@@ -108,21 +108,21 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   base::subtle::PlatformSharedMemoryRegion region =
       base::subtle::PlatformSharedMemoryRegion::CreateWritable(num_bytes);
 
-  std::vector<PlatformHandleInTransit> handles(2);
+  std::vector<PlatformHandleInTransit> handles;
+  handles.reserve(2);
   if (region.IsValid()) {
     PlatformHandle h[2];
     ExtractPlatformHandlesFromSharedMemoryRegionHandle(
         region.PassPlatformHandle(), &h[0], &h[1]);
-    handles[0] = PlatformHandleInTransit(std::move(h[0]));
-    handles[1] = PlatformHandleInTransit(std::move(h[1]));
+    handles.emplace_back(std::move(h[0]));
 #if !defined(OS_POSIX) || defined(OS_ANDROID) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
     // Non-POSIX systems, as well as Android, and non-iOS Mac, only use a single
     // handle to represent a writable region.
-    DCHECK(!handles[1].handle().is_valid());
-    handles.resize(1);
+    DCHECK(!h[1].is_valid());
 #else
-    DCHECK(handles[1].handle().is_valid());
+    DCHECK(h[1].is_valid());
+    handles.emplace_back(std::move(h[1]));
 #endif
   }
 

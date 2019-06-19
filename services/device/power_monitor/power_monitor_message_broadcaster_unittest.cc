@@ -50,15 +50,21 @@ class PowerMonitorMessageBroadcasterTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::SetUp();
 
     power_monitor_source_ = new base::PowerMonitorTestSource();
-    power_monitor_.reset(new base::PowerMonitor(
-        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
+    base::PowerMonitor::Initialize(
+        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
+  }
+
+  void TearDown() override {
+    // The DeviceService must be destroyed before shutting down the
+    // PowerMonitor, which the DeviceService is observing.
+    DestroyDeviceService();
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   base::PowerMonitorTestSource* source() { return power_monitor_source_; }
 
  private:
   base::PowerMonitorTestSource* power_monitor_source_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcasterTest);
 };

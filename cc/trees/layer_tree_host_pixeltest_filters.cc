@@ -347,6 +347,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBoundsWithChildren) {
                                      0);
   invert->SetBackdropFilterBounds(backdrop_filter_bounds);
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL(
                    "backdrop_filter_bounds_with_children.png")));
@@ -419,6 +422,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
   filters.Append(FilterOperation::CreateReferenceFilter(nullptr));
   foreground->SetFilters(filters);
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(renderer_type(), foreground,
                base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
@@ -474,6 +480,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterClipped) {
   transform.Translate(0.0, -100.0);
   foreground->SetTransform(transform);
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
@@ -505,6 +514,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
   // Now move the filters origin up by 100 pixels, so the crop rect is
   // applied only to the top 100 pixels, not the bottom.
   foreground->SetFiltersOrigin(gfx::PointF(0.0f, -100.0f));
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
@@ -632,6 +644,20 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
 
+  if (renderer_type() == RENDERER_SKIA_VK) {
+    constexpr bool discard_alpha = false;
+    constexpr float error_pixels_percentage_limit = 5.f;
+    constexpr float small_error_pixels_percentage_limit = 0.f;
+    constexpr float avg_abs_error_limit = 1.f;
+    constexpr int max_abs_error_limit = 2;
+    constexpr int small_error_threshold = 0;
+
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        discard_alpha, error_pixels_percentage_limit,
+        small_error_pixels_percentage_limit, avg_abs_error_limit,
+        max_abs_error_limit, small_error_threshold);
+  }
+
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_rotated_.png"))
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
@@ -681,6 +707,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageRenderSurfaceScaled) {
         average_error_allowed_in_bad_pixels, large_error_allowed,
         small_error_allowed));
   }
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(
       renderer_type(), background,
@@ -925,6 +954,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {
   // Force the allocation a larger textures.
   set_enlarge_texture_amount(gfx::Size(50, 50));
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(
       renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
@@ -962,6 +994,9 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
 
   // Force the allocation a larger textures.
   set_enlarge_texture_amount(gfx::Size(50, 50));
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(
       renderer_type(), background,

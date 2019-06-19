@@ -187,7 +187,8 @@ bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,
                                             *local_location))
     return false;
 
-  if (SVGLayoutSupport::HitTestChildren(LastChild(), result, *local_location,
+  if (!PaintBlockedByDisplayLock(DisplayLockContext::kChildren) &&
+      SVGLayoutSupport::HitTestChildren(LastChild(), result, *local_location,
                                         accumulated_offset, hit_test_action))
     return true;
 

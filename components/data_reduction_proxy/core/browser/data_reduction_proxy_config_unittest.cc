@@ -1241,8 +1241,9 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
       "DataReductionProxy.WarmupURL.FetchInitiated", 2);
 }
 
+// https://crbug.com/974895: Flaky test.
 TEST_F(DataReductionProxyConfigTest,
-       HandleWarmupFetcherRetryWithConnectionChange) {
+       DISABLED_HandleWarmupFetcherRetryWithConnectionChange) {
   // The test manually controls the fetch of warmup URL and the response.
   test_context_->DisableWarmupURLFetchCallback();
 

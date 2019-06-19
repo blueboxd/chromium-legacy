@@ -228,8 +228,8 @@ String StylePropertySerializer::AsText() const {
     const CSSProperty& property_class = property.Property();
     CSSPropertyID property_id = property_class.PropertyID();
 
-    // Only enabled properties should be part of the style.
-    DCHECK(property_class.IsEnabled());
+    // Only web exposed properties should be part of the style.
+    DCHECK(property_class.IsWebExposed());
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
            (property_class.IsProperty() && !property_class.IsShorthand()));

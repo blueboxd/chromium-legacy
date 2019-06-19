@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -74,8 +75,8 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome with mus) with Mus running in the browser process.
-  if (!base::PowerMonitor::Get()) {
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
+  if (!base::PowerMonitor::IsInitialized()) {
+    base::PowerMonitor::Initialize(
         std::make_unique<base::PowerMonitorDeviceSource>());
   }
 

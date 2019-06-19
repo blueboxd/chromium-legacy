@@ -32,6 +32,11 @@ struct CORE_EXPORT NGInlineItemResult {
   DISALLOW_NEW();
 
  public:
+  unsigned Length() const {
+    DCHECK_GT(end_offset, start_offset);
+    return end_offset - start_offset;
+  }
+
   // The NGInlineItem and its index.
   const NGInlineItem* item;
   unsigned item_index;

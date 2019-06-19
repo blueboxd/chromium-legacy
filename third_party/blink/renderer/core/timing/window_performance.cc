@@ -119,14 +119,14 @@ bool IsSameOrigin(const AtomicString& key) {
 
 }  // namespace
 
-static TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
+static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
   Document* document = window->document();
   if (!document)
-    return TimeTicks();
+    return base::TimeTicks();
 
   DocumentLoader* loader = document->Loader();
   if (!loader)
-    return TimeTicks();
+    return base::TimeTicks();
 
   return loader->GetTiming().ReferenceMonotonicTime();
 }
@@ -328,9 +328,9 @@ bool WindowPerformance::ShouldBufferEntries() {
 }
 
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
-                                            TimeTicks start_time,
-                                            TimeTicks processing_start,
-                                            TimeTicks processing_end,
+                                            base::TimeTicks start_time,
+                                            base::TimeTicks processing_start,
+                                            base::TimeTicks processing_end,
                                             bool cancelable) {
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
@@ -357,7 +357,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 }
 
 void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
-                                           TimeTicks timestamp) {
+                                           base::TimeTicks timestamp) {
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   bool event_timing_enabled =
       RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext());
@@ -395,8 +395,8 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
 void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const String& url,
                                          const FloatRect& rect,
-                                         TimeTicks start_time,
-                                         TimeTicks response_end,
+                                         base::TimeTicks start_time,
+                                         base::TimeTicks response_end,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,

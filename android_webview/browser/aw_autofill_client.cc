@@ -173,7 +173,7 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
   NOTIMPLEMENTED();
 }
 
-void AwAutofillClient::CreditCardUploadCompleted() {
+void AwAutofillClient::CreditCardUploadCompleted(bool card_saved) {
   NOTIMPLEMENTED();
 }
 

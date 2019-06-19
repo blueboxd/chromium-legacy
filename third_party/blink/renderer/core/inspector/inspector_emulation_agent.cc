@@ -317,7 +317,7 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     *virtual_time_ticks_base_ms = 0;
   } else {
     *virtual_time_ticks_base_ms =
-        (virtual_time_base_ticks_ - WTF::TimeTicks()).InMillisecondsF();
+        (virtual_time_base_ticks_ - base::TimeTicks()).InMillisecondsF();
   }
 
   return response;
@@ -333,8 +333,8 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
   if (new_policy.virtual_time_budget_ms) {
     TRACE_EVENT_ASYNC_BEGIN1("renderer.scheduler", "VirtualTimeBudget", this,
                              "budget", *new_policy.virtual_time_budget_ms);
-    WTF::TimeDelta budget_amount =
-        WTF::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
+    base::TimeDelta budget_amount =
+        base::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
         budget_amount,
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,

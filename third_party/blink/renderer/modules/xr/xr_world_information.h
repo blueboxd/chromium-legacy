@@ -7,6 +7,7 @@
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
+#include "third_party/blink/renderer/modules/xr/xr_plane_set.h"
 
 namespace blink {
 
@@ -18,9 +19,9 @@ class XRWorldInformation : public ScriptWrappable {
  public:
   XRWorldInformation(XRSession* session);
 
-  // Returns vector containing detected planes, |is_null| will be set to true
-  // if plane detection is not enabled.
-  HeapVector<Member<XRPlane>> detectedPlanes(bool& is_null) const;
+  // Returns set of detected planes. Returns null if plane detection is
+  // disabled.
+  XRPlaneSet* detectedPlanes() const;
 
   void Trace(blink::Visitor* visitor) override;
 

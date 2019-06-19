@@ -2620,7 +2620,7 @@
                            'shuchen+watch@chromium.org',
                            'yhanada+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
-    'timers': ['chirantan+watch@chromium.org'],
+    'timers': [],
     'tools_win_chromeexts': ['robliao+watch@chromium.org'],
     'touch_selection': ['ajith.v@samsung.com',
                         'ajith.v@chromium.org'],

@@ -227,7 +227,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           onEndSession: (session) => session.end(),
           supportedSessionTypes: ['immersive-vr']
         });
-        document.querySelector('header').appendChild(xrButton.domElement);
+        xrButton.addToHeader();
       }
 
       function initGL() {

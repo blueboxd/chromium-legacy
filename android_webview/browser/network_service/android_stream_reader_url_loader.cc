@@ -152,10 +152,21 @@ void AndroidStreamReaderURLLoader::OnInputStreamOpened(
   response_delegate_ = std::move(returned_delegate);
 
   if (!input_stream) {
-    bool restarted = false;
-    response_delegate_->OnInputStreamOpenFailed(&restarted);
-    if (restarted) {
-      // request has been restarted with a new loader.
+    bool restarted_or_completed = response_delegate_->OnInputStreamOpenFailed();
+    if (restarted_or_completed) {
+      // The original request has been restarted with a new loader or
+      // completed. We can clean up this loader.
+      // Generally speaking this can happen in the following cases
+      // (see aw_proxying_url_loader_factory.cc for delegate implementation):
+      //   1. InterceptResponseDelegate :
+      //     - intercepted requests with custom response,
+      //     - no restart required
+      //   2. ProtocolResponseDelegate :
+      //     - e.g. file:///android_asset/,
+      //     - restart required
+      //   3. InterceptResponseDelegate, intercept-only setting :
+      //     - used for external protocols,
+      //     - no restart, but completes immediately.
       CleanUp();
     } else {
       HeadersComplete(net::HTTP_NOT_FOUND, kHTTPNotFoundText);

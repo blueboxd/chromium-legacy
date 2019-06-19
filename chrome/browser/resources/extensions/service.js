@@ -146,18 +146,22 @@ cr.define('extensions', function() {
     }
 
     /**
-     * Attempts to load an unpacked extension, optionally as another attempt at
-     * a previously-specified load.
-     * @param {string=} opt_retryGuid
+     * @param {chrome.developerPrivate.LoadUnpackedOptions=} opt_options
      * @return {!Promise} A signal that loading finished, rejected if any error
      *     occurred.
      * @private
      */
-    loadUnpackedHelper_(opt_retryGuid) {
+    loadUnpackedHelper_(opt_options) {
       return new Promise(function(resolve, reject) {
+        const options = Object.assign(
+            {
+              failQuietly: true,
+              populateError: true,
+            },
+            opt_options);
+
         chrome.developerPrivate.loadUnpacked(
-            {failQuietly: true, populateError: true, retryGuid: opt_retryGuid},
-            (loadError) => {
+            options, (loadError) => {
               if (chrome.runtime.lastError &&
                   chrome.runtime.lastError.message !=
                       'File selection was canceled.') {
@@ -290,7 +294,9 @@ cr.define('extensions', function() {
 
     /** @override */
     retryLoadUnpacked(retryGuid) {
-      return this.loadUnpackedHelper_(retryGuid);
+      // Attempt to load an unpacked extension, optionally as another attempt at
+      // a previously-specified load.
+      return this.loadUnpackedHelper_({retryGuid: retryGuid});
     }
 
     /** @override */
@@ -427,6 +433,22 @@ cr.define('extensions', function() {
       a.href = url;
       a.download = fileName;
       a.click();
+    }
+
+    /**
+     * Attempts to load an unpacked extension via a drag-n-drop gesture.
+     * @return {!Promise}
+     */
+    loadUnpackedFromDrag() {
+      return this.loadUnpackedHelper_({useDraggedPath: true});
+    }
+
+    installDroppedFile() {
+      chrome.developerPrivate.installDroppedFile();
+    }
+
+    notifyDragInstallInProgress() {
+      chrome.developerPrivate.notifyDragInstallInProgress();
     }
   }
 

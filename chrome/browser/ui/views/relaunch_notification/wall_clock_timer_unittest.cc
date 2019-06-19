@@ -27,7 +27,6 @@ class StubPowerMonitorSource : public base::PowerMonitorSource {
   void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
 
   // base::PowerMonitorSource:
-  void Shutdown() override {}
   bool IsOnBatteryPowerImpl() override { return false; }
 };
 
@@ -40,11 +39,11 @@ class WallClockTimerTest : public ::testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
     auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
-        std::move(mock_power_monitor_source));
+    base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));
   }
 
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  ~WallClockTimerTest() override { base::PowerMonitor::ShutdownForTesting(); }
+
   // Owned by power_monitor_. Use this to simulate a power suspend and resume.
   StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
   base::test::ScopedTaskEnvironment task_environment_;

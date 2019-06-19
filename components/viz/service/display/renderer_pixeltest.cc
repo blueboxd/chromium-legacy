@@ -1359,9 +1359,17 @@ TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
       this->shared_bitmap_manager_.get(), this->child_context_provider_,
       this->render_pass_.get());
 
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 45.f, 0.f,
+                                                            1.2f, 50, 0.f);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 2.f, 0.f,
+                                                            256.f, 256, 0.f);
+  }
+
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
-      FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
+      *comparator, FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
 TYPED_TEST(IntersectingQuadPixelTest, NonFlippedTexturedQuads) {
@@ -1383,8 +1391,17 @@ TYPED_TEST(IntersectingQuadPixelTest, NonFlippedTexturedQuads) {
       this->shared_bitmap_manager_.get(), this->child_context_provider_,
       this->render_pass_.get());
 
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 40.f, 0.f,
+                                                            2.5f, 130, 0.f);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 2.f, 0.f,
+                                                            256.f, 256, 0.f);
+  }
+
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      *comparator,
       FILE_PATH_LITERAL(
           "intersecting_non_flipped_blue_green_half_size_rectangles.png"));
 }
@@ -1408,8 +1425,17 @@ TYPED_TEST(IntersectingQuadPixelTest, FlippedTexturedQuads) {
       this->shared_bitmap_manager_.get(), this->child_context_provider_,
       this->render_pass_.get());
 
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 50.f, 0.f,
+                                                            2.5f, 130, 0.f);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 2.f, 0.f,
+                                                            256.f, 256, 0.f);
+  }
+
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
+      *comparator,
       FILE_PATH_LITERAL(
           "intersecting_flipped_blue_green_half_size_rectangles.png"));
 }
@@ -1504,9 +1530,18 @@ TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
 
   this->pass_list_.push_back(std::move(child_pass1));
   this->pass_list_.push_back(std::move(child_pass2));
+
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 45.f, 0.f,
+                                                            2.f, 50, 0.f);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 2.f, 0.f,
+                                                            256.f, 256, 0.f);
+  }
+
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
-      FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
+      *comparator, FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
 TYPED_TEST(IntersectingVideoQuadPixelTest, YUVVideoQuads) {
@@ -2098,7 +2133,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   // renderer so use a fuzzy comparator.
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
-      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
@@ -2158,7 +2193,7 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   // renderer so use a fuzzy comparator.
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha.png")),
-      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
@@ -2220,7 +2255,7 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_filter_chain.png")),
-      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
@@ -2303,7 +2338,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_alpha_translate.png")),
-      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
@@ -2497,7 +2532,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("mask_bottom_right.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 // This tests the case where we have a RenderPass with a mask, but the quad
@@ -2594,7 +2629,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("mask_middle.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
@@ -2680,10 +2715,19 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
   // The rounded corners generated by masks should be very close to the rounded
   // corners generated by the fragment shader approach. The percentage of pixel
   // mismatch is around 0.52%.
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 64.f, 0.f,
+                                                            1.3f, 65, 0);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 0.6f, 0.f,
+                                                            255.f, 255, 0);
+  }
+
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("rounded_corner_simple.png")),
-      cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
+      *comparator));
 }
 
 TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
@@ -2781,10 +2825,19 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
+  std::unique_ptr<cc::FuzzyPixelComparator> comparator;
+  if (this->use_vulkan()) {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 64.f, 0,
+                                                            0.8f, 80.f, 0);
+  } else {
+    comparator = std::make_unique<cc::FuzzyPixelComparator>(false, 0.6f, 0.f,
+                                                            255.f, 255, 0);
+  }
+
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("rounded_corner_multi_radii.png")),
-      cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
+      *comparator));
 }
 
 template <typename RendererType>

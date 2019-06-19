@@ -229,7 +229,7 @@ const Vector<const CSSProperty*>&
 CSSComputedStyleDeclaration::ComputableProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kComputedPropertyArray, base::size(kComputedPropertyArray), properties);
   }
   return properties;

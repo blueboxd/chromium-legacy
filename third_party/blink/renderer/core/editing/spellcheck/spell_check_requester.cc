@@ -198,8 +198,8 @@ bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
   if (!request)
     return false;
 
-  const TimeTicks current_request_time = CurrentTimeTicks();
-  if (request_num == 0 && last_request_time_ > TimeTicks()) {
+  const base::TimeTicks current_request_time = CurrentTimeTicks();
+  if (request_num == 0 && last_request_time_ > base::TimeTicks()) {
     UMA_HISTOGRAM_TIMES("WebCore.SpellChecker.RequestInterval",
                         current_request_time - last_request_time_);
   }
@@ -297,7 +297,7 @@ void SpellCheckRequester::DidCheck(int sequence) {
 
   ClearProcessingRequest();
   if (!request_queue_.IsEmpty())
-    timer_to_process_queued_request_.StartOneShot(TimeDelta(), FROM_HERE);
+    timer_to_process_queued_request_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void SpellCheckRequester::DidCheckSucceed(

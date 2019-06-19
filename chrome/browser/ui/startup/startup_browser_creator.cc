@@ -363,6 +363,21 @@ bool StartupBrowserCreator::LaunchBrowser(
                  << "browser session.";
   }
 
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  if (command_line.HasSwitch(switches::kGuest)) {
+    PrefService* service = g_browser_process->local_state();
+    DCHECK(service);
+    if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
+      profile = g_browser_process->profile_manager()
+                    ->GetProfile(ProfileManager::GetGuestProfilePath())
+                    ->GetOffTheRecordProfile();
+    } else {
+      LOG(WARNING) << "Guest mode disabled by policy, launching a normal "
+                   << "browser session.";
+    }
+  }
+#endif
+
 #if defined(OS_WIN)
   // Continue with the incognito profile if this is a credential provider logon.
   if (command_line.HasSwitch(credential_provider::kGcpwSigninSwitch))

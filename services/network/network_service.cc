@@ -41,6 +41,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -542,6 +543,22 @@ void NetworkService::SetRawHeadersAccess(
     raw_headers_access_origins_by_pid_[process_id] =
         base::flat_set<url::Origin>(origins.begin(), origins.end());
   }
+}
+
+void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
+  int new_limit = max_connections;
+  if (new_limit < 0)
+    new_limit = net::kDefaultMaxSocketsPerProxyServer;
+
+  // Clamp the value between min_limit and max_limit.
+  int max_limit = 99;
+  int min_limit = net::ClientSocketPoolManager::max_sockets_per_group(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL);
+  new_limit = std::max(std::min(new_limit, max_limit), min_limit);
+
+  // Assign the global limit.
+  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
+      net::HttpNetworkSession::NORMAL_SOCKET_POOL, new_limit);
 }
 
 bool NetworkService::HasRawHeadersAccess(uint32_t process_id,

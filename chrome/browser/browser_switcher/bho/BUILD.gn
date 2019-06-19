@@ -20,6 +20,11 @@ shared_library("browser_switcher_bho") {
     ":copy_browser_switcher_binaries",
   ]
 
+  defines = [
+    # Needed to build COM objects that will be hosted in a DLL.
+    "_WINDLL",
+  ]
+
   # TODO(nicolaso): Reduce binary size as much as possible.
   #
   # TODO(nicolaso): Use ie_bho.def and ie_bho.rc.
@@ -32,6 +37,9 @@ shared_library("browser_switcher_bho") {
     "bho.h",
     "browser_switcher_core.cc",
     "browser_switcher_core.h",
+    "ie_bho.cc",
+    "ie_bho.def",
+    "ie_bho.h",
     "logging.cc",
     "logging.h",
     "resource.h",

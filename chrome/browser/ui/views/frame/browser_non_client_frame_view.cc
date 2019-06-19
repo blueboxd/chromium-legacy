@@ -379,6 +379,15 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
 #endif
 }
 
+#if defined(OS_WIN)
+int BrowserNonClientFrameView::GetSystemMenuY() const {
+  if (!browser_view()->IsTabStripVisible())
+    return GetTopInset(false);
+  return GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom() -
+         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+}
+#endif
+
 void BrowserNonClientFrameView::MaybeObserveTabstrip() {
   if (browser_view_->tabstrip()) {
     DCHECK(!tab_strip_observer_.IsObserving(browser_view_->tabstrip()));

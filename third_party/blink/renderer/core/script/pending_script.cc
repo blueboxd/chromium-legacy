@@ -72,7 +72,7 @@ void PendingScript::Dispose() {
   DCHECK(!IsWatchingForLoad());
 
   starting_position_ = TextPosition::BelowRangePosition();
-  parser_blocking_load_start_time_ = TimeTicks();
+  parser_blocking_load_start_time_ = base::TimeTicks();
 
   DisposeInternal();
   element_ = nullptr;
@@ -172,7 +172,7 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   const bool was_canceled = WasCanceled();
   const bool is_external = IsExternal();
   const bool created_during_document_write = WasCreatedDuringDocumentWrite();
-  const TimeTicks parser_blocking_load_start_time =
+  const base::TimeTicks parser_blocking_load_start_time =
       ParserBlockingLoadStartTime();
   const bool is_controlled_by_script_runner = IsControlledByScriptRunner();
   ScriptElementBase* element = element_;
@@ -192,7 +192,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     bool was_canceled,
     bool is_external,
     bool created_during_document_write,
-    TimeTicks parser_blocking_load_start_time,
+    base::TimeTicks parser_blocking_load_start_time,
     bool is_controlled_by_script_runner) {
   Document& element_document = element->GetDocument();
   Document* context_document = element_document.ContextDocument();
@@ -204,7 +204,7 @@ void PendingScript::ExecuteScriptBlockInternal(
     return;
   }
 
-  if (parser_blocking_load_start_time > TimeTicks()) {
+  if (parser_blocking_load_start_time > base::TimeTicks()) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptLoadDuration(
             CurrentTimeTicks() - parser_blocking_load_start_time,
@@ -214,7 +214,7 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (was_canceled)
     return;
 
-  TimeTicks script_exec_start_time = CurrentTimeTicks();
+  base::TimeTicks script_exec_start_time = CurrentTimeTicks();
 
   {
     if (element->ElementHasDuplicateAttributes()) {

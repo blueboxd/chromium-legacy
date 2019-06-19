@@ -34,9 +34,11 @@ class TestIsolationContextMetrics : public IsolationContextMetrics {
   using IsolationContextMetrics::GetProcessDataState;
   using IsolationContextMetrics::kBrowsingInstanceDataByPageTimeHistogramName;
   using IsolationContextMetrics::kBrowsingInstanceDataByTimeHistogramName;
+  using IsolationContextMetrics::kFramesPerRendererByTimeHistogram;
   using IsolationContextMetrics::kProcessDataByProcessHistogramName;
   using IsolationContextMetrics::kProcessDataByTimeHistogramName;
   using IsolationContextMetrics::kReportingInterval;
+  using IsolationContextMetrics::kSiteInstancesPerRendererByTimeHistogram;
   using IsolationContextMetrics::ProcessData;
   using IsolationContextMetrics::ProcessDataState;
 
@@ -223,6 +225,10 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
                                      0);
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 0);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 0);
 
   FastForwardUntilTimerFires();
 
@@ -234,6 +240,12 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
       metrics_->kReportingInterval.InSeconds());
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectUniqueSample(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds());
+  histogram_tester_.ExpectUniqueSample(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds());
 
   {
     // Advance time and add another frame to a new site instance, as a child
@@ -257,6 +269,16 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
         metrics_->kReportingInterval.InSeconds() + 1);
     histogram_tester_.ExpectTotalCount(
         metrics_->kProcessDataByProcessHistogramName, 0);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds());
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 2, 1);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds());
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
     // Advance time.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -277,6 +299,16 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
       metrics_->kReportingInterval.InSeconds() + 1);
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 2, 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
   {
     // Advance time and add another frame to the same site instance, as a child
@@ -306,6 +338,16 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
         metrics_->kReportingInterval.InSeconds() + 2);
     histogram_tester_.ExpectTotalCount(
         metrics_->kProcessDataByProcessHistogramName, 0);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds() + 1);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 2, 2);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds() + 2);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
     // Advance time.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -329,6 +371,16 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
       metrics_->kReportingInterval.InSeconds() + 2);
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 2);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 2, 2);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 3);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
   // Destroy the other frame and the page. No metrics should be flushed.
   {

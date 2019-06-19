@@ -83,6 +83,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_launcher.h"
@@ -2169,6 +2170,8 @@ RenderProcessHostWatcher::RenderProcessHostWatcher(
     : render_process_host_(render_process_host),
       type_(type),
       did_exit_normally_(true),
+      allow_renderer_crashes_(
+          std::make_unique<ScopedAllowRendererCrashes>(render_process_host)),
       quit_closure_(run_loop_.QuitClosure()) {
   render_process_host_->AddObserver(this);
 }

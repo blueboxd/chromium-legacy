@@ -51,6 +51,9 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
       base::RepeatingCallback<void(const char*, int32_t)>) override;
   cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override;
   gpu::SharedImageInterface* SharedImageInterface() override;
+  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                      media::VideoFrame* video_frame,
+                      cc::PaintCanvas* canvas) override;
 
   viz::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();

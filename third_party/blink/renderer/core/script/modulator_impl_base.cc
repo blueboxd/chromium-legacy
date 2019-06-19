@@ -66,6 +66,8 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
           GetExecutionContext());
     case layered_api::Module::kElementsSwitch:
       return RuntimeEnabledFeatures::BuiltInModuleSwitchElementEnabled();
+    case layered_api::Module::kToast:
+      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
   }
 }
 
@@ -79,6 +81,9 @@ void ModulatorImplBase::BuiltInModuleUseCount(
     case layered_api::Module::kElementsSwitch:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kBuiltInModuleSwitchImported);
+      break;
+    case layered_api::Module::kToast:
+      UseCounter::Count(GetExecutionContext(), WebFeature::kBuiltInModuleToast);
       break;
     case layered_api::Module::kVirtualScroller:
       UseCounter::Count(GetExecutionContext(),

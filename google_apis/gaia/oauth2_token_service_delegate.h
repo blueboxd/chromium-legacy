@@ -5,6 +5,7 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -43,10 +44,10 @@ class OAuth2TokenServiceDelegate {
   OAuth2TokenServiceDelegate();
   virtual ~OAuth2TokenServiceDelegate();
 
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      OAuth2AccessTokenConsumer* consumer) = 0;
+      OAuth2AccessTokenConsumer* consumer) WARN_UNUSED_RESULT = 0;
 
   // Returns |true| if a refresh token is available for |account_id|, and
   // |false| otherwise.

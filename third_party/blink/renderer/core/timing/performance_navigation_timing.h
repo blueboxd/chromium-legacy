@@ -33,7 +33,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
  public:
   PerformanceNavigationTiming(LocalFrame*,
                               ResourceTimingInfo*,
-                              TimeTicks time_origin,
+                              base::TimeTicks time_origin,
                               const WebVector<WebServerTimingInfo>&);
 
   // Attributes inheritted from PerformanceEntry.

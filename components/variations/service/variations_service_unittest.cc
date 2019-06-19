@@ -649,55 +649,62 @@ TEST_F(VariationsServiceTest, Observer) {
 
 TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
   struct {
+    const char* permanent_overridden_country_before;
     // Comma separated list, NULL if the pref isn't set initially.
-    const char* pref_value_before;
+    const char* permanent_consistency_country_before;
     const char* version;
     // NULL indicates that no latest country code is present.
     const char* latest_country_code;
     // Comma separated list.
-    const char* expected_pref_value_after;
+    const char* permanent_consistency_country_after;
     std::string expected_country;
-    VariationsService::LoadPermanentConsistencyCountryResult expected_result;
+    LoadPermanentConsistencyCountryResult expected_result;
   } test_cases[] = {
+      // Existing permanent overridden country.
+      {"ca", "20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "ca",
+       LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
+      {"us", "20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
+      {"ca", nullptr, "20.0.0.0", nullptr, nullptr, "ca",
+       LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY},
+
       // Existing pref value present for this version.
-      {"20.0.0.0,us", "20.0.0.0", "ca", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ},
-      {"20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ},
-      {"20.0.0.0,us", "20.0.0.0", nullptr, "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ},
+      {"", "20.0.0.0,us", "20.0.0.0", "ca", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ},
+      {"", "20.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ},
+      {"", "20.0.0.0,us", "20.0.0.0", nullptr, "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ},
 
       // Existing pref value present for a different version.
-      {"19.0.0.0,ca", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ},
-      {"19.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ},
-      {"19.0.0.0,ca", "20.0.0.0", nullptr, "19.0.0.0,ca", "",
-       VariationsService::LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ},
+      {"", "19.0.0.0,ca", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ},
+      {"", "19.0.0.0,us", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ},
+      {"", "19.0.0.0,ca", "20.0.0.0", nullptr, "19.0.0.0,ca", "",
+       LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ},
 
       // No existing pref value present.
-      {nullptr, "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_NO_PREF_HAS_SEED},
-      {nullptr, "20.0.0.0", nullptr, "", "",
-       VariationsService::LOAD_COUNTRY_NO_PREF_NO_SEED},
-      {"", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_NO_PREF_HAS_SEED},
-      {"", "20.0.0.0", nullptr, "", "",
-       VariationsService::LOAD_COUNTRY_NO_PREF_NO_SEED},
+      {"", nullptr, "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_NO_PREF_HAS_SEED},
+      {"", nullptr, "20.0.0.0", nullptr, "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
+      {"", "", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_NO_PREF_HAS_SEED},
+      {"", "", "20.0.0.0", nullptr, "", "", LOAD_COUNTRY_NO_PREF_NO_SEED},
 
       // Invalid existing pref value.
-      {"20.0.0.0", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"20.0.0.0", "20.0.0.0", nullptr, "", "",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_NO_SEED},
-      {"20.0.0.0,us,element3", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"20.0.0.0,us,element3", "20.0.0.0", nullptr, "", "",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_NO_SEED},
-      {"badversion,ca", "20.0.0.0", "us", "20.0.0.0,us", "us",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
-      {"badversion,ca", "20.0.0.0", nullptr, "", "",
-       VariationsService::LOAD_COUNTRY_INVALID_PREF_NO_SEED},
+      {"", "20.0.0.0", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
+      {"", "20.0.0.0", "20.0.0.0", nullptr, "", "",
+       LOAD_COUNTRY_INVALID_PREF_NO_SEED},
+      {"", "20.0.0.0,us,element3", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
+      {"", "20.0.0.0,us,element3", "20.0.0.0", nullptr, "", "",
+       LOAD_COUNTRY_INVALID_PREF_NO_SEED},
+      {"", "badversion,ca", "20.0.0.0", "us", "20.0.0.0,us", "us",
+       LOAD_COUNTRY_INVALID_PREF_HAS_SEED},
+      {"", "badversion,ca", "20.0.0.0", nullptr, "", "",
+       LOAD_COUNTRY_INVALID_PREF_NO_SEED},
   };
 
   for (const auto& test : test_cases) {
@@ -707,13 +714,20 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
             &prefs_, network_tracker_),
         &prefs_, GetMetricsStateManager(), UIStringOverrider());
 
-    if (!test.pref_value_before) {
+    if (!test.permanent_overridden_country_before) {
+      prefs_.ClearPref(prefs::kVariationsPermanentOverriddenCountry);
+    } else {
+      prefs_.SetString(prefs::kVariationsPermanentOverriddenCountry,
+                       test.permanent_overridden_country_before);
+    }
+
+    if (!test.permanent_consistency_country_before) {
       prefs_.ClearPref(prefs::kVariationsPermanentConsistencyCountry);
     } else {
       base::ListValue list_value;
       for (const std::string& component :
-           base::SplitString(test.pref_value_before, ",", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_ALL)) {
+           base::SplitString(test.permanent_consistency_country_before, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
         list_value.AppendString(component);
       }
       prefs_.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
@@ -728,12 +742,12 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     EXPECT_EQ(test.expected_country,
               service.LoadPermanentConsistencyCountry(
                   base::Version(test.version), latest_country))
-        << test.pref_value_before << ", " << test.version << ", "
-        << test.latest_country_code;
+        << test.permanent_consistency_country_before << ", " << test.version
+        << ", " << test.latest_country_code;
 
     base::ListValue expected_list_value;
     for (const std::string& component :
-         base::SplitString(test.expected_pref_value_after, ",",
+         base::SplitString(test.permanent_consistency_country_after, ",",
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       expected_list_value.AppendString(component);
     }
@@ -741,8 +755,8 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
         prefs_.GetList(prefs::kVariationsPermanentConsistencyCountry);
     EXPECT_EQ(ListValueToString(expected_list_value),
               ListValueToString(*pref_value))
-        << test.pref_value_before << ", " << test.version << ", "
-        << test.latest_country_code;
+        << test.permanent_consistency_country_before << ", " << test.version
+        << ", " << test.latest_country_code;
 
     histogram_tester.ExpectUniqueSample(
         "Variations.LoadPermanentConsistencyCountryResult",
@@ -750,27 +764,70 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
   }
 }
 
+TEST_F(VariationsServiceTest, GetStoredPermanentCountry) {
+  struct {
+    // The old overridden country, empty string if the pref isn't set initially.
+    const std::string permanent_overridden_country_before;
+    // Comma separated list, NULL if the pref isn't set initially.
+    const std::string permanent_consistency_country_before;
+    const std::string expected_country;
+  } test_cases[] = {
+      {"", "20.0.0.0,us", "us"},
+      {"us", "20.0.0.0,us", "us"},
+      {"ca", "20.0.0.0,us", "ca"},
+      {"ca", "", "ca"},
+  };
+
+  for (const auto& test : test_cases) {
+    TestVariationsService service(
+        std::make_unique<web_resource::TestRequestAllowedNotifier>(
+            &prefs_, network_tracker_),
+        &prefs_, GetMetricsStateManager(), true);
+
+    if (test.permanent_overridden_country_before.empty()) {
+      prefs_.ClearPref(prefs::kVariationsPermanentOverriddenCountry);
+    } else {
+      prefs_.SetString(prefs::kVariationsPermanentOverriddenCountry,
+                       test.permanent_overridden_country_before);
+    }
+
+    if (test.permanent_consistency_country_before.empty()) {
+      prefs_.ClearPref(prefs::kVariationsPermanentConsistencyCountry);
+    } else {
+      base::ListValue list_value;
+      for (const std::string& component :
+           base::SplitString(test.permanent_consistency_country_before, ",",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+        list_value.AppendString(component);
+      }
+      prefs_.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
+    }
+
+    VariationsSeed seed(CreateTestSeed());
+
+    EXPECT_EQ(test.expected_country, service.GetStoredPermanentCountry())
+        << test.permanent_overridden_country_before << ", "
+        << test.permanent_consistency_country_before;
+  }
+}
+
 TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
-  const std::string kTestVersion = version_info::GetVersionNumber();
-  const std::string kPrefCa = version_info::GetVersionNumber() + ",ca";
-  const std::string kPrefUs = version_info::GetVersionNumber() + ",us";
+  const std::string kPrefCa = "ca";
+  const std::string kPrefUs = "us";
 
   struct {
-    // Comma separated list, empty string if the pref isn't set initially.
+    // The old overridden country, empty string if the pref isn't set initially.
     const std::string pref_value_before;
     const std::string country_code_override;
-    // Comma separated list.
+    // The expected override country.
     const std::string expected_pref_value_after;
     // Is the pref expected to be updated or not.
     const bool has_updated;
   } test_cases[] = {
       {kPrefUs, "ca", kPrefCa, true},
       {kPrefUs, "us", kPrefUs, false},
-      {kPrefUs, "", kPrefUs, false},
+      {kPrefUs, "", "", true},
       {"", "ca", kPrefCa, true},
-      {"", "", "", false},
-      {"19.0.0.0,us", "ca", kPrefCa, true},
-      {"19.0.0.0,us", "us", "19.0.0.0,us", false},
   };
 
   for (const auto& test : test_cases) {
@@ -780,15 +837,10 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
         &prefs_, GetMetricsStateManager(), true);
 
     if (test.pref_value_before.empty()) {
-      prefs_.ClearPref(prefs::kVariationsPermanentConsistencyCountry);
+      prefs_.ClearPref(prefs::kVariationsPermanentOverriddenCountry);
     } else {
-      base::ListValue list_value;
-      for (const std::string& component :
-           base::SplitString(test.pref_value_before, ",", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_ALL)) {
-        list_value.AppendString(component);
-      }
-      prefs_.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
+      prefs_.SetString(prefs::kVariationsPermanentOverriddenCountry,
+                       test.pref_value_before);
     }
 
     VariationsSeed seed(CreateTestSeed());
@@ -797,16 +849,9 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
                                     test.country_code_override))
         << test.pref_value_before << ", " << test.country_code_override;
 
-    base::ListValue expected_list_value;
-    for (const std::string& component :
-         base::SplitString(test.expected_pref_value_after, ",",
-                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      expected_list_value.AppendString(component);
-    }
-    const base::ListValue* pref_value =
-        prefs_.GetList(prefs::kVariationsPermanentConsistencyCountry);
-    EXPECT_EQ(ListValueToString(expected_list_value),
-              ListValueToString(*pref_value))
+    const std::string pref_value =
+        prefs_.GetString(prefs::kVariationsPermanentOverriddenCountry);
+    EXPECT_EQ(test.expected_pref_value_after, pref_value)
         << test.pref_value_before << ", " << test.country_code_override;
   }
 }

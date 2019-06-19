@@ -30,6 +30,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/ip_endpoint.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -50,13 +53,17 @@ class TestDataReductionProxyMetricsObserverBase
       bool data_reduction_proxy_used,
       bool cached_data_reduction_proxy_used,
       bool lite_page_used,
-      bool black_listed)
+      bool black_listed,
+      std::string session_key,
+      uint64_t page_id)
       : web_contents_(web_contents),
         pingback_client_(pingback_client),
         data_reduction_proxy_used_(data_reduction_proxy_used),
         cached_data_reduction_proxy_used_(cached_data_reduction_proxy_used),
         lite_page_used_(lite_page_used),
-        black_listed_(black_listed) {}
+        black_listed_(black_listed),
+        session_key_(session_key),
+        page_id_(page_id) {}
 
   ~TestDataReductionProxyMetricsObserverBase() override {}
 
@@ -71,6 +78,8 @@ class TestDataReductionProxyMetricsObserverBase
         cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
+    data->set_session_key(session_key_);
+    data->set_page_id(page_id_);
     DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
         web_contents_->GetBrowserContext())
         ->SetDataForNextCommitForTesting(std::move(data));
@@ -113,19 +122,45 @@ class TestDataReductionProxyMetricsObserverBase
   bool cached_data_reduction_proxy_used_;
   bool lite_page_used_;
   bool black_listed_;
+  std::string session_key_;
+  uint64_t page_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyMetricsObserverBase);
 };
 
 class DataReductionProxyMetricsObserverBaseTest
     : public DataReductionProxyMetricsObserverTestBase {
+ public:
+  void ValidateUKM(bool want_ukm,
+                   uint64_t want_original_bytes,
+                   uint64_t want_uuid) {
+    using UkmEntry = ukm::builders::DataReductionProxy;
+    auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+
+    if (!want_ukm) {
+      EXPECT_EQ(0u, entries.size());
+      return;
+    }
+
+    EXPECT_EQ(1u, entries.size());
+    for (const auto* const entry : entries) {
+      test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
+
+      test_ukm_recorder().ExpectEntryMetric(
+          entry, UkmEntry::kEstimatedOriginalNetworkBytesName,
+          want_original_bytes);
+      test_ukm_recorder().ExpectEntryMetric(
+          entry, UkmEntry::kDataSaverPageUUIDName, want_uuid);
+    }
+  }
+
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         std::make_unique<TestDataReductionProxyMetricsObserverBase>(
             web_contents(), pingback_client(), data_reduction_proxy_used(),
             cached_data_reduction_proxy_used(), is_using_lite_page(),
-            black_listed()));
+            black_listed(), session_key(), page_id()));
   }
 };
 
@@ -347,6 +382,62 @@ TEST_F(DataReductionProxyMetricsObserverBaseTest,
 
   // When the renderer does not crash, the pingback should report that.
   ValidateRendererCrash(false);
+}
+
+TEST_F(DataReductionProxyMetricsObserverBaseTest,
+       ValidateUKM_DataSaverNotUsed) {
+  ResetTest();
+  RunTestAndNavigateToUntrackedUrl(false, false, false);
+  ValidateUKM(false, 0U, 0U);
+}
+
+TEST_F(DataReductionProxyMetricsObserverBaseTest, ValidateUKM_DataSaverUsed) {
+  ResetTest();
+  RunTestAndNavigateToUntrackedUrl(true, false, false);
+  ValidateUKM(true, 0U, 0U);
+}
+
+TEST_F(DataReductionProxyMetricsObserverBaseTest,
+       ValidateUKM_DataSaverPopulated_Lower) {
+  ResetTest();
+
+  session_key_ = "abc";
+  page_id_ = 1U;
+
+  RunTest(true, false, false, false);
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 2 * 1024 /* delta_bytes */,
+      true /* is_complete */, true /* proxy_used*/, 5 /* compression_ratio */));
+
+  SimulateResourceDataUseUpdate(resources);
+
+  NavigateToUntrackedUrl();
+  // Use https://play.golang.org/p/XnMDcTiPzt8 to generate an updated uuid.
+  ValidateUKM(true, 9918U, 5261012271403106530);
+}
+
+TEST_F(DataReductionProxyMetricsObserverBaseTest,
+       ValidateUKM_DataSaverPopulated_Upper) {
+  ResetTest();
+
+  session_key_ = "xyz";
+  // Same as 1<<63, but keeps clang happy.
+  page_id_ = 0x8000000000000000;
+
+  RunTest(true, false, false, false);
+
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  resources.push_back(CreateDataReductionProxyResource(
+      false /* was_cached */, 2 * 1024 /* delta_bytes */,
+      true /* is_complete */, true /* proxy_used*/, 5 /* compression_ratio */));
+
+  SimulateResourceDataUseUpdate(resources);
+
+  NavigateToUntrackedUrl();
+  // Use https://play.golang.org/p/XnMDcTiPzt8 to generate an updated uuid.
+  ValidateUKM(true, 9918U, 7538012597823726222);
 }
 
 }  // namespace data_reduction_proxy

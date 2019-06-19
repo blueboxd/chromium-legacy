@@ -7,6 +7,8 @@
 namespace base {
 namespace sequence_manager {
 
+NativeWorkHandle::~NativeWorkHandle() = default;
+
 SequenceManager::MetricRecordingSettings::MetricRecordingSettings(
     double task_thread_time_sampling_rate)
     : task_sampling_rate_for_recording_cpu_time(

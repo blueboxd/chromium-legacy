@@ -17,7 +17,7 @@ class MockManualFillingController
   ~MockManualFillingController() override;
 
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
-  MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::FillingStatus));
+  MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::mojom::FillingStatus));
   MOCK_METHOD2(RefreshSuggestionsForField,
                void(autofill::mojom::FocusedFieldType,
                     const autofill::AccessorySheetData&));

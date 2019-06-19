@@ -15,7 +15,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/common/filling_status.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -71,7 +71,7 @@ class PasswordAccessoryControllerImpl
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
       const url::Origin& origin) override;
-  void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
+  void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
   void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) override;

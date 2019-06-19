@@ -1361,3 +1361,77 @@ TEST_F(ToolbarActionsModelUnitTest, ChangesToExtensionPrefsReflectedInModel) {
   // Verify that the observer is notified as well.
   EXPECT_EQ(pinned_extension_list, observer()->last_pinned_action_ids());
 }
+
+TEST_F(ToolbarActionsModelUnitTest,
+       MismatchInPinnedExtensionPreferencesNotReflectedInModel) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+
+  Init();
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+
+  // No actions should be initially pinned.
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(), testing::IsEmpty());
+
+  // Update preferences to indicate that extensions A and C are pinned.
+  extensions::ExtensionIdList pinned_extension_list = {
+      browser_action_a()->id(), browser_action_c()->id()};
+  extensions::ExtensionIdList pinned_extension_list_with_additional_id =
+      pinned_extension_list;
+  pinned_extension_list_with_additional_id.push_back("bogus id");
+
+  // Verify that setting the extension preferences updates the model and that
+  // the additional extension id is filtered out in the model.
+  extension_prefs->SetPinnedExtensions(
+      pinned_extension_list_with_additional_id);
+  EXPECT_EQ(pinned_extension_list_with_additional_id,
+            extension_prefs->GetPinnedExtensions());
+  EXPECT_EQ(pinned_extension_list, toolbar_model()->pinned_action_ids());
+
+  // Verify that the observer is notified as well.
+  EXPECT_EQ(pinned_extension_list, observer()->last_pinned_action_ids());
+}
+
+TEST_F(ToolbarActionsModelUnitTest, PinnedExtensionsFilteredOnInitialization) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+
+  Init();
+  ASSERT_TRUE(AddBrowserActionExtensions());
+
+  extensions::ExtensionPrefs* const extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+
+  // Update preferences to indicate that extensions A and a "bogus id" one is
+  // set.
+  extensions::ExtensionIdList pinned_extension_list_with_additional_id = {
+      browser_action_a()->id(), "bogus id"};
+  extension_prefs->SetPinnedExtensions(
+      pinned_extension_list_with_additional_id);
+
+  // Create a model after setting the prefs, this is done to ensure that the
+  // pinned preferences are loaded and correctly filtered.
+  ToolbarActionsModel model_created_after_prefs_set(profile(), extension_prefs);
+  // Wait for load to happen (::OnReady is posted from ToolbarActionModel's
+  // constructor).
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(pinned_extension_list_with_additional_id,
+            extension_prefs->GetPinnedExtensions());
+
+  // Verify that the new model loads the same action_ids() and
+  // pinned_action_ids() from ExtensionPrefs that |toolbar_model()| should have
+  // saved.
+  EXPECT_EQ(toolbar_model()->pinned_action_ids(),
+            model_created_after_prefs_set.pinned_action_ids());
+  EXPECT_EQ(toolbar_model()->action_ids(),
+            model_created_after_prefs_set.action_ids());
+
+  // Verify that the new model's pinned action IDs have been pruned down to only
+  // extension a.
+  EXPECT_THAT(model_created_after_prefs_set.pinned_action_ids(),
+              testing::ElementsAre(browser_action_a()->id()));
+}

@@ -11,7 +11,6 @@
 
 #include <algorithm>
 
-#include "base/bind_helpers.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -825,8 +824,7 @@ void TSFTextStore::DispatchKeyEvent(ui::EventType type,
   ui::KeyEvent key_event = KeyEventFromMSG(key_event_MSG);
 
   if (input_method_delegate_) {
-    input_method_delegate_->DispatchKeyEventPostIME(&key_event,
-                                                    base::NullCallback());
+    input_method_delegate_->DispatchKeyEventPostIME(&key_event);
   }
 }
 

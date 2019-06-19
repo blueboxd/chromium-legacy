@@ -20,10 +20,10 @@
 
 namespace {
 
-constexpr TimeDelta kPictureInPictureStyleChangeTransitionDuration =
-    TimeDelta::FromMilliseconds(200);
-constexpr TimeDelta kPictureInPictureHiddenAnimationSeconds =
-    TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kPictureInPictureStyleChangeTransitionDuration =
+    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kPictureInPictureHiddenAnimationSeconds =
+    base::TimeDelta::FromMilliseconds(300);
 
 }  // namespace
 

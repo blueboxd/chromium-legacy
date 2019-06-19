@@ -97,7 +97,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
     // Events that happen while app list is sliding out during overview should
     // be ignored to prevent overview from disappearing out from under the user.
     if (!IsSlidingOutOverviewFromShelf())
-      controller->ToggleOverview();
+      controller->EndOverview();
     event->StopPropagation();
   }
 

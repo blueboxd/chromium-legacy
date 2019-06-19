@@ -405,8 +405,6 @@ suite('CrActionMenu', function() {
     const containerTop = 10000;
     const containerWidth = 500;
     const containerHeight = 500;
-    const menuWidth = 150;
-    const menuHeight = 200;
 
     suiteSetup(function() {
       document.body.innerHTML = `
@@ -426,14 +424,6 @@ suite('CrActionMenu', function() {
               #inner-container {
                 height: 1000px;
                 width: 1000px;
-              }
-
-              cr-action-menu {
-                --cr-action-menu-dialog: {
-                  height: ${menuHeight}px;
-                  width: ${menuWidth}px;
-                  padding: 0;
-                };
               }
             </style>
             <div id="container">
@@ -508,6 +498,8 @@ suite('CrActionMenu', function() {
       menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
       const buttonWidth = dots.offsetWidth;
       const buttonHeight = dots.offsetHeight;
+      const menuWidth = dialog.offsetWidth;
+      const menuHeight = dialog.offsetHeight;
       assertEquals(containerLeft - menuWidth + buttonWidth, dialog.offsetLeft);
       assertEquals(containerTop - menuHeight + buttonHeight, dialog.offsetTop);
       menu.close();
@@ -526,6 +518,7 @@ suite('CrActionMenu', function() {
       // Anchor to an item in RTL.
       document.body.style.direction = 'rtl';
       menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
+      const menuWidth = dialog.offsetWidth;
       assertEquals(
           container.offsetLeft + containerWidth - menuWidth, dialog.offsetLeft);
       assertEquals(containerTop, dialog.offsetTop);

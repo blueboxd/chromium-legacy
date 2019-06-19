@@ -263,9 +263,25 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate" ||
          (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
 
-  if (!IsInertialScroll(latency) && input_modality == "Touch")
+  if (!IsInertialScroll(latency) && input_modality == "Touch") {
     average_lag_tracker_.AddLatencyInFrame(latency, gpu_swap_begin_timestamp,
                                            scroll_name);
+
+    base::TimeTicks last_scroll_event_timestamp, frame_time;
+    if (latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+            &last_scroll_event_timestamp) &&
+        latency.FindLatency(
+            ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT,
+            &frame_time)) {
+      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+          "Event.Latency." + scroll_name + ".Touch.EventTimeToRAFTime",
+          last_scroll_event_timestamp, frame_time);
+      UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
+          "Event.Latency." + scroll_name + ".Touch.RAFTimeToFrameSwapEnd",
+          frame_time, gpu_swap_end_timestamp);
+    }
+  }
 
   base::TimeTicks rendering_scheduled_timestamp;
   bool rendering_scheduled_on_main = latency.FindLatency(

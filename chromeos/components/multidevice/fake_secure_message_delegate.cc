@@ -197,6 +197,14 @@ std::string FakeSecureMessageDelegate::GetPrivateKeyForPublicKey(
   return kPrivateKeyPrefix + public_key;
 }
 
+std::unique_ptr<multidevice::SecureMessageDelegate>
+FakeSecureMessageDelegateFactory::BuildInstance() {
+  auto instance = std::make_unique<multidevice::FakeSecureMessageDelegate>();
+  instance_ = instance.get();
+
+  return instance;
+}
+
 }  // namespace multidevice
 
 }  // namespace chromeos

@@ -16,9 +16,11 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace content {
-
+namespace blink {
 class TrackObserver;
+}
+
+namespace content {
 
 // Base class used for mapping between webrtc and blink MediaStream tracks.
 // RemoteMediaStreamImpl has a RemoteMediaStreamTrackAdapter per remote audio
@@ -108,7 +110,7 @@ class RemoteVideoTrackAdapter
   ~RemoteVideoTrackAdapter() override;
 
  private:
-  void InitializeWebVideoTrack(std::unique_ptr<TrackObserver> observer,
+  void InitializeWebVideoTrack(std::unique_ptr<blink::TrackObserver> observer,
                                bool enabled);
 };
 

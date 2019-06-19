@@ -50,6 +50,9 @@ enum class DeviceBatteryState {
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceBatteryState deviceBatteryState;
 
+// The storage available, in kilobytes, at the end of the previous session.
+@property(nonatomic, assign, readonly) NSInteger availableDeviceStorage;
+
 // The thermal state of the device at the end of the previous session.
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceThermalState deviceThermalState;
@@ -72,6 +75,10 @@ enum class DeviceBatteryState {
 // session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterLanguageChange;
 
+// The time at which the previous sesion ended. Note that this is only an
+// estimate and is updated whenever another value of the receiver is updated.
+@property(nonatomic, strong, readonly) NSDate* sessionEndTime;
+
 // Singleton PreviousSessionInfo. During the lifetime of the app, the returned
 // object is the same, and describes the previous session, even after a new
 // session has started (by calling beginRecordingCurrentSession).
@@ -80,6 +87,12 @@ enum class DeviceBatteryState {
 // Clears the persisted information about the previous session and starts
 // persisting information about the current session, for use in a next session.
 - (void)beginRecordingCurrentSession;
+
+// Updates the currently available device storage, in kilobytes.
+- (void)updateAvailableDeviceStorage:(NSInteger)availableStorage;
+
+// Updates the saved last known session time.
+- (void)updateSessionEndTime;
 
 // Updates the saved last known battery level of the device.
 - (void)updateStoredBatteryLevel;

@@ -71,6 +71,7 @@ class ASH_EXPORT AssistantNotificationController
   void RemoveNotificationByGroupingKey(const std::string& grouping_id,
                                        bool from_server) override;
   void RemoveAllNotifications(bool from_server) override;
+  void SetQuietMode(bool enabled) override;
 
   // AssistantNotificationModelObserver:
   void OnNotificationAdded(const AssistantNotification* notification) override;

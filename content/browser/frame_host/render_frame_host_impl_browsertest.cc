@@ -2391,8 +2391,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Test deduplication of SameSite cookie deprecation messages.
+// TODO(crbug.com/976475): This test is flaky.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       SameSiteCookieDeprecationMessages) {
+                       DISABLED_SameSiteCookieDeprecationMessages) {
 #if defined(OS_ANDROID)
   // TODO(crbug.com/974701): This test is broken on Android that is
   // Marshmallow or older.

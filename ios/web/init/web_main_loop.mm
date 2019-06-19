@@ -80,9 +80,8 @@ void WebMainLoop::MainMessageLoopStart() {
 
   // TODO(crbug.com/807279): Do we need PowerMonitor on iOS, or can we get rid
   // of it?
-  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
-  power_monitor_.reset(new base::PowerMonitor(std::move(power_monitor_source)));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
 
   ios_global_state::CreateNetworkChangeNotifier();
 

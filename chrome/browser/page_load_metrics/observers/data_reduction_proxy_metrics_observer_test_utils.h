@@ -111,9 +111,6 @@ class DataReductionProxyMetricsObserverTestBase
   // Validates the times in the pingback.
   void ValidateTimes();
 
-  // Validates the LoFi state in the pingback.
-  void ValidateLoFiInPingback(bool lofi_expected);
-
   // Validates the blacklist state in the pingback.
   void ValidateBlackListInPingback(bool black_listed);
 
@@ -141,11 +138,15 @@ class DataReductionProxyMetricsObserverTestBase
   bool is_using_lite_page() const { return is_using_lite_page_; }
   bool opt_out_expected() const { return opt_out_expected_; }
   bool black_listed() const { return black_listed_; }
+  std::string session_key() const { return session_key_; }
+  uint64_t page_id() const { return page_id_; }
 
  protected:
   std::unique_ptr<TestPingbackClient> pingback_client_;
   page_load_metrics::mojom::PageLoadTiming timing_;
   bool cached_data_reduction_proxy_used_ = false;
+  std::string session_key_;
+  uint64_t page_id_ = 0;
 
  private:
   previews::PreviewsUserData::ServerLitePageInfo* preview_info_;

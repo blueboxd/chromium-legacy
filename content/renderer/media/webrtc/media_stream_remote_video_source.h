@@ -15,9 +15,11 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace content {
-
+namespace blink {
 class TrackObserver;
+}
+
+namespace content {
 
 // MediaStreamRemoteVideoSource implements the blink::MediaStreamVideoSource
 // interface for video tracks received on a PeerConnection. The purpose of the
@@ -28,7 +30,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
     : public blink::MediaStreamVideoSource {
  public:
   explicit MediaStreamRemoteVideoSource(
-      std::unique_ptr<TrackObserver> observer);
+      std::unique_ptr<blink::TrackObserver> observer);
   ~MediaStreamRemoteVideoSource() override;
 
   // Should be called when the remote video track this source originates from is
@@ -54,7 +56,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   // libjingle thread and forward it to the IO-thread.
   class RemoteVideoSourceDelegate;
   scoped_refptr<RemoteVideoSourceDelegate> delegate_;
-  std::unique_ptr<TrackObserver> observer_;
+  std::unique_ptr<blink::TrackObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRemoteVideoSource);
 };

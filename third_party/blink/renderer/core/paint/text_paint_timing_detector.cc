@@ -27,7 +27,7 @@ namespace blink {
 namespace {
 
 // Calculate metrics candidate every 1 second after the first text pre-paint.
-constexpr TimeDelta kTimerDelay = TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kTimerDelay = base::TimeDelta::FromSeconds(1);
 constexpr size_t kTextNodeNumberLimit = 5000;
 
 bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,

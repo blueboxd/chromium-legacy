@@ -226,7 +226,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostNotTaken) {
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostKilled) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RenderProcessHost::WarmupSpareRenderProcessHost(
       ShellContentBrowserClient::Get()->browser_context());
 
@@ -241,8 +240,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostKilled) {
   spare_renderer->AddObserver(this);  // For process_exit_callback.
 
   // Should reply with a bad message and cause process death.
-  service->DoSomething(base::DoNothing());
-  run_loop.Run();
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(spare_renderer);
+    service->DoSomething(base::DoNothing());
+    run_loop.Run();
+  }
 
   // The spare RenderProcessHost should disappear when its process dies.
   EXPECT_EQ(nullptr,
@@ -620,7 +622,6 @@ class ObserverLogger : public RenderProcessHostObserver {
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
                        MAYBE_AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
@@ -640,6 +641,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // This will crash the render process, and start all the callbacks.
   // We can't use NavigateToURL here since it accesses the shell() after
   // navigating, which the shell_closer deletes.
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), GURL(kChromeUICrashURL), 1);
 
@@ -659,7 +661,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
@@ -678,9 +679,11 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   set_process_exit_callback(run_loop.QuitClosure());
 
   // Should reply with a bad message and cause process death.
-  service->DoSomething(base::DoNothing());
-
-  run_loop.Run();
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(rph);
+    service->DoSomething(base::DoNothing());
+    run_loop.Run();
+  }
 
   EXPECT_EQ(1, process_exits_);
   EXPECT_EQ(0, host_destructions_);
@@ -718,8 +721,6 @@ class AudioStartObserver : public WebContentsObserver {
 #define KillProcessZerosAudioStreams DISABLED_KillProcessZerosAudioStreams
 #endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-
   // TODO(maxmorin): This test only uses an output stream. There should be a
   // similar test for input streams.
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -758,6 +759,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     // Note: We post task the QuitClosure since RenderProcessExited() is called
     // before destroying BrowserMessageFilters; and the next portion of the test
     // must run after these notifications have been delivered.
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(rph);
     base::RunLoop run_loop;
     set_process_exit_callback(media::BindToCurrentLoop(run_loop.QuitClosure()));
     service->DoSomething(base::DoNothing());
@@ -837,7 +839,6 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 // terminations.
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosVideoCaptureStreams) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -858,6 +859,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 
   {
     // Force a bad message event to occur which will terminate the renderer.
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(rph);
     base::RunLoop run_loop;
     set_process_exit_callback(media::BindToCurrentLoop(run_loop.QuitClosure()));
     service->DoSomething(base::DoNothing());
@@ -902,7 +904,6 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 // terminations for audio only streams.
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosAudioCaptureStreams) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -924,6 +925,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
 
   {
     // Force a bad message event to occur which will terminate the renderer.
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(rph);
     base::RunLoop run_loop;
     set_process_exit_callback(media::BindToCurrentLoop(run_loop.QuitClosure()));
     service->DoSomething(base::DoNothing());

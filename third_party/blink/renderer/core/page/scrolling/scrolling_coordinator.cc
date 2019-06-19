@@ -240,11 +240,14 @@ template <typename Function>
 static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
                                          const Function& function) {
   // Don't recurse into display-locked elements.
-  if (layer.Client().PaintBlockedByDisplayLock())
+  if (layer.Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
     return;
+  }
 
   if (layer.PaintsContentOrHitTest())
     function(layer);
+
   for (auto* child : layer.Children())
     ForAllPaintingGraphicsLayers(*child, function);
 }

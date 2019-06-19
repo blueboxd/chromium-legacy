@@ -3976,25 +3976,28 @@
     Setup complete
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the Plugin VM installer if there was an error during installation.">
-    Could not set up Plugin VM
+    Setup couldn't complete
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE" desc="Title of the Plugin VM installer if Plugin VM is disallowed.">
+    Plugin VM needs permission to run
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer that informs the user that setup may take a while.">
-    This may take several minutes.
+    This may take awhile
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer while downloading the VM.">
-    Downloading the virtual machine.
+    Downloading the virtual machine
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_IMPORTING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM.">
     Configuring the virtual machine. This may take a few minutes.
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
-    Click or tap Launch to use Plugin VM. In the future, you can start Plugin VM by selecting the icon in the Launcher.
+    Plugin VM is ready to use
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Text of the Plugin VM installer if the installation failed.">
-    An error occurred. Please try again.
+    Try installing again
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disabled.">
-   Please contact your admin to enable Plugin VM on this device.
+  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disallowed.">
+    Contact your organization's device admin
   </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>

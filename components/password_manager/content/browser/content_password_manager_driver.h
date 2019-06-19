@@ -67,10 +67,11 @@ class ContentPasswordManagerDriver
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
-  void FillIntoFocusedField(bool is_password,
-                            const base::string16& credential,
-                            base::OnceCallback<void(autofill::FillingStatus)>
-                                compeleted_callback) override;
+  void FillIntoFocusedField(
+      bool is_password,
+      const base::string16& credential,
+      base::OnceCallback<void(autofill::mojom::FillingStatus)>
+          compeleted_callback) override;
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
   void ShowInitialPasswordAccountSuggestions(

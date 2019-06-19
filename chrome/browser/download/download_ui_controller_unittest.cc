@@ -111,10 +111,10 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
   download::DownloadItem* notified_item() { return notified_item_; }
 
   // DownloadHistory performs a query of existing downloads when it is first
-  // instantiated. This method returns the completion callback for that query.
-  // It can be used to inject history downloads.
-  const HistoryService::DownloadQueryCallback& history_query_callback() const {
-    return history_adapter_->download_query_callback_;
+  // instantiated. This method returns a pointer to the completion callback
+  // for that query. It can be used to inject history downloads.
+  HistoryService::DownloadQueryCallback* history_query_callback() {
+    return &(history_adapter_->download_query_callback_);
   }
 
   // DownloadManager::Observer registered by DownloadHistory.
@@ -134,8 +134,8 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
    private:
     void QueryDownloads(
-        const HistoryService::DownloadQueryCallback& callback) override {
-      download_query_callback_ = callback;
+        HistoryService::DownloadQueryCallback callback) override {
+      download_query_callback_ = std::move(callback);
     }
 
     void UpdateDownload(const history::DownloadRow& data,
@@ -327,7 +327,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   // DownloadHistory should already have been created. It performs a query of
   // existing downloads upon creation. We'll use the callback to inject a
   // history download.
-  ASSERT_FALSE(history_query_callback().is_null());
+  ASSERT_FALSE(history_query_callback()->is_null());
 
   // download_history_manager_observer is the DownloadManager::Observer
   // registered by the DownloadHistory. DownloadHistory relies on the
@@ -335,10 +335,9 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   // from history.
   ASSERT_TRUE(download_history_manager_observer());
 
-  std::unique_ptr<std::vector<history::DownloadRow>> history_downloads;
-  history_downloads.reset(new std::vector<history::DownloadRow>());
-  history_downloads->push_back(history::DownloadRow());
-  history_downloads->front().id = 1;
+  std::vector<history::DownloadRow> history_downloads;
+  history_downloads.push_back(history::DownloadRow());
+  history_downloads.front().id = 1;
 
   std::vector<GURL> url_chain;
   GURL url;
@@ -373,7 +372,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
                                  Return(item.get())));
     EXPECT_CALL(mock_function, Call());
 
-    history_query_callback().Run(std::move(history_downloads));
+    std::move(*history_query_callback()).Run(std::move(history_downloads));
     mock_function.Call();
   }
 

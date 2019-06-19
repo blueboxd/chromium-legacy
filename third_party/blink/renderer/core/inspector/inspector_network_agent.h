@@ -127,7 +127,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                                    size_t encoded_data_length);
   void DidFinishLoading(uint64_t identifier,
                         DocumentLoader*,
-                        TimeTicks monotonic_finish_time,
+                        base::TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);

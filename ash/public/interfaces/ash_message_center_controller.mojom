@@ -9,7 +9,4 @@ import "components/arc/common/notifications.mojom";
 interface AshMessageCenterController {
   // Sets the ARC notification instance.
   SetArcNotificationsInstance(arc.mojom.NotificationsInstance instance);
-
-  // Changes the quiet mode state in the message center.
-  SetQuietMode(bool enabled);
 };

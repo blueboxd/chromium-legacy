@@ -17,10 +17,10 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -38,7 +38,7 @@ class MediaStreamRemoteVideoSourceUnderTest
     : public MediaStreamRemoteVideoSource {
  public:
   explicit MediaStreamRemoteVideoSourceUnderTest(
-      std::unique_ptr<TrackObserver> observer)
+      std::unique_ptr<blink::TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::StartSourceImpl;
@@ -65,16 +65,16 @@ class MediaStreamRemoteVideoSourceTest
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    std::unique_ptr<TrackObserver> track_observer;
+    std::unique_ptr<blink::TrackObserver> track_observer;
     mock_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                webrtc::MediaStreamTrackInterface* webrtc_track,
-               std::unique_ptr<TrackObserver>* track_observer,
+               std::unique_ptr<blink::TrackObserver>* track_observer,
                base::WaitableEvent* waitable_event) {
               track_observer->reset(
-                  new TrackObserver(main_thread, webrtc_track));
+                  new blink::TrackObserver(main_thread, webrtc_track));
               waitable_event->Signal();
             },
             main_thread, base::Unretained(webrtc_video_track_.get()),

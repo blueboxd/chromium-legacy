@@ -94,6 +94,9 @@ class MockWebGraphisContext3DProviderWrapper
   viz::TestSharedImageInterface* SharedImageInterface() override {
     return GetTestContextProvider()->SharedImageInterface();
   }
+  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                      media::VideoFrame* video_frame,
+                      cc::PaintCanvas* canvas) override {}
 
  private:
   cc::StubDecodeCache stub_image_decode_cache_;

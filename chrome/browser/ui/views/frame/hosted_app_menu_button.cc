@@ -52,7 +52,7 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   if (!is_focus_mode) {
     constexpr gfx::Insets kInkDropInsets(2);
-    *GetProperty(views::kInternalPaddingKey) = kInkDropInsets;
+    SetProperty(views::kInternalPaddingKey, kInkDropInsets);
   }
 }
 

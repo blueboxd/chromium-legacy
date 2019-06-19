@@ -6,45 +6,30 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:targetApi="21">
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/favicon"
+        android:layout_width="@dimen/open_last_tab_icon_size"
+        android:layout_height="@dimen/open_last_tab_icon_size"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerInside"/>
 
-    <!-- The Chrome Explore header displayed when the user has no history. -->
-    <include layout="@layout/open_last_tab_fallback_view"/>
-
-    <LinearLayout
-        android:id="@+id/open_last_tab"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/title"
+        style="@style/TextAppearance.BlackBodyDefault.Touchless"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:paddingHorizontal="@dimen/open_last_tab_button_padding_horizontal"
-        android:paddingVertical="@dimen/open_last_tab_button_padding_vertical"
-        android:background="@drawable/hairline_border_card_background"
-        style="@style/Theme.AppCompat.Light">
+        android:layout_weight="1"
+        android:layout_marginStart="@dimen/open_last_tab_title_text_margin_left"
+        android:ellipsize="end"
+        android:maxLines="1"/>
 
-        <org.chromium.ui.widget.ChromeImageView
-            android:id="@+id/favicon"
-            android:layout_width="@dimen/open_last_tab_icon_size"
-            android:layout_height="@dimen/open_last_tab_icon_size"
-            android:layout_gravity="center_vertical"
-            android:scaleType="centerInside"/>
+    <TextView
+        android:id="@+id/timestamp"
+        style="@style/TextAppearance.BlackCaption.Touchless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/open_last_tab_timestamp_text_margin_left"
+        android:ellipsize="end"
+        android:maxLines="1" />
 
-        <TextView
-            android:id="@+id/title"
-            style="@style/TextAppearance.BlackBodyDefault.Touchless"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="@dimen/open_last_tab_title_text_margin_left"
-            android:ellipsize="end"
-            android:maxLines="1"/>
-
-        <TextView
-            android:id="@+id/timestamp"
-            style="@style/TextAppearance.BlackCaption.Touchless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/open_last_tab_timestamp_text_margin_left"
-            android:ellipsize="end"
-            android:maxLines="1" />
-
-    </LinearLayout>
 </merge>

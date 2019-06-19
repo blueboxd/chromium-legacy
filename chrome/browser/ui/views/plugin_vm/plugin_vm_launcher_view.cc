@@ -359,8 +359,10 @@ base::string16 PluginVmLauncherView::GetBigMessage() const {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
     case State::ERROR:
-    case State::NOT_ALLOWED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
+    case State::NOT_ALLOWED:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE);
   }
 }
 

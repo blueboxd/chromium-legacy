@@ -164,6 +164,11 @@ void SaveCardBubbleControllerImpl::ShowBubbleForManageCardsForTesting(
   ShowBubble();
 }
 
+void SaveCardBubbleControllerImpl::UpdateIconForSaveCardSuccess() {
+  // TODO(crbug.com/964127): Dismisses the icon and triggers a highlight
+  // animation of the avatar button.
+}
+
 void SaveCardBubbleControllerImpl::UpdateIconForSaveCardFailure() {
   current_bubble_type_ = BubbleType::FAILURE;
   ShowIconOnly();

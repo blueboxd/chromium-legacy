@@ -44,7 +44,7 @@ void DocumentParserTiming::MarkParserDetached() {
 }
 
 void DocumentParserTiming::RecordParserBlockedOnScriptLoadDuration(
-    TimeDelta duration,
+    base::TimeDelta duration,
     bool script_inserted_via_document_write) {
   if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;
@@ -55,7 +55,7 @@ void DocumentParserTiming::RecordParserBlockedOnScriptLoadDuration(
 }
 
 void DocumentParserTiming::RecordParserBlockedOnScriptExecutionDuration(
-    TimeDelta duration,
+    base::TimeDelta duration,
     bool script_inserted_via_document_write) {
   if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;

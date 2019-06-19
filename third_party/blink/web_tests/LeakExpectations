@@ -38,6 +38,7 @@ crbug.com/667560 [ Linux ] http/tests/devtools/console/console-search.js [ Leak 
 crbug.com/835943 [ Linux ] http/tests/appcache/non-html.xhtml [ Leak Pass ]
 
 crbug.com/860117 [ Linux ] editing/pasteboard/drag-drop-iframe-refresh-crash.html [ Pass Leak ]
+crbug.com/976438 [ Linux ] external/wpt/css/selectors/focus-visible-007.html [ Pass Leak ]
 
 # -----------------------------------------------------------------
 # Not revert suspected CL as jam@ request, expected to be fixed soon.

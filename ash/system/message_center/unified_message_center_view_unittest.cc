@@ -218,9 +218,6 @@ TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
 
   auto id0 = AddNotification();
   EXPECT_TRUE(message_center_view()->GetVisible());
-  EXPECT_EQ(3 * kUnifiedNotificationCenterSpacing,
-            GetScrollerContents()->height() -
-                GetScroller()->GetVisibleRect().bottom());
 
   // The notification first slides out of the list.
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
@@ -393,7 +390,7 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
 TEST_F(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
   AddNotification();
   AddNotification();
-  CreateMessageCenterView(100 /* max_height */);
+  CreateMessageCenterView(80 /* max_height */);
   EXPECT_TRUE(message_center_view()->GetVisible());
 
   // MessageCenterView is shorter than the notification.

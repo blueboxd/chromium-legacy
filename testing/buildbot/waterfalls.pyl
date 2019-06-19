@@ -2427,7 +2427,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 5)': {
@@ -2441,7 +2441,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 5X)': {
@@ -2471,7 +2471,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 6P)': {
@@ -2486,7 +2486,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 9)': {
@@ -2501,7 +2501,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Android FYI Release (Pixel 2)': {
@@ -2727,6 +2727,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
           'isolated_scripts': 'gpu_blink_web_tests',
+          'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },
       },
       'Linux FYI dEQP Release (Intel HD 630)': {
@@ -2799,7 +2800,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Mac FYI Experimental Release (Intel)': {
@@ -2870,7 +2871,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
           'isolated_scripts': 'rendering_representative_perf_tests_isolated_scripts',
         },
       },
@@ -2882,7 +2883,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Mac FYI Retina Debug (NVIDIA)': {
@@ -2893,7 +2894,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_debug_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_gold_telemetry_tests',
         },
       },
       'Mac FYI Retina Release (AMD)': {
@@ -2904,7 +2905,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
           'isolated_scripts': 'rendering_representative_perf_tests_isolated_scripts',
         },
       },
@@ -3072,7 +3073,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
       'Win10 FYI Exp Release (Intel HD 630)': {
@@ -3127,7 +3128,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_angle_and_representative_perf_fyi_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
       'Win10 FYI Release (NVIDIA GeForce GTX 1660)': {
@@ -3153,7 +3154,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
         # We keep this value enabled to provide minimal regression testing.
         'use_multi_dimension_trigger_script': True,

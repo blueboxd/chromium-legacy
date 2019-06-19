@@ -99,10 +99,13 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
     return false;
   // Check a character in text content after |fragment_| comes from same
   // layout text of |fragment_|.
-  const NGOffsetMapping& mapping =
-      *NGOffsetMapping::GetFor(fragment_->GetLayoutObject());
+  const NGOffsetMapping* mapping =
+      NGOffsetMapping::GetFor(fragment_->GetLayoutObject());
+  // TODO(kojii): There's not much we can do for dirty-tree. crbug.com/946004
+  if (!mapping)
+    return false;
   const base::span<const NGOffsetMappingUnit> mapping_units =
-      mapping.GetMappingUnitsForTextContentOffsetRange(
+      mapping->GetMappingUnitsForTextContentOffsetRange(
           text_fragment.EndOffset(), text_fragment.EndOffset() + 1);
   if (mapping_units.begin() == mapping_units.end())
     return false;

@@ -27,7 +27,7 @@ ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
       ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
   // The histogram is all about time, just disable it if high resolution isn't
   // supported.
-  if (TimeTicks::IsHighResolution()) {
+  if (base::TimeTicks::IsHighResolution()) {
     histogram_reporter_ =
         base::MakeRefCounted<ContentCaptureTaskHistogramReporter>();
     task_session_->SetSentNodeCountCallback(
@@ -210,7 +210,7 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
   if (is_scheduled_)
     return;
 
-  TimeDelta delay;
+  base::TimeDelta delay;
   switch (reason) {
     case ScheduleReason::kFirstContentChange:
     case ScheduleReason::kScrolling:

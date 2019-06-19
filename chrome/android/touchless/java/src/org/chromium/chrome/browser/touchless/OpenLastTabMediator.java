@@ -44,7 +44,6 @@ import java.util.List;
 // TODO(crbug.com/948858): Add unit tests for this behavior.
 class OpenLastTabMediator extends EmptyTabObserver
         implements HistoryProvider.BrowsingHistoryObserver, FocusableComponent {
-    private static final String FIRST_LAUNCHED_KEY = "TOUCHLESS_WAS_FIRST_LAUNCHED";
     private static final String LAST_REMOVED_VISIT_TIMESTAMP_KEY =
             "TOUCHLESS_LAST_REMOVED_VISIT_TIMESTAMP";
     // Used to match URLs in Chome's history to PWA launches via webapk.
@@ -94,13 +93,10 @@ class OpenLastTabMediator extends EmptyTabObserver
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
             // Check if this is a first launch of Chrome.
             SharedPreferences prefs = getSharedPreferences();
-            boolean firstLaunched = prefs.getBoolean(FIRST_LAUNCHED_KEY, true);
-            prefs.edit().putBoolean(FIRST_LAUNCHED_KEY, false).apply();
             mLastRemovedVisitTimestamp =
                     prefs.getLong(LAST_REMOVED_VISIT_TIMESTAMP_KEY, Long.MIN_VALUE);
             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
                 mPreferencesRead = true;
-                mModel.set(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH, firstLaunched);
                 updateModel();
             });
         });

@@ -52,7 +52,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
   void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) override;
-  AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
 
   // If a derived class overrides this method, it should call parent's
   // implementation.
@@ -73,9 +72,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
  protected:
-  // See InputMethodDelegate for details on this.
-  using ResultCallback = base::OnceCallback<void(bool, bool)>;
-
   explicit InputMethodBase(internal::InputMethodDelegate* delegate);
   InputMethodBase(internal::InputMethodDelegate* delegate,
                   std::unique_ptr<InputMethodKeyboardController> controller);
@@ -120,11 +116,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // input type is not TEXT_INPUT_TYPE_NONE.
   void OnInputMethodChanged() const;
 
-  // See InputMethodDelegate::DispatchKeyEventPostIME(() for details on
-  // callback.
   virtual ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event,
-      ResultCallback result_callback) const WARN_UNUSED_RESULT;
+      ui::KeyEvent* event) const WARN_UNUSED_RESULT;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

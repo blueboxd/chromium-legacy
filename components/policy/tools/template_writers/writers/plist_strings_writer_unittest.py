@@ -22,6 +22,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy_json = '''
       {
         'policy_definitions': [],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -43,6 +44,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy_json = '''
       {
         'policy_definitions': [],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -82,6 +84,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'desc': 'Description of main policy.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -124,6 +127,7 @@ With a newline.""",
             'supported_on': ['chrome.mac:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -168,6 +172,7 @@ With a newline.""",
             'supported_on': ['chrome.mac:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -224,6 +229,7 @@ With a newline.""",
             'supported_on': ['chrome.mac:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -276,6 +282,7 @@ With a newline.""",
             'supported_on': ['chrome.mac:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -329,6 +336,7 @@ With a newline.""",
             'supported_on': ['chrome.mac:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {
@@ -371,6 +379,7 @@ With a newline.""",
             'supported_on': ['chrome_os:8-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': {
           'mac_chrome_preferences': {

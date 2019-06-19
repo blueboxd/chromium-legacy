@@ -23,7 +23,8 @@
 namespace blink {
 
 namespace {
-constexpr auto kLongTaskSubTaskThreshold = TimeDelta::FromMilliseconds(12);
+constexpr auto kLongTaskSubTaskThreshold =
+    base::TimeDelta::FromMilliseconds(12);
 }  // namespace
 
 void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
@@ -256,7 +257,7 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
   if (!enabled_ || thresholds_[kLongTask].is_zero())
     return;
 
-  TimeDelta v8_compile_duration = probe.Duration();
+  base::TimeDelta v8_compile_duration = probe.Duration();
 
   if (bypass_long_compile_threshold_) {
     bypass_long_compile_threshold_ = false;
@@ -312,9 +313,9 @@ void PerformanceMonitor::WillProcessTask(base::TimeTicks start_time) {
   // Reset everything for regular and nested tasks.
   script_depth_ = 0;
   layout_depth_ = 0;
-  per_task_style_and_layout_time_ = TimeDelta();
+  per_task_style_and_layout_time_ = base::TimeDelta();
   user_callback_ = nullptr;
-  v8_compile_start_time_ = TimeTicks();
+  v8_compile_start_time_ = base::TimeTicks();
   sub_task_attributions_.clear();
 }
 

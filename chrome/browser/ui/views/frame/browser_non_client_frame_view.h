@@ -172,6 +172,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   }
 
  private:
+  // views::NonClientFrameView:
+#if defined(OS_WIN)
+  int GetSystemMenuY() const override;
+#endif
+
   void MaybeObserveTabstrip();
 
   // Gets a theme provider that should be non-null even before we're added to a

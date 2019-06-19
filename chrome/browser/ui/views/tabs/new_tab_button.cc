@@ -32,7 +32,6 @@
 
 #if defined(OS_WIN)
 #include "ui/display/win/screen_win.h"
-#include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -152,12 +151,14 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
     return;
   }
 
+  // TODO(pkasting): If we handled right-clicks on the frame, and we made sure
+  // this event was not handled, it seems like things would Just Work.
   gfx::Point point = event.location();
   views::View::ConvertPointToScreen(this, &point);
   point = display::win::ScreenWin::DIPToScreenPoint(point);
   bool destroyed = false;
   destroyed_ = &destroyed;
-  gfx::ShowSystemMenuAtPoint(views::HWNDForView(this), point);
+  views::ShowSystemMenuAtScreenPixelLocation(views::HWNDForView(this), point);
   if (!destroyed)
     SetState(views::Button::STATE_NORMAL);
 }

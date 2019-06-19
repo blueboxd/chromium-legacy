@@ -81,7 +81,7 @@ void PaintTiming::MarkFirstImagePaint() {
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
 }
 
-void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
+void PaintTiming::SetFirstMeaningfulPaintCandidate(base::TimeTicks timestamp) {
   if (!first_meaningful_paint_candidate_.is_null())
     return;
   first_meaningful_paint_candidate_ = timestamp;
@@ -91,7 +91,7 @@ void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
 }
 
 void PaintTiming::SetFirstMeaningfulPaint(
-    TimeTicks swap_stamp,
+    base::TimeTicks swap_stamp,
     FirstMeaningfulPaintDetector::HadUserInput had_input) {
   DCHECK(first_meaningful_paint_swap_.is_null());
   DCHECK(!swap_stamp.is_null());
@@ -162,14 +162,14 @@ void PaintTiming::NotifyPaintTimingChanged() {
     GetSupplementable()->Loader()->DidChangePerformanceTiming();
 }
 
-void PaintTiming::SetFirstPaint(TimeTicks stamp) {
+void PaintTiming::SetFirstPaint(base::TimeTicks stamp) {
   if (!first_paint_.is_null())
     return;
   first_paint_ = stamp;
   RegisterNotifySwapTime(PaintEvent::kFirstPaint);
 }
 
-void PaintTiming::SetFirstContentfulPaint(TimeTicks stamp) {
+void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
   if (!first_contentful_paint_.is_null())
     return;
   SetFirstPaint(stamp);
@@ -232,7 +232,7 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
   }
 }
 
-void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstPaintSwap(base::TimeTicks stamp) {
   DCHECK(first_paint_swap_.is_null());
   first_paint_swap_ = stamp;
   probe::PaintTiming(GetSupplementable(), "firstPaint",
@@ -243,7 +243,7 @@ void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
   NotifyPaintTimingChanged();
 }
 
-void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstContentfulPaintSwap(base::TimeTicks stamp) {
   DCHECK(first_contentful_paint_swap_.is_null());
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0("loading", "FirstContentfulPaint",
                                       TRACE_EVENT_SCOPE_GLOBAL, stamp);
@@ -259,7 +259,7 @@ void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
   fmp_detector_->NotifyFirstContentfulPaint(first_contentful_paint_swap_);
 }
 
-void PaintTiming::SetFirstImagePaintSwap(TimeTicks stamp) {
+void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {
   DCHECK(first_image_paint_swap_.is_null());
   first_image_paint_swap_ = stamp;
   probe::PaintTiming(GetSupplementable(), "firstImagePaint",

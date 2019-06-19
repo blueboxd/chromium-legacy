@@ -16,6 +16,14 @@ namespace test {
 struct GssNameMockImpl {
   std::string name;
   gss_OID_desc name_type;
+
+  static GssNameMockImpl* FromGssName(gss_name_t name) {
+    return reinterpret_cast<GssNameMockImpl*>(name);
+  }
+
+  static gss_name_t ToGssName(GssNameMockImpl* name) {
+    return reinterpret_cast<gss_name_t>(name);
+  }
 };
 
 }  // namespace test
@@ -56,8 +64,10 @@ void ClearBuffer(gss_buffer_t dest) {
   if (!dest)
     return;
   dest->length = 0;
-  delete [] reinterpret_cast<char*>(dest->value);
-  dest->value = nullptr;
+  if (dest->value) {
+    delete[] reinterpret_cast<char*>(dest->value);
+    dest->value = nullptr;
+  }
 }
 
 void SetBuffer(gss_buffer_t dest, const void* src, size_t length) {
@@ -101,7 +111,7 @@ void BufferFromString(const std::string& src, gss_buffer_t dest) {
 void ClearName(gss_name_t dest) {
   if (!dest)
     return;
-  test::GssNameMockImpl* name = reinterpret_cast<test::GssNameMockImpl*>(dest);
+  auto* name = test::GssNameMockImpl::FromGssName(dest);
   name->name.clear();
   ClearOid(&name->name_type);
 }
@@ -112,24 +122,15 @@ void SetName(gss_name_t dest, const void* src, size_t length) {
   ClearName(dest);
   if (!src)
     return;
-  test::GssNameMockImpl* name = reinterpret_cast<test::GssNameMockImpl*>(dest);
+  auto* name = test::GssNameMockImpl::FromGssName(dest);
   name->name.assign(reinterpret_cast<const char*>(src), length);
 }
 
-std::string NameToString(const gss_name_t& src) {
-  std::string dest;
-  if (!src)
-    return dest;
-  test::GssNameMockImpl* string =
-      reinterpret_cast<test::GssNameMockImpl*>(src);
-  dest = string->name;
-  return dest;
-}
-
-void NameFromString(const std::string& src, gss_name_t dest) {
-  if (!dest)
-    return;
+gss_name_t NameFromString(const std::string& src) {
+  gss_name_t dest = test::GssNameMockImpl::ToGssName(
+      new test::GssNameMockImpl{"", {0, nullptr}});
   SetName(dest, src.c_str(), src.length());
+  return dest;
 }
 
 }  // namespace
@@ -279,7 +280,7 @@ OM_uint32 MockGSSAPILibrary::import_name(
   // Save the data.
   output->name = BufferToString(input_name_buffer);
   CopyOid(&output->name_type, input_name_type);
-  *output_name = reinterpret_cast<gss_name_t>(output);
+  *output_name = test::GssNameMockImpl::ToGssName(output);
 
   return GSS_S_COMPLETE;
 }
@@ -293,10 +294,10 @@ OM_uint32 MockGSSAPILibrary::release_name(
     return GSS_S_BAD_NAME;
   if (!*input_name)
     return GSS_S_COMPLETE;
-  GssNameMockImpl* name = *reinterpret_cast<GssNameMockImpl**>(input_name);
+  GssNameMockImpl* name = GssNameMockImpl::FromGssName(*input_name);
   ClearName(*input_name);
   delete name;
-  *input_name = nullptr;
+  *input_name = GSS_C_NO_NAME;
   return GSS_S_COMPLETE;
 }
 
@@ -324,12 +325,13 @@ OM_uint32 MockGSSAPILibrary::display_name(
     return GSS_S_CALL_BAD_STRUCTURE;
   if (!output_name_type)
     return GSS_S_CALL_BAD_STRUCTURE;
-  std::string name(NameToString(input_name));
+  GssNameMockImpl* internal_name = GssNameMockImpl::FromGssName(input_name);
+  std::string name = internal_name->name;
   BufferFromString(name, output_name_buffer);
-  GssNameMockImpl* internal_name =
-      *reinterpret_cast<GssNameMockImpl**>(input_name);
-  if (output_name_type)
-    *output_name_type = internal_name ? &internal_name->name_type : nullptr;
+  if (output_name_type) {
+    *output_name_type =
+        internal_name ? &internal_name->name_type : GSS_C_NO_OID;
+  }
   return GSS_S_COMPLETE;
 }
 
@@ -459,9 +461,9 @@ OM_uint32 MockGSSAPILibrary::inquire_context(
       reinterpret_cast<GssContextMockImpl*>(context_handle);
   GssContextMockImpl& context = *internal_context_ptr;
   if (src_name)
-    NameFromString(context.src_name, *src_name);
+    *src_name = NameFromString(context.src_name);
   if (targ_name)
-    NameFromString(context.targ_name, *targ_name);
+    *targ_name = NameFromString(context.targ_name);
   if (lifetime_rec)
     *lifetime_rec = context.lifetime_rec;
   if (mech_type)

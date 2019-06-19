@@ -166,7 +166,7 @@ TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
   // Enter Overview mode, since the shelf view is hidden from the Kiosk Next
   // home screen.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->StartOverview());
   ASSERT_TRUE(overview_controller->InOverviewSession());
   test_api()->RunMessageLoopUntilAnimationsDone();
 

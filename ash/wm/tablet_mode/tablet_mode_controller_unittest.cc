@@ -554,7 +554,7 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_FALSE(IsTabletModeStarted());
 
   tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
 
   UpdateDisplay("800x600");
   base::RunLoop().RunUntilIdle();
@@ -1481,7 +1481,7 @@ TEST_F(TabletModeControllerTest,
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   ::wm::ActivateWindow(window.get());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
 }
 
 // Test that when OnKioskNextEnabled() is called the UI mode changes into

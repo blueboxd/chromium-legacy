@@ -73,7 +73,7 @@ class HitTestLatencyRecorder {
         allows_child_frame_content_(allows_child_frame_content) {}
 
   ~HitTestLatencyRecorder() {
-    TimeDelta duration = CurrentTimeTicks() - start_;
+    base::TimeDelta duration = CurrentTimeTicks() - start_;
     if (allows_child_frame_content_) {
       DEFINE_STATIC_LOCAL(CustomCountHistogram, recursive_latency_histogram,
                           ("Event.Latency.HitTestRecursive", 0, 10000000, 100));
@@ -86,7 +86,7 @@ class HitTestLatencyRecorder {
   }
 
  private:
-  TimeTicks start_;
+  base::TimeTicks start_;
   bool allows_child_frame_content_;
 };
 

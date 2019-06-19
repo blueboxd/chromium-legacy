@@ -157,6 +157,11 @@ ListIdentifier GetUrlCsdWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, CSD_WHITELIST);
 }
 
+ListIdentifier GetUrlHighConfidenceAllowlistId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL,
+                        HIGH_CONFIDENCE_ALLOWLIST);
+}
+
 ListIdentifier GetUrlMalwareId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, MALWARE_THREAT);
 }

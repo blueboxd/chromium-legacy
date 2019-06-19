@@ -561,7 +561,11 @@ void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
 
 void HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
-  Shell::Get()->overview_controller()->ToggleOverview();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller->InOverviewSession())
+    overview_controller->EndOverview();
+  else
+    overview_controller->StartOverview();
 }
 
 void HandleToggleUnifiedDesktop() {

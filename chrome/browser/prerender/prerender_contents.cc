@@ -198,6 +198,7 @@ PrerenderContents::PrerenderContents(
     case ORIGIN_OMNIBOX:
     case ORIGIN_EXTERNAL_REQUEST:
     case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
+    case ORIGIN_NAVIGATION_PREDICTOR:
       DCHECK(!initiator_origin_.has_value());
       break;
 
@@ -309,6 +310,9 @@ void PrerenderContents::StartPrerendering(
     load_url_params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_TYPED |
         ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  } else if (origin_ == ORIGIN_NAVIGATION_PREDICTOR) {
+    load_url_params.transition_type =
+        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED);
   }
   load_url_params.override_user_agent =
       prerender_manager_->config().is_overriding_user_agent ?

@@ -202,8 +202,8 @@ class MockServiceWatcherClient {
                void(ServiceWatcher::UpdateType, const std::string&));
 
   ServiceWatcher::UpdatedCallback GetCallback() {
-    return base::Bind(&MockServiceWatcherClient::OnServiceUpdated,
-                      base::Unretained(this));
+    return base::BindRepeating(&MockServiceWatcherClient::OnServiceUpdated,
+                               base::Unretained(this));
   }
 };
 
@@ -439,9 +439,9 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
 
   void SetUp() override {
     resolver_ = service_discovery_client_.CreateServiceResolver(
-                    "hello._privet._tcp.local",
-                     base::Bind(&ServiceResolverTest::OnFinishedResolving,
-                                base::Unretained(this)));
+        "hello._privet._tcp.local",
+        base::BindOnce(&ServiceResolverTest::OnFinishedResolving,
+                       base::Unretained(this)));
   }
 
   void OnFinishedResolving(ServiceResolver::RequestStatus request_status,

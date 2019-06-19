@@ -286,6 +286,7 @@
 <translation id="4568854179928172494">የተሻሻለበት ጊዜ</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ፋይል</translation>
 <translation id="457386861538956877">ተጨማሪ...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> ወደ ምርጫ ታክለዋል።</translation>
 <translation id="4582497162516204941">ከLinux (ቅድመ ይሁንታ ሙከራ) ጋር ጫን</translation>
 <translation id="4594543368593301662">ለ <ph name="SEARCH_TERM" /> ውጤቶችን በማሳየት ላይ።</translation>
 <translation id="4631887759990505102">አርቲስት</translation>
@@ -419,6 +420,7 @@
 <translation id="5819442873484330149">ሃንጉል 3 ስብስብ (የመጨረሻ)</translation>
 <translation id="5833610766403489739">ይህ ፋይል ወደሆነ ቦታ ሄዷል። እባክዎ የውርድ አካባቢዎን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="5838051104334203064">የ Play መደብር መተግበሪያዎች ይህን መሣሪያ ሊደርሱበት አይችሉም</translation>
+<translation id="5838451609423551646">ሁሉም ግቤቶች ከምርጫ ተወግደዋል።</translation>
 <translation id="5838825566232597749">አሜሪካ ዎርክማን አለምአቀፍ</translation>
 <translation id="5850516540536751549">ይህ የፋይል ዓይነት አይደገፍም። እባክዎ የዚህ አይነት ፋይል መክፈት የሚችል መተግበሪያ ለማግኘት <ph name="BEGIN_LINK" />Chrome የድር መደብር<ph name="END_LINK" />ን ይጎብኙ። <ph name="BEGIN_LINK_HELP" />ተጨማሪ ለመረዳት<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">እዚህ ላይ ምንም የሚታይ ነገር የለም...</translation>
@@ -491,6 +493,7 @@
 <translation id="6820687829547641339">Gzip የታመቀ የtar ማህደር</translation>
 <translation id="6825883775269213504">ራሽኛ</translation>
 <translation id="6827236167376090743">ላሞቹ ቤት እስኪገቡ ድረስ ይህ ቪዲዮ መጫወቱን ይቀጥላል።</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> ከምርጫ ተወግዷል።</translation>
 <translation id="6862635236584086457">በዚህ አቃፊ ውስጥ የተቀመጡ ፋይሎች ሁሉ በራስ-ሰር መስመር ላይ መጠባበቂያ ይቀመጥላቸዋል</translation>
 <translation id="6870130893560916279">የዩክሬይንኛ ቁልፍ ሰሌዳ</translation>
 <translation id="6876155724392614295">ቢስክሌት</translation>
@@ -618,6 +621,7 @@
 <translation id="8148264977957212129">የፒንዪን ግቤት ስልት</translation>
 <translation id="8151638057146502721">አዋቅር</translation>
 <translation id="8153607920959057464">ይህ ፋይል ሊታይ አልቻለም።</translation>
+<translation id="8154842056504218462">ሁሉም ግቤቶች ተመርጠዋል።</translation>
 <translation id="8157684860301034423">የመተግበሪያ መረጃን ሰርስሮ ማውጣት አልተሳካም።</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">የስፓኒሽ ቁልፍ ሰሌዳ</translation>
@@ -660,6 +664,7 @@
 <translation id="8686213429977032554">ይህ የDrive ፋይል ገና አልተጋራም</translation>
 <translation id="8698464937041809063">Google ስዕል</translation>
 <translation id="8714406895390098252">ቢስክሌት</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ተመርጧል።</translation>
 <translation id="8722421161699219904">የአሜሪካ አለምአቀፍ ቁልፍ ሰሌዳ</translation>
 <translation id="872537912056138402">ክሮሽያንኛ</translation>
 <translation id="874420130893181774">ተለምዷዊ የፒንዪን ግቤት ስልት</translation>
@@ -700,6 +705,7 @@
 <translation id="942954117721265519">በዚህ አቃፊ ውስጥ ምንም ምስሎች የሉም።</translation>
 <translation id="943972244133411984">የተቀየረው በ</translation>
 <translation id="945522503751344254">ግብረ መልስ ላክ</translation>
+<translation id="947144732524271678">ከ<ph name="FROM_ENTRY_NAME" /> እስከ <ph name="TO_ENTRY_NAME" /> ያሉ የ<ph name="ENTRY_COUNT" /> ግቤቶች ክልል ተመርጧል።</translation>
 <translation id="981121421437150478">ከመስመር ውጪ</translation>
 <translation id="988685240266037636">«<ph name="FILE_NAME" />» ፋይል አስቀድሞ አለ። ሊተኩት ይፈልጋሉ?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> ሜባ</translation>

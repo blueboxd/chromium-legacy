@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_H_
 
 #include "base/optional.h"
+#include "content/public/browser/render_frame_host.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -47,5 +48,12 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
                      NavigateParams* params,
                      const content::OpenURLParams* open_url_params,
                      const blink::mojom::WindowFeatures& window_features);
+
+// Tries to get the opener from either the |params| or |open_url_params|,
+// otherwise uses the focused frame from |web_contents| as a proxy.
+content::RenderFrameHost* GetSourceFrameForPopup(
+    NavigateParams* params,
+    const content::OpenURLParams* open_url_params,
+    content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_H_

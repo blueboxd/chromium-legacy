@@ -9,6 +9,7 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/layer_tree_pixel_test.h"
+#include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -392,6 +393,9 @@ TEST_P(LayerTreeHostReadbackPixelTestMaybeVulkan, ReadbackNonRootOrFirstLayer) {
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   blue->RequestCopyOfOutput(viz::CopyOutputRequest::CreateStubForTesting());
   background->AddChild(blue);
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTestWithReadbackTarget(
       renderer_type(), background, background.get(),

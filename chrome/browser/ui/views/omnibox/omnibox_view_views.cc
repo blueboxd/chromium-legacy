@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
@@ -444,9 +445,10 @@ bool OmniboxViewViews::IsImeComposing() const {
 
 gfx::Size OmniboxViewViews::GetMinimumSize() const {
   const int kMinCharacters = 20;
-  return gfx::Size(
-      GetFontList().GetExpectedTextWidth(kMinCharacters) + GetInsets().width(),
-      GetPreferredSize().height());
+  const int expected_text_width = views::style::GetExpectedTextWidth(
+      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY, kMinCharacters);
+  return gfx::Size(expected_text_width + GetInsets().width(),
+                   GetPreferredSize().height());
 }
 
 void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
@@ -1767,8 +1769,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           index, IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get());
     }
+#if !defined(OS_MACOSX)
     menu_contents->SetIcon(index,
                            gfx::Image(*send_tab_to_self::GetImageSkia()));
+#endif
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }
 

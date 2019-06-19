@@ -88,7 +88,8 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void InterceptResponseReceived(
       std::unique_ptr<AwWebResourceResponse> response);
 
-  void InputStreamFailed(bool restart_needed);
+  // Returns true if the request was restarted or completed.
+  bool InputStreamFailed(bool restart_needed);
 
  private:
   std::unique_ptr<AwContentsIoThreadClient> GetIoThreadClient();
@@ -162,11 +163,11 @@ class InterceptResponseDelegate
     return response_->GetInputStream(env);
   }
 
-  void OnInputStreamOpenFailed(bool* restarted) override {
-    if (request_) {
-      request_->InputStreamFailed(false /* restart_needed */);
-    }
-    *restarted = false;
+  bool OnInputStreamOpenFailed() override {
+    // return true if there is no valid request, meaning it has completed or
+    // deleted.
+    return request_ ? request_->InputStreamFailed(false /* restart_needed */)
+                    : true;
   }
 
   bool GetMimeType(JNIEnv* env,
@@ -214,11 +215,11 @@ class ProtocolResponseDelegate
     return CreateInputStream(env, url_);
   }
 
-  void OnInputStreamOpenFailed(bool* restarted) override {
-    if (request_) {
-      request_->InputStreamFailed(true /* restart_needed */);
-    }
-    *restarted = true;
+  bool OnInputStreamOpenFailed() override {
+    // return true if there is no valid request, meaning it has completed or has
+    // been deleted.
+    return request_ ? request_->InputStreamFailed(true /* restart_needed */)
+                    : true;
   }
 
   bool GetMimeType(JNIEnv* env,
@@ -362,7 +363,8 @@ void InterceptedRequest::InterceptResponseReceived(
   }
 }
 
-void InterceptedRequest::InputStreamFailed(bool restart_needed) {
+// returns true if the request has been restarted or was completed.
+bool InterceptedRequest::InputStreamFailed(bool restart_needed) {
   DCHECK(!input_stream_previously_failed_);
 
   if (intercept_only_) {
@@ -371,15 +373,19 @@ void InterceptedRequest::InputStreamFailed(bool restart_needed) {
     // the provided input stream in response failed to load. In
     // this case we send and error and stop loading.
     SendErrorAndCompleteImmediately(net::ERR_UNKNOWN_URL_SCHEME);
-    return;
+    return true;  // request completed
   }
 
-  if (!restart_needed)
-    return;
+  if (!restart_needed) {
+    // request will not be restarted, error reporting will be done
+    // via other means e.g. setting appropriate response header status.
+    return false;
+  }
 
   input_stream_previously_failed_ = true;
   proxied_client_binding_.Unbind();
   Restart();
+  return true;  // request restarted
 }
 
 void InterceptedRequest::ContinueAfterIntercept() {

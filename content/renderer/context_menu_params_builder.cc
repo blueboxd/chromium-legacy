@@ -42,11 +42,6 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.suggested_filename = data.suggested_filename.Utf16();
   params.input_field_type = data.input_field_type;
 
-  if (!data.image_response.IsNull()) {
-    GetContentClient()->renderer()->AddImageContextMenuProperties(
-        data.image_response, data.is_placeholder_image, &params.properties);
-  }
-
   for (size_t i = 0; i < data.dictionary_suggestions.size(); ++i)
     params.dictionary_suggestions.push_back(
         data.dictionary_suggestions[i].Utf16());

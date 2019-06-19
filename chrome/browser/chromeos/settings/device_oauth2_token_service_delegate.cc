@@ -99,7 +99,8 @@ std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
     case STATE_VALIDATION_PENDING:
     case STATE_VALIDATION_STARTED:
     case STATE_TOKEN_VALID:
-      accounts.push_back(GetRobotAccountId());
+      if (!GetRobotAccountId().empty())
+        accounts.push_back(GetRobotAccountId());
       return accounts;
   }
 
@@ -108,6 +109,10 @@ std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
 }
 
 CoreAccountId DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {
+  if (!robot_account_id_for_testing_.empty()) {
+    return robot_account_id_for_testing_;
+  }
+
   std::string account_id;
   CrosSettings::Get()->GetString(kServiceAccountIdentity, &account_id);
   return CoreAccountId(account_id);
@@ -171,15 +176,15 @@ DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return url_loader_factory_;
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   std::string refresh_token = GetRefreshToken();
   DCHECK(!refresh_token.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
-                                          refresh_token);
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, refresh_token);
 }
 
 void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(

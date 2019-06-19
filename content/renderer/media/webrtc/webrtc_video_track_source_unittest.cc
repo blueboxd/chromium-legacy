@@ -6,7 +6,6 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -55,7 +55,7 @@ void HTMLImportTreeRoot::ScheduleRecalcState() {
   DCHECK(document_);
   if (recalc_timer_.IsActive() || !document_->IsActive())
     return;
-  recalc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  recalc_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 HTMLImportChild* HTMLImportTreeRoot::Add(HTMLImportChild* child) {

@@ -488,8 +488,9 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // TODO(crbug.com/927066): We calculate an incorrect intrinsic logical height
   // when percentages are involved, so for now don't apply min-height: auto
   // in such cases.
-  if (IsColumnFlow() && child.IsFlexibleBox() &&
-      To<LayoutBlock>(child).HasPercentHeightDescendants())
+  const LayoutBlock* child_block = DynamicTo<LayoutBlock>(child);
+  if (IsColumnFlow() && child_block &&
+      child_block->HasPercentHeightDescendants())
     return false;
 
   return !child.ShouldApplySizeContainment() &&

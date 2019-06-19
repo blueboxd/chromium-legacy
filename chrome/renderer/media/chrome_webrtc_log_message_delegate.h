@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
-#include "content/public/renderer/webrtc_log_message_delegate.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,8 +23,7 @@ class WebRtcLoggingMessageFilter;
 // per render process, owned by WebRtcLoggingMessageFilter. It communicates with
 // WebRtcLoggingHandlerHost and receives logging messages from libjingle and
 // writes them to a shared memory buffer.
-class ChromeWebRtcLogMessageDelegate
-    : public content::WebRtcLogMessageDelegate {
+class ChromeWebRtcLogMessageDelegate : public blink::WebRtcLogMessageDelegate {
  public:
   ChromeWebRtcLogMessageDelegate(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
@@ -32,7 +31,7 @@ class ChromeWebRtcLogMessageDelegate
 
   ~ChromeWebRtcLogMessageDelegate() override;
 
-  // content::WebRtcLogMessageDelegate implementation.
+  // blink::WebRtcLogMessageDelegate implementation.
   void LogMessage(const std::string& message) override;
 
   void OnFilterRemoved();

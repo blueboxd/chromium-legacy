@@ -259,7 +259,7 @@ PrefsManager.prototype.initPreferences = function() {
 /**
  * Generates the basic speech options for Select-to-Speak based on user
  * preferences. Call for each chrome.tts.speak.
- * @return {!Object} options The TTS options.
+ * @return {!TtsOptions} options The TTS options.
  * @public
  */
 PrefsManager.prototype.speechOptions = function() {

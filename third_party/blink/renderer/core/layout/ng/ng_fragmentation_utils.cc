@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
@@ -109,6 +110,25 @@ bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace& constraint_space,
 
   // Otherwise, only ignore in-flow margins.
   return !child.IsFloating() && !child.IsOutOfFlowPositioned();
+}
+
+void SetupFragmentation(const NGConstraintSpace& parent_space,
+                        LayoutUnit new_bfc_block_offset,
+                        NGConstraintSpaceBuilder* builder) {
+  DCHECK(parent_space.HasBlockFragmentation());
+
+  LayoutUnit space_available =
+      parent_space.FragmentainerSpaceAtBfcStart() - new_bfc_block_offset;
+
+  // The policy regarding collapsing block-start margin with the fragmentainer
+  // block-start is the same throughout the entire fragmentainer (although it
+  // really only matters at the beginning of each fragmentainer, we don't need
+  // to bother to check whether we're actually at the start).
+  builder->SetSeparateLeadingFragmentainerMargins(
+      parent_space.HasSeparateLeadingFragmentainerMargins());
+  builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
+  builder->SetFragmentainerSpaceAtBfcStart(space_available);
+  builder->SetFragmentationType(parent_space.BlockFragmentationType());
 }
 
 }  // namespace blink

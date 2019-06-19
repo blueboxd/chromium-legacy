@@ -12,6 +12,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -95,7 +96,7 @@ OverviewWindowDragController::OverviewWindowDragController(
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
       should_allow_split_view_(ShouldAllowSplitView()),
-      virtual_desks_enabled_(features::IsVirtualDesksEnabled()) {}
+      virtual_desks_bar_enabled_(desks_util::ShouldDesksBarBeCreated()) {}
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
 
@@ -132,7 +133,7 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       overview_session_->GetGridWithRootWindow(item_->root_window())
           ->StartNudge(item_);
       did_move_ = true;
-    } else if (should_allow_split_view_ || virtual_desks_enabled_) {
+    } else if (should_allow_split_view_ || virtual_desks_bar_enabled_) {
       StartNormalDragMode(location_in_screen);
     }
   }
@@ -183,7 +184,7 @@ OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartNormalDragMode(
     const gfx::PointF& location_in_screen) {
-  DCHECK(should_allow_split_view_ || virtual_desks_enabled_);
+  DCHECK(should_allow_split_view_ || virtual_desks_bar_enabled_);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kNormalDrag;
@@ -334,7 +335,7 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
   gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
 
-  if (virtual_desks_enabled_) {
+  if (virtual_desks_bar_enabled_) {
     if (item_->overview_grid()->UpdateDesksBarDragDetails(
             gfx::ToRoundedPoint(location_in_screen))) {
       // The drag location intersects the bounds of the DesksBarView, in this
@@ -391,7 +392,7 @@ OverviewWindowDragController::CompleteNormalDrag(
   }
 
   // Attempt to move a window to a different desk.
-  if (virtual_desks_enabled_) {
+  if (virtual_desks_bar_enabled_) {
     item_->SetOpacity(original_opacity_);
 
     if (item_->overview_grid()->MaybeDropItemOnDeskMiniView(

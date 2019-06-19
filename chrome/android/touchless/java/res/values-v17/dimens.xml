@@ -3,7 +3,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <resources>
-    <dimen name="touchless_new_tab_view_top_margin">12dp</dimen>
     <dimen name="touchless_new_tab_view_padding_horizontal">8dp</dimen>
     <dimen name="touchless_new_tab_recycler_view_over_scroll">24dp</dimen>
 
@@ -21,22 +20,18 @@
     <dimen name="focus_ring_stroke_width">2dp</dimen>
     <dimen name="touchless_preferences_highlight_padding">8dp</dimen>
 
-    <!-- Open last tab placeholder dimensions. -->
-    <dimen name="open_last_tab_placeholder_image_size">24dp</dimen>
-    <dimen name="open_last_tab_placeholder_image_margin_bottom">13dp</dimen>
-
     <!-- Open last tab button dimensions. -->
     <dimen name="open_last_tab_button_padding_horizontal">12dp</dimen>
     <dimen name="open_last_tab_button_padding_vertical">9dp</dimen>
+    <dimen name="open_last_tab_bottom_margin">8dp</dimen>
     <dimen name="open_last_tab_icon_size">16dp</dimen>
     <dimen name="open_last_tab_title_text_margin_left">12dp</dimen>
     <dimen name="open_last_tab_timestamp_text_margin_left">10dp</dimen>
 
     <!-- Most likely carousel dimensions. -->
+    <dimen name="most_likely_bottom_margin">16dp</dimen>
     <dimen name="most_likely_carousel_edge_spacer">8dp</dimen>
     <dimen name="most_likely_tile_size">40dp</dimen>
-    <!-- Desired 24dp, but the edge spacer is also in effect. 8 + 16 = 24 -->
-    <dimen name="above_the_fold_bottom_margin">16dp</dimen>
     <dimen name="most_likely_quantized_icon_size_large">24dp</dimen>
     <dimen name="most_likely_quantized_icon_size_small">18dp</dimen>
     <!-- 6dp chosen so that the icon is large in the inner 3 positions and small in

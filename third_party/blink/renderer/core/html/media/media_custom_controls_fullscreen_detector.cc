@@ -19,7 +19,8 @@ using blink::WebFullscreenVideoStatus;
 
 namespace {
 
-constexpr TimeDelta kCheckFullscreenInterval = TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kCheckFullscreenInterval =
+    base::TimeDelta::FromSeconds(1);
 constexpr float kMostlyFillViewportThresholdOfOccupationProportion = 0.85f;
 constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 

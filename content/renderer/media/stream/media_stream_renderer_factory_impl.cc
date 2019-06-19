@@ -9,11 +9,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -82,7 +82,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       web_stream.AudioTracks();
   if (audio_tracks.empty()) {
-    WebRtcLogMessage("No audio tracks in media stream (return null).");
+    blink::WebRtcLogMessage("No audio tracks in media stream (return null).");
     return nullptr;
   }
 
@@ -101,13 +101,13 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.
-    WebRtcLogMessage("Error: No native track for WebMediaStreamTrack");
+    blink::WebRtcLogMessage("Error: No native track for WebMediaStreamTrack");
     return nullptr;
   }
 
   // If the track has a local source, or is a remote track that does not use the
   // WebRTC audio pipeline, return a new TrackAudioRenderer instance.
-  if (!PeerConnectionRemoteAudioTrack::From(audio_track)) {
+  if (!blink::PeerConnectionRemoteAudioTrack::From(audio_track)) {
     // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     DVLOG(1) << "Creating TrackAudioRenderer for "
@@ -134,14 +134,15 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
         device_id);
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
-      WebRtcLogMessage("Error: SetAudioRenderer failed for remote track.");
+      blink::WebRtcLogMessage(
+          "Error: SetAudioRenderer failed for remote track.");
       return nullptr;
     }
   }
 
   auto ret = renderer->CreateSharedAudioRendererProxy(web_stream);
   if (!ret)
-    WebRtcLogMessage("Error: CreateSharedAudioRendererProxy failed.");
+    blink::WebRtcLogMessage("Error: CreateSharedAudioRendererProxy failed.");
   return ret;
 }
 

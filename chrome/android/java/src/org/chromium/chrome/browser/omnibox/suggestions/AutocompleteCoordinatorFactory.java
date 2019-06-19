@@ -29,4 +29,19 @@ public class AutocompleteCoordinatorFactory {
         return new AutocompleteCoordinatorImpl(
                 parent, delegate, listEmbedder, urlBarEditingTextProvider);
     }
+
+    /**
+     * Temporary shortcut for {@link org.chromium.chrome.browser.IntentHandler} to access
+     * {@link AutocompleteController#nativeQualifyPartialURLQuery(String)} without having an
+     * instance of {@link AutocompleteCoordinator}.
+     *
+     * TODO(crbug.com/966424): Fix the dependency issue and remove this method.
+     *
+     * @param query The query to be expanded into a fully qualified URL if appropriate.
+     * @return The fully qualified URL or null.
+     */
+    @Deprecated
+    public static String qualifyPartialURLQuery(String query) {
+        return AutocompleteController.nativeQualifyPartialURLQuery(query);
+    }
 }

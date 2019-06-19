@@ -697,6 +697,7 @@ void StatusBubbleViews::InitPopup() {
     popup_->SetContentsView(view_);
 #if defined(OS_CHROMEOS)
     popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+    popup_->GetNativeWindow()->SetProperty(ash::kHideInDeskMiniViewKey, true);
 #endif
     RepositionPopup();
   }

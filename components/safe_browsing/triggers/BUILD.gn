@@ -65,6 +65,21 @@ source_set("ad_sampler_trigger") {
   ]
 }
 
+source_set("ad_popup_trigger") {
+  sources = [
+    "ad_popup_trigger.cc",
+    "ad_popup_trigger.h",
+  ]
+  deps = [
+    ":trigger_throttler",
+    ":trigger_util",
+    ":triggers",
+    "//base:base",
+    "//components/safe_browsing:features",
+    "//content/public/browser",
+  ]
+}
+
 source_set("suspicious_site_trigger") {
   sources = [
     "suspicious_site_trigger.cc",
@@ -85,6 +100,7 @@ source_set("suspicious_site_trigger") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ad_popup_trigger_unittest.cc",
     "ad_sampler_trigger_unittest.cc",
     "mock_trigger_manager.cc",
     "mock_trigger_manager.h",
@@ -93,6 +109,7 @@ source_set("unit_tests") {
     "trigger_throttler_unittest.cc",
   ]
   deps = [
+    ":ad_popup_trigger",
     ":ad_sampler_trigger",
     ":suspicious_site_trigger",
     ":trigger_throttler",
@@ -102,6 +119,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/safe_browsing:features",
     "//components/safe_browsing/browser:browser",
+    "//components/subresource_filter/content/browser:test_support",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -207,9 +208,15 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   DCHECK(web_state->GetNavigationManager());
   web::NavigationItem* item =
       web_state->GetNavigationManager()->GetLastCommittedItem();
+  // TODO(crbug.com/966747): Add a function in browser_state_metrics.h to return
+  // profile type.
+  profile_metrics::BrowserProfileType profile_type =
+      web_state->GetBrowserState()->IsOffTheRecord()
+          ? profile_metrics::BrowserProfileType::kIncognito
+          : profile_metrics::BrowserProfileType::kRegular;
   navigation_metrics::RecordMainFrameNavigation(
       item ? item->GetVirtualURL() : GURL::EmptyGURL(), true,
-      web_state->GetBrowserState()->IsOffTheRecord());
+      web_state->GetBrowserState()->IsOffTheRecord(), profile_type);
 }
 
 }  // anonymous namespace

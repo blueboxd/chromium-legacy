@@ -22,6 +22,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_id.h"
@@ -80,7 +81,7 @@ class FaviconCache : public syncer::SyncableService,
 
   // If a valid favicon for the icon at |favicon_url| is found, returns a
   // pointer to the png-encoded image. Otherwise, returns nullptr.
-  scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForFaviconURL(
+  favicon_base::FaviconRawBitmapResult GetSyncedFaviconForFaviconURL(
       const GURL& favicon_url) const;
 
   // Returns the value associated with |page_url| in |page_favicon_map_| if one
@@ -89,7 +90,7 @@ class FaviconCache : public syncer::SyncableService,
 
   // If a valid favicon for the icon associated with |page_url| is found,
   // returns a pointer to the png-encoded image. Otherwise, returns nullptr.
-  scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
+  favicon_base::FaviconRawBitmapResult GetSyncedFaviconForPageURL(
       const GURL& page_url) const;
 
   // Load the favicon for |page_url|. Will create a new sync node or update

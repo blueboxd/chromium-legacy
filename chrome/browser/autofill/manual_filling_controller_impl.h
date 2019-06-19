@@ -32,7 +32,7 @@ class ManualFillingControllerImpl
   void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       const autofill::AccessorySheetData& accessory_sheet_data) override;
-  void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
+  void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
   void ShowWhenKeyboardIsVisible(FillingSource source) override;
   void ShowTouchToFillSheet(const autofill::AccessorySheetData& data) override;
   void DeactivateFillingSource(FillingSource source) override;

@@ -8,7 +8,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "content/public/browser/navigation_handle.h"
-#include "services/network/public/cpp/features.h"
 
 DataUseMetricsObserver::DataUseMetricsObserver() = default;
 
@@ -18,8 +17,6 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataUseMetricsObserver::OnCommit(content::NavigationHandle* navigation_handle,
                                  ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return STOP_OBSERVING;
   return CONTINUE_OBSERVING;
 }
 

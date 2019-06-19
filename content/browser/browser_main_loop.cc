@@ -568,7 +568,6 @@ void BrowserMainLoop::Init() {
     mojo_ipc_support_ = std::move(startup_data->mojo_ipc_support);
     service_manager_shutdown_closure_ =
         std::move(startup_data->service_manager_shutdown_closure);
-    power_monitor_ = std::move(startup_data->power_monitor);
   }
 
   parts_ = GetContentClient()->browser()->CreateBrowserMainParts(parameters_);
@@ -693,8 +692,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor");
-    if (!power_monitor_) {
-      power_monitor_ = std::make_unique<base::PowerMonitor>(
+    if (!base::PowerMonitor::IsInitialized()) {
+      base::PowerMonitor::Initialize(
           std::make_unique<base::PowerMonitorDeviceSource>());
     }
   }

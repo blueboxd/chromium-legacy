@@ -107,7 +107,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
   Member<WebLocalFrameImpl> web_local_frame_;
-  WTF::TimeTicks virtual_time_base_ticks_;
+  base::TimeTicks virtual_time_base_ticks_;
 
   std::unique_ptr<TimeZoneController::TimeZoneOverride> timezone_override_;
 

@@ -84,11 +84,11 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/style_retain_scope.h"
@@ -277,10 +277,10 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
                                : nullptr)),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
-      forced_layout_start_time_(TimeTicks()),
+      forced_layout_start_time_(base::TimeTicks()),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
-      jank_tracker_(std::make_unique<JankTracker>(this)),
+      layout_shift_tracker_(std::make_unique<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this))
 #if DCHECK_IS_ON()
       ,
@@ -397,7 +397,7 @@ void LocalFrameView::Dispose() {
   ClearPrintContext();
 
   ukm_aggregator_.reset();
-  jank_tracker_->Dispose();
+  layout_shift_tracker_->Dispose();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
@@ -1222,7 +1222,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
     return;
 
   if (frame_->IsMainFrame())
-    jank_tracker_->NotifyViewportSizeChanged();
+    layout_shift_tracker_->NotifyViewportSizeChanged();
 
   auto* layout_view = GetLayoutView();
   if (layout_view) {
@@ -1779,7 +1779,7 @@ void LocalFrameView::ScheduleUpdatePluginsIfNecessary() {
   DCHECK(!IsInPerformLayout());
   if (update_plugins_timer_.IsActive() || part_update_set_.IsEmpty())
     return;
-  update_plugins_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  update_plugins_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void LocalFrameView::PerformPostLayoutTasks() {
@@ -2577,11 +2577,10 @@ static void CollectDrawableLayersForLayerListRecursively(
     return;
   }
 
-  // TODO(crbug.com/966493): We can't currently collect display-locked elements
-  // as foreign layers. However, if we skip collecting them, then we need to
-  // ensure to notify the display lock context, because when we unlock we need
-  // to force recollecting of graphics layers.
-  if (layer->Client().PaintBlockedByDisplayLock()) {
+  if (layer->Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    // If we skip the layer, then we need to ensure to notify the
+    // display-lock, since we need to force recollect the layers when we commit.
     layer->Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
     return;
   }

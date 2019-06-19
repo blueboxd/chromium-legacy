@@ -10,10 +10,12 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -74,7 +76,18 @@ void FakeCloudPolicyStore::Load() {
 // true if FCM (Firebase Cloud Messaging) is enabled,
 // and false otherwise.
 class AffiliatedCloudPolicyInvalidatorTest
-    : public testing::TestWithParam<bool> {};
+    : public testing::TestWithParam<bool> {
+ public:
+  AffiliatedCloudPolicyInvalidatorTest();
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+AffiliatedCloudPolicyInvalidatorTest::AffiliatedCloudPolicyInvalidatorTest() {
+  feature_list_.InitWithFeatureState(features::kPolicyFcmInvalidations,
+                                     GetParam() /* is_fcm_enabled */);
+}
 
 // Verifies that an invalidator is created/destroyed as an invalidation service
 // becomes available/unavailable. Also verifies that invalidations are handled
@@ -125,7 +138,7 @@ TEST_P(AffiliatedCloudPolicyInvalidatorTest, CreateUseDestroy) {
 
   FakeAffiliatedInvalidationServiceProvider provider;
   AffiliatedCloudPolicyInvalidator affiliated_invalidator(
-      em::DeviceRegisterRequest::DEVICE, &core, &provider, is_fcm_enabled);
+      em::DeviceRegisterRequest::DEVICE, &core, &provider);
 
   // Verify that no invalidator exists initially.
   EXPECT_FALSE(affiliated_invalidator.GetInvalidatorForTest());

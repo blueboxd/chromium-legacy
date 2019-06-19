@@ -1597,8 +1597,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
         pingback_client->data();
     EXPECT_TRUE(data->used_data_reduction_proxy());
     EXPECT_TRUE(data->lite_page_received());
-    EXPECT_FALSE(data->lofi_policy_received());
-    EXPECT_FALSE(data->lofi_received());
     EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
     EXPECT_EQ(data->page_id().value(), expected_page_id);
     EXPECT_EQ(data->page_id().value(), got_page_id());

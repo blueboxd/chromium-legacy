@@ -51,7 +51,7 @@ class UserChooserDetailedViewControllerTest : public AshTestBase {
 TEST_F(UserChooserDetailedViewControllerTest,
        ShowMultiProfileLoginWithOverview) {
   // Enter ovewview mode.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
   // Show system tray.
@@ -80,7 +80,7 @@ TEST_F(UserChooserDetailedViewControllerTest, SwitchUserWithOverview) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   // Enter overview mode.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
   // Show system tray.

@@ -57,13 +57,13 @@ class TestOverlayWindow : public OverlayWindow {
     return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
   }
 
-  bool IsActive() const override { return false; }
+  bool IsActive() override { return false; }
   void Close() override {}
   void ShowInactive() override {}
   void Hide() override {}
-  bool IsVisible() const override { return false; }
-  bool IsAlwaysOnTop() const override { return false; }
-  gfx::Rect GetBounds() const override { return gfx::Rect(); }
+  bool IsVisible() override { return false; }
+  bool IsAlwaysOnTop() override { return false; }
+  gfx::Rect GetBounds() override { return gfx::Rect(); }
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}

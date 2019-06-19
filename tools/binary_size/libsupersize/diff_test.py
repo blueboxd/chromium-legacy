@@ -140,11 +140,15 @@ class DiffTest(unittest.TestCase):
     size_info1.raw_symbols += [
         _MakeSym(TEXT, 11, 'a', name='.L__unnamed_1193'),
         _MakeSym(TEXT, 22, 'a', name='.L__unnamed_1194'),
+        _MakeSym(TEXT, 33, 'a', name='SingleCategoryPreferences$3#this$0'),
+        _MakeSym(TEXT, 44, 'a', name='.L.ref.tmp.2'),
     ]
     size_info2 = _CreateSizeInfo()
     size_info2.raw_symbols += [
         _MakeSym(TEXT, 11, 'a', name='.L__unnamed_2194'),
         _MakeSym(TEXT, 22, 'a', name='.L__unnamed_2195'),
+        _MakeSym(TEXT, 33, 'a', name='SingleCategoryPreferences$9#this$009'),
+        _MakeSym(TEXT, 44, 'a', name='.L.ref.tmp.137'),
     ]
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])

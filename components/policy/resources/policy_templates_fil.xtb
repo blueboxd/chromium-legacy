@@ -456,6 +456,12 @@
       Kung hindi naka-configure o naka-disable ang patakaran, mababago ng user ang setting na ito (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).
       </translation>
 <translation id="1767673020408652620">I-enable ang Mga Rekomendasyon sa App sa Zero State ng Box para sa Paghahanap</translation>
+<translation id="17719159826324007">
+      Pupuwersahin ng patakarang ito, kapag nakatakda sa ArcSession, na mag-reboot ang device kapag may user na nag-sign out kung nagsimula ang Android.
+      Kapag nakatakda sa Palagi, pupuwersahin nito ang device na mag-reboot sa tuwing pag-sign out ng user.
+      Kung iiwanang hindi nakatakda, wala itong epekto at hindi pupuwersahin ang pag-reboot sa pag-sign out ng user. Nalalapat din ito kung nakatakda sa Hindi Kailanman.
+      May epekto lang ang patakarang ito sa mga hindi naka-affiliate na user.
+      </translation>
 <translation id="1781356041596378058">Kinokontrol ng patakarang ito ang access sa Mga Opsyon ng Developer sa Android. Kung itatakda mo ang patakarang ito sa true, hindi maa-access ng mga user ang Mga Opsyon ng Developer. Kung itatakda mo ang patakarang ito sa false o iiwan itong hindi nakatakda, maa-access ng mga user ang Mga Opsyon ng Developer sa pamamagitan ng pag-tap nang pitong beses sa app na Mga setting ng Android.</translation>
 <translation id="1793346220873697538">I-disable ang pag-print gamit ang PIN bilang default</translation>
 <translation id="1797233582739332495">Magpakita sa user ng umuulit na prompt na nagsasaad na kinakailangan ang muling paglulunsad</translation>
@@ -956,6 +962,7 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
 <translation id="2693108589792503178">I-configure ang URL ng pagpapalit ng password.</translation>
+<translation id="2694143893026486692">Na-enable ang naka-dock na magnifier</translation>
 <translation id="2706708761587205154">Payagan lang ang pag-print gamit ang PIN</translation>
 <translation id="2710534340210290498">Kung itatakda ang patakarang ito sa false, hindi magagawa ng mga user na i-lock ang screen (tanging pag-sign out lang mula sa session ng user ang magiging posible). Kung itatakda ang setting na ito sa true o kung hindi ito itatakda, magagawa ng mga user na nag-authenticate gamit ang password na i-lock ang screen.</translation>
 <translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
@@ -1192,6 +1199,7 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, hindi magpapalit ng termino para sa paghahanap.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Pinapayagan ng patakarang ito ang mga user ng feature na WebDriver na mag-override
       ng mga patakarang makakaapekto sa mga pagpapatakbo nito.
 

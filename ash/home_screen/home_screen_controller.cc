@@ -86,7 +86,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
 
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // End overview mode.
-    Shell::Get()->overview_controller()->ToggleOverview(
+    Shell::Get()->overview_controller()->EndOverview(
         OverviewSession::EnterExitOverviewType::kWindowsMinimized);
     return true;
   }

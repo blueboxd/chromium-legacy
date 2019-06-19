@@ -76,7 +76,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              kShowStateKey,
                              ui::SHOW_STATE_DEFAULT)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTitleKey, nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTitleShownKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowCornerRadiusKey, -1)

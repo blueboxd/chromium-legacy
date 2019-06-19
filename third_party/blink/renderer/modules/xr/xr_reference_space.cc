@@ -137,16 +137,7 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_input_pose,
     const TransformationMatrix& base_pose) {
-  switch (type_) {
-    case Type::kTypeViewer:
-    case Type::kTypeLocal:
-    case Type::kTypeLocalFloor:
-    case Type::kTypeUnbounded:
-      return TransformBasePose(base_input_pose);
-    case Type::kTypeBoundedFloor:
-      break;
-  }
-  return nullptr;
+  return TransformBasePose(base_input_pose);
 }
 
 std::unique_ptr<TransformationMatrix>

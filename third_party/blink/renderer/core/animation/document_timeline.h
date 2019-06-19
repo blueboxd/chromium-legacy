@@ -68,15 +68,16 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  static DocumentTimeline* Create(Document*,
-                                  TimeDelta origin_time = TimeDelta(),
-                                  PlatformTiming* = nullptr);
+  static DocumentTimeline* Create(
+      Document*,
+      base::TimeDelta origin_time = base::TimeDelta(),
+      PlatformTiming* = nullptr);
 
   // Web Animations API IDL constructor
   static DocumentTimeline* Create(ExecutionContext*,
                                   const DocumentTimelineOptions*);
 
-  DocumentTimeline(Document*, TimeDelta origin_time, PlatformTiming*);
+  DocumentTimeline(Document*, base::TimeDelta origin_time, PlatformTiming*);
   ~DocumentTimeline() override = default;
 
   bool IsDocumentTimeline() const final { return true; }
@@ -99,7 +100,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   wtf_size_t PendingAnimationsCount() const {
     return animations_needing_update_.size();
   }
-  TimeTicks ZeroTime();
+  base::TimeTicks ZeroTime();
   double currentTime(bool& is_null) override;
   double currentTime();
   double CurrentTimeInternal(bool& is_null);
@@ -134,10 +135,10 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   // Origin time for the timeline relative to the time origin of the document.
   // Provided when the timeline is constructed. See
   // https://drafts.csswg.org/web-animations/#dom-documenttimelineoptions-origintime.
-  TimeDelta origin_time_;
+  base::TimeDelta origin_time_;
   // The origin time. This is computed by adding |origin_time_| to the time
   // origin of the document.
-  TimeTicks zero_time_;
+  base::TimeTicks zero_time_;
   bool zero_time_initialized_;
   unsigned outdated_animation_count_;
   // Animations which will be updated on the next frame

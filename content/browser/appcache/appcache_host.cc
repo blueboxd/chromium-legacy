@@ -19,7 +19,9 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -55,6 +57,16 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
   info->response_sizes = cache->cache_size();
   info->padding_sizes = cache->padding_size();
   return info;
+}
+
+bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
+  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
+  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  return document_url.is_empty() ||       // window.open("javascript:''") case.
+         document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
+         document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
+         document_url == GURL("data:,") ||  // CSP blocked_urls.
+         security_policy->CanAccessDataForOrigin(process_id, document_url);
 }
 
 }  // namespace
@@ -131,6 +143,19 @@ void AppCacheHost::SelectCache(const GURL& document_url,
                                const GURL& manifest_url) {
   if (was_select_cache_called_) {
     mojo::ReportBadMessage("ACH_SELECT_CACHE");
+    return;
+  }
+
+  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  if (!CanAccessDocumentURL(process_id_, document_url)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
+    return;
+  }
+
+  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  if (!manifest_url.is_empty() &&
+      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
@@ -223,6 +248,12 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64_t cache_document_was_loaded_from) {
   if (was_select_cache_called_) {
     mojo::ReportBadMessage("ACH_MARK_AS_FOREIGN_ENTRY");
+    return;
+  }
+
+  if (!CanAccessDocumentURL(process_id_, document_url)) {
+    mojo::ReportBadMessage(
+        "ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 

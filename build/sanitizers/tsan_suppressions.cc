@@ -49,9 +49,6 @@ char kTSanDefaultSuppressions[] =
     "race:third_party/ffmpeg/libavcodec/h264pred.c\n"
     "race:media::ReleaseData\n"
 
-    // http://crbug.com/239359
-    "race:media::TestInputCallback::OnData\n"
-
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
 
@@ -126,9 +123,6 @@ char kTSanDefaultSuppressions[] =
 
     // http://crbug.com/415472
     "deadlock:base::trace_event::TraceLog::GetCategoryGroupEnabled\n"
-
-    // http://crbug.com/490856
-    "deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
 
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638

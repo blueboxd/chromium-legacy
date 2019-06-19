@@ -127,9 +127,6 @@ struct CONTENT_EXPORT OpenURLParams {
 
   // Indicates if this navigation is a reload.
   ReloadType reload_type;
-
- private:
-  OpenURLParams();
 };
 
 class PageNavigator {

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/data_model/phone_number.h"
 
+#include <algorithm>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -165,8 +167,21 @@ base::string16 PhoneNumber::GetInfoImpl(const AutofillType& type,
     case PHONE_HOME_COUNTRY_CODE:
       return cached_parsed_phone_.country_code();
 
-    case PHONE_HOME_CITY_AND_NUMBER:
-      return cached_parsed_phone_.city_code() + cached_parsed_phone_.number();
+    case PHONE_HOME_CITY_AND_NUMBER: {
+      // Just concatenating city code and phone number is insufficient because
+      // a number of non-US countries (e.g. Germany and France) use a leading 0
+      // to indicate that the next digits represent a city code.
+      base::string16 national_number =
+          cached_parsed_phone_.GetNationallyFormattedNumber();
+      // GetNationallyFormattedNumber optimizes for screen display, e.g. it
+      // shows a US number as (888) 123-1234. The following retains only the
+      // digits.
+      national_number.erase(
+          std::remove_if(national_number.begin(), national_number.end(),
+                         [](auto c) { return !std::isdigit(c); }),
+          national_number.end());
+      return national_number;
+    }
 
     case PHONE_HOME_EXTENSION:
       return base::string16();

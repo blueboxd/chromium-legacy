@@ -56,7 +56,7 @@ import java.util.List;
         "force-fieldtrials=Study/Group"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
-    private static final String TAG = "GTSLayoutTest";
+    private static final String TAG = "GTSLayoutPerfTest";
 
     /** Flip this to {@code true} to run performance tests locally. */
     private static final boolean PERF_RUN = false;

@@ -20,7 +20,7 @@ ANNOTATION_TYPES = {
     'DefinePartialNetworkTrafficAnnotation': 'Partial',
     'CompleteNetworkTrafficAnnotation': 'Completing',
     'BranchedCompleteNetworkTrafficAnnotation': 'BranchedCompleting',
-    # TODO(crbug/966883): Add 'Mutable' type.
+    'CreateMutableNetworkTrafficAnnotationTag': 'Mutable',
 }
 
 
@@ -49,8 +49,12 @@ class Annotation:
       re_match: A MatchObject obtained from CALL_DETECTION_REGEX.
     """
     self.file_path = file_path
-    # TODO(crbug/966883): Either find a way to detect parent function name, or
-    # (more likely) remove function_name-related code from the auditor.
+    # TODO(crbug/966883): Remove function_name from here and from the clang
+    # tool's output.
+    #
+    # |function_name| is not supported, but keep it in the output for
+    # compatibility with the clang tool. Use an obviously wrong function name
+    # in case this details ends up in auditor output.
     self.function_name = "XXX_UNIMPLEMENTED_XXX"
     self.line_number = get_line_number_at(re_match.string, re_match.start())
 
@@ -83,6 +87,11 @@ class Annotation:
 
   def _parse_body(self, body):
     """Tokenizes and parses the arguments given to the definition function."""
+    # Don't bother parsing CreateMutableNetworkTrafficAnnotationTag(), we don't
+    # care about its arguments anyways.
+    if self.type_name == 'Mutable':
+      return
+
     tokenizer = Tokenizer(body, self.file_path, self.line_number)
 
     # unique_id

@@ -28,6 +28,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/browser_process.h"
@@ -251,6 +252,11 @@ bool CheckBlankPasswordWithPrefs(const WCHAR* username,
   }
 
   if (need_recheck) {
+    // Mitigate the issues caused by loading DLLs on a background thread
+    // (http://crbug/973868).
+    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
+        FROM_HERE);
+
     HANDLE handle = INVALID_HANDLE_VALUE;
 
     // Attempt to login using blank password.

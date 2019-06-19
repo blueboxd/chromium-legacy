@@ -146,7 +146,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
   ScheduledAction* action = ScheduledAction::Create(
       script_state, execution_context, handler, arguments);
   return DOMTimer::Install(execution_context, action,
-                           TimeDelta::FromMilliseconds(timeout), true);
+                           base::TimeDelta::FromMilliseconds(timeout), true);
 }
 
 int WindowOrWorkerGlobalScope::setTimeout(
@@ -189,7 +189,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
   ScheduledAction* action =
       ScheduledAction::Create(script_state, execution_context, handler);
   return DOMTimer::Install(execution_context, action,
-                           TimeDelta::FromMilliseconds(timeout), true);
+                           base::TimeDelta::FromMilliseconds(timeout), true);
 }
 
 int WindowOrWorkerGlobalScope::setInterval(
@@ -204,7 +204,7 @@ int WindowOrWorkerGlobalScope::setInterval(
   ScheduledAction* action = ScheduledAction::Create(
       script_state, execution_context, handler, arguments);
   return DOMTimer::Install(execution_context, action,
-                           TimeDelta::FromMilliseconds(timeout), false);
+                           base::TimeDelta::FromMilliseconds(timeout), false);
 }
 
 int WindowOrWorkerGlobalScope::setInterval(
@@ -242,7 +242,7 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
   ScheduledAction* action =
       ScheduledAction::Create(script_state, execution_context, handler);
   return DOMTimer::Install(execution_context, action,
-                           TimeDelta::FromMilliseconds(timeout), false);
+                           base::TimeDelta::FromMilliseconds(timeout), false);
 }
 
 void WindowOrWorkerGlobalScope::clearTimeout(EventTarget& event_target,

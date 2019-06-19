@@ -336,10 +336,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
       const ScopeSet& scopes);
 
   // Create an access token fetcher for the given account id.
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      OAuth2AccessTokenConsumer* consumer);
+      OAuth2AccessTokenConsumer* consumer) WARN_UNUSED_RESULT;
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|. Virtual so it can be overriden for tests and for platform-

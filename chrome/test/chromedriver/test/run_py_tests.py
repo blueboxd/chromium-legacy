@@ -85,6 +85,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2965
+    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad'
 ]
 
 
@@ -92,8 +94,6 @@ _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1367
-    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
     'ChromeDownloadDirTest.testFileDownloadWithClick',
     'ChromeDriverTest.testBackNavigationAfterClickElement',
@@ -107,8 +107,6 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDriverTest.testSwitchToWindow',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=932073
-    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
@@ -1813,8 +1811,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                       + '/chromedriver/empty.html')
 
   def testSlowIFrame(self):
-    """Verify ChromeDriver waits for slow frames to load.
-
+    """Verify ChromeDriver does not wait for slow frames to load.
     Regression test for bugs
     https://bugs.chromium.org/p/chromedriver/issues/detail?id=2198 and
     https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350.
@@ -1843,14 +1840,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     thread = threading.Thread(target=waitAndRespond)
     thread.start()
     self._driver.FindElement('css selector', '#button').Click()
-    # If ChromeDriver correctly waits for slow iframe to load, then
-    # SwitchToFrame succeeds, and element with id='top' won't be found.
-    # If ChromeDriver didn't wait for iframe load, then SwitchToFrame fails,
-    # we remain in top frame, and FindElement succeeds.
+    # Correct ChromeDriver behavior should not wait for iframe to
+    # load. Therefore, SwitchToFrame should fail, we remain in the top
+    # frame, and FindElement should succeed. If ChromeDriver incorrectly
+    # waits for slow iframe to load, then SwitchToFrame succeeds,
+    # and element with id='top' won't be found.
     frame = self._driver.FindElement('css selector', '#iframe')
     self._driver.SwitchToFrame(frame)
-    with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.FindElement('css selector', '#top')
+    self._driver.FindElement('css selector', '#top')
     thread.join()
 
   @staticmethod

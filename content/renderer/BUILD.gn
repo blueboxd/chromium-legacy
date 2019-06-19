@@ -250,8 +250,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/media_stream_video_webrtc_sink.h",
     "media/webrtc/peer_connection_dependency_factory.cc",
     "media/webrtc/peer_connection_dependency_factory.h",
-    "media/webrtc/peer_connection_remote_audio_source.cc",
-    "media/webrtc/peer_connection_remote_audio_source.h",
     "media/webrtc/peer_connection_tracker.cc",
     "media/webrtc/peer_connection_tracker.h",
     "media/webrtc/rtc_certificate_generator.cc",
@@ -283,8 +281,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_video_encoder_factory.h",
     "media/webrtc/stun_field_trial.cc",
     "media/webrtc/stun_field_trial.h",
-    "media/webrtc/track_observer.cc",
-    "media/webrtc/track_observer.h",
     "media/webrtc/transceiver_state_surfacer.cc",
     "media/webrtc/transceiver_state_surfacer.h",
     "media/webrtc/transmission_encoding_info_handler.cc",
@@ -307,22 +303,10 @@ target(link_target_type, "renderer") {
     "media/webrtc/webrtc_set_description_observer.cc",
     "media/webrtc/webrtc_set_description_observer.h",
     "media/webrtc/webrtc_util.h",
-    "media/webrtc/webrtc_video_frame_adapter.cc",
-    "media/webrtc/webrtc_video_frame_adapter.h",
     "media/webrtc/webrtc_video_track_source.cc",
     "media/webrtc/webrtc_video_track_source.h",
     "media/webrtc/webrtc_video_utils.cc",
     "media/webrtc/webrtc_video_utils.h",
-    "media/webrtc_logging.cc",
-    "media/webrtc_logging.h",
-    "media_recorder/media_recorder_handler.cc",
-    "media_recorder/media_recorder_handler.h",
-    "media_recorder/vea_encoder.cc",
-    "media_recorder/vea_encoder.h",
-    "media_recorder/video_track_recorder.cc",
-    "media_recorder/video_track_recorder.h",
-    "media_recorder/vpx_encoder.cc",
-    "media_recorder/vpx_encoder.h",
     "menu_item_builder.cc",
     "menu_item_builder.h",
     "mhtml_handle_writer.cc",
@@ -565,7 +549,6 @@ target(link_target_type, "renderer") {
     "//third_party/blink/public/common",
     "//third_party/boringssl",
     "//third_party/icu",
-    "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/sqlite",
     "//third_party/webrtc/api:callfactory_api",
@@ -711,14 +694,6 @@ target(link_target_type, "renderer") {
       "pepper/pepper_media_stream_video_track_host.cc",
       "pepper/pepper_media_stream_video_track_host.h",
     ]
-  }
-
-  if (rtc_use_h264) {
-    sources += [
-      "media_recorder/h264_encoder.cc",
-      "media_recorder/h264_encoder.h",
-    ]
-    deps += [ "//third_party/openh264:encoder" ]
   }
 
   if (enable_plugins) {

@@ -428,6 +428,7 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   render_frame_metadata_provider_.RemoveObserver(this);
   if (!destroyed_)
     Destroy(false);
+  CHECK(!notifying_of_visibility_change_);
 }
 
 // static
@@ -692,12 +693,15 @@ void RenderWidgetHostImpl::WasHidden() {
   process_->UpdateClientPriority(this);
 
   bool is_visible = false;
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      Source<RenderWidgetHost>(this),
-      Details<bool>(&is_visible));
-  for (auto& observer : observers_)
-    observer.RenderWidgetHostVisibilityChanged(this, false);
+  {
+    CHECK(!notifying_of_visibility_change_);
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        Source<RenderWidgetHost>(this), Details<bool>(&is_visible));
+    base::AutoReset<bool> setter(&notifying_of_visibility_change_, true);
+    for (auto& observer : observers_)
+      observer.RenderWidgetHostVisibilityChanged(this, false);
+  }
 }
 
 void RenderWidgetHostImpl::WasShown(
@@ -727,12 +731,15 @@ void RenderWidgetHostImpl::WasShown(
   process_->UpdateClientPriority(this);
 
   bool is_visible = true;
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      Source<RenderWidgetHost>(this),
-      Details<bool>(&is_visible));
-  for (auto& observer : observers_)
-    observer.RenderWidgetHostVisibilityChanged(this, true);
+  {
+    CHECK(!notifying_of_visibility_change_);
+    base::AutoReset<bool> setter(&notifying_of_visibility_change_, true);
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        Source<RenderWidgetHost>(this), Details<bool>(&is_visible));
+    for (auto& observer : observers_)
+      observer.RenderWidgetHostVisibilityChanged(this, true);
+  }
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:

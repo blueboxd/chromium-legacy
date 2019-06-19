@@ -49,7 +49,6 @@
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
-#include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
@@ -65,6 +64,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
+#include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -86,7 +86,6 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/public/platform/web_blob_registry.h"
-#include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -119,7 +118,6 @@ using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebDatabaseObserver;
-using blink::WebMediaRecorderHandler;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
@@ -593,15 +591,6 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebMediaRecorderHandler>
-RendererBlinkPlatformImpl::CreateMediaRecorderHandler(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return std::make_unique<content::MediaRecorderHandler>(
-      std::move(task_runner));
-}
-
-//------------------------------------------------------------------------------
-
 std::unique_ptr<WebRTCPeerConnectionHandler>
 RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client,
@@ -968,6 +957,16 @@ void RendererBlinkPlatformImpl::RecordMetricsForBackgroundedRendererPurge() {
   if (!render_thread)
     return;
   render_thread->RecordMetricsForBackgroundedRendererPurge();
+}
+
+//------------------------------------------------------------------------------
+media::GpuVideoAcceleratorFactories*
+RendererBlinkPlatformImpl::GetGpuFactories() {
+  auto* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
+    return nullptr;
+
+  return render_thread->GetGpuFactories();
 }
 
 //------------------------------------------------------------------------------

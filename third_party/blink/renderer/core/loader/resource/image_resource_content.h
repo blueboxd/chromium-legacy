@@ -109,7 +109,7 @@ class CORE_EXPORT ImageResourceContent final
 
   // Redirecting methods to Resource.
   const KURL& Url() const;
-  TimeTicks LoadResponseEnd() const;
+  base::TimeTicks LoadResponseEnd() const;
   bool IsAccessAllowed();
   const ResourceResponse& GetResponse() const;
   base::Optional<ResourceError> GetResourceError() const;

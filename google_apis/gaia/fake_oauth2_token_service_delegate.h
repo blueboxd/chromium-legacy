@@ -23,7 +23,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   FakeOAuth2TokenServiceDelegate();
   ~FakeOAuth2TokenServiceDelegate() override;
 
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;

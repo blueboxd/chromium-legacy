@@ -35,6 +35,13 @@ class VIEWS_EXPORT TypographyProvider {
   // Gets the line spacing, or 0 if it should be provided by gfx::FontList.
   virtual int GetLineHeight(int context, int style) const = 0;
 
+  // Returns the expected number of horizontal pixels needed to display the
+  // specified length of characters. Call gfx::GetStringWidth() to retrieve the
+  // actual number.
+  virtual int GetExpectedTextWidth(int context,
+                                   int style,
+                                   int length) const = 0;
+
   // Returns the weight that will result in the ResourceBundle returning an
   // appropriate "medium" weight for UI. This caters for systems that are known
   // to be unable to provide a system font with weight other than NORMAL or BOLD
@@ -61,6 +68,7 @@ class VIEWS_EXPORT DefaultTypographyProvider : public TypographyProvider {
                    int context,
                    int style) const override;
   int GetLineHeight(int context, int style) const override;
+  int GetExpectedTextWidth(int context, int style, int length) const override;
 
   // Sets the |size_delta| and |font_weight| that the the default GetFont()
   // implementation uses. Always sets values, even for styles it doesn't know

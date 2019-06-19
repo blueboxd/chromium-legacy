@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/frame_set_painter.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/html/html_frame_set_element.h"
 #include "third_party/blink/renderer/core/layout/layout_frame_set.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -126,6 +127,11 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
 }
 
 void FrameSetPainter::PaintChildren(const PaintInfo& paint_info) {
+  if (layout_frame_set_.PaintBlockedByDisplayLock(
+          DisplayLockContext::kChildren)) {
+    return;
+  }
+
   // Paint only those children that fit in the grid.
   // Remaining frames are "hidden".
   // See also LayoutFrameSet::positionFrames.

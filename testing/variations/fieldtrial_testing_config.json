@@ -872,6 +872,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "ios",
                 "linux",
@@ -1068,6 +1069,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "ios"
             ],
             "experiments": [
@@ -1342,62 +1344,6 @@
             "experiments": [
                 {
                     "name": "DetachTimeFg16x"
-                }
-            ]
-        }
-    ],
-    "CerseiFakeboxOnNtp": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledAlt",
-                    "enable_features": [
-                        "UseAlternateFakeboxOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledAltWithIcon",
-                    "enable_features": [
-                        "FakeboxSearchIconOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledAltWithIconColor",
-                    "enable_features": [
-                        "FakeboxSearchIconColorOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledAltRect",
-                    "enable_features": [
-                        "UseAlternateFakeboxRectOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledAltRectWithIcon",
-                    "enable_features": [
-                        "FakeboxSearchIconOnNtp",
-                        "UseAlternateFakeboxRectOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledAltRectWithIconColor",
-                    "enable_features": [
-                        "FakeboxSearchIconColorOnNtp",
-                        "UseAlternateFakeboxRectOnNtp"
-                    ]
-                },
-                {
-                    "name": "EnabledShortString",
-                    "enable_features": [
-                        "FakeboxShortHintTextOnNtp"
-                    ]
                 }
             ]
         }
@@ -3669,13 +3615,16 @@
                         "UIVerticalMargin": "10"
                     },
                     "enable_features": [
+                        "OmniboxDedupeGoogleDriveURLs",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
+                        "OmniboxGroupSuggestionsBySearchVsUrl",
                         "OmniboxLocalEntitySuggestions",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTailSuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "QueryInOmnibox"
+                        "QueryInOmnibox",
+                        "UseAlternateFakeboxOnNtp"
                     ]
                 }
             ]

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
@@ -157,7 +158,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const std::string& oauth_consumer_name,
       const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
+      AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
   // Creates an AccessTokenFetcher given the passed-in information, allowing
   // to specify a custom |url_loader_factory| as well.
@@ -167,7 +168,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
+      AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
   // Creates an AccessTokenFetcher given the passed-in information, allowing to
   // specify custom |client_id| and |client_secret| to identify the OAuth client
@@ -179,7 +180,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const std::string& oauth_consumer_name,
       const ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
-      AccessTokenFetcher::Mode mode);
+      AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
   // If an entry exists in the cache of access tokens corresponding to the
   // given information, removes that entry; in this case, the next access token

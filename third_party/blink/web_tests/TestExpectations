@@ -269,9 +269,6 @@ Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-dis
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update.html [ Timeout ]
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
-crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-001.html [ Failure Crash ]
-crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-002.html [ Failure Crash ]
-crbug.com/973555 virtual/display-lock/wpt_internal/display-lock/paint/hit-testing-003.html [ Failure Crash ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -716,7 +713,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-018.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/boundary-shaping/boundary-shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/hyphens/shy-styling-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-018.html [ Failure ]
@@ -1374,7 +1370,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-blo
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash Timeout ]
 crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Pass Crash Timeout ]
 
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flowthread-with-floats-destroyed-crash.html [ Crash ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/flowthread-with-floats-destroyed-crash.html [ Crash Pass ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/regular-block-becomes-multicol.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regular-block-becomes-multicol.html [ Failure ]
 
@@ -1873,8 +1869,8 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/abspos-after-force
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/auto-scrollbar-shrink-to-fit.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/avoid-break-inside-first-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/avoid-break-inside-first-child-nested.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-lines.html [ Crash ]
-crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-unbreakable-blocks.html [ Crash ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-lines.html [ Crash Pass ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/become-unfragmented-with-unbreakable-blocks.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/block-after-float-first-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/border-spacing-break-before-unbreakable-row.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/break-in-first-table-row-only.html [ Failure ]
@@ -2318,6 +2314,8 @@ crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printin
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
+crbug.com/974857 external/wpt/css/filter-effects/backdrop-filter-plus-mask.html [ Failure ]
+crbug.com/974857 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-plus-mask.html [ Failure ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -3296,6 +3294,7 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/pointerevents/pointerevent_touch-action-keyboard.html [ Failure Timeout ]
+crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -3344,9 +3343,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-sizing/slice-intrinsic-size.html [
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/clone-intrinsic-size.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-av-framesize.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-negative-duration.html [ Timeout ]
@@ -5686,7 +5682,7 @@ crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 
 # See also crbug.com/907150
 crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
-crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
+crbug.com/907412 external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
 crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failure ]
@@ -6242,3 +6238,20 @@ crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/video-played-ranges-1.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/video-played-reset.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]
+
+# Flaky on Linux
+crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
+
+# Failing on windows with lazy-feedback-allocation feature in V8. See the bug
+# for more details.
+crbug.com/976587 [ Win Mac ] netinfo/gc-unused-listeners.html [ Pass Failure ]
+
+# TODO (michaelludwig): Remove after Skia roll and rebaseline
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
+crbug.com/976743 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]

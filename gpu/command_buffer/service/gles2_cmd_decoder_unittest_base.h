@@ -216,24 +216,29 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   struct InitState {
     InitState();
     InitState(const InitState& other);
+    InitState& operator=(const InitState& other);
 
-    std::string extensions;
-    std::string gl_version;
-    bool has_alpha;
-    bool has_depth;
-    bool has_stencil;
-    bool request_alpha;
-    bool request_depth;
-    bool request_stencil;
-    bool bind_generates_resource;
-    bool lose_context_when_out_of_memory;
-    bool use_native_vao;  // default is true.
-    ContextType context_type;
+    std::string extensions = "GL_EXT_framebuffer_object";
+    std::string gl_version = "2.1";
+    bool has_alpha = false;
+    bool has_depth = false;
+    bool has_stencil = false;
+    bool request_alpha = false;
+    bool request_depth = false;
+    bool request_stencil = false;
+    bool bind_generates_resource = false;
+    bool lose_context_when_out_of_memory = false;
+    bool lose_context_on_init = false;
+    bool use_native_vao = true;
+    ContextType context_type = CONTEXT_TYPE_OPENGLES2;
   };
 
   void InitDecoder(const InitState& init);
   void InitDecoderWithWorkarounds(const InitState& init,
                                   const GpuDriverBugWorkarounds& workarounds);
+  ContextResult MaybeInitDecoderWithWorkarounds(
+      const InitState& init,
+      const GpuDriverBugWorkarounds& workarounds);
 
   void ResetDecoder();
 

@@ -42,8 +42,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
   void OnEventOccurred(const void* const event_key) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
@@ -67,8 +65,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   // The preview type that was most recently committed.
   PreviewsType committed_preview_;
 
-  bool server_lofi_seen_ = false;
-  bool client_lofi_seen_ = false;
   bool lite_page_seen_ = false;
   bool lite_page_redirect_seen_ = false;
   bool noscript_seen_ = false;

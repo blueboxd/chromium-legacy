@@ -1013,9 +1013,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, FetchPersistentError) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher =
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          email, oauth2_service_delegate_->GetURLLoaderFactory(), this));
+          email, oauth2_service_delegate_->GetURLLoaderFactory(), this);
   fetcher->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -1043,9 +1043,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1 =
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          email, oauth2_service_delegate_->GetURLLoaderFactory(), this));
+          email, oauth2_service_delegate_->GetURLLoaderFactory(), this);
   fetcher1->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -1057,9 +1057,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   // Pretend that backoff has expired and try again.
   oauth2_service_delegate_->backoff_entry_.SetCustomReleaseTime(
       base::TimeTicks());
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2 =
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          email, oauth2_service_delegate_->GetURLLoaderFactory(), this));
+          email, oauth2_service_delegate_->GetURLLoaderFactory(), this);
   fetcher2->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, access_token_success_count_);
@@ -1085,9 +1085,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   EXPECT_EQ(0, access_token_failure_count_);
   std::vector<std::string> scope_list;
   scope_list.push_back("scope");
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher1 =
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetURLLoaderFactory(), this));
+          kEmail, oauth2_service_delegate_->GetURLLoaderFactory(), this);
   fetcher1->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, access_token_success_count_);
@@ -1096,9 +1096,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ResetBackoff) {
   // Notify of network change and ensure that request now runs.
   oauth2_service_delegate_->OnConnectionChanged(
       network::mojom::ConnectionType::CONNECTION_WIFI);
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher2 =
       oauth2_service_delegate_->CreateAccessTokenFetcher(
-          kEmail, oauth2_service_delegate_->GetURLLoaderFactory(), this));
+          kEmail, oauth2_service_delegate_->GetURLLoaderFactory(), this);
   fetcher2->Start("foo", "bar", scope_list);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, access_token_success_count_);

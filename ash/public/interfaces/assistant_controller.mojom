@@ -105,6 +105,9 @@ interface AssistantNotificationController {
   // Requests that all notifications be removed. If |from_server| is true the
   // request was initiated by the server.
   RemoveAllNotifications(bool from_server);
+
+  // Changes the quiet mode state in the message center.
+  SetQuietMode(bool enabled);
 };
 
 // Interface to the AssistantScreenContextController which is owned by the

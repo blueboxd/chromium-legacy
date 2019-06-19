@@ -323,8 +323,11 @@ public class PickerCategoryView extends RelativeLayout
         for (ContactDetails contactDetails : selectedContacts) {
             contacts.add(new ContactsPickerListener.Contact(
                     includeNames ? contactDetails.getDisplayNames() : null,
-                    includeEmails ? contactDetails.getEmails() : null,
-                    includeTel ? contactDetails.getPhoneNumbers() : null));
+                    includeEmails && PickerAdapter.includesEmails() ? contactDetails.getEmails()
+                                                                    : null,
+                    includeTel && PickerAdapter.includesTelephones()
+                            ? contactDetails.getPhoneNumbers()
+                            : null));
         }
         executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
     }
@@ -344,5 +347,10 @@ public class PickerCategoryView extends RelativeLayout
     @VisibleForTesting
     public SelectionDelegate<ContactDetails> getSelectionDelegateForTesting() {
         return mSelectionDelegate;
+    }
+
+    @VisibleForTesting
+    public TopView getTopViewForTesting() {
+        return mTopView;
     }
 }

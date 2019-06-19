@@ -42,6 +42,9 @@ ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window);
 // container, otherwise return nullptr.
 ASH_EXPORT aura::Window* GetDeskContainerForContext(aura::Window* context);
 
+// Returns true if the DesksBar widget should be created in overview mode.
+ASH_EXPORT bool ShouldDesksBarBeCreated();
+
 }  // namespace desks_util
 
 }  // namespace ash

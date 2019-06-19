@@ -16,13 +16,15 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.widget.ChipView;
 
 import java.text.NumberFormat;
 
 /**
  * A container class for the Disclaimer and Select All functionality (and both associated labels).
  */
-public class TopView extends RelativeLayout implements CompoundButton.OnCheckedChangeListener {
+public class TopView extends RelativeLayout
+        implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
     /**
      * An interface for communicating when the Select All checkbox is toggled.
      */
@@ -32,6 +34,17 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
          * @param allSelected Whether the Select All checkbox is checked.
          */
         void onSelectAllToggled(boolean allSelected);
+    }
+
+    /**
+     * An interface for communicating when one of the chips has been toggled.
+     */
+    public interface ChipToggledCallback {
+        /**
+         * Called when a Chip is toggled.
+         * @param chip The chip type that was toggled.
+         */
+        void onChipToggled(@PickerAdapter.FilterType int chip);
     }
 
     private final Context mContext;
@@ -47,6 +60,15 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
 
     // The callback to use when notifying that the Select All checkbox was toggled.
     private SelectAllToggleCallback mSelectAllCallback;
+
+    // A Chip for filtering out emails.
+    private ChipView mEmailFilterChip;
+
+    // A Chip for filtering out telephones.
+    private ChipView mTelephonesFilterChip;
+
+    // The callback to use to notify when the filter chips are toggled.
+    private ChipToggledCallback mChipToggledCallback;
 
     // Whether to temporarily ignore clicks on the checkbox.
     private boolean mIgnoreCheck;
@@ -69,6 +91,39 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
 
         TextView title = findViewById(R.id.checkbox_title);
         title.setText(R.string.contacts_picker_all_contacts);
+
+        mEmailFilterChip = findViewById(R.id.email_filter);
+        TextView textView = mEmailFilterChip.getPrimaryTextView();
+        textView.setText(R.string.top_view_email_filter_label);
+        mEmailFilterChip.setSelected(true);
+        mEmailFilterChip.setOnClickListener(this);
+
+        mTelephonesFilterChip = findViewById(R.id.tel_filter);
+        textView = mTelephonesFilterChip.getPrimaryTextView();
+        textView.setText(R.string.top_view_telephone_filter_label);
+        mTelephonesFilterChip.setSelected(true);
+        mTelephonesFilterChip.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.email_filter) {
+            notifyChipToggled(PickerAdapter.FilterType.EMAILS);
+        } else if (id == R.id.tel_filter) {
+            notifyChipToggled(PickerAdapter.FilterType.TELEPHONES);
+        }
+    }
+
+    /**
+     * Sends a notification that a chip has been toggled and updates the selection state for it.
+     * @param chip The id of the chip that was toggled.
+     */
+    public void notifyChipToggled(@PickerAdapter.FilterType int chip) {
+        ChipView chipView =
+                chip == PickerAdapter.FilterType.EMAILS ? mEmailFilterChip : mTelephonesFilterChip;
+        chipView.setSelected(!chipView.isSelected());
+        mChipToggledCallback.onChipToggled(chip);
     }
 
     /**
@@ -89,6 +144,13 @@ public class TopView extends RelativeLayout implements CompoundButton.OnCheckedC
      */
     public void registerSelectAllCallback(SelectAllToggleCallback callback) {
         mSelectAllCallback = callback;
+    }
+
+    /**
+     * Register a callback to use to notify when the filter chips are toggled.
+     */
+    public void registerChipToggledCallback(ChipToggledCallback callback) {
+        mChipToggledCallback = callback;
     }
 
     /**

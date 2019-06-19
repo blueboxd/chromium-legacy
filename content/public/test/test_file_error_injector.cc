@@ -20,6 +20,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -67,6 +68,7 @@ class DownloadFileWithError : public download::DownloadFileImpl {
                          const std::string& client_guid,
                          const GURL& source_url,
                          const GURL& referrer_url,
+                         std::unique_ptr<service_manager::Connector> connector,
                          const RenameCompletionCallback& callback) override;
 
  private:
@@ -237,6 +239,7 @@ void DownloadFileWithError::RenameAndAnnotate(
     const std::string& client_guid,
     const GURL& source_url,
     const GURL& referrer_url,
+    std::unique_ptr<service_manager::Connector> connector,
     const RenameCompletionCallback& callback) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -260,9 +263,9 @@ void DownloadFileWithError::RenameAndAnnotate(
                                  error_to_return);
   }
 
-  download::DownloadFileImpl::RenameAndAnnotate(full_path, client_guid,
-                                                source_url, referrer_url,
-                                                std::move(callback_to_use));
+  download::DownloadFileImpl::RenameAndAnnotate(
+      full_path, client_guid, source_url, referrer_url, nullptr,
+      std::move(callback_to_use));
 }
 
 bool DownloadFileWithError::OverwriteError(

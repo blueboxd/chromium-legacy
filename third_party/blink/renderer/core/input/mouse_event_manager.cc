@@ -84,23 +84,23 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
 
 // The amount of time to wait before sending a fake mouse event triggered
 // during a scroll.
-constexpr TimeDelta kFakeMouseMoveIntervalDuringScroll =
-    TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kFakeMouseMoveIntervalDuringScroll =
+    base::TimeDelta::FromMilliseconds(100);
 
 // The amount of time to wait before sending a fake mouse event on style and
 // layout changes sets to 50Hz, same as common screen refresh rate.
-constexpr TimeDelta kFakeMouseMoveIntervalAfterLayoutChange =
-    TimeDelta::FromMilliseconds(20);
+constexpr base::TimeDelta kFakeMouseMoveIntervalAfterLayoutChange =
+    base::TimeDelta::FromMilliseconds(20);
 
 // TODO(crbug.com/653490): Read these values from the OS.
 #if defined(OS_MACOSX)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
-constexpr TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.15);
+constexpr base::TimeDelta kTextDragDelay = base::TimeDelta::FromSecondsD(0.15);
 #else
 const int kDragThresholdX = 4;
 const int kDragThresholdY = 4;
-constexpr TimeDelta kTextDragDelay = TimeDelta::FromSecondsD(0.0);
+constexpr base::TimeDelta kTextDragDelay = base::TimeDelta::FromSecondsD(0.0);
 #endif
 
 }  // namespace
@@ -132,7 +132,7 @@ void MouseEventManager::Clear() {
   click_element_ = nullptr;
   mouse_down_element_ = nullptr;
   mouse_down_pos_ = IntPoint();
-  mouse_down_timestamp_ = TimeTicks();
+  mouse_down_timestamp_ = base::TimeTicks();
   mouse_down_ = WebMouseEvent();
   svg_pan_ = false;
   drag_start_pos_ = PhysicalOffset();
@@ -673,7 +673,7 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
   // during a scroll. This avoids a potential source of scroll jank.
   // Or dispatch a fake mouse move to update hover states when the layout
   // changes.
-  TimeDelta interval =
+  base::TimeDelta interval =
       update_hover_reason ==
               MouseEventManager::UpdateHoverReason::kScrollOffsetChanged
           ? kFakeMouseMoveIntervalDuringScroll

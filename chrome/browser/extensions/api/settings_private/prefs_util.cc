@@ -289,6 +289,20 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Accessibility.
   (*s_whitelist)[::prefs::kAccessibilityImageLabelsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextSize] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextFont] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextColor] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextOpacity] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsBackgroundColor] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextShadow] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsBackgroundOpacity] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 
 #if defined(OS_CHROMEOS)
   // Accounts / Users / People.

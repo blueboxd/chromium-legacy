@@ -23,6 +23,8 @@ class IPEndPoint;
 
 namespace chromeos {
 
+class NetworkStateHandler;
+
 // The NetworkDeviceHandler class allows making device specific requests on a
 // ChromeOS network device. All calls are asynchronous and interact with the
 // Shill device API. No calls will block on DBus calls.
@@ -222,6 +224,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   virtual void RemoveAllWifiWakeOnPacketConnections(
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
+
+  static std::unique_ptr<NetworkDeviceHandler> InitializeForTesting(
+      NetworkStateHandler* network_state_handler);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);

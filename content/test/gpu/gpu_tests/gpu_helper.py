@@ -85,3 +85,13 @@ def GetCommandDecoder(gpu_info):
       gpu_info.aux_attributes.get('passthrough_cmd_decoder', False):
     return 'passthrough'
   return 'no_passthrough'
+
+# Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--enable-features=UseSkiaRenderer' which
+# may be merged with additional feature flags.
+def GetSkiaRenderer(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if "UseSkiaRenderer" in o:
+        return 'skia-renderer'
+  return 'no-skia-renderer'

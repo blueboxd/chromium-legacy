@@ -1204,6 +1204,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
 
+  // TODO(crbug.com/976199): remove this, used in tracking a crash.
+  bool notifying_of_visibility_change_ = false;
+
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);

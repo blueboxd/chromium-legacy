@@ -75,9 +75,7 @@ class MockTextInputClient : public TextInputClient {
 class MockInputMethodDelegate : public internal::InputMethodDelegate {
  public:
   ~MockInputMethodDelegate() {}
-  MOCK_METHOD2(DispatchKeyEventPostIME,
-               EventDispatchDetails(KeyEvent*,
-                                    base::OnceCallback<void(bool, bool)>));
+  MOCK_METHOD1(DispatchKeyEventPostIME, EventDispatchDetails(KeyEvent*));
 };
 
 class MockStoreACPSink : public ITextStoreACPSink {
@@ -1510,9 +1508,7 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
     SetHasCompositionText(true);
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME1(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME1(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -1559,17 +1555,13 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
     SetHasCompositionText(true);
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME2(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME2(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME3a(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME3a(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -1594,9 +1586,7 @@ class KeyEventTestCallback : public TSFTextStoreTestCallback {
     SetHasCompositionText(false);
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME3b(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME3b(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -1622,7 +1612,7 @@ TEST_F(TSFTextStoreTest, KeyEventTest) {
       .WillOnce(Invoke(&callback, &KeyEventTestCallback::InsertText2))
       .WillOnce(Invoke(&callback, &KeyEventTestCallback::InsertText3));
 
-  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_, _))
+  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_))
       .WillOnce(
           Invoke(&callback, &KeyEventTestCallback::DispatchKeyEventPostIME1))
       .WillOnce(
@@ -2452,9 +2442,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME1(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME1(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -2499,17 +2487,13 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME2a(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME2a(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME2b(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME2b(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -2547,9 +2531,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME3(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME3(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -2576,9 +2558,7 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME4(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME4(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -2613,17 +2593,13 @@ class RegressionTestCallback : public TSFTextStoreTestCallback {
     return S_OK;
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME5a(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME5a(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_RELEASED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
   }
 
-  ui::EventDispatchDetails DispatchKeyEventPostIME5b(
-      KeyEvent* key,
-      base::OnceCallback<void(bool, bool)> ack_callback) {
+  ui::EventDispatchDetails DispatchKeyEventPostIME5b(KeyEvent* key) {
     EXPECT_EQ(ui::ET_KEY_PRESSED, key->type());
     EXPECT_EQ(VKEY_PROCESSKEY, key->key_code());
     return ui::EventDispatchDetails();
@@ -2676,7 +2652,7 @@ TEST_F(TSFTextStoreTest, RegressionTest) {
       .WillOnce(
           Invoke(&callback, &RegressionTestCallback::SetCompositionText5));
 
-  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_, _))
+  EXPECT_CALL(input_method_delegate_, DispatchKeyEventPostIME(_))
       .WillOnce(
           Invoke(&callback, &RegressionTestCallback::DispatchKeyEventPostIME1))
       .WillOnce(

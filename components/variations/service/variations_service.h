@@ -120,6 +120,10 @@ class VariationsService
   // should happen in that case.
   GURL GetVariationsServerURL(HttpOptions http_options);
 
+  // Returns the permanent overridden country code stored for this client. This
+  // value will not be updated on Chrome updates.
+  std::string GetOverriddenPermanentCountry();
+
   // Returns the permanent country code stored for this client. Country code is
   // in the format of lowercase ISO 3166-1 alpha-2. Example: us, br, in
   std::string GetStoredPermanentCountry();
@@ -289,23 +293,6 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, DoNotRetryAfterARetry);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
                            DoNotRetryIfInsecureURLIsHTTPS);
-
-  // Set of different possible values to report for the
-  // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
-  // be kept consistent with its counterpart in histograms.xml.
-  enum LoadPermanentConsistencyCountryResult {
-    LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
-    LOAD_COUNTRY_NO_PREF_HAS_SEED,
-    LOAD_COUNTRY_INVALID_PREF_NO_SEED,
-    LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
-    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
-    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
-    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
-    LOAD_COUNTRY_MAX,
-  };
 
   void InitResourceRequestedAllowedNotifier();
 

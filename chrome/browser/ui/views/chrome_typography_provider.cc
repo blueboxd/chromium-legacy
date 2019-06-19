@@ -312,3 +312,11 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
       return default_height;
   }
 }
+
+int ChromeTypographyProvider::GetExpectedTextWidth(int context,
+                                                   int style,
+                                                   int length) const {
+  // TODO(etienneb): Do not rely on font.GetExpectedTextWidth(...) to retrieve
+  // the expected text width.
+  return GetFont(context, style).GetExpectedTextWidth(length);
+}

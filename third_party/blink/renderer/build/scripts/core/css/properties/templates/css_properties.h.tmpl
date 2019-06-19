@@ -38,7 +38,6 @@ namespace {{namespace}} {
   (property.is_property and 'kProperty' or ''),
   (property.inherited and 'kInherited' or ''),
   (property.visited and 'kVisited' or ''),
-  (property.is_internal and 'kInternal' or '')
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}
@@ -49,7 +48,7 @@ class {{class_name}} final : public {{property.superclass}} {
   const WTF::AtomicString& GetPropertyNameAtomicString() const override;
   const char* GetJSPropertyName() const override;
   {% if property.is_internal or property.runtime_flag %}
-  bool IsEnabled() const override;
+  CSSExposure Exposure() const override;
   {% endif %}
   {% if not is_alias %}
   {% if not property.affected_by_all %}

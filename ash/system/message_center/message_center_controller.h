@@ -41,7 +41,6 @@ class ASH_EXPORT MessageCenterController
   // mojom::AshMessageCenterController:
   void SetArcNotificationsInstance(
       arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
-  void SetQuietMode(bool enabled) override;
 
   InactiveUserNotificationBlocker*
   inactive_user_notification_blocker_for_testing() {

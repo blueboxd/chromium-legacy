@@ -46,39 +46,16 @@ constexpr base::TimeDelta kHideStackingBarAnimationDuration =
 constexpr base::TimeDelta kCollapseAnimationDuration =
     base::TimeDelta::FromMilliseconds(640);
 
-enum ClearAllButtonTag {
-  kStackingBarClearAllButtonTag,
-  kBottomClearAllButtonTag,
-};
-
-constexpr int kClearAllButtonRowHeight = 3 * kUnifiedNotificationCenterSpacing;
-
 class ScrollerContentsView : public views::View {
  public:
   ScrollerContentsView(UnifiedMessageListView* message_list_view,
                        views::ButtonListener* listener) {
-    auto* contents_layout = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::kVertical,
+        gfx::Insets(0, 0, kUnifiedNotificationCenterSpacing, 0)));
     contents_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStretch);
     AddChildView(message_list_view);
-
-    views::View* button_container = new views::View;
-    auto* button_layout =
-        button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal,
-            gfx::Insets(kUnifiedNotificationCenterSpacing), 0));
-    button_layout->set_main_axis_alignment(
-        views::BoxLayout::MainAxisAlignment::kEnd);
-
-    auto* clear_all_button = new RoundedLabelButton(
-        listener, l10n_util::GetStringUTF16(
-                      IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL));
-    clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
-    clear_all_button->set_tag(kBottomClearAllButtonTag);
-    button_container->AddChildView(clear_all_button);
-    AddChildView(button_container);
   }
 
   ~ScrollerContentsView() override = default;
@@ -100,7 +77,6 @@ class StackingBarClearAllButton : public views::LabelButton {
   StackingBarClearAllButton(views::ButtonListener* listener,
                             const base::string16& text)
       : views::LabelButton(listener, text) {
-    set_tag(kStackingBarClearAllButtonTag);
     SetEnabledTextColors(kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetBorder(views::CreateEmptyBorder(gfx::Insets()));
@@ -285,7 +261,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
       scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this, model)),
-      last_scroll_position_from_bottom_(kClearAllButtonRowHeight),
+      last_scroll_position_from_bottom_(0),
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   message_list_view_->Init();
 
@@ -392,9 +368,6 @@ gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
     preferred_size.set_height(preferred_size.height() + bar_height);
   }
 
-  // Hide Clear All button at the buttom from initial viewport.
-  preferred_size.set_height(preferred_size.height() - kClearAllButtonRowHeight);
-
   if (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE) {
     int height = preferred_size.height() * (1.0 - GetAnimationValue());
     preferred_size.set_height(height);
@@ -431,18 +404,8 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
 
 void UnifiedMessageCenterView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  if (sender) {
-    switch (sender->tag()) {
-      case kStackingBarClearAllButtonTag:
-        base::RecordAction(base::UserMetricsAction(
-            "StatusArea_Notifications_StackingBarClearAll"));
-        break;
-      case kBottomClearAllButtonTag:
-        base::RecordAction(
-            base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
-        break;
-    }
-  }
+  base::RecordAction(
+      base::UserMetricsAction("StatusArea_Notifications_StackingBarClearAll"));
 
   message_list_view_->ClearAllWithAnimation();
 }

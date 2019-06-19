@@ -257,7 +257,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   ResetTest();
   // Verify that when the data reduction proxy was used, but lite page was not
-  // used, the correpsonding UMA is reported.
+  // used, the corresponding UMA is reported.
   RunTest(true, false, false, false);
   ValidateHistograms();
 }
@@ -274,11 +274,6 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   ResetTest();
 
   RunTest(true, false, false, false);
-
-  std::unique_ptr<DataReductionProxyData> data =
-      std::make_unique<DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_request_url(GURL(kDefaultTestUrl));
 
   std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
   // Cached resource.
@@ -342,11 +337,6 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   ResetTest();
 
   RunTest(true, false, false, false);
-
-  std::unique_ptr<DataReductionProxyData> data =
-      std::make_unique<DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_request_url(GURL(kDefaultTestUrl));
 
   std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
   // Cached resource.

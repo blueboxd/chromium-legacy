@@ -94,7 +94,6 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         assert fromViewHolder instanceof TabGridViewHolder;
         assert toViewHolder instanceof TabGridViewHolder;
 
-        RecordUserAction.record("TabGrid.DragToReorder." + mComponentName);
         mSelectedTabIndex = toViewHolder.getAdapterPosition();
         if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
             mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, false);
@@ -120,6 +119,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     : TabGroupUtils.getFirstTabModelIndexForList(tabModel, destinationTabGroup);
             ((TabGroupModelFilter) filter).moveRelatedTabs(currentTabId, newIndex);
         }
+        RecordUserAction.record("TabGrid.Drag.Reordered." + mComponentName);
         return true;
     }
 
@@ -136,14 +136,15 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             mSelectedTabIndex = viewHolder.getAdapterPosition();
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, true);
+            RecordUserAction.record("TabGrid.Drag.Start." + mComponentName);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
-                RecordUserAction.record("GridTabSwitcher.DropTabToMerge");
                 onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                 mRecyclerView.getAdapter().notifyDataSetChanged();
+                RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
             }
             if (mHoveredTabIndex == TabModel.INVALID_TAB_INDEX) {
                 mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
@@ -154,6 +155,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                                 .getCurrentTabModelFilter();
                 filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
                 mRecyclerView.getAdapter().notifyDataSetChanged();
+                RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;

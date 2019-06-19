@@ -81,7 +81,7 @@ void TextElementTiming::OnTextNodesPainted(
     DEFINE_STATIC_LOCAL(const AtomicString, kTextPaint, ("text-paint"));
     performance_->AddElementTiming(
         kTextPaint, g_empty_string, record->element_timing_rect_,
-        record->paint_time, TimeTicks(), attr, IntSize(), id, element);
+        record->paint_time, base::TimeTicks(), attr, IntSize(), id, element);
   }
 }
 

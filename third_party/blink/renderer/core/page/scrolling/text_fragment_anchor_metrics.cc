@@ -85,8 +85,8 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                          TRACE_EVENT_SCOPE_THREAD, "did_scroll_into_view",
                          did_non_zero_scroll_);
 
-    WTF::TimeDelta time_to_scroll_into_view(first_scroll_into_view_time_ -
-                                            create_time_);
+    base::TimeDelta time_to_scroll_into_view(first_scroll_into_view_time_ -
+                                             create_time_);
     UMA_HISTOGRAM_TIMES("TextFragmentAnchor.TimeToScrollIntoView",
                         time_to_scroll_into_view);
     TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",

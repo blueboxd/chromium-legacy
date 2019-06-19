@@ -807,7 +807,9 @@ bool LoopbackServer::SaveStateToFile(const base::FilePath& filename) const {
     return false;
   }
   int result = base::WriteFile(filename, serialized.data(), serialized.size());
-  UMA_HISTOGRAM_MEMORY_KB("Sync.Local.FileSize", result);
+  if (result == static_cast<int>(serialized.size()))
+    UMA_HISTOGRAM_MEMORY_KB("Sync.Local.FileSizeKB", result / 1024);
+  // TODO(pastarmovj): Add new UMA here to catch error counts.
   return result == static_cast<int>(serialized.size());
 }
 

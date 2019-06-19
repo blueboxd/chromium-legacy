@@ -135,8 +135,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/media_buildflags.h"
-#include "net/socket/client_socket_pool_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -319,13 +317,6 @@ void BrowserProcessImpl::Init() {
   pref_change_registrar_.Add(metrics::prefs::kMetricsReportingEnabled,
                              base::Bind(&ApplyMetricsReportingPolicy));
 #endif
-
-  int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
-  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
-      net::HttpNetworkSession::NORMAL_SOCKET_POOL,
-      std::max(std::min(max_per_proxy, 99),
-               net::ClientSocketPoolManager::max_sockets_per_group(
-                   net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
@@ -909,10 +900,6 @@ prefs::InProcessPrefServiceFactory* BrowserProcessImpl::pref_service_factory()
 void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
                                 false);
-  // This policy needs to be defined before the net subsystem is initialized,
-  // so we do it here.
-  registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,
-                                net::kDefaultMaxSocketsPerProxyServer);
 
   registry->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
 

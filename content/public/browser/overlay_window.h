@@ -51,14 +51,14 @@ class OverlayWindow {
   static std::unique_ptr<OverlayWindow> Create(
       PictureInPictureWindowController* controller);
 
-  virtual bool IsActive() const = 0;
+  virtual bool IsActive() = 0;
   virtual void Close() = 0;
   virtual void ShowInactive() = 0;
   virtual void Hide() = 0;
-  virtual bool IsVisible() const = 0;
-  virtual bool IsAlwaysOnTop() const = 0;
+  virtual bool IsVisible() = 0;
+  virtual bool IsAlwaysOnTop() = 0;
   // Retrieves the window's current bounds, including its window.
-  virtual gfx::Rect GetBounds() const = 0;
+  virtual gfx::Rect GetBounds() = 0;
   virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
   virtual void SetPlaybackState(PlaybackState playback_state) = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;

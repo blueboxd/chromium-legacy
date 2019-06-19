@@ -122,9 +122,9 @@ TEST(UserGestureIndicatorTest, Timeouts) {
     // reset it so it gets the Now() of the mock clock.
     token->ResetTimestampForTesting();
     EXPECT_TRUE(token->HasGestures());
-    test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
+    test_task_runner->FastForwardBy(base::TimeDelta::FromSecondsD(0.75));
     EXPECT_TRUE(token->HasGestures());
-    test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
+    test_task_runner->FastForwardBy(base::TimeDelta::FromSecondsD(0.75));
     EXPECT_FALSE(token->HasGestures());
   }
 
@@ -141,15 +141,15 @@ TEST(UserGestureIndicatorTest, Timeouts) {
       // clock, reset it so it gets the Now() of the mock clock.
       token->ResetTimestampForTesting();
       EXPECT_TRUE(token->HasGestures());
-      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(base::TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
     }
 
     {
       UserGestureIndicator user_gesture_scope(token.get());
-      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(base::TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
-      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(base::TimeDelta::FromSecondsD(0.75));
       EXPECT_FALSE(token->HasGestures());
     }
   }

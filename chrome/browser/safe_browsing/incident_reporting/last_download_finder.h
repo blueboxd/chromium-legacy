@@ -101,9 +101,8 @@ class LastDownloadFinder : public content::NotificationObserver,
   // HistoryService::DownloadQueryCallback. Retrieves the most recent completed
   // executable download from |downloads| and reports results if there are no
   // more pending queries.
-  void OnDownloadQuery(
-      Profile* profile,
-      std::unique_ptr<std::vector<history::DownloadRow>> downloads);
+  void OnDownloadQuery(Profile* profile,
+                       std::vector<history::DownloadRow> downloads);
 
   // Removes the profile pointed to by |it| from profile_states_ and reports
   // results if there are no more pending queries.

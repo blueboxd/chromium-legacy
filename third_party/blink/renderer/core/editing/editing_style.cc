@@ -100,7 +100,7 @@ enum EditingPropertiesType {
 static const Vector<const CSSProperty*>& AllEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size(); index++) {
@@ -116,7 +116,7 @@ static const Vector<const CSSProperty*>& AllEditingProperties() {
 static const Vector<const CSSProperty*>& InheritableEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size();) {
@@ -704,7 +704,7 @@ static const CSSPropertyID kStaticBlockProperties[] = {
 static const Vector<const CSSProperty*>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticBlockProperties, base::size(kStaticBlockProperties), properties);
   }
   return properties;

@@ -190,8 +190,6 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 
 class TestPowerSource : public base::PowerMonitorSource {
  public:
-  void Shutdown() override {}
-
   void GenerateSuspendEvent() {
     ProcessPowerEvent(SUSPEND_EVENT);
     base::RunLoop().RunUntilIdle();
@@ -213,8 +211,8 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
 
     power_source_ = new TestPowerSource();
-    power_monitor_.reset(new base::PowerMonitor(
-        std::unique_ptr<TestPowerSource>(power_source_)));
+    base::PowerMonitor::Initialize(
+        std::unique_ptr<TestPowerSource>(power_source_));
 
     cast_environment_ = new CastEnvironment(
         &clock_, scoped_task_environment_.GetMainThreadTaskRunner(),
@@ -230,7 +228,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   void TearDown() final {
     encoder_.reset();
     base::RunLoop().RunUntilIdle();
-    power_monitor_.reset();
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void AdvanceClockAndVideoFrameTimestamp() {
@@ -260,7 +258,6 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
   TestPowerSource* power_source_;  // Owned by the power monitor.
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoderTest);

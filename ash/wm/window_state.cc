@@ -380,7 +380,7 @@ gfx::Rect WindowState::GetRestoreBoundsInParent() const {
 }
 
 void WindowState::SetRestoreBoundsInScreen(const gfx::Rect& bounds) {
-  window_->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
+  window_->SetProperty(aura::client::kRestoreBoundsKey, bounds);
 }
 
 void WindowState::SetRestoreBoundsInParent(const gfx::Rect& bounds) {

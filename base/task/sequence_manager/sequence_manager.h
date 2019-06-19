@@ -21,6 +21,18 @@ namespace sequence_manager {
 
 class TimeDomain;
 
+// Represent outstanding work the sequence underlying a SequenceManager (e.g.,
+// a native system task for drawing the UI). As long as this handle is alive,
+// the work is considered to be pending.
+class NativeWorkHandle {
+ public:
+  virtual ~NativeWorkHandle();
+  NativeWorkHandle(const NativeWorkHandle&) = delete;
+
+ protected:
+  NativeWorkHandle() = default;
+};
+
 // SequenceManager manages TaskQueues which have different properties
 // (e.g. priority, common task type) multiplexing all posted tasks into
 // a single backing sequence (currently bound to a single thread, which is
@@ -205,6 +217,17 @@ class BASE_EXPORT SequenceManager {
 
   // Returns a JSON string which describes all pending tasks.
   virtual std::string DescribeAllPendingTasks() const = 0;
+
+  // Indicates that the underlying sequence (e.g., the message pump) has pending
+  // work at priority |priority|. If the priority of the work in this
+  // SequenceManager is lower, it will yield to let the native work run. The
+  // native work is assumed to remain pending while the returned handle is
+  // valid.
+  //
+  // Must be called on the main thread, and the returned handle must also be
+  // deleted on the main thread.
+  virtual std::unique_ptr<NativeWorkHandle> OnNativeWorkPending(
+      TaskQueue::QueuePriority priority) = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(

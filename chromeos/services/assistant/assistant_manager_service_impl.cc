@@ -154,8 +154,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       connector, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
       network_connection_tracker, service->assistant_state()->locale().value());
-  connector->BindInterface(ash::mojom::kServiceName,
-                           &ash_message_center_controller_);
 
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,
@@ -911,7 +909,8 @@ void AssistantManagerServiceImpl::OnModifySettingsAction(
 
   if (modify_setting_args.setting_id() == kDoNotDisturbDeviceSettingId) {
     HandleOnOffChange(modify_setting_args, [&](bool enabled) {
-      ash_message_center_controller_->SetQuietMode(enabled);
+      this->service_->assistant_notification_controller()->SetQuietMode(
+          enabled);
     });
   }
 

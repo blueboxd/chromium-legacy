@@ -28,9 +28,8 @@ int NaClMain(const content::MainFunctionParams& parameters) {
       base::MessagePump::Type::IO);
   base::PlatformThread::SetName("CrNaClMain");
 
-  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
-  base::PowerMonitor power_monitor(std::move(power_monitor_source));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

@@ -18,7 +18,6 @@
 #include "ash/wm/cursor_manager_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -1708,8 +1707,7 @@ TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
   dispatcher_api.set_target(
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           GetSecondaryDisplay().id()));
-  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(
-      &key_event, base::NullCallback());
+  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(&key_event);
   // As long as nothing crashes, we're good.
 }
 

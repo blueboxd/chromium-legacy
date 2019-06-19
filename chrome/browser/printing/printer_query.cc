@@ -36,7 +36,8 @@ PrinterQuery::~PrinterQuery() {
   DCHECK(!worker_);
 }
 
-void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
+void PrinterQuery::GetSettingsDone(base::OnceClosure callback,
+                                   const PrintSettings& new_settings,
                                    PrintingContext::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   is_print_dialog_box_shown_ = false;
@@ -49,24 +50,21 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
     cookie_ = 0;
   }
 
-  if (callback_) {
-    // This may cause reentrancy like to call StopWorker().
-    std::move(callback_).Run();
-  }
+  std::move(callback).Run();
 }
 
-void PrinterQuery::PostSettingsDoneToIO(const PrintSettings& new_settings,
+void PrinterQuery::PostSettingsDoneToIO(base::OnceClosure callback,
+                                        const PrintSettings& new_settings,
                                         PrintingContext::Result result) {
-  // |this| is owned by |callback_|, so |base::Unretained| is safe.
+  // |this| is owned by |callback|, so |base::Unretained()| is safe.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::GetSettingsDone, base::Unretained(this),
-                     new_settings, result));
+                     std::move(callback), new_settings, result));
 }
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!callback_);
   DCHECK(worker_);
 
   return std::move(worker_);
@@ -80,10 +78,6 @@ int PrinterQuery::cookie() const {
   return cookie_;
 }
 
-void PrinterQuery::set_callback(base::OnceClosure callback) {
-  callback_ = std::move(callback);
-}
-
 void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                int expected_page_count,
                                bool has_selection,
@@ -94,34 +88,35 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!is_print_dialog_box_shown_ || !is_scripted);
 
-  StartWorker(std::move(callback));
+  StartWorker();
 
   // Real work is done in PrintJobWorker::GetSettings().
   is_print_dialog_box_shown_ =
       ask_user_for_settings == GetSettingsAskParam::ASK_USER;
-  // |this| is owned by |callback_|, so |base::Unretained| is safe.
+  // |this| is owned by |callback|, so |base::Unretained()| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(&PrintJobWorker::GetSettings,
-                     base::Unretained(worker_.get()),
-                     is_print_dialog_box_shown_, expected_page_count,
-                     has_selection, margin_type, is_scripted, is_modifiable,
-                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
-                                    base::Unretained(this))));
+      base::BindOnce(
+          &PrintJobWorker::GetSettings, base::Unretained(worker_.get()),
+          is_print_dialog_box_shown_, expected_page_count, has_selection,
+          margin_type, is_scripted, is_modifiable,
+          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                         base::Unretained(this), std::move(callback))));
 }
 
 void PrinterQuery::SetSettings(base::Value new_settings,
                                base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  StartWorker(std::move(callback));
-  // |this| is owned by |callback_|, so |base::Unretained| is safe.
+  StartWorker();
+  // |this| is owned by |callback|, so |base::Unretained()| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(&PrintJobWorker::SetSettings,
-                     base::Unretained(worker_.get()), std::move(new_settings),
-                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
-                                    base::Unretained(this))));
+      base::BindOnce(
+          &PrintJobWorker::SetSettings, base::Unretained(worker_.get()),
+          std::move(new_settings),
+          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                         base::Unretained(this), std::move(callback))));
 }
 
 #if defined(OS_CHROMEOS)
@@ -130,27 +125,25 @@ void PrinterQuery::SetSettingsFromPOD(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  StartWorker(std::move(callback));
-  // |this| is owned by |callback_|, so |base::Unretained| is safe.
+  StartWorker();
+  // |this| is owned by |callback|, so |base::Unretained()| is safe.
   worker_->PostTask(
       FROM_HERE,
-      base::BindOnce(&PrintJobWorker::SetSettingsFromPOD,
-                     base::Unretained(worker_.get()), std::move(new_settings),
-                     base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
-                                    base::Unretained(this))));
+      base::BindOnce(
+          &PrintJobWorker::SetSettingsFromPOD, base::Unretained(worker_.get()),
+          std::move(new_settings),
+          base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
+                         base::Unretained(this), std::move(callback))));
 }
 #endif
 
-void PrinterQuery::StartWorker(base::OnceClosure callback) {
+void PrinterQuery::StartWorker() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!callback_);
   DCHECK(worker_);
 
   // Lazily create the worker thread. There is one worker thread per print job.
   if (!worker_->IsRunning())
     worker_->Start();
-
-  callback_ = std::move(callback);
 }
 
 void PrinterQuery::StopWorker() {
@@ -170,10 +163,6 @@ bool PrinterQuery::PostTask(const base::Location& from_here,
                             base::OnceClosure task) {
   return base::PostTaskWithTraits(from_here, {content::BrowserThread::IO},
                                   std::move(task));
-}
-
-bool PrinterQuery::is_callback_pending() const {
-  return !callback_.is_null();
 }
 
 bool PrinterQuery::is_valid() const {

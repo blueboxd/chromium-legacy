@@ -103,18 +103,19 @@ bool IsIppUri(base::StringPiece printer_uri) {
 // located at |printer_uri|.  Results are reported through |callback|.  It is an
 // error to attempt this with a non-IPP printer.
 void QueryAutoconf(const std::string& printer_uri,
-                   const PrinterInfoCallback& callback) {
+                   PrinterInfoCallback callback) {
   auto optional = ParseUri(printer_uri);
   // Behavior for querying a non-IPP uri is undefined and disallowed.
   if (!IsIppUri(printer_uri) || !optional.has_value()) {
     PRINTER_LOG(ERROR) << "Printer uri is invalid: " << printer_uri;
-    callback.Run(PrinterQueryResult::UNKNOWN_FAILURE, "", "", "", {}, false);
+    std::move(callback).Run(PrinterQueryResult::UNKNOWN_FAILURE, "", "", "", {},
+                            false);
     return;
   }
 
   UriComponents uri = optional.value();
   QueryIppPrinter(uri.host(), uri.port(), uri.path(), uri.encrypted(),
-                  callback);
+                  std::move(callback));
 }
 
 // Returns the list of |printers| formatted as a CupsPrintersList.
@@ -481,8 +482,8 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
       base::StringPrintf("%s://%s/%s", printer_protocol.c_str(),
                          printer_address.c_str(), printer_queue.c_str());
   QueryAutoconf(printer_uri,
-                base::Bind(&CupsPrintersHandler::OnAutoconfQueried,
-                           weak_factory_.GetWeakPtr(), callback_id));
+                base::BindOnce(&CupsPrintersHandler::OnAutoconfQueried,
+                               weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
@@ -840,8 +841,8 @@ void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(
   CHECK_EQ(1U, args->GetSize());
   CHECK(args->GetString(0, &callback_id));
   ppd_provider_->ResolveManufacturers(
-      base::Bind(&CupsPrintersHandler::ResolveManufacturersDone,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CupsPrintersHandler::ResolveManufacturersDone,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterModels(
@@ -865,8 +866,8 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
 
   ppd_provider_->ResolvePrinters(
       manufacturer,
-      base::Bind(&CupsPrintersHandler::ResolvePrintersDone,
-                 weak_factory_.GetWeakPtr(), manufacturer, callback_id));
+      base::BindOnce(&CupsPrintersHandler::ResolvePrintersDone,
+                     weak_factory_.GetWeakPtr(), manufacturer, callback_id));
 }
 
 void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
@@ -1060,8 +1061,8 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     // If we have something that looks like a ppd reference for this printer,
     // try to configure it.
     printer_configurer_->SetUpPrinter(
-        *printer, base::Bind(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
-                             weak_factory_.GetWeakPtr(), *printer));
+        *printer, base::BindOnce(&CupsPrintersHandler::OnAddedDiscoveredPrinter,
+                                 weak_factory_.GetWeakPtr(), *printer));
     return;
   }
 
@@ -1095,8 +1096,8 @@ void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
 
   ppd_provider_->ReverseLookup(
       printer->ppd_reference().effective_make_and_model,
-      base::Bind(&CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindOnce(&CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
@@ -1153,8 +1154,8 @@ void CupsPrintersHandler::OnIpResolved(const Printer& printer,
     PRINTER_LOG(EVENT) << "Query printer for IPP attributes";
     QueryAutoconf(
         resolved_uri,
-        base::BindRepeating(&CupsPrintersHandler::OnAutoconfQueriedDiscovered,
-                            weak_factory_.GetWeakPtr(), printer));
+        base::BindOnce(&CupsPrintersHandler::OnAutoconfQueriedDiscovered,
+                       weak_factory_.GetWeakPtr(), printer));
     return;
   }
 

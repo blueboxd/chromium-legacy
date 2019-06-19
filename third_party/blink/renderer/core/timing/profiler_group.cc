@@ -25,7 +25,8 @@ namespace {
 
 #if defined(OS_WIN)
 // On Windows, assume we have the coarsest possible timer.
-static constexpr int kBaseSampleIntervalMs = Time::kMinLowResolutionThresholdMs;
+static constexpr int kBaseSampleIntervalMs =
+    base::Time::kMinLowResolutionThresholdMs;
 #else
 // Default to a 10ms base sampling interval on other platforms.
 // TODO(acomminos): Reevaluate based on empirical overhead.
@@ -56,7 +57,7 @@ ProfilerGroup::ProfilerGroup(v8::Isolate* isolate)
   cpu_profiler_->SetUsePreciseSampling(false);
 #endif  // defined(OS_WIN)
   cpu_profiler_->SetSamplingInterval(kBaseSampleIntervalMs *
-                                     Time::kMicrosecondsPerMillisecond);
+                                     base::Time::kMicrosecondsPerMillisecond);
 }
 
 Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,

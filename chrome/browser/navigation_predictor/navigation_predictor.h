@@ -25,6 +25,10 @@ class BrowserContext;
 class RenderFrameHost;
 }
 
+namespace prerender {
+class PrerenderHandle;
+}
+
 class SiteEngagementService;
 class TemplateURLService;
 
@@ -145,6 +149,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
 
+  // Given a url to prerender, use PrerenderManager to prerender that page.
+  void Prerender(const GURL& url);
+
   base::Optional<GURL> GetUrlToPrefetch(
       const url::Origin& document_origin,
       const std::vector<std::unique_ptr<NavigationScore>>&
@@ -216,6 +223,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // True if |this| is allowed to preconnect to same origin hosts.
   const bool same_origin_preconnecting_allowed_;
 
+  // True if |this| should use the PrerenderManager to prefetch after
+  // a preconnect.
+  const bool prefetch_after_preconnect_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;
@@ -229,6 +240,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Used to preconnect regularly.
   base::OneShotTimer timer_;
+
+  // PrerenderHandle returned after completing a prefetch in PrerenderManager.
+  std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

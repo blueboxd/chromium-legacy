@@ -39,13 +39,13 @@ class OverlayWindowViews : public content::OverlayWindow,
   enum class WindowQuadrant { kBottomLeft, kBottomRight, kTopLeft, kTopRight };
 
   // OverlayWindow:
-  bool IsActive() const override;
+  bool IsActive() override;
   void Close() override;
   void ShowInactive() override;
   void Hide() override;
-  bool IsVisible() const override;
-  bool IsAlwaysOnTop() const override;
-  gfx::Rect GetBounds() const override;
+  bool IsVisible() override;
+  bool IsAlwaysOnTop() override;
+  gfx::Rect GetBounds() override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
@@ -56,6 +56,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSurfaceId(const viz::SurfaceId& surface_id) override;
 
   // views::Widget:
+  bool IsActive() const override;
+  bool IsVisible() const override;
   void OnNativeBlur() override;
   void OnNativeWidgetDestroyed() override;
   gfx::Size GetMinimumSize() const override;

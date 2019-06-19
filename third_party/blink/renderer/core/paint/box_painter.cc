@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -39,6 +40,9 @@ void BoxPainter::Paint(const PaintInfo& paint_info) {
 }
 
 void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
+  if (layout_box_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {

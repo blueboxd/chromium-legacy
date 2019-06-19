@@ -145,6 +145,8 @@ void AssistantWebView::DidStopLoading() {
   if (contents_view_initialized_)
     return;
 
+  contents_view_initialized_ = true;
+
   UpdateContentSize();
   AddChildView(contents_->GetView()->view());
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -153,8 +155,6 @@ void AssistantWebView::DidStopLoading() {
   contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
       {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
        /*bottom_left=*/kCornerRadiusDip});
-
-  contents_view_initialized_ = true;
 }
 
 void AssistantWebView::DidSuppressNavigation(const GURL& url,
@@ -190,8 +190,7 @@ void AssistantWebView::OnUiVisibilityChanged(
 
 void AssistantWebView::OnUsableWorkAreaChanged(
     const gfx::Rect& usable_work_area) {
-  if (contents_)
-    UpdateContentSize();
+  UpdateContentSize();
 }
 
 void AssistantWebView::RemoveContents() {
@@ -209,7 +208,7 @@ void AssistantWebView::RemoveContents() {
 }
 
 void AssistantWebView::UpdateContentSize() {
-  if (!contents_view_initialized_)
+  if (!contents_ || !contents_view_initialized_)
     return;
 
   const gfx::Size preferred_size = gfx::Size(

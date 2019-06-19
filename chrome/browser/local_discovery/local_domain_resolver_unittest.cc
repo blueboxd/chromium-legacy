@@ -109,8 +109,9 @@ class LocalDomainResolverTest : public testing::Test {
 TEST_F(LocalDomainResolverTest, ResolveDomainA) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_IPV4,
-      base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)), &mdns_client_);
+      base::BindOnce(&LocalDomainResolverTest::AddressCallback,
+                     base::Unretained(this)),
+      &mdns_client_);
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);  // Twice per query
 
@@ -124,8 +125,9 @@ TEST_F(LocalDomainResolverTest, ResolveDomainA) {
 TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_IPV6,
-      base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)), &mdns_client_);
+      base::BindOnce(&LocalDomainResolverTest::AddressCallback,
+                     base::Unretained(this)),
+      &mdns_client_);
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);  // Twice per query
 
@@ -139,8 +141,9 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
 TEST_F(LocalDomainResolverTest, ResolveDomainAnyOneAvailable) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
-      base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)), &mdns_client_);
+      base::BindOnce(&LocalDomainResolverTest::AddressCallback,
+                     base::Unretained(this)),
+      &mdns_client_);
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 
@@ -157,8 +160,9 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAnyOneAvailable) {
 TEST_F(LocalDomainResolverTest, ResolveDomainAnyBothAvailable) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
-      base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)), &mdns_client_);
+      base::BindOnce(&LocalDomainResolverTest::AddressCallback,
+                     base::Unretained(this)),
+      &mdns_client_);
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 
@@ -174,8 +178,9 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAnyBothAvailable) {
 TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
   LocalDomainResolverImpl resolver(
       "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
-      base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)), &mdns_client_);
+      base::BindOnce(&LocalDomainResolverTest::AddressCallback,
+                     base::Unretained(this)),
+      &mdns_client_);
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 

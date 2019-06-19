@@ -65,7 +65,6 @@ jumbo_component("ime") {
     "input_method.h",
     "input_method_base.cc",
     "input_method_base.h",
-    "input_method_delegate.cc",
     "input_method_delegate.h",
     "input_method_keyboard_controller.h",
     "input_method_keyboard_controller_observer.h",

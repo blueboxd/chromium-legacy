@@ -789,8 +789,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
 }
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
-    ui::KeyEvent* event,
-    DispatchKeyEventPostIMECallback callback) {
+    ui::KeyEvent* event) {
   aura::Window* root_window = nullptr;
   if (event->target()) {
     root_window = static_cast<aura::Window*>(event->target())->GetRootWindow();
@@ -803,8 +802,7 @@ ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     root_window = active_window ? active_window->GetRootWindow()
                                 : Shell::GetPrimaryRootWindow();
   }
-  return root_window->GetHost()->DispatchKeyEventPostIME(event,
-                                                         std::move(callback));
+  return root_window->GetHost()->DispatchKeyEventPostIME(event);
 }
 
 AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(

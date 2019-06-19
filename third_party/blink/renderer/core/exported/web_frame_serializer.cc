@@ -408,7 +408,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   scoped_refptr<RawData> buffer = RawData::Create();
   MHTMLArchive::GenerateMHTMLHeader(
       boundary, document->Url(), document->title(),
-      document->SuggestedMIMEType(), WTF::Time::Now(), *buffer->MutableData());
+      document->SuggestedMIMEType(), base::Time::Now(), *buffer->MutableData());
   return WebThreadSafeData(buffer);
 }
 

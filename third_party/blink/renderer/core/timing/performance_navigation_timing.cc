@@ -19,7 +19,7 @@ namespace blink {
 PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
-    TimeTicks time_origin,
+    base::TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceResourceTiming(
           info ? AtomicString(

@@ -17,7 +17,6 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -33,6 +32,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -360,7 +360,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       web_stream_, routing_id, initial_audio_output_device_id_);
 
   if (!audio_renderer_)
-    WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
+    blink::WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::kNetworkStateNetworkError);

@@ -38,7 +38,8 @@ class TestQuery : public PrinterQuery {
       : PrinterQuery(content::ChildProcessHost::kInvalidUniqueID,
                      content::ChildProcessHost::kInvalidUniqueID) {}
 
-  void GetSettingsDone(const PrintSettings& new_settings,
+  void GetSettingsDone(base::OnceClosure callback,
+                       const PrintSettings& new_settings,
                        PrintingContext::Result result) override {
     FAIL();
   }

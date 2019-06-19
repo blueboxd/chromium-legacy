@@ -9678,7 +9678,7 @@ Called by update_net_error_codes.py.-->
 <enum name="ContextMenuSaveImage">
   <summary>Context menu type related to the save image option.</summary>
   <int value="0" label="Loaded"/>
-  <int value="1" label="Image was fatched LoFi"/>
+  <int value="1" label="(DEPRECATED in M77) Image was fatched LoFi"/>
   <int value="2" label="Not downloadable scheme"/>
   <int value="3" label="No save image option and param is not image"/>
   <int value="4" label="No save image option and param is image"/>
@@ -23676,6 +23676,7 @@ Called by update_net_error_codes.py.-->
   <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
   <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
+  <int value="2926" label="BuiltInModuleToast"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47320,6 +47321,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="ORIGIN_EXTERNAL_REQUEST"/>
   <int value="12" label="ORIGIN_LINK_REL_NEXT"/>
   <int value="13" label="ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER"/>
+  <int value="15" label="ORIGIN_NAVIGATION_PREDICTOR"/>
 </enum>
 
 <enum name="PrerenderPageviewEvents">
@@ -58495,6 +58497,9 @@ Full version information for the fingerprint enum values:
   <int value="9"
       label="Saved pref present for different version and country code in
              seed is different"/>
+  <int value="10"
+      label="Saved pref present for variations overridden country is set.
+             Mainly used for testing / developer."/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState">

@@ -248,7 +248,7 @@ class CORE_EXPORT MouseEventManager final
   Member<Element> mouse_down_element_;
 
   IntPoint mouse_down_pos_;  // In our view's coords.
-  TimeTicks mouse_down_timestamp_;
+  base::TimeTicks mouse_down_timestamp_;
   WebMouseEvent mouse_down_;
 
   PhysicalOffset drag_start_pos_;

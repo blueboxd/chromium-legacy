@@ -194,10 +194,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   }
 
   bool was_preview_shown = false;
-  if (request_data.lofi_received() || request_data.client_lofi_requested()) {
-    request->set_previews_type(PageloadMetrics_PreviewsType_LOFI);
-    was_preview_shown = true;
-  } else if (request_data.lite_page_received()) {
+  if (request_data.lite_page_received()) {
     request->set_previews_type(PageloadMetrics_PreviewsType_LITE_PAGE);
     was_preview_shown = true;
   } else if (request_data.black_listed()) {

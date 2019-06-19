@@ -71,6 +71,16 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
 }
 
+// Set up a child's constraint space builder for block fragmentation. The child
+// participates in the same fragmentation context as parent_space. If the child
+// establishes a new formatting context, new_bfc_block_offset must be set to the
+// offset from the parent block formatting context, or, if the parent formatting
+// context starts in a previous fragmentainer; the offset from the current
+// fragmentainer block-start.
+void SetupFragmentation(const NGConstraintSpace& parent_space,
+                        LayoutUnit new_bfc_block_offset,
+                        NGConstraintSpaceBuilder*);
+
 }  // namespace blink
 
 #endif  // NGFragmentationUtils_h

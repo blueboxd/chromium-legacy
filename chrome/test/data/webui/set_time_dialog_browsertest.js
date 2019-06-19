@@ -48,7 +48,7 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
 
       /** @override */
       setTimezone(timezone) {
-        this.methodCalled('setTimezone');
+        this.methodCalled('setTimezone', timezone);
       }
 
       /** @override */
@@ -64,12 +64,18 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
     }
 
     suiteSetup(function() {
+      // Must use existing timezones in the test.
       loadTimeData.overrideValues({
-        currentTimezoneId: 'Westeros/Highgarden',
+        currentTimezoneId: 'America/Sao_Paulo',
         timezoneList: [
-          ['Westeros/Highgarden', '(KNG-2:00) The Reach Time (Highgarden)'],
-          ['Westeros/Winterfell', '(KNG-1:00) The North Time (Winterfell)'],
-          ['Westeros/Sunspear', '(KNG+2:00) Dorne Time (Sunspear)'],
+          [
+            'America/Los_Angeles',
+            '(GMT-7:00) Pacific Daylight Time (Los Angeles)'
+          ],
+          [
+            'America/Sao_Paulo', '(GMT-3:00) Brasilis Standard Time (Sao Paulo)'
+          ],
+          ['Asia/Seoul', '(GMT+9:00) Korean Standard Time (Seoul)'],
         ],
       });
     });
@@ -128,14 +134,58 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
     test('SystemTimezoneChanged', () => {
       const timezoneSelect = setTimeElement.$$('#timezoneSelect');
       assertTrue(!!timezoneSelect);
-      expectEquals('Westeros/Highgarden', timezoneSelect.value);
+      expectEquals('America/Sao_Paulo', timezoneSelect.value);
 
       cr.webUIListenerCallback(
-          'system-timezone-changed', 'Westeros/Winterfell');
-      expectEquals('Westeros/Winterfell', timezoneSelect.value);
+          'system-timezone-changed', 'America/Los_Angeles');
+      expectEquals('America/Los_Angeles', timezoneSelect.value);
 
-      cr.webUIListenerCallback('system-timezone-changed', 'Westeros/Sunspear');
-      expectEquals('Westeros/Sunspear', timezoneSelect.value);
+      cr.webUIListenerCallback('system-timezone-changed', 'Asia/Seoul');
+      expectEquals('Asia/Seoul', timezoneSelect.value);
+    });
+
+    test('SetDateAndTimezone', () => {
+      const dateInput = setTimeElement.$$('#dateInput');
+      assertTrue(!!dateInput);
+
+      const timeInput = setTimeElement.$$('#timeInput');
+      assertTrue(!!timeInput);
+
+      const timezoneSelect = setTimeElement.$$('#timezoneSelect');
+      assertTrue(!!timezoneSelect);
+      expectEquals('America/Sao_Paulo', timezoneSelect.value);
+
+      // Simulate the user changing the time by forwarding it 15 minutes.
+      const originalTime = dateInput.valueAsDate;
+      originalTime.setMilliseconds(timeInput.valueAsNumber);
+      const updatedTime = new Date(originalTime.getTime() + 15 * 60 * 1000);
+      dateInput.focus();
+      dateInput.valueAsDate = updatedTime;
+      setTimeElement.$$('#doneButton').click();
+
+      // Simulate timezone change.
+      cr.webUIListenerCallback(
+          'system-timezone-changed', 'America/Los_Angeles');
+      expectEquals('America/Los_Angeles', timezoneSelect.value);
+
+      // Make sure that time on input field was updated.
+      const updatedTimeAndTimezone = dateInput.valueAsDate;
+      updatedTimeAndTimezone.setMilliseconds(timeInput.valueAsNumber);
+      // updatedTimeAndTimezone reflects the new timezone so it should be
+      // smaller, because it is more to the west than the original
+      // one, therefore even with the 15 minutes forwarded it should be smaller.
+      expectGT(updatedTime.getTime(), updatedTimeAndTimezone.getTime());
+
+
+      return testBrowserProxy.whenCalled('setTimeInSeconds')
+          .then(timeInSeconds => {
+            const todaySeconds = originalTime.getTime() / 1000;
+            // The exact value isn't important (it depends on the current time).
+            // timeInSeconds should be bigger, because this timestamp is seconds
+            // since epoch and it does not hold any information regarding the
+            // current timezone.
+            assertGT(timeInSeconds, todaySeconds);
+          });
     });
   });
 

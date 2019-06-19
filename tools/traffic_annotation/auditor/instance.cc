@@ -153,6 +153,9 @@ AuditorResult AnnotationInstance::Deserialize(
     type = Type::ANNOTATION_COMPLETING;
   } else if (function_type == "BranchedCompleting") {
     type = Type::ANNOTATION_BRANCHED_COMPLETING;
+  } else if (function_type == "Mutable") {
+    return AuditorResult(AuditorResult::Type::ERROR_MUTABLE_TAG, "", file_path,
+                         line_number);
   } else {
     return AuditorResult(AuditorResult::Type::ERROR_FATAL,
                          base::StringPrintf("Unexpected function type: %s",

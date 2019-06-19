@@ -188,55 +188,6 @@ base::string16 MediaComboboxModel::GetItemAt(int index) {
              : base::UTF8ToUTF16(GetDevices()[index].name);
 }
 
-// ContentSettingBubbleContents::Favicon --------------------------------------
-
-class ContentSettingBubbleContents::Favicon : public views::ImageView {
- public:
-  Favicon(const gfx::Image& image,
-          ContentSettingBubbleContents* parent,
-          views::Link* link);
-  ~Favicon() override;
-
- private:
-  // views::View overrides:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-
-  ContentSettingBubbleContents* parent_;
-  views::Link* link_;
-};
-
-ContentSettingBubbleContents::Favicon::Favicon(
-    const gfx::Image& image,
-    ContentSettingBubbleContents* parent,
-    views::Link* link)
-    : parent_(parent),
-      link_(link) {
-  SetImage(image.AsImageSkia());
-}
-
-ContentSettingBubbleContents::Favicon::~Favicon() {
-}
-
-bool ContentSettingBubbleContents::Favicon::OnMousePressed(
-    const ui::MouseEvent& event) {
-  return event.IsLeftMouseButton() || event.IsMiddleMouseButton();
-}
-
-void ContentSettingBubbleContents::Favicon::OnMouseReleased(
-    const ui::MouseEvent& event) {
-  if ((event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-     HitTestPoint(event.location())) {
-    parent_->LinkClicked(link_, event.flags());
-  }
-}
-
-gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
-    const ui::MouseEvent& event) {
-  return views::GetNativeHandCursor();
-}
-
 // ContentSettingBubbleContents::ListItemContainer -----------------------------
 
 class ContentSettingBubbleContents::ListItemContainer : public views::View {
@@ -275,16 +226,14 @@ ContentSettingBubbleContents::ListItemContainer::ListItemContainer(
 
 void ContentSettingBubbleContents::ListItemContainer::AddItem(
     const ContentSettingBubbleModel::ListItem& item) {
-  views::ImageView* icon = nullptr;
+  views::ImageView* icon = new views::ImageView();
   views::Label* label = nullptr;
   if (item.has_link) {
     views::Link* link = new views::Link(item.title);
     link->set_listener(parent_);
     link->SetElideBehavior(gfx::ELIDE_MIDDLE);
-    icon = new Favicon(item.image, parent_, link);
     label = link;
   } else {
-    icon = new views::ImageView();
     icon->SetImage(item.image.AsImageSkia());
     label = new views::Label(item.title);
   }

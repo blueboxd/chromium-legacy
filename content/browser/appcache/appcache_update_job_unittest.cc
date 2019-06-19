@@ -28,8 +28,10 @@
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -700,7 +702,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
         tested_manifest_path_override_(nullptr),
-        thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+        thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        process_id_(123) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
@@ -722,6 +725,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         base::BindOnce(&IOThread::CleanUp, base::Unretained(io_thread_.get())));
   }
 
+  void SetUp() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(process_id_,
+                                                       &browser_context_);
+  }
+
+  void TearDown() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(process_id_);
+  }
   // Use a separate IO thread to run a test. Thread will be destroyed
   // when it goes out of scope.
   template <class Method>
@@ -3507,11 +3518,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   }
 
   AppCacheHost* MakeHost(blink::mojom::AppCacheFrontend* frontend) {
-    constexpr int kProcessIdForTests = 123;
     constexpr int kRenderFrameIdForTests = 456;
     hosts_.push_back(std::make_unique<AppCacheHost>(
-        base::UnguessableToken::Create(), kProcessIdForTests,
-        kRenderFrameIdForTests, nullptr, service_.get()));
+        base::UnguessableToken::Create(), process_id_, kRenderFrameIdForTests,
+        nullptr, service_.get()));
     hosts_.back()->set_frontend_for_testing(frontend);
     return hosts_.back().get();
   }
@@ -3860,6 +3870,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   MockURLLoaderFactory mock_url_loader_factory_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserContext browser_context_;
+  const int process_id_;
 };
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {

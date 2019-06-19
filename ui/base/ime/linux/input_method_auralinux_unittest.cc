@@ -171,8 +171,7 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
   ~InputMethodDelegateForTesting() override {}
 
   ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* key_event,
-      DispatchKeyEventPostIMECallback callback) override {
+      ui::KeyEvent* key_event) override {
     std::string action;
     switch (key_event->type()) {
       case ET_KEY_PRESSED:
@@ -188,7 +187,6 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
     ss << key_event->key_code();
     action += std::string(ss.str());
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(action));
-    RunDispatchKeyEventPostIMECallback(key_event, std::move(callback));
     return ui::EventDispatchDetails();
   }
 

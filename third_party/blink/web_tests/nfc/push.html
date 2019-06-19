@@ -150,7 +150,7 @@ nfc_test(() => {
 nfc_test(async () => {
   await navigator.nfc.push(test_text_data);
   assertNFCPushOptionsEqual(createNFCPushOptions('any', Infinity, true),
-                            mockNFC.pushOptions());
+                            mockNFC.pushOptions(), 'any');
 }, 'Check that default NFCPushOptions values are correctly set.');
 
 nfc_test(async () => {

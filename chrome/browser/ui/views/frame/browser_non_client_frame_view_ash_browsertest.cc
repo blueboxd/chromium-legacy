@@ -130,8 +130,12 @@ void ExitFullscreenModeAndWait(BrowserView* browser_view) {
   waiter.Wait();
 }
 
-void ToggleOverview() {
-  ash::Shell::Get()->overview_controller()->ToggleOverview();
+void StartOverview() {
+  ash::Shell::Get()->overview_controller()->StartOverview();
+}
+
+void EndOverview() {
+  ash::Shell::Get()->overview_controller()->EndOverview();
 }
 
 bool IsShelfVisible() {
@@ -906,9 +910,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   SetUpHostedApp();
   EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(hosted_app_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 }
 
@@ -1260,17 +1264,17 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
           aura::client::kResizeBehaviorCanResize);
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ash::Shell::Get()->split_view_controller()->SnapWindow(
       widget->GetNativeWindow(), ash::SplitViewController::LEFT);
@@ -1295,17 +1299,17 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
 
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
   ash::Shell::Get()->split_view_controller()->SnapWindow(
@@ -1373,7 +1377,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // The kTopViewInset is the same as in overview mode.
   const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
-  ToggleOverview();
+  StartOverview();
   const int inset_in_overview_mode =
       window->GetProperty(aura::client::kTopViewInset);
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
@@ -1410,9 +1414,9 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
@@ -1443,9 +1447,9 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // However, overview mode does.
-  ToggleOverview();
+  StartOverview();
   EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
-  ToggleOverview();
+  EndOverview();
   EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(

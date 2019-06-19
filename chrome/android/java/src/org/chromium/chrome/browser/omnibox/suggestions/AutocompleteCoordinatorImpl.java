@@ -254,6 +254,16 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         mMediator.startAutocompleteForQuery(query);
     }
 
+    @Override
+    public String qualifyPartialURLQuery(String query) {
+        return AutocompleteController.nativeQualifyPartialURLQuery(query);
+    }
+
+    @Override
+    public void prefetchZeroSuggestResults() {
+        AutocompleteController.nativePrefetchZeroSuggestResults();
+    }
+
     @VisibleForTesting
     ListView getSuggestionList() {
         return mListView;

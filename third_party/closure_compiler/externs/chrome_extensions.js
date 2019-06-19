@@ -2315,6 +2315,29 @@ chrome.enterprise.platformKeys.importCertificate = function(
 chrome.enterprise.platformKeys.removeCertificate = function(
     tokenId, certificate, opt_callback) {};
 
+/**
+ * reportingPrivate is a Private API for reporting Chrome browser status to
+ * admin console.
+ * @see https://cs.chromium.org/chromium/src/chrome/common/extensions/api/enterprise_reporting_private.idl
+ */
+chrome.enterprise.reportingPrivate = {};
+
+/**
+ * Uploads the status of Chrome browser to the admin console by sending
+ * request to the DMServer. Sets runtime.lastError on failure.
+ * @param {!Object} report Object to report to admin console.
+ * @param {(function(): void)=} callback Called back when this operation is
+ *     finished.
+ */
+chrome.enterprise.reportingPrivate.uploadChromeDesktopReport = function(
+    report, callback) {};
+
+/**
+ * Gets the identity of device that Chrome browser is running on. The ID is
+ * retrieved from the local device and used by the Google admin console.
+ * @param {(function(!string): void)=} callback Called with the device ID.
+ */
+chrome.enterprise.reportingPrivate.getDeviceId = function(callback) {};
 
 /**
  * @see https://developer.chrome.com/extensions/extension.html
@@ -4201,6 +4224,43 @@ TtsEvent.prototype.charIndex;
 TtsEvent.prototype.errorMessage;
 
 
+/**
+ * The speech options for the TTS engine.
+ * @record
+ * @see https://developer.chrome.com/apps/tts#type-TtsOptions
+ */
+function TtsOptions() {}
+
+/** @type {boolean|undefined} */
+TtsOptions.prototype.enqueue;
+
+/** @type {string|undefined} */
+TtsOptions.prototype.voiceName;
+
+/** @type {string|undefined} */
+TtsOptions.prototype.extensionId;
+
+/** @type {string|undefined} */
+TtsOptions.prototype.lang;
+
+/** @type {number|undefined} */
+TtsOptions.prototype.rate;
+
+/** @type {number|undefined} */
+TtsOptions.prototype.pitch;
+
+/** @type {number|undefined} */
+TtsOptions.prototype.volume;
+
+/** @type {!Array<string>|undefined} */
+TtsOptions.prototype.requiredEventTypes;
+
+/** @type {!Array<string>|undefined} */
+TtsOptions.prototype.desiredEventTypes;
+
+/** @type {!function(!TtsEvent)|undefined} */
+TtsOptions.prototype.onEvent;
+
 
 /**
  * A description of a voice available for speech synthesis.
@@ -4252,11 +4312,11 @@ chrome.tts.isSpeaking = function(opt_callback) {};
  *     well-formed SSML document. Speech engines that do not support SSML will
  *     strip away the tags and speak the text. The maximum length of the text is
  *     32,768 characters.
- * @param {Object=} opt_options The speech options.
- * @param {function()=} opt_callback Called right away, before speech finishes.
+ * @param {TtsOptions=} options The speech options.
+ * @param {function()=} callback Called right away, before speech finishes.
  * @return {undefined}
  */
-chrome.tts.speak = function(utterance, opt_options, opt_callback) {};
+chrome.tts.speak = function(utterance, options, callback) {};
 
 
 /**
@@ -10078,6 +10138,126 @@ chrome.networkingPrivate.onDeviceStateListChanged;
 /** @type {!ChromeStringStringEvent} */
 chrome.networkingPrivate.onPortalDetectionCompleted;
 
+/**
+ * safeBrowsingPrivate is a Private API for observing events and retrieving a
+ * referrer chain.
+ * @see https://cs.chromium.org/chromium/src/chrome/common/extensions/api/safe_browsing_private.idl
+ */
+chrome.safeBrowsingPrivate = {};
+
+/**
+ * @enum {string}
+ */
+chrome.safeBrowsingPrivate.URLType = {
+  EVENT_URL: '',
+  LANDING_PAGE: '',
+  LANDING_REFERRER: '',
+  CLIENT_REDIRECT: '',
+  RECENT_NAVIGATION: '',
+  REFERRER: '',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.safeBrowsingPrivate.NavigationInitiation = {
+  BROWSER_INITIATED: '',
+  RENDERER_INITIATED_WITHOUT_USER_GESTURE: '',
+  RENDERER_INITIATED_WITH_USER_GESTURE: '',
+};
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   userName: string,
+ *   isPhishingUrl: boolean
+ * }}
+ */
+chrome.safeBrowsingPrivate.PolicySpecifiedPasswordReuse;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   fileName: string,
+ *   downloadDigestSha256: string,
+ *   userName: string
+ * }}
+ */
+chrome.safeBrowsingPrivate.DangerousDownloadInfo;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   reason: string,
+ *   netErrorCode: (string|undefined),
+ *   userName: string
+ * }}
+ */
+chrome.safeBrowsingPrivate.InterstitialInfo;
+
+/**
+ * @typedef {{
+ *   url: (string|undefined)
+ * }}
+ */
+chrome.safeBrowsingPrivate.ServerRedirect;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   mainFrameUrl: (string|undefined),
+ *   urlType: !chrome.safeBrowsingPrivate.URLType,
+ *   ipAddresses: (!Array<string>|undefined),
+ *   referrerUrl: (string|undefined),
+ *   referrerMainFrameUrl: (string|undefined),
+ *   isRetargeting: (boolean|undefined),
+ *   navigationTimeMs: (number|undefined),
+ *   serverRedirectChain:
+ * (!Array<!chrome.safeBrowsingPrivate.ServerRedirect>|undefined),
+ *   navigationInitiation:
+ * (!chrome.safeBrowsingPrivate.NavigationInitiation|undefined),
+ *   maybeLaunchedByExternalApp: (boolean|undefined)
+ * }}
+ */
+chrome.safeBrowsingPrivate.ReferrerChainEntry;
+
+/**
+ * Gets referrer chain for the specified tab.
+ * @param {number} tabId Id of the tab from which to retrieve the referrer.
+ * @param {function(!Array<!chrome.safeBrowsingPrivate.ReferrerChainEntry>):void}
+ *     callback Called with the list of referrer chain entries.
+ */
+chrome.safeBrowsingPrivate.getReferrerChain = function(tabId, callback) {};
+
+/**
+ * Fired when Chrome detects a reuse of a policy specified password.
+ * @type {!ChromeObjectEvent}
+ */
+chrome.safeBrowsingPrivate.onPolicySpecifiedPasswordReuseDetected;
+
+/**
+ * Fired when the user changed their policy specified password.
+ * @type {!ChromeStringEvent}
+ */
+chrome.safeBrowsingPrivate.onPolicySpecifiedPasswordChanged;
+
+/**
+ * Fired when the user opened a dangerous download.
+ * @type {!ChromeObjectEvent}
+ */
+chrome.safeBrowsingPrivate.onDangerousDownloadOpened;
+
+/**
+ * Fired when a security interstitial is shown to the user.
+ * @type {!ChromeObjectEvent}
+ */
+chrome.safeBrowsingPrivate.onSecurityInterstitialShown;
+
+/**
+ * Fired when the user clicked-through a security interstitial.
+ * @type {!ChromeObjectEvent}
+ */
+chrome.safeBrowsingPrivate.onSecurityInterstitialProceeded;
 
 /**
  * WARNING(2014/08/14): This API is still under active initial development and
@@ -11125,3 +11305,70 @@ chrome.declarativeContent.RequestContentScript = function(literalValue) {};
  * @see https://developer.chrome.com/extensions/declarativeContent#event-onPageChanged
  */
 chrome.declarativeContent.onPageChanged;
+
+/**
+ * @see https://developer.chrome.com/extensions/instanceID
+ * @const
+ */
+chrome.instanceID = {};
+
+/**
+ * @param {function(string)} callback
+ * @see https://developer.chrome.com/extensions/instanceID#method-getID
+ */
+chrome.instanceID.getID = function(callback) {};
+
+/**
+ * @param {function(number)} callback
+ * @see https://developer.chrome.com/extensions/instanceID#method-getCreationTime
+ */
+chrome.instanceID.getCreationTime = function(callback) {};
+
+/**
+ * @typedef {{
+ *   authorizedEntity: string,
+ *   scope: string,
+ *   options: (!Object|undefined)
+ * }}
+ */
+chrome.instanceID.GetTokenParams;
+
+/**
+ * @param {!chrome.instanceID.GetTokenParams} getTokenParams
+ * @param {function(string)} callback
+ * @see https://developer.chrome.com/extensions/instanceID#method-getToken
+ */
+chrome.instanceID.getToken = function(getTokenParams, callback) {};
+
+/**
+ * @typedef {{
+ *   authorizedEntity: string,
+ *   scope: string,
+ * }}
+ */
+chrome.instanceID.DeleteTokenParams;
+
+/**
+ * @param {!chrome.instanceID.DeleteTokenParams} deleteTokenParams
+ * @param {function()} callback
+ * @see https://developer.chrome.com/extensions/instanceID#method-deleteToken
+ */
+chrome.instanceID.deleteToken = function(deleteTokenParams, callback) {};
+
+/**
+ * @param {function()} callback
+ * @see https://developer.chrome.com/extensions/instanceID#method-deleteID
+ */
+chrome.instanceID.deleteID = function(callback) {};
+
+/**
+ * @const
+ * @see https://developer.chrome.com/extensions/instanceID#event-onTokenRefresh
+ */
+chrome.instanceID.onTokenRefresh = {};
+
+/**
+ * @param {function()} callback
+ * @see https://developer.chrome.com/extensions/instanceID#event-onTokenRefresh
+ */
+chrome.instanceID.onTokenRefresh.addListener = function(callback) {};

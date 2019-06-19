@@ -32,6 +32,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "media/base/logging_override_if_enabled.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -107,7 +108,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #ifndef LOG_MEDIA_EVENTS
 // Default to not logging events because so many are generated they can
@@ -712,7 +712,7 @@ void HTMLMediaElement::DidNotifySubtreeInsertionsToDocument() {
 void HTMLMediaElement::RemovedFrom(ContainerNode& insertion_point) {
   DVLOG(3) << "removedFrom(" << (void*)this << ", " << insertion_point << ")";
 
-  removed_from_document_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  removed_from_document_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   HTMLElement::RemovedFrom(insertion_point);
 }
@@ -735,14 +735,14 @@ void HTMLMediaElement::ScheduleTextTrackResourceLoad() {
   pending_action_flags_ |= kLoadTextTrackResource;
 
   if (!load_timer_.IsActive())
-    load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::ScheduleNextSourceChild() {
   // Schedule the timer to try the next <source> element WITHOUT resetting state
   // ala invokeLoadAlgorithm.
   pending_action_flags_ |= kLoadMediaResource;
-  load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::ScheduleEvent(const AtomicString& event_name) {
@@ -1328,7 +1328,7 @@ void HTMLMediaElement::DeferLoad() {
   ChangeNetworkStateFromLoadingToIdle();
   // 3. Queue a task to set the element's delaying-the-load-event
   // flag to false. This stops delaying the load event.
-  deferred_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  deferred_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   // 4. Wait for the task to be run.
   deferred_load_state_ = kWaitingForStopDelayingLoadEventTask;
   // Continued in executeDeferredLoad().
@@ -1504,7 +1504,7 @@ void HTMLMediaElement::StartProgressEventTimer() {
 
   previous_progress_time_ = WTF::CurrentTime();
   // 350ms is not magic, it is in the spec!
-  progress_event_timer_.StartRepeating(TimeDelta::FromMilliseconds(350),
+  progress_event_timer_.StartRepeating(base::TimeDelta::FromMilliseconds(350),
                                        FROM_HERE);
 }
 
@@ -2655,8 +2655,8 @@ double HTMLMediaElement::EffectiveMediaVolume() const {
 
 // The spec says to fire periodic timeupdate events (those sent while playing)
 // every "15 to 250ms", we choose the slowest frequency
-static const TimeDelta kMaxTimeupdateEventFrequency =
-    TimeDelta::FromMilliseconds(250);
+static const base::TimeDelta kMaxTimeupdateEventFrequency =
+    base::TimeDelta::FromMilliseconds(250);
 
 void HTMLMediaElement::StartPlaybackProgressTimer() {
   if (playback_progress_timer_.IsActive())
@@ -2733,7 +2733,7 @@ void HTMLMediaElement::AudioTrackChanged(AudioTrack* track) {
     media_source_->OnTrackChanged(track);
 
   if (!audio_tracks_timer_.IsActive())
-    audio_tracks_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    audio_tracks_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void HTMLMediaElement::AudioTracksTimerFired(TimerBase*) {

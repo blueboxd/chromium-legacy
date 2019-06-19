@@ -523,7 +523,8 @@ void FidoDeviceAuthenticator::BioEnrollFingerprint(
       BioEnrollmentRequest::ForEnrollBegin(response),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(callback)),
+                     std::move(callback),
+                     /*current_template_id=*/base::nullopt),
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
@@ -558,22 +559,31 @@ void FidoDeviceAuthenticator::BioEnrollDelete(
 void FidoDeviceAuthenticator::OnBioEnroll(
     pin::TokenResponse token,
     BioEnrollmentCallback callback,
+    base::Optional<std::vector<uint8_t>> current_template_id,
     CtapDeviceResponseCode code,
     base::Optional<BioEnrollmentResponse> bio) {
-  static base::Optional<std::vector<uint8_t>> template_id_;
   if (code != CtapDeviceResponseCode::kSuccess || bio->remaining_samples == 0) {
     std::move(callback).Run(code, std::move(bio));
     return;
   }
-  if (bio->template_id) {
-    template_id_ = std::move(bio->template_id);
+  if (!current_template_id) {
+    if (!bio->template_id) {
+      // The templateId response field is required in the first response of each
+      // enrollment.
+      std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                              base::nullopt);
+      return;
+    }
+    current_template_id = *bio->template_id;
   }
 
+  auto request =
+      BioEnrollmentRequest::ForEnrollNextSample(token, *current_template_id);
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
-      BioEnrollmentRequest::ForEnrollNextSample(token, *template_id_),
+      std::move(request),
       base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
                      weak_factory_.GetWeakPtr(), std::move(token),
-                     std::move(callback)),
+                     std::move(callback), std::move(current_template_id)),
       base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 

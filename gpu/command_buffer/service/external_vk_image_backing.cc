@@ -142,8 +142,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
       context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
   VkFormat vk_format = ToVkFormat(format);
   VkImage image;
-  bool is_transfer_dst = using_gmb || !pixel_data.empty();
   bool is_external = context_state->support_vulkan_external_object();
+  bool is_transfer_dst = using_gmb || !pixel_data.empty() || !is_external;
   VkResult result = CreateVkImage(context_state, vk_format, size,
                                   is_transfer_dst, is_external, &image);
   if (result != VK_SUCCESS) {

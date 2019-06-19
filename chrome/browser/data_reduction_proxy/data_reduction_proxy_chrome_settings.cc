@@ -298,12 +298,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     case data_reduction_proxy::TRANSFORM_LITE_PAGE:
       data->set_lite_page_received(true);
       break;
-    case data_reduction_proxy::TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
-      data->set_lofi_policy_received(true);
-      break;
-    case data_reduction_proxy::TRANSFORM_EMPTY_IMAGE:
-      data->set_lofi_received(true);
-      break;
     case data_reduction_proxy::TRANSFORM_IDENTITY:
     case data_reduction_proxy::TRANSFORM_COMPRESSED_VIDEO:
     case data_reduction_proxy::TRANSFORM_NONE:

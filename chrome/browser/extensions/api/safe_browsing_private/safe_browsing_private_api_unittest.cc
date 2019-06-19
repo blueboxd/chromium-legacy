@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -30,7 +29,6 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 
 namespace extensions {
 
@@ -82,16 +80,11 @@ class SafeBrowsingPrivateApiUnitTest : public ExtensionServiceTestBase {
 
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
-  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateApiUnitTest);
 };
 
 void SafeBrowsingPrivateApiUnitTest::SetUp() {
-  // Need to use the network service path because we've removed the
-  // URLRequestContext path in src/chrome and unit_tests currently are running
-  // with network service disabled. https://crbug.com/966633
-  feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
   content::BrowserSideNavigationSetUp();

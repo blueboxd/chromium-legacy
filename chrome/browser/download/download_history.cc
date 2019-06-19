@@ -204,8 +204,6 @@ ShouldUpdateHistoryResult ShouldUpdateHistory(
   return ShouldUpdateHistoryResult::NO_UPDATE;
 }
 
-typedef std::vector<history::DownloadRow> InfoVector;
-
 }  // anonymous namespace
 
 DownloadHistory::HistoryAdapter::HistoryAdapter(
@@ -215,8 +213,8 @@ DownloadHistory::HistoryAdapter::HistoryAdapter(
 DownloadHistory::HistoryAdapter::~HistoryAdapter() {}
 
 void DownloadHistory::HistoryAdapter::QueryDownloads(
-    const history::HistoryService::DownloadQueryCallback& callback) {
-  history_->QueryDownloads(callback);
+    history::HistoryService::DownloadQueryCallback callback) {
+  history_->QueryDownloads(std::move(callback));
 }
 
 void DownloadHistory::HistoryAdapter::CreateDownload(
@@ -257,8 +255,8 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
   notifier_.GetManager()->GetAllDownloads(&items);
   for (auto* item : items)
     OnDownloadCreated(notifier_.GetManager(), item);
-  history_->QueryDownloads(base::Bind(
-      &DownloadHistory::QueryCallback, weak_ptr_factory_.GetWeakPtr()));
+  history_->QueryDownloads(base::BindOnce(&DownloadHistory::QueryCallback,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 DownloadHistory::~DownloadHistory() {
@@ -281,7 +279,7 @@ void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
+void DownloadHistory::QueryCallback(std::vector<history::DownloadRow> rows) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // ManagerGoingDown() may have happened before the history loaded.
   if (!notifier_.GetManager())
@@ -289,37 +287,37 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
 
   notifier_.GetManager()->OnHistoryQueryComplete(
       base::BindOnce(&DownloadHistory::LoadHistoryDownloads,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(infos)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(rows)));
 }
 
-void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
+void DownloadHistory::LoadHistoryDownloads(
+    std::vector<history::DownloadRow> rows) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(notifier_.GetManager());
 
-  for (InfoVector::const_iterator it = infos->begin();
-       it != infos->end(); ++it) {
-    loading_id_ = history::ToContentDownloadId(it->id);
+  for (const history::DownloadRow& row : rows) {
+    loading_id_ = history::ToContentDownloadId(row.id);
     download::DownloadItem::DownloadState history_download_state =
-        history::ToContentDownloadState(it->state);
+        history::ToContentDownloadState(row.state);
     download::DownloadInterruptReason history_reason =
-        history::ToContentDownloadInterruptReason(it->interrupt_reason);
+        history::ToContentDownloadInterruptReason(row.interrupt_reason);
     download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
-        it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
-        it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
-        base::nullopt, it->mime_type, it->original_mime_type, it->start_time,
-        it->end_time, it->etag, it->last_modified, it->received_bytes,
-        it->total_bytes,
+        row.guid, loading_id_, row.current_path, row.target_path, row.url_chain,
+        row.referrer_url, row.site_url, row.tab_url, row.tab_referrer_url,
+        base::nullopt, row.mime_type, row.original_mime_type, row.start_time,
+        row.end_time, row.etag, row.last_modified, row.received_bytes,
+        row.total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of
                         // partial file for an interrupted download. No need to
                         // store hash for a completed file.
         history_download_state,
-        history::ToContentDownloadDangerType(it->danger_type), history_reason,
-        it->opened, it->last_access_time, it->transient,
-        history::ToContentReceivedSlices(it->download_slice_info));
+        history::ToContentDownloadDangerType(row.danger_type), history_reason,
+        row.opened, row.last_access_time, row.transient,
+        history::ToContentReceivedSlices(row.download_slice_info));
     // DownloadManager returns a nullptr if it decides to remove the download
     // permanently.
     if (item == nullptr) {
-      ScheduleRemoveDownload(it->id);
+      ScheduleRemoveDownload(row.id);
       continue;
     }
     DCHECK_EQ(download::DownloadItem::kInvalidId, loading_id_);
@@ -333,9 +331,9 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
       OnDownloadUpdated(notifier_.GetManager(), item);
     }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
-      new extensions::DownloadedByExtension(
-          item, it->by_ext_id, it->by_ext_name);
+    if (!row.by_ext_id.empty() && !row.by_ext_name.empty()) {
+      new extensions::DownloadedByExtension(item, row.by_ext_id,
+                                            row.by_ext_name);
       item->UpdateObservers();
     }
 #endif

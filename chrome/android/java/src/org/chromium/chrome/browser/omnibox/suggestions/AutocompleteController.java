@@ -45,7 +45,7 @@ public class AutocompleteController {
     /**
      * Listener for receiving OmniboxSuggestions.
      */
-    public static interface OnSuggestionsReceivedListener {
+    public interface OnSuggestionsReceivedListener {
         void onSuggestionsReceived(
                 List<OmniboxSuggestion> suggestions, String inlineAutocompleteText);
     }
@@ -85,7 +85,7 @@ public class AutocompleteController {
      * Use cached zero suggest results if there are any available and start caching them
      * for all zero suggest updates.
      */
-    public void startCachedZeroSuggest() {
+    void startCachedZeroSuggest() {
         mUseCachedZeroSuggestResults = true;
         List<OmniboxSuggestion> suggestions =
                 OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
@@ -193,7 +193,7 @@ public class AutocompleteController {
      * Resets session for autocomplete controller. This happens every time we start typing
      * new input into the omnibox.
      */
-    public void resetSession() {
+    void resetSession() {
         if (mNativeAutocompleteControllerAndroid != 0) {
             nativeResetSession(mNativeAutocompleteControllerAndroid);
         }
@@ -203,7 +203,7 @@ public class AutocompleteController {
      * Deletes an omnibox suggestion, if possible.
      * @param position The position at which the suggestion is located.
      */
-    public void deleteSuggestion(int position, int hashCode) {
+    void deleteSuggestion(int position, int hashCode) {
         if (mNativeAutocompleteControllerAndroid != 0) {
             nativeDeleteSuggestion(mNativeAutocompleteControllerAndroid, position, hashCode);
         }
@@ -213,7 +213,7 @@ public class AutocompleteController {
      * @return Native pointer to current autocomplete results.
      */
     @VisibleForTesting
-    public long getCurrentNativeAutocompleteResult() {
+    long getCurrentNativeAutocompleteResult() {
         return mCurrentNativeAutocompleteResult;
     }
 
@@ -256,9 +256,9 @@ public class AutocompleteController {
      * @param completedLength The length of the default match's inline autocompletion if any.
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
-    public void onSuggestionSelected(int selectedIndex, int hashCode, int type,
-            String currentPageUrl, int pageClassification, long elapsedTimeSinceModified,
-            int completedLength, WebContents webContents) {
+    void onSuggestionSelected(int selectedIndex, int hashCode, int type, String currentPageUrl,
+            int pageClassification, long elapsedTimeSinceModified, int completedLength,
+            WebContents webContents) {
         assert mNativeAutocompleteControllerAndroid != 0;
         // Don't natively log voice suggestion results as we add them in Java.
         if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
@@ -271,7 +271,7 @@ public class AutocompleteController {
      * Pass the voice provider a list representing the results of a voice recognition.
      * @param results A list containing the results of a voice recognition.
      */
-    public void onVoiceResults(@Nullable List<VoiceResult> results) {
+    void onVoiceResults(@Nullable List<VoiceResult> results) {
         mVoiceSuggestionProvider.setVoiceResults(results);
     }
 
@@ -336,7 +336,7 @@ public class AutocompleteController {
      * @return The url to navigate to for this match with aqs parameter updated, if we are
      *         making a Google search query.
      */
-    public String updateMatchDestinationUrlWithQueryFormulationTime(
+    String updateMatchDestinationUrlWithQueryFormulationTime(
             int selectedIndex, int hashCode, long elapsedTimeSinceInputChange) {
         return nativeUpdateMatchDestinationURLWithQueryFormulationTime(
                 mNativeAutocompleteControllerAndroid, selectedIndex, hashCode,
@@ -373,10 +373,10 @@ public class AutocompleteController {
      * @param query The query to be expanded into a fully qualified URL if appropriate.
      * @return The fully qualified URL or null.
      */
-    public static native String nativeQualifyPartialURLQuery(String query);
+    static native String nativeQualifyPartialURLQuery(String query);
 
     /**
      * Sends a zero suggest request to the server in order to pre-populate the result cache.
      */
-    public static native void nativePrefetchZeroSuggestResults();
+    static native void nativePrefetchZeroSuggestResults();
 }

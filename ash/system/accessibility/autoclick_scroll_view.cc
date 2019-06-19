@@ -317,25 +317,30 @@ const char* AutoclickScrollBubbleView::GetClassName() const {
 
 // ------ AutoclickScrollView  ------ //
 
-AutoclickScrollView::AutoclickScrollView() {
+AutoclickScrollView::AutoclickScrollView()
+    : scroll_up_button_(new AutoclickScrollButton(
+          AutoclickController::ScrollPadAction::kScrollUp,
+          kAutoclickScrollUpIcon,
+          IDS_ASH_AUTOCLICK_SCROLL_UP,
+          ButtonId::kScrollUp)),
+      scroll_down_button_(new AutoclickScrollButton(
+          AutoclickController::ScrollPadAction::kScrollDown,
+          kAutoclickScrollDownIcon,
+          IDS_ASH_AUTOCLICK_SCROLL_DOWN,
+          ButtonId::kScrollDown)),
+      scroll_left_button_(new AutoclickScrollButton(
+          AutoclickController::ScrollPadAction::kScrollLeft,
+          kAutoclickScrollLeftIcon,
+          IDS_ASH_AUTOCLICK_SCROLL_LEFT,
+          ButtonId::kScrollLeft)),
+      scroll_right_button_(new AutoclickScrollButton(
+          AutoclickController::ScrollPadAction::kScrollRight,
+          kAutoclickScrollRightIcon,
+          IDS_ASH_AUTOCLICK_SCROLL_RIGHT,
+          ButtonId::kScrollRight)),
+      close_scroll_button_(new AutoclickScrollCloseButton()) {
   SetPreferredSize(gfx::Size(kScrollPadButtonHypotenuseDips,
                              kScrollPadButtonHypotenuseDips));
-  scroll_up_button_ = new AutoclickScrollButton(
-      AutoclickController::ScrollPadAction::kScrollUp, kAutoclickScrollUpIcon,
-      IDS_ASH_AUTOCLICK_SCROLL_UP, ButtonId::kScrollUp);
-  scroll_down_button_ = new AutoclickScrollButton(
-      AutoclickController::ScrollPadAction::kScrollDown,
-      kAutoclickScrollDownIcon, IDS_ASH_AUTOCLICK_SCROLL_DOWN,
-      ButtonId::kScrollDown);
-  scroll_left_button_ = new AutoclickScrollButton(
-      AutoclickController::ScrollPadAction::kScrollLeft,
-      kAutoclickScrollLeftIcon, IDS_ASH_AUTOCLICK_SCROLL_LEFT,
-      ButtonId::kScrollLeft);
-  scroll_right_button_ = new AutoclickScrollButton(
-      AutoclickController::ScrollPadAction::kScrollRight,
-      kAutoclickScrollRightIcon, IDS_ASH_AUTOCLICK_SCROLL_RIGHT,
-      ButtonId::kScrollRight);
-  close_scroll_button_ = new AutoclickScrollCloseButton();
   AddChildView(close_scroll_button_);
   AddChildView(scroll_up_button_);
   AddChildView(scroll_down_button_);

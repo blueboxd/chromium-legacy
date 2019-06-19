@@ -93,6 +93,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING;
     case SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_MALWARE;
+    case SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+      return ClientSafeBrowsingReportRequest::BLOCKED_AD_POPUP;
     case SB_THREAT_TYPE_AD_SAMPLE:
       return ClientSafeBrowsingReportRequest::AD_SAMPLE;
     case SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
@@ -112,6 +114,7 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
     case SB_THREAT_TYPE_API_ABUSE:
     case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
     case SB_THREAT_TYPE_CSD_WHITELIST:
+    case SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
     case DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type: "

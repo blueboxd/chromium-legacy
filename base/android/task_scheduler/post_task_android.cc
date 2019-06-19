@@ -4,12 +4,12 @@
 
 #include "base/android/task_scheduler/post_task_android.h"
 
+#include "base/android_runtime_jni_headers/Runnable_jni.h"
+#include "base/base_jni_headers/PostTask_jni.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
-#include "jni/PostTask_jni.h"
-#include "jni/Runnable_jni.h"
 
 namespace base {
 

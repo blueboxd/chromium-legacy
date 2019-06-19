@@ -15,6 +15,7 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_animation_type.h"
@@ -764,7 +765,7 @@ void OverviewItem::UpdateMaskAndShadow() {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (disable_mask_ || !overview_controller ||
       !overview_controller->InOverviewSession() ||
-      (!ash::features::ShouldUseShaderRoundedCorner() &&
+      (!features::ShouldUseShaderRoundedCorner() &&
        overview_grid_->window_list().size() > 10) ||
       overview_controller->IsInStartAnimation() || is_being_dragged_ ||
       overview_grid_->IsDropTargetWindow(GetWindow()) ||
@@ -864,7 +865,7 @@ void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
 }
 
 void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
-  if (ShouldAllowSplitView() || features::IsVirtualDesksEnabled())
+  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
     overview_session_->StartNormalDragMode(location_in_screen);
 }
 

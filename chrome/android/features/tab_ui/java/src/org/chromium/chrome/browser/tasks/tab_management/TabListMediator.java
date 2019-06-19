@@ -21,6 +21,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -60,7 +62,11 @@ class TabListMediator {
      * An interface to get the thumbnails to be shown inside the tab grid cards.
      */
     public interface ThumbnailProvider {
-        void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback, boolean forceUpdate);
+        /**
+         * @see TabContentManager#getTabThumbnailWithCallback
+         */
+        void getTabThumbnailWithCallback(
+                Tab tab, Callback<Bitmap> callback, boolean forceUpdate, boolean writeToCache);
     }
 
     /**
@@ -96,15 +102,19 @@ class TabListMediator {
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
         private boolean mForceUpdate;
+        private boolean mWriteToCache;
 
-        ThumbnailFetcher(ThumbnailProvider provider, Tab tab, boolean forceUpdate) {
+        ThumbnailFetcher(
+                ThumbnailProvider provider, Tab tab, boolean forceUpdate, boolean writeToCache) {
             mThumbnailProvider = provider;
             mTab = tab;
             mForceUpdate = forceUpdate;
+            mWriteToCache = writeToCache;
         }
 
         void fetch(Callback<Bitmap> callback) {
-            mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback, mForceUpdate);
+            mThumbnailProvider.getTabThumbnailWithCallback(
+                    mTab, callback, mForceUpdate, mWriteToCache);
         }
     }
 
@@ -661,7 +671,7 @@ class TabListMediator {
      */
     void softCleanup() {
         for (int i = 0; i < mModel.size(); i++) {
-            mModel.get(i).set(TabProperties.IS_HIDDEN, true);
+            mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, null);
         }
     }
 
@@ -670,7 +680,10 @@ class TabListMediator {
         if (index < 0 || index >= mModel.size()) return;
         if (isUpdatingId) {
             mModel.get(index).set(TabProperties.TAB_ID, tab.getId());
+        } else {
+            assert mModel.get(index).get(TabProperties.TAB_ID) == tab.getId();
         }
+
         TabActionListener tabSelectedListener;
         if (mGridCardOnClickListenerProvider == null
                 || getRelatedTabsForId(tab.getId()).size() == 1) {
@@ -683,7 +696,7 @@ class TabListMediator {
                 TabProperties.CREATE_GROUP_LISTENER, getCreateGroupButtonListener(tab, isSelected));
         mModel.get(index).set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(tab));
-        mModel.get(index).set(TabProperties.IS_HIDDEN, false);
+
         Callback<Drawable> faviconCallback = drawable -> {
             int modelIndex = mModel.indexFromId(tab.getId());
             if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
@@ -693,8 +706,14 @@ class TabListMediator {
 
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
-        if (mThumbnailProvider != null && !quickMode && (isSelected || isUpdatingId)) {
-            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected);
+        if (mThumbnailProvider != null
+                && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || isSelected
+                        || isUpdatingId)) {
+            boolean forceUpdate = isSelected && !quickMode;
+            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
+                    forceUpdate
+                            && !ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.TAB_TO_GTS_ANIMATION));
             mModel.get(index).set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
     }
@@ -773,7 +792,6 @@ class TabListMediator {
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
-                        .with(TabProperties.IS_HIDDEN, false)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
@@ -803,7 +821,10 @@ class TabListMediator {
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
 
         if (mThumbnailProvider != null) {
-            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected);
+            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
+                    isSelected
+                            && !ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.TAB_TO_GTS_ANIMATION));
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);

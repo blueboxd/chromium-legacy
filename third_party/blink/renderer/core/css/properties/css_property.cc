@@ -54,13 +54,13 @@ const CSSValue* CSSProperty::CSSValueFromComputedStyle(
       style, svg_style, layout_object, styled_node, allow_visited_style);
 }
 
-void CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+void CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
     const CSSPropertyID* properties,
     size_t propertyCount,
     Vector<const CSSProperty*>& outVector) {
   for (unsigned i = 0; i < propertyCount; i++) {
     const CSSProperty& property = Get(properties[i]);
-    if (property.IsEnabled())
+    if (property.IsWebExposed())
       outVector.push_back(&property);
   }
 }

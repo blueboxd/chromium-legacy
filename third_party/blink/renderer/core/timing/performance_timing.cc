@@ -52,7 +52,7 @@
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {
 
-static uint64_t ToIntegerMilliseconds(TimeDelta duration) {
+static uint64_t ToIntegerMilliseconds(base::TimeDelta duration) {
   // TODO(npm): add histograms to understand when/why |duration| is sometimes
   // negative.
   double clamped_seconds =
@@ -141,7 +141,7 @@ uint64_t PerformanceTiming::domainLookupStart() const {
   // This will be zero when a DNS request is not performed.  Rather than
   // exposing a special value that indicates no DNS, we "backfill" with
   // fetchStart.
-  TimeTicks dns_start = timing->DnsStart();
+  base::TimeTicks dns_start = timing->DnsStart();
   if (dns_start.is_null())
     return fetchStart();
 
@@ -156,7 +156,7 @@ uint64_t PerformanceTiming::domainLookupEnd() const {
   // This will be zero when a DNS request is not performed.  Rather than
   // exposing a special value that indicates no DNS, we "backfill" with
   // domainLookupStart.
-  TimeTicks dns_end = timing->DnsEnd();
+  base::TimeTicks dns_end = timing->DnsEnd();
   if (dns_end.is_null())
     return domainLookupStart();
 
@@ -175,7 +175,7 @@ uint64_t PerformanceTiming::connectStart() const {
   // connectStart will be zero when a network request is not made.  Rather than
   // exposing a special value that indicates no new connection, we "backfill"
   // with domainLookupEnd.
-  TimeTicks connect_start = timing->ConnectStart();
+  base::TimeTicks connect_start = timing->ConnectStart();
   if (connect_start.is_null() || loader->GetResponse().ConnectionReused())
     return domainLookupEnd();
 
@@ -200,7 +200,7 @@ uint64_t PerformanceTiming::connectEnd() const {
   // connectEnd will be zero when a network request is not made.  Rather than
   // exposing a special value that indicates no new connection, we "backfill"
   // with connectStart.
-  TimeTicks connect_end = timing->ConnectEnd();
+  base::TimeTicks connect_end = timing->ConnectEnd();
   if (connect_end.is_null() || loader->GetResponse().ConnectionReused())
     return connectStart();
 
@@ -216,7 +216,7 @@ uint64_t PerformanceTiming::secureConnectionStart() const {
   if (!timing)
     return 0;
 
-  TimeTicks ssl_start = timing->SslStart();
+  base::TimeTicks ssl_start = timing->SslStart();
   if (ssl_start.is_null())
     return 0;
 
@@ -237,7 +237,7 @@ uint64_t PerformanceTiming::responseStart() const {
   if (!timing)
     return requestStart();
 
-  TimeTicks response_start = timing->ReceiveHeadersStart();
+  base::TimeTicks response_start = timing->ReceiveHeadersStart();
   if (response_start.is_null())
     response_start = timing->ReceiveHeadersEnd();
   if (response_start.is_null())
@@ -622,7 +622,7 @@ ScriptValue PerformanceTiming::toJSONForBinding(
 }
 
 uint64_t PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
-    TimeTicks time) const {
+    base::TimeTicks time) const {
   const DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!timing)
     return 0;

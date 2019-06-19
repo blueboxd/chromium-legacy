@@ -895,6 +895,8 @@ jumbo_component("base") {
     "threading/post_task_and_reply_impl.h",
     "threading/scoped_blocking_call.cc",
     "threading/scoped_blocking_call.h",
+    "threading/scoped_thread_priority.cc",
+    "threading/scoped_thread_priority.h",
     "threading/sequence_bound.h",
     "threading/sequence_local_storage_map.cc",
     "threading/sequence_local_storage_map.h",
@@ -2714,6 +2716,7 @@ test("base_unittests") {
     "threading/platform_thread_win_unittest.cc",
     "threading/post_task_and_reply_impl_unittest.cc",
     "threading/scoped_blocking_call_unittest.cc",
+    "threading/scoped_thread_priority_unittest.cc",
     "threading/sequence_bound_unittest.cc",
     "threading/sequence_local_storage_map_unittest.cc",
     "threading/sequence_local_storage_slot_unittest.cc",
@@ -3114,12 +3117,9 @@ if (is_android) {
     public_deps = [
       ":android_runtime_jni_headers",
     ]
-
-    jni_package = "base"
   }
 
   generate_jar_jni("android_runtime_jni_headers") {
-    jni_package = "base"
     classes = [
       "java/lang/Runnable.class",
       "java/lang/Runtime.class",

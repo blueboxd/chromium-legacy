@@ -687,6 +687,10 @@ gfx::Rect OverlayWindowViews::CalculateControlsBounds(int x,
       gfx::Point(x, (GetBounds().size().height() - size.height()) / 2), size);
 }
 
+bool OverlayWindowViews::IsActive() {
+  return views::Widget::IsActive();
+}
+
 bool OverlayWindowViews::IsActive() const {
   return views::Widget::IsActive();
 }
@@ -718,15 +722,19 @@ void OverlayWindowViews::Hide() {
   views::Widget::Hide();
 }
 
+bool OverlayWindowViews::IsVisible() {
+  return is_initialized_ ? views::Widget::IsVisible() : false;
+}
+
 bool OverlayWindowViews::IsVisible() const {
   return is_initialized_ ? views::Widget::IsVisible() : false;
 }
 
-bool OverlayWindowViews::IsAlwaysOnTop() const {
+bool OverlayWindowViews::IsAlwaysOnTop() {
   return true;
 }
 
-gfx::Rect OverlayWindowViews::GetBounds() const {
+gfx::Rect OverlayWindowViews::GetBounds() {
   return views::Widget::GetRestoredBounds();
 }
 

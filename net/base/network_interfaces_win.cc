@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/win/scoped_handle.h"
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
@@ -103,6 +104,10 @@ WlanApi& WlanApi::GetInstance() {
 }
 
 WlanApi::WlanApi() : initialized(false) {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+
   HMODULE module =
       ::LoadLibraryEx(L"wlanapi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   if (!module)

@@ -152,6 +152,9 @@ policy_templates_android_outputs = [ policy_templates_android_policy_path ]
 # Common outputs.
 policy_templates_doc_path =
     "$policy_templates_base_dir/common/html/\${lang}/chrome_policy_list.html"
+policy_templates_doc_atomic_groups_path =
+    "$policy_templates_base_dir/common/" +
+    "html/\${lang}/chrome_policy_atomic_groups_list.html"
 policy_templates_common_outputs = []
 foreach(lang, policy_templates_languages) {
   policy_templates_common_outputs += [

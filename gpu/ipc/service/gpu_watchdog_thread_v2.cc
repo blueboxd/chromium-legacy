@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop_current.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
@@ -23,13 +25,19 @@ const int kGpuTimeoutInMs = 10000;
 
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2()
     : timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeoutInMs)),
-      task_observer_(this),
       watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  Disarm();
+
+  base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+}
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
   DCHECK(watched_task_runner_->BelongsToCurrentThread());
-  Stop();
+  Stop();  // stop the watchdog thread
+
+  base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 // static
@@ -46,7 +54,12 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
   return watchdog_thread;
 }
 
-void GpuWatchdogThreadImplV2::AddPowerObserver() {}
+// Do not add power observer during watchdog init, PowerMonitor might not be up
+// running yet.
+void GpuWatchdogThreadImplV2::AddPowerObserver() {
+  DCHECK(base::PowerMonitor::IsInitialized());
+  base::PowerMonitor::AddObserver(this);
+}
 
 void GpuWatchdogThreadImplV2::OnBackgrounded() {}
 
@@ -60,19 +73,14 @@ void GpuWatchdogThreadImplV2::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-GpuWatchdogThreadImplV2::GpuWatchdogTaskObserver::GpuWatchdogTaskObserver(
-    GpuWatchdogThreadImplV2* watchdog)
-    : watchdog_(watchdog) {}
-
-GpuWatchdogThreadImplV2::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() =
-    default;
-
-void GpuWatchdogThreadImplV2::GpuWatchdogTaskObserver::WillProcessTask(
-    const base::PendingTask& pending_task) {}
-
-void GpuWatchdogThreadImplV2::GpuWatchdogTaskObserver::DidProcessTask(
+void GpuWatchdogThreadImplV2::WillProcessTask(
     const base::PendingTask& pending_task) {
-  watchdog_->Disarm();
+  Arm();
+}
+
+void GpuWatchdogThreadImplV2::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  Disarm();
 }
 
 void GpuWatchdogThreadImplV2::Arm() {}

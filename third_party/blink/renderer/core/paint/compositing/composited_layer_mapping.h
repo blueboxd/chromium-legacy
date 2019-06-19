@@ -218,7 +218,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool IsTrackingRasterInvalidations() const override;
   void SetOverlayScrollbarsHidden(bool) override;
   void GraphicsLayersDidChange() override;
-  bool PaintBlockedByDisplayLock() const override;
+  bool PaintBlockedByDisplayLockIncludingAncestors(
+      DisplayLockContextLifecycleTarget) const override;
   void NotifyDisplayLockNeedsGraphicsLayerCollection() override;
 
 #if DCHECK_IS_ON()

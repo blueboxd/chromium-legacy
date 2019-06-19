@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -35,6 +36,7 @@ class WebContentsImpl;
 // other end of the pipe (typically in the renderer) exists.
 class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                               public blink::mojom::PortalHost,
+                              public FrameTreeNode::Observer,
                               public WebContentsObserver,
                               public WebContentsDelegate {
  public:
@@ -77,6 +79,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void PostMessageToHost(
       blink::TransferableMessage message,
       const base::Optional<url::Origin>& target_origin) override;
+
+  // FrameTreeNode::Observer overrides.
+  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

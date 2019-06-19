@@ -285,10 +285,10 @@ void LazyLoadFrameObserver::RecordVisibilityMetricsIfLoadedAndVisible() {
 
   DCHECK(has_above_the_fold_been_set_);
 
-  TimeDelta visible_load_delay =
+  base::TimeDelta visible_load_delay =
       time_when_first_load_finished_ - time_when_first_visible_;
-  if (visible_load_delay < TimeDelta())
-    visible_load_delay = TimeDelta();
+  if (visible_load_delay < base::TimeDelta())
+    visible_load_delay = base::TimeDelta();
 
   switch (element_->GetDocument()
               .GetFrame()

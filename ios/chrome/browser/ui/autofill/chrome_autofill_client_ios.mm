@@ -264,7 +264,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
   }
 }
 
-void ChromeAutofillClientIOS::CreditCardUploadCompleted() {
+void ChromeAutofillClientIOS::CreditCardUploadCompleted(bool card_saved) {
   NOTIMPLEMENTED();
 }
 

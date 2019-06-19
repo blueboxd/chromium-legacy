@@ -85,10 +85,11 @@ class WebURLRequest {
   enum PreviewsTypes {
     kPreviewsUnspecified = 0,  // Let the browser process decide whether or
                                // not to request Preview types.
-    kServerLoFiOn = 1 << 0,    // Request a Lo-Fi version of the resource
-                               // from the server.
-    kClientLoFiOn = 1 << 1,    // Request a Lo-Fi version of the resource
-                               // from the client.
+    kServerLoFiOn_DEPRECATED =
+        1 << 0,  // Request a Lo-Fi version of the resource
+                 // from the server. Deprecated and should not be used.
+    kClientLoFiOn = 1 << 1,          // Request a Lo-Fi version of the resource
+                                     // from the client.
     kClientLoFiAutoReload = 1 << 2,  // Request the original version of the
                                      // resource after a decoding error occurred
                                      // when attempting to use Client Lo-Fi.

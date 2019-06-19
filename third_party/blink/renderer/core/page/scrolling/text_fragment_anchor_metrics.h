@@ -46,8 +46,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
   int match_count_ = 0;
   bool ambiguous_match_ = false;
   bool scroll_cancelled_ = false;
-  WTF::TimeTicks create_time_;
-  WTF::TimeTicks first_scroll_into_view_time_;
+  base::TimeTicks create_time_;
+  base::TimeTicks first_scroll_into_view_time_;
   bool did_non_zero_scroll_ = false;
 };
 

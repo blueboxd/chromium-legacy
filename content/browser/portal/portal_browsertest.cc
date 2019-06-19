@@ -46,6 +46,9 @@ class PortalInterceptorForTesting final
       RenderFrameHostImpl* render_frame_host_impl,
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
       mojo::AssociatedRemote<blink::mojom::PortalClient> client);
+  static PortalInterceptorForTesting* Create(
+      RenderFrameHostImpl* render_frame_host_impl,
+      content::Portal* portal);
   static PortalInterceptorForTesting* From(content::Portal* portal);
 
   void Activate(blink::TransferableMessage data,
@@ -88,8 +91,12 @@ class PortalInterceptorForTesting final
       navigate_callback_;
 
  private:
-  PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl)
+  explicit PortalInterceptorForTesting(
+      RenderFrameHostImpl* render_frame_host_impl)
       : portal_(content::Portal::CreateForTesting(render_frame_host_impl)) {}
+  PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl,
+                              std::unique_ptr<content::Portal> portal)
+      : portal_(std::move(portal)) {}
 
   blink::mojom::Portal* GetForwardingInterface() override {
     return portal_.get();
@@ -112,6 +119,27 @@ PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
       mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
           std::move(test_portal_ptr), std::move(receiver)));
   test_portal->GetPortal()->SetClientForTesting(std::move(client));
+  return test_portal;
+}
+
+PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
+    RenderFrameHostImpl* render_frame_host_impl,
+    content::Portal* portal) {
+  // Take ownership of the portal.
+  std::unique_ptr<blink::mojom::Portal> mojom_portal_ptr =
+      portal->GetBindingForTesting()->SwapImplForTesting(nullptr);
+  std::unique_ptr<content::Portal> portal_ptr = base::WrapUnique(
+      static_cast<content::Portal*>(mojom_portal_ptr.release()));
+
+  // Create PortalInterceptorForTesting.
+  auto test_portal_ptr = base::WrapUnique(new PortalInterceptorForTesting(
+      render_frame_host_impl, std::move(portal_ptr)));
+  PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
+
+  // Set the binding for the PortalInterceptorForTesting.
+  portal->GetBindingForTesting()->SwapImplForTesting(
+      std::move(test_portal_ptr));
+
   return test_portal;
 }
 
@@ -156,6 +184,20 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
     RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
     std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),
                             portal_->GetDevToolsFrameToken());
+
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void AdoptPortal(const base::UnguessableToken& portal_token,
+                   AdoptPortalCallback callback) override {
+    Portal* portal = Portal::FromToken(portal_token);
+    PortalInterceptorForTesting* portal_interceptor =
+        PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);
+    portal_ = portal_interceptor->GetPortal();
+    RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
+    std::move(callback).Run(proxy_host->GetRoutingID(),
+                            portal->GetDevToolsFrameToken());
 
     if (run_loop_)
       run_loop_->Quit();
@@ -621,7 +663,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
   Portal* portal = portal_created_observer.WaitUntilPortalCreated();
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
-  WebContentsImpl* portal_contents = portal->GetPortalContents();
 
   // Try to navigate to chrome://settings and wait for the process to die.
   portal_interceptor->navigate_callback_ = base::BindRepeating(
@@ -630,12 +671,11 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
         portal->Navigate(chrome_url, std::move(referrer));
       },
       portal);
-  RenderProcessHostKillWaiter kill_waiter(
-      portal_contents->GetMainFrame()->GetProcess());
+  RenderProcessHostKillWaiter kill_waiter(main_frame->GetProcess());
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ignore_result(ExecJs(main_frame, JsReplace("portal.src = $1;", a_url)));
 
-  EXPECT_EQ(base::nullopt, kill_waiter.Wait());
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
 // Regression test for crbug.com/969714. Tests that receiving a touch ack
@@ -683,6 +723,92 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
 
   // Wait for a touch ack to be sent from the predecessor.
   input_event_ack_waiter.Wait();
+}
+
+// Tests that the outer FrameTreeNode is deleted after activation.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FrameDeletedAfterActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet; wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
+      portal_contents->GetOuterDelegateFrameTreeNodeId());
+  EXPECT_TRUE(outer_frame_tree_node);
+
+  EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
+                     "window.onportalactivate = e => "
+                     "document.body.appendChild(e.adoptPredecessor());"));
+
+  {
+    FrameDeletedObserver observer(outer_frame_tree_node->current_frame_host());
+    PortalCreatedObserver portal_created_observer(
+        portal_contents->GetMainFrame());
+    ExecuteScriptAsync(main_frame,
+                       "document.querySelector('portal').activate();");
+    observer.Wait();
+
+    // Observes the creation of a new portal due to the adoption of the
+    // predecessor during the activate event.
+    // TODO(lfg): We only wait for the adoption callback to avoid a race
+    // receiving a sync IPC in a nested message loop while the browser is
+    // sending out another sync IPC to the GPU process.
+    // https://crbug.com/976367.
+    portal_created_observer.WaitUntilPortalCreated();
+  }
+}
+
+// Tests that activating a portal at the same time as it is being removed
+// doesn't crash the browser.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RemovePortalWhenUnloading) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create a container for the portal.
+  EXPECT_TRUE(ExecJs(main_frame,
+                     "var div = document.createElement('div');"
+                     "document.body.appendChild(div);"));
+
+  // Create portal.
+  PortalCreatedObserver portal_created_observer(main_frame);
+  EXPECT_TRUE(ExecJs(main_frame,
+                     "var portal = document.createElement('portal');"
+                     "div.appendChild(portal);"));
+
+  // Add a same-origin iframe in the same div as the portal that activates the
+  // portal on its unload handler.
+  EXPECT_TRUE(
+      ExecJs(main_frame,
+             "var iframe = document.createElement('iframe');"
+             "iframe.src = 'about:blank';"
+             "div.appendChild(iframe);"
+             "iframe.contentWindow.onunload = () => portal.activate();"));
+
+  // Remove the div from the document. This destroys the portal's WebContents
+  // and should destroy the Portal object as well, so that the activate message
+  // is not processed.
+  EXPECT_TRUE(ExecJs(main_frame, "div.remove();"));
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

@@ -43,26 +43,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     lite_page_received_ = lite_page_received;
   }
 
-  // Whether a Lo-Fi (or empty-image) page policy directive was received for
-  // the navigation.
-  bool lofi_policy_received() const { return lofi_policy_received_; }
-  void set_lofi_policy_received(bool lofi_policy_received) {
-    lofi_policy_received_ = lofi_policy_received;
-  }
-
-  // Whether a server Lo-Fi page response was seen for the request or
-  // navigation.
-  bool lofi_received() const { return lofi_received_; }
-  void set_lofi_received(bool lofi_received) { lofi_received_ = lofi_received; }
-
-  // Whether client Lo-Fi was requested for this request. This is only set on
-  // image requests that have added a range header to attempt to get a smaller
-  // file size image.
-  bool client_lofi_requested() const { return client_lofi_requested_; }
-  void set_client_lofi_requested(bool client_lofi_requested) {
-    client_lofi_requested_ = client_lofi_requested;
-  }
-
   // This response was fetched from cache, but the original request used DRP.
   bool was_cached_data_reduction_proxy_response() const {
     return was_cached_data_reduction_proxy_response_;
@@ -125,21 +105,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Cached responses are not considered to have used DRP.
   bool used_data_reduction_proxy_;
 
-  // Whether client Lo-Fi was requested for this request. This is only set on
-  // image requests that have added a range header to attempt to get a smaller
-  // file size image.
-  bool client_lofi_requested_;
-
   // Whether a proxy-served lite page response was seen for the HTTP request or
   // navigation.
   bool lite_page_received_;
-
-  // Whether server Lo-Fi directive was received for this navigation. True if
-  // the proxy returns the empty-image page-policy for the main frame response.
-  bool lofi_policy_received_;
-
-  // Whether a lite page response was seen for the request or navigation.
-  bool lofi_received_;
 
   // Whether the blacklist prevented a preview.
   bool black_listed_;

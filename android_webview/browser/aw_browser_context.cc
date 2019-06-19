@@ -211,8 +211,6 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager(
       GetAwURLRequestContext(), user_pref_service_.get());
-  safe_browsing_db_manager_ =
-      new safe_browsing::RemoteSafeBrowsingDatabaseManager();
   safe_browsing_trigger_manager_ =
       std::make_unique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get(),
@@ -371,6 +369,10 @@ AwSafeBrowsingUIManager* AwBrowserContext::GetSafeBrowsingUIManager() const {
 safe_browsing::RemoteSafeBrowsingDatabaseManager*
 AwBrowserContext::GetSafeBrowsingDBManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!safe_browsing_db_manager_) {
+    safe_browsing_db_manager_ =
+        new safe_browsing::RemoteSafeBrowsingDatabaseManager();
+  }
   if (!safe_browsing_db_manager_started_) {
     // V4ProtocolConfig is not used. Just create one with empty values..
     safe_browsing::V4ProtocolConfig config("", false, "", "");

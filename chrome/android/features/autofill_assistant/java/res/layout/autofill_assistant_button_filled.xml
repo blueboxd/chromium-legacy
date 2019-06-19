@@ -7,6 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:minHeight="@dimen/min_touch_target_size"
     app:chipColor="@color/filled_button_bg"
     app:rippleColor="@color/filled_button_ripple_color"

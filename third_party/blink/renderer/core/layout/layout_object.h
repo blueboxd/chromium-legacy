@@ -2403,9 +2403,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return context && !context->ShouldPrePaint(target);
   }
 
-  bool PaintBlockedByDisplayLock() const {
+  bool PaintBlockedByDisplayLock(
+      DisplayLockContext::LifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
-    return context && !context->ShouldPaint();
+    return context && !context->ShouldPaint(target);
   }
 
   void NotifyDisplayLockDidPrePaint(
@@ -2414,9 +2415,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       context->DidPrePaint(target);
   }
 
-  void NotifyDisplayLockDidPaint() const {
+  void NotifyDisplayLockDidPaint(
+      DisplayLockContext::LifecycleTarget target) const {
     if (auto* context = GetDisplayLockContext())
-      context->DidPaint();
+      context->DidPaint(target);
   }
 
   // This flag caches StyleRef().HasBorderDecoration() &&

@@ -52,7 +52,7 @@ unsigned LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
 unsigned LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
 unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
 
-TimeDelta LayoutThemeDefault::caret_blink_interval_;
+base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
 
 LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
   caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
@@ -387,14 +387,15 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
 // The following values come from the defaults of GTK+.
 //
 constexpr int kProgressAnimationFrames = 10;
-constexpr TimeDelta kProgressAnimationInterval =
-    TimeDelta::FromMilliseconds(125);
+constexpr base::TimeDelta kProgressAnimationInterval =
+    base::TimeDelta::FromMilliseconds(125);
 
-TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar() const {
+base::TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar()
+    const {
   return kProgressAnimationInterval;
 }
 
-TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
+base::TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
   return kProgressAnimationInterval * kProgressAnimationFrames *
          2;  // "2" for back and forth
 }

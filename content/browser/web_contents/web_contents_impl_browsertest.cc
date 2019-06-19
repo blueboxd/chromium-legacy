@@ -875,7 +875,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Kill the renderer process so when the navigate again, it will be a fresh
   // renderer with an empty in-memory cache.
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
   NavigateToURL(shell(), GetWebUIURL("crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
@@ -983,7 +983,6 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
         shell()->web_contents()->GetMainFrame()->GetProcess();
     RenderProcessHostWatcher process_watcher(
         process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
     NavigateToURL(shell(), GetWebUIURL("crash"));
     process_watcher.Wait();
   }

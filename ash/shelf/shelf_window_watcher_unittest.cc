@@ -43,7 +43,7 @@ gfx::ImageSkia CreateImageSkiaIcon(SkColor color) {
 static ShelfID CreateShelfItem(aura::Window* window) {
   static int id = 0;
   ShelfID shelf_id(base::NumberToString(id++));
-  window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   return shelf_id;
 }
@@ -197,7 +197,7 @@ TEST_F(ShelfWindowWatcherTest, DialogWindows) {
   std::unique_ptr<views::Widget> dialog_widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect());
   aura::Window* dialog = dialog_widget->GetNativeWindow();
-  dialog->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  dialog->SetProperty(kShelfIDKey, ShelfID("a").Serialize());
   dialog->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   EXPECT_EQ(3, model->item_count());
 
@@ -205,7 +205,7 @@ TEST_F(ShelfWindowWatcherTest, DialogWindows) {
   std::unique_ptr<views::Widget> app_widget = CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect());
   aura::Window* app = app_widget->GetNativeWindow();
-  app->SetProperty(kShelfIDKey, new std::string(ShelfID("c").Serialize()));
+  app->SetProperty(kShelfIDKey, ShelfID("c").Serialize());
   app->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_APP));
   EXPECT_EQ(3, model->item_count());
   app_widget.reset();
@@ -230,13 +230,13 @@ TEST_F(ShelfWindowWatcherTest, ItemIcon) {
       default_image.AsImageSkia()));
 
   // Setting a window icon should update the item icon.
-  const gfx::ImageSkia red = CreateImageSkiaIcon(SK_ColorRED);
-  window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(red));
+  gfx::ImageSkia red = CreateImageSkiaIcon(SK_ColorRED);
+  window->SetProperty(aura::client::kWindowIconKey, std::move(red));
   EXPECT_EQ(SK_ColorRED, model->items()[2].image.bitmap()->getColor(0, 0));
 
   // Setting an app icon should override the window icon.
-  const gfx::ImageSkia blue = CreateImageSkiaIcon(SK_ColorBLUE);
-  window->SetProperty(aura::client::kAppIconKey, new gfx::ImageSkia(blue));
+  gfx::ImageSkia blue = CreateImageSkiaIcon(SK_ColorBLUE);
+  window->SetProperty(aura::client::kAppIconKey, std::move(blue));
   EXPECT_EQ(SK_ColorBLUE, model->items()[2].image.bitmap()->getColor(0, 0));
 
   // Clearing the app icon should restore the window icon to the shelf item.
@@ -249,7 +249,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   std::unique_ptr<aura::Window> window =
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  window->SetProperty(kShelfIDKey, ShelfID("a").Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   Shell::GetPrimaryRootWindow()
       ->GetChildById(desks_util::GetActiveDeskContainerId())
@@ -260,7 +260,7 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
   std::unique_ptr<aura::Window> child =
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   child->Init(ui::LAYER_NOT_DRAWN);
-  child->SetProperty(kShelfIDKey, new std::string(ShelfID("b").Serialize()));
+  child->SetProperty(kShelfIDKey, ShelfID("b").Serialize());
   child->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   window->AddChild(child.get());
   child->Show();
@@ -278,7 +278,7 @@ TEST_F(ShelfWindowWatcherTest, CreateShelfEntriesForTransientWindows) {
   std::unique_ptr<aura::Window> window =
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetProperty(kShelfIDKey, new std::string(ShelfID("a").Serialize()));
+  window->SetProperty(kShelfIDKey, ShelfID("a").Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   Shell::GetPrimaryRootWindow()
       ->GetChildById(desks_util::GetActiveDeskContainerId())

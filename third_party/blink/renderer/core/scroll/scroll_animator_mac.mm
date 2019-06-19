@@ -315,7 +315,7 @@ class BlinkScrollbarPartAnimationTimer {
     start_time_ = WTF::CurrentTime();
     // Set the framerate of the animation. NSAnimation uses a default
     // framerate of 60 Hz, so use that here.
-    timer_.StartRepeating(TimeDelta::FromSecondsD(1.0 / 60.0), FROM_HERE);
+    timer_.StartRepeating(base::TimeDelta::FromSecondsD(1.0 / 60.0), FROM_HERE);
   }
 
   void Stop() { timer_.Stop(); }
@@ -1058,7 +1058,7 @@ void ScrollAnimatorMac::StartScrollbarPaintTimer() {
       *task_runner_, FROM_HERE,
       WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
                 WrapWeakPersistent(this)),
-      TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(1));
 }
 
 bool ScrollAnimatorMac::ScrollbarPaintTimerIsActive() const {

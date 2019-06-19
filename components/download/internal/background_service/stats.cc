@@ -221,18 +221,6 @@ void LogStartDownloadResult(DownloadClient client,
                                 DownloadParams::StartResult::COUNT);
 }
 
-void LogDownloadParams(const DownloadParams& params) {
-  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.BatteryRequirement",
-                            params.scheduling_params.battery_requirements,
-                            SchedulingParams::BatteryRequirements::COUNT);
-  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.NetworkRequirement",
-                            params.scheduling_params.network_requirements,
-                            SchedulingParams::NetworkRequirements::COUNT);
-  UMA_HISTOGRAM_ENUMERATION("Download.Service.Request.Priority",
-                            params.scheduling_params.priority,
-                            SchedulingParams::Priority::COUNT);
-}
-
 void LogRecoveryOperation(Entry::State to_state) {
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Recovery", to_state,
                             Entry::State::COUNT);

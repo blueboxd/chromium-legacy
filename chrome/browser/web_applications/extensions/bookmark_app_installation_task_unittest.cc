@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -47,6 +48,29 @@ namespace extensions {
 using Result = BookmarkAppInstallationTask::Result;
 
 namespace {
+
+// Returns a factory that will return |data_retriever| the first time it gets
+// called. It will DCHECK if called more than once.
+web_app::WebAppInstallManager::DataRetrieverFactory GetFactoryForRetriever(
+    std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
+  // Ideally we would return this lambda directly but passing a mutable lambda
+  // to BindLambdaForTesting results in a OnceCallback which cannot be used as a
+  // DataRetrieverFactory because DataRetrieverFactory is a RepeatingCallback.
+  // For this reason, wrap the OnceCallback in a repeating callback that DCHECKs
+  // if it gets called more than once.
+  auto callback = base::BindLambdaForTesting(
+      [data_retriever = std::move(data_retriever)]() mutable {
+        return std::move(data_retriever);
+      });
+
+  return base::BindRepeating(
+      [](base::OnceCallback<std::unique_ptr<web_app::WebAppDataRetriever>()>
+             callback) {
+        DCHECK(callback);
+        return std::move(callback).Run();
+      },
+      base::Passed(std::move(callback)));
+}
 
 const GURL kWebAppUrl("https://foo.example");
 
@@ -262,17 +286,13 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<TestBookmarkAppInstallFinalizer>(registrar.get());
     install_finalizer_ = install_finalizer.get();
 
+    auto data_retriever = std::make_unique<web_app::TestDataRetriever>();
+    data_retriever_ = data_retriever.get();
+
     auto install_manager = std::make_unique<web_app::WebAppInstallManager>(
         profile(), registrar.get(), install_finalizer.get());
-
     install_manager->SetDataRetrieverFactoryForTesting(
-        base::BindLambdaForTesting([this]() {
-          // This factory requires a prepared DataRetriever. A test should
-          // create one with CreateDefaultDataToRetrieve, for example.
-          DCHECK(prepared_data_retriever_);
-          return std::unique_ptr<web_app::WebAppDataRetriever>(
-              std::move(prepared_data_retriever_));
-        }));
+        GetFactoryForRetriever(std::move(data_retriever)));
 
     provider->SetRegistrar(std::move(registrar));
     provider->SetInstallManager(std::move(install_manager));
@@ -283,55 +303,51 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   web_app::TestAppRegistrar* registrar() { return registrar_; }
   TestBookmarkAppInstallFinalizer* finalizer() { return install_finalizer_; }
 
-  web_app::TestDataRetriever* data_retriever() {
-    DCHECK(prepared_data_retriever_);
-    return prepared_data_retriever_.get();
-  }
+  web_app::TestDataRetriever* data_retriever() { return data_retriever_; }
 
   const web_app::InstallFinalizer::FinalizeOptions& finalize_options() {
-    DCHECK_EQ(1u, finalizer()->finalize_options_list().size());
-    return finalizer()->finalize_options_list().at(0);
+    DCHECK_EQ(1u, install_finalizer_->finalize_options_list().size());
+    return install_finalizer_->finalize_options_list().at(0);
   }
 
-  void CreateDefaultDataToRetrieve(const GURL& url) {
-    DCHECK(!prepared_data_retriever_);
-    prepared_data_retriever_ = std::make_unique<web_app::TestDataRetriever>();
+  std::unique_ptr<BookmarkAppInstallationTask> GetInstallationTaskWithTestMocks(
+      web_app::InstallOptions options) {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = options.url;
 
-    data_retriever()->SetRendererWebApplicationInfo(
+    data_retriever_->SetRendererWebApplicationInfo(
         std::make_unique<WebApplicationInfo>());
 
-    auto manifest = std::make_unique<blink::Manifest>();
-    manifest->start_url = url;
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
-    data_retriever()->SetManifest(std::move(manifest), /*is_installable=*/true);
+    data_retriever_->SetIcons(web_app::IconsMap{});
 
-    data_retriever()->SetIcons(web_app::IconsMap{});
+    install_finalizer_->SetNextFinalizeInstallResult(
+        options.url, web_app::InstallResultCode::kSuccess);
 
-    finalizer()->SetNextFinalizeInstallResult(
-        url, web_app::InstallResultCode::kSuccess);
+    install_finalizer_->SetNextCreateOsShortcutsResult(
+        install_finalizer_->GetAppIdForUrl(options.url), true);
 
-    finalizer()->SetNextCreateOsShortcutsResult(
-        finalizer()->GetAppIdForUrl(url), true);
+    auto task = std::make_unique<BookmarkAppInstallationTask>(
+        profile(), registrar_, install_finalizer_, std::move(options));
+    return task;
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   web_app::TestAppRegistrar* registrar_ = nullptr;
+  web_app::TestDataRetriever* data_retriever_ = nullptr;
   TestBookmarkAppInstallFinalizer* install_finalizer_ = nullptr;
-  std::unique_ptr<web_app::TestDataRetriever> prepared_data_retriever_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTaskTest);
 };
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(),
-      web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kInternal));
+  auto task = GetInstallationTaskWithTestMocks(
+      {kWebAppUrl, web_app::LaunchContainer::kDefault,
+       web_app::InstallSource::kInternal});
 
   base::RunLoop run_loop;
 
@@ -369,14 +385,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-  // Fail GetWebApplicationInfo.
+  auto task = GetInstallationTaskWithTestMocks(
+      {kWebAppUrl, web_app::LaunchContainer::kWindow,
+       web_app::InstallSource::kInternal});
   data_retriever()->SetRendererWebApplicationInfo(nullptr);
-
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(),
-      web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                              web_app::InstallSource::kInternal));
 
   base::RunLoop run_loop;
 
@@ -402,14 +414,11 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoDesktopShortcut) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions install_options(kWebAppUrl,
                                           web_app::LaunchContainer::kWindow,
                                           web_app::InstallSource::kInternal);
   install_options.add_to_desktop = false;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
 
@@ -436,14 +445,11 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions install_options(kWebAppUrl,
                                           web_app::LaunchContainer::kWindow,
                                           web_app::InstallSource::kInternal);
   install_options.add_to_quick_launch_bar = false;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -470,15 +476,12 @@ TEST_F(BookmarkAppInstallationTaskTest,
 TEST_F(
     BookmarkAppInstallationTaskTest,
     WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions install_options(kWebAppUrl,
                                           web_app::LaunchContainer::kWindow,
                                           web_app::InstallSource::kInternal);
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -504,13 +507,10 @@ TEST_F(
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
                               web_app::InstallSource::kInternal);
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -531,13 +531,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kTab,
                               web_app::InstallSource::kInternal);
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -557,13 +554,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_DefaultApp) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
                               web_app::InstallSource::kInternal);
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -584,13 +578,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_AppFromPolicy) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
                               web_app::InstallSource::kExternalPolicy);
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(install_options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
   task->Install(web_contents(), web_app::WebAppUrlLoader::Result::kUrlLoaded,
@@ -610,13 +601,10 @@ TEST_F(BookmarkAppInstallationTaskTest,
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
   options.install_placeholder = true;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), std::move(options));
+  auto task = GetInstallationTaskWithTestMocks(std::move(options));
 
   base::RunLoop run_loop;
   task->Install(
@@ -646,8 +634,6 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
   options.install_placeholder = true;
@@ -655,9 +641,7 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
 
   // Install a placeholder app.
   {
-    auto task = std::make_unique<BookmarkAppInstallationTask>(
-        profile(), registrar(), finalizer(), options);
-
+    auto task = GetInstallationTaskWithTestMocks(options);
     base::RunLoop run_loop;
     task->Install(
         web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
@@ -673,8 +657,7 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
   }
 
   // Try to install it again.
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), options);
+  auto task = GetInstallationTaskWithTestMocks(options);
   base::RunLoop run_loop;
   task->Install(
       web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
@@ -692,8 +675,6 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
   options.install_placeholder = true;
@@ -701,8 +682,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
 
   // Install a placeholder app.
   {
-    auto task = std::make_unique<BookmarkAppInstallationTask>(
-        profile(), registrar(), finalizer(), options);
+    auto task = GetInstallationTaskWithTestMocks(options);
 
     base::RunLoop run_loop;
     task->Install(
@@ -720,14 +700,8 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
 
   // Replace the placeholder with a real app.
   options.reinstall_placeholder = true;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), options);
-
+  auto task = GetInstallationTaskWithTestMocks(options);
   finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, true);
-  finalizer()->SetNextFinalizeInstallResult(
-      kWebAppUrl, web_app::InstallResultCode::kSuccess);
-  finalizer()->SetNextCreateOsShortcutsResult(
-      finalizer()->GetAppIdForUrl(kWebAppUrl), true);
 
   base::RunLoop run_loop;
   task->Install(
@@ -749,8 +723,6 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
-  CreateDefaultDataToRetrieve(kWebAppUrl);
-
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
   options.install_placeholder = true;
@@ -758,9 +730,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
 
   // Install a placeholder app.
   {
-    auto task = std::make_unique<BookmarkAppInstallationTask>(
-        profile(), registrar(), finalizer(), options);
-
+    auto task = GetInstallationTaskWithTestMocks(options);
     base::RunLoop run_loop;
     task->Install(
         web_contents(), web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded,
@@ -778,8 +748,7 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
 
   // Replace the placeholder with a real app.
   options.reinstall_placeholder = true;
-  auto task = std::make_unique<BookmarkAppInstallationTask>(
-      profile(), registrar(), finalizer(), options);
+  auto task = GetInstallationTaskWithTestMocks(options);
 
   finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, false);
 

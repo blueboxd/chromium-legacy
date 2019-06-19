@@ -27,12 +27,6 @@ bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
   return false;
 }
 
-UINavigationController* ChromeIdentityService::CreateAccountDetailsController(
-    ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
-  return nil;
-}
-
 DismissASMViewControllerBlock
 ChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,

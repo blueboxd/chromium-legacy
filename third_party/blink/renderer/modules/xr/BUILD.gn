@@ -40,6 +40,8 @@ blink_modules_sources("xr") {
     "xr_plane.h",
     "xr_plane_detection_state.cc",
     "xr_plane_detection_state.h",
+    "xr_plane_set.cc",
+    "xr_plane_set.h",
     "xr_pose.cc",
     "xr_pose.h",
     "xr_ray.cc",

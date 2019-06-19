@@ -44,7 +44,7 @@ ShelfID GetShelfID(aura::Window* window) {
     static int id = 0;
     const ash::ShelfID shelf_id(ShelfWindowWatcher::kDefaultShelfIdPrefix +
                                 std::to_string(id++));
-    window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+    window->SetProperty(kShelfIDKey, shelf_id.Serialize());
     return shelf_id;
   }
   return ShelfID::Deserialize(window->GetProperty(kShelfIDKey));

@@ -21,6 +21,7 @@ using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
 using autofill::AddressAccessoryController;
+using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 
 ManualFillingControllerImpl::~ManualFillingControllerImpl() = default;
@@ -65,8 +66,8 @@ void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(
 }
 
 void ManualFillingControllerImpl::OnFilledIntoFocusedField(
-    autofill::FillingStatus status) {
-  if (status != autofill::FillingStatus::SUCCESS)
+    FillingStatus status) {
+  if (status != FillingStatus::SUCCESS)
     return;  // TODO(crbug.com/853766): Record success rate.
   view_->SwapSheetWithKeyboard();
 }

@@ -296,7 +296,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
   // client after WebAssociatedURLLoader::loadAsynchronously has returned to the
   // caller.
   if (did_fail_)
-    error_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    error_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {

@@ -200,7 +200,7 @@ ACTION_P3(ScheduleRenameAndUniquifyCallback,
 // Schedules a task to invoke the RenameCompletionCallback with |new_path| on
 // the |task_runner|. Should only be used as the action for
 // MockDownloadFile::RenameAndAnnotate as follows:
-//   EXPECT_CALL(download_file, RenameAndAnnotate(_,_,_,_,_))
+//   EXPECT_CALL(download_file, RenameAndAnnotate(_,_,_,_,_,_))
 //       .WillOnce(ScheduleRenameAndAnnotateCallback(
 //           DOWNLOAD_INTERRUPT_REASON_NONE, new_path, task_runner));
 ACTION_P3(ScheduleRenameAndAnnotateCallback,
@@ -208,7 +208,7 @@ ACTION_P3(ScheduleRenameAndAnnotateCallback,
           new_path,
           task_runner) {
   task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(arg4, interrupt_reason, new_path));
+                        base::BindOnce(arg5, interrupt_reason, new_path));
 }
 
 // Schedules a task to invoke a callback that's bound to the specified
@@ -341,7 +341,7 @@ class DownloadItemTest : public testing::Test {
     EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
         .WillOnce(Return(true));
     base::FilePath final_path(kDummyTargetPath);
-    EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _))
+    EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _))
         .WillOnce(ScheduleRenameAndAnnotateCallback(
             DOWNLOAD_INTERRUPT_REASON_NONE, final_path,
             base::ThreadTaskRunnerHandle::Get()));
@@ -516,7 +516,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _));
+  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _));
   unsafeurl_item->ValidateDangerousDownload();
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
   CleanupItem(unsafeurl_item, download_file, DownloadItem::IN_PROGRESS);
@@ -534,7 +534,7 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _));
+  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _));
   unsafefile_item->ValidateDangerousDownload();
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
   CleanupItem(unsafefile_item, download_file, DownloadItem::IN_PROGRESS);
@@ -769,8 +769,9 @@ TEST_F(DownloadItemTest, UnresumableInterrupt) {
   // Fail final rename with unresumable reason.
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file,
-              RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _))
+  EXPECT_CALL(
+      *download_file,
+      RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED, base::FilePath(),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1278,7 +1279,7 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _, _, _, _))
+  EXPECT_CALL(*download_file, RenameAndAnnotate(final_path, _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, final_path,
           base::ThreadTaskRunnerHandle::Get()));
@@ -1697,7 +1698,7 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
   EXPECT_TRUE(item->CanOpenDownload());
 
   // Complete
-  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _))
+  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1733,7 +1734,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
   // Complete Temporary
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(item, _))
       .WillOnce(Return(true));
-  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _))
+  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1799,8 +1800,9 @@ TEST_F(DownloadItemTest, CompleteDelegate_ReturnTrue) {
   EXPECT_FALSE(item->IsDangerous());
 
   // Make sure the download can complete.
-  EXPECT_CALL(*download_file,
-              RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _))
+  EXPECT_CALL(
+      *download_file,
+      RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1839,8 +1841,9 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockOnce) {
   EXPECT_FALSE(item->IsDangerous());
 
   // Make sure the download can complete.
-  EXPECT_CALL(*download_file,
-              RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _))
+  EXPECT_CALL(
+      *download_file,
+      RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1882,8 +1885,9 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   EXPECT_TRUE(item->IsDangerous());
 
   // Make sure the download doesn't complete until we've validated it.
-  EXPECT_CALL(*download_file,
-              RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _))
+  EXPECT_CALL(
+      *download_file,
+      RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -1934,8 +1938,9 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
   EXPECT_FALSE(item->IsDangerous());
 
   // Make sure the download can complete.
-  EXPECT_CALL(*download_file,
-              RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _))
+  EXPECT_CALL(
+      *download_file,
+      RenameAndAnnotate(base::FilePath(kDummyTargetPath), _, _, _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -2046,7 +2051,7 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   // Target file should be annotated with the source URL.
   EXPECT_CALL(*download_file,
-              RenameAndAnnotate(_, _, create_info()->url(), _, _))
+              RenameAndAnnotate(_, _, create_info()->url(), _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));
@@ -2064,7 +2069,7 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
   download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
   // Target file should be annotated with an empty URL.
-  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, GURL(), _, _))
+  EXPECT_CALL(*download_file, RenameAndAnnotate(_, _, GURL(), _, _, _))
       .WillOnce(ScheduleRenameAndAnnotateCallback(
           DOWNLOAD_INTERRUPT_REASON_NONE, base::FilePath(kDummyTargetPath),
           base::ThreadTaskRunnerHandle::Get()));

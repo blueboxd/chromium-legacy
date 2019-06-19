@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -260,15 +260,16 @@ void WebRtcVideoTrackSource::DeliverFrame(
   // Clear accumulated_update_rect_.
   accumulated_update_rect_ = gfx::Rect();
 
-  OnFrame(webrtc::VideoFrame::Builder()
-              .set_video_frame_buffer(
-                  new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
-              .set_rotation(webrtc::kVideoRotation_0)
-              .set_timestamp_us(timestamp_us)
-              .set_update_rect(webrtc::VideoFrame::UpdateRect{
-                  update_rect.x(), update_rect.y(), update_rect.width(),
-                  update_rect.height()})
-              .build());
+  OnFrame(
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(
+              new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(frame))
+          .set_rotation(webrtc::kVideoRotation_0)
+          .set_timestamp_us(timestamp_us)
+          .set_update_rect(webrtc::VideoFrame::UpdateRect{
+              update_rect.x(), update_rect.y(), update_rect.width(),
+              update_rect.height()})
+          .build());
 }
 
 }  // namespace content

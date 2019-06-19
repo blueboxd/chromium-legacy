@@ -432,14 +432,20 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   // Emit any new interned data entries into the packet.
-  auto* interned_data = trace_packet->set_interned_data();
+  perfetto::protos::pbzero::InternedData* interned_data = nullptr;
   if (!interned_category.was_emitted) {
+    if (!interned_data) {
+      interned_data = trace_packet->set_interned_data();
+    }
     auto* category_entry = interned_data->add_event_categories();
     category_entry->set_iid(interned_category.id);
     category_entry->set_name(category_name);
   }
 
   if (!interned_name.was_emitted) {
+    if (!interned_data) {
+      interned_data = trace_packet->set_interned_data();
+    }
     auto* name_entry = interned_data->add_legacy_event_names();
     name_entry->set_iid(interned_name.id);
     name_entry->set_name(copy_strings && privacy_filtering_enabled_
@@ -449,6 +455,9 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   if (interned_source_location.id) {
     if (!interned_source_location.was_emitted) {
+      if (!interned_data) {
+        interned_data = trace_packet->set_interned_data();
+      }
       auto* source_location_entry = interned_data->add_source_locations();
       source_location_entry->set_iid(interned_source_location.id);
       source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
@@ -462,6 +471,9 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
          ++i) {
       DCHECK(interned_annotation_names[i].id);
       if (!interned_annotation_names[i].was_emitted) {
+        if (!interned_data) {
+          interned_data = trace_packet->set_interned_data();
+        }
         auto* name_entry = interned_data->add_debug_annotation_names();
         name_entry->set_iid(interned_annotation_names[i].id);
         name_entry->set_name(trace_event->arg_name(i));

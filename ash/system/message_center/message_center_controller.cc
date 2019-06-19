@@ -114,8 +114,4 @@ void MessageCenterController::SetArcNotificationsInstance(
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
 }
 
-void MessageCenterController::SetQuietMode(bool enabled) {
-  MessageCenter::Get()->SetQuietMode(enabled);
-}
-
 }  // namespace ash

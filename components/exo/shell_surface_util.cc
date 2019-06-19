@@ -32,7 +32,7 @@ void SetShellApplicationId(aura::Window* window,
   TRACE_EVENT1("exo", "SetApplicationId", "application_id", id ? *id : "null");
 
   if (id)
-    window->SetProperty(kApplicationIdKey, new std::string(*id));
+    window->SetProperty(kApplicationIdKey, *id);
   else
     window->ClearProperty(kApplicationIdKey);
 }
@@ -46,7 +46,7 @@ void SetShellStartupId(aura::Window* window,
   TRACE_EVENT1("exo", "SetStartupId", "startup_id", id ? *id : "null");
 
   if (id)
-    window->SetProperty(kStartupIdKey, new std::string(*id));
+    window->SetProperty(kStartupIdKey, *id);
   else
     window->ClearProperty(kStartupIdKey);
 }

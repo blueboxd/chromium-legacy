@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -474,16 +475,15 @@ void ChildThreadImpl::Init(const Options& options) {
     }
   }
 
-  // In single process mode we may already have a power monitor,
+  // In single process mode we may already have initialized the power monitor,
   // also for some edge cases where there is no ServiceManagerConnection, we do
   // not create the power monitor.
-  if (!base::PowerMonitor::Get() && service_manager_connection_) {
+  if (!base::PowerMonitor::IsInitialized() && service_manager_connection_) {
     auto power_monitor_source =
         std::make_unique<device::PowerMonitorBroadcastSource>(
             GetIOTaskRunner());
     auto* source_ptr = power_monitor_source.get();
-    power_monitor_.reset(
-        new base::PowerMonitor(std::move(power_monitor_source)));
+    base::PowerMonitor::Initialize(std::move(power_monitor_source));
     // The two-phase init is necessary to ensure that the process-wide
     // PowerMonitor is set before the power monitor source receives incoming
     // communication from the browser process (see https://crbug.com/821790 for

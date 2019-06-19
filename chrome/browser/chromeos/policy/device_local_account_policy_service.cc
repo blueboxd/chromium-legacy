@@ -210,8 +210,8 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
   invalidator_.reset(new AffiliatedCloudPolicyInvalidator(
-      em::DeviceRegisterRequest::DEVICE, &core_, invalidation_service_provider_,
-      base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)));
+      em::DeviceRegisterRequest::DEVICE, &core_,
+      invalidation_service_provider_));
 }
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {

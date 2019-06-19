@@ -72,6 +72,11 @@ std::string DeviceOAuth2TokenService::GetRobotAccountId() const {
   return GetDeviceDelegate()->GetRobotAccountId();
 }
 
+void DeviceOAuth2TokenService::set_robot_account_id_for_testing(
+    const CoreAccountId& account_id) {
+  GetDeviceDelegate()->set_robot_account_id_for_testing(account_id);
+}
+
 void DeviceOAuth2TokenService::FetchOAuth2Token(
     RequestImpl* request,
     const CoreAccountId& account_id,

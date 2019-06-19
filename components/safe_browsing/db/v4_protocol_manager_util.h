@@ -149,6 +149,9 @@ enum SBThreatType {
   // A sample of an ad was collected
   SB_THREAT_TYPE_AD_SAMPLE,
 
+  // A report of Google ad that caused a blocked popup was collected.
+  SB_THREAT_TYPE_BLOCKED_AD_POPUP,
+
   // The page loaded a resource from the Suspicious Site list.
   SB_THREAT_TYPE_SUSPICIOUS_SITE,
 
@@ -160,6 +163,9 @@ enum SBThreatType {
 
   // Off-market APK file downloaded, which could be potentially dangerous.
   SB_THREAT_TYPE_APK_DOWNLOAD,
+
+  // Match found in the local high-confidence allowlist.
+  SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;
@@ -216,6 +222,7 @@ ListIdentifier GetIpMalwareId();
 ListIdentifier GetUrlBillingId();
 ListIdentifier GetUrlCsdDownloadWhitelistId();
 ListIdentifier GetUrlCsdWhitelistId();
+ListIdentifier GetUrlHighConfidenceAllowlistId();
 ListIdentifier GetUrlMalBinId();
 ListIdentifier GetUrlMalwareId();
 ListIdentifier GetUrlSocEngId();

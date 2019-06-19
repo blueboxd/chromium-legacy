@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_INVALIDATOR_H_
 #define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_INVALIDATOR_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -30,13 +28,9 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
   // a reference to the profile's invalidation service. Both the profile and
   // invalidation service must remain valid until Shutdown is called.
   // |policy_manager| is the policy manager for the user policy and must remain
-  // valid until Shutdown is called. |is_fcm_enabled| is the flag denoting
-  // FCM is being used as InvalidationService. |fcm_sender_id| is the id of
-  // FCM Policy Invalidation sender coming from Firebase console.
+  // valid until Shutdown is called.
   UserCloudPolicyInvalidator(Profile* profile,
-                             CloudPolicyManager* policy_manager,
-                             bool is_fcm_enabled,
-                             std::string fcm_sender_id);
+                             CloudPolicyManager* policy_manager);
 
   static enterprise_management::DeviceRegisterRequest::Type GetPolicyType();
 
@@ -54,9 +48,6 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
 
   // Used to register for notification that profile creation is complete.
   content::NotificationRegistrar registrar_;
-
-  // Sender ID coming from the Firebase console.
-  const std::string fcm_sender_id_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyInvalidator);
 };

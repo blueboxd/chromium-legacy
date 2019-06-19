@@ -22,11 +22,13 @@ TEST(CaptionStyleWinTest, TestWinCaptionStyle) {
     base::win::ScopedCOMInitializer com_initializer;
     ASSERT_TRUE(com_initializer.Succeeded());
 
-    ui::CaptionStyle caption_style = ui::CaptionStyle::FromSystemSettings();
+    base::Optional<ui::CaptionStyle> caption_style =
+        ui::CaptionStyle::FromSystemSettings();
     // Other caption style properties can be empty and shouldn't be checked.
-    EXPECT_TRUE(!caption_style.background_color.empty());
-    EXPECT_TRUE(!caption_style.text_color.empty());
-    EXPECT_TRUE(!caption_style.font_variant.empty());
+    ASSERT_TRUE(caption_style.has_value());
+    EXPECT_TRUE(!caption_style->background_color.empty());
+    EXPECT_TRUE(!caption_style->text_color.empty());
+    EXPECT_TRUE(!caption_style->font_variant.empty());
   }
 }
 

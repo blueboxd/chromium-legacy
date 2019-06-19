@@ -35,6 +35,8 @@ namespace {
 const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 }
 
+using base::test::ios::WaitUntilConditionOrTimeout;
+
 @interface PaymentRequestEGTestBase () {
   // The PersonalDataManager instance for the current browser state.
   autofill::PersonalDataManager* _personalDataManager;
@@ -82,35 +84,24 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
 
 #pragma mark - Public methods
 
-- (NSError*)addAutofillProfile:(const autofill::AutofillProfile&)profile {
+- (void)addAutofillProfile:(const autofill::AutofillProfile&)profile {
   _profiles.push_back(profile);
   size_t profile_count = [self personalDataManager]->GetProfiles().size();
   [self personalDataManager]->AddProfile(profile);
-  bool isProfileAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return profile_count <
-                   [self personalDataManager] -> GetProfiles().size();
-      });
-  if (!isProfileAdded) {
-    return testing::NSErrorWithLocalizedDescription(@"Failed to add profile.");
-  }
-  return nil;
+  bool profileAdded = WaitUntilConditionOrTimeout(kPDMMaxDelaySeconds, ^{
+    return profile_count < [self personalDataManager] -> GetProfiles().size();
+  });
+  GREYAssert(profileAdded, @"Failed to add profile.");
 }
 
-- (NSError*)addCreditCard:(const autofill::CreditCard&)card {
+- (void)addCreditCard:(const autofill::CreditCard&)card {
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
-  bool isCreditCardAdded = base::test::ios::WaitUntilConditionOrTimeout(
-      kPDMMaxDelaySeconds, ^bool() {
-        return card_count <
-                   [self personalDataManager] -> GetCreditCards().size();
-      });
-  if (!isCreditCardAdded) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Failed to add credit card.");
-  }
-  return nil;
+  bool creditCardAdded = WaitUntilConditionOrTimeout(kPDMMaxDelaySeconds, ^{
+    return card_count < [self personalDataManager] -> GetCreditCards().size();
+  });
+  GREYAssert(creditCardAdded, @"Failed to add credit card.");
 }
 
 - (void)addServerCreditCard:(const autofill::CreditCard&)card {

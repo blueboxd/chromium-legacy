@@ -158,7 +158,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   // Note: Toggling overview mode will fail if there is no window to show, the
   // screen is locked, a modal dialog is open or is running in kiosk app
   // session.
-  bool performed = controller->ToggleOverview();
+  bool performed;
+  if (controller->InOverviewSession())
+    performed = controller->EndOverview();
+  else
+    performed = controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return performed;
 }

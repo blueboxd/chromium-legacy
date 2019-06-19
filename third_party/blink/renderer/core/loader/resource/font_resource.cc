@@ -44,8 +44,10 @@ namespace blink {
 // https://tabatkins.github.io/specs/css-font-display/#font-display-desc
 // TODO(toyoshim): Revisit short limit value once cache-aware font display is
 // launched. crbug.com/570205
-constexpr TimeDelta kFontLoadWaitShort = TimeDelta::FromMilliseconds(100);
-constexpr TimeDelta kFontLoadWaitLong = TimeDelta::FromMilliseconds(3000);
+constexpr base::TimeDelta kFontLoadWaitShort =
+    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kFontLoadWaitLong =
+    base::TimeDelta::FromMilliseconds(3000);
 
 enum FontPackageFormat {
   kPackageFormatUnknown,

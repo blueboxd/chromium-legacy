@@ -12,6 +12,10 @@ import("//tools/grit/grit_rule.gni")
 
 assert(!is_ios, "Policy should not be referenced on iOS")
 
+# To generate policy documentation for local use, set this to true for the
+# links between pages and subpages to work.
+gen_policy_templates_local = false
+
 # To test policy generation for platforms different than your OS, override and
 # enable these flags (but don't check that in!).
 gen_policy_templates_common = true
@@ -192,11 +196,16 @@ action("policy_templates") {
            chrome_version_path,
          ] + grit_defines
 
+  if (gen_policy_templates_local) {
+    args += [ "--local" ]
+  }
   if (gen_policy_templates_common) {
     outputs += policy_templates_common_outputs
     args += [
       "--doc",
       rebase_path(policy_templates_doc_path, root_build_dir),
+      "--doc_atomic_groups",
+      rebase_path(policy_templates_doc_atomic_groups_path, root_build_dir),
     ]
   }
   if (gen_policy_templates_android) {
@@ -452,6 +461,8 @@ if (gen_policy_templates_zip) {
       rebase_path(version_path, root_build_dir),
       "--add",
       rebase_path(policy_templates_doc_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_doc_atomic_groups_path, root_build_dir),
       "--add",
       rebase_path(policy_templates_win_reg_path, root_build_dir),
       "--add",

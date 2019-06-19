@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
@@ -67,7 +66,8 @@ class ManualFillingController {
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
+  virtual void OnFilledIntoFocusedField(
+      autofill::mojom::FillingStatus status) = 0;
 
   // Requests to show the accessory bar. The accessory will only be shown
   // when the keyboard becomes visible.

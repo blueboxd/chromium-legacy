@@ -171,7 +171,7 @@ void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
   visible_load_time_metrics.record_visibility_metrics = false;
   visibility_metrics_observer_->unobserve(image_element);
 
-  TimeDelta visible_load_delay;
+  base::TimeDelta visible_load_delay;
   if (!visible_load_time_metrics.time_when_first_visible.is_null()) {
     visible_load_delay =
         CurrentTimeTicks() - visible_load_time_metrics.time_when_first_visible;

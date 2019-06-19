@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 chrome.test.getConfig(function(config) {
-  // TODO(yoichio): Remove this if network service is enabled w/o flag.
-  let networkServiceEnabled = (config.customArg === 'NetworkServiceEnabled');
-
   chrome.tabs.getCurrent(function(tab) {
     runTestsForTab(
         [
@@ -93,9 +90,7 @@ chrome.test.getConfig(function(config) {
                       type: 'websocket',
                       ip: '127.0.0.1',
                       fromCache: false,
-                      error:
-                          (networkServiceEnabled ? 'net::ERR_FAILED' :
-                                                   'net::ERR_ABORTED'),
+                      error: 'net::ERR_FAILED',
                       initiator: getDomain(initiators.WEB_INITIATED)
                     }
                   },
@@ -194,9 +189,7 @@ chrome.test.getConfig(function(config) {
                       type: 'websocket',
                       ip: '127.0.0.1',
                       fromCache: false,
-                      error:
-                          (networkServiceEnabled ? 'net::ERR_FAILED' :
-                                                   'net::ERR_ABORTED'),
+                      error: 'net::ERR_FAILED',
                       initiator: getDomain(initiators.WEB_INITIATED)
                     }
                   },
@@ -295,9 +288,7 @@ chrome.test.getConfig(function(config) {
                       type: 'websocket',
                       ip: '127.0.0.1',
                       fromCache: false,
-                      error:
-                          (networkServiceEnabled ? 'net::ERR_FAILED' :
-                                                   'net::ERR_ABORTED'),
+                      error: 'net::ERR_FAILED',
                       initiator: getDomain(initiators.WEB_INITIATED)
                     }
                   },

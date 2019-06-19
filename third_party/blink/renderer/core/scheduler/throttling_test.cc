@@ -48,7 +48,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
   // Run delayed tasks for 1 second. All tasks should be completed
   // with throttling disabled.
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
 
   EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
                                              "called f", "called f"));
@@ -74,7 +74,7 @@ TEST_F(BackgroundPageThrottlingTest, BackgroundPagesAreThrottled) {
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // Make sure that we run no more than one task a second.
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(3000));
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(3000));
   EXPECT_THAT(
       ConsoleMessages(),
       AnyOf(ElementsAre("called f", "called f", "called f"),

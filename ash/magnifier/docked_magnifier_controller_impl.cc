@@ -583,7 +583,7 @@ void DockedMagnifierControllerImpl::OnEnabledPrefChanged() {
           SplitViewController::EndReason::kNormal);
     }
 
-    overview_controller->ToggleOverview();
+    overview_controller->EndOverview();
   }
 
   if (new_enabled) {

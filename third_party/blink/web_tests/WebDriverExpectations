@@ -3,6 +3,7 @@
 # separate runner, run_webdriver_tests.py. Thus this is a separate
 # expectation file from TestExpectations.
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_window/alerts.py>>test_retain_tab_modal_status [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/minimize_window/minimize.py>>test_fully_exit_fullscreen [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/permissions/set.py>>test_set_to_state[realmSetting2-denied] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/perform_actions/pointer_contextmenu.py>>test_control_click[\ue009-ctrlKey] [ Failure ]

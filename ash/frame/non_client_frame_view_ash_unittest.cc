@@ -412,10 +412,10 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInOverviewMode) {
 
   // Verify the header is not painted in overview mode and painted when not in
   // overview mode.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   EXPECT_FALSE(delegate->header_view()->should_paint());
 
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
   EXPECT_TRUE(delegate->header_view()->should_paint());
 }
 
@@ -439,7 +439,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
 
   // Verify that when one window is snapped, the header is drawn for the snapped
   // window, but not drawn for the window still in overview.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   Shell::Get()->split_view_controller()->SnapWindow(widget1->GetNativeWindow(),
                                                     SplitViewController::LEFT);
   EXPECT_TRUE(delegate1->header_view()->should_paint());
@@ -457,7 +457,7 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
   // Toggle overview mode so we return back to left snapped mode. Verify that
   // the header is again drawn for the snapped window, but not for the unsnapped
   // window.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   ASSERT_EQ(SplitViewState::kLeftSnapped,
             Shell::Get()->split_view_controller()->state());
   EXPECT_TRUE(delegate1->header_view()->should_paint());
@@ -731,9 +731,9 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_FALSE(header_view->should_paint());
   EXPECT_TRUE(wide_header_view->should_paint());
 
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   EXPECT_FALSE(wide_header_view->should_paint());
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
   EXPECT_TRUE(wide_header_view->should_paint());
 
   // Test immersive.

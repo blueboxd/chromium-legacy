@@ -332,9 +332,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetMap touchscreen_gesture_target_map_;
   RenderWidgetHostViewBase* touch_target_ = nullptr;
   RenderWidgetHostViewBase* touchscreen_gesture_target_ = nullptr;
-  // The following variable is temporary, for diagnosis of
-  // https://crbug.com/824774.
-  bool touchscreen_gesture_target_in_map_;
   RenderWidgetHostViewBase* touchpad_gesture_target_ = nullptr;
   RenderWidgetHostViewBase* bubbling_gesture_scroll_target_ = nullptr;
   RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin_ = nullptr;

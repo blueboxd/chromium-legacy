@@ -79,7 +79,7 @@ const base::string16& StatusIconLinuxWrapper::GetToolTip() const {
   return tool_tip_;
 }
 
-const ui::MenuModel* StatusIconLinuxWrapper::GetMenuModel() const {
+ui::MenuModel* StatusIconLinuxWrapper::GetMenuModel() const {
   return menu_model_;
 }
 

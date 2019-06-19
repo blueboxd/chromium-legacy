@@ -1267,6 +1267,10 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   is_scheduled_ = true;
 }
 
+const AttrNameToTrustedType& SVGSMILElement::GetCheckedAttributeTypes() const {
+  return SVGURIReference::GetCheckedAttributeTypes();
+}
+
 void SVGSMILElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_element_);
   visitor->Trace(target_id_observer_);

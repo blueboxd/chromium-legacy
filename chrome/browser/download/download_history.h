@@ -36,7 +36,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
     virtual ~HistoryAdapter();
 
     virtual void QueryDownloads(
-        const history::HistoryService::DownloadQueryCallback& callback);
+        history::HistoryService::DownloadQueryCallback callback);
 
     virtual void CreateDownload(
         const history::DownloadRow& info,
@@ -96,11 +96,10 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
  private:
   // Callback from |history_| containing all entries in the downloads database
   // table.
-  void QueryCallback(std::unique_ptr<std::vector<history::DownloadRow>> infos);
+  void QueryCallback(std::vector<history::DownloadRow> rows);
 
   // Called to create all history downloads.
-  void LoadHistoryDownloads(
-      std::unique_ptr<std::vector<history::DownloadRow>> infos);
+  void LoadHistoryDownloads(std::vector<history::DownloadRow> rows);
 
   // May add |item| to |history_|.
   void MaybeAddToHistory(download::DownloadItem* item);

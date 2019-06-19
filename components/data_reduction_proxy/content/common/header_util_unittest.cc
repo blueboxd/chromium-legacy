@@ -29,10 +29,7 @@ TEST(HeaderUtilTest, MaybeSetAcceptTransformHeader) {
       {GURL(kHttpsUrl), content::ResourceType::kMedia, 0, ""},
       {GURL(kUrl), content::ResourceType::kMainFrame,
        content::SERVER_LITE_PAGE_ON, lite_page_directive()},
-      {GURL(kUrl), content::ResourceType::kSubFrame, content::SERVER_LOFI_ON,
-       empty_image_directive()},
       {GURL(kUrl), content::ResourceType::kSubFrame, 0, ""},
-      {GURL(kUrl), content::ResourceType::kScript, content::SERVER_LOFI_ON, ""},
   };
 
   for (const auto& test : tests) {

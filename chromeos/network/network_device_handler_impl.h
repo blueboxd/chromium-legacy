@@ -122,6 +122,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
  private:
   friend class NetworkHandler;
+  friend class NetworkDeviceHandler;
   friend class NetworkDeviceHandlerTest;
 
   // When there's no Wi-Fi device or there is one but we haven't asked if

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -37,6 +38,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
 
 #if defined(KIOSK_NEXT)
@@ -48,16 +50,15 @@ namespace extensions {
 namespace {
 #if defined(OS_CHROMEOS)
 
-// Forwards service requests to Service Manager since the renderer cannot launch
-// out-of-process services on its own.
-template <typename Interface>
-void ForwardRequest(const char* service_name,
-                    mojo::InterfaceRequest<Interface> request,
-                    content::RenderFrameHost* source) {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(service_name, std::move(request));
+#if defined(GOOGLE_CHROME_BUILD)
+// Resolves InputEngineManager request in InputMethodManager.
+void BindInputEngineManager(
+    chromeos::ime::mojom::InputEngineManagerRequest request,
+    content::RenderFrameHost* source) {
+  chromeos::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
+      std::move(request));
 }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(KIOSK_NEXT)
 const char kKioskNextHomeInterfaceBrokerImplKey[] = "cros_kiosk_next_home_impl";
@@ -153,9 +154,7 @@ void RegisterChromeInterfacesForExtension(
 #if defined(GOOGLE_CHROME_BUILD)
   // Registry InputEngineManager for official Google XKB Input only.
   if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
-    registry->AddInterface(base::BindRepeating(
-        &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
-        chromeos::ime::mojom::kServiceName));
+    registry->AddInterface(base::BindRepeating(&BindInputEngineManager));
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

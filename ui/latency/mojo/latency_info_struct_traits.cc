@@ -206,6 +206,9 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
@@ -292,6 +295,10 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT;
       return true;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
@@ -126,6 +127,9 @@ void BlockPainter::PaintOverflowControlsIfNeeded(
 }
 
 void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
+  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   // We may use legacy paint to paint the anonymous fieldset child. The layout
   // object for the rendered legend will be a child of that one, and has to be
   // skipped here, since it's handled by a special NG fieldset painter.
@@ -169,6 +173,8 @@ void BlockPainter::PaintChild(const LayoutBox& child,
 
 void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
                                            const PaintInfo& paint_info) {
+  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
   for (const LayoutBox* child = order_iterator.First(); child;
        child = order_iterator.Next()) {
     PaintAllChildPhasesAtomically(*child, paint_info);
@@ -177,6 +183,8 @@ void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
 
 void BlockPainter::PaintAllChildPhasesAtomically(const LayoutBox& child,
                                                  const PaintInfo& paint_info) {
+  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
   if (!child.HasSelfPaintingLayer() && !child.IsFloating())
     ObjectPainter(child).PaintAllPhasesAtomically(paint_info);
 }

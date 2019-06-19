@@ -34,7 +34,6 @@ js_type_check("closure_compile") {
     ":oobe_buttons",
     ":oobe_change_picture",
     ":oobe_dialog",
-    ":oobe_enrollment",
     ":oobe_eula",
     ":oobe_i18n_dropdown",
     ":oobe_network",
@@ -284,12 +283,6 @@ js_library("oobe_buttons") {
 }
 
 js_library("oobe_dialog") {
-}
-
-js_library("oobe_enrollment") {
-  deps = [
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
 }
 
 js_library("oobe_eula") {

@@ -175,10 +175,11 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
   // Modify this array if the UMA ratio metrics should be bucketed in a
   // different way.
-  static const Vector<TimeDelta>& bucket_thresholds() {
+  static const Vector<base::TimeDelta>& bucket_thresholds() {
     // Leaky construction to avoid exit-time destruction.
-    static const Vector<TimeDelta>* thresholds = new Vector<TimeDelta>{
-        TimeDelta::FromMilliseconds(1), TimeDelta::FromMilliseconds(5)};
+    static const Vector<base::TimeDelta>* thresholds =
+        new Vector<base::TimeDelta>{base::TimeDelta::FromMilliseconds(1),
+                                    base::TimeDelta::FromMilliseconds(5)};
     return *thresholds;
   }
 
@@ -204,7 +205,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
     scoped_refptr<LocalFrameUkmAggregator> aggregator_;
     const size_t metric_index_;
     const base::TickClock* clock_;
-    const TimeTicks start_time_;
+    const base::TimeTicks start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedUkmHierarchicalTimer);
   };
@@ -220,12 +221,14 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // sub-metrics and generates UMA samples. UKM is only reported when
   // BeginMainFrame() returned true. All counters are cleared when this method
   // is called.
-  void RecordEndOfFrameMetrics(TimeTicks start, TimeTicks end);
+  void RecordEndOfFrameMetrics(base::TimeTicks start, base::TimeTicks end);
 
   // Record a sample for a sub-metric. This should only be used when
   // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
   // interval does not fall inside a single calling function).
-  void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
+  void RecordSample(size_t metric_index,
+                    base::TimeTicks start,
+                    base::TimeTicks end);
 
   // Mark the beginning of a main frame update.
   void BeginMainFrame();
@@ -242,9 +245,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
     // Accumulated at each sample, then reset with a call to
     // RecordEndOfFrameMetrics.
-    TimeDelta interval_duration;
+    base::TimeDelta interval_duration;
 
-    void reset() { interval_duration = TimeDelta(); }
+    void reset() { interval_duration = base::TimeDelta(); }
   };
 
   struct MainFramePercentageRecord {
@@ -252,9 +255,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
     // Accumulated at each sample, then reset with a call to
     // RecordEndOfFrameMetrics.
-    TimeDelta interval_duration;
+    base::TimeDelta interval_duration;
 
-    void reset() { interval_duration = TimeDelta(); }
+    void reset() { interval_duration = base::TimeDelta(); }
   };
 
   void UpdateEventTimeAndRecordEventIfNeeded();
@@ -263,7 +266,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   unsigned SampleFramesToNextEvent();
 
   // Implements throttling of the ForcedStyleAndLayoutUMA metric.
-  void RecordForcedStyleLayoutUMA(TimeDelta& duration);
+  void RecordForcedStyleLayoutUMA(base::TimeDelta& duration);
 
   // To test event sampling. This and all future intervals will be the given
   // frame count, until this is called again.

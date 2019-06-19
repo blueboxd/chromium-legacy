@@ -78,7 +78,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
 
   void SetV8Isolate(v8::Isolate* isolate) override {}
 
-  void RunIdleTask() { std::move(idle_task_).Run(TimeTicks()); }
+  void RunIdleTask() { std::move(idle_task_).Run(base::TimeTicks()); }
   bool HasIdleTask() const { return !!idle_task_; }
 
  private:

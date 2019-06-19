@@ -100,14 +100,14 @@ QueryResult QueryPrinterImpl(const std::string& host,
 
 // Handles the request for |info|.  Parses make and model information before
 // calling |callback|.
-void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
+void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
                       const QueryResult& query_result) {
   const ::printing::PrinterQueryResult& result = query_result.result;
   const ::printing::PrinterInfo& printer_info = query_result.printer_info;
   if (result != ::printing::PrinterQueryResult::SUCCESS) {
     VLOG(1) << "Could not reach printer";
-    callback.Run(result, std::string(), std::string(), std::string(), {},
-                 false);
+    std::move(callback).Run(result, std::string(), std::string(), std::string(),
+                            {}, false);
     return;
   }
 
@@ -124,9 +124,9 @@ void OnPrinterQueried(const chromeos::PrinterInfoCallback& callback,
     model = make_and_model;
   }
 
-  callback.Run(result, make.as_string(), model.as_string(),
-               printer_info.make_and_model, printer_info.document_formats,
-               IsAutoconf(printer_info));
+  std::move(callback).Run(
+      result, make.as_string(), model.as_string(), printer_info.make_and_model,
+      printer_info.document_formats, IsAutoconf(printer_info));
 }
 
 }  // namespace
@@ -137,7 +137,7 @@ void QueryIppPrinter(const std::string& host,
                      const int port,
                      const std::string& path,
                      bool encrypted,
-                     const PrinterInfoCallback& callback) {
+                     PrinterInfoCallback callback) {
   DCHECK(!host.empty());
 
   // QueryPrinterImpl could block on a network call for a noticable amount of
@@ -146,8 +146,8 @@ void QueryIppPrinter(const std::string& host,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       base::TaskTraits(base::TaskPriority::USER_VISIBLE, base::MayBlock()),
-      base::Bind(&QueryPrinterImpl, host, port, path, encrypted),
-      base::Bind(&OnPrinterQueried, callback));
+      base::BindOnce(&QueryPrinterImpl, host, port, path, encrypted),
+      base::BindOnce(&OnPrinterQueried, std::move(callback)));
 }
 
 }  // namespace chromeos

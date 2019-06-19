@@ -93,6 +93,9 @@ class KioskNextHomeBridge {
     /** @private @const */
     this.appControllerClientCallbackRouter_ =
         new chromeos.kioskNextHome.mojom.AppControllerClientCallbackRouter();
+    /** @private @const */
+    this.websiteControllerProxy_ =
+        new chromeos.kioskNextHome.mojom.WebsiteControllerProxy();
 
     const kioskNextHomeInterfaceBrokerProxy =
         chromeos.kioskNextHome.mojom.KioskNextHomeInterfaceBroker.getProxy();
@@ -102,6 +105,8 @@ class KioskNextHomeBridge {
         this.identityControllerProxy_.$.createRequest());
     kioskNextHomeInterfaceBrokerProxy.getAppController(
         this.appControllerProxy_.$.createRequest());
+    kioskNextHomeInterfaceBrokerProxy.getWebsiteController(
+        this.websiteControllerProxy_.$.createRequest());
 
     // Attaching app listeners.
     this.appControllerClientCallbackRouter_.onAppChanged.addListener(
@@ -219,6 +224,16 @@ class KioskNextHomeBridge {
         throw result.errorMessage;
       }
     });
+  }
+
+  /** @override */
+  launchKioskNextWebsite(url) {
+    this.websiteControllerProxy_.launchKioskNextWebsite(url);
+  }
+
+  /** @override */
+  launchWebsite(url) {
+    this.websiteControllerProxy_.launchWebsite(url);
   }
 
   /** @override */

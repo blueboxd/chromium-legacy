@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,6 +16,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -43,8 +45,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
-    int64_t highest_handled_invalidation_version,
-    bool is_fcm_enabled)
+    int64_t highest_handled_invalidation_version)
     : state_(UNINITIALIZED),
       type_(type),
       core_(core),
@@ -61,7 +62,6 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
           highest_handled_invalidation_version),
       max_fetch_delay_(kMaxFetchDelayDefault),
       policy_hash_value_(0),
-      is_fcm_enabled_(is_fcm_enabled),
       weak_factory_(this) {
   DCHECK(core);
   DCHECK(task_runner.get());
@@ -293,7 +293,7 @@ void CloudPolicyInvalidator::UpdateRegistration(
 
   // If the policy does not specify an ObjectId, then unregister.
   invalidation::ObjectId object_id;
-  if (is_fcm_enabled_) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     if (!policy->has_policy_invalidation_topic() ||
         policy->policy_invalidation_topic().empty()) {
       Unregister();

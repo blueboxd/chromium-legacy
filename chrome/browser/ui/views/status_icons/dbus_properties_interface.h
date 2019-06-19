@@ -18,7 +18,7 @@ class DbusPropertiesInterface {
  public:
   using InitializedCallback = base::OnceCallback<void(bool success)>;
 
-  // Registers method handles for the properties interface.  The handles will
+  // Registers method handlers for the properties interface.  The handlers will
   // not be removed until the bus is shut down.
   DbusPropertiesInterface(dbus::ExportedObject* exported_object,
                           InitializedCallback callback);

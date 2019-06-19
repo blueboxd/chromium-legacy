@@ -517,7 +517,6 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
 // static
 void FileMetricsProvider::MergeHistogramDeltasFromSource(SourceInfo* source) {
   DCHECK(source->allocator);
-  SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.File");
   base::PersistentHistogramAllocator::Iterator histogram_iter(
       source->allocator.get());
 
@@ -782,8 +781,6 @@ bool FileMetricsProvider::HasPreviousSessionData() {
   // Check all sources for previous run to see if they need to be read.
   for (auto iter = sources_for_previous_run_.begin();
        iter != sources_for_previous_run_.end();) {
-    SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.InitialCheckTime.File");
-
     auto temp = iter++;
     SourceInfo* source = temp->get();
 
@@ -828,9 +825,6 @@ void FileMetricsProvider::RecordInitialHistogramSnapshots(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (const std::unique_ptr<SourceInfo>& source : sources_for_previous_run_) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "UMA.FileMetricsProvider.InitialSnapshotTime.File");
-
     // The source needs to have an allocator attached to it in order to read
     // histograms out of it.
     DCHECK(!source->read_complete);

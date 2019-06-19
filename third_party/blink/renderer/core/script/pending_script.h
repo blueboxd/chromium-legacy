@@ -73,7 +73,7 @@ class CORE_EXPORT PendingScript
   // Returns the time the load of this script started blocking the parser, or
   // zero if this script hasn't yet blocked the parser, in
   // monotonicallyIncreasingTime.
-  TimeTicks ParserBlockingLoadStartTime() const {
+  base::TimeTicks ParserBlockingLoadStartTime() const {
     return parser_blocking_load_start_time_;
   }
 
@@ -153,7 +153,7 @@ class CORE_EXPORT PendingScript
       bool was_canceled,
       bool is_external,
       bool created_during_document_write,
-      TimeTicks parser_blocking_load_start_time,
+      base::TimeTicks parser_blocking_load_start_time,
       bool is_controlled_by_script_runner);
 
   // |m_element| must points to the corresponding ScriptLoader's
@@ -162,7 +162,7 @@ class CORE_EXPORT PendingScript
   Member<ScriptElementBase> element_;
 
   TextPosition starting_position_;  // Only used for inline script tags.
-  TimeTicks parser_blocking_load_start_time_;
+  base::TimeTicks parser_blocking_load_start_time_;
 
   ScriptSchedulingType scheduling_type_ = ScriptSchedulingType::kNotSet;
 

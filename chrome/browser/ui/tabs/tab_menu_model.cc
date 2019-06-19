@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
@@ -89,6 +90,13 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddSeparator(ui::NORMAL_SEPARATOR);
 
     if (send_tab_to_self::GetValidDeviceCount(tab_strip->profile()) == 1) {
+#if defined(OS_MACOSX)
+      AddItem(TabStripModel::CommandSendTabToSelfSingleTarget,
+              l10n_util::GetStringFUTF16(
+                  IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                  base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
+                      tab_strip->profile()))));
+#else
       AddItemWithIcon(
           TabStripModel::CommandSendTabToSelfSingleTarget,
           l10n_util::GetStringFUTF16(
@@ -96,6 +104,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
               base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
                   tab_strip->profile()))),
           *send_tab_to_self::GetImageSkia());
+#endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu,
           SendTabToSelfClickResult::kShowDeviceList);
@@ -106,10 +115,16 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
               tab_strip->GetActiveWebContents(),
               send_tab_to_self::SendTabToSelfMenuType::kTab);
+#if defined(OS_MACOSX)
+      AddSubMenuWithStringId(TabStripModel::CommandSendTabToSelf,
+                             IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
+                             send_tab_to_self_sub_menu_model_.get());
+#else
       AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
                                     IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                                     send_tab_to_self_sub_menu_model_.get(),
                                     *send_tab_to_self::GetImageSkia());
+#endif
     }
   }
 

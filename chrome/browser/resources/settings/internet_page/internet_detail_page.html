@@ -205,9 +205,7 @@
       <template is="dom-if" if="[[showCellularSim_(networkProperties_)]]"
           restamp>
         <div class="settings-box single-column stretch">
-          <network-siminfo on-siminfo-change="onNetworkPropertyChange_"
-              network-properties="[[networkProperties_]]"
-              networking-private="[[networkingPrivate]]">
+          <network-siminfo on-siminfo-change="onNetworkPropertyChange_">
           </network-siminfo>
         </div>
       </template>

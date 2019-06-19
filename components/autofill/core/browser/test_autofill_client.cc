@@ -152,7 +152,7 @@ void TestAutofillClient::ConfirmSaveCreditCardToCloud(
   std::move(callback).Run(AutofillClient::ACCEPTED, {});
 }
 
-void TestAutofillClient::CreditCardUploadCompleted() {}
+void TestAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
 
 void TestAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,

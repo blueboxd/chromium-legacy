@@ -14,13 +14,12 @@ namespace page_load_metrics {
 
 namespace {
 
-// Returns true when the image is a placeholder for lazy load or client LoFi.
+// Returns true when the image is a placeholder for lazy load.
 bool IsPartialImageRequest(content::ResourceType resource_type,
                            content::PreviewsState previews_state) {
   if (resource_type != content::ResourceType::kImage)
     return false;
-  return (previews_state & content::PreviewsTypes::CLIENT_LOFI_ON) ||
-         (previews_state & content::PreviewsTypes::LAZY_IMAGE_LOAD_DEFERRED);
+  return previews_state & content::PreviewsTypes::LAZY_IMAGE_LOAD_DEFERRED;
 }
 
 // Returns true if this resource was previously fetched as a placeholder.
@@ -28,8 +27,7 @@ bool IsImageAutoReload(content::ResourceType resource_type,
                        content::PreviewsState previews_state) {
   if (resource_type != content::ResourceType::kImage)
     return false;
-  return (previews_state & content::PreviewsTypes::CLIENT_LOFI_AUTO_RELOAD) ||
-         (previews_state & content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD);
+  return previews_state & content::PreviewsTypes::LAZY_IMAGE_AUTO_RELOAD;
 }
 
 // Returns the ratio of original data size (without applying interventions) to

@@ -25,10 +25,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -48,34 +48,6 @@
 namespace content {
 
 namespace {
-
-class RenderProcessKilledObserver : public WebContentsObserver {
- public:
-  explicit RenderProcessKilledObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-  ~RenderProcessKilledObserver() override {}
-
-  bool killed() const { return killed_; }
-
-  void RenderProcessGone(base::TerminationStatus status) override {
-    killed_ = true;
-    run_loop_.Quit();
-  }
-
-  void WaitUntilRenderProcessDied() {
-    if (killed_)
-      return;
-    run_loop_.Run();
-  }
-
- private:
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
-  bool killed_ = false;
-
-  // Used to wait for the render process being killed. Android doesn't
-  // immediately kill the render process.
-  base::RunLoop run_loop_;
-};
 
 class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
@@ -219,10 +191,10 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
   NavigateToURL(shell(), test_url);
-  RenderProcessKilledObserver killed_observer(shell()->web_contents());
+  RenderProcessHostKillWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
-  killed_observer.WaitUntilRenderProcessDied();
-  ASSERT_TRUE(killed_observer.killed());
+  EXPECT_EQ(bad_message::WEBUI_BAD_SCHEME_ACCESS, kill_waiter.Wait());
 }
 
 // Verifies that WebUI pages without WebUI bindings can make network requests.

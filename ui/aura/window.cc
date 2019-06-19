@@ -211,7 +211,7 @@ const std::string& Window::GetName() const {
 void Window::SetName(const std::string& name) {
   if (name == GetName())
     return;
-  SetProperty(client::kNameKey, new std::string(name));
+  SetProperty(client::kNameKey, name);
   if (layer())
     UpdateLayerName();
 }
@@ -224,7 +224,7 @@ const base::string16& Window::GetTitle() const {
 void Window::SetTitle(const base::string16& title) {
   if (title == GetTitle())
     return;
-  SetProperty(client::kTitleKey, new base::string16(title));
+  SetProperty(client::kTitleKey, title);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTitleChanged(this);
 }
@@ -929,6 +929,8 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   child->OnParentChanged();
   if (layout_manager_)
     layout_manager_->OnWindowRemovedFromLayout(child);
+  for (WindowObserver& observer : observers_)
+    observer.OnWindowRemoved(child);
 }
 
 void Window::OnParentChanged() {

@@ -23,7 +23,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
       AccountTrackerService* account_tracker_service);
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;

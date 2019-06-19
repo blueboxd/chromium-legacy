@@ -14,14 +14,11 @@
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/task/post_task.h"
 #include "components/metrics/call_stack_profile_builder.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 
 namespace {
 
-// Enables reporting of sampling heap profiles over UMA.
-const base::Feature kHeapProfilerReporting{"HeapProfilerReporting",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Sets sampling interval in bytes.
+// Sets heap sampling interval in bytes.
 const char kHeapProfilerSamplingRate[] = "sampling-rate";
 
 constexpr base::TimeDelta kHeapCollectionInterval =
@@ -42,15 +39,12 @@ HeapProfilerController::~HeapProfilerController() {
   stopped_->data.Set();
 }
 
-// static
-bool HeapProfilerController::IsReportingEnabled() {
-  return base::FeatureList::IsEnabled(kHeapProfilerReporting);
-}
-
 void HeapProfilerController::Start() {
-  if (IsReportingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
     int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
-        kHeapProfilerReporting, kHeapProfilerSamplingRate, 0);
+        metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
+        kHeapProfilerSamplingRate, 0);
     if (sampling_rate > 0)
       base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
     base::SamplingHeapProfiler::Get()->Start();

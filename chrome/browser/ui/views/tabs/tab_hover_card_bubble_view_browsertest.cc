@@ -5,7 +5,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -255,6 +257,36 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
   ClickMouseOnTab();
   EXPECT_FALSE(widget->IsVisible());
+}
+
+// Verify hover card is visible after navigating to the tab strip using keyboard
+// accelerators.
+IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
+                       WidgetVisibleOnTabFocusFromKeyboardAccelerator) {
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
+  TabRendererData new_tab_data = TabRendererData();
+  new_tab_data.title = base::UTF8ToUTF16("Test Tab 2");
+  new_tab_data.last_committed_url =
+      GURL("http://example.com/this/should/not/be/seen");
+  tab_strip->AddTabAt(1, new_tab_data, false);
+
+  // Cycle focus until it reaches a tab.
+  while (!tab_strip->IsFocusInTabs())
+    browser()->command_controller()->ExecuteCommand(IDC_FOCUS_NEXT_PANE);
+
+  TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
+  Widget* widget = GetHoverCardWidget(hover_card);
+  HoverCardVisibleWaiter waiter(widget);
+  waiter.Wait();
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
+
+  // Move focus forward to the close button or next tab dependent on window
+  // size.
+  tab_strip->AcceleratorPressed(ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE));
+  EXPECT_TRUE(widget != nullptr);
+  EXPECT_TRUE(widget->IsVisible());
 }
 
 // Verify hover card is not visible after clicking on a tab.

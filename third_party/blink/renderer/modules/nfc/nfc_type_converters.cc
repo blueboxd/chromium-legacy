@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+using device::mojom::blink::NDEFCompatibility;
 using device::mojom::blink::NDEFMessage;
 using device::mojom::blink::NDEFMessagePtr;
 using device::mojom::blink::NDEFRecord;
@@ -213,25 +214,18 @@ TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*>::Convert(
     const blink::NFCPushOptions* pushOptions) {
   // https://w3c.github.io/web-nfc/#the-nfcpushoptions-dictionary
   // Default values for NFCPushOptions dictionary are:
-  // target = 'any', timeout = Infinity, ignoreRead = true
+  // target = 'any', timeout = Infinity, ignoreRead = true,
+  // compatibility = "nfc-forum"
   NFCPushOptionsPtr pushOptionsPtr = NFCPushOptions::New();
-
-  if (pushOptions->hasTarget()) {
-    pushOptionsPtr->target =
-        blink::StringToNFCPushTarget(pushOptions->target());
-  } else {
-    pushOptionsPtr->target = NFCPushTarget::ANY;
-  }
+  pushOptionsPtr->target = blink::StringToNFCPushTarget(pushOptions->target());
+  pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
+  pushOptionsPtr->compatibility =
+      blink::StringToNDEFCompatibility(pushOptions->compatibility());
 
   if (pushOptions->hasTimeout())
     pushOptionsPtr->timeout = pushOptions->timeout();
   else
     pushOptionsPtr->timeout = std::numeric_limits<double>::infinity();
-
-  if (pushOptions->hasIgnoreRead())
-    pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
-  else
-    pushOptionsPtr->ignore_read = true;
 
   return pushOptionsPtr;
 }

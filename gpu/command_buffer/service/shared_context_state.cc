@@ -17,6 +17,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -211,6 +212,24 @@ bool SharedContextState::InitializeGL(
   context_state_->InitCapabilities(nullptr);
   context_state_->InitState(nullptr);
 
+  bool has_robustness = (feature_info_->feature_flags().arb_robustness ||
+                         feature_info_->feature_flags().khr_robustness ||
+                         feature_info_->feature_flags().ext_robustness) &&
+                        real_context_->WasAllocatedUsingRobustnessExtension();
+  if (has_robustness) {
+    GLenum driver_status = api->glGetGraphicsResetStatusARBFn();
+    if (driver_status != GL_NO_ERROR) {
+      // If the context was lost at any point before or during initialization,
+      // the values queried from the driver could be bogus, and potentially
+      // inconsistent between various ContextStates on the same underlying real
+      // GL context. Make sure to report the failure early, to not allow
+      // virtualized context switches in that case.
+      feature_info_ = nullptr;
+      context_state_ = nullptr;
+      return false;
+    }
+  }
+
   if (use_virtualized_gl_contexts_) {
     auto virtual_context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), real_context_.get(),
@@ -224,9 +243,13 @@ bool SharedContextState::InitializeGL(
     MakeCurrent(nullptr);
   }
 
-  // TODO(penghuang): query extension from VulkanInstance.
+  // Swiftshader GL and Vulkan report supporting external objects extensions,
+  // but they don't.
   support_vulkan_external_object_ =
-      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative;
+      !gl::g_current_gl_version->is_swiftshader &&
+      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd;
 
   return true;
 }

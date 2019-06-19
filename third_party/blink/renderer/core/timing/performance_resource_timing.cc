@@ -44,7 +44,7 @@ namespace blink {
 
 PerformanceResourceTiming::PerformanceResourceTiming(
     const WebResourceTimingInfo& info,
-    TimeTicks time_origin,
+    base::TimeTicks time_origin,
     const AtomicString& initiator_type)
     : PerformanceEntry(info.name,
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
@@ -80,7 +80,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 // This constructor is for PerformanceNavigationTiming.
 PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
-    TimeTicks time_origin,
+    base::TimeTicks time_origin,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
@@ -235,7 +235,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
     return domainLookupEnd();
 
   // connectStart includes any DNS time, so we may need to trim that off.
-  TimeTicks connect_start = timing->ConnectStart();
+  base::TimeTicks connect_start = timing->ConnectStart();
   if (!timing->DnsEnd().is_null())
     connect_start = timing->DnsEnd();
 
@@ -292,7 +292,7 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
   if (!timing)
     return requestStart();
 
-  TimeTicks response_start = timing->ReceiveHeadersStart();
+  base::TimeTicks response_start = timing->ReceiveHeadersStart();
   if (response_start.is_null())
     response_start = timing->ReceiveHeadersEnd();
   if (response_start.is_null())

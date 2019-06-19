@@ -323,6 +323,13 @@ jumbo_component("gfx") {
     ]
   }
 
+  if (is_android || is_fuchsia || is_win) {
+    sources += [
+      "font_fallback_skia_impl.cc",
+      "font_fallback_skia_impl.h",
+    ]
+  }
+
   if (!is_ios) {
     sources += [
       "bidi_line_iterator.cc",

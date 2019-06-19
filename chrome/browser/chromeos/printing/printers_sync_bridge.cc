@@ -147,10 +147,10 @@ class PrintersSyncBridge::StoreProxy {
 
 PrintersSyncBridge::PrintersSyncBridge(
     syncer::OnceModelTypeStoreFactory callback,
-    const base::RepeatingClosure& error_callback)
-    : ModelTypeSyncBridge(
-          std::make_unique<ClientTagBasedModelTypeProcessor>(syncer::PRINTERS,
-                                                             error_callback)),
+    base::RepeatingClosure error_callback)
+    : ModelTypeSyncBridge(std::make_unique<ClientTagBasedModelTypeProcessor>(
+          syncer::PRINTERS,
+          std::move(error_callback))),
       store_delegate_(std::make_unique<StoreProxy>(this, std::move(callback))),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 

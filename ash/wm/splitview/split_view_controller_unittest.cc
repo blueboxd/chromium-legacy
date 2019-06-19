@@ -175,7 +175,12 @@ class SplitViewControllerTest : public AshTestBase {
   void EndSplitView() { split_view_controller()->EndSplitView(); }
 
   void ToggleOverview() {
-    Shell::Get()->overview_controller()->ToggleOverview();
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
+    if (overview_controller->InOverviewSession())
+      overview_controller->EndOverview();
+    else
+      overview_controller->StartOverview();
   }
 
   void LongPressOnOverivewButtonTray() {
@@ -2675,13 +2680,13 @@ TEST_F(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
   std::unique_ptr<aura::Window> window2(
       CreateWindowWithType(bounds, AppType::BROWSER));
 
-  Shell::Get()->overview_controller()->ToggleOverview();
+  ToggleOverview();
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   OverviewSession* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(window1.get()));
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
-  Shell::Get()->overview_controller()->ToggleOverview();
+  ToggleOverview();
 
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window1.get(), window1.get());

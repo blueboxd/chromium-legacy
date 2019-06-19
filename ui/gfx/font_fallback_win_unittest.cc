@@ -34,26 +34,16 @@ class FontFallbackWinTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FontFallbackWinTest);
 };
 
-enum class FallbackFontFn { DEFAULT, UNISCRIBE };
-
 // Options to parameterized unittests.
 struct FallbackFontTestOption {
-  FallbackFontFn fallback_font = FallbackFontFn::DEFAULT;
   bool ignore_get_fallback_failure = false;
   bool skip_code_point_validation = false;
   bool skip_fallback_fonts_validation = false;
 };
 
-// Options for tests that fully validate the GetFallbackFont(...) parameters.
-const FallbackFontTestOption default_fallback_option = {
-    FallbackFontFn::DEFAULT};
-const FallbackFontTestOption uniscribe_fallback_option = {
-    FallbackFontFn::UNISCRIBE};
+const FallbackFontTestOption default_fallback_option = {false, false, false};
 // Options for tests that does not validate the GetFallbackFont(...) parameters.
-const FallbackFontTestOption untested_default_fallback_option = {
-    FallbackFontFn::DEFAULT, true, true, true};
-const FallbackFontTestOption untested_uniscribe_fallback_option = {
-    FallbackFontFn::UNISCRIBE, true, true, true};
+const FallbackFontTestOption untested_fallback_option = {true, true, true};
 
 // A font test case for the parameterized unittests.
 struct FallbackFontTestCase {
@@ -74,32 +64,16 @@ class GetFallbackFontTest
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<FallbackFontTestParamInfo> param_info) {
     const FallbackFontTestCase& test_case = std::get<0>(param_info.param);
-    const FallbackFontTestOption& options = std::get<1>(param_info.param);
 
-    std::string script_name = uscript_getName(test_case.script);
-
-    std::string fallback_fn;
-    if (options.fallback_font == FallbackFontFn::DEFAULT)
-      fallback_fn = "DEFAULT";
-    else if (options.fallback_font == FallbackFontFn::UNISCRIBE)
-      fallback_fn = "UNISCRIBE";
-
-    return base::StringPrintf("%s_%s", script_name.c_str(),
-                              fallback_fn.c_str());
+    return uscript_getName(test_case.script);
   }
 
   void SetUp() override { std::tie(test_case_, test_option_) = GetParam(); }
 
  protected:
   bool GetFallbackFont(const Font& font, Font* result) {
-    if (test_option_.fallback_font == FallbackFontFn::DEFAULT) {
-      return gfx::GetFallbackFont(font, kDefaultApplicationLocale,
-                                  test_case_.text, result);
-    } else if (test_option_.fallback_font == FallbackFontFn::UNISCRIBE) {
-      return internal::GetUniscribeFallbackFont(font, kDefaultApplicationLocale,
-                                                test_case_.text, result);
-    }
-    return false;
+    return gfx::GetFallbackFont(font, kDefaultApplicationLocale,
+                                test_case_.text, result);
   }
 
   bool EnsuresScriptSupportCodePoints(const base::string16& text,
@@ -199,15 +173,6 @@ TEST_F(FontFallbackWinTest, ParseFontFamilyString) {
   EXPECT_EQ("Meiryo Italic", font_names[1]);
   EXPECT_EQ("Meiryo UI", font_names[2]);
   EXPECT_EQ("Meiryo UI Italic", font_names[3]);
-}
-
-TEST_F(FontFallbackWinTest, EmptyStringUniscribeFallback) {
-  Font base_font;
-  Font fallback_font;
-  bool result =
-      internal::GetUniscribeFallbackFont(base_font, kDefaultApplicationLocale,
-                                         base::StringPiece16(), &fallback_font);
-  EXPECT_FALSE(result);
 }
 
 TEST_F(FontFallbackWinTest, EmptyStringFallback) {
@@ -339,20 +304,13 @@ TEST_P(GetFallbackFontTest, GetFallbackFont) {
   }
 }
 
-FallbackFontTestCase kGetUniscribeFontFallbackTests[] = {
-    {USCRIPT_ARABIC, L"\u062A\u062D", {"Segoe UI", "Tahoma"}},
-    {USCRIPT_DEVANAGARI, L"\u0905\u0906", {"Mangal", "Nirmala UI"}},
-    {USCRIPT_GURMUKHI, L"\u0A21\u0A22", {"Raavi", "Nirmala UI"}},
-    {USCRIPT_NEW_TAI_LUE, L"\u1981\u1982", {"Microsoft New Tai Lue"}},
-};
-
 // A list of script and the fallback font on a default windows installation.
 // This list may need to be updated if fonts or operating systems are
 // upgraded.
 constexpr bool kWin10Only = true;
 FallbackFontTestCase kGetFontFallbackTests[] = {
     {USCRIPT_ARABIC, L"\u062A\u062D", {"Segoe UI", "Tahoma"}},
-    {USCRIPT_ARMENIAN, L"\u0540\u0541", {"Segoe UI", "Tahoma"}},
+    {USCRIPT_ARMENIAN, L"\u0540\u0541", {"Segoe UI", "Tahoma", "Sylfaen"}},
     {USCRIPT_BENGALI, L"\u09B8\u09AE", {"Nirmala UI", "Vrinda"}},
     {USCRIPT_BRAILLE, L"\u2870\u2871", {"Segoe UI Symbol"}},
     {USCRIPT_BUGINESE, L"\u1A00\u1A01", {"Leelawadee UI"}, kWin10Only},
@@ -515,20 +473,10 @@ std::vector<FallbackFontTestCase> GetSampleFontTestCases() {
   return result;
 }
 
-// Ensures that Uniscribe fallback font gives known results. The uniscribe
-// fallback is only used on windows 7. For the purpose of tests coverage, we
-// are validating its behavior on every windows version.
-INSTANTIATE_TEST_SUITE_P(
-    Uniscribe,
-    GetFallbackFontTest,
-    testing::Combine(testing::ValuesIn(kGetUniscribeFontFallbackTests),
-                     testing::Values(uniscribe_fallback_option)),
-    GetFallbackFontTest::ParamInfoToString);
-
 // Ensures that the default fallback font gives known results. The test
 // is validating that a known fallback font is given for a given text and font.
 INSTANTIATE_TEST_SUITE_P(
-    Default,
+    KnownExpectedFonts,
     GetFallbackFontTest,
     testing::Combine(testing::ValuesIn(kGetFontFallbackTests),
                      testing::Values(default_fallback_option)),
@@ -543,7 +491,6 @@ INSTANTIATE_TEST_SUITE_P(
     Glyphs,
     GetFallbackFontTest,
     testing::Combine(testing::ValuesIn(GetSampleFontTestCases()),
-                     testing::Values(untested_default_fallback_option,
-                                     untested_uniscribe_fallback_option)),
+                     testing::Values(untested_fallback_option)),
     GetFallbackFontTest::ParamInfoToString);
 }  // namespace gfx

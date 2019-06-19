@@ -39,6 +39,8 @@ const LayeredAPIResource kLayeredAPIResources[] = {
     {"kv-storage/index.mjs", IDR_LAYERED_API_KV_STORAGE_INDEX_MJS,
      Module::kKvStorage},
 
+    {"toast/index.mjs", IDR_LAYERED_API_TOAST_INDEX_MJS, Module::kToast},
+
     {"virtual-scroller/index.mjs", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_MJS,
      Module::kVirtualScroller},
     {"virtual-scroller/item-source.mjs",

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
@@ -49,9 +51,8 @@ namespace policy {
 namespace {
 
 invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
-    Profile* profile,
-    bool is_fcm_enabled) {
-  if (is_fcm_enabled) {
+    Profile* profile) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
         profile);
   }
@@ -169,17 +170,11 @@ AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::
 }
 
 AffiliatedInvalidationServiceProviderImpl::
-    AffiliatedInvalidationServiceProviderImpl(bool is_fcm_enabled,
-                                              std::string fcm_sender_id)
-    : invalidation_service_(nullptr),
-      consumer_count_(0),
-      is_shut_down_(false),
-      is_fcm_enabled_(is_fcm_enabled),
-      fcm_sender_id_(std::move(fcm_sender_id)) {
+    AffiliatedInvalidationServiceProviderImpl()
+    : invalidation_service_(nullptr), consumer_count_(0), is_shut_down_(false) {
   // The AffiliatedInvalidationServiceProviderImpl should be created before any
   // user Profiles.
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
-  DCHECK_EQ(is_fcm_enabled_, !fcm_sender_id_.empty());
 
   // Subscribe to notification about new user profiles becoming available.
   registrar_.Add(this,
@@ -201,7 +196,7 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   DCHECK(!is_shut_down_);
   Profile* profile = content::Details<Profile>(details).ptr();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      GetInvalidationProvider(profile, is_fcm_enabled_);
+      GetInvalidationProvider(profile);
   if (!invalidation_provider) {
     // If the Profile does not support invalidation (e.g. guest, incognito),
     // ignore it.
@@ -217,10 +212,10 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
 
   // Create a state observer for the user's invalidation service.
   invalidation::InvalidationService* invalidation_service;
-  if (is_fcm_enabled_) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     invalidation_service =
         invalidation_provider->GetInvalidationServiceForCustomSender(
-            fcm_sender_id_);
+            policy::kPolicyFCMInvalidationSenderID);
   } else {
     invalidation_service = invalidation_provider->GetInvalidationService();
   }
@@ -406,7 +401,7 @@ AffiliatedInvalidationServiceProviderImpl::
       std::make_unique<chromeos::DeviceIdentityProvider>(
           chromeos::DeviceOAuth2TokenServiceFactory::Get());
 
-  if (is_fcm_enabled_) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     device_instance_id_driver_ =
         std::make_unique<instance_id::InstanceIDDriver>(
             g_browser_process->gcm_driver());
@@ -419,7 +414,7 @@ AffiliatedInvalidationServiceProviderImpl::
                 data_decoder::SafeJsonParser::Parse,
                 content::ServiceManagerConnection::GetForProcess()
                     ->GetConnector()),
-            url_loader_factory.get(), fcm_sender_id_);
+            url_loader_factory.get(), policy::kPolicyFCMInvalidationSenderID);
     device_invalidation_service->Init();
     return device_invalidation_service;
   }

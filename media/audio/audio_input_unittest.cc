@@ -5,13 +5,13 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"
@@ -27,23 +27,41 @@ namespace media {
 // expected and if any error has been reported.
 class TestInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  TestInputCallback() : callback_count_(0), had_error_(0) {}
+  TestInputCallback(base::OnceClosure quit_closure)
+      : quit_closure_(std::move(quit_closure)),
+        callback_count_(0),
+        had_error_(0) {}
   void OnData(const AudioBus* source,
               base::TimeTicks capture_time,
               double volume) override {
-    ++callback_count_;
+    if (!quit_closure_.is_null()) {
+      ++callback_count_;
+      if (callback_count_ >= 2) {
+        std::move(quit_closure_).Run();
+      }
+    }
   }
-  void OnError() override { ++had_error_; }
-  // Returns how many times OnData() has been called.
+  void OnError() override {
+    if (!quit_closure_.is_null()) {
+      ++had_error_;
+      std::move(quit_closure_).Run();
+    }
+  }
+  // Returns how many times OnData() has been called. This should not be called
+  // until |quit_closure_| has run.
   int callback_count() const {
+    DCHECK(quit_closure_.is_null());
     return callback_count_;
   }
-  // Returns how many times the OnError callback was called.
+  // Returns how many times the OnError callback was called. This should not be
+  // called until |quit_closure_| has run.
   int had_error() const {
+    DCHECK(quit_closure_.is_null());
     return had_error_;
   }
 
  private:
+  base::OnceClosure quit_closure_;
   int callback_count_;
   int had_error_;
 };
@@ -200,19 +218,15 @@ TEST_F(AudioInputTest, MAYBE_OpenStopAndClose) {
 #define MAYBE_Record Record
 #endif
 // Test a normal recording sequence using an AudioInputStream.
-// Very simple test which starts capturing during half a second and verifies
-// that recording starts.
+// Very simple test which starts capturing and verifies that recording starts.
 TEST_F(AudioInputTest, MAYBE_Record) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
   MakeAudioInputStreamOnAudioThread();
 
-  TestInputCallback test_callback;
+  base::RunLoop run_loop;
+  TestInputCallback test_callback(run_loop.QuitClosure());
   OpenAndStartAudioInputStreamOnAudioThread(&test_callback);
 
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(500));
   run_loop.Run();
   EXPECT_GE(test_callback.callback_count(), 2);
   EXPECT_FALSE(test_callback.had_error());

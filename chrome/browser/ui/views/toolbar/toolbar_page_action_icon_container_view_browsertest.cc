@@ -54,13 +54,13 @@ class ToolbarPageActionIconContainerViewBrowserTest
                          bool expect_highlight) {
     DCHECK(view);
     EXPECT_EQ(view->uses_highlight(), expect_highlight);
-    EXPECT_EQ(view->background(), nullptr);
+    EXPECT_EQ(view->border(), nullptr);
 
     view->UpdateHighlight(true);
-    EXPECT_EQ(view->background() != nullptr, expect_highlight);
+    EXPECT_EQ(view->border() != nullptr, expect_highlight);
 
     view->UpdateHighlight(false);
-    EXPECT_EQ(view->background(), nullptr);
+    EXPECT_EQ(view->border(), nullptr);
   }
 
  private:

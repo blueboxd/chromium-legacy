@@ -169,21 +169,10 @@ void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
   }
 }
 
-GLES2DecoderTestBase::InitState::InitState()
-    : extensions("GL_EXT_framebuffer_object"),
-      gl_version("2.1"),
-      has_alpha(false),
-      has_depth(false),
-      has_stencil(false),
-      request_alpha(false),
-      request_depth(false),
-      request_stencil(false),
-      bind_generates_resource(false),
-      lose_context_when_out_of_memory(false),
-      use_native_vao(true),
-      context_type(CONTEXT_TYPE_OPENGLES2) {}
-
+GLES2DecoderTestBase::InitState::InitState() = default;
 GLES2DecoderTestBase::InitState::InitState(const InitState& other) = default;
+GLES2DecoderTestBase::InitState& GLES2DecoderTestBase::InitState::operator=(
+    const InitState& other) = default;
 
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
   gpu::GpuDriverBugWorkarounds workarounds;
@@ -191,6 +180,13 @@ void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
 }
 
 void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
+    const InitState& init,
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
+  ContextResult result = MaybeInitDecoderWithWorkarounds(init, workarounds);
+  ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+}
+
+ContextResult GLES2DecoderTestBase::MaybeInitDecoderWithWorkarounds(
     const InitState& init,
     const gpu::GpuDriverBugWorkarounds& workarounds) {
   InitState normalized_init = init;
@@ -482,6 +478,12 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   }
 #endif
 
+  if (context_->WasAllocatedUsingRobustnessExtension()) {
+    EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
+        .WillOnce(Return(init.lose_context_on_init ? GL_GUILTY_CONTEXT_RESET_ARB
+                                                   : GL_NO_ERROR));
+  }
+
   scoped_refptr<gpu::Buffer> buffer =
       command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
                                                           &shared_memory_id_);
@@ -512,9 +514,14 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
     decoder_->SetCopyTexImageBlitterForTest(copy_tex_image_blitter_);
   }
 
-  ASSERT_EQ(decoder_->Initialize(surface_, context_, false,
-                                 DisallowedFeatures(), attribs),
-            gpu::ContextResult::kSuccess);
+  gpu::ContextResult result = decoder_->Initialize(
+      surface_, context_, false, DisallowedFeatures(), attribs);
+  if (result != gpu::ContextResult::kSuccess) {
+    decoder_->Destroy(false /* have_context */);
+    decoder_.reset();
+    group_->Destroy(mock_decoder_.get(), false);
+    return result;
+  }
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   if (context_->WasAllocatedUsingRobustnessExtension()) {
@@ -566,6 +573,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
   }
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  return result;
 }
 
 void GLES2DecoderTestBase::ResetDecoder() {

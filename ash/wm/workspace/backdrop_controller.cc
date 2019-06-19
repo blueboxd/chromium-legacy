@@ -266,9 +266,10 @@ void BackdropController::EnsureBackdropWidget() {
   if (backdrop_)
     return;
 
-  backdrop_ = new views::Widget;
+  backdrop_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = container_->GetBoundsInScreen();
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.name = "Backdrop";
@@ -357,8 +358,9 @@ void BackdropController::Hide(bool destroy, bool animate) {
   }
 
   if (destroy) {
-    backdrop_->Close();
-    backdrop_ = nullptr;
+    // The |backdrop_| widget owns the |backdrop_window_| so it will also be
+    // deleted.
+    backdrop_.reset();
     backdrop_window_ = nullptr;
     original_event_handler_ = nullptr;
     backdrop_event_handler_.reset();

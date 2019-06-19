@@ -55,9 +55,12 @@ const char* const kPersistentPrefsWhitelist[] = {
     cdm::prefs::kMediaDrmStorage,
     // Randomly-generated GUID which pseudonymously identifies uploaded metrics.
     metrics::prefs::kMetricsClientID,
-    // Random seed values for variation's entropy providers, used to assign
+    // Random seed value for variation's entropy providers. Used to assign
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
+    // Current and past country codes, to filter variations studies by country.
+    variations::prefs::kVariationsCountry,
+    variations::prefs::kVariationsPermanentConsistencyCountry,
 };
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.

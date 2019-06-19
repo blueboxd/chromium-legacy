@@ -28,21 +28,15 @@ class TestableInputMethodChromeOS;
 
 // A ui::InputMethod implementation for ChromeOS.
 class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
-    : public InputMethodBase,
-      public AsyncKeyDispatcher {
+    : public InputMethodBase {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;
 
   using AckCallback = base::OnceCallback<void(bool)>;
 
-  // Overridden from AsyncKeyDispatcher:
-  void DispatchKeyEventAsync(ui::KeyEvent* event,
-                             AckCallback ack_callback) override;
-
   // Overridden from InputMethod:
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
-  AsyncKeyDispatcher* GetAsyncKeyDispatcher() override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;
   void CancelComposition(const TextInputClient* client) override;
@@ -68,7 +62,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // Process a key returned from the input method.
   virtual ui::EventDispatchDetails ProcessKeyEventPostIME(
       ui::KeyEvent* event,
-      ResultCallback result_callback,
       bool skip_process_filtered,
       bool handled,
       bool stopped_propagation) WARN_UNUSED_RESULT;
@@ -91,9 +84,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
     std::vector<ui::ImeTextSpan> text_spans;
   };
 
-  ui::EventDispatchDetails DispatchKeyEventInternal(ui::KeyEvent* event,
-                                                    AckCallback ack_callback);
-
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
@@ -105,28 +95,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // A VKEY_PROCESSKEY may be dispatched to the EventTargets.
   // It returns the result of whether the event has been stopped propagation
   // when dispatching post IME.
-  ui::EventDispatchDetails ProcessFilteredKeyPressEvent(
-      ui::KeyEvent* event,
-      ResultCallback result_callback) WARN_UNUSED_RESULT;
-
-  // Post processes a key event that was already filtered by the input method.
-  void PostProcessFilteredKeyPressEvent(ui::KeyEvent* event,
-                                        TextInputClient* prev_client,
-                                        ResultCallback result_callback,
-                                        bool handled,
-                                        bool stopped_propagation);
+  ui::EventDispatchDetails ProcessFilteredKeyPressEvent(ui::KeyEvent* event)
+      WARN_UNUSED_RESULT;
 
   // Processes a key event that was not filtered by the input method.
-  ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(
-      ui::KeyEvent* event,
-      ResultCallback result_callback) WARN_UNUSED_RESULT;
-
-  // Post processes a key event that was unfiltered by the input method.
-  void PostProcessUnfilteredKeyPressEvent(ui::KeyEvent* event,
-                                          TextInputClient* prev_client,
-                                          ResultCallback result_callback,
-                                          bool handled,
-                                          bool stopped_propagation);
+  ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(ui::KeyEvent* event)
+      WARN_UNUSED_RESULT;
 
   // Sends input method result caused by the given key event to the focused text
   // input client.
@@ -153,14 +127,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // Hides the composition text.
   void HidePreeditText();
 
-  // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent.
-  void KeyEventDoneCallback(ui::KeyEvent* event,
-                            ResultCallback result_callback,
-                            bool is_handled);
-  ui::EventDispatchDetails ProcessKeyEventDone(ui::KeyEvent* event,
-                                               ResultCallback result_callback,
-                                               bool is_handled)
-      WARN_UNUSED_RESULT;
+  // Called from the engine when it completes processing.
+  void ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled);
 
   // Returns whether an non-password input field is focused.
   bool IsNonPasswordInputFieldFocused();

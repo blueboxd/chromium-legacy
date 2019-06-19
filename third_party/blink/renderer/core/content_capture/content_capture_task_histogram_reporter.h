@@ -39,15 +39,15 @@ class CORE_EXPORT ContentCaptureTaskHistogramReporter
 
  private:
   // The time of first content change since the last content captured.
-  base::Optional<WTF::TimeTicks> content_change_time_;
+  base::Optional<base::TimeTicks> content_change_time_;
   // The copy of |content_change_time| after the content has been captured; we
   // need to record the time the content has been sent, |content_change_time_|
   // shall be released for the next content change.
-  base::Optional<WTF::TimeTicks> captured_content_change_time_;
+  base::Optional<base::TimeTicks> captured_content_change_time_;
   // The time to start capturing content.
-  WTF::TimeTicks capture_content_start_time_;
+  base::TimeTicks capture_content_start_time_;
   // The time to start sending content.
-  WTF::TimeTicks send_content_start_time_;
+  base::TimeTicks send_content_start_time_;
 
   // Records time from first content change to content that has been sent, its
   // range is 500ms from to 30s.

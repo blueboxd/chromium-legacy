@@ -131,7 +131,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
 // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
-         CSSProperty::Get(resolveCSSPropertyID(property_id)).IsEnabled());
+         CSSProperty::Get(resolveCSSPropertyID(property_id)).IsWebExposed());
 #endif
   return result;
 }

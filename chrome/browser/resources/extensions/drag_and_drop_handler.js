@@ -36,7 +36,7 @@ cr.define('extensions', function() {
 
     /** @override */
     doDragEnter() {
-      chrome.developerPrivate.notifyDragInstallInProgress();
+      extensions.Service.getInstance().notifyDragInstallInProgress();
       this.eventTarget_.dispatchEvent(
           new CustomEvent('extension-drag-started'));
     }
@@ -83,7 +83,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleFileDrop_() {
-      chrome.developerPrivate.installDroppedFile();
+      extensions.Service.getInstance().installDroppedFile();
     }
 
     /**
@@ -91,15 +91,10 @@ cr.define('extensions', function() {
      * @private
      */
     handleDirectoryDrop_() {
-      // TODO(devlin): Update this to use extensions.Service when it's not
-      // shared between the MD and non-MD pages.
-      chrome.developerPrivate.loadUnpacked(
-          {failQuietly: true, populateError: true, useDraggedPath: true},
-          (loadError) => {
-            if (loadError) {
-              this.eventTarget_.dispatchEvent(new CustomEvent(
-                  'drag-and-drop-load-error', {detail: loadError}));
-            }
+      extensions.Service.getInstance().loadUnpackedFromDrag().catch(
+          loadError => {
+            this.eventTarget_.dispatchEvent(new CustomEvent(
+                'drag-and-drop-load-error', {detail: loadError}));
           });
     }
 

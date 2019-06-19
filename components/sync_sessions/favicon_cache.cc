@@ -480,31 +480,38 @@ void FaviconCache::OnFaviconVisited(const GURL& page_url,
                    syncer::SyncChange::ACTION_ADD));
 }
 
-scoped_refptr<base::RefCountedMemory>
+favicon_base::FaviconRawBitmapResult
 FaviconCache::GetSyncedFaviconForFaviconURL(const GURL& favicon_url) const {
   if (!favicon_url.is_valid())
-    return nullptr;
+    return favicon_base::FaviconRawBitmapResult();
   auto iter = synced_favicons_.find(favicon_url);
 
   UMA_HISTOGRAM_BOOLEAN("Sync.FaviconCacheLookupSucceeded",
                         iter != synced_favicons_.end());
   if (iter == synced_favicons_.end())
-    return nullptr;
+    return favicon_base::FaviconRawBitmapResult();
 
   // TODO(zea): support getting other resolutions.
   if (!iter->second->bitmap_data[SIZE_16].bitmap_data.get())
-    return nullptr;
+    return favicon_base::FaviconRawBitmapResult();
 
-  return iter->second->bitmap_data[SIZE_16].bitmap_data;
+  favicon_base::FaviconRawBitmapResult sync_bitmap_result;
+  // Size is at most 16x16.
+  sync_bitmap_result.pixel_size = gfx::Size(16, 16);
+  sync_bitmap_result.icon_type = favicon_base::IconType::kFavicon;
+  sync_bitmap_result.icon_url = favicon_url;
+  sync_bitmap_result.bitmap_data =
+      iter->second->bitmap_data[SIZE_16].bitmap_data;
+  return sync_bitmap_result;
 }
 
-scoped_refptr<base::RefCountedMemory> FaviconCache::GetSyncedFaviconForPageURL(
+favicon_base::FaviconRawBitmapResult FaviconCache::GetSyncedFaviconForPageURL(
     const GURL& page_url) const {
   if (!page_url.is_valid())
-    return nullptr;
+    return favicon_base::FaviconRawBitmapResult();
   GURL icon_url = GetIconUrlForPageUrl(page_url);
   if (icon_url.is_empty())
-    return nullptr;
+    return favicon_base::FaviconRawBitmapResult();
 
   return GetSyncedFaviconForFaviconURL(icon_url);
 }

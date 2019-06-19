@@ -548,7 +548,7 @@ void DocumentLoader::BodyDataReceived(base::span<const char> data) {
 }
 
 void DocumentLoader::BodyLoadingFinished(
-    TimeTicks completion_time,
+    base::TimeTicks completion_time,
     int64_t total_encoded_data_length,
     int64_t total_encoded_body_length,
     int64_t total_decoded_body_length,
@@ -618,7 +618,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   params_ = nullptr;
 }
 
-void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
+void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
 
@@ -678,7 +678,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   // In any way, by this point we should have already committed.
   DCHECK_GE(state_, kCommitted);
 
-  TimeTicks response_end_time = finish_time;
+  base::TimeTicks response_end_time = finish_time;
   if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
   if (response_end_time.is_null())

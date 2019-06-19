@@ -97,8 +97,7 @@ class ShellDesktopControllerAura
 
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* key_event,
-      DispatchKeyEventPostIMECallback callback) override;
+      ui::KeyEvent* key_event) override;
 
   // KeepAliveStateObserver:
   void OnKeepAliveStateChanged(bool is_keeping_alive) override;

@@ -115,11 +115,11 @@ js_library("detail_view") {
 
 js_library("drag_and_drop_handler") {
   deps = [
+    ":service",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:drag_wrapper",
   ]
-  externs_list = [ "$externs_path/developer_private.js" ]
 }
 
 js_library("drop_overlay") {

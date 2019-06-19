@@ -36,13 +36,15 @@ namespace {{namespace}} {
 // {{property.name}}
 
   {% if property.is_internal or property.runtime_flag %}
-bool {{class_name}}::IsEnabled() const {
+CSSExposure {{class_name}}::Exposure() const {
+    {% if property.runtime_flag %}
+  if (!RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled())
+    return CSSExposure::kNone;
+    {% endif %}
     {% if property.is_internal %}
-  return false;
-    {% elif property.runtime_flag %}
-  return RuntimeEnabledFeatures::{{property.runtime_flag}}Enabled();
+  return CSSExposure::kUA;
     {% else %}
-  return true;
+  return CSSExposure::kWeb;
     {% endif %}
 }
   {% endif %}

@@ -150,7 +150,6 @@
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_service.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -1238,46 +1237,37 @@ void ProfileImpl::SetCorsOriginAccessListForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
     base::OnceClosure closure) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        std::move(closure));
-  } else {
-    auto barrier_closure = BarrierClosure(3, std::move(closure));
+  auto barrier_closure = BarrierClosure(3, std::move(closure));
 
-    // Keep profile storage partitions' NetworkContexts synchronized.
-    auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+  // Keep profile storage partitions' NetworkContexts synchronized.
+  auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+      source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+      CorsOriginPatternSetter::ClonePatterns(block_patterns), barrier_closure);
+  ForEachStoragePartition(
+      this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                base::RetainedRef(profile_setter.get())));
+
+  // Keep incognito storage partitions' NetworkContexts synchronized.
+  if (HasOffTheRecordProfile()) {
+    auto off_the_record_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
         source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
         CorsOriginPatternSetter::ClonePatterns(block_patterns),
         barrier_closure);
     ForEachStoragePartition(
-        this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                                  base::RetainedRef(profile_setter.get())));
-
-    // Keep incognito storage partitions' NetworkContexts synchronized.
-    if (HasOffTheRecordProfile()) {
-      auto off_the_record_setter =
-          base::MakeRefCounted<CorsOriginPatternSetter>(
-              source_origin,
-              CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-              CorsOriginPatternSetter::ClonePatterns(block_patterns),
-              barrier_closure);
-      ForEachStoragePartition(
-          GetOffTheRecordProfile(),
-          base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                              base::RetainedRef(off_the_record_setter.get())));
-    } else {
-      // Release unused closure reference.
-      barrier_closure.Run();
-    }
-
-    // Keep the per-profile access list up to date so that we can use this to
-    // restore NetworkContext settings at anytime, e.g. on restarting the
-    // network service.
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        barrier_closure);
+        GetOffTheRecordProfile(),
+        base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                            base::RetainedRef(off_the_record_setter.get())));
+  } else {
+    // Release unused closure reference.
+    barrier_closure.Run();
   }
+
+  // Keep the per-profile access list up to date so that we can use this to
+  // restore NetworkContext settings at anytime, e.g. on restarting the
+  // network service.
+  shared_cors_origin_access_list_->SetForOrigin(
+      source_origin, std::move(allow_patterns), std::move(block_patterns),
+      barrier_closure);
 }
 
 const content::SharedCorsOriginAccessList*

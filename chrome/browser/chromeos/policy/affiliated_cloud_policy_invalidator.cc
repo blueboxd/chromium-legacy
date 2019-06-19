@@ -15,10 +15,8 @@ namespace policy {
 AffiliatedCloudPolicyInvalidator::AffiliatedCloudPolicyInvalidator(
     enterprise_management::DeviceRegisterRequest::Type type,
     CloudPolicyCore* core,
-    AffiliatedInvalidationServiceProvider* invalidation_service_provider,
-    bool is_fcm_enabled)
-    : is_fcm_enabled_(is_fcm_enabled),
-      type_(type),
+    AffiliatedInvalidationServiceProvider* invalidation_service_provider)
+    : type_(type),
       core_(core),
       invalidation_service_provider_(invalidation_service_provider),
       highest_handled_invalidation_version_(0) {
@@ -47,8 +45,8 @@ void AffiliatedCloudPolicyInvalidator::CreateInvalidator(
   DCHECK(!invalidator_);
   invalidator_.reset(new CloudPolicyInvalidator(
       type_, core_, base::ThreadTaskRunnerHandle::Get(),
-      base::DefaultClock::GetInstance(), highest_handled_invalidation_version_,
-      is_fcm_enabled_));
+      base::DefaultClock::GetInstance(),
+      highest_handled_invalidation_version_));
   invalidator_->Initialize(invalidation_service);
 }
 

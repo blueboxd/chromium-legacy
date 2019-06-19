@@ -59,8 +59,6 @@ class TabGridViewBinder {
                 holder.itemView.setForeground(
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
-        } else if (TabProperties.IS_HIDDEN == propertyKey) {
-            updateThumbnail(holder, item);
         } else if (TabProperties.FAVICON == propertyKey) {
             holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
@@ -152,14 +150,12 @@ class TabGridViewBinder {
     }
 
     private static void updateThumbnail(TabGridViewHolder holder, PropertyModel item) {
-        if (item.get(TabProperties.IS_HIDDEN)) {
+        TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
+        if (fetcher == null) {
             // Release the thumbnail to save memory.
             holder.resetThumbnail();
             return;
         }
-
-        TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
-        if (fetcher == null) return;
         Callback<Bitmap> callback = result -> {
             if (result == null) {
                 holder.resetThumbnail();

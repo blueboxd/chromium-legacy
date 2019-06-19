@@ -224,7 +224,7 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 // Enables or disables new Desktop PWAs unified |InstallManager| that does not
 // use extensions.
 const base::Feature kDesktopPWAsUnifiedInstall{
-    "DesktopPWAsUnifiedInstall", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsUnifiedInstall", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the ability to install PWAs from the omnibox.
 const base::Feature kDesktopPWAsOmniboxInstall{
@@ -367,14 +367,8 @@ const base::Feature kInstallableAmbientBadgeInfoBar{
 
 #if !defined(OS_ANDROID)
 // Enables or disables intent picker.
-const base::Feature kIntentPicker {
-  "IntentPicker",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  //  defined(OS_CHROMEOS)
-};
+const base::Feature kIntentPicker{"IntentPicker",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

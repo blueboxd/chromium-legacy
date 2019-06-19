@@ -318,8 +318,7 @@ std::string DescribeName(GSSAPILibrary* gssapi_lib, const gss_name_t name) {
   }
   int len = output_name_buffer.length;
   std::string description = base::StringPrintf(
-      "%*s (Type %s)",
-      len,
+      "%.*s (Type %s)", len,
       reinterpret_cast<const char*>(output_name_buffer.value),
       DescribeOid(gssapi_lib, output_name_type).c_str());
   return description;

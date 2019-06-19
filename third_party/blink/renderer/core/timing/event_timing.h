@@ -28,8 +28,8 @@ class CORE_EXPORT EventTiming final {
   // Returns an object only if the event is relevant for the EventTiming API.
   static std::unique_ptr<EventTiming> Create(LocalDOMWindow*, const Event&);
 
-  explicit EventTiming(TimeTicks processing_start,
-                       TimeTicks event_timestamp,
+  explicit EventTiming(base::TimeTicks processing_start,
+                       base::TimeTicks event_timestamp,
                        WindowPerformance* performance);
 
   // Notifies the Performance object that the event has been dispatched.
@@ -40,9 +40,9 @@ class CORE_EXPORT EventTiming final {
 
  private:
   // The time the first event handler or default action started to execute.
-  TimeTicks processing_start_;
+  base::TimeTicks processing_start_;
   // The event timestamp to be used in EventTiming and in histograms.
-  TimeTicks event_timestamp_;
+  base::TimeTicks event_timestamp_;
 
   Persistent<WindowPerformance> performance_;
   DISALLOW_COPY_AND_ASSIGN(EventTiming);

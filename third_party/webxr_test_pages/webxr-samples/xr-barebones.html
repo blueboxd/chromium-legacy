@@ -42,6 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           headset's display to a slowly changing color to prove it's working.
           <a class="back" href="./index.html">Back</a>
         </p>
+        <div id="warning-zone"></div>
         <button id="xr-button" disabled>XR not found</button>
       </details>
     </header>
@@ -76,6 +77,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // session options are supported both right now and whenever a device is
       // added or removed.
       function initXR() {
+        // WebXR API is only available for secure contexts. If the page is using
+        // an insecure context, add a warning message about this above the
+        // button.
+        if (!window.isSecureContext) {
+          let message = "WebXR unavailable due to insecure context";
+          document.getElementById("warning-zone").innerText = message;
+        }
+
         // If WebXR is available on this UA, check if any devices are connected
         // that would support an immersive VR session.
         if (navigator.xr) {

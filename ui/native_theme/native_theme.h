@@ -419,7 +419,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   virtual bool SystemDarkModeSupported() const;
 
   // Returns the system's caption style.
-  virtual CaptionStyle GetSystemCaptionStyle() const;
+  virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
 
   // Observes |dark_mode_parent| for dark mode changes and propagates them to
   // self.

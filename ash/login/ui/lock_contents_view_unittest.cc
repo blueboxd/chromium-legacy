@@ -27,8 +27,11 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
@@ -36,9 +39,11 @@
 #include "ash/tray_action/test_tray_action_client.h"
 #include "ash/tray_action/tray_action.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -2386,6 +2391,94 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
   EXPECT_EQ(list_user, auth_view->GetCurrentUser().basic_user_info.account_id);
   EXPECT_EQ(auth_view_user,
             list_user_view->current_user().basic_user_info.account_id);
+}
+
+TEST_F(LockContentsViewUnitTest,
+       LockScreenMediaControlsShownIfFeaturesEnabled) {
+  // Enable media controls.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+
+  // Build lock screen with 1 user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Verify media controls are shown.
+  EXPECT_TRUE(lock_contents.media_controls_view());
+}
+
+TEST_F(LockContentsViewUnitTest,
+       LockScreenMediaControlsHiddenIfFeaturesDisabled) {
+  // Disable media controls.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({}, {features::kLockScreenMediaControls});
+
+  // Build lock screen with 1 user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Verify media controls are hidden.
+  EXPECT_EQ(nullptr, lock_contents.media_controls_view());
+}
+
+TEST_F(LockContentsViewUnitTest,
+       LockScreenMediaControlsHiddenIfPreferenceDisabled) {
+  // Enable media controls.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+
+  // Disable user preference for media keys.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+
+  // Build lock screen with 1 user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Verify media controls are hidden.
+  EXPECT_EQ(nullptr, lock_contents.media_controls_view());
+}
+
+TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
+  // Enable media controls.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+
+  // Build login screen with 1 user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Verify media controls are hidden on login screen for one user.
+  EXPECT_EQ(nullptr, lock_contents.media_controls_view());
+
+  SetUserCount(5);
+
+  // Verify media controls are hidden on login screen for multiple users.
+  EXPECT_EQ(nullptr, lock_contents.media_controls_view());
 }
 
 }  // namespace ash

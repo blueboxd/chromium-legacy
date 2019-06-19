@@ -50,6 +50,22 @@ Polymer({
     screen: {
       type: Object,
     },
+
+    /**
+     * Domain the device was enrolled to.
+     */
+    enrolledDomain_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Name of the device that was enrolled.
+     */
+    deviceName_: {
+      type: String,
+      value: 'Chromebook',
+    },
   },
 
   /**
@@ -328,9 +344,8 @@ Polymer({
    */
   showAttestationBasedEnrollmentSuccess: function(
       device, enterpriseEnrollmentDomain) {
-    this.$['oauth-enroll-success-subtitle'].deviceName = device;
-    this.$['oauth-enroll-success-subtitle'].enrollmentDomain =
-        enterpriseEnrollmentDomain;
+    this.enrolledDomain_ = enterpriseEnrollmentDomain;
+    this.deviceName_ = device;
     this.showStep(ENROLLMENT_STEP.SUCCESS);
   },
 
@@ -547,5 +562,17 @@ Polymer({
 
   updateLocalizedContent: function() {
     this.offlineAdUi_.i18nUpdateLocale();
+  },
+
+  /**
+   * Generates message on the success screen.
+   */
+  successText_: function(locale, device, domain) {
+    return this.i18nAdvanced(
+        'oauthEnrollAbeSuccessDomain', {substitutions: [device, domain]});
+  },
+
+  isEmpty_: function(str) {
+    return !str;
   }
 });

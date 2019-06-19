@@ -70,14 +70,7 @@ bool NativeTheme::IsForcedHighContrast() const {
   return kIsForcedHighContrast;
 }
 
-CaptionStyle NativeTheme::GetSystemCaptionStyle() const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kForceCaptionStyle)) {
-    return CaptionStyle::FromSpec(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kForceCaptionStyle));
-  }
-
+base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
   return CaptionStyle::FromSystemSettings();
 }
 

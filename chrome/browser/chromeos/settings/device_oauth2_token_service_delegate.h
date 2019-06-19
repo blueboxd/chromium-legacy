@@ -50,13 +50,16 @@ class DeviceOAuth2TokenServiceDelegate
   // Pull the robot account ID from device policy.
   CoreAccountId GetRobotAccountId() const;
 
+  void set_robot_account_id_for_testing(const CoreAccountId& account_id) {
+    robot_account_id_for_testing_ = account_id;
+  }
+
   // Implementation of OAuth2TokenServiceDelegate.
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
-
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
@@ -153,6 +156,8 @@ class DeviceOAuth2TokenServiceDelegate
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       service_account_identity_subscription_;
+
+  CoreAccountId robot_account_id_for_testing_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenServiceDelegate> weak_ptr_factory_;
 

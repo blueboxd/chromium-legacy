@@ -60,7 +60,6 @@ class MockPowerMonitorSource : public base::PowerMonitorSource {
     ProcessPowerEvent(RESUME_EVENT);
   }
 
-  MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(IsOnBatteryPowerImpl, bool());
 };
 
@@ -102,8 +101,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
     auto mock_power_monitor_source =
         std::make_unique<NiceMock<MockPowerMonitorSource>>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
-        std::move(mock_power_monitor_source));
+    base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));
 
     proxy_ = std::make_unique<D3D11CdmProxy>(CRYPTO_TYPE_GUID, kTestProtocol,
                                              function_id_map);
@@ -266,8 +264,7 @@ class D3D11CdmProxyTest : public ::testing::Test {
 
   MockProxyClient client_;
   std::unique_ptr<D3D11CdmProxy> proxy_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
-  // Owned by power_monitor_. Use this to simulate a power-resume.
+  // Owned by PowerMonitor. Use this to simulate a power-resume.
   MockPowerMonitorSource* mock_power_monitor_source_;
 
   D3D11CreateDeviceMock create_device_mock_;
@@ -389,7 +386,7 @@ TEST_F(D3D11CdmProxyTest, PowerResumeAndHardwareContentProtectionTeardown) {
 
 // Verify that if there isn't a power monitor, initialization fails.
 TEST_F(D3D11CdmProxyTest, NoPowerMonitor) {
-  power_monitor_ = nullptr;
+  base::PowerMonitor::ShutdownForTesting();
   EXPECT_CALL(callback_mock_,
               InitializeCallback(CdmProxy::Status::kFail, _, _));
 

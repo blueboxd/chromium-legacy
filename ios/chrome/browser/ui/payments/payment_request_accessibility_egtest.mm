@@ -13,7 +13,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "third_party/libaddressinput/messages.h"
@@ -102,14 +101,14 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
   [super setUp];
 
   _profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile]);
+  [self addAutofillProfile:_profile];
 
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard1]);
+  [self addCreditCard:_creditCard1];
 
   _creditCard2 = autofill::test::GetCreditCard2();
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard2]);
+  [self addCreditCard:_creditCard2];
 
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentRequestDemoPage)];

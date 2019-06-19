@@ -38,8 +38,8 @@ bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
   // Show the waiting-for-printing notification immediately.
   base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeCupsPrintJobManager::ChangePrintJobState,
-                 weak_ptr_factory_.GetWeakPtr(), print_jobs_.back().get()),
+      base::BindOnce(&FakeCupsPrintJobManager::ChangePrintJobState,
+                     weak_ptr_factory_.GetWeakPtr(), print_jobs_.back().get()),
       base::TimeDelta());
 
   return true;
@@ -69,8 +69,9 @@ bool FakeCupsPrintJobManager::ResumePrintJob(CupsPrintJob* job) {
   NotifyJobResumed(job->GetWeakPtr());
 
   base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
-      FROM_HERE, base::Bind(&FakeCupsPrintJobManager::ChangePrintJobState,
-                            weak_ptr_factory_.GetWeakPtr(), job),
+      FROM_HERE,
+      base::BindOnce(&FakeCupsPrintJobManager::ChangePrintJobState,
+                     weak_ptr_factory_.GetWeakPtr(), job),
       base::TimeDelta::FromMilliseconds(3000));
 
   return true;
@@ -130,8 +131,9 @@ void FakeCupsPrintJobManager::ChangePrintJobState(CupsPrintJob* job) {
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
-      FROM_HERE, base::Bind(&FakeCupsPrintJobManager::ChangePrintJobState,
-                            weak_ptr_factory_.GetWeakPtr(), job),
+      FROM_HERE,
+      base::BindOnce(&FakeCupsPrintJobManager::ChangePrintJobState,
+                     weak_ptr_factory_.GetWeakPtr(), job),
       base::TimeDelta::FromMilliseconds(3000));
 }
 

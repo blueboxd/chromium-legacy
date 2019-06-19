@@ -216,9 +216,7 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
   CloseHandle(watched_thread_handle_);
 #endif
 
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 
 #if defined(USE_X11)
   if (tty_file_)
@@ -343,11 +341,6 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
 
   if (!base::subtle::NoBarrier_Load(&awaiting_acknowledge_)) {
     OnAcknowledge();
-    return;
-  }
-
-  if (alternative_terminate_for_testing_) {
-    alternative_terminate_for_testing_.Run();
     return;
   }
 
@@ -535,9 +528,8 @@ void GpuWatchdogThreadImplV1::AddPowerObserver() {
 }
 
 void GpuWatchdogThreadImplV1::OnAddPowerObserver() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  DCHECK(power_monitor);
-  power_monitor->AddObserver(this);
+  DCHECK(base::PowerMonitor::IsInitialized());
+  base::PowerMonitor::AddObserver(this);
 }
 
 void GpuWatchdogThreadImplV1::OnSuspend() {
@@ -622,15 +614,6 @@ int GpuWatchdogThreadImplV1::GetActiveTTY() const {
   return -1;
 }
 #endif
-
-void GpuWatchdogThreadImplV1::SetAlternativeTerminateFunctionForTesting(
-    base::RepeatingClosure on_terminate) {
-  alternative_terminate_for_testing_ = std::move(on_terminate);
-}
-
-void GpuWatchdogThreadImplV1::SetTimeoutForTesting(base::TimeDelta timeout) {
-  timeout_ = timeout;
-}
 
 GpuWatchdogThread::GpuWatchdogThread() : base::Thread("GpuWatchdog") {}
 GpuWatchdogThread::~GpuWatchdogThread() {}

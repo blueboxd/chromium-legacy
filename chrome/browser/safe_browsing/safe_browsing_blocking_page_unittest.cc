@@ -39,7 +39,6 @@
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -279,11 +278,6 @@ class SafeBrowsingBlockingPageTestBase
   }
 
   void SetUp() override {
-    // Need to use the network service path because we've removed the
-    // URLRequestContext path in src/chrome and unit_tests currently are running
-    // with network service disabled. https://crbug.com/966633
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-
     ChromeRenderViewHostTestHarness::SetUp();
 
     if (is_incognito_) {
@@ -422,7 +416,6 @@ class SafeBrowsingBlockingPageTestBase
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;
   }
 
-  base::test::ScopedFeatureList feature_list_;
   ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;

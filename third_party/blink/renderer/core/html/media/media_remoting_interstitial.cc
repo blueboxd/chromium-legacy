@@ -14,10 +14,11 @@
 
 namespace {
 
-constexpr TimeDelta kStyleChangeTransitionDuration =
-    TimeDelta::FromMilliseconds(200);
-constexpr TimeDelta kHiddenAnimationDuration = TimeDelta::FromMilliseconds(300);
-constexpr TimeDelta kShowToastDuration = TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kStyleChangeTransitionDuration =
+    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kHiddenAnimationDuration =
+    base::TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kShowToastDuration = base::TimeDelta::FromSeconds(5);
 
 }  // namespace
 

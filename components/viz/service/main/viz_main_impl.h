@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -168,7 +167,6 @@ class VizMainImpl : public mojom::VizMain {
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
   mojo::Binding<mojom::VizMain> binding_;
   mojo::AssociatedBinding<mojom::VizMain> associated_binding_;
 

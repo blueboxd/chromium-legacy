@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/chromeos/kiosk_next/kiosk_next_browser_factory.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
@@ -19,6 +20,9 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -32,6 +36,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/dns/mock_host_resolver.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace kiosk_next_home {
@@ -69,6 +74,20 @@ class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsLoadFinishedWaiter);
 };
+
+const Browser* GetBrowserForWebsite(const GURL& url) {
+  BrowserList* list = BrowserList::GetInstance();
+  for (const Browser* browser : *list) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int tab_index = 0; tab_index < tab_strip_model->count(); tab_index++) {
+      content::WebContents* web_contents =
+          tab_strip_model->GetWebContentsAt(tab_index);
+      if (web_contents && (web_contents->GetURL() == url))
+        return browser;
+    }
+  }
+  return nullptr;
+}
 
 }  // namespace
 
@@ -238,6 +257,25 @@ IN_PROC_BROWSER_TEST_F(KioskNextHomeBrowserTest, LaunchApp) {
       TestTimeouts::action_timeout()));
 }
 
+IN_PROC_BROWSER_TEST_F(KioskNextHomeBrowserTest, LaunchKioskNextBrowser) {
+  const std::string kUrl = "https://www.url1.com";
+  RunJS(content::JsReplace(
+      "kioskNextHome.getChromeOsBridge().launchKioskNextWebsite({url : $1})",
+      kUrl));
+  Browser* browser =
+      KioskNextBrowserList::Get().GetBrowserForWebsite(GURL(kUrl));
+  EXPECT_NE(browser, nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(KioskNextHomeBrowserTest, LaunchWebsite) {
+  const std::string kUrl = "https://www.url1.com";
+  RunJS(content::JsReplace(
+      "kioskNextHome.getChromeOsBridge().launchWebsite({url : $1})", kUrl));
+  const Browser* browser =
+      KioskNextBrowserList::Get().GetBrowserForWebsite(GURL(kUrl));
+  EXPECT_EQ(browser, nullptr);
+  EXPECT_NE(GetBrowserForWebsite(GURL(kUrl)), nullptr);
+}
 // Fixture variant that sets up additional user information for
 // GetUser(Given|Display)Name methods.
 class KioskNextHomeUserInfoBrowserTest : public KioskNextHomeBrowserTest {

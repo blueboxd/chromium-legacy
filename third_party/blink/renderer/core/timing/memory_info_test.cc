@@ -240,9 +240,9 @@ TEST_F(MemoryInfoTest, FlagEnabled) {
 }
 
 TEST_F(MemoryInfoTest, ZeroTime) {
-  // In this test, we make sure that even if the current TimeTicks() value is
-  // very close to 0, we still obtain memory information from the first call to
-  // MemoryInfo::Create.
+  // In this test, we make sure that even if the current base::TimeTicks() value
+  // is very close to 0, we still obtain memory information from the first call
+  // to MemoryInfo::Create.
   MemoryInfoTestScopedMockTime mock_time(MemoryInfo::Precision::Precise);
   mock_time.AdvanceClock(base::TimeDelta::FromMicroseconds(100));
   V8TestingScope scope;

@@ -304,7 +304,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Not converted to ASCII lowercase. Must be lowered later or compared
   // using case insensitive comparison functions if needed.
   AtomicString mime_type_override_;
-  TimeDelta timeout_;
+  base::TimeDelta timeout_;
   Member<Blob> response_blob_;
 
   TaskHandle pending_abort_event_;

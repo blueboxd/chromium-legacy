@@ -71,7 +71,7 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
       CreateTestWindow(gfx::Rect(0, 0, 100, 100));
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Get |window1| and |window2|'s transformed bounds in overview.

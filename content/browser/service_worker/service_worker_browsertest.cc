@@ -72,7 +72,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -3020,7 +3019,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   StartWorker(blink::ServiceWorkerStatusCode::kOk);
 
   // Crash the renderer process. The version should stop.
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   RenderProcessHost* process =
       shell()->web_contents()->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher process_watcher(

@@ -54,6 +54,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         private final Tab mInitialTab;
         private final Callback<Bitmap> mFinalCallback;
         private final boolean mForceUpdate;
+        private final boolean mWriteToCache;
         private final List<Tab> mTabs = new ArrayList<>(4);
         private final AtomicInteger mThumbnailsToFetch = new AtomicInteger();
 
@@ -61,10 +62,15 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         private Bitmap mMultiThumbnailBitmap;
         private String mText;
 
-        MultiThumbnailFetcher(Tab initialTab, Callback<Bitmap> finalCallback, boolean forceUpdate) {
+        /**
+         * @see TabContentManager#getTabThumbnailWithCallback
+         */
+        MultiThumbnailFetcher(Tab initialTab, Callback<Bitmap> finalCallback, boolean forceUpdate,
+                boolean writeToCache) {
             mFinalCallback = finalCallback;
             mInitialTab = initialTab;
             mForceUpdate = forceUpdate;
+            mWriteToCache = writeToCache;
         }
 
         private void initializeAndStartFetching(Tab tab) {
@@ -123,7 +129,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
                                         drawFaviconThenMaybeSendBack(favicon, index);
                                     });
                         }
-                    }, mForceUpdate && i == 0);
+                    }, mForceUpdate && i == 0, mWriteToCache && i == 0);
                 } else {
                     drawThumbnailBitmapOnCanvasWithFrame(null, i);
                     if (mText != null && i == 3) {
@@ -262,16 +268,17 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
     @Override
     public void getTabThumbnailWithCallback(
-            Tab tab, Callback<Bitmap> finalCallback, boolean forceUpdate) {
+            Tab tab, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
         if (mTabModelSelector.getTabModelFilterProvider()
                         .getCurrentTabModelFilter()
                         .getRelatedTabList(tab.getId())
                         .size()
                 == 1) {
-            mTabContentManager.getTabThumbnailWithCallback(tab, finalCallback, forceUpdate);
+            mTabContentManager.getTabThumbnailWithCallback(
+                    tab, finalCallback, forceUpdate, writeToCache);
             return;
         }
 
-        new MultiThumbnailFetcher(tab, finalCallback, forceUpdate).fetch();
+        new MultiThumbnailFetcher(tab, finalCallback, forceUpdate, writeToCache).fetch();
     }
 }

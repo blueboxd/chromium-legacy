@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_EQ(2U, root->child_count());
     observer.Wait();
 
-    EXPECT_EQ(GURL(kAboutSrcDocURL), root->child_at(1)->current_url());
+    EXPECT_TRUE(root->child_at(1)->current_url().IsAboutSrcdoc());
     EvalJsResult frame_origin = EvalJs(root->child_at(1), "self.origin");
     EXPECT_EQ(root->current_frame_host()->GetLastCommittedURL().GetOrigin(),
               GURL(frame_origin.ExtractString()));
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_TRUE(ExecJs(root, script));
     observer.Wait();
 
-    EXPECT_EQ(GURL(kAboutSrcDocURL), child->current_url());
+    EXPECT_TRUE(child->current_url().IsAboutSrcdoc());
     EXPECT_EQ(
         url::Origin::Create(root->current_frame_host()->GetLastCommittedURL())
             .Serialize(),

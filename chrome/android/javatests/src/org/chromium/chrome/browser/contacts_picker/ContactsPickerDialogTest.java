@@ -39,6 +39,7 @@ import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.ContactsPickerListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -85,7 +86,8 @@ public class ContactsPickerDialogTest
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestContacts = new ArrayList<ContactDetails>();
-        mTestContacts.add(new ContactDetails("0", "Contact 0", null, null));
+        mTestContacts.add(new ContactDetails(
+                "0", "Contact 0", Arrays.asList("0@example.com"), Arrays.asList("555-1234")));
         mTestContacts.add(new ContactDetails("1", "Contact 1", null, null));
         mTestContacts.add(new ContactDetails("2", "Contact 2", null, null));
         mTestContacts.add(new ContactDetails("3", "Contact 3", null, null));
@@ -210,6 +212,18 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(expectedAction, mLastActionRecorded);
     }
 
+    private void notifyChipToggled(@PickerAdapter.FilterType int filter) {
+        TopView topView = mDialog.getCategoryViewForTesting().getTopViewForTesting();
+        topView.notifyChipToggled(filter);
+    }
+
+    private void toggleFilter(@PickerAdapter.FilterType int filter) throws Exception {
+        RecyclerView recyclerView = getRecyclerView();
+        RecyclerViewTestUtils.waitForView(recyclerView, 0);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> notifyChipToggled(filter));
+    }
+
     private void clickSearchButton() throws Exception {
         ContactsPickerToolbar toolbar =
                 (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
@@ -307,6 +321,52 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(2).getDisplayName(), mLastSelectedContacts.get(1).names.get(0));
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
+
+        dismissDialog();
+    }
+
+    @Test
+    @LargeTest
+    public void testEmailsRemoved() throws Throwable {
+        createDialog(/* multiselect = */ false, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+
+        toggleFilter(PickerAdapter.FilterType.EMAILS);
+
+        int expectedSelectionCount = 1;
+        clickView(0, expectedSelectionCount, /* expectSelection = */ true);
+        clickDone();
+
+        Assert.assertEquals(ContactsPickerAction.CONTACTS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(1, mLastSelectedContacts.size());
+        Assert.assertEquals(
+                mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
+        Assert.assertEquals(null, mLastSelectedContacts.get(0).emails);
+
+        dismissDialog();
+    }
+
+    @Test
+    @LargeTest
+    public void testTelephonesRemoved() throws Throwable {
+        createDialog(/* multiselect = */ false, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+
+        toggleFilter(PickerAdapter.FilterType.TELEPHONES);
+
+        int expectedSelectionCount = 1;
+        clickView(0, expectedSelectionCount, /* expectSelection = */ true);
+        clickDone();
+
+        Assert.assertEquals(ContactsPickerAction.CONTACTS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(1, mLastSelectedContacts.size());
+        Assert.assertEquals(
+                mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
+        Assert.assertEquals(null, mLastSelectedContacts.get(0).tel);
 
         dismissDialog();
     }

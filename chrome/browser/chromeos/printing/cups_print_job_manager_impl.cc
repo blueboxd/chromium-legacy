@@ -377,8 +377,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Schedule a query of CUPS for print job status with a delay of |delay|.
   void ScheduleQuery(int attempt_count = 1) {
     timer_.Start(FROM_HERE, kPollRate * attempt_count,
-                 base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                            weak_ptr_factory_.GetWeakPtr()));
+                 base::BindRepeating(&CupsPrintJobManagerImpl::PostQuery,
+                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Schedule the CUPS query off the UI thread. Posts results back to UI thread
@@ -399,10 +399,10 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     // completion.
     query_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&CupsWrapper::QueryCups,
-                   base::Unretained(cups_wrapper_.get()), ids, result_ptr),
-        base::Bind(&CupsPrintJobManagerImpl::UpdateJobs,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&result)));
+        base::BindOnce(&CupsWrapper::QueryCups,
+                       base::Unretained(cups_wrapper_.get()), ids, result_ptr),
+        base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(result)));
   }
 
   // Process jobs from CUPS and perform notifications.

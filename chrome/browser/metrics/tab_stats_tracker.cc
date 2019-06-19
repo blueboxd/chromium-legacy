@@ -165,9 +165,7 @@ TabStatsTracker::TabStatsTracker(PrefService* pref_service)
   }
 
   browser_list->AddObserver(this);
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 
   daily_event_->AddObserver(std::make_unique<TabStatsDailyObserver>(
       reporting_delegate_.get(), tab_stats_data_store_.get()));
@@ -221,9 +219,7 @@ TabStatsTracker::~TabStatsTracker() {
 
   browser_list->RemoveObserver(this);
 
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 // static

@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.tab_ui.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +49,18 @@ class TabSelectionEditorCoordinator {
     private final View mParentView;
     private final TabModelSelector mTabModelSelector;
 
+    private final TabSelectionEditorLayout mTabSelectionEditorLayout;
+
     public TabSelectionEditorCoordinator(Context context, View parentView,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager) {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
+
+        // TODO(meiliang): call mTabSelectionEditorLayout.initialize()
+        mTabSelectionEditorLayout = LayoutInflater.from(context)
+                .inflate(R.layout.tab_selection_editor_layout, null)
+                .findViewById(R.id.selectable_list);
     }
 
     private void resetWithListOfTabs(@Nullable List<Tab> tab) {

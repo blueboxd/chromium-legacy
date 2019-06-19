@@ -196,9 +196,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
  protected:
   void AutoscrollTimerFired(TimerBase*);
-  void StartTimerIfNeeded(TimeDelta delay);
+  void StartTimerIfNeeded(base::TimeDelta delay);
   void StopTimerIfNeeded();
-  void AutoscrollPressedPart(TimeDelta delay);
+  void AutoscrollPressedPart(base::TimeDelta delay);
   bool HandleTapGesture();
   bool IsScrollGestureInjectionEnabled() const;
   void InjectScrollGestureForPressedPart(WebInputEvent::Type gesture_type);

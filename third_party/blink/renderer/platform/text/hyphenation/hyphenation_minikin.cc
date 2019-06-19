@@ -12,7 +12,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/mojom/hyphenation/hyphenation.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -66,10 +65,7 @@ static const mojom::blink::HyphenationPtr& GetService() {
 bool HyphenationMinikin::OpenDictionary(const AtomicString& locale) {
   const mojom::blink::HyphenationPtr& service = GetService();
   base::File file;
-  base::ElapsedTimer timer;
   service->OpenDictionary(locale, &file);
-  UMA_HISTOGRAM_TIMES("Hyphenation.Open", timer.Elapsed());
-
   return OpenDictionary(std::move(file));
 }
 

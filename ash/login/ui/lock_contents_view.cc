@@ -14,6 +14,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/lock_screen_media_controls_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_detachable_base_model.h"
@@ -74,6 +75,10 @@ namespace {
 // Any non-zero value used for separator height. Makes debugging easier; this
 // should not affect visual appearance.
 constexpr int kNonEmptyHeightDp = 30;
+
+// Horizontal distance between the auth user and the media controls.
+constexpr int kDistanceBetweenAuthUserAndMediaControlsLandscapeDp = 100;
+constexpr int kDistanceBetweenAuthUserAndMediaControlsPortraitDp = 50;
 
 // Horizontal distance between two users in the low density layout.
 constexpr int kLowDensityDistanceBetweenUsersInLandscapeDp = 118;
@@ -314,6 +319,11 @@ LoginBigUserView* LockContentsView::TestApi::opt_secondary_big_view() const {
 
 ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
   return view_->users_list_;
+}
+
+LockScreenMediaControlsView* LockContentsView::TestApi::media_controls_view()
+    const {
+  return view_->media_controls_view_;
 }
 
 views::View* LockContentsView::TestApi::note_action() const {
@@ -617,6 +627,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   primary_big_view_ = nullptr;
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
+  media_controls_view_ = nullptr;
   layout_actions_.clear();
   // Removing child views can change focus, which may result in LockContentsView
   // getting focused. Make sure to clear internal references before that happens
@@ -1182,11 +1193,35 @@ void LockContentsView::FocusNextWidget(bool reverse) {
   }
 }
 
+void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
+                                            views::View* secondary_view,
+                                            int landscape_dist,
+                                            int portrait_dist,
+                                            bool landscape) {
+  int total_width = GetPreferredSize().width();
+  int available_width =
+      total_width - (primary_big_view_->GetPreferredSize().width() +
+                     secondary_view->GetPreferredSize().width());
+  if (available_width <= 0) {
+    SetPreferredWidthForView(spacing_middle, 0);
+    return;
+  }
+
+  int desired_width = landscape ? landscape_dist : portrait_dist;
+  SetPreferredWidthForView(spacing_middle,
+                           std::min(available_width, desired_width));
+}
+
 void LockContentsView::CreateLowDensityLayout(
     const std::vector<LoginUserInfo>& users) {
   DCHECK_LE(users.size(), 2u);
 
   main_view_->AddChildView(primary_big_view_);
+
+  // If the lock screen media controls view should be shown.
+  const bool media_controls_enabled =
+      LockScreenMediaControlsView::AreMediaControlsEnabled(screen_type_,
+                                                           expanded_view_);
 
   if (users.size() > 1) {
     // Space between primary user and secondary user.
@@ -1198,28 +1233,27 @@ void LockContentsView::CreateLowDensityLayout(
         AllocateLoginBigUserView(users[1], false /*is_primary*/);
     main_view_->AddChildView(opt_secondary_big_view_);
 
-    // Set |spacing_middle| to the correct size. If there is less spacing
-    // available than desired, use up to the available.
+    // Set |spacing_middle|.
     AddDisplayLayoutAction(base::BindRepeating(
-        [](views::View* host_view, views::View* big_user_view,
-           views::View* spacing_middle, views::View* secondary_big_view,
-           bool landscape) {
-          int total_width = host_view->GetPreferredSize().width();
-          int available_width =
-              total_width - (big_user_view->GetPreferredSize().width() +
-                             secondary_big_view->GetPreferredSize().width());
-          if (available_width <= 0) {
-            SetPreferredWidthForView(spacing_middle, 0);
-            return;
-          }
+        &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
+        spacing_middle, opt_secondary_big_view_,
+        kLowDensityDistanceBetweenUsersInLandscapeDp,
+        kLowDensityDistanceBetweenUsersInPortraitDp));
+  } else if (media_controls_enabled) {
+    // Space between primary user and media controls.
+    auto* spacing_middle = new NonAccessibleView();
+    main_view_->AddChildView(spacing_middle);
 
-          int desired_width = landscape
-                                  ? kLowDensityDistanceBetweenUsersInLandscapeDp
-                                  : kLowDensityDistanceBetweenUsersInPortraitDp;
-          SetPreferredWidthForView(spacing_middle,
-                                   std::min(available_width, desired_width));
-        },
-        this, primary_big_view_, spacing_middle, opt_secondary_big_view_));
+    // Build media controls view.
+    media_controls_view_ = new LockScreenMediaControlsView();
+    main_view_->AddChildView(media_controls_view_);
+
+    // Set |spacing_middle|.
+    AddDisplayLayoutAction(base::BindRepeating(
+        &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
+        spacing_middle, media_controls_view_,
+        kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
+        kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
   }
 }
 

@@ -200,11 +200,7 @@ class BackgroundFetchDelegateImpl
 
       Status status = Status::kAbsent;
 
-      // The request body blob will be stored here after the Download Service
-      // queries the upload data. The blob handle needs to be kept alive
-      // while the request is sent out, and will be cleared after.
-      blink::mojom::SerializedBlobPtr request_body_blob = nullptr;
-
+      uint64_t body_size_bytes = 0u;
       uint64_t in_progress_uploaded_bytes = 0u;
       uint64_t in_progress_downloaded_bytes = 0u;
     };

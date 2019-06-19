@@ -104,7 +104,7 @@ class CORE_EXPORT InspectorTraceEvents
                       uint64_t data_length);
   void DidFinishLoading(uint64_t identifier,
                         DocumentLoader*,
-                        TimeTicks monotonic_finish_time,
+                        base::TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
@@ -298,7 +298,7 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
 namespace inspector_resource_finish_event {
 std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   uint64_t identifier,
-                                  TimeTicks finish_time,
+                                  base::TimeTicks finish_time,
                                   bool did_fail,
                                   int64_t encoded_data_length,
                                   int64_t decoded_body_length);
@@ -307,7 +307,7 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
 namespace inspector_timer_install_event {
 std::unique_ptr<TracedValue> Data(ExecutionContext*,
                                   int timer_id,
-                                  TimeDelta timeout,
+                                  base::TimeDelta timeout,
                                   bool single_shot);
 }
 

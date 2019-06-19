@@ -33,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -146,6 +147,10 @@ using download::DownloadUrlParameters;
 using extensions::Extension;
 using net::URLRequestMockHTTPJob;
 using net::test_server::EmbeddedTestServer;
+
+// TODO(crbug.com/971199): tests should be fixed to use base::RunLoop::Run()
+// and base::RunLoop::Quit() instead of content::RunMessageLoop() and the
+// deprecated base::RunLoop::QuitCurrentWhenIdleDeprecated().
 
 namespace {
 
@@ -339,35 +344,24 @@ const char kUserScriptPath[] = "extensions/user_script_basic.user.js";
 class DownloadsHistoryDataCollector {
  public:
   explicit DownloadsHistoryDataCollector(Profile* profile)
-      : profile_(profile), result_valid_(false) {}
+      : profile_(profile) {}
 
-  bool WaitForDownloadInfo(
-      std::unique_ptr<std::vector<history::DownloadRow>>* results) {
-    history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(hs);
-    hs->QueryDownloads(
-        base::Bind(&DownloadsHistoryDataCollector::OnQueryDownloadsComplete,
-                   base::Unretained(this)));
+  bool WaitForDownloadInfo(std::vector<history::DownloadRow>* results) {
+    EXPECT_TRUE(results);
+    HistoryServiceFactory::GetForProfile(profile_,
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryDownloads(base::BindLambdaForTesting(
+            [&](std::vector<history::DownloadRow> rows) {
+              *results = std::move(rows);
+              base::RunLoop::QuitCurrentWhenIdleDeprecated();
+            }));
 
     content::RunMessageLoop();
-    if (result_valid_) {
-      *results = std::move(results_);
-    }
-    return result_valid_;
+    return true;
   }
 
  private:
-  void OnQueryDownloadsComplete(
-      std::unique_ptr<std::vector<history::DownloadRow>> entries) {
-    result_valid_ = true;
-    results_ = std::move(entries);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
   Profile* profile_;
-  std::unique_ptr<std::vector<history::DownloadRow>> results_;
-  bool result_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
 };
@@ -2003,14 +1997,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // Get what was stored in the history.
   observer.WaitForStored();
   // Get the details on what was stored into the history.
-  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  std::vector<history::DownloadRow> downloads_in_database;
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
-  ASSERT_EQ(1u, downloads_in_database->size());
+  ASSERT_EQ(1u, downloads_in_database.size());
 
   // Confirm history storage is what you expect for an interrupted slow download
   // job. The download isn't continuable, so there's no intermediate file.
-  history::DownloadRow& row1(downloads_in_database->at(0));
+  history::DownloadRow& row1(downloads_in_database[0]);
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_TRUE(row1.current_path.empty());
   ASSERT_EQ(2u, row1.url_chain.size());
@@ -2068,11 +2062,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 
   // Get history details and confirm it's what you expect.
   observer.WaitForStored();
-  std::unique_ptr<std::vector<history::DownloadRow>> downloads_in_database;
+  std::vector<history::DownloadRow> downloads_in_database;
   ASSERT_TRUE(DownloadsHistoryDataCollector(
       browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
-  ASSERT_EQ(1u, downloads_in_database->size());
-  history::DownloadRow& row1(downloads_in_database->at(0));
+  ASSERT_EQ(1u, downloads_in_database.size());
+  history::DownloadRow& row1(downloads_in_database[0]);
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));
   EXPECT_EQ(DestinationFile(browser(), file), row1.target_path);
   EXPECT_EQ(DestinationFile(browser(), file), row1.current_path);

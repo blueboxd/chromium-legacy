@@ -18,7 +18,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/cpp/features.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
     PluginResponseInterceptorURLLoaderThrottle(
@@ -40,17 +39,6 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   if (content::download_utils::MustDownload(response_url,
                                             response_head->headers.get(),
                                             response_head->mime_type)) {
-    return;
-  }
-
-  // Don't intercept if the request went through the legacy resource loading
-  // path, i.e., ResourceDispatcherHost, since that path doesn't need response
-  // interception. ResourceDispatcherHost is only used if network service is
-  // disabled (in which case this throttle was created because
-  // ServiceWorkerServicification was enabled) and a service worker didn't
-  // handle the request.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !response_head->was_fetched_via_service_worker) {
     return;
   }
 

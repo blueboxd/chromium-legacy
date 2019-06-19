@@ -299,6 +299,10 @@
       status: "experimental",
     },
     {
+      name: "ContentIndex",
+      status: "experimental",
+    },
+    {
       name: "ContextMenu",
       status: "experimental",
     },
@@ -773,8 +777,8 @@
       name: "IsolatedWorldCSP"
     },
     {
-      // Modifies JankTracker to use O(n log n) sweep line algorithm for
-      // computing the area of the jank region.
+      // Modifies LayoutShiftTracker to use O(n log n) sweep line algorithm for
+      // computing the area of the layout shift region.
       name: "JankTrackingSweepLine",
       status: "experimental",
     },
@@ -798,7 +802,7 @@
     },
     {
       // Modifies LayoutInstabilityAPI to include the maximum move distance in the
-      // jank fraction computation.
+      // layout shift score computation.
       name: "LayoutInstabilityMoveDistance",
     },
     {

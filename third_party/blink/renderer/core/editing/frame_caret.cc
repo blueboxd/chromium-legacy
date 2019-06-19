@@ -116,7 +116,7 @@ void FrameCaret::StartBlinkCaret() {
   if (caret_blink_timer_->IsActive())
     return;
 
-  TimeDelta blink_interval = LayoutTheme::GetTheme().CaretBlinkInterval();
+  base::TimeDelta blink_interval = LayoutTheme::GetTheme().CaretBlinkInterval();
   if (!blink_interval.is_zero())
     caret_blink_timer_->StartRepeating(blink_interval, FROM_HERE);
 

@@ -180,8 +180,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   }
   virtual void PlatformColorsDidChange();
 
-  void SetCaretBlinkInterval(TimeDelta);
-  virtual TimeDelta CaretBlinkInterval() const;
+  void SetCaretBlinkInterval(base::TimeDelta);
+  virtual base::TimeDelta CaretBlinkInterval() const;
 
   // System fonts and colors for CSS.
   virtual void SystemFont(CSSValueID system_font_id,
@@ -222,9 +222,9 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual void AdjustProgressBarBounds(ComputedStyle& style) const {}
 
   // Returns the repeat interval of the animation for the progress bar.
-  virtual TimeDelta AnimationRepeatIntervalForProgressBar() const;
+  virtual base::TimeDelta AnimationRepeatIntervalForProgressBar() const;
   // Returns the duration of the animation for the progress bar.
-  virtual TimeDelta AnimationDurationForProgressBar() const;
+  virtual base::TimeDelta AnimationDurationForProgressBar() const;
 
   // Returns size of one slider tick mark for a horizontal track.
   // For vertical tracks we rotate it and use it. i.e. Width is always length
@@ -355,7 +355,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;
-  TimeDelta caret_blink_interval_ = TimeDelta::FromMilliseconds(500);
+  base::TimeDelta caret_blink_interval_ =
+      base::TimeDelta::FromMilliseconds(500);
 
   // This color is expected to be drawn on a semi-transparent overlay,
   // making it more transparent than its alpha value indicates.

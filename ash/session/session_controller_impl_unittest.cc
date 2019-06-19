@@ -613,8 +613,8 @@ class CanSwitchUserTest : public AshTestBase {
   }
 
   // Methods needed to test with overview mode.
-  bool ToggleOverview() {
-    return Shell::Get()->overview_controller()->ToggleOverview();
+  bool StartOverview() {
+    return Shell::Get()->overview_controller()->StartOverview();
   }
   bool InOverviewSession() const {
     return Shell::Get()->overview_controller()->InOverviewSession();
@@ -771,7 +771,7 @@ TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
   EXPECT_EQ(0, switch_callback_hit_count());
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
-  ASSERT_TRUE(ToggleOverview());
+  ASSERT_TRUE(StartOverview());
   ASSERT_TRUE(InOverviewSession());
   SwitchUser(CanSwitchUserTest::NO_DIALOG);
   ASSERT_FALSE(InOverviewSession());

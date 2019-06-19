@@ -411,7 +411,8 @@ Polymer({
     this.error = '';
 
     const propertiesToSet = this.getPropertiesToSet_();
-    if (this.getSource_() == CrOnc.Source.NONE) {
+    if (this.getSource_(this.guid, this.managedProperties) ==
+        CrOnc.Source.NONE) {
       // Set 'AutoConnect' to false for VPN or if prohibited by policy.
       // Note: Do not set AutoConnect to true, the connection manager will do
       // that on a successful connection (unless set to false here).
@@ -466,14 +467,17 @@ Polymer({
 
   /**
    * Returns a valid CrOnc.Source.
+   * @param {string} guid
+   * @param {!chrome.networkingPrivate.ManagedProperties|undefined}
+   *     managedProperties
    * @private
    * @return {!CrOnc.Source}
    */
-  getSource_: function() {
-    if (!this.guid) {
+  getSource_: function(guid, managedProperties) {
+    if (!guid) {
       return CrOnc.Source.NONE;
     }
-    const source = this.managedProperties.Source;
+    const source = managedProperties.Source;
     return source ? /** @type {!CrOnc.Source} */ (source) : CrOnc.Source.NONE;
   },
 
@@ -646,14 +650,14 @@ Polymer({
 
   /** @private */
   setShareNetwork_: function() {
-    const source = this.getSource_();
+    const source = this.getSource_(this.guid, this.managedProperties);
     if (source != CrOnc.Source.NONE) {
       // Configured networks can not change whether they are shared.
       this.shareNetwork_ =
           source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
       return;
     }
-    if (!this.shareIsVisible_()) {
+    if (!this.shareIsVisible_(this.guid, this.type, this.managedProperties)) {
       this.shareNetwork_ = false;
       return;
     }
@@ -1176,7 +1180,7 @@ Polymer({
       if (!this.get('WiFi.SSID', this.configProperties_)) {
         return false;
       }
-      if (this.configRequiresPassphrase_()) {
+      if (this.configRequiresPassphrase_(this.type, this.security_)) {
         const passphrase = this.get('WiFi.Passphrase', this.configProperties_);
         if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH) {
           return false;
@@ -1236,11 +1240,12 @@ Polymer({
   },
 
   /**
+   * @param {string} type
    * @return {boolean}
    * @private
    */
-  securityIsVisible_: function() {
-    return this.type == CrOnc.Type.WI_FI || this.type == CrOnc.Type.ETHERNET;
+  securityIsVisible_: function(type) {
+    return type == CrOnc.Type.WI_FI || type == CrOnc.Type.ETHERNET;
   },
 
   /**
@@ -1253,12 +1258,16 @@ Polymer({
   },
 
   /**
+   * @param {string} guid
+   * @param {string} type
+   * @param {!chrome.networkingPrivate.ManagedProperties|undefined}
+   *     managedProperties
    * @return {boolean}
    * @private
    */
-  shareIsVisible_: function() {
-    return this.getSource_() == CrOnc.Source.NONE &&
-        (this.type == CrOnc.Type.WI_FI || this.type == CrOnc.Type.WI_MAX);
+  shareIsVisible_: function(guid, type, managedProperties) {
+    return this.getSource_(guid, managedProperties) == CrOnc.Source.NONE &&
+        (type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX);
   },
 
   /**
@@ -1266,7 +1275,9 @@ Polymer({
    * @private
    */
   shareIsEnabled_: function() {
-    if (!this.shareAllowEnable || this.getSource_() != CrOnc.Source.NONE) {
+    if (!this.shareAllowEnable ||
+        this.getSource_(this.guid, this.managedProperties) !=
+            CrOnc.Source.NONE) {
       return false;
     }
 
@@ -1521,15 +1532,17 @@ Polymer({
   },
 
   /**
+   * @param {string} type
+   * @param {string} security
    * @return {boolean}
    * @private
    */
-  configRequiresPassphrase_: function() {
+  configRequiresPassphrase_: function(type, security) {
     // Note: 'Passphrase' is only used by WiFi; Ethernet and WiMAX use
     // EAP.Password.
-    return this.type == CrOnc.Type.WI_FI &&
-        (this.security_ == CrOnc.Security.WEP_PSK ||
-         this.security_ == CrOnc.Security.WPA_PSK);
+    return type == CrOnc.Type.WI_FI &&
+        (security == CrOnc.Security.WEP_PSK ||
+         security == CrOnc.Security.WPA_PSK);
   },
 
   /**

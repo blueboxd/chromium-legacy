@@ -454,13 +454,14 @@ void ToolbarActionsModel::InitializeActionList() {
   CHECK(action_ids_.empty());  // We shouldn't have any actions yet.
 
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    pinned_action_ids_ = extension_prefs_->GetPinnedExtensions();
 
   if (profile_->IsOffTheRecord())
     IncognitoPopulate();
   else
     Populate();
+
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    pinned_action_ids_ = GetFilteredPinnedActionIds();
 }
 
 void ToolbarActionsModel::Populate() {
@@ -644,8 +645,7 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
     return;
 
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    std::vector<ActionId> pinned_extensions =
-        extension_prefs_->GetPinnedExtensions();
+    std::vector<ActionId> pinned_extensions = GetFilteredPinnedActionIds();
     if (pinned_extensions != pinned_action_ids_) {
       pinned_action_ids_ = pinned_extensions;
       for (Observer& observer : observers_)
@@ -768,4 +768,16 @@ bool ToolbarActionsModel::IsActionVisible(const ActionId& action_id) const {
   while (action_ids().size() > index && action_ids()[index] != action_id)
     ++index;
   return index < visible_icon_count();
+}
+
+std::vector<ToolbarActionsModel::ActionId>
+ToolbarActionsModel::GetFilteredPinnedActionIds() const {
+  // TODO(pbos): Make sure that the pinned IDs are pruned from ExtensionPrefs on
+  // startup so that we don't keep saving stale IDs.
+  std::vector<ActionId> filtered_action_ids;
+  for (auto& action_id : extension_prefs_->GetPinnedExtensions()) {
+    if (HasAction(action_id))
+      filtered_action_ids.push_back(action_id);
+  }
+  return filtered_action_ids;
 }

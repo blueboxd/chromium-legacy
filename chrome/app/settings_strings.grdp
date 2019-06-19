@@ -599,7 +599,7 @@
       Plugin VM
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_PAGE_SUBTEXT" desc="Description for the section for managing Plugin VM.">
-      Manage settings for running Plugin VM on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      Set up permissions
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_PRINTER_ACCESS" desc="The text in the settings page for allowing printer access from Plugin VM.">
       Give access to printers

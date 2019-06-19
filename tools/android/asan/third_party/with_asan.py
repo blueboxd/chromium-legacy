@@ -48,6 +48,7 @@ def Asan(args):
     subprocess.check_call(setup_cmd, env=env)
     yield
   finally:
+    device.EnableRoot()
     teardown_cmd = [_SCRIPT_PATH, '--revert']
     if args.device:
       teardown_cmd += ['--device', args.device]

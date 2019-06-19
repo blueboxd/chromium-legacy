@@ -67,7 +67,7 @@ class CORE_EXPORT TypeAhead {
  private:
   TypeAheadDataSource* data_source_;
   // platform timestamp of last keyboard event in seconds
-  base::Optional<TimeTicks> last_type_time_;
+  base::Optional<base::TimeTicks> last_type_time_;
   UChar repeating_char_;
   StringBuilder buffer_;
 };

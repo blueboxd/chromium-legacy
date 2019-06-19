@@ -41,7 +41,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/features.h"
 
 namespace {
 const char kUserNeedsNotification[] =
@@ -214,8 +213,7 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   if (!handle->IsInMainFrame())
     return nullptr;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      base::FeatureList::IsEnabled(
+  if (base::FeatureList::IsEnabled(
           previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
     return nullptr;
   }

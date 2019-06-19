@@ -29,7 +29,20 @@ std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request);
 // Replayer for Autofill Server cache. Can be used in concurrency.
 class ServerCacheReplayer {
  public:
-  enum Options { kOptionNone = 0, kOptionFailOnInvalidJsonRecord = 1 << 1 };
+  enum Options {
+    kOptionNone = 0,
+    kOptionFailOnInvalidJsonRecord = 1 << 1,
+    kOptionFailOnEmpty = 1 << 2
+  };
+
+  // Container for status.
+  enum class StatusCode { kOk = 0, kEmpty = 1, kBadRead = 2, kBadNode = 3 };
+  struct Status {
+    StatusCode error_code;
+    std::string message;
+
+    bool Ok() { return error_code == StatusCode::kOk; }
+  };
 
   // Populates the cache at construction time. File at |json_file_path| has to
   // contain a textual json structured like this (same as WPR):

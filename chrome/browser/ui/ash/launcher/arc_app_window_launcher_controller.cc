@@ -265,7 +265,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
   const ash::ShelfID shelf_id(info->app_window()->shelf_id());
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(ash::kArcPackageNameKey,
                       new std::string(info->package_name()));
 }

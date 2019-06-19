@@ -249,34 +249,3 @@ TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
 }
 #endif
-
-TEST_F(ChromeContentRendererClientTest, AddImageContextMenuPropertiesForLoFi) {
-  ChromeContentRendererClient client;
-  blink::WebURLResponse web_url_response;
-  web_url_response.AddHttpHeaderField(
-      blink::WebString::FromUTF8(
-          data_reduction_proxy::chrome_proxy_content_transform_header()),
-      blink::WebString::FromUTF8(
-          data_reduction_proxy::empty_image_directive()));
-  std::map<std::string, std::string> properties;
-  client.AddImageContextMenuProperties(
-      web_url_response, /*is_image_in_context_a_placeholder_image=*/false,
-      &properties);
-  EXPECT_EQ(
-      data_reduction_proxy::empty_image_directive(),
-      properties
-          [data_reduction_proxy::chrome_proxy_content_transform_header()]);
-}
-
-TEST_F(ChromeContentRendererClientTest,
-       AddImageContextMenuPropertiesForPlaceholder) {
-  ChromeContentRendererClient client;
-  std::map<std::string, std::string> properties;
-  client.AddImageContextMenuProperties(
-      blink::WebURLResponse(), /*is_image_in_context_a_placeholder_image=*/true,
-      &properties);
-  EXPECT_EQ(
-      data_reduction_proxy::empty_image_directive(),
-      properties
-          [data_reduction_proxy::chrome_proxy_content_transform_header()]);
-}

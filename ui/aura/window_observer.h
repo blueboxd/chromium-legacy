@@ -55,6 +55,9 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // Invoked prior to removing |window| as a child of this window.
   virtual void OnWillRemoveWindow(Window* window) {}
 
+  // Invoked after |removed_window| had been removed as a child of this window.
+  virtual void OnWindowRemoved(Window* removed_window) {}
+
   // Invoked when this window's parent window changes.  |parent| may be NULL.
   virtual void OnWindowParentChanged(Window* window, Window* parent) {}
 

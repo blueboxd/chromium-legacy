@@ -18,7 +18,8 @@ class CORE_EXPORT LongTaskObserver : public GarbageCollectedMixin {
  public:
   virtual ~LongTaskObserver() = default;
 
-  virtual void OnLongTaskDetected(TimeTicks start_time, TimeTicks end_time) = 0;
+  virtual void OnLongTaskDetected(base::TimeTicks start_time,
+                                  base::TimeTicks end_time) = 0;
 };
 
 // LongTaskDetector detects tasks longer than kLongTaskThreshold and notifies

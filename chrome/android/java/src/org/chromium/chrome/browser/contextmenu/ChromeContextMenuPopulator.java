@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
-import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -131,13 +130,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         // Note: these values must match the ContextMenuSaveImage enum in enums.xml.
         // Only add new values at the end, right before NUM_ENTRIES.
-        @IntDef({TypeSaveImage.LOADED, TypeSaveImage.FETCHED_LOFI, TypeSaveImage.NOT_DOWNLOADABLE,
+        @IntDef({TypeSaveImage.LOADED, TypeSaveImage.NOT_DOWNLOADABLE,
                 TypeSaveImage.DISABLED_AND_IS_NOT_IMAGE_PARAM,
                 TypeSaveImage.DISABLED_AND_IS_IMAGE_PARAM, TypeSaveImage.SHOWN})
         @Retention(RetentionPolicy.SOURCE)
         public @interface TypeSaveImage {
             int LOADED = 0;
-            int FETCHED_LOFI = 1;
+            // int FETCHED_LOFI = 1; deprecated
             int NOT_DOWNLOADABLE = 2;
             int DISABLED_AND_IS_NOT_IMAGE_PARAM = 3;
             int DISABLED_AND_IS_IMAGE_PARAM = 4;
@@ -326,16 +325,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         if (params.isImage() && FirstRunStatus.getFirstRunFlowComplete()) {
             List<ContextMenuItem> imageTab = new ArrayList<>();
             boolean isSrcDownloadableScheme = UrlUtilities.isDownloadableScheme(params.getSrcUrl());
-            if (params.imageWasFetchedLoFi()) {
-                DataReductionProxyUma.previewsLoFiContextMenuAction(
-                        DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
-                // All image context menu items other than "Load image," "Open original image in
-                // new tab," and "Copy image URL" should be disabled on Lo-Fi images.
-                imageTab.add(new ChromeContextMenuItem(Item.LOAD_ORIGINAL_IMAGE));
-                if (mMode == ContextMenuMode.NORMAL) {
-                    imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
-                }
-            } else {
+
                 // Avoid showing open image option for same image which is already opened.
                 if (mMode == ContextMenuMode.CUSTOM_TAB
                         && !mDelegate.getPageUrl().equals(params.getSrcUrl())) {
@@ -363,9 +353,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 }
                 imageTab.add(new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
                         R.string.contextmenu_share_image, R.id.contextmenu_share_image, false));
-            }
-            recordSaveImageContextMenuResult(params.imageWasFetchedLoFi(), isSrcDownloadableScheme);
-            groupedItems.add(new Pair<>(R.string.contextmenu_image_title, imageTab));
+
+                recordSaveImageContextMenuResult(isSrcDownloadableScheme);
+                groupedItems.add(new Pair<>(R.string.contextmenu_image_title, imageTab));
         }
 
         if (params.isVideo() && FirstRunStatus.getFirstRunFlowComplete() && params.canSaveMedia()
@@ -451,15 +441,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 title = URLUtil.guessFileName(params.getSrcUrl(), null, null);
             }
             mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), title);
-        } else if (itemId == R.id.contextmenu_load_original_image) {
-            ContextMenuUma.record(params, ContextMenuUma.Action.LOAD_ORIGINAL_IMAGE);
-            DataReductionProxyUma.previewsLoFiContextMenuAction(
-                    DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
-            if (!mDelegate.wasLoadOriginalImageRequestedForPageLoad()) {
-                DataReductionProxyUma.previewsLoFiContextMenuAction(
-                        DataReductionProxyUma.ACTION_LOFI_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
-            }
-            mDelegate.onLoadOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address) {
             ContextMenuUma.record(params, ContextMenuUma.Action.COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(
@@ -561,22 +542,15 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     /**
      * Record the UMA related to save image context menu option.
-     * @param wasFetchedLoFi The image was fetched Lo-Fi.
      * @param isDownloadableScheme The image is downloadable.
      */
-    private void recordSaveImageContextMenuResult(
-            boolean wasFetchedLoFi, boolean isDownloadableScheme) {
+    private void recordSaveImageContextMenuResult(boolean isDownloadableScheme) {
         if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isStartupSuccessfullyCompleted()) {
             return;
         }
 
         ContextMenuUma.recordSaveImageUma(ContextMenuUma.TypeSaveImage.LOADED);
-
-        if (wasFetchedLoFi) {
-            ContextMenuUma.recordSaveImageUma(ContextMenuUma.TypeSaveImage.FETCHED_LOFI);
-            return;
-        }
 
         if (!isDownloadableScheme) {
             ContextMenuUma.recordSaveImageUma(ContextMenuUma.TypeSaveImage.NOT_DOWNLOADABLE);

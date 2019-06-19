@@ -97,7 +97,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -1455,14 +1454,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebSocketRequestAuthRequired) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory(), true));
-  // Test expectations differ with the Network Service because of the way
-  // mojo onError is handled.
-  const char* network_service_arg =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? "NetworkServiceEnabled"
-          : "NetworkServiceDisabled";
-  ASSERT_TRUE(RunExtensionSubtestWithArg(
-      "webrequest", "test_websocket_auth.html", network_service_arg))
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_websocket_auth.html"))
       << message_;
 }
 
@@ -1480,9 +1472,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebSocketRequestOnWorker) {
 // http://crbug.com/878574.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebSocketConnectionErrorBeforeChannelRequest) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   InstallWebRequestExtension("extension");
 
   network::mojom::WebSocketPtr web_socket;
@@ -1746,11 +1735,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, InitiatorAccessRequired) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestApiClearsBindingOnFirstListener) {
-  // Skip if network service is disabled since the proxy is not used. Also skip
-  // if the proxy is forced since the bindings will never be cleared in that
-  // case.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::FeatureList::IsEnabled(
+  // Skip if the proxy is forced since the bindings will never be cleared in
+  // that case.
+  if (base::FeatureList::IsEnabled(
           extensions_features::kForceWebRequestProxyForTest)) {
     return;
   }
@@ -1779,9 +1766,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // Regression test for http://crbug.com/878366.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestApiDoesNotCrashOnErrorAfterProfileDestroyed) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a profile that will be destroyed later.
@@ -2052,21 +2036,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
 
 // Ensure that devtools frontend requests are hidden from the webRequest API.
 IN_PROC_BROWSER_TEST_F(DevToolsFrontendInWebRequestApiTest, HiddenRequests) {
-  // Test expectations differ with the Network Service because of the way
-  // request interception is done for the test. In the legacy networking path a
-  // URLRequestMockHTTPJob is used, which does not generate
-  // |onBeforeHeadersSent| events. With the Network Service enabled, requests
-  // issued to HTTP URLs by these tests look like real HTTP requests and
-  // therefore do generate |onBeforeHeadersSent| events.
-  //
-  // These tests adjust their expectations accordingly based on whether or not
-  // the Network Service is enabled.
-  const char* network_service_arg =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? "NetworkServiceEnabled"
-          : "NetworkServiceDisabled";
-  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_devtools.html",
-                                         network_service_arg))
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_devtools.html"))
       << message_;
 }
 

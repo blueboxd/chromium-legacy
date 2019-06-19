@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/threading/thread.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_worker.h"
@@ -69,9 +70,10 @@ class MEDIA_EXPORT FakeAudioInputStream
 
   AudioManagerBase* audio_manager_;
   AudioInputCallback* callback_;
-  FakeAudioWorker fake_audio_worker_;
+  base::Thread capture_thread_;
   AudioParameters params_;
 
+  std::unique_ptr<FakeAudioWorker> fake_audio_worker_;
   std::unique_ptr<AudioOutputStream::AudioSourceCallback> audio_source_;
   std::unique_ptr<media::AudioBus> audio_bus_;
 

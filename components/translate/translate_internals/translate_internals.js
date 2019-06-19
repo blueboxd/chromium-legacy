@@ -271,13 +271,25 @@ cr.define('cr.translateInternals', function() {
       const h2 = $('override-variations-country');
       h2.title =
           ('Changing this value will override the permanent country stored ' +
-           'by variations. Normally, this value gets automatically updated ' +
-           'with a new value received from the variations server when ' +
-           'Chrome is updated.');
+           'by variations. The overridden country is not automatically ' +
+           'updated when Chrome is updated and overrides all variations ' +
+           'country settings. After clicking clear button or the overridden ' +
+           'country is not set, the text box shows the country used by ' +
+           'permanent consistency studies. The value that this is overriding ' +
+           'gets automatically updated with a new value received from the ' +
+           'variations server when Chrome is updated.');
 
+      // Add the button to override the country. Note: The country-override
+      // component is re-created on country update, so there is no issue of this
+      // being called multiple times.
       appendTextFieldWithButton(p, country, function(value) {
         chrome.send('overrideCountry', [value]);
       });
+
+      appendClearButton(
+          p, 'overridden' in details && details['overridden'], function() {
+            chrome.send('overrideCountry', ['']);
+          });
 
       if ('update' in details && details['update']) {
         const div1 = document.createElement('div');
@@ -521,6 +533,30 @@ cr.define('cr.translateInternals', function() {
 
     elt.appendChild(input);
     elt.appendChild(document.createElement('br'));
+    elt.appendChild(button);
+  }
+
+  /**
+   * Appends a clear button to `elt`. When the button is clicked,
+   * `clearCallback` is called.
+   *
+   * @param {HTMLElement} elt Container element to append to.
+   * @param {boolean} enabled Whether the button is clickable.
+   * @param {Function} clearCallback Function to call when the button is
+   *                                 clicked.
+   */
+  function appendClearButton(elt, enabled, clearCallback) {
+    const button = document.createElement('button');
+    button.textContent = 'clear';
+    button.style.marginLeft = '10px';
+    button.disabled = !enabled;
+    if (enabled) {
+      button.addEventListener('click', clearCallback, false);
+    } else {
+      // Used for tooltip when the button is unclickable.
+      button.title = 'No pref values to clear.'
+    }
+
     elt.appendChild(button);
   }
 

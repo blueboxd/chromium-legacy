@@ -1,0 +1,16 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.kiosk_next_home.mojom;
+
+import "url/mojom/url.mojom";
+
+// Creates Browser instances and navigates them to the requested URL.
+interface WebsiteController {
+  // Launches KioskNextBrowser with the given URL.
+  LaunchKioskNextWebsite(url.mojom.Url url);
+
+  // Launches tabbed browser with the given URL.
+  LaunchWebsite(url.mojom.Url url);
+};

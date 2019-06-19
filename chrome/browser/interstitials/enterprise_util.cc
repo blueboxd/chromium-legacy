@@ -83,9 +83,11 @@ std::string GetThreatTypeStringForInterstitial(
         DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
     case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
     case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
     case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
     case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
+    case safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
       NOTREACHED();
       break;
   }

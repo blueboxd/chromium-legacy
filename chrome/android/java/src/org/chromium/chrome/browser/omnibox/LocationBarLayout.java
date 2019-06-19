@@ -283,6 +283,11 @@ public class LocationBarLayout extends FrameLayout
         return mAutocompleteCoordinator;
     }
 
+    @Override
+    public void onDeferredStartup() {
+        mAutocompleteCoordinator.prefetchZeroSuggestResults();
+    }
+
     /**
      * Handles native dependent initialization for this class.
      */

@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 

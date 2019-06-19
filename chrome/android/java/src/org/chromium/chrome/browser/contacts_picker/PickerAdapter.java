@@ -25,7 +25,8 @@ import java.util.Locale;
  * A data adapter for the Contacts Picker.
  */
 public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
-        implements ContactsFetcherWorkerTask.ContactsRetrievedCallback {
+        implements ContactsFetcherWorkerTask.ContactsRetrievedCallback,
+                   TopView.ChipToggledCallback {
     /**
      * A ViewHolder for the top-most view in the RecyclerView. The view it contains has a
      * checkbox and some multi-line text that goes with it, so clicks on either text line
@@ -45,6 +46,16 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             // TODO(finnur): Make the explanation text non-clickable.
             mItemView.toggle();
         }
+    }
+
+    /**
+     * The types of filters supported.
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({FilterType.EMAILS, FilterType.TELEPHONES})
+    public @interface FilterType {
+        int EMAILS = 0;
+        int TELEPHONES = 1;
     }
 
     /**
@@ -81,6 +92,12 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     // A list of search result indices into the larger data set.
     private ArrayList<Integer> mSearchResults;
 
+    // Whether to include emails in the returned results.
+    private static boolean sIncludeEmails;
+
+    // Whether to include telephone numbers in the returned results.
+    private static boolean sIncludeTelephones;
+
     // A list of contacts to use for testing (instead of querying Android).
     private static ArrayList<ContactDetails> sTestContacts;
 
@@ -95,6 +112,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         mCategoryView = categoryView;
         mContentResolver = contentResolver;
         mFormattedOrigin = formattedOrigin;
+        sIncludeEmails = true;
+        sIncludeTelephones = true;
 
         if (getAllContacts() == null && sTestContacts == null) {
             mWorkerTask = new ContactsFetcherWorkerTask(mContentResolver, this,
@@ -131,7 +150,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             for (ContactDetails contact : mContactDetails) {
                 if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
                         || contact.getContactDetailsAsString(
-                                          /*longVersion=*/true, /*resources=*/null)
+                                          /*longVersion=*/true, includesEmails(),
+                                          includesTelephones(), /*resources=*/null)
                                    .toLowerCase(Locale.getDefault())
                                    .contains(query_lower)) {
                     mSearchResults.add(count);
@@ -175,6 +195,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
                                    .inflate(R.layout.top_view, parent, false);
                 mTopView.setSiteString(mFormattedOrigin);
                 mTopView.registerSelectAllCallback(mCategoryView);
+                mTopView.registerChipToggledCallback(this);
                 mTopView.updateCheckboxVisibility(mCategoryView.multiSelectionAllowed());
                 mCategoryView.setTopView(mTopView);
                 if (mContactDetails != null) mTopView.updateContactCount(mContactDetails.size());
@@ -218,6 +239,34 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         if (mContactDetails == null || mContactDetails.size() == 0) return 0;
         // Add one entry to account for the Select All checkbox, when not searching.
         return mContactDetails.size() + (mSearchMode ? 0 : 1);
+    }
+
+    // TopView.ChipToggledCallback:
+
+    @Override
+    public void onChipToggled(@FilterType int chip) {
+        if (chip == FilterType.EMAILS) {
+            sIncludeEmails = !sIncludeEmails;
+        } else if (chip == FilterType.TELEPHONES) {
+            sIncludeTelephones = !sIncludeTelephones;
+        } else {
+            assert false;
+        }
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Returns true unless the adapter is filtering out emails.
+     */
+    public static boolean includesEmails() {
+        return sIncludeEmails;
+    }
+
+    /**
+     * Returns true unless the adapter is filtering out telephone numbers.
+     */
+    public static boolean includesTelephones() {
+        return sIncludeTelephones;
     }
 
     /** Sets a list of contacts to use as data for the dialog. For testing use only. */

@@ -197,7 +197,6 @@ class MenuItemViewLayoutTest : public ::testing::Test {
 
     submenu_parent_ = std::make_unique<View>();
     submenu_parent_->AddChildView(submenu);
-    submenu_parent_->SetPosition(gfx::Point(0, 0));
     submenu_parent_->SetSize(submenu->GetPreferredSize());
   }
 
@@ -218,7 +217,7 @@ TEST_F(MenuItemViewLayoutTest, ContainerLayoutRespectsMarginsAndPreferredSize) {
   const gfx::Size child_size(200, 50);
   const gfx::Insets child_margins(5, 10);
   child_view->SetPreferredSize(child_size);
-  child_view->SetProperty(kMarginsKey, new gfx::Insets(child_margins));
+  child_view->SetProperty(kMarginsKey, child_margins);
 
   PerformLayout();
 
@@ -267,7 +266,7 @@ TEST_F(MenuItemViewLayoutTest, ContainerLayoutPassesTrueWidth) {
   FakeView* child_view =
       test_item()->AddChildView(std::make_unique<FakeView>(child_size.width()));
   child_view->SetPreferredSize(child_size);
-  child_view->SetProperty(kMarginsKey, new gfx::Insets(child_margins));
+  child_view->SetProperty(kMarginsKey, child_margins);
 
   PerformLayout();
 

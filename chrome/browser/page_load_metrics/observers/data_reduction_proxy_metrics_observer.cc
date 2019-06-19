@@ -123,7 +123,7 @@ void DataReductionProxyMetricsObserver::RecordPageSizeUMA() const {
   const int64_t original_network_bytes =
       insecure_original_network_bytes() + secure_original_network_bytes();
 
-  // TODO(ryansturm): Evaluate if any of the below histograms are unncessary
+  // TODO(ryansturm): Evaluate if any of the below histograms are unnecessary
   // once data is available. crbug.com/682782
 
   // The percent of resources that went through the data reduction proxy.

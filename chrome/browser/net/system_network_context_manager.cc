@@ -56,7 +56,6 @@
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -282,12 +281,6 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 };
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // SetUp should already have been called.
-    DCHECK(io_thread_network_context_);
-    return io_thread_network_context_.get();
-  }
-
   if (!network_service_network_context_ ||
       network_service_network_context_.encountered_error()) {
     // This should call into OnNetworkServiceCreated(), which will re-create
@@ -477,12 +470,12 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 
   registry->RegisterBooleanPref(prefs::kQuickCheckEnabled, true);
+
+  registry->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy, -1);
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   // Disable QUIC globally, if needed.
   if (!is_quic_allowed_)
     network_service->DisableQuic();
@@ -532,6 +525,11 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
          "application/vnd.wordprocessing-openxml",
          "text/csv"});
   }
+
+  int max_connections_per_proxy =
+      local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
+  if (max_connections_per_proxy != -1)
+    network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
 
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
@@ -686,13 +684,8 @@ void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {
 }
 
 void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK(io_thread_network_context_);
-    io_thread_network_context_.FlushForTesting();
-  } else {
-    DCHECK(network_service_network_context_);
-    network_service_network_context_.FlushForTesting();
-  }
+  DCHECK(network_service_network_context_);
+  network_service_network_context_.FlushForTesting();
   if (url_loader_factory_)
     url_loader_factory_.FlushForTesting();
 }

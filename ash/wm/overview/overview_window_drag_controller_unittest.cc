@@ -97,7 +97,7 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =
@@ -125,7 +125,7 @@ TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_session = overview_controller->overview_session();
   auto* overview_item =

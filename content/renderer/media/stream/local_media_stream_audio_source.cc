@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 
 namespace content {
 
@@ -69,7 +69,7 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
       consumer_render_frame_id_, device().input.channel_layout(),
       device().input.sample_rate(), device().input.frames_per_buffer(),
       device().session_id, device().input.effects());
-  WebRtcLogMessage(str);
+  blink::WebRtcLogMessage(str);
   DVLOG(1) << str;
 
   // Sanity-check that the consuming RenderFrame still exists. This is required
@@ -123,7 +123,8 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
 }
 
 void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
-  WebRtcLogMessage("LocalMediaStreamAudioSource::OnCaptureError: " + why);
+  blink::WebRtcLogMessage("LocalMediaStreamAudioSource::OnCaptureError: " +
+                          why);
   StopSourceOnError(why);
 }
 
@@ -133,7 +134,7 @@ void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
 
 void LocalMediaStreamAudioSource::ChangeSourceImpl(
     const blink::MediaStreamDevice& new_device) {
-  WebRtcLogMessage(
+  blink::WebRtcLogMessage(
       "LocalMediaStreamAudioSource::ChangeSourceImpl(new_device = " +
       new_device.id + ")");
   EnsureSourceIsStopped();

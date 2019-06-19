@@ -5,10 +5,10 @@
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
-#include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
@@ -17,8 +17,8 @@ RemoteVideoTrackAdapter::RemoteVideoTrackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::VideoTrackInterface* webrtc_track)
     : RemoteMediaStreamTrackAdapter(main_thread, webrtc_track) {
-  std::unique_ptr<TrackObserver> observer(
-      new TrackObserver(main_thread, observed_track().get()));
+  std::unique_ptr<blink::TrackObserver> observer(
+      new blink::TrackObserver(main_thread, observed_track().get()));
   // Here, we use base::Unretained() to avoid a circular reference.
   web_initialize_ = base::Bind(
       &RemoteVideoTrackAdapter::InitializeWebVideoTrack, base::Unretained(this),
@@ -35,7 +35,7 @@ RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
 }
 
 void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
-    std::unique_ptr<TrackObserver> observer,
+    std::unique_ptr<blink::TrackObserver> observer,
     bool enabled) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   std::unique_ptr<MediaStreamRemoteVideoSource> video_source_ptr =
@@ -61,7 +61,7 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
       unregistered_(false),
 #endif
       state_(observed_track()->state()) {
-  // TODO(tommi): Use TrackObserver instead.
+  // TODO(tommi): Use blink::TrackObserver instead.
   observed_track()->RegisterObserver(this);
   // Here, we use base::Unretained() to avoid a circular reference.
   web_initialize_ =
@@ -88,7 +88,8 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeAudio);
 
   blink::MediaStreamAudioSource* const source =
-      new PeerConnectionRemoteAudioSource(observed_track().get(), main_thread);
+      new blink::PeerConnectionRemoteAudioSource(observed_track().get(),
+                                                 main_thread);
   web_track()->Source().SetPlatformSource(
       base::WrapUnique(source));  // Takes ownership.
 

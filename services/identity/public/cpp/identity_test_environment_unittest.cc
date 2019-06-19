@@ -36,17 +36,20 @@ TEST_F(IdentityTestEnvironmentTest,
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::set<std::string> scopes{"scope"};
 
-  identity_test_environment->identity_manager()
-      ->CreateAccessTokenFetcherForAccount(
-          identity_test_environment->identity_manager()->GetPrimaryAccountId(),
-          "dummy_consumer", scopes, std::move(callback),
-          AccessTokenFetcher::Mode::kImmediate);
+  std::unique_ptr<identity::AccessTokenFetcher> fetcher =
+      identity_test_environment->identity_manager()
+          ->CreateAccessTokenFetcherForAccount(
+              identity_test_environment->identity_manager()
+                  ->GetPrimaryAccountId(),
+              "dummy_consumer", scopes, std::move(callback),
+              AccessTokenFetcher::Mode::kImmediate);
 
   // Deleting the IdentityTestEnvironment should cancel any pending
   // task in order to avoid use-after-free crashes. The destructor of
   // the test will spin the runloop which would run
   // IdentityTestEnvironment pending tasks if not canceled.
   identity_test_environment.reset();
+  fetcher.reset();
 }
 
 }  // namespace identity

@@ -1570,6 +1570,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
+  if (IsFormatDialogTest()) {
+    enabled_features.emplace_back(
+        chromeos::features::kEnableFileManagerFormatDialog);
+  }
+
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
@@ -1730,6 +1735,10 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableFormatDialog() const {
   return false;
 }
 
@@ -2125,7 +2134,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         extensions::AppWindowRegistry::Get(profile())->app_windows();
     ASSERT_FALSE(app_windows.empty());
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
-        &key_event, base::NullCallback());
+        &key_event);
     *output = "mediaKeyDispatched";
     return;
   }
@@ -2149,7 +2158,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       host = app_windows.front()->GetNativeWindow()->GetHost();
     }
     ASSERT_TRUE(host);
-    host->DispatchKeyEventPostIME(&key_event, base::NullCallback());
+    host->DispatchKeyEventPostIME(&key_event);
     *output = "tabKeyDispatched";
     return;
   }

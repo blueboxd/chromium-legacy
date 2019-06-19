@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"

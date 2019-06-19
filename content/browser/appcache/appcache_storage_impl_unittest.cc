@@ -27,7 +27,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache.h"
-#include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -36,8 +35,10 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -74,6 +75,8 @@ static GURL GetMockUrl(const std::string& path) {
   return GURL("http://mockhost/" + path);
 }
 
+std::unique_ptr<TestBrowserContext> browser_context;
+const int kProcessId = 1;
 std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment;
 scoped_refptr<base::SingleThreadTaskRunner> io_runner;
 std::unique_ptr<base::Thread> background_thread;
@@ -277,6 +280,10 @@ class AppCacheStorageImplTest : public testing::Test {
     scoped_task_environment = std::make_unique<TestBrowserThreadBundle>(
         TestBrowserThreadBundle::REAL_IO_THREAD);
 
+    browser_context = std::make_unique<TestBrowserContext>();
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
+                                                       browser_context.get());
+
     io_runner =
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
@@ -291,6 +298,8 @@ class AppCacheStorageImplTest : public testing::Test {
   static void TearDownTestCase() {
     io_runner.reset();
     background_thread.reset();
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kProcessId);
+    browser_context.reset();
     scoped_task_environment.reset();
   }
 
@@ -1697,7 +1706,6 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Continue_Reinitialize(ReinitTestCase test_case) {
     const int kMockRenderFrameId = MSG_ROUTING_NONE;
-
     if (test_case == CORRUPT_SQL_ON_INSTALL) {
       // Break the db file
       EXPECT_FALSE(database()->was_corruption_detected());
@@ -1866,7 +1874,6 @@ class AppCacheStorageImplTest : public testing::Test {
   std::unique_ptr<MockServiceObserver> observer_;
   MockAppCacheFrontend frontend_;
   mojo::BindingSet<blink::mojom::AppCacheFrontend> frontend_bindings_;
-  std::unique_ptr<AppCacheBackendImpl> backend_;
   std::unique_ptr<AppCacheRequestHandler> handler_;
   network::TestURLLoaderFactory mock_url_loader_factory_;
 

@@ -14,7 +14,6 @@
 #include "content/public/common/content_features.h"
 #include "crypto/random.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -135,8 +134,7 @@ bool ShouldUseMirroringService() {
   return (base::FeatureList::IsEnabled(
               mirroring::features::kMirroringService) ||
           base::FeatureList::IsEnabled(kCastMediaRouteProvider)) &&
-         base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
-         base::FeatureList::IsEnabled(network::features::kNetworkService);
+         base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams);
 }
 
 #endif  // !defined(OS_ANDROID)

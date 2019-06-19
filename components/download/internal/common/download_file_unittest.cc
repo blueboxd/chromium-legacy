@@ -26,6 +26,7 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_input_stream.h"
 #include "net/base/net_errors.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -396,7 +397,7 @@ class DownloadFileTest : public testing::Test {
       case RENAME_AND_ANNOTATE:
         download_file_->RenameAndAnnotate(
             full_path, "12345678-ABCD-1234-DCBA-123456789ABC", GURL(), GURL(),
-            completion_callback);
+            nullptr, completion_callback);
         break;
     }
   }

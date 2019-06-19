@@ -216,10 +216,8 @@ void TranslateInternalsHandler::OnOverrideCountry(const base::ListValue* args) {
   std::string country;
   if (args->GetString(0, &country)) {
     variations::VariationsService* variations_service = GetVariationsService();
-    if (variations_service) {
-      SendCountryToJs(
-          variations_service->OverrideStoredPermanentCountry(country));
-    }
+    SendCountryToJs(
+        variations_service->OverrideStoredPermanentCountry(country));
   }
 }
 
@@ -287,15 +285,19 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
 }
 
 void TranslateInternalsHandler::SendCountryToJs(bool was_updated) {
-  std::string country;
+  std::string country, overridden_country;
   variations::VariationsService* variations_service = GetVariationsService();
-  if (variations_service)
-    country = variations_service->GetStoredPermanentCountry();
+  // The |country| will get the overridden country when it exists. The
+  // |overridden_country| is used to check if the overridden country exists or
+  // not and disable/enable the clear button.
+  country = variations_service->GetStoredPermanentCountry();
+  overridden_country = variations_service->GetOverriddenPermanentCountry();
 
   base::DictionaryValue dict;
   if (!country.empty()) {
     dict.SetString("country", country);
     dict.SetBoolean("update", was_updated);
+    dict.SetBoolean("overridden", !overridden_country.empty());
   }
   SendMessageToJs("countryUpdated", dict);
 }

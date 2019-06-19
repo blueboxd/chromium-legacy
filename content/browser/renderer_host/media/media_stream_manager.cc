@@ -585,11 +585,7 @@ MediaStreamManager::MediaStreamManager(
         ServiceManagerConnection::GetForProcess()->GetConnector()->Clone());
   }
 
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  // BrowserMainLoop always creates the PowerMonitor instance before creating
-  // MediaStreamManager, but power_monitor may be NULL in unit tests.
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 }
 
 MediaStreamManager::~MediaStreamManager() {
@@ -597,11 +593,7 @@ MediaStreamManager::~MediaStreamManager() {
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
 
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  // The PowerMonitor instance owned by BrowserMainLoops always outlives the
-  // MediaStreamManager, but it may be NULL in unit tests.
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {

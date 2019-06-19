@@ -37,5 +37,11 @@ int GetLineHeight(int context, int style) {
                                                                       style);
 }
 
+int GetExpectedTextWidth(int context, int style, int length) {
+  ValidateContextAndStyle(context, style);
+  return LayoutProvider::Get()->GetTypographyProvider().GetExpectedTextWidth(
+      context, style, length);
+}
+
 }  // namespace style
 }  // namespace views

@@ -266,6 +266,18 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
 }
 
 std::unique_ptr<PrerenderHandle>
+PrerenderManager::AddPrerenderFromNavigationPredictor(
+    const GURL& url,
+    SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  DCHECK(IsNoStatePrefetchEnabled());
+
+  return AddPrerenderWithPreconnectFallback(
+      ORIGIN_NAVIGATION_PREDICTOR, url, content::Referrer(), base::nullopt,
+      gfx::Rect(size), session_storage_namespace);
+}
+
+std::unique_ptr<PrerenderHandle>
 PrerenderManager::AddPrerenderFromExternalRequest(
     const GURL& url,
     const content::Referrer& referrer,

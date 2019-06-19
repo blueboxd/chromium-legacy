@@ -28,7 +28,7 @@ class CORE_EXPORT IdleDeadline : public ScriptWrappable {
     kMaxValue = kCalledByTimeout
   };
 
-  IdleDeadline(TimeTicks deadline, CallbackType);
+  IdleDeadline(base::TimeTicks deadline, CallbackType);
 
   double timeRemaining() const;
 
@@ -41,7 +41,7 @@ class CORE_EXPORT IdleDeadline : public ScriptWrappable {
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  private:
-  TimeTicks deadline_;
+  base::TimeTicks deadline_;
   CallbackType callback_type_;
   const base::TickClock* clock_;
 };

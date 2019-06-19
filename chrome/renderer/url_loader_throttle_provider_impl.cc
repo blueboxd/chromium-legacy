@@ -29,7 +29,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/gurl.h"
@@ -119,12 +118,9 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
-    content::RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName,
-        mojo::MakeRequest(&safe_browsing_info_));
-  }
+  content::RenderThread::Get()->GetConnector()->BindInterface(
+      content::mojom::kBrowserServiceName,
+      mojo::MakeRequest(&safe_browsing_info_));
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     content::RenderThread::Get()->GetConnector()->BindInterface(
@@ -170,8 +166,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
   bool is_frame_resource = content::IsResourceTypeFrame(resource_type);
@@ -194,10 +188,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
             net::HttpRequestHeaders(), data_reduction_proxy_manager_.get()));
   }
 
-  if ((network_service_enabled ||
-       base::FeatureList::IsEnabled(
-           safe_browsing::kCheckByURLLoaderThrottle)) &&
-      !is_frame_resource) {
+  if (!is_frame_resource) {
     if (safe_browsing_info_)
       safe_browsing_.Bind(std::move(safe_browsing_info_));
     throttles.push_back(
@@ -233,8 +224,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (network_service_enabled &&
-      type_ == content::URLLoaderThrottleProviderType::kFrame &&
+  if (type_ == content::URLLoaderThrottleProviderType::kFrame &&
       resource_type == content::ResourceType::kObject) {
     content::RenderFrame* render_frame =
         content::RenderFrame::FromRoutingID(render_frame_id);

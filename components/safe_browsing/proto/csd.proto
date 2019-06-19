@@ -1155,6 +1155,7 @@ message ClientSafeBrowsingReportRequest {
     URL_SUSPICIOUS = 15;
     BILLING = 16;
     APK_DOWNLOAD = 17;
+    BLOCKED_AD_POPUP = 20;
   }
 
   message HTTPHeader {

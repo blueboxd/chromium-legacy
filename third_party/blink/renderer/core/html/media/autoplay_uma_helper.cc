@@ -25,10 +25,11 @@ namespace blink {
 
 namespace {
 
-constexpr TimeDelta kMaxOffscreenDurationUma = TimeDelta::FromHours(1);
+constexpr base::TimeDelta kMaxOffscreenDurationUma =
+    base::TimeDelta::FromHours(1);
 constexpr int32_t kOffscreenDurationUmaBucketCount = 50;
 
-constexpr TimeDelta kMaxWaitTimeUma = TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kMaxWaitTimeUma = base::TimeDelta::FromSeconds(30);
 constexpr int32_t kWaitTimeBucketCount = 50;
 
 // Returns a int64_t with the following structure:
@@ -69,7 +70,7 @@ void AutoplayUmaHelper::OnLoadStarted() {
 }
 
 void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
-  base::Optional<TimeDelta> autoplay_wait_time;
+  base::Optional<base::TimeDelta> autoplay_wait_time;
   if (!load_start_time_.is_null())
     autoplay_wait_time = CurrentTimeTicks() - load_start_time_;
   DEFINE_STATIC_LOCAL(EnumerationHistogram, video_histogram,
@@ -100,12 +101,12 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
       if (source == AutoplaySource::kAttribute) {
         UMA_HISTOGRAM_CUSTOM_TIMES("Media.Video.Autoplay.Attribute.WaitTime",
                                    *autoplay_wait_time,
-                                   TimeDelta::FromMilliseconds(1),
+                                   base::TimeDelta::FromMilliseconds(1),
                                    kMaxWaitTimeUma, kWaitTimeBucketCount);
       } else if (source == AutoplaySource::kMethod) {
         UMA_HISTOGRAM_CUSTOM_TIMES("Media.Video.Autoplay.PlayMethod.WaitTime",
                                    *autoplay_wait_time,
-                                   TimeDelta::FromMilliseconds(1),
+                                   base::TimeDelta::FromMilliseconds(1),
                                    kMaxWaitTimeUma, kWaitTimeBucketCount);
       }
     }
@@ -115,12 +116,12 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
       if (source == AutoplaySource::kAttribute) {
         UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Autoplay.Attribute.WaitTime",
                                    *autoplay_wait_time,
-                                   TimeDelta::FromMilliseconds(1),
+                                   base::TimeDelta::FromMilliseconds(1),
                                    kMaxWaitTimeUma, kWaitTimeBucketCount);
       } else if (source == AutoplaySource::kMethod) {
         UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Autoplay.PlayMethod.WaitTime",
                                    *autoplay_wait_time,
-                                   TimeDelta::FromMilliseconds(1),
+                                   base::TimeDelta::FromMilliseconds(1),
                                    kMaxWaitTimeUma, kWaitTimeBucketCount);
       }
     }
@@ -355,12 +356,13 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration",
-      muted_video_autoplay_offscreen_duration_, TimeDelta::FromMilliseconds(1),
-      kMaxOffscreenDurationUma, kOffscreenDurationUmaBucketCount);
+      muted_video_autoplay_offscreen_duration_,
+      base::TimeDelta::FromMilliseconds(1), kMaxOffscreenDurationUma,
+      kOffscreenDurationUmaBucketCount);
 
   muted_video_offscreen_duration_intersection_observer_->disconnect();
   muted_video_offscreen_duration_intersection_observer_ = nullptr;
-  muted_video_autoplay_offscreen_duration_ = TimeDelta();
+  muted_video_autoplay_offscreen_duration_ = base::TimeDelta();
   MaybeUnregisterMediaElementPauseListener();
   MaybeUnregisterContextDestroyedObserver();
 }

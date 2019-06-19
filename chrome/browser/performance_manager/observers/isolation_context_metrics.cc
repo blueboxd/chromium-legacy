@@ -43,15 +43,17 @@ int GetSecondsSinceLastReportAndUpdate(const base::TimeTicks now,
 
 // Adds |count| samples of the given |value| to the linear histogram with the
 // provided |name|. Assumes the enum starts at 0, and ends at
-// EnumType::kMaxValue inclusively.
-template <typename EnumType>
-void AddCountsToHistogram(const char* name, EnumType value, int count) {
+// EnumType::kMaxValue inclusively. This is templated on the histogram name so
+// that each histogram gets a distinct static histogram pointer.
+template <const char* kName, typename EnumType>
+void AddCountsToHistogram(EnumType value, int count) {
   static constexpr int32_t kMaxValue =
       static_cast<int32_t>(EnumType::kMaxValue);
-  auto* histogram = base::LinearHistogram::FactoryGet(
-      name, 0, kMaxValue, kMaxValue + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddCount(static_cast<int32_t>(value), count);
+  STATIC_HISTOGRAM_POINTER_BLOCK(
+      kName, AddCount(static_cast<int32_t>(value), count),
+      base::LinearHistogram::FactoryGet(
+          kName, 0, kMaxValue, kMaxValue + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 }  // namespace
@@ -95,6 +97,14 @@ const char
 // static
 const char IsolationContextMetrics::kBrowsingInstanceDataByTimeHistogramName[] =
     "PerformanceManager.BrowsingInstancePluralityVisibilityState.ByTime";
+
+// static
+const char IsolationContextMetrics::kFramesPerRendererByTimeHistogram[] =
+    "PerformanceManager.FramesPerRendererByTime";
+
+// static
+const char IsolationContextMetrics::kSiteInstancesPerRendererByTimeHistogram[] =
+    "PerformanceManager.SiteInstancesPerRendererByTime";
 
 IsolationContextMetrics::IsolationContextMetrics() = default;
 
@@ -244,8 +254,25 @@ void IsolationContextMetrics::ReportProcessData(ProcessData* process_data,
                                                 base::TimeTicks now) {
   const int seconds =
       GetSecondsSinceLastReportAndUpdate(now, kReportingInterval, process_data);
-  if (seconds)
-    AddCountsToHistogram(kProcessDataByTimeHistogramName, state, seconds);
+  if (seconds) {
+    AddCountsToHistogram<kProcessDataByTimeHistogramName>(state, seconds);
+
+    // The following are effectively UMA_HISTOGRAM_COUNTS_100, but using
+    // AddCount rather than Add.
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        kFramesPerRendererByTimeHistogram,
+        AddCount(process_data->frame_count, seconds),
+        base::Histogram::FactoryGet(
+            kFramesPerRendererByTimeHistogram, 1, 100, 50,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+
+    STATIC_HISTOGRAM_POINTER_BLOCK(
+        kSiteInstancesPerRendererByTimeHistogram,
+        AddCount(process_data->site_instance_frame_count.size(), seconds),
+        base::Histogram::FactoryGet(
+            kSiteInstancesPerRendererByTimeHistogram, 1, 100, 50,
+            base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
 }
 
 void IsolationContextMetrics::ReportAllProcessData(base::TimeTicks now) {
@@ -328,10 +355,10 @@ void IsolationContextMetrics::ReportBrowsingInstanceData(
       now, kReportingInterval, browsing_instance_data);
   if (seconds) {
     DCHECK_LT(0, page_count);
-    AddCountsToHistogram(kBrowsingInstanceDataByPageTimeHistogramName, state,
-                         seconds * page_count);
-    AddCountsToHistogram(kBrowsingInstanceDataByTimeHistogramName, state,
-                         seconds);
+    AddCountsToHistogram<kBrowsingInstanceDataByPageTimeHistogramName>(
+        state, seconds * page_count);
+    AddCountsToHistogram<kBrowsingInstanceDataByTimeHistogramName>(state,
+                                                                   seconds);
   }
 }
 

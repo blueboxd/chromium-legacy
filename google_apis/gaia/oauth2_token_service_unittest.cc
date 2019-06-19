@@ -87,12 +87,12 @@ class FakeOAuth2TokenServiceDelegateDesktop
     return std::string();
   }
 
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override {
     if (GetAuthError(account_id).IsPersistentError()) {
-      return new OAuth2AccessTokenFetcherImmediateError(
+      return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
           consumer, GetAuthError(account_id));
     }
     return FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(

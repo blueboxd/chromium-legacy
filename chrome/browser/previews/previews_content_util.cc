@@ -39,7 +39,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
-#include "services/network/public/cpp/features.h"
 
 namespace previews {
 
@@ -306,22 +305,12 @@ content::PreviewsState DetermineCommittedServerPreviewsState(
     data_reduction_proxy::DataReductionProxyData* data,
     content::PreviewsState initial_state) {
   if (!data) {
-    return initial_state &=
-           ~(content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON);
+    return initial_state &= ~(content::SERVER_LITE_PAGE_ON);
   }
   content::PreviewsState updated_state = initial_state;
   if (!data->lite_page_received()) {
     // Turn off LitePage bit.
     updated_state &= ~(content::SERVER_LITE_PAGE_ON);
-  }
-  if (!data->lofi_policy_received()) {
-    // Turn off LoFi bit(s).
-    updated_state &= ~(content::SERVER_LOFI_ON);
-    if (data->used_data_reduction_proxy()) {
-      // Turn off Client LoFi bit also if using proxy but proxy did not
-      // request LoFi.
-      updated_state &= ~(content::CLIENT_LOFI_ON);
-    }
   }
   return updated_state;
 }
@@ -360,13 +349,10 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // If a server preview is set, retain only the bits determined for the server.
   // |previews_state| must already have been updated for server previews from
   // the main frame response headers (so if they are set here, then they are
-  // the specify the committed preview). Note: for Server LoFi we keep the
-  // Client LoFi bit on so that it is applied to both HTTP and HTTPS images.
-  if (previews_state &
-      (content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON)) {
+  // the specify the committed preview).
+  if (previews_state & content::SERVER_LITE_PAGE_ON) {
     LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE);
-    return previews_state & (content::SERVER_LITE_PAGE_ON |
-                             content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON);
+    return previews_state & content::SERVER_LITE_PAGE_ON;
   }
 
   if (previews_data && previews_data->cache_control_no_transform_directive()) {
@@ -383,7 +369,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
       if (navigation_handle &&
-          base::FeatureList::IsEnabled(network::features::kNetworkService) &&
           base::FeatureList::IsEnabled(
               previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
         previews_data->set_server_lite_page_info(

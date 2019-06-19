@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutSrcdocNoFound) {
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
-  EXPECT_EQ(GURL("about:srcdoc"), sub_document->GetLastCommittedURL());
+  EXPECT_TRUE(sub_document->GetLastCommittedURL().IsAboutSrcdoc());
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeAboutSrcdocFound) {
   ASSERT_EQ(1u, main_document->child_count());
   RenderFrameHostImpl* sub_document =
       main_document->child_at(0)->current_frame_host();
-  EXPECT_EQ(GURL("about:srcdoc"), sub_document->GetLastCommittedURL());
+  EXPECT_TRUE(sub_document->GetLastCommittedURL().IsAboutSrcdoc());
 
   // Check the iframe is properly loaded. EvalJs("document.body.innerHTML")
   // can't be used, because javascript is disabled. Instead, check it was able

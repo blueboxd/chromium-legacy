@@ -10,7 +10,8 @@
 namespace gpu {
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
-    : public GpuWatchdogThread {
+    : public GpuWatchdogThread,
+      public base::MessageLoopCurrent::TaskObserver {
  public:
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded);
@@ -30,22 +31,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void CleanUp() override;
 
  private:
-  // An object of this type intercepts the reception and completion of all tasks
-  // on the watched thread and checks whether the watchdog is armed.
-  class GpuWatchdogTaskObserver
-      : public base::MessageLoopCurrent::TaskObserver {
-   public:
-    explicit GpuWatchdogTaskObserver(GpuWatchdogThreadImplV2* watchdog);
-    ~GpuWatchdogTaskObserver() override;
-
-    // Implements MessageLoopCurrent::TaskObserver.
-    void WillProcessTask(const base::PendingTask& pending_task) override;
-    void DidProcessTask(const base::PendingTask& pending_task) override;
-
-   private:
-    GpuWatchdogThreadImplV2* watchdog_;
-  };
-
   GpuWatchdogThreadImplV2();
   void Arm();
   void Disarm();
@@ -54,11 +39,14 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnSuspend() override;
   void OnResume() override;
 
+  // Implements MessageLoopCurrent::TaskObserver.
+  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void DidProcessTask(const base::PendingTask& pending_task) override;
+
   // Implements GpuWatchdogThread
   void DeliberatelyTerminateToRecoverFromHang() override;
 
   base::TimeDelta timeout_;
-  GpuWatchdogTaskObserver task_observer_;
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
 
   base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_;

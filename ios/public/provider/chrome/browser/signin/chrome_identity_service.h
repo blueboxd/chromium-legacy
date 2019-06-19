@@ -53,16 +53,8 @@ typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
 // the device is blocked.
 typedef void (^MDMStatusCallback)(bool is_blocked);
 
-// Callback to dismiss Web and App settings details view. No-op, if this block
-// is more than once.
-// |animated| the view will be dismissed with animation if the value is YES.
-// This type is obsolete and should be replaced by
-// DismissASMViewControllerBlock.
-typedef void (^DismissWebAndAppSettingDetailsControllerBlock)(BOOL animated);
-
 // Callback to dismiss ASM view. No-op, if this block is more than once.
 // |animated| the view will be dismissed with animation if the value is YES.
-// Replaces DismissWebAndAppSettingDetailsControllerBlock type.
 typedef void (^DismissASMViewControllerBlock)(BOOL animated);
 
 // Opaque type representing the MDM (Mobile Device Management) status of the
@@ -112,14 +104,12 @@ class ChromeIdentityService {
   // Dismisses all the dialogs created by the abstracted flows.
   virtual void DismissDialogs();
 
-  // Returns a new account details controller to present. A cancel button is
-  // present as leading navigation item.
-  virtual UINavigationController* CreateAccountDetailsController(
-      ChromeIdentity* identity,
-      id<ChromeIdentityBrowserOpener> browser_opener);
-
-  // Not implemented yet. Please use CreateAccountDetailsController().
-  // See: crbug.com/858845.
+  // Presents a new Account Details view.
+  // |identity| the identity used to present the view.
+  // |view_controller| the view to present the details view.
+  // |animated| the view is presented with animation if YES.
+  // Returns a block to dismiss the presented view. This block can be ignored if
+  // not needed.
   virtual ios::DismissASMViewControllerBlock PresentAccountDetailsController(
       ChromeIdentity* identity,
       UIViewController* view_controller,

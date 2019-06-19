@@ -131,6 +131,20 @@ cipd_archive("castrunner") {
   ]
 }
 
+cipd_archive("http") {
+  cipd_manifest_name = "http.yaml"
+  cipd_path = "chromium/fuchsia/http-\${targetarch}"
+  cipd_description = "Prebuilt HTTP service binary for Fuchsia."
+
+  deps = [
+    "//fuchsia/http:http_pkg",
+  ]
+
+  sources = [
+    "${root_gen_dir}/fuchsia/http/http/http.far",
+  ]
+}
+
 cipd_archive("tests") {
   _manifest_path = "${target_gen_dir}/test_manifest.json"
   cipd_manifest_name = "tests.yaml"
@@ -207,6 +221,7 @@ group("cipd") {
   deps = [
     ":castrunner",
     ":debug_symbols",
+    ":http",
     ":tests",
     ":webrunner",
   ]

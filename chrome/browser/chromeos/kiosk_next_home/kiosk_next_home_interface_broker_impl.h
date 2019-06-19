@@ -25,6 +25,7 @@ namespace chromeos {
 namespace kiosk_next_home {
 
 class IdentityControllerImpl;
+class WebsiteControllerImpl;
 
 // Implementation of interface responsible for brokering other interfaces needed
 // to support Kiosk Next Home functionality.
@@ -43,11 +44,14 @@ class KioskNextHomeInterfaceBrokerImpl
       ::identity::mojom::IdentityAccessorRequest request) override;
   void GetIdentityController(mojom::IdentityControllerRequest request) override;
   void GetAppController(mojom::AppControllerRequest request) override;
+  void GetWebsiteController(mojom::WebsiteControllerRequest request) override;
 
  private:
   content::BrowserContext* context_;
   mojo::BindingSet<mojom::KioskNextHomeInterfaceBroker> bindings_;
   std::unique_ptr<IdentityControllerImpl> identity_controller_;
+  std::unique_ptr<WebsiteControllerImpl> website_controller_;
+
   // Clone of BrowserContext's Connector, which allows binding to other
   // services.
   std::unique_ptr<service_manager::Connector> connector_;

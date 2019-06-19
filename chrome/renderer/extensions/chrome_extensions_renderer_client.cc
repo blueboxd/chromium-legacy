@@ -39,7 +39,6 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/script_context.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -242,8 +241,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
               extensions::PermissionsData::PageAccess::kAllowed) {
         *attach_same_site_cookies = true;
       }
-    } else if (base::FeatureList::IsEnabled(
-                   network::features::kNetworkService)) {
+    } else {
       // If there is no extension installed for the origin, it may be from a
       // recently uninstalled extension.  The tabs of such extensions are
       // automatically closed, but subframes and content scripts may stick

@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS If constructing entry list flag of form is true, then return
-FAIL If form's firing submission events is true, then return; 'invalid' event assert_equals: expected 1 but got 2
-PASS If form's firing submission events is true, then return; 'submit' event
-PASS Cannot navigate (after constructing the entry list)
-Harness: the test ran to completion.
-

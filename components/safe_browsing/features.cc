@@ -17,6 +17,8 @@ namespace safe_browsing {
 // Please define any new SafeBrowsing related features in this file, and add
 // them to the ExperimentalFeaturesList below to start displaying their status
 // on the chrome://safe-browsing page.
+const base::Feature kAdPopupTriggerFeature{"SafeBrowsingAdPopupTrigger",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls various parameters related to occasionally collecting ad samples,
 // for example to control how often collection should occur.
@@ -49,6 +51,10 @@ const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRealTimeUrlLookupFetchAllowlist{
+    "SafeBrowsingRealTimeUrlLookupFetchAllowlist",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -77,6 +83,7 @@ constexpr struct {
   // True if the feature's state should be listed on chrome://safe-browsing.
   bool show_state;
 } kExperimentalFeatures[]{
+    {&kAdPopupTriggerFeature, true},
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
@@ -84,6 +91,7 @@ constexpr struct {
     {&kCommittedSBInterstitials, true},
     {&kForceUseAPDownloadProtection, false},
     {&kPasswordProtectionForSignedInUsers, true},
+    {&kRealTimeUrlLookupFetchAllowlist, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

@@ -160,11 +160,6 @@ class SystemNetworkContextManager {
   // enabled. nullptr, otherwise.
   network::mojom::NetworkContextPtr network_service_network_context_;
 
-  // This is a NetworkContext that wraps the IOThread's SystemURLRequestContext.
-  // Always initialized in SetUp, but it's only returned by Context() when the
-  // network service is disabled.
-  network::mojom::NetworkContextPtr io_thread_network_context_;
-
   // URLLoaderFactory backed by the NetworkContext returned by GetContext(), so
   // consumers don't all need to create their own factory.
   scoped_refptr<URLLoaderFactoryForSystem> shared_url_loader_factory_;

@@ -98,7 +98,7 @@ void ExternalDateTimeChooser::ResponseHandler(bool success,
     DidChooseValue(dialog_value);
   else
     DidCancelChooser();
-  EndChooser();
+  client_ = nullptr;
 }
 
 bool ExternalDateTimeChooser::IsShowingDateTimeChooserUI() const {
@@ -128,6 +128,7 @@ void ExternalDateTimeChooser::DidCancelChooser() {
 }
 
 void ExternalDateTimeChooser::EndChooser() {
+  DCHECK(client_);
   DateTimeChooserClient* client = client_;
   client_ = nullptr;
   client->DidEndChooser();

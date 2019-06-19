@@ -35,6 +35,19 @@ std::string DbusInt32::GetSignature() {
   return "i";
 }
 
+DbusUint32::DbusUint32(uint32_t value) : value_(value) {}
+DbusUint32::DbusUint32(DbusUint32&& other) = default;
+DbusUint32::~DbusUint32() = default;
+
+void DbusUint32::Write(dbus::MessageWriter* writer) const {
+  writer->AppendUint32(value_);
+}
+
+// static
+std::string DbusUint32::GetSignature() {
+  return "u";
+}
+
 DbusString::DbusString(const std::string& value) : value_(value) {}
 DbusString::DbusString(DbusString&& other) = default;
 DbusString::~DbusString() = default;
@@ -68,6 +81,10 @@ DbusVariant::DbusVariant(DbusVariant&& other) = default;
 DbusVariant::~DbusVariant() = default;
 DbusVariant& DbusVariant::operator=(DbusVariant&& other) = default;
 
+DbusVariant::operator bool() const {
+  return !!value_;
+}
+
 void DbusVariant::Write(dbus::MessageWriter* writer) const {
   dbus::MessageWriter variant_writer(nullptr);
   writer->OpenVariant(value_->GetSignatureDynamic(), &variant_writer);
@@ -81,13 +98,13 @@ std::string DbusVariant::GetSignature() {
 }
 
 DbusByteArray::DbusByteArray() = default;
-DbusByteArray::DbusByteArray(std::vector<uint8_t>&& value)
-    : value_(std::move(value)) {}
+DbusByteArray::DbusByteArray(scoped_refptr<base::RefCountedMemory> value)
+    : value_(value) {}
 DbusByteArray::DbusByteArray(DbusByteArray&& other) = default;
 DbusByteArray::~DbusByteArray() = default;
 
 void DbusByteArray::Write(dbus::MessageWriter* writer) const {
-  writer->AppendArrayOfBytes(value_.data(), value_.size());
+  writer->AppendArrayOfBytes(value_->front(), value_->size());
 }
 
 // static

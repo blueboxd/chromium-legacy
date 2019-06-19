@@ -273,7 +273,7 @@ void OAuth2TokenServiceDelegateAndroid::SetAccounts(
   Java_OAuth2TokenService_setAccounts(env, java_accounts);
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_factory,
@@ -284,7 +284,7 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
   std::string account_name = MapAccountIdToAccountName(account_id);
   DCHECK(!account_name.empty())
       << "Cannot find account name for account id " << account_id;
-  return new AndroidAccessTokenFetcher(consumer, account_name);
+  return std::make_unique<AndroidAccessTokenFetcher>(consumer, account_name);
 }
 
 void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(

@@ -59,14 +59,14 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
                          const ImageEncodeOptions* options,
                          ToBlobFunctionType function_type,
-                         TimeTicks start_time,
+                         base::TimeTicks start_time,
                          ExecutionContext*,
                          ScriptPromiseResolver*);
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
                          const ImageEncodeOptions*,
                          ToBlobFunctionType,
                          V8BlobCallback*,
-                         TimeTicks start_time,
+                         base::TimeTicks start_time,
                          ExecutionContext*,
                          ScriptPromiseResolver* = nullptr);
   virtual ~CanvasAsyncBlobCreator();
@@ -90,7 +90,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
       ImageEncodingMimeType);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
-  virtual void IdleEncodeRows(TimeTicks deadline);
+  virtual void IdleEncodeRows(base::TimeTicks deadline);
   virtual void PostDelayedTaskToCurrentThread(const base::Location&,
                                               base::OnceClosure,
                                               double delay_ms);
@@ -98,7 +98,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void CreateBlobAndReturnResult();
   virtual void CreateNullAndReturnResult();
 
-  void InitiateEncoding(double quality, TimeTicks deadline);
+  void InitiateEncoding(double quality, base::TimeTicks deadline);
 
  protected:
   IdleTaskStatus idle_task_status_;
@@ -123,8 +123,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   sk_sp<SkData> png_data_helper_;
 
   // Chrome metrics use
-  TimeTicks start_time_;
-  TimeTicks schedule_idle_task_start_time_;
+  base::TimeTicks start_time_;
+  base::TimeTicks schedule_idle_task_start_time_;
   bool static_bitmap_image_loaded_;
 
   // Used when CanvasAsyncBlobCreator runs on main thread only

@@ -27,7 +27,6 @@
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/video_capture/local_video_capturer_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/audio_parameters.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -700,7 +700,7 @@ void UserMediaProcessor::SelectVideoContentSettings() {
 void UserMediaProcessor::GenerateStreamForCurrentRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
-  WebRtcLogMessage(base::StringPrintf(
+  blink::WebRtcLogMessage(base::StringPrintf(
       "UMCI::GenerateStreamForCurrentRequestInfo. request_id=%d, "
       "audio device id=\"%s\", video device id=\"%s\"",
       current_request_info_->request_id(),
@@ -743,7 +743,7 @@ void UserMediaProcessor::OnStreamGenerated(
 
   for (const auto* devices : {&audio_devices, &video_devices}) {
     for (const auto& device : *devices) {
-      WebRtcLogMessage(base::StringPrintf(
+      blink::WebRtcLogMessage(base::StringPrintf(
           "UMCI::OnStreamGenerated. request_id=%d, device id=\"%s\", "
           "device name=\"%s\"",
           request_id, device.id.c_str(), device.name.c_str()));
@@ -1192,7 +1192,7 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest web_request) {
   DCHECK(IsCurrentRequestInfo(web_request));
-  WebRtcLogMessage(
+  blink::WebRtcLogMessage(
       base::StringPrintf("UMCI::GetUserMediaRequestSucceeded. request_id=%d",
                          current_request_info_->request_id()));
 
@@ -1219,7 +1219,7 @@ void UserMediaProcessor::GetUserMediaRequestFailed(
     MediaStreamRequestResult result,
     const blink::WebString& constraint_name) {
   DCHECK(current_request_info_);
-  WebRtcLogMessage(
+  blink::WebRtcLogMessage(
       base::StringPrintf("UMCI::GetUserMediaRequestFailed. request_id=%d",
                          current_request_info_->request_id()));
 

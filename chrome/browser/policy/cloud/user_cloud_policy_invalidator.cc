@@ -7,22 +7,24 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "content/public/browser/notification_source.h"
 
 namespace {
 
 invalidation::ProfileInvalidationProvider* GetInvalidationProvider(
-    Profile* profile,
-    bool is_fcm_enabled) {
-  if (is_fcm_enabled) {
+    Profile* profile) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     return invalidation::ProfileInvalidationProviderFactory::GetForProfile(
         profile);
   }
@@ -36,17 +38,13 @@ namespace policy {
 
 UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
-    CloudPolicyManager* policy_manager,
-    bool is_fcm_enabled,
-    std::string fcm_sender_id)
+    CloudPolicyManager* policy_manager)
     : CloudPolicyInvalidator(GetPolicyType(),
                              policy_manager->core(),
                              base::ThreadTaskRunnerHandle::Get(),
                              base::DefaultClock::GetInstance(),
-                             0 /* highest_handled_invalidation_version */,
-                             is_fcm_enabled),
-      profile_(profile),
-      fcm_sender_id_(std::move(fcm_sender_id)) {
+                             0 /* highest_handled_invalidation_version */),
+      profile_(profile) {
   DCHECK(profile);
 
   // Register for notification that profile creation is complete. The
@@ -85,12 +83,12 @@ void UserCloudPolicyInvalidator::Observe(
   // service can safely be initialized.
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      GetInvalidationProvider(profile_, is_fcm_enabled());
+      GetInvalidationProvider(profile_);
   if (!invalidation_provider)
     return;
-  if (is_fcm_enabled()) {
+  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
     Initialize(invalidation_provider->GetInvalidationServiceForCustomSender(
-        fcm_sender_id_));
+        policy::kPolicyFCMInvalidationSenderID));
   } else {
     Initialize(invalidation_provider->GetInvalidationService());
   }

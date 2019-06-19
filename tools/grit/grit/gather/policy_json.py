@@ -269,6 +269,11 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     self._AddNontranslateableChunk("  'policy_definitions': [\n")
     self._AddItems(self.data['policy_definitions'], 'policy', None, 2)
     self._AddNontranslateableChunk("  ],\n")
+    self._AddNontranslateableChunk("  'policy_atomic_group_definitions': [\n")
+    if 'policy_atomic_group_definitions' in self.data:
+      self._AddItems(self.data['policy_atomic_group_definitions'],
+                    'policy', None, 2)
+    self._AddNontranslateableChunk("  ],\n")
     self._AddMessages()
     self._AddNontranslateableChunk('\n}')
 

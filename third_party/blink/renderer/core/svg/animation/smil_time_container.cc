@@ -39,8 +39,8 @@
 
 namespace blink {
 
-static constexpr TimeDelta kAnimationPolicyOnceDuration =
-    TimeDelta::FromSeconds(3);
+static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
+    base::TimeDelta::FromSeconds(3);
 
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : presentation_time_(0),
@@ -273,7 +273,8 @@ void SMILTimeContainer::ScheduleWakeUp(
     FrameSchedulingState frame_scheduling_state) {
   DCHECK(frame_scheduling_state == kSynchronizeAnimations ||
          frame_scheduling_state == kFutureAnimationFrame);
-  wakeup_timer_.StartOneShot(TimeDelta::FromSecondsD(delay_time), FROM_HERE);
+  wakeup_timer_.StartOneShot(base::TimeDelta::FromSecondsD(delay_time),
+                             FROM_HERE);
   frame_scheduling_state_ = frame_scheduling_state;
 }
 

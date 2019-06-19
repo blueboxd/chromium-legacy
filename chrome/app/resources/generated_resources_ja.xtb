@@ -4172,7 +4172,6 @@
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="7366415735885268578">サイトの追加</translation>
 <translation id="7366909168761621528">閲覧履歴データ</translation>
-<translation id="7367483872576694328">BLE スキャン パーサー サービス</translation>
 <translation id="736877393389250337"><ph name="URL" /> を <ph name="ALTERNATIVE_BROWSER_NAME" /> で開けませんでした。システム管理者にお問い合わせください。</translation>
 <translation id="7371006317849674875">開始時間</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4749,6 +4748,7 @@
 <translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
 <translation id="8206581664590136590">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、お子様向けの Android 機能の向上にご協力ください。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">ブルース</translation>
+<translation id="8206859287963243715">携帯電話</translation>
 <translation id="8209677645716428427">監視対象ユーザーは、あなたの案内に従ってウェブにアクセスできます。Chrome の監視対象ユーザーの管理者として、あなたができることは次のとおりです。</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{ダウンロードが進行中です}other{ダウンロードが進行中です}}</translation>
 <translation id="8213449224684199188">写真モードに切り替えました</translation>

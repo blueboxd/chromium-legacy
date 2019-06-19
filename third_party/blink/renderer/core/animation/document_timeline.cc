@@ -59,7 +59,7 @@ bool CompareAnimations(const Member<Animation>& left,
 const double DocumentTimeline::kMinimumDelay = 0.04;
 
 DocumentTimeline* DocumentTimeline::Create(Document* document,
-                                           TimeDelta origin_time,
+                                           base::TimeDelta origin_time,
                                            PlatformTiming* timing) {
   return MakeGarbageCollected<DocumentTimeline>(document, origin_time, timing);
 }
@@ -69,15 +69,16 @@ DocumentTimeline* DocumentTimeline::Create(
     const DocumentTimelineOptions* options) {
   Document* document = To<Document>(execution_context);
   return MakeGarbageCollected<DocumentTimeline>(
-      document, TimeDelta::FromMillisecondsD(options->originTime()), nullptr);
+      document, base::TimeDelta::FromMillisecondsD(options->originTime()),
+      nullptr);
 }
 
 DocumentTimeline::DocumentTimeline(Document* document,
-                                   TimeDelta origin_time,
+                                   base::TimeDelta origin_time,
                                    PlatformTiming* timing)
     : document_(document),
       origin_time_(origin_time),
-      zero_time_(TimeTicks() + origin_time_),
+      zero_time_(base::TimeTicks() + origin_time_),
       zero_time_initialized_(false),
       outdated_animation_count_(0),
       playback_rate_(1),
@@ -186,7 +187,7 @@ void DocumentTimeline::ScheduleNextService() {
 }
 
 void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
-  TimeDelta duration_delta = TimeDelta::FromSecondsD(duration);
+  base::TimeDelta duration_delta = base::TimeDelta::FromSecondsD(duration);
   if (timer_.IsActive() && timer_.NextFireInterval() < duration_delta)
     return;
   timer_.StartOneShot(duration_delta, FROM_HERE);
@@ -202,7 +203,7 @@ void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
   DocumentTimeline::PlatformTiming::Trace(visitor);
 }
 
-TimeTicks DocumentTimeline::ZeroTime() {
+base::TimeTicks DocumentTimeline::ZeroTime() {
   if (!zero_time_initialized_ && document_->Loader()) {
     zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime() +
                  origin_time_;
@@ -212,7 +213,7 @@ TimeTicks DocumentTimeline::ZeroTime() {
 }
 
 void DocumentTimeline::ResetForTesting() {
-  zero_time_ = TimeTicks() + origin_time_;
+  zero_time_ = base::TimeTicks() + origin_time_;
   zero_time_initialized_ = true;
   playback_rate_ = 1;
   last_current_time_internal_ = 0;
@@ -226,7 +227,7 @@ double DocumentTimeline::currentTime(bool& is_null) {
   return CurrentTimeInternal(is_null) * 1000;
 }
 
-// TODO(npm): change the return type to base::Optional<TimeTicks>.
+// TODO(npm): change the return type to base::Optional<base::TimeTicks>.
 double DocumentTimeline::CurrentTimeInternal(bool& is_null) {
   if (!IsActive()) {
     is_null = true;

@@ -9,10 +9,10 @@
 #include <memory>
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -61,7 +61,7 @@ class FaviconRequestHandler : public KeyedService {
  public:
   // Callback that requests the synced bitmap for a page url.
   using SyncedFaviconGetter =
-      base::RepeatingCallback<scoped_refptr<base::RefCountedMemory>(
+      base::RepeatingCallback<favicon_base::FaviconRawBitmapResult(
           const GURL&)>;
 
   FaviconRequestHandler(const SyncedFaviconGetter& synced_favicon_getter,

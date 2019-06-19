@@ -62,8 +62,7 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
                                         base::Unretained(this)));
 
   // Start listening to power state.
-  if (base::PowerMonitor* power_monitor = base::PowerMonitor::Get())
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 
   // Arm the |offline_signin_limit_timer_| if a limit is in force.
   UpdateLimit();
@@ -90,8 +89,7 @@ SAMLOfflineSigninLimiter::SAMLOfflineSigninLimiter(Profile* profile,
       offline_signin_limit_timer_(std::make_unique<base::OneShotTimer>()) {}
 
 SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {
-  if (base::PowerMonitor* power_monitor = base::PowerMonitor::Get())
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 void SAMLOfflineSigninLimiter::UpdateLimit() {

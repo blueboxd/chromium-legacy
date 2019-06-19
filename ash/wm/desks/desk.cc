@@ -4,6 +4,7 @@
 
 #include "ash/wm/desks/desk.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
@@ -15,6 +16,7 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/stl_util.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -23,7 +25,11 @@ namespace {
 
 void UpdateBackdropController(aura::Window* desk_container) {
   auto* workspace_controller = GetWorkspaceController(desk_container);
-  DCHECK(workspace_controller);
+  // Work might have already been cleared when the display is removed. See
+  // |RootWindowController::MoveWindowsTo()|.
+  if (!workspace_controller)
+    return;
+
   WorkspaceLayoutManager* layout_manager =
       workspace_controller->layout_manager();
   BackdropController* backdrop_controller =
@@ -34,8 +40,21 @@ void UpdateBackdropController(aura::Window* desk_container) {
 // Returns true if |window| can be managed by the desk, and therefore can be
 // moved out of the desk when the desk is removed.
 bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
-  // TODO(afakhry): Is there a better way to filter windows?
-  return CanIncludeWindowInMruList(window);
+  // We never move transient descendants directly, this is taken care of by
+  // `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
+  auto* transient_root = ::wm::GetTransientRoot(window);
+  if (transient_root != window)
+    return false;
+
+  const bool has_transient_children =
+      !::wm::GetTransientChildren(transient_root).empty();
+
+  // Do not move non-desk windows. A transient root can be blocked by a
+  // modal transient child, in which case it will be non-activatable and
+  // will be considered a non-desk window; however it shouldn't be excluded.
+  // TODO(afakhry): We need to implement a better mechanism for excluding
+  // non-desk windows that doesn't depend on the activatability of the window.
+  return has_transient_children || CanIncludeWindowInMruList(window);
 }
 
 }  // namespace
@@ -57,6 +76,13 @@ class DeskContainerObserver : public aura::WindowObserver {
     // this window addition here. Consider ignoring these windows if they cause
     // problems.
     owner_->AddWindowToDesk(new_window);
+  }
+
+  void OnWindowRemoved(aura::Window* removed_window) override {
+    // We listen to `OnWindowRemoved()` as opposed to `OnWillRemoveWindow()`
+    // since we want to refresh the mini_views only after the window has been
+    // removed from the window tree hierarchy.
+    owner_->RemoveWindowFromDesk(removed_window);
   }
 
   void OnWindowDestroyed(aura::Window* window) override {
@@ -86,12 +112,13 @@ Desk::Desk(int associated_container_id)
 }
 
 Desk::~Desk() {
+#if DCHECK_IS_ON()
   for (auto* window : windows_) {
     DCHECK(!CanMoveWindowOutOfDeskContainer(window))
         << "DesksController should remove this desk's application windows "
            "first.";
-    window->RemoveObserver(this);
   }
+#endif
 
   for (auto& observer : observers_) {
     observers_.RemoveObserver(&observer);
@@ -110,9 +137,10 @@ void Desk::RemoveObserver(Observer* observer) {
 void Desk::OnRootWindowAdded(aura::Window* root) {
   DCHECK(!roots_to_containers_observers_.count(root));
 
+  // No windows should be added to the desk container on |root| prior to
+  // tracking it by the desk.
   aura::Window* desk_container = root->GetChildById(container_id_);
-  DCHECK(desk_container);
-
+  DCHECK(desk_container->children().empty());
   auto container_observer =
       std::make_unique<DeskContainerObserver>(this, desk_container);
   roots_to_containers_observers_.emplace(root, std::move(container_observer));
@@ -124,20 +152,21 @@ void Desk::OnRootWindowClosing(aura::Window* root) {
 }
 
 void Desk::AddWindowToDesk(aura::Window* window) {
-  if (windows_.count(window))
-    return;
+  DCHECK(!base::Contains(windows_, window));
+  windows_.push_back(window);
+  // No need to refresh the mini_views if the destroyed window doesn't show up
+  // there in the first place.
+  if (!window->GetProperty(kHideInDeskMiniViewKey))
+    NotifyContentChanged();
+}
 
-  for (auto* transient_window : wm::GetTransientTreeIterator(window)) {
-    const auto result = windows_.emplace(transient_window);
-
-    // GetTransientTreeIterator() starts iterating the transient tree hierarchy
-    // from the root transient parent, which may include windows that we already
-    // track from before.
-    if (result.second)
-      transient_window->AddObserver(this);
-  }
-
-  NotifyContentChanged();
+void Desk::RemoveWindowFromDesk(aura::Window* window) {
+  DCHECK(base::Contains(windows_, window));
+  base::Erase(windows_, window);
+  // No need to refresh the mini_views if the destroyed window doesn't show up
+  // there in the first place.
+  if (!window->GetProperty(kHideInDeskMiniViewKey))
+    NotifyContentChanged();
 }
 
 base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
@@ -158,7 +187,7 @@ void Desk::Activate(bool update_window_activation) {
   // the user switched to another desk, so as not to break the user's workflow.
   for (auto* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
-    if (!windows_.contains(window))
+    if (!base::Contains(windows_, window))
       continue;
 
     // Do not activate minimized windows, otherwise they will unminimize.
@@ -188,7 +217,7 @@ void Desk::Deactivate(bool update_window_activation) {
   // containers have been hidden. This is to prevent the focus controller from
   // activating another window on the same desk when the active window loses
   // focus.
-  if (active_window && windows_.contains(active_window))
+  if (active_window && base::Contains(windows_, active_window))
     wm::DeactivateWindow(active_window);
 }
 
@@ -202,17 +231,21 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
     auto target_desk_throttled =
         target_desk->GetScopedNotifyContentChangedDisabler();
 
-    auto iter = windows_.begin();
-    while (iter != windows_.end()) {
-      aura::Window* window = *iter;
-      // Do not move non-desk windows.
-      if (!CanMoveWindowOutOfDeskContainer(window)) {
-        ++iter;
-        continue;
-      }
+    // Moving windows will change the hierarchy and hence |windows_|, and has to
+    // be done without changing the relative z-order. So we make a copy of all
+    // the top-level windows on all the containers of this desk.
+    std::vector<aura::Window*> windows_to_move;
+    windows_to_move.reserve(windows_.size());
+    for (aura::Window* root : Shell::GetAllRootWindows()) {
+      const aura::Window* container = GetDeskContainerForRoot(root);
+      const auto& children = container->children();
+      std::copy(children.begin(), children.end(),
+                std::back_inserter(windows_to_move));
+    }
 
-      MoveWindowToDeskInternal(window, target_desk);
-      iter = windows_.erase(iter);
+    for (auto* window : windows_to_move) {
+      if (CanMoveWindowOutOfDeskContainer(window))
+        MoveWindowToDeskInternal(window, target_desk);
     }
   }
 
@@ -223,32 +256,29 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
 void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
   DCHECK(target_desk);
   DCHECK(window);
-  DCHECK(windows_.contains(window));
+  DCHECK(base::Contains(windows_, window));
   DCHECK(this != target_desk);
 
   {
-    // TODO(afakhry): Throttling here should not be necessary for a single
-    // window. It should be possible to rely on
-    // DeskContainerObserver::OnWindowAdded() but the problem is we don't have
-    // aura::WindowObserver::OnWindowRemoved(); we instead only have
-    // aura::WindowObserver::OnWillRemoveWindow(). This won't work as we should
-    // only notify and refresh the mini_views once the window is no longer in
-    // the tree. Two possible solutions:
-    //   - Add aura::WindowObserver::OnWindowRemoved(), or
-    //   - Remove `DeskContainerObserver` entirely and rely on
-    //     `WorkspaceLayoutManager`, which already has OnWindowAddedToLayout(),
-    //     and OnWindowRemovedFromLayout().
+    // Throttling here is necessary even though we're attempting to move a
+    // single window. This is because that window might exist in a transient
+    // window tree, which will result in actually moving multiple windows if the
+    // transient children used to be on the same container.
+    // See `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
     auto this_desk_throttled = GetScopedNotifyContentChangedDisabler();
     auto target_desk_throttled =
         target_desk->GetScopedNotifyContentChangedDisabler();
 
-    MoveWindowToDeskInternal(window, target_desk);
-
-    windows_.erase(window);
+    // Always move the root of the transient window tree. We should never move a
+    // transient child and leave its parent behind. Moving the transient
+    // descendants that exist on the same desk container will be taken care of
+    //  by `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
+    aura::Window* transient_root = ::wm::GetTransientRoot(window);
+    MoveWindowToDeskInternal(transient_root, target_desk);
 
     // Unminimize the window so that it shows up in the mini_view after it had
     // been dragged and moved to another desk.
-    auto* window_state = wm::GetWindowState(window);
+    auto* window_state = wm::GetWindowState(transient_root);
     if (window_state->IsMinimized())
       window_state->Unminimize();
   }
@@ -261,19 +291,6 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
   DCHECK(root);
 
   return root->GetChildById(container_id_);
-}
-
-void Desk::OnWindowDestroyed(aura::Window* window) {
-  // We listen to `OnWindowDestroyed()` as opposed to `OnWindowDestroying()`
-  // since we want to refresh the mini_views only after the window has been
-  // removed from the window tree hierarchy.
-  const size_t count = windows_.erase(window);
-  DCHECK(count);
-
-  // No need to refresh the mini_views if the destroyed window doesn't show up
-  // there in the first place.
-  if (!window->GetProperty(kHideInDeskMiniViewKey))
-    NotifyContentChanged();
 }
 
 void Desk::NotifyContentChanged() {
@@ -294,31 +311,15 @@ void Desk::UpdateDeskBackdrops() {
 }
 
 void Desk::MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk) {
-  DCHECK(windows_.contains(window));
-
+  DCHECK(base::Contains(windows_, window));
   DCHECK(CanMoveWindowOutOfDeskContainer(window))
       << "Non-desk windows are not allowed to move out of the container.";
 
-  window->RemoveObserver(this);
-
-  // Add the window to the target desk before reparenting such that when the
-  // target desk's DeskContainerObserver notices this reparenting and calls
-  // AddWindowToDesk(), the window had already been added and there's no
-  // need to iterate over its transient hierarchy.
-  target_desk->windows_.insert(window);
-  window->AddObserver(target_desk);
-
-  // Reparent windows to the target desk's container in the same root
-  // window. Note that `windows_` may contain transient children, which may
-  // not have the same parent as the source desk's container. So, only
-  // reparent the windows which are direct children of the source desks'
-  // container.
-  // TODO(afakhry): Check if this is necessary.
   aura::Window* root = window->GetRootWindow();
   aura::Window* source_container = GetDeskContainerForRoot(root);
   aura::Window* target_container = target_desk->GetDeskContainerForRoot(root);
-  if (window->parent() == source_container)
-    target_container->AddChild(window);
+  DCHECK(window->parent() == source_container);
+  target_container->AddChild(window);
 }
 
 }  // namespace ash

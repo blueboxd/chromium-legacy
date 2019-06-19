@@ -103,7 +103,7 @@ MutationObserver::MutationObserver(ExecutionContext* execution_context,
                                    Delegate* delegate)
     : ContextClient(execution_context), delegate_(delegate) {
   priority_ = GetDocument()
-                  ->GetAgent()
+                  ->GetWindowAgent()
                   .GetMutationObserverNotifier()
                   .NextObserverPriority();
 }
@@ -220,19 +220,23 @@ void MutationObserver::ObservationEnded(
 // static
 void MutationObserver::EnqueueSlotChange(HTMLSlotElement& slot) {
   DCHECK(IsMainThread());
-  slot.GetDocument().GetAgent().GetMutationObserverNotifier().EnqueueSlotChange(
-      slot);
+  slot.GetDocument()
+      .GetWindowAgent()
+      .GetMutationObserverNotifier()
+      .EnqueueSlotChange(slot);
 }
 
 // static
 void MutationObserver::CleanSlotChangeList(Document& document) {
-  document.GetAgent().GetMutationObserverNotifier().CleanSlotChangeList(
+  document.GetWindowAgent().GetMutationObserverNotifier().CleanSlotChangeList(
       document);
 }
 
 void MutationObserver::Activate() {
-  GetDocument()->GetAgent().GetMutationObserverNotifier().ActivateObserver(
-      this);
+  GetDocument()
+      ->GetWindowAgent()
+      .GetMutationObserverNotifier()
+      .ActivateObserver(this);
 }
 
 void MutationObserver::EnqueueMutationRecord(MutationRecord* mutation) {

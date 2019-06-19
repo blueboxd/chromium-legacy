@@ -145,7 +145,7 @@ void LayoutExampleBase::ChildPanel::ContentsChanged(
     const base::string16& new_contents) {
   const gfx::Insets margins = LayoutExampleBase::TextfieldsToInsets(margin_);
   if (!margins.IsEmpty())
-    this->SetProperty(kMarginsKey, new gfx::Insets(margins));
+    this->SetProperty(kMarginsKey, margins);
   else
     this->ClearProperty(kMarginsKey);
   example_->RefreshLayoutPanel(sender == flex_);

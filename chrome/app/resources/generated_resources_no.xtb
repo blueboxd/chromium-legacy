@@ -533,7 +533,7 @@
 <translation id="1799071797295057738">Utvidelsen «<ph name="EXTENSION_NAME" />» ble slått av automatisk.</translation>
 <translation id="1802687198411089702">Siden svarer ikke. Du kan vente på den eller avslutte.</translation>
 <translation id="1802931390041703523">Flash ble blokkert på denne siden</translation>
-<translation id="1803531841600994172">Språket det skal oversettes til</translation>
+<translation id="1803531841600994172">Språket du vil oversette til</translation>
 <translation id="1803545009660609783">Lær opp på nytt</translation>
 <translation id="1805472176602625930">Trykk på knappen på sikkerhetsnøkkelen</translation>
 <translation id="1805738995123446102">En fane i bakgrunnen bruker mikrofonen din</translation>
@@ -2345,7 +2345,7 @@
 <translation id="4562155214028662640">Legg til fingeravtrykk</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Skjul passord</translation>
-<translation id="456717285308019641">Sidespråket som skal oversettes</translation>
+<translation id="456717285308019641">Sidespråket du vil oversette</translation>
 <translation id="4567772783389002344">Legg til ord</translation>
 <translation id="4568025708905928793">En sikkerhetsnøkkel blir forespurt</translation>
 <translation id="4568213207643490790">Beklager, men Google-kontoer er ikke tillatt på denne enheten.</translation>
@@ -2907,7 +2907,7 @@
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
 <translation id="5453630479789469584">Kunne ikke sette opp VM for programtillegg</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
-<translation id="545426320101607695">Språket det skal oversettes til</translation>
+<translation id="545426320101607695">Språket du vil oversette til</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5457459357461771897">lese og slette bilder, musikk og andre medier fra datamaskinen din</translation>
 <translation id="5457599981699367932">Surf som gjest</translation>
@@ -4165,7 +4165,6 @@
 <translation id="7364796246159120393">Velg fil</translation>
 <translation id="7366415735885268578">Legg til et nettsted</translation>
 <translation id="7366909168761621528">Nettleserdata</translation>
-<translation id="7367483872576694328">Parsertjeneste for BLE-gjennomsøking</translation>
 <translation id="736877393389250337">Kunne ikke åpne <ph name="URL" /> i <ph name="ALTERNATIVE_BROWSER_NAME" />. Kontakt systemadministratoren din.</translation>
 <translation id="7371006317849674875">Starttid</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4739,6 +4738,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>
 <translation id="8206581664590136590">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen bedre for barnet ditt ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Plystre</translation>
+<translation id="8206859287963243715">Mobil</translation>
 <translation id="8209677645716428427">En administrert bruker kan utforske nettet med veiledning fra deg. Som administrator for en administrert bruker i Chrome kan du:</translation>
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{Nedlasting pågår}other{Nedlastinger pågår}}</translation>
 <translation id="8213449224684199188">Fotomodus er aktivert</translation>
@@ -4747,7 +4747,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8214489666383623925">Åpne fil</translation>
 <translation id="8214962590150211830">Fjern denne personen</translation>
 <translation id="8217399928341212914">Fortsett blokkeringen av automatisk nedlasting av flere filer</translation>
-<translation id="822519928942492333">Sidespråket som skal oversettes</translation>
+<translation id="822519928942492333">Sidespråket du vil oversette</translation>
 <translation id="8225265270453771718">Del et programvindu</translation>
 <translation id="8225753906568652947">Løs inn tilbudene dine</translation>
 <translation id="8226222018808695353">Forbudt</translation>

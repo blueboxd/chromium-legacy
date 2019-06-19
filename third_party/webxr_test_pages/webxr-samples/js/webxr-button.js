@@ -260,6 +260,14 @@ const generateCSS = (options, fontSize=18)=> {
     button.${cssPrefix}-button[disabled=true] > .${cssPrefix}-logo > .${cssPrefix}-svg-error {
         display:initial;
     }
+
+    /*
+    * warning
+    */
+    div.webxrWarning {
+      color: #f00;
+      font-weight: bold;
+    }
   `);
 };
 
@@ -427,6 +435,23 @@ class EnterXRButton {
   disable() {
     this.__setDisabledAttribute(true);
     this.__forceDisabled = true;
+    return this;
+  }
+
+  /**
+   * Add the button to the document header. WebXR is only available in secure
+   * contexts, so include a warning message above the button when using an
+   * insecure context.
+   * @return {EnterXRButton}
+   */
+  addToHeader() {
+    if (!window.isSecureContext) {
+      let warning_elem = document.createElement("div");
+      warning_elem.setAttribute("class", "webxrWarning");
+      warning_elem.innerText = "WebXR unavailable due to insecure context";
+      document.querySelector('header').appendChild(warning_elem);
+    }
+    document.querySelector('header').appendChild(this.domElement);
     return this;
   }
 

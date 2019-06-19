@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/deferred_sequenced_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
@@ -12,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
@@ -20,7 +23,9 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -105,6 +110,21 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 
   uint32_t GetPeerToPeerConnectionsCountChangeFromNetworkService() {
+    uint32_t connection_count = 0u;
+    if (content::IsInProcessNetworkService()) {
+      base::RunLoop run_loop;
+      content::GetNetworkTaskRunner()->PostTask(
+          FROM_HERE, base::BindLambdaForTesting([&connection_count, &run_loop] {
+            connection_count =
+                network::NetworkService::GetNetworkServiceForTesting()
+                    ->network_quality_estimator()
+                    ->GetPeerToPeerConnectionsCountChange();
+            run_loop.Quit();
+          }));
+      run_loop.Run();
+      return connection_count;
+    }
+
     network::mojom::NetworkServiceTestPtr network_service_test;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
@@ -115,7 +135,6 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     network_service_test.FlushForTesting();
 
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    uint32_t connection_count = 0u;
 
     bool available = network_service_test->GetPeerToPeerConnectionsCountChange(
         &connection_count);
@@ -257,11 +276,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        GetPeerToPeerConnectionsCountChangeFromNetworkService) {
-  // https://crbug.com/976186: Test fails when network service is in process.
-  // Network Service runs in-process only on Android.
-  if (content::IsInProcessNetworkService())
-    return;
-
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
 
   StartServerAndOpenTabs();
@@ -303,7 +317,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange) {
-  EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
@@ -319,11 +332,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserTest,
     RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange_ConnectionCount) {
-  // https://crbug.com/976186: Test fails when network service is in process.
-  // Network Service runs in-process only on Android.
-  if (content::IsInProcessNetworkService())
-    return;
-
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);

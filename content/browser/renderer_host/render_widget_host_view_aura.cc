@@ -1171,7 +1171,7 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewAura::SetMainFrameAXTreeID(ui::AXTreeID id) {
-  window_->SetProperty(ui::kChildAXTreeID, new std::string(id.ToString()));
+  window_->SetProperty(ui::kChildAXTreeID, id.ToString());
 }
 
 bool RenderWidgetHostViewAura::LockMouse() {

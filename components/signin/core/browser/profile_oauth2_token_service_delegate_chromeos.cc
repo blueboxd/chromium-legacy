@@ -87,7 +87,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -105,7 +105,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
     VLOG(1) << "Request for token has been rejected due to persistent error #"
             << it->second.last_auth_error.state();
     // |OAuth2TokenService| will manage the lifetime of this pointer.
-    return new OAuth2AccessTokenFetcherImmediateError(
+    return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
         consumer, it->second.last_auth_error);
   }
   // Or when we need to backoff.
@@ -113,18 +113,16 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
     VLOG(1) << "Request for token has been rejected due to backoff rules from"
             << " previous error #" << backoff_error_.state();
     // |OAuth2TokenService| will manage the lifetime of this pointer.
-    return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
+    return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
+        consumer, backoff_error_);
   }
 
-  // |OAuth2TokenService| will manage the lifetime of the released pointer.
-  return account_manager_
-      ->CreateAccessTokenFetcher(
-          chromeos::AccountManager::AccountKey{
-              account_tracker_service_->GetAccountInfo(account_id).gaia,
-              chromeos::account_manager::AccountType::
-                  ACCOUNT_TYPE_GAIA} /* account_key */,
-          url_loader_factory, consumer)
-      .release();
+  return account_manager_->CreateAccessTokenFetcher(
+      chromeos::AccountManager::AccountKey{
+          account_tracker_service_->GetAccountInfo(account_id).gaia,
+          chromeos::account_manager::AccountType::
+              ACCOUNT_TYPE_GAIA} /* account_key */,
+      url_loader_factory, consumer);
 }
 
 // Note: This method should use the same logic for filtering accounts as

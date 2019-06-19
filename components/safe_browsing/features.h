@@ -19,6 +19,10 @@ class ListValue;
 
 namespace safe_browsing {
 // Features list
+// Controls whether we send RIND reports when a popup originating from a Google
+// ad is blocked.
+extern const base::Feature kAdPopupTriggerFeature;
+
 extern const base::Feature kAdSamplerTriggerFeature;
 
 // Controls whether we sample inline JavaScript for ads in RIND
@@ -44,6 +48,10 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
+
+// Controls whether the high confidence allowlist for real time URL lookup be
+// fetched.
+extern const base::Feature kRealTimeUrlLookupFetchAllowlist;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.

@@ -44,6 +44,12 @@ class DeviceOAuth2TokenService
   // Pull the robot account ID from device policy.
   virtual std::string GetRobotAccountId() const;
 
+  // Can be used to override the robot account ID for testing purposes. Most
+  // common use case is to easily inject a non-empty account ID to make the
+  // refresh token for the robot account visible via GetAccounts() and
+  // RefreshTokenIsAvailable().
+  void set_robot_account_id_for_testing(const CoreAccountId& account_id);
+
  protected:
   // Implementation of OAuth2TokenService.
   void FetchOAuth2Token(

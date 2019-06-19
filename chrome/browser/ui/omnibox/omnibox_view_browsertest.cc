@@ -1667,7 +1667,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CtrlArrowAfterArrowSuggestions) {
+// Flaky test. The below suggestions are in a random order, and the injected
+// keys may or may not have registered. Probably https://crbug.com/751031,
+// but I believe the whole input mechanism needs to be re-architected.
+// What I'd like to see is, after a sequence of keys is injected, we inject
+// an artificial input, and, *only* after that input has been registered,
+// do we continue.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       DISABLED_CtrlArrowAfterArrowSuggestions) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();

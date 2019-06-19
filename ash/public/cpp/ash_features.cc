@@ -32,6 +32,9 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
 const base::Feature kLockScreenMediaKeys{"LockScreenMediaKeys",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 

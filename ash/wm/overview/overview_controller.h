@@ -29,13 +29,13 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   OverviewController();
   ~OverviewController() override;
 
-  // Attempts to toggle overview mode and returns true if successful (showing
+  // Starts/Ends overview with |type|. Returns true if successful (showing
   // overview would be unsuccessful if there are no windows to show). Depending
   // on |type| the enter/exit animation will look different.
-  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
-                          OverviewSession::EnterExitOverviewType::kNormal);
-
-  void EndOverview();
+  bool StartOverview(OverviewSession::EnterExitOverviewType type =
+                         OverviewSession::EnterExitOverviewType::kNormal);
+  bool EndOverview(OverviewSession::EnterExitOverviewType type =
+                       OverviewSession::EnterExitOverviewType::kNormal);
 
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
@@ -115,6 +115,12 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   friend class OverviewSessionTest;
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
+
+  // Attempts to toggle overview mode and returns true if successful (showing
+  // overview would be unsuccessful if there are no windows to show). Depending
+  // on |type| the enter/exit animation will look different.
+  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
+                          OverviewSession::EnterExitOverviewType::kNormal);
 
   // There is no need to blur or dim the wallpaper for tests.
   static void SetDoNotChangeWallpaperForTests();

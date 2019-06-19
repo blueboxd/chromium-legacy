@@ -36,8 +36,7 @@ class AffiliatedCloudPolicyInvalidator
   AffiliatedCloudPolicyInvalidator(
       enterprise_management::DeviceRegisterRequest::Type type,
       CloudPolicyCore* core,
-      AffiliatedInvalidationServiceProvider* invalidation_service_provider,
-      bool is_fcm_enabled);
+      AffiliatedInvalidationServiceProvider* invalidation_service_provider);
   ~AffiliatedCloudPolicyInvalidator() override;
 
   // AffiliatedInvalidationServiceProvider::Consumer:
@@ -53,10 +52,6 @@ class AffiliatedCloudPolicyInvalidator
 
   // Destroy the current |CloudPolicyInvalidator|, if any.
   void DestroyInvalidator();
-
-  // Whether or not should use FCM (Firebase Cloud Messaging) topic for
-  // registration.
-  const bool is_fcm_enabled_;
 
   const enterprise_management::DeviceRegisterRequest::Type type_;
   CloudPolicyCore* const core_;

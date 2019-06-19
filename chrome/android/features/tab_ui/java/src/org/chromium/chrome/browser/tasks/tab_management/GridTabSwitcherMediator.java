@@ -214,7 +214,7 @@ class GridTabSwitcherMediator
         if (mSoftCleanupDelayMsForTesting != null) return mSoftCleanupDelayMsForTesting;
 
         String delay = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.TAB_TO_GTS_ANIMATION, SOFT_CLEANUP_DELAY_PARAM);
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, SOFT_CLEANUP_DELAY_PARAM);
         try {
             return Integer.valueOf(delay);
         } catch (NumberFormatException e) {
@@ -226,7 +226,7 @@ class GridTabSwitcherMediator
         if (mCleanupDelayMsForTesting != null) return mCleanupDelayMsForTesting;
 
         String delay = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.TAB_TO_GTS_ANIMATION, CLEANUP_DELAY_PARAM);
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, CLEANUP_DELAY_PARAM);
         try {
             return Integer.valueOf(delay);
         } catch (NumberFormatException e) {
@@ -273,8 +273,12 @@ class GridTabSwitcherMediator
     boolean prepareOverview() {
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
-        boolean quick = mResetHandler.resetWithTabList(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
+        boolean quick = false;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+            quick = mResetHandler.resetWithTabList(
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                    false);
+        }
         int initialPosition = Math.max(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
                         - INITIAL_SCROLL_INDEX_OFFSET,
@@ -286,7 +290,8 @@ class GridTabSwitcherMediator
     @Override
     public void showOverview(boolean animate) {
         mResetHandler.resetWithTabList(
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), true);
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);

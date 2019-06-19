@@ -284,7 +284,7 @@ TEST_F(KioskNextHomeButtonTest, TapToGoHome) {
 
   // Enter Overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->StartOverview());
   ASSERT_TRUE(overview_controller->InOverviewSession());
   test_api.RunMessageLoopUntilAnimationsDone();
 

@@ -4,9 +4,15 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_base.h"
 
+#include <stdint.h>
+#include <algorithm>
+#include <iterator>
 #include <string>
+#include <vector>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -29,7 +35,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "crypto/sha2.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -60,6 +70,33 @@ PageloadMetrics_PageEndReason ConvertPLMPageEndReasonToProto(
     default:
       return PageloadMetrics_PageEndReason_END_OTHER;
   }
+}
+
+uint64_t ComputeDataReductionProxyUUID(
+    data_reduction_proxy::DataReductionProxyData* data) {
+  if (!data || data->session_key().empty() || !data->page_id().has_value() ||
+      data->page_id().value() == 0) {
+    return 0;
+  }
+
+  std::string session_key = data->session_key();
+  uint64_t page_id = data->page_id().value();
+
+  char buf[8];
+  base::WriteBigEndian<uint64_t>(buf, page_id);
+
+  std::vector<char> to_hash;
+  std::copy(session_key.begin(), session_key.end(),
+            std::back_inserter(to_hash));
+  to_hash.insert(to_hash.end(), buf, buf + 8);
+
+  char hash[32];
+  crypto::SHA256HashString(base::StringPiece(to_hash.begin(), to_hash.end()),
+                           hash, 32);
+
+  uint64_t uuid;
+  base::ReadBigEndian<uint64_t>(hash, &uuid);
+  return uuid;
 }
 
 }  // namespace
@@ -182,6 +219,7 @@ DataReductionProxyMetricsObserverBase::FlushMetricsOnAppEnterBackground(
   // notification, so we send a pingback with data collected up to this point.
   if (info.did_commit) {
     SendPingback(timing, info, true /* app_background_occurred */);
+    RecordUKM(info);
   }
   return STOP_OBSERVING;
 }
@@ -191,6 +229,7 @@ void DataReductionProxyMetricsObserverBase::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SendPingback(timing, info, false /* app_background_occurred */);
+  RecordUKM(info);
 }
 
 // static
@@ -201,6 +240,27 @@ int64_t DataReductionProxyMetricsObserverBase::ExponentiallyBucketBytes(
     return 0;
   }
   return ukm::GetExponentialBucketMin(bytes, 1.16);
+}
+
+void DataReductionProxyMetricsObserverBase::RecordUKM(
+    const page_load_metrics::PageLoadExtraInfo& info) const {
+  if (!data())
+    return;
+
+  if (!data()->used_data_reduction_proxy())
+    return;
+
+  int64_t original_network_bytes =
+      insecure_original_network_bytes() + secure_original_network_bytes();
+  uint64_t uuid = ComputeDataReductionProxyUUID(data());
+
+  ukm::builders::DataReductionProxy builder(info.source_id);
+
+  builder.SetEstimatedOriginalNetworkBytes(
+      ExponentiallyBucketBytes(original_network_bytes));
+  builder.SetDataSaverPageUUID(uuid);
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void DataReductionProxyMetricsObserverBase::SendPingback(
@@ -334,11 +394,6 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extra_request_complete_info.data_reduction_proxy_data &&
-      extra_request_complete_info.data_reduction_proxy_data->lofi_received()) {
-    data_->set_lofi_received(true);
-  }
-
   if (extra_request_complete_info.resource_type ==
       content::ResourceType::kMainFrame) {
     main_frame_fetch_start_ =

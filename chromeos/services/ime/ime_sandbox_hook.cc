@@ -8,6 +8,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "build/buildflag.h"
+#include "chromeos/services/ime/public/cpp/buildflags.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 
@@ -19,17 +21,22 @@ namespace ime {
 
 namespace {
 
-// This is IME decoder shared library, which will be built from google3.
+// The name of an IME decoder shared library.
 const char kLibImeDecoderName[] = "libimedecoder.so";
-// This is input method's relative folder, where the pre-installed dictionaries
-// will be put.
+// The path of input tools relative folder, which contains some 'pre-bundled'
+// static language dictionaries.
 const char kInputToolsBundleFolder[] = "input_methods/input_tools";
-// This is where shared dictionaries will be put, decoder will load them for
-// all users and regularly update them from server.
-const char kSharedHomePath[] = "/home/chronos/ime/";
-// This is where user's dictionaries will be put, decoder will load them for
-// current user and save new words learnt from user.
+// The path of the user's own language dictionaries, including private and
+// public static language dictionaries.
 const char kUserHomePath[] = "/home/chronos/user/ime/";
+// The path of downloadable IME language dictionaries shared by all users.
+// This feature is to reduce storage by sharing single dictionary between all
+// users. This feature is optional.
+// When `CrosImeSharedDataEnabled`, if the input decoder find some language
+// dictionary is missing from the device, the IME service will download the
+// dictionary to the shared path. Then the data can be accessible by others to
+// avoid another download of the same dictionary.
+const char kSharedHomePath[] = "/home/chronos/ime/";
 
 bool CreateFolderIfNotExist(const char* dir) {
   base::FilePath path = base::FilePath(dir);
@@ -42,6 +49,15 @@ base::FilePath GetLibFolder() {
   return base::FilePath("/usr/lib64");
 #else
   return base::FilePath("/usr/lib");
+#endif
+}
+
+// Whether IME instance shares a same language data path with each other.
+inline constexpr bool CrosImeSharedDataEnabled() {
+#if BUILDFLAG(ENABLE_CROS_IME_SHARED_DATA)
+  return true;
+#else
+  return false;
 #endif
 }
 
@@ -65,9 +81,13 @@ void AddBundleFolder(std::vector<BrokerFilePermission>* permissions) {
       BrokerFilePermission::ReadOnlyRecursive(bundle_dir.value()));
 }
 
-void AddSharedDataFolder(std::vector<BrokerFilePermission>* permissions) {
-  // Must have access to shared home folder, otherwise decoder won't be able
-  // to work.
+void AddSharedDataFolderIfEnabled(
+    std::vector<BrokerFilePermission>* permissions) {
+  if (!CrosImeSharedDataEnabled())
+    return;
+
+  // Without access to shared home folder, IME servcie will download all
+  // missing dictionaries to `kUserHomePath` of the current user.
   CHECK(CreateFolderIfNotExist(kSharedHomePath));
   permissions->push_back(
       BrokerFilePermission::ReadWriteCreateRecursive(kSharedHomePath));
@@ -93,8 +113,8 @@ std::vector<BrokerFilePermission> GetImeFilePermissions() {
       BrokerFilePermission::ReadOnly("/sys/devices/system/cpu")};
   AddDecoderPath(&permissions);
   AddBundleFolder(&permissions);
-  AddSharedDataFolder(&permissions);
   AddUserDataFolder(&permissions);
+  AddSharedDataFolderIfEnabled(&permissions);
   return permissions;
 }
 

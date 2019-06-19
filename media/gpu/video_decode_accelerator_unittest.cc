@@ -37,6 +37,7 @@
 #include "base/hash/md5.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -865,12 +866,17 @@ void GLRenderingVDAClient::DecodeNextFragment() {
 
   // Populate the shared memory buffer w/ the fragment, duplicate its handle,
   // and hand it off to the decoder.
-  base::SharedMemory shm;
-  LOG_ASSERT(shm.CreateAndMapAnonymous(next_fragment_size));
-  memcpy(shm.memory(), next_fragment_bytes.data(), next_fragment_size);
-
-  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_, shm.handle(),
-                                   false /* read_only */, next_fragment_size);
+  base::UnsafeSharedMemoryRegion shm_region =
+      base::UnsafeSharedMemoryRegion::Create(next_fragment_size);
+  LOG_ASSERT(shm_region.IsValid());
+  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+  LOG_ASSERT(shm_mapping.IsValid());
+  memcpy(shm_mapping.memory(), next_fragment_bytes.data(), next_fragment_size);
+  BitstreamBuffer bitstream_buffer(
+      next_bitstream_buffer_id_,
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(shm_region)),
+      next_fragment_size);
   decode_start_time_[next_bitstream_buffer_id_] = base::TimeTicks::Now();
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;

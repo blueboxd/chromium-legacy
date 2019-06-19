@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "components/favicon/core/favicon_request_handler.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -19,13 +20,13 @@
 
 namespace {
 
-scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageUrl(
+favicon_base::FaviconRawBitmapResult GetSyncedFaviconForPageUrl(
     sync_sessions::SessionSyncService* session_sync_service,
     const GURL& page_url) {
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
-  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
-                   : nullptr;
+  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url)
+                   : favicon_base::FaviconRawBitmapResult();
 }
 
 }  // namespace

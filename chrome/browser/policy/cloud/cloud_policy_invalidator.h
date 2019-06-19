@@ -75,8 +75,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
       CloudPolicyCore* core,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* clock,
-      int64_t highest_handled_invalidation_version,
-      bool is_fcm_enabled);
+      int64_t highest_handled_invalidation_version);
   ~CloudPolicyInvalidator() override;
 
   // Initializes the invalidator. No invalidations will be generated before this
@@ -93,10 +92,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   bool invalidations_enabled() {
     return invalidations_enabled_;
   }
-
-  // Whether to use FCM (Firebase Cloud Messaging) topics when registering
-  // to invalidations.
-  bool is_fcm_enabled() { return is_fcm_enabled_; }
 
   // The highest invalidation version that was handled already.
   int64_t highest_handled_invalidation_version() const {
@@ -242,10 +237,6 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   // The hash value of the current policy. This is used to determine if a new
   // policy is different from the current one.
   uint32_t policy_hash_value_;
-
-  // Whether the CloudPolicyInvalidator should use FCM (Firebase Cloud
-  // Messaging) topics.
-  const bool is_fcm_enabled_;
 
   // A thread checker to make sure that callbacks are invoked on the correct
   // thread.

@@ -51,7 +51,7 @@ TEST_F(ImeUtilChromeosTest, RestoreWindowBounds) {
   EXPECT_EQ(bounds, window->bounds());
 
   gfx::Rect r1(40, 50, 150, 200);
-  window->SetProperty(kVirtualKeyboardRestoreBoundsKey, new gfx::Rect(r1));
+  window->SetProperty(kVirtualKeyboardRestoreBoundsKey, r1);
   RestoreWindowBoundsOnClientFocusLost(window);
   EXPECT_EQ(r1, window->bounds());
   EXPECT_EQ(nullptr, window->GetProperty(kVirtualKeyboardRestoreBoundsKey));

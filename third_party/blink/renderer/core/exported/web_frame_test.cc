@@ -10355,7 +10355,7 @@ TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   ImageResource* resource = img_document->CachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
-  EXPECT_NE(TimeTicks(), resource->LoadResponseEnd());
+  EXPECT_NE(base::TimeTicks(), resource->LoadResponseEnd());
 
   DocumentLoader* loader = document->Loader();
 

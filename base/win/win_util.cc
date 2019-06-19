@@ -42,6 +42,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/propvarutil.h"
@@ -155,6 +156,11 @@ bool* GetDomainEnrollmentStateStorage() {
 
 bool* GetRegisteredWithManagementStateStorage() {
   static bool state = []() {
+    // Mitigate the issues caused by loading DLLs on a background thread
+    // (http://crbug/973868).
+    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
+        FROM_HERE);
+
     ScopedNativeLibrary library(
         FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
     if (!library.is_valid())

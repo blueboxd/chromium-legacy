@@ -61,7 +61,7 @@ void LayoutProgress::UpdateFromElement() {
 double LayoutProgress::AnimationProgress() const {
   if (!animating_)
     return 0;
-  TimeDelta elapsed = CurrentTimeTicks() - animation_start_time_;
+  base::TimeDelta elapsed = CurrentTimeTicks() - animation_start_time_;
   return (elapsed % animation_duration_).InSecondsF() /
          animation_duration_.InSecondsF();
 }
@@ -92,7 +92,7 @@ void LayoutProgress::UpdateAnimationState() {
       LayoutTheme::GetTheme().AnimationRepeatIntervalForProgressBar();
 
   bool animating = !IsDeterminate() && StyleRef().HasAppearance() &&
-                   animation_duration_ > TimeDelta();
+                   animation_duration_ > base::TimeDelta();
   if (animating == animating_)
     return;
 

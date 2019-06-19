@@ -66,7 +66,6 @@ target(link_target_type, "renderer_sources") {
     "v8_value_converter.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
-    "webrtc_log_message_delegate.h",
     "websocket_handshake_throttle_provider.h",
     "window_features_converter.cc",
     "window_features_converter.h",

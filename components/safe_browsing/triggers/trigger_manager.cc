@@ -26,6 +26,7 @@ bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
       // For security interstitials, users can change the opt-in while the
       // trigger runs, so collection can begin without opt-in.
       return false;
+    case TriggerType::AD_POPUP:
     case TriggerType::AD_SAMPLE:
       // Ad samples happen in the background so the user must already be opted
       // in before the trigger is allowed to run.
@@ -111,7 +112,6 @@ bool TriggerManager::CanStartDataCollectionWithReason(
   bool optin_required_check_ok =
       !TriggerNeedsOptInForCollection(trigger_type) ||
       error_display_options.is_extended_reporting_enabled;
-
   // We start data collection as long as user is not incognito and is able to
   // change the Extended Reporting opt-in, and the |trigger_type| has available
   // quota. For some triggers we also require extended reporting opt-in in
@@ -128,6 +128,7 @@ bool TriggerManager::CanStartDataCollectionWithReason(
     return false;
   }
 }
+
 bool TriggerManager::StartCollectingThreatDetails(
     const TriggerType trigger_type,
     content::WebContents* web_contents,
@@ -160,7 +161,8 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
   if (collectors->threat_details != nullptr)
     return false;
 
-  bool should_trim_threat_details = trigger_type == TriggerType::AD_SAMPLE;
+  bool should_trim_threat_details = (trigger_type == TriggerType::AD_POPUP ||
+                                     trigger_type == TriggerType::AD_SAMPLE);
   collectors->threat_details = ThreatDetails::NewThreatDetails(
       ui_manager_, web_contents, resource, url_loader_factory, history_service,
       referrer_chain_provider_, should_trim_threat_details,

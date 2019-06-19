@@ -86,6 +86,13 @@ class GpuIntegrationTest(
     browser_args.append(
       '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
+    if not ('--force_low_power_gpu' in browser_args or
+            '--force_high_performance_gpu' in browser_args):
+      # Force the GPU tests to use the high-performance GPU on dual-GPU machines
+      # by default. In Chromium's hardware fleet this currently only has an
+      # effect on the dual-GPU MacBook Pros.
+      browser_args.append('--force_high_performance_gpu')
+
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)
     cls._last_launched_browser_args = set(browser_args)
@@ -307,6 +314,14 @@ class GpuIntegrationTest(
       # be converted to its lower case form.
       tags.extend([tag.lower().replace(' ', '-').replace('_', '-') for tag in [
           gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+    # If additional options have been set via '--extra-browser-args' check for
+    # those which map to expectation tags. The '_browser_backend' attribute may
+    # not exist in unit tests.
+    if (hasattr(browser, '_browser_backend') and
+        browser._browser_backend.browser_options.extra_browser_args):
+      skia_renderer = gpu_helper.GetSkiaRenderer(\
+          browser._browser_backend.browser_options.extra_browser_args)
+      tags.extend([skia_renderer])
     return tags
 
   @classmethod

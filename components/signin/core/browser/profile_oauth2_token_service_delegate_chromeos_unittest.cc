@@ -544,10 +544,10 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_failure_);
   std::vector<std::string> scopes{"scope"};
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher =
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
-                                          &access_token_consumer));
+                                          &access_token_consumer);
   task_environment_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
   task_environment_.RunUntilIdle();
@@ -558,9 +558,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
 
   // Pretend that backoff has expired and try again.
   delegate_->backoff_entry_.SetCustomReleaseTime(base::TimeTicks());
-  fetcher.reset(delegate_->CreateAccessTokenFetcher(
+  fetcher = delegate_->CreateAccessTokenFetcher(
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
-      &access_token_consumer));
+      &access_token_consumer);
   fetcher->Start("client_id", "client_secret", scopes);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
@@ -581,10 +581,10 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_failure_);
   std::vector<std::string> scopes{"scope"};
-  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> fetcher =
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
-                                          &access_token_consumer));
+                                          &access_token_consumer);
   task_environment_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
   task_environment_.RunUntilIdle();
@@ -596,9 +596,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
   // Notify of network change and ensure that request now runs.
   delegate_->OnConnectionChanged(
       network::mojom::ConnectionType::CONNECTION_WIFI);
-  fetcher.reset(delegate_->CreateAccessTokenFetcher(
+  fetcher = delegate_->CreateAccessTokenFetcher(
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
-      &access_token_consumer));
+      &access_token_consumer);
   fetcher->Start("client_id", "client_secret", scopes);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);

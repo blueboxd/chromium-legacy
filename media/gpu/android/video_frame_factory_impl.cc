@@ -327,6 +327,10 @@ void VideoFrameFactoryImpl::OnImageReady(
   frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
                                 !!texture_owner);
 
+  // Required for WebGL to work properly. See https://crbug.com/891456.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
+                                true);
+
   frame->SetReleaseMailboxCB(std::move(record.release_cb));
 
   // Note that we don't want to handle the CodecImageGroup here.  It needs to be

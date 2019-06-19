@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 using testing::DoubleNear;
 using testing::ElementsAreArray;
@@ -33,9 +32,6 @@ const double kThreshold = 0.006;
 
 class DOMTimerTest : public RenderingTest {
  public:
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform_;
-
   // Expected time between each iterator for setInterval(..., 1) or nested
   // setTimeout(..., 1) are 1, 1, 1, 1, 4, 4, ... as a minimum clamp of 4ms
   // is applied from the 5th iteration onwards.
@@ -46,13 +42,14 @@ class DOMTimerTest : public RenderingTest {
   };
 
   void SetUp() override {
-    platform_->SetAutoAdvanceNowToPendingTasks(true);
+    EnablePlatform();
+    platform()->SetAutoAdvanceNowToPendingTasks(true);
     // Advance timer manually as RenderingTest expects the time to be non-zero.
-    platform_->AdvanceClockSeconds(1.);
+    platform()->AdvanceClockSeconds(1.);
     RenderingTest::SetUp();
     auto* window_performance = DOMWindowPerformance::performance(
         *GetDocument().GetFrame()->DomWindow());
-    auto test_task_runner = platform_->test_task_runner();
+    auto test_task_runner = platform()->test_task_runner();
     auto* mock_clock = test_task_runner->GetMockClock();
     auto* mock_tick_clock = test_task_runner->GetMockTickClock();
     auto now_ticks = test_task_runner->NowTicks();
@@ -91,7 +88,7 @@ class DOMTimerTest : public RenderingTest {
     ScriptSourceCode script(script_text);
     GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
         script, KURL(), SanitizeScriptErrors::kSanitize);
-    platform_->RunUntilIdle();
+    platform()->RunUntilIdle();
   }
 
  private:

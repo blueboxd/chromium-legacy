@@ -346,8 +346,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
 
   is_animating_ = true;
   // FIXME: Should duration be configurable?
-  constexpr auto kFadeDuration = TimeDelta::FromMilliseconds(100);
-  constexpr auto kMinPreFadeDuration = TimeDelta::FromMilliseconds(100);
+  constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(100);
+  constexpr auto kMinPreFadeDuration = base::TimeDelta::FromMilliseconds(100);
 
   auto curve = std::make_unique<CompositorFloatAnimationCurve>();
 
@@ -358,8 +358,9 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       CompositorFloatKeyframe(0, kStartOpacity, timing_function));
   // Make sure we have displayed for at least minPreFadeDuration before starting
   // to fade out.
-  TimeDelta extra_duration_required = std::max(
-      TimeDelta(), kMinPreFadeDuration - (CurrentTimeTicks() - start_time_));
+  base::TimeDelta extra_duration_required =
+      std::max(base::TimeDelta(),
+               kMinPreFadeDuration - (CurrentTimeTicks() - start_time_));
   if (!extra_duration_required.is_zero()) {
     curve->AddKeyframe(CompositorFloatKeyframe(
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));

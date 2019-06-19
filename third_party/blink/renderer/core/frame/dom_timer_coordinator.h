@@ -32,7 +32,7 @@ class DOMTimerCoordinator {
   // Creates and installs a new timer. Returns the assigned ID.
   int InstallNewTimeout(ExecutionContext*,
                         ScheduledAction*,
-                        TimeDelta timeout,
+                        base::TimeDelta timeout,
                         bool single_shot);
 
   // Removes and disposes the timer with the specified ID, if any. This may

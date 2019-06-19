@@ -168,6 +168,12 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   return false;
 }
 
+static inline bool IsExposedInMode(const CSSProperty& property,
+                                   CSSParserMode mode) {
+  return mode == kUASheetMode ? property.IsUAExposed()
+                              : property.IsWebExposed();
+}
+
 template <typename CharacterType>
 static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
                                              unsigned length,
@@ -196,9 +202,8 @@ static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
   CSSPropertyID property_id = static_cast<CSSPropertyID>(hash_table_entry->id);
   const CSSProperty& property =
       CSSProperty::Get(resolveCSSPropertyID(property_id));
-  bool enabled =
-      property.IsEnabled() || (property.IsInternal() && mode == kUASheetMode);
-  return enabled ? property_id : CSSPropertyID::kInvalid;
+  bool exposed = IsExposedInMode(property, mode);
+  return exposed ? property_id : CSSPropertyID::kInvalid;
 }
 
 CSSPropertyID unresolvedCSSPropertyID(const String& string) {

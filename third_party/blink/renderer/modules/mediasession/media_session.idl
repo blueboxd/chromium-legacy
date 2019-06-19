@@ -26,6 +26,7 @@ enum MediaSessionAction {
 callback MediaSessionActionHandler = void ();
 
 [
+    Exposed=Window,
     RuntimeEnabled=MediaSession
 ] interface MediaSession {
     [Measure] attribute MediaMetadata? metadata;

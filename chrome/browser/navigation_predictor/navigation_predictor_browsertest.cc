@@ -9,6 +9,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,11 +19,13 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
@@ -521,6 +525,57 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnect, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(PrefetchAfterPreconnect)) {
+  prerender::PrerenderManager::SetMode(
+      prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder =
+      std::make_unique<ukm::TestAutoSetUkmRecorder>();
+
+  std::map<std::string, std::string> parameters;
+  base::test::ScopedFeatureList feature_list;
+  parameters["same_origin_preconnecting_allowed"] = "true";
+  parameters["prefetch_after_preconnect"] = "true";
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kNavigationPredictor, parameters);
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForLayout(&histogram_tester);
+
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('example').click();"));
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
+      NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameURL, 1);
+
+  const auto& entries = ukm_recorder->GetMergedEntriesByName(
+      ukm::builders::NoStatePrefetch::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+
+  for (const auto& kv : entries) {
+    EXPECT_TRUE(ukm_recorder->EntryHasMetric(
+        kv.second.get(),
+        ukm::builders::NoStatePrefetch::kPrefetchedRecently_FinalStatusName));
+    EXPECT_TRUE(ukm_recorder->EntryHasMetric(
+        kv.second.get(),
+        ukm::builders::NoStatePrefetch::kPrefetchedRecently_OriginName));
+    EXPECT_TRUE(ukm_recorder->EntryHasMetric(
+        kv.second.get(),
+        ukm::builders::NoStatePrefetch::kPrefetchedRecently_PrefetchAgeName));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,

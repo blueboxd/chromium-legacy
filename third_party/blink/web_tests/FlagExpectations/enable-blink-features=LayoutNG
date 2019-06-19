@@ -110,7 +110,6 @@ crbug.com/591099 external/wpt/css/css-position/static-position/vrl-rtl-ltr.tenta
 crbug.com/591099 external/wpt/css/css-position/static-position/vrl-rtl-rtl.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-rhythm/ [ Skip ]
 crbug.com/591099 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Pass ]
-crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-018.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Pass ]
 crbug.com/845902 external/wpt/css/css-sizing/whitespace-and-break.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-text/boundary-shaping/boundary-shaping-001.html [ Pass ]

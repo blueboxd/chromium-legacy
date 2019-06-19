@@ -9,12 +9,13 @@ import sys
 def _CommonChecks(input_api, output_api):
   results = []
   # We don't apply eslint to virtual-scroller/, which is not developed here.
-  # TODO(tkent): kv-storage/.eslintrc.js specifies babel-eslint parser, which
+  # TODO(tkent): kv-storage/.eslintrc.js and toast/.eslintrc.js specify babel-eslint parser, which
   # is not in third_party/node/node_modules/.
   mjs_files = input_api.AffectedFiles(
       file_filter=lambda f: (f.LocalPath().endswith('.mjs') and
-                             not 'virtual-scroller' in f.LocalPath() and
-                             not 'kv-storage' in f.LocalPath()),
+                             not '/virtual-scroller/' in f.LocalPath() and
+                             not '/kv-storage/' in f.LocalPath() and
+                             not '/toast/' in f.LocalPath()),
       include_deletes=False)
   if not mjs_files:
     return results

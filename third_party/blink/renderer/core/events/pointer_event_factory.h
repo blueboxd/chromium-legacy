@@ -38,7 +38,7 @@ class CORE_EXPORT PointerEventFactory {
                        LocalDOMWindow* view);
 
   PointerEvent* CreatePointerCancelEvent(const PointerId pointer_id,
-                                         TimeTicks platfrom_time_stamp);
+                                         base::TimeTicks platfrom_time_stamp);
 
   // For creating raw update events in chorded button case.
   PointerEvent* CreatePointerRawUpdateEvent(PointerEvent*);

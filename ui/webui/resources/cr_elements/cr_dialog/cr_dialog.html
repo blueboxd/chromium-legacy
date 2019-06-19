@@ -65,21 +65,9 @@
         top: 0;
       }
 
-      /**
-       * When using mixins, avoid using padding shorthand. Using both the
-       * shorthand and top/bottom/start/end can lead to style override issues.
-       * This is only noticable when the |optimize_webui=true| build argument
-       * is used.
-       *
-       * See https://crbug.com/846254 and associated CL for more information.
-       */
       :host ::slotted([slot=body]) {
         color: var(--cr-secondary-text-color);
-        padding-bottom: 0;
-        padding-inline-end: 20px;
-        padding-inline-start: 20px;
-        padding-top: 0;
-        @apply --cr-dialog-body;
+        padding: 0 20px;
       }
 
       /**

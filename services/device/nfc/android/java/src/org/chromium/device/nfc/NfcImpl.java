@@ -335,6 +335,22 @@ public class NfcImpl implements Nfc {
         }
 
         /**
+         * Check if the NFC device matches the |compatibility| field in |options|.
+         *
+         * @param compatibility denotes the compatibility kind of the found NFC device.
+         * @return boolean true if NFC the compatibility matches.
+         */
+        boolean checkCompatibility(int compatibility) {
+            // 'nfc-forum' option can only push messages to NFC standard devices and 'vendor'
+            // option can only push to vendor specific ones.
+            if (nfcPushOptions.compatibility == NdefCompatibility.ANY
+                    || nfcPushOptions.compatibility == compatibility) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
          * Completes pending push operation.
          *
          * @param error should be null when operation is completed successfully, otherwise,
@@ -494,6 +510,10 @@ public class NfcImpl implements Nfc {
 
         if (mTagHandler.isTagOutOfRange()) {
             mTagHandler = null;
+            return;
+        }
+
+        if (!mPendingPushOperation.checkCompatibility(mTagHandler.compatibility())) {
             return;
         }
 

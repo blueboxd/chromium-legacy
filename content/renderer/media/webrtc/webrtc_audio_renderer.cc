@@ -17,13 +17,13 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -165,7 +165,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       sink_params_(kFormat, kChannelLayout, 0, 0),
       output_device_id_(device_id) {
-  WebRtcLogMessage(base::StringPrintf(
+  blink::WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
       source_render_frame_id, session_id, sink_params_.effects()));
 }
@@ -587,8 +587,8 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
     // WebRtcAudioRenderer can only render audio tracks received from a remote
     // peer. Since the actual MediaStream is mutable from JavaScript, we need
     // to make sure |web_track| is actually a remote track.
-    PeerConnectionRemoteAudioTrack* const remote_track =
-        PeerConnectionRemoteAudioTrack::From(
+    blink::PeerConnectionRemoteAudioTrack* const remote_track =
+        blink::PeerConnectionRemoteAudioTrack::From(
             blink::MediaStreamAudioTrack::From(web_track));
     if (!remote_track)
       continue;

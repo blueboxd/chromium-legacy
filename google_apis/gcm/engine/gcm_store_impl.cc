@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -924,6 +925,11 @@ bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64_t* android_id,
     s = db_->Get(read_options, MakeSlice(kDeviceTokenKey), &result);
   }
   if (s.ok()) {
+    // Mitigate the issues caused by loading DLLs on a background thread
+    // (http://crbug/973868).
+    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
+        FROM_HERE);
+
     std::string decrypted_token;
     encryptor_->DecryptString(result, &decrypted_token);
     if (!base::StringToUint64(decrypted_token, security_token)) {

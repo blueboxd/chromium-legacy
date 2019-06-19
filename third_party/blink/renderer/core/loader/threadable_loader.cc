@@ -469,13 +469,13 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
 
 ThreadableLoader::~ThreadableLoader() {}
 
-void ThreadableLoader::SetTimeout(const TimeDelta& timeout) {
+void ThreadableLoader::SetTimeout(const base::TimeDelta& timeout) {
   timeout_ = timeout;
 
-  // |request_started_| <= TimeTicks() indicates loading is either not yet
+  // |request_started_| <= base::TimeTicks() indicates loading is either not yet
   // started or is already finished, and thus we don't need to do anything with
   // timeout_timer_.
-  if (request_started_ <= TimeTicks()) {
+  if (request_started_ <= base::TimeTicks()) {
     DCHECK(!timeout_timer_.IsActive());
     return;
   }
@@ -490,8 +490,9 @@ void ThreadableLoader::SetTimeout(const TimeDelta& timeout) {
   // was initially sent, however other uses of this method may need to
   // behave differently, in which case this should be re-arranged somehow.
   if (!timeout_.is_zero()) {
-    TimeDelta elapsed_time = CurrentTimeTicks() - request_started_;
-    TimeDelta resolved_time = std::max(timeout_ - elapsed_time, TimeDelta());
+    base::TimeDelta elapsed_time = CurrentTimeTicks() - request_started_;
+    base::TimeDelta resolved_time =
+        std::max(timeout_ - elapsed_time, base::TimeDelta());
     timeout_timer_.StartOneShot(resolved_time, FROM_HERE);
   }
 }
@@ -523,7 +524,7 @@ void ThreadableLoader::SetDefersLoading(bool value) {
 void ThreadableLoader::Clear() {
   client_ = nullptr;
   timeout_timer_.Stop();
-  request_started_ = TimeTicks();
+  request_started_ = base::TimeTicks();
   if (GetResource())
     checker_.WillRemoveClient();
   ClearResource();

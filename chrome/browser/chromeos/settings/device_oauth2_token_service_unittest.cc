@@ -252,6 +252,10 @@ void DeviceOAuth2TokenServiceTest::AssertConsumerTokensAndErrors(
 TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
   CreateService();
 
+  // The token service won't report there being a token if the robot account ID
+  // is not set, which would cause the expectation below to fail.
+  SetRobotAccountId("service_acct@g.com");
+
   oauth2_service_->SetAndSaveRefreshToken(
       "test-token", DeviceOAuth2TokenService::StatusCallback());
   EXPECT_EQ("test-token", GetRefreshToken());

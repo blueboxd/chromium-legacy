@@ -51,7 +51,6 @@ class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
-class WebURLResponse;
 struct WebPluginParams;
 struct WebURLError;
 }  // namespace blink
@@ -312,13 +311,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Records a domain and registry of a url to a Rappor privacy-preserving
   // metric. See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) {}
-
-  // Gives the embedder a chance to add properties to the context menu.
-  // Currently only called when the context menu is for an image.
-  virtual void AddImageContextMenuProperties(
-      const blink::WebURLResponse& response,
-      bool is_image_in_context_a_placeholder_image,
-      std::map<std::string, std::string>* properties) {}
 
   // Notifies that a document element has been inserted in the frame's document.
   // This may be called multiple times for the same document. This method may

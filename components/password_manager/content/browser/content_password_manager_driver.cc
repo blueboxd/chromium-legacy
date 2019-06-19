@@ -146,7 +146,8 @@ void ContentPasswordManagerDriver::FillSuggestion(
 void ContentPasswordManagerDriver::FillIntoFocusedField(
     bool is_password,
     const base::string16& credential,
-    base::OnceCallback<void(autofill::FillingStatus)> compeleted_callback) {
+    base::OnceCallback<void(autofill::mojom::FillingStatus)>
+        compeleted_callback) {
   GetPasswordAutofillAgent()->FillIntoFocusedField(
       is_password, credential, std::move(compeleted_callback));
 }

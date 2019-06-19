@@ -112,6 +112,30 @@ function perspectiveFromFieldOfView(fov, near, far) {
   return out;
 }
 
+function assert_points_approx_equal(actual, expected, epsilon = FLOAT_EPSILON, message = '') {
+  if (expected == null && actual == null) {
+    return;
+  }
+
+  assert_not_equals(expected, null);
+  assert_not_equals(actual, null);
+
+  let mismatched_component = null;
+  for (const v of ['x', 'y', 'z', 'w']) {
+    if (Math.abs(expected[v] - actual[v]) > epsilon) {
+      mismatched_component = v;
+      break;
+    }
+  }
+
+  if (mismatched_component !== null) {
+    let error_message = message ? message + '\n' : 'Point comparison failed.\n';
+    error_message += ` Expected: {x: ${expected.x}, y: ${expected.y}, z: ${expected.z}, w: ${expected.w}}\n`;
+    error_message += ` Actual: {x: ${actual.x}, y: ${actual.y}, z: ${actual.z}, w: ${actual.w}}\n`;
+    error_message += ` Difference in component ${mismatched_component} exceeded the given epsilon.\n`;
+    assert_approx_equals(actual[mismatched_component], expected[mismatched_component], epsilon, error_message);
+  }
+}
 
 function assert_matrices_approx_equal(
     matA, matB, epsilon = FLOAT_EPSILON, message = '') {

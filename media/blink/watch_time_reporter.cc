@@ -14,8 +14,8 @@ namespace media {
 constexpr gfx::Size kMinimumVideoSize = gfx::Size(200, 140);
 
 static bool IsOnBatteryPower() {
-  if (base::PowerMonitor* pm = base::PowerMonitor::Get())
-    return pm->IsOnBatteryPower();
+  if (base::PowerMonitor::IsInitialized())
+    return base::PowerMonitor::IsOnBatteryPower();
   return false;
 }
 
@@ -84,8 +84,7 @@ WatchTimeReporter::WatchTimeReporter(
   if (is_muted_)
     DCHECK_EQ(volume_, 1.0);
 
-  if (base::PowerMonitor* pm = base::PowerMonitor::Get())
-    pm->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 
   provider->AcquireWatchTimeRecorder(properties_->Clone(),
                                      mojo::MakeRequest(&recorder_));
@@ -133,8 +132,7 @@ WatchTimeReporter::~WatchTimeReporter() {
   // This is our last chance, so finalize now if there's anything remaining.
   in_shutdown_ = true;
   MaybeFinalizeWatchTime(FinalizeTime::IMMEDIATELY);
-  if (base::PowerMonitor* pm = base::PowerMonitor::Get())
-    pm->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 void WatchTimeReporter::OnPlaying() {

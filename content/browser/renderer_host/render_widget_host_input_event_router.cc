@@ -443,8 +443,7 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
 }
 
 RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
-    : touchscreen_gesture_target_in_map_(false),
-      last_mouse_move_target_(nullptr),
+    : last_mouse_move_target_(nullptr),
       last_mouse_move_root_view_(nullptr),
       last_emulated_event_root_view_(nullptr),
       last_device_scale_factor_(1.f),
@@ -1524,7 +1523,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // to get the coordinate transform.
     DCHECK(target);
     touchscreen_gesture_target_ = target;
-    touchscreen_gesture_target_in_map_ = IsViewInMap(target);
     fallback_target_location = target_location;
   } else if (no_matching_id && is_gesture_start) {
     // A long-standing Windows issues where occasionally a GestureStart is
@@ -1545,13 +1543,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
     touchscreen_gesture_target_ = result.view;
-    touchscreen_gesture_target_in_map_ = IsViewInMap(result.view);
     fallback_target_location = transformed_point;
   } else if (is_gesture_start) {
     touchscreen_gesture_target_ = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
-    touchscreen_gesture_target_in_map_ =
-        IsViewInMap(touchscreen_gesture_target_);
 
     // Abort any scroll bubbling in progress to avoid double entry.
     CancelScrollBubblingIfConflicting(touchscreen_gesture_target_);
@@ -1559,7 +1554,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
 
   // If we set a target and it's not in the map, we won't get notified if the
   // target goes away, so drop the target and the resulting events.
-  if (!touchscreen_gesture_target_in_map_)
+  if (touchscreen_gesture_target_ && !IsViewInMap(touchscreen_gesture_target_))
     touchscreen_gesture_target_ = nullptr;
 
   if (!touchscreen_gesture_target_) {

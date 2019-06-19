@@ -249,6 +249,16 @@ struct NetworkFilter {
   int32 limit = kNoLimit;
 };
 
+struct CellularSimState {
+  // The current PIN or PUK. Required for unlocking the SIM, or when setting
+  // |require_pin|.
+  string current_pin_or_puk;
+  // If provided change the PIN to |new_pin|. Required if the SIM is PUK locked.
+  string? new_pin;
+  // Whether a PIN should be required. Ignored when unlocking a locked SIM.
+  bool require_pin;
+};
+
 interface CrosNetworkConfig {
   AddObserver(CrosNetworkConfigObserver observer);
 
@@ -271,6 +281,20 @@ interface CrosNetworkConfig {
   // CrosNetworkConfigObserver::OnDeviceStateListChanged() can be used to be
   // notified when the enabled state changes.
   SetNetworkTypeEnabledState(NetworkType type, bool enabled) => (bool success);
+
+  // Sets the SIM state for the primary Cellular device:
+  // * If no SIM is present, returns false.
+  // * If the SIM is PUK locked, attempts to unlock the SIM with the provided
+  //   |current_pin_or_puk| value and set a new SIM value to |new_pin| which
+  //   must be provided. |pin_required| is ignored. Returns true on success.
+  // * If the SIM is PIN locked, attempts to unlock the SIM with the provided
+  //   |current_pin_or_puk| value. |pin_required| is ignored. Returns true on
+  //   success.
+  // * If the SIM is unlocked, |current_pin_or_puk| must match the current PIN.
+  //   * If |new_pin| if provided, attempts to set the new PIN.
+  //   * Otherwise attempts to set the pin required state to |pin_required|.
+  //   * Returns true if the operation succeeded.
+  SetCellularSimState(CellularSimState state) => (bool success);
 
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.

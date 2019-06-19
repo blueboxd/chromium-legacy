@@ -40,12 +40,16 @@ class CORE_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
   ScrollbarThemeOverlayMock()
       : ScrollbarThemeOverlay(3, 4, kDisallowHitTest, Color(128, 128, 128)) {}
 
-  TimeDelta OverlayScrollbarFadeOutDelay() const override { return delay_; }
-  TimeDelta OverlayScrollbarFadeOutDuration() const override {
-    return TimeDelta();
+  base::TimeDelta OverlayScrollbarFadeOutDelay() const override {
+    return delay_;
+  }
+  base::TimeDelta OverlayScrollbarFadeOutDuration() const override {
+    return base::TimeDelta();
   }
 
-  void SetOverlayScrollbarFadeOutDelay(TimeDelta delay) { delay_ = delay; }
+  void SetOverlayScrollbarFadeOutDelay(base::TimeDelta delay) {
+    delay_ = delay;
+  }
 
   void PaintThumb(GraphicsContext& gc,
                   const Scrollbar& scrollbar,
@@ -63,7 +67,7 @@ class CORE_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
   int MinimumThumbLength(const Scrollbar&) override { return 7; }
 
  private:
-  TimeDelta delay_;
+  base::TimeDelta delay_;
   bool IsMockTheme() const final { return true; }
 };
 

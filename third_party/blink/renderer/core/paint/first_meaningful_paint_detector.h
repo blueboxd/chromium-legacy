@@ -41,7 +41,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyInputEvent();
   void NotifyPaint();
   void ReportSwapTime(PaintEvent, WebWidgetClient::SwapResult, base::TimeTicks);
-  void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
+  void NotifyFirstContentfulPaint(base::TimeTicks swap_stamp);
   void OnNetwork0Quiet();
   void OnNetwork2Quiet();
 
@@ -65,7 +65,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   int ActiveConnections();
   void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
-  void SetFirstMeaningfulPaint(TimeTicks swap_stamp);
+  void SetFirstMeaningfulPaint(base::TimeTicks swap_stamp);
 
   bool next_paint_is_meaningful_ = false;
   HadUserInput had_user_input_ = kNoUserInput;
@@ -73,16 +73,16 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
       kNoUserInput;
 
   Member<PaintTiming> paint_timing_;
-  TimeTicks provisional_first_meaningful_paint_;
-  TimeTicks provisional_first_meaningful_paint_swap_;
+  base::TimeTicks provisional_first_meaningful_paint_;
+  base::TimeTicks provisional_first_meaningful_paint_swap_;
   double max_significance_so_far_ = 0.0;
   double accumulated_significance_while_having_blank_text_ = 0.0;
   unsigned prev_layout_object_count_ = 0;
   bool seen_first_meaningful_paint_candidate_ = false;
   bool network0_quiet_reached_ = false;
   bool network2_quiet_reached_ = false;
-  TimeTicks first_meaningful_paint0_quiet_;
-  TimeTicks first_meaningful_paint2_quiet_;
+  base::TimeTicks first_meaningful_paint0_quiet_;
+  base::TimeTicks first_meaningful_paint2_quiet_;
   unsigned outstanding_swap_promise_count_ = 0;
   DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
   DISALLOW_COPY_AND_ASSIGN(FirstMeaningfulPaintDetector);

@@ -30,7 +30,7 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "input_engine",
               service_manager::Manifest::InterfaceList<
-                  mojom::InputEngineManager, mojom::InputChannel>())
+                  mojom::InputEngineManager, mojom::PlatformAccessClient>())
           .Build()};
   return *manifest;
 }

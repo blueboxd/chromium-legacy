@@ -22,6 +22,21 @@
 
 namespace variations {
 
+enum LoadPermanentConsistencyCountryResult {
+  LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
+  LOAD_COUNTRY_NO_PREF_HAS_SEED,
+  LOAD_COUNTRY_INVALID_PREF_NO_SEED,
+  LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY,
+  LOAD_COUNTRY_MAX,
+};
+
 class PlatformFieldTrials;
 class SafeSeedManager;
 class VariationsServiceClient;
@@ -86,6 +101,10 @@ class VariationsFieldTrialCreator {
   // Sets the stored permanent country pref for this client.
   void StorePermanentCountry(const base::Version& version,
                              const std::string& country);
+
+  // Sets the stored permanent variations overridden country pref for this
+  // client.
+  void StoreVariationsOverriddenCountry(const std::string& country);
 
   // Records the time of the most recent successful fetch.
   void RecordLastFetchTime();

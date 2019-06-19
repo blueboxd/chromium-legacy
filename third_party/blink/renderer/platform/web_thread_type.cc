@@ -41,6 +41,8 @@ const char* GetNameForThreadType(WebThreadType thread_type) {
       return "test thread";
     case WebThreadType::kAudioEncoderThread:
       return "Audio encoder thread";
+    case WebThreadType::kVideoEncoderThread:
+      return "Video encoder thread";
     case WebThreadType::kCount:
       NOTREACHED();
       return nullptr;

@@ -188,7 +188,7 @@ void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
 }
 
 void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
-    autofill::FillingStatus status) {
+    autofill::mojom::FillingStatus status) {
   GetManualFillingController()->OnFilledIntoFocusedField(status);
 }
 

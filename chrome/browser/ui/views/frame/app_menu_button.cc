@@ -21,7 +21,7 @@ AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
           this, menu_button_listener, CreateButtonControllerDelegate());
   menu_button_controller_ = menu_button_controller.get();
   SetButtonController(std::move(menu_button_controller));
-  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
+  SetProperty(views::kInternalPaddingKey, gfx::Insets());
 }
 
 AppMenuButton::~AppMenuButton() {}

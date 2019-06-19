@@ -39,13 +39,11 @@ Polymer({
 
     /**
      * The active set of default user images.
-     * @private {!Array<!settings.DefaultImage>}
+     * @private {?Array<!settings.DefaultImage>}
      */
     defaultImages_: {
-      type: Array,
-      value: function() {
-        return [];
-      },
+      type: Object,
+      value: null,
     },
 
     /**
@@ -277,7 +275,7 @@ Polymer({
    * @private
    */
   getDefaultImages_(defaultImages, firstDefaultImageIndex) {
-    return defaultImages.slice(firstDefaultImageIndex);
+    return defaultImages ? defaultImages.slice(firstDefaultImageIndex) : [];
   },
 
   /**

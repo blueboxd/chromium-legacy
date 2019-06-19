@@ -30,6 +30,11 @@ public interface LocationBar extends UrlBarDelegate {
     void destroy();
 
     /**
+     * Handle all necessary tasks that can be delayed until initialization completes.
+     */
+    default void onDeferredStartup() {}
+
+    /**
      * Handles native dependent initialization for this class.
      */
     void onNativeLibraryReady();

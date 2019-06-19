@@ -219,9 +219,12 @@ void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
   task_queue_selector_observer_ = observer;
 }
 
-bool TaskQueueSelector::AllEnabledWorkQueuesAreEmpty() const {
+Optional<TaskQueue::QueuePriority>
+TaskQueueSelector::GetHighestPendingPriority() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  return active_priorities_.empty();
+  if (active_priorities_.empty())
+    return nullopt;
+  return active_priorities_.min_id();
 }
 
 void TaskQueueSelector::SetImmediateStarvationCountForTest(

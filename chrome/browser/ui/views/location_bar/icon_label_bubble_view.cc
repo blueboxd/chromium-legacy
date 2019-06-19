@@ -495,7 +495,7 @@ void IconLabelBubbleView::UpdateHighlightPath() {
 
   SkPath path;
   path.addRoundRect(rect, corner_radius, corner_radius);
-  SetProperty(views::kHighlightPathKey, new SkPath(path));
+  SetProperty(views::kHighlightPathKey, path);
   if (focus_ring()) {
     focus_ring()->Layout();
     focus_ring()->SchedulePaint();

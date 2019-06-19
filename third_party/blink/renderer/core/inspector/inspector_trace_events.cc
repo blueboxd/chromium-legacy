@@ -156,7 +156,7 @@ void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
 
 void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                                             DocumentLoader* loader,
-                                            TimeTicks finish_time,
+                                            base::TimeTicks finish_time,
                                             int64_t encoded_data_length,
                                             int64_t decoded_body_length,
                                             bool should_report_corb_blocking) {
@@ -176,7 +176,7 @@ void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_resource_finish_event::Data(
-                           loader, identifier, TimeTicks(), true, 0, 0));
+                           loader, identifier, base::TimeTicks(), true, 0, 0));
 }
 
 void InspectorTraceEvents::Will(const probe::ExecuteScript&) {}
@@ -841,7 +841,7 @@ std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
 std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
     DocumentLoader* loader,
     uint64_t identifier,
-    TimeTicks finish_time,
+    base::TimeTicks finish_time,
     bool did_fail,
     int64_t encoded_data_length,
     int64_t decoded_body_length) {
@@ -875,7 +875,7 @@ static std::unique_ptr<TracedValue> GenericTimerData(ExecutionContext* context,
 std::unique_ptr<TracedValue> inspector_timer_install_event::Data(
     ExecutionContext* context,
     int timer_id,
-    TimeDelta timeout,
+    base::TimeDelta timeout,
     bool single_shot) {
   std::unique_ptr<TracedValue> value = GenericTimerData(context, timer_id);
   value->SetDouble("timeout", timeout.InMillisecondsF());

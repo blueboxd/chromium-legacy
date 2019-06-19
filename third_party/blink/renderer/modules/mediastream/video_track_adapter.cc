@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
@@ -37,12 +36,6 @@ namespace WTF {
 template <>
 struct CrossThreadCopier<blink::VideoTrackAdapterSettings>
     : public CrossThreadCopierPassThrough<blink::VideoTrackAdapterSettings> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
-struct CrossThreadCopier<gfx::Size>
-    : public CrossThreadCopierPassThrough<gfx::Size> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

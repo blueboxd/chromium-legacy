@@ -37,8 +37,6 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
   // the Mojo connection is set up.
   void Init(service_manager::Connector* connector);
 
-  void Shutdown() override;
-
  private:
   friend class PowerMonitorBroadcastSourceTest;
   friend class MockClient;

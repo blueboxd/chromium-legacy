@@ -69,14 +69,6 @@ const base::Feature kHistoryServiceUsesTaskScheduler{
 
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
-// Callback from WebHistoryService::ExpireWebHistory().
-void ExpireWebHistoryComplete(bool success) {
-  // Ignore the result.
-  //
-  // TODO(davidben): ExpireLocalAndRemoteHistoryBetween callback should not fire
-  // until this completes.
-}
-
 }  // namespace
 
 // Sends messages from the backend to us on the main thread. This must be a
@@ -193,7 +185,7 @@ void HistoryService::HandleBackgrounding() {
     return;
 
   ScheduleTask(PRIORITY_NORMAL,
-               base::MakeCriticalClosure(base::Bind(
+               base::MakeCriticalClosure(base::BindOnce(
                    &HistoryBackend::PersistState, history_backend_.get())));
 }
 #endif
@@ -720,30 +712,24 @@ void HistoryService::CreateDownload(const DownloadRow& create_info,
                              std::move(callback));
 }
 
-void HistoryService::GetNextDownloadId(const DownloadIdCallback& callback) {
+void HistoryService::GetNextDownloadId(DownloadIdCallback callback) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetNextDownloadId, history_backend_),
-      callback);
+      base::BindOnce(&HistoryBackend::GetNextDownloadId, history_backend_),
+      std::move(callback));
 }
 
 // Handle queries for a list of all downloads in the history database's
 // 'downloads' table.
-void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
+void HistoryService::QueryDownloads(DownloadQueryCallback callback) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<DownloadRow>* rows = new std::vector<DownloadRow>();
-  std::unique_ptr<std::vector<DownloadRow>> scoped_rows(rows);
-  // Beware! The first Bind() does not simply |scoped_rows.get()| because
-  // std::move(scoped_rows) nullifies |scoped_rows|, and compilers do not
-  // guarantee that the first Bind's arguments are evaluated before the second
-  // Bind's arguments.
-  backend_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&HistoryBackend::QueryDownloads, history_backend_, rows),
-      base::BindOnce(callback, std::move(scoped_rows)));
+  PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::QueryDownloads, history_backend_),
+      std::move(callback));
 }
 
 // Handle updates for a particular download. This is a 'fire and forget'
@@ -1091,8 +1077,8 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
             }
           })");
     web_history->ExpireHistoryBetween(
-        /*restrict_urls=*/{}, begin_time, end_time,
-        base::Bind(&ExpireWebHistoryComplete), partial_traffic_annotation);
+        /*restrict_urls=*/{}, begin_time, end_time, base::DoNothing(),
+        partial_traffic_annotation);
   }
   ExpireHistoryBetween(/*restrict_urls=*/{}, begin_time, end_time,
                        /*user_initiated=*/true, std::move(callback), tracker);
@@ -1131,7 +1117,7 @@ void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
           })");
     web_history->ExpireHistoryBetween(
         /*restrict_urls=*/{url}, base::Time(), base::Time::Max(),
-        base::Bind(&ExpireWebHistoryComplete), partial_traffic_annotation);
+        base::DoNothing(), partial_traffic_annotation);
   }
   DeleteURL(url);
 }

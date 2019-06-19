@@ -1190,7 +1190,8 @@ static LayoutUnit ComputeContentSize(
       is_after_break = true;
     }
 
-    void AddTabulationCharacters(const NGInlineItem& item) {
+    void AddTabulationCharacters(const NGInlineItem& item, unsigned length) {
+      DCHECK_GE(length, 1u);
       AddTextUntil(&item);
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
@@ -1198,7 +1199,6 @@ static LayoutUnit ComputeContentSize(
       const SimpleFontData* font_data = font.PrimaryFont();
       const TabSize& tab_size = style.GetTabSize();
       float advance = font.TabWidth(font_data, tab_size, position);
-      unsigned length = item.Length();
       DCHECK_GE(length, 1u);
       if (length > 1u)
         advance += font.TabWidth(font_data, tab_size) * (length - 1);
@@ -1241,7 +1241,7 @@ static LayoutUnit ComputeContentSize(
           // their widths for the max size may be different from the widths for
           // the min size. Fall back to 2 pass for now.
           if (c == kTabulationCharacter) {
-            AddTabulationCharacters(item);
+            AddTabulationCharacters(item, result.Length());
             continue;
           }
         }

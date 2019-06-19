@@ -27,7 +27,8 @@ struct AuditorException {
     MISSING,            // Ignore missing annotations.
     DIRECT_ASSIGNMENT,  // Ignore direct assignment of annotation value.
     TEST_ANNOTATION,    // Ignore usages of annotation for tests.
-    EXCEPTION_TYPE_LAST = TEST_ANNOTATION
+    MUTABLE_TAG,        // Ignore CreateMutableNetworkTrafficAnnotationTag().
+    EXCEPTION_TYPE_LAST = MUTABLE_TAG,
   } type;
 
   static bool TypeFromString(const std::string& type_string,
@@ -40,6 +41,8 @@ struct AuditorException {
       *type_value = ExceptionType::DIRECT_ASSIGNMENT;
     } else if (type_string == "test_annotation") {
       *type_value = ExceptionType::TEST_ANNOTATION;
+    } else if (type_string == "mutable_tag") {
+      *type_value = ExceptionType::MUTABLE_TAG;
     } else {
       return false;
     }

@@ -87,7 +87,7 @@ class OpenTabsUIDelegateMock : public sync_sessions::OpenTabsUIDelegate {
 
   MOCK_CONST_METHOD1(
       GetSyncedFaviconForPageURL,
-      scoped_refptr<base::RefCountedMemory>(const std::string& page_url));
+      favicon_base::FaviconRawBitmapResult(const GURL& page_url));
   MOCK_METHOD1(
       GetAllForeignSessions,
       bool(std::vector<const sync_sessions::SyncedSession*>* sessions));

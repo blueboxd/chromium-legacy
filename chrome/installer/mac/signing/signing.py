@@ -34,15 +34,20 @@ def get_parts(config):
     else:
         uncustomized_bundle_id = config.base_bundle_id
 
+    # Specify the components of HARDENED_RUNTIME that are also available on
+    # older macOS versions.
+    full_hardened_runtime_options = (
+        CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+        CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
+
     parts = {
         'app':
             CodeSignedProduct(
                 '{.app_product}.app'.format(config),
                 config.base_bundle_id,
-                options=CodeSignOptions.RESTRICT,
+                options=full_hardened_runtime_options,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
-                resource_rules='app_resource_rules.plist',
                 entitlements='app-entitlements.plist',
                 verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
         'framework':
@@ -57,30 +62,32 @@ def get_parts(config):
                 .format(config),
                 '{}.framework.AlertNotificationService'.format(
                     config.base_bundle_id),
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.DEEP),
         'crashpad':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/chrome_crashpad_handler'.format(
                     config),
                 'chrome_crashpad_handler',
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.DEEP),
         'helper-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper.app'.format(
                     config),
                 '{}.helper'.format(uncustomized_bundle_id),
-                options=CodeSignOptions.RESTRICT,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.DEEP),
         'helper-renderer-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (Renderer).app'
                 .format(config),
                 '{}.helper.renderer'.format(uncustomized_bundle_id),
-                options=CodeSignOptions.RESTRICT,
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with the JIT entitlement.
+                options=CodeSignOptions.RESTRICT +
+                CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-renderer-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
         'helper-plugin-app':
@@ -88,15 +95,19 @@ def get_parts(config):
                 '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'
                 .format(config),
                 '{}.helper.plugin'.format(uncustomized_bundle_id),
-                options=CodeSignOptions.RESTRICT,
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with the disable-library-validation
+                # entitlement.
+                options=CodeSignOptions.RESTRICT +
+                CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-plugin-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
                 '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
-                options=CodeSignOptions.RESTRICT +
-                CodeSignOptions.LIBRARY_VALIDATION,
+                options=full_hardened_runtime_options,
                 verify_options=VerifyOptions.IGNORE_RESOURCES),
     }
 
@@ -138,7 +149,9 @@ def get_installer_tools(config):
         'xzdec',
     )
     for binary in binaries:
-        options = CodeSignOptions.RESTRICT + CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL
+        options = (
+            CodeSignOptions.HARDENED_RUNTIME + CodeSignOptions.RESTRICT +
+            CodeSignOptions.LIBRARY_VALIDATION + CodeSignOptions.KILL)
         tools[binary] = CodeSignedProduct(
             '{.packaging_dir}/{binary}'.format(config, binary=binary),
             binary.replace('.dylib', ''),

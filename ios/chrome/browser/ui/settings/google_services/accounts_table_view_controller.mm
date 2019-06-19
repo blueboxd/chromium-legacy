@@ -96,7 +96,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Whether the view controller is currently being dismissed and new dismiss
   // requests should be ignored.
   BOOL _isBeingDismissed;
-  __weak UIViewController* _settingsDetails;
+  ios::DismissASMViewControllerBlock _dimissAccountDetailsViewControllerBlock;
   ResizedAvatarCache* _avatarCache;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
 
@@ -431,9 +431,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)onEndBatchOfRefreshTokenStateChanges {
   [self reloadData];
   [self popViewIfSignedOut];
-  if (![self authService] -> IsAuthenticated() && _settingsDetails) {
-    [_settingsDetails dismissViewControllerAnimated:YES completion:nil];
-    _settingsDetails = nil;
+  if (![self authService] -> IsAuthenticated() &&
+                                 _dimissAccountDetailsViewControllerBlock) {
+    _dimissAccountDetailsViewControllerBlock(/*animated=*/YES);
+    _dimissAccountDetailsViewControllerBlock = nil;
   }
 }
 
@@ -506,19 +507,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAccountDetails:(ChromeIdentity*)identity {
   if ([_alertCoordinator isVisible])
     return;
-  UIViewController* accountDetails =
+  _dimissAccountDetailsViewControllerBlock =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateAccountDetailsController(identity, self);
-  if (!accountDetails) {
-    // Failed to create a new account details. Ignored.
-    return;
-  }
-  [self presentViewController:accountDetails animated:YES completion:nil];
-
-  // Keep a weak reference on the account details, to be able to dismiss it
-  // when the primary account is removed.
-  _settingsDetails = accountDetails;
+          ->PresentAccountDetailsController(identity, self, /*animated=*/YES);
 }
 
 - (void)showDisconnect {

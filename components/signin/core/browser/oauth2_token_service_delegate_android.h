@@ -78,7 +78,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
       const CoreAccountId& primary_account_id) override;
 
  protected:
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_factory,
       OAuth2AccessTokenConsumer* consumer) override;

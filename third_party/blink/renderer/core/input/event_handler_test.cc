@@ -1452,7 +1452,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
   EXPECT_TRUE(iframe_doc->GetActiveElement());
 
   // The active will cancel after 15ms.
-  test::RunDelayedTasks(TimeDelta::FromSecondsD(0.2));
+  test::RunDelayedTasks(base::TimeDelta::FromSecondsD(0.2));
   EXPECT_FALSE(GetDocument().GetActiveElement());
   EXPECT_FALSE(iframe_doc->GetActiveElement());
 }

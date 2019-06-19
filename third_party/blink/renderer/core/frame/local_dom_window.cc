@@ -115,7 +115,8 @@
 namespace blink {
 
 // Timeout for link preloads to be used after window.onload
-static constexpr TimeDelta kUnusedPreloadTimeout = TimeDelta::FromSeconds(3);
+static constexpr base::TimeDelta kUnusedPreloadTimeout =
+    base::TimeDelta::FromSeconds(3);
 
 static void UpdateSuddenTerminationStatus(
     LocalDOMWindow* dom_window,

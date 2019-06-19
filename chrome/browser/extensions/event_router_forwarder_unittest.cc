@@ -92,7 +92,11 @@ class EventRouterForwarderTest : public testing::Test {
 #endif
     std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
         new base::PowerMonitorDeviceSource());
-    dummy.reset(new base::PowerMonitor(std::move(power_monitor_source)));
+    base::PowerMonitor::Initialize(std::move(power_monitor_source));
+  }
+
+  ~EventRouterForwarderTest() override {
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void SetUp() override {
@@ -105,7 +109,6 @@ class EventRouterForwarderTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
-  std::unique_ptr<base::PowerMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;
   TestingProfile* profile2_;

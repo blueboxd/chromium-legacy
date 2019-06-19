@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_PWA_CONFIRMATION_BUBBLE_VIEW_H_
 
-#include "chrome/browser/ui/views/extensions/pwa_confirmation.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
@@ -15,10 +15,13 @@
 // icon in the omnibox.
 class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
+  static bool IsShowing();
+
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,
                             std::unique_ptr<WebApplicationInfo> web_app_info,
                             chrome::AppInstallationAcceptanceCallback callback);
+  ~PWAConfirmationBubbleView() override;
 
   // LocationBarBubbleDelegateView:
   bool ShouldShowCloseButton() const override;
@@ -29,7 +32,8 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
   bool Accept() override;
 
  private:
-  PWAConfirmation pwa_confirmation_;
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
+  chrome::AppInstallationAcceptanceCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PWAConfirmationBubbleView);
 };

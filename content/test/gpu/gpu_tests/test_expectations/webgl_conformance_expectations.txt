@@ -444,14 +444,6 @@ crbug.com/352645 [ android android-webview-instrumentation ] conformance/texture
 crbug.com/352645 [ android-webview-instrumentation ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Skip ]
 crbug.com/352645 [ android android-webview-instrumentation no-angle ] conformance/textures/misc/texture-npot-video.html [ Skip ]
 
-# These video tests appear to be flaky.
-crbug.com/907512 [ android release no-angle ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
-crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/834933 [ android android-chromium no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/834933 [ android android-chromium no-angle ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
-
 # This crashes in Android WebView on the Nexus 6, preventing the
 # suite from running further. Rather than add multiple
 # suppressions, skip it until it's passing at least in content
@@ -506,11 +498,6 @@ crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/all/a
 crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/cos/cos_001_to_006.html [ RetryOnFailure ]
 crbug.com/818041 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/dot/dot_001_to_006.html [ RetryOnFailure ]
 crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] conformance/ogles/GL/swizzlers/swizzlers_041_to_048.html [ RetryOnFailure ]
-crbug.com/818041 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/793050 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/716496 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/965387 [ android qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
-crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 no-angle ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] WebglExtension_EXT_sRGB [ Failure ]
 crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
@@ -555,14 +542,6 @@ crbug.com/478572 [ android nvidia ] deqp/data/gles2/shaders/functions.html [ Fai
 crbug.com/606096 [ android nvidia ] conformance/glsl/bugs/multiplication-assignment.html [ Failure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-ivec4.html [ RetryOnFailure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-mat2.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 
 # Flaky timeout on android_n5x_swarming_rel and
 # android-marshmallow-arm64-rel.

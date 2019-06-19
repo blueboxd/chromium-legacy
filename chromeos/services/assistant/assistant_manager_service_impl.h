@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -307,7 +306,6 @@ class AssistantManagerServiceImpl
       nullptr;
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
-  ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
   media_session::mojom::MediaControllerPtr media_controller_;
 
   Service* service_;  // unowned.

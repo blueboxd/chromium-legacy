@@ -6,11 +6,11 @@
 #define ASH_WM_DESKS_DESK_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
@@ -28,7 +28,7 @@ class DeskContainerObserver;
 // Those containers are parent windows of the windows that belong to the
 // associated desk. When the desk is active, those containers are shown, when
 // the desk is in active, those containers are hidden.
-class ASH_EXPORT Desk : public aura::WindowObserver {
+class ASH_EXPORT Desk {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -44,11 +44,11 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   };
 
   explicit Desk(int associated_container_id);
-  ~Desk() override;
+  ~Desk();
 
   int container_id() const { return container_id_; }
 
-  const base::flat_set<aura::Window*>& windows() const { return windows_; }
+  const std::vector<aura::Window*>& windows() const { return windows_; }
 
   bool is_active() const { return is_active_; }
 
@@ -63,6 +63,7 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   void OnRootWindowClosing(aura::Window* root);
 
   void AddWindowToDesk(aura::Window* window);
+  void RemoveWindowFromDesk(aura::Window* window);
 
   base::AutoReset<bool> GetScopedNotifyContentChangedDisabler();
 
@@ -87,9 +88,6 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
-  // aura::WindowObserver:
-  void OnWindowDestroyed(aura::Window* window) override;
-
   void NotifyContentChanged();
 
   // Updates the backdrop availability and visibility on the containers (on all
@@ -104,7 +102,8 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   // Windows tracked on this desk. Clients of the DesksController can use this
   // list when they're notified of desk change events.
-  base::flat_set<aura::Window*> windows_;
+  // TODO(afakhry): Change this to track MRU windows on this desk.
+  std::vector<aura::Window*> windows_;
 
   // Maps all root windows to observer objects observing the containers
   // associated with this desk on those root windows.

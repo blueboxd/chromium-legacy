@@ -195,6 +195,10 @@ void AssistantNotificationController::RemoveAllNotifications(bool from_server) {
   model_.RemoveAllNotifications(from_server);
 }
 
+void AssistantNotificationController::SetQuietMode(bool enabled) {
+  message_center::MessageCenter::Get()->SetQuietMode(enabled);
+}
+
 // AssistantNotificationModelObserver ------------------------------------------
 
 void AssistantNotificationController::OnNotificationAdded(

@@ -112,6 +112,9 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   layer->SetBounds(gfx::Size(200, 200));
   background->AddChild(layer);
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("spiral.png")));
 }
@@ -130,6 +133,9 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
   layer->SetIsDrawable(true);
   layer->SetBounds(gfx::Size(100, 100));
   background->AddChild(layer);
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
@@ -151,6 +157,9 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, TransformScale) {
   gfx::Transform scale_transform;
   scale_transform.Scale(2.0, 2.0);
   layer->SetTransform(scale_transform);
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(renderer_type(), background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
@@ -285,6 +294,9 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledUp) {
 
   layer->SetPosition(gfx::PointF(185, 10));
 
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
+
   RunPixelTest(
       renderer_type(), background,
       base::FilePath(FILE_PATH_LITERAL("overlay_scrollbar_scaled_up.png")));
@@ -308,6 +320,9 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledDown) {
   background->AddChild(layer);
 
   layer->SetPosition(gfx::PointF(185, 10));
+
+  if (renderer_type() == RENDERER_SKIA_VK)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
 
   RunPixelTest(
       renderer_type(), background,

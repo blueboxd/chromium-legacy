@@ -15,6 +15,7 @@
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
+#include "components/favicon_base/favicon_types.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,25 +38,25 @@ const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
 const SkColor kTestColor = SK_ColorRED;
 base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 
-scoped_refptr<base::RefCountedBytes> CreateTestBitmapBytes() {
-  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+SkBitmap CreateTestSkBitmap() {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kDesiredSizeInPixel, kDesiredSizeInPixel);
   bitmap.eraseColor(kTestColor);
-  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data->data());
-  return data;
+  return bitmap;
 }
 
 favicon_base::FaviconRawBitmapResult CreateTestBitmapResult() {
+  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+  gfx::PNGCodec::EncodeBGRASkBitmap(CreateTestSkBitmap(), false, &data->data());
   favicon_base::FaviconRawBitmapResult result;
-  result.bitmap_data = CreateTestBitmapBytes();
+  result.bitmap_data = data;
   result.icon_url = GURL(kDummyIconUrl);
   return result;
 }
 
 favicon_base::FaviconImageResult CreateTestImageResult() {
   favicon_base::FaviconImageResult result;
-  result.image = gfx::Image::CreateFrom1xPNGBytes(CreateTestBitmapBytes());
+  result.image = gfx::Image::CreateFrom1xBitmap(CreateTestSkBitmap());
   result.icon_url = GURL(kDummyIconUrl);
   return result;
 }
@@ -141,7 +142,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
         return kDummyTaskId;
       });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
-      .WillOnce([](auto) { return nullptr; });
+      .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -166,7 +167,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
         return kDummyTaskId;
       });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
-      .WillOnce([](auto) { return CreateTestBitmapBytes(); });
+      .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -289,7 +290,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyImage) {
         return kDummyTaskId;
       });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
-      .WillOnce([](auto) { return nullptr; });
+      .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
@@ -311,7 +312,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncImage) {
         return kDummyTaskId;
       });
   EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
-      .WillOnce([](auto) { return CreateTestBitmapBytes(); });
+      .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),

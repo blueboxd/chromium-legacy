@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -1319,7 +1320,7 @@ aura::Window* OverviewGrid::GetTargetWindowOnLocation(
 }
 
 bool OverviewGrid::IsDesksBarViewActive() const {
-  DCHECK(features::IsVirtualDesksEnabled());
+  DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   // The desk bar view is not active if there is only a single desk when
   // overview is started. Once there are more than one desk, it should stay
@@ -1329,7 +1330,7 @@ bool OverviewGrid::IsDesksBarViewActive() const {
 }
 
 gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
-  if (!features::IsVirtualDesksEnabled() || !IsDesksBarViewActive())
+  if (!desks_util::ShouldDesksBarBeCreated() || !IsDesksBarViewActive())
     return bounds_;
 
   gfx::Rect effective_bounds = bounds_;
@@ -1339,7 +1340,7 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
 
 bool OverviewGrid::UpdateDesksBarDragDetails(
     const gfx::Point& screen_location) {
-  DCHECK(features::IsVirtualDesksEnabled());
+  DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   const bool dragged_item_over_bar =
       desks_widget_->GetWindowBoundsInScreen().Contains(screen_location);
@@ -1350,7 +1351,7 @@ bool OverviewGrid::UpdateDesksBarDragDetails(
 bool OverviewGrid::MaybeDropItemOnDeskMiniView(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
-  DCHECK(features::IsVirtualDesksEnabled());
+  DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   // End the drag for the DesksBarView.
   desks_bar_view_->SetDragDetails(screen_location,
@@ -1386,7 +1387,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {
-  if (!features::IsVirtualDesksEnabled() || desks_widget_)
+  if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
 
   desks_widget_ = DesksBarView::CreateDesksWidget(

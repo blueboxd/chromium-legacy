@@ -585,7 +585,7 @@ TEST_F(FlexLayoutTest,
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
 
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
   host_->InvalidateLayout();
   host_->Layout();
   expected = std::vector<Rect>{Rect(27, 25, 12, 10), Rect(62, 5, 13, 11),
@@ -593,7 +593,7 @@ TEST_F(FlexLayoutTest,
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(101, 64), host_->GetPreferredSize());
 
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
   host_->InvalidateLayout();
   layout_->SetDefaultChildMargins(gfx::Insets(0, 3));
   host_->Layout();
@@ -602,7 +602,7 @@ TEST_F(FlexLayoutTest,
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(109, 64), host_->GetPreferredSize());
 
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->InvalidateLayout();
   host_->Layout();
   expected = std::vector<Rect>{Rect(27, 25, 12, 10), Rect(63, 6, 13, 11),
@@ -621,9 +621,9 @@ TEST_F(FlexLayoutTest,
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{Rect(27, 25, 12, 10), Rect(7, 58, 13, 11),
@@ -642,9 +642,9 @@ TEST_F(FlexLayoutTest,
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{Rect(21, 20, 12, 10), Rect(56, 5, 13, 11),
@@ -662,9 +662,9 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_MarginAndSpacing_Collapse_Vertical) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{Rect(21, 20, 12, 10), Rect(6, 52, 13, 11),
@@ -681,7 +681,7 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_InteriorPadding) {
   layout_->SetDefaultChildMargins(gfx::Insets(10));
   View* child = AddChild(Size(13, 15));
   AddChild(kChild3Size);
-  child->SetProperty(views::kInternalPaddingKey, new Insets(1, 2, 4, 8));
+  child->SetProperty(views::kInternalPaddingKey, Insets(1, 2, 4, 8));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{
@@ -700,8 +700,8 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_InteriorPadding_Margins) {
   layout_->SetDefaultChildMargins(gfx::Insets(2));
   View* child = AddChild(Size(13, 15));
   View* child2 = AddChild(kChild3Size);
-  child->SetProperty(views::kInternalPaddingKey, new Insets(1, 2, 4, 8));
-  child2->SetProperty(views::kMarginsKey, new Insets(5, 5, 5, 5));
+  child->SetProperty(views::kInternalPaddingKey, Insets(1, 2, 4, 8));
+  child2->SetProperty(views::kMarginsKey, Insets(5, 5, 5, 5));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{
@@ -720,8 +720,8 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_InteriorPadding_Additive) {
   layout_->SetDefaultChildMargins(gfx::Insets(20));
   View* child = AddChild(Size(13, 15));
   View* child2 = AddChild(kChild3Size);
-  child->SetProperty(views::kInternalPaddingKey, new Insets(1, 2, 4, 8));
-  child2->SetProperty(views::kInternalPaddingKey, new Insets(5, 5, 5, 5));
+  child->SetProperty(views::kInternalPaddingKey, Insets(1, 2, 4, 8));
+  child2->SetProperty(views::kInternalPaddingKey, Insets(5, 5, 5, 5));
   host_->InvalidateLayout();
   host_->Layout();
   std::vector<Rect> expected{
@@ -743,9 +743,9 @@ TEST_F(FlexLayoutTest, Layout_CrossStart) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(200, 200));
   host_->Layout();
   EXPECT_EQ(10, child1->origin().y());
@@ -762,9 +762,9 @@ TEST_F(FlexLayoutTest, Layout_CrossCenter) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(200, 200));
   host_->Layout();
   EXPECT_EQ(94, child1->origin().y());
@@ -781,9 +781,9 @@ TEST_F(FlexLayoutTest, Layout_CrossEnd) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(200, 200));
   host_->Layout();
   EXPECT_EQ(178, child1->origin().y());
@@ -800,9 +800,9 @@ TEST_F(FlexLayoutTest, Layout_CrossStretch) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(200, 200));
   host_->Layout();
   EXPECT_EQ(10, child1->origin().y());
@@ -823,9 +823,9 @@ TEST_F(FlexLayoutTest, Layout_AlignStart) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(105, 50));
   host_->Layout();
   std::vector<Rect> expected{Rect(21, 20, 12, 10), Rect(56, 5, 13, 11),
@@ -843,9 +843,9 @@ TEST_F(FlexLayoutTest, Layout_AlignCenter) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(105, 50));
   host_->Layout();
   std::vector<Rect> expected{Rect(25, 20, 12, 10), Rect(60, 5, 13, 11),
@@ -863,9 +863,9 @@ TEST_F(FlexLayoutTest, Layout_AlignEnd) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(20, 21, 22, 23));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(105, 50));
   host_->Layout();
   std::vector<Rect> expected{Rect(29, 20, 12, 10), Rect(64, 5, 13, 11),
@@ -882,7 +882,7 @@ TEST_F(FlexLayoutTest, Layout_AddDroppedMargins) {
   View* child1 = AddChild(Size(10, 10));
   View* child2 = AddChild(Size(10, 10));
   View* child3 = AddChild(Size(10, 10));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
   layout_->SetFlexForView(child2, kDropOut);
   EXPECT_EQ(Size(30, 20), host_->GetMinimumSize());
 
@@ -911,9 +911,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropViews) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   host_->SetSize(Size(55, 50));
   host_->Layout();
   std::vector<Rect> expected{Rect(11, 10, 12, 10), Rect(36, 5, 13, 11),
@@ -963,9 +963,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropInOrder) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   // Set flex separately; we'll test default flex later.
   layout_->SetFlexForView(child1, kDropOut);
   layout_->SetFlexForView(child2, kDropOut);
@@ -1015,9 +1015,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropInOrder_DefaultFlex) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   layout_->SetDefaultFlex(kDropOut);
   EXPECT_EQ(Size(9, 7), host_->GetMinimumSize());
 
@@ -1063,9 +1063,9 @@ TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropByPriority) {
   View* child1 = AddChild(kChild1Size);
   View* child2 = AddChild(kChild2Size);
   View* child3 = AddChild(kChild3Size);
-  child1->SetProperty(views::kMarginsKey, new Insets(kLargeInsets));
-  child2->SetProperty(views::kMarginsKey, new Insets(1, 1, 1, 1));
-  child3->SetProperty(views::kMarginsKey, new Insets(2, 2, 2, 2));
+  child1->SetProperty(views::kMarginsKey, Insets(kLargeInsets));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
   layout_->SetDefaultFlex(kDropOut);
   layout_->SetFlexForView(child3, kDropOutHighPriority);
   EXPECT_EQ(Size(9, 7), host_->GetMinimumSize());
@@ -1747,7 +1747,7 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
 
     for (size_t i = 0; i < kNumChildren; ++i) {
       View* const child = AddChild(kChildSizes[i]);
-      child->SetProperty(kMarginsKey, new gfx::Insets(kChildMargins[i]));
+      child->SetProperty(kMarginsKey, gfx::Insets(kChildMargins[i]));
       child_views_.push_back(child);
     }
 

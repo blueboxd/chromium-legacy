@@ -263,6 +263,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // Returns true if the action is visible on the toolbar.
   bool IsActionVisible(const ActionId& action_id) const;
 
+  // Gets a list of pinned action ids that only contains that only contains IDs
+  // with a corresponding action in the model.
+  std::vector<ActionId> GetFilteredPinnedActionIds() const;
+
   // Our observers.
   base::ObserverList<Observer>::Unchecked observers_;
 

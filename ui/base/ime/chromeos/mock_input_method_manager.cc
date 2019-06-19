@@ -149,6 +149,9 @@ MockInputMethodManager::GetSupportedInputMethods() const {
 void MockInputMethodManager::ActivateInputMethodMenuItem(
     const std::string& key) {}
 
+void MockInputMethodManager::ConnectInputEngineManager(
+    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {}
+
 bool MockInputMethodManager::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
   return false;
 }

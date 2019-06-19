@@ -1463,26 +1463,6 @@ void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 
-void ChromeContentRendererClient::AddImageContextMenuProperties(
-    const WebURLResponse& response,
-    bool is_image_in_context_a_placeholder_image,
-    std::map<std::string, std::string>* properties) {
-  DCHECK(properties);
-
-  WebString cpct_value = response.HttpHeaderField(WebString::FromASCII(
-      data_reduction_proxy::chrome_proxy_content_transform_header()));
-  WebString chrome_proxy_value = response.HttpHeaderField(
-      WebString::FromASCII(data_reduction_proxy::chrome_proxy_header()));
-
-  if (is_image_in_context_a_placeholder_image ||
-      data_reduction_proxy::IsEmptyImagePreview(cpct_value.Utf8(),
-                                                chrome_proxy_value.Utf8())) {
-    (*properties)
-        [data_reduction_proxy::chrome_proxy_content_transform_header()] =
-            data_reduction_proxy::empty_image_directive();
-  }
-}
-
 void ChromeContentRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)

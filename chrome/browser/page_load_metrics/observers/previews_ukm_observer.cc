@@ -217,8 +217,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   // |navigation_restart_penalty_| is included here because a Lite Page Redirect
   // preview can be attempted and not commit. This incurs the penalty but may
   // also cause no preview to be committed.
-  if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
-      !noscript_seen_ && !resource_loading_hints_seen_ &&
+  if (!lite_page_seen_ && !noscript_seen_ && !resource_loading_hints_seen_ &&
       !offline_preview_seen_ && !origin_opt_out_occurred_ &&
       !save_data_enabled_ && !lite_page_redirect_seen_ &&
       !navigation_restart_penalty_.has_value()) {
@@ -227,10 +226,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
 
   ukm::builders::Previews builder(info.source_id);
   builder.Setcoin_flip_result(static_cast<int>(coin_flip_result_));
-  if (server_lofi_seen_)
-    builder.Setserver_lofi(1);
-  if (client_lofi_seen_)
-    builder.Setclient_lofi(1);
   if (lite_page_seen_)
     builder.Setlite_page(1);
   if (lite_page_redirect_seen_)
@@ -306,22 +301,6 @@ void PreviewsUKMObserver::RecordOptimizationGuideInfo(
     builder.SetHintSource(static_cast<int>(hint_version.hint_source()));
   }
   builder.Record(ukm::UkmRecorder::Get());
-}
-
-void PreviewsUKMObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extra_request_complete_info.data_reduction_proxy_data) {
-    if (extra_request_complete_info.data_reduction_proxy_data
-            ->lofi_received()) {
-      server_lofi_seen_ = true;
-    }
-    if (extra_request_complete_info.data_reduction_proxy_data
-            ->client_lofi_requested()) {
-      client_lofi_seen_ = true;
-    }
-  }
 }
 
 void PreviewsUKMObserver::OnEventOccurred(const void* const event_key) {

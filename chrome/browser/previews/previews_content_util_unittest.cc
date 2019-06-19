@@ -393,8 +393,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
 TEST_F(PreviewsContentUtilTest,
        DetermineCommittedClientPreviewsStateNoScriptCheckIfStillAllowed) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi",
-                                          "NoScriptPreviews");
+  scoped_feature_list.InitFromCommandLine("Previews", "NoScriptPreviews");
   PreviewsUserData user_data(1);
   // NoScript not allowed at commit time so no previews chosen:
   EXPECT_EQ(content::PREVIEWS_OFF,
@@ -411,7 +410,6 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLitePage) {
   data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
   data_reduction_proxy_data.set_used_data_reduction_proxy(true);
   data_reduction_proxy_data.set_lite_page_received(true);
-  data_reduction_proxy_data.set_lofi_policy_received(false);
 
   // Verify selects LitePage bit but doesn't touch client-only NoScript bit.
   EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,

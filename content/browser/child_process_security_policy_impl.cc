@@ -868,7 +868,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   // TODO(dcheng): Figure out why this check is different from CanCommitURL,
   // which checks for direct equality with kAboutBlankURL.
   if (IsPseudoScheme(scheme))
-    return url.IsAboutBlank() || url == kAboutSrcDocURL;
+    return url.IsAboutBlank() || url.IsAboutSrcdoc();
 
   // Blob and filesystem URLs require special treatment; validate the inner
   // origin they embed.
@@ -940,7 +940,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   // Of all the pseudo schemes, only about:blank and about:srcdoc are allowed to
   // commit.
   if (IsPseudoScheme(scheme))
-    return url == url::kAboutBlankURL || url == kAboutSrcDocURL;
+    return url.IsAboutBlank() || url.IsAboutSrcdoc();
 
   // Blob and filesystem URLs require special treatment; validate the inner
   // origin they embed.
@@ -995,7 +995,7 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
     return false;  // Can't set invalid URLs as origin headers.
 
   // about:srcdoc cannot be used as an origin
-  if (url == kAboutSrcDocURL)
+  if (url.IsAboutSrcdoc())
     return false;
 
   // If this process can commit |url|, it can use |url| as an origin for

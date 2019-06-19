@@ -77,6 +77,8 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Original timestamp of the last event that has been coalesced into this one.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+  // Timestamp of the frame when a scroll update event is handled (rAF time).
+  INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.
   INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
   // Timestamp when the frame is swapped in renderer.

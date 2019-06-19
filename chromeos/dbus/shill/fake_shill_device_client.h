@@ -114,6 +114,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   void SetSimLocked(const std::string& device_path, bool locked) override;
   void AddCellularFoundNetwork(const std::string& device_path) override;
 
+  static const char kSimPuk[];
   static const char kDefaultSimPin[];
   static const int kSimPinRetryCount;
 

@@ -117,6 +117,10 @@ void TestAssignment() {
   x.unique_id_hash_code = 3;
 }
 
+void TestMutableTags() {
+  SetAnnotationTagForSomething(CreateMutableNetworkTrafficAnnotationTag(3));
+}
+
 void DummyFunction(net::NetworkTrafficAnnotationTag traffic_annotation) {}
 
 void TestMacroExpansion() {

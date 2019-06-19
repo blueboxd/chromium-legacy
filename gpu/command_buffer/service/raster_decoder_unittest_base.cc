@@ -175,6 +175,11 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   ContextStateTestHelpers::SetupInitState(gl_.get(), feature_info(),
                                           gfx::Size(1, 1));
 
+  if (context_->WasAllocatedUsingRobustnessExtension()) {
+    EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
+        .WillOnce(Return(GL_NO_ERROR));
+  }
+
   shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       new gl::GLShareGroup(), surface_, context_,
       feature_info()->workarounds().use_virtualized_gl_contexts,

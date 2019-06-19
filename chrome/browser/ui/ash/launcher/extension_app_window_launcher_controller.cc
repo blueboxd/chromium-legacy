@@ -165,7 +165,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   const ash::ShelfID shelf_id = GetShelfId(app_window);
   DCHECK(!shelf_id.IsNull());
 
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
 

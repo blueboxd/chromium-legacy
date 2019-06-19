@@ -5333,7 +5333,6 @@ void RenderFrameImpl::WillSendRequestInternal(
       // The decision of whether or not to enable Client Lo-Fi is made earlier
       // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
       // so don't add the Client Lo-Fi bit to the request here.
-      request_previews_state &= ~(WebURLRequest::kClientLoFiOn);
       request_previews_state &= ~(WebURLRequest::kLazyImageLoadDeferred);
       if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
         request_previews_state = WebURLRequest::kPreviewsOff;
@@ -6495,8 +6494,7 @@ void RenderFrameImpl::BeginNavigation(
     // process.
     // TODO(arthursonzogni): Remove this. Everything should use the default code
     // path and be driven by the browser process.
-    if (((url == content::kAboutSrcDocURL) ||
-         WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
+    if ((url.IsAboutSrcdoc() || WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
         !is_history_navigation_in_new_child_frame) {
       if (!frame_->WillStartNavigation(
               *info, false /* is_history_navigation_in_new_child_frame */))

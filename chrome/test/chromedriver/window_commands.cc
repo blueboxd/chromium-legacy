@@ -1889,10 +1889,8 @@ Status ExecuteGetCookies(Session* session,
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> cookie_list(new base::ListValue());
-  for (std::list<Cookie>::iterator it = cookies.begin();
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    if (session->w3c_compliant && it->domain[0] == '.')
-      it->domain.erase(0, 1);
     cookie_list->Append(CreateDictionaryFrom(*it));
   }
   *value = std::move(cookie_list);
@@ -1913,11 +1911,9 @@ Status ExecuteGetNamedCookie(Session* session,
   if (status.IsError())
     return status;
 
-  for (std::list<Cookie>::iterator it = cookies.begin();
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     if (name == it->name) {
-      if (session->w3c_compliant && it->domain[0] == '.')
-        it->domain.erase(0, 1);
       value->reset(CreateDictionaryFrom(*it)->DeepCopy());
       return Status(kOk);
     }

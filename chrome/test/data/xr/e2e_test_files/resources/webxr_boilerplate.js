@@ -118,9 +118,7 @@ function onSessionStarted(session) {
   session.addEventListener('end', onSessionEnded);
   // Initialize the WebGL context for use with XR if it hasn't been already
   if (!gl) {
-    // Create an offscreen canvas and get its context
-    let offscreenCanvas = document.createElement('canvas');
-    gl = offscreenCanvas.getContext('webgl', glAttribs);
+    gl = webglCanvas.getContext('webgl', glAttribs);
     if (!gl) {
       throw 'Failed to get WebGL context';
     }

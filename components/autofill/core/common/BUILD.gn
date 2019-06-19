@@ -28,7 +28,6 @@ jumbo_static_library("common") {
     "autofill_util.cc",
     "autofill_util.h",
     "button_title_type.h",
-    "filling_status.h",
     "form_data.cc",
     "form_data.h",
     "form_data_predictions.cc",

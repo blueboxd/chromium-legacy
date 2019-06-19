@@ -19,6 +19,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/piet/form_fields.proto",
   "src/src/main/proto/search/now/ui/piet/gradients.proto",
   "src/src/main/proto/search/now/ui/piet/images.proto",
+  "src/src/main/proto/search/now/ui/piet/log_data.proto",
   "src/src/main/proto/search/now/ui/piet/media_queries.proto",
   "src/src/main/proto/search/now/ui/piet/piet.proto",
   "src/src/main/proto/search/now/ui/piet/piet_android_support.proto",

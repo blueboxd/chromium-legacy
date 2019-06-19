@@ -61,9 +61,9 @@ void ContentCaptureTaskHistogramReporter::OnSendContentStarted() {
 
 void ContentCaptureTaskHistogramReporter::OnSendContentEnded(
     size_t sent_content_count) {
-  TimeTicks now = WTF::CurrentTimeTicks();
+  base::TimeTicks now = WTF::CurrentTimeTicks();
   if (captured_content_change_time_) {
-    TimeTicks content_change_time = captured_content_change_time_.value();
+    base::TimeTicks content_change_time = captured_content_change_time_.value();
     captured_content_change_time_.reset();
     capture_content_delay_time_histogram_.CountMilliseconds(
         now - content_change_time);

@@ -1,5 +1,6 @@
 # tags: [ android chromeos highsierra linux mac mojave win ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
+# tags: [ skia-renderer no-skia-renderer ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e
 #         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
@@ -113,7 +114,7 @@ crbug.com/840394 [ mac ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure 
 
 # TODO(kbr): temporary suppression for new test.
 crbug.com/575305 [ linux ] Pixel_WebGLSadCanvas [ Failure ]
-crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ RetryOnFailure ]
+crbug.com/575305 [ win ] Pixel_WebGLSadCanvas [ Failure ]
 crbug.com/872423 [ mac ] Pixel_WebGLSadCanvas [ Failure ]
 crbug.com/575305 [ android ] Pixel_WebGLSadCanvas [ Skip ]
 
@@ -179,10 +180,15 @@ crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [
 # Failing on Pixel 2 FYI.
 crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]
 
-# Failing on Linux, both Intel HD 630 and NVIDIA Quadro P400
+# Failing on Linux and Windows, both Intel HD 630 and NVIDIA Quadro P400
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
+crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Failure ]
 crbug.com/974380 [ linux ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
+crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 
 # Producing blank images on Macmini and Macbook Pro
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
+
+# Fails when the browser feature SkiaRenderer is enabled
+crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]

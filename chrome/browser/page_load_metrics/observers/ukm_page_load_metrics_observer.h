@@ -118,6 +118,12 @@ class UkmPageLoadMetricsObserver
   base::Optional<int64_t> GetRoundedSiteEngagementScore(
       const page_load_metrics::PageLoadExtraInfo& info) const;
 
+  // Returns whether third party cookie blocking is enabled for the committed
+  // URL. This is only recorded for users who have prefs::kCookieControlsEnabled
+  // set to true.
+  base::Optional<bool> GetThirdPartyCookieBlockingEnabled(
+      const page_load_metrics::PageLoadExtraInfo& info) const;
+
   // Records the metrics for the nostate prefetch to an event with UKM source ID
   // |source_id|.
   void RecordNoStatePrefetchMetrics(

@@ -27,10 +27,6 @@ class OverviewGestureHandlerTest : public AshTestBase {
     return CreateTestWindowInShellWithDelegate(&delegate_, -1, bounds);
   }
 
-  void ToggleOverview() {
-    Shell::Get()->overview_controller()->ToggleOverview();
-  }
-
   bool InOverviewSession() {
     return Shell::Get()->overview_controller()->InOverviewSession();
   }
@@ -93,7 +89,7 @@ TEST_F(OverviewGestureHandlerTest, HorizontalScrollInOverview) {
   // Enter overview mode as if using an accelerator.
   // Entering overview mode with an upwards three-finger scroll gesture would
   // have the same result (allow selection using horizontal scroll).
-  ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   EXPECT_TRUE(InOverviewSession());
 
   // Long scroll right moves selection to the fourth window.

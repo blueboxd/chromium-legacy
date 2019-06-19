@@ -399,6 +399,12 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
         scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
                                                 now);
 
+    // Save the rAF time in the latency info to be able to compute the
+    // output latency.
+    LatencyInfo* latency_info = event_with_callback->mutable_latency_info();
+    latency_info->AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RAF_TIME_COMPONENT, now, 1);
+
     DispatchSingleInputEvent(std::move(event_with_callback), now);
   }
 }

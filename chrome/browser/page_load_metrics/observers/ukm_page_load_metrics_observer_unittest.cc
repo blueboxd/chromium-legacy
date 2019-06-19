@@ -8,13 +8,21 @@
 
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/content_settings/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "net/base/ip_endpoint.h"
@@ -1113,6 +1121,103 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
     // Check main-frame-only jank in UKM.
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScore_MainFrameName, 100);
+  }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
+  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, false);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kThirdPartyCookieBlockingEnabledForSiteName));
+  }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest,
+       ThirdPartyCookieBlockingFeatureDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(content_settings::kImprovedCookieControls);
+  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kThirdPartyCookieBlockingEnabledForSiteName));
+  }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
+  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kThirdPartyCookieBlockingEnabledForSiteName,
+        true);
+  }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest,
+       ThirdPartyCookieBlockingDisabledForSite) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
+  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile());
+  cookie_settings->SetThirdPartyCookieSetting(GURL(kTestUrl1),
+                                              CONTENT_SETTING_ALLOW);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kThirdPartyCookieBlockingEnabledForSiteName,
+        false);
   }
 }
 

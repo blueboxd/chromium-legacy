@@ -64,7 +64,7 @@ class TextPaintTimingDetectorTest
                              test_task_runner_->NowTicks());
   }
 
-  TimeTicks LargestPaintStoredResult() {
+  base::TimeTicks LargestPaintStoredResult() {
     return GetPaintTimingDetector().largest_text_paint_time_;
   }
 
@@ -230,22 +230,22 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_LargestText) {
 }
 
 TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
-  TimeTicks time1 = NowTicks();
+  base::TimeTicks time1 = NowTicks();
   SetBodyInnerHTML(R"HTML(
     <div>small text</div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
-  TimeTicks time2 = NowTicks();
-  TimeTicks first_largest = LargestPaintStoredResult();
+  base::TimeTicks time2 = NowTicks();
+  base::TimeTicks first_largest = LargestPaintStoredResult();
   EXPECT_GE(first_largest, time1);
   EXPECT_GE(time2, first_largest);
 
   AppendDivElementToBody("a long-long-long text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   UpdateCandidate();
-  TimeTicks time3 = NowTicks();
-  TimeTicks second_largest = LargestPaintStoredResult();
+  base::TimeTicks time3 = NowTicks();
+  base::TimeTicks second_largest = LargestPaintStoredResult();
   EXPECT_GE(second_largest, time2);
   EXPECT_GE(time3, second_largest);
 }
@@ -282,19 +282,19 @@ TEST_F(TextPaintTimingDetectorTest, VisitSameNodeTwiceBeforePaintTimeIsSet) {
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
   base::TimeTicks start_time = NowTicks();
-  AdvanceClock(TimeDelta::FromSecondsD(1));
+  AdvanceClock(base::TimeDelta::FromSecondsD(1));
   SetBodyInnerHTML(R"HTML(
   )HTML");
   Element* text = AppendDivElementToBody("text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  AdvanceClock(TimeDelta::FromSecondsD(1));
+  AdvanceClock(base::TimeDelta::FromSecondsD(1));
   text->setAttribute(html_names::kStyleAttr,
                      AtomicString("position:fixed;left:30px"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  AdvanceClock(TimeDelta::FromSecondsD(1));
+  AdvanceClock(base::TimeDelta::FromSecondsD(1));
   TextRecord* record = TextRecordOfLargestTextPaint();
   EXPECT_TRUE(record);
-  EXPECT_EQ(record->paint_time, start_time + TimeDelta::FromSecondsD(1));
+  EXPECT_EQ(record->paint_time, start_time + base::TimeDelta::FromSecondsD(1));
 }
 
 TEST_F(TextPaintTimingDetectorTest,

@@ -25,7 +25,7 @@ namespace blink {
 class TestPerformance : public Performance {
  public:
   explicit TestPerformance(ScriptState* script_state)
-      : Performance(TimeTicks(),
+      : Performance(base::TimeTicks(),
                     ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
   ~TestPerformance() override = default;

@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-namespace base {
-class PowerMonitor;
-}  // namespace base
-
 namespace web {
 class CookieNotificationBridge;
 class ServiceManagerContext;
@@ -68,7 +64,6 @@ class WebMainLoop {
   // WebMainLoop but still need to be destroyed in correct order so use
   // ScopedClosureRunner.
   base::ScopedClosureRunner destroy_task_executor_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
   base::ScopedClosureRunner destroy_network_change_notifier_;
 
   // Destroy parts_ before main_message_loop_ (required) and before other

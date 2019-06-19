@@ -705,13 +705,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
   GURL url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_srcdoc_frame.html"));
   NavigationHandleObserver observer(shell()->web_contents(),
-                                    GURL(kAboutSrcDocURL));
+                                    GURL("about:srcdoc"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_error());
-  EXPECT_EQ(GURL(kAboutSrcDocURL), observer.last_committed_url());
+  EXPECT_TRUE(observer.last_committed_url().IsAboutSrcdoc());
 }
 
 // Ensure that the IsSameDocument() method on NavigationHandle behaves

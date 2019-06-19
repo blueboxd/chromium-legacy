@@ -16,13 +16,13 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
@@ -76,7 +76,7 @@ void LogAudioProcesingProperties(
       bool_to_string(properties.goog_experimental_auto_gain_control),
       bool_to_string(base::FeatureList::IsEnabled(features::kWebRtcHybridAgc)));
 
-  WebRtcLogMessage(str);
+  blink::WebRtcLogMessage(str);
 }
 }  // namespace
 
@@ -139,8 +139,9 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   // to initialize the audio source.
   if (!allow_invalid_render_frame_id_for_testing_ &&
       !RenderFrameImpl::FromRoutingID(consumer_render_frame_id_)) {
-    WebRtcLogMessage("ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
-                     " because the render frame does not exist.");
+    blink::WebRtcLogMessage(
+        "ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
+        " because the render frame does not exist.");
     return false;
   }
 
@@ -151,7 +152,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       consumer_render_frame_id_, device().input.channel_layout(),
       device().input.sample_rate(), device().input.frames_per_buffer(),
       device().session_id, device().input.effects());
-  WebRtcLogMessage(str);
+  blink::WebRtcLogMessage(str);
   DVLOG(1) << str;
 
   LogAudioProcesingProperties(audio_processing_properties_);
@@ -198,7 +199,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   WebRtcAudioDeviceImpl* const rtc_audio_device =
       pc_factory_->GetWebRtcAudioDevice();
   if (!rtc_audio_device) {
-    WebRtcLogMessage(
+    blink::WebRtcLogMessage(
         "ProcessedLocalAudioSource::EnsureSourceIsStarted() fails"
         " because there is no WebRtcAudioDeviceImpl instance.");
     return false;
@@ -228,7 +229,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       channel_layout != media::CHANNEL_LAYOUT_STEREO &&
       channel_layout != media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC &&
       channel_layout != media::CHANNEL_LAYOUT_DISCRETE) {
-    WebRtcLogMessage(base::StringPrintf(
+    blink::WebRtcLogMessage(base::StringPrintf(
         "ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
         " because the input channel layout (%d) is not supported.",
         static_cast<int>(channel_layout)));
@@ -278,12 +279,12 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       source_params.processing->settings.automatic_gain_control =
           media::AutomaticGainControlType::kHybridExperimental;
     }
-    WebRtcLogMessage(base::StringPrintf(
+    blink::WebRtcLogMessage(base::StringPrintf(
         "Using APM in audio process; settings: %s",
         source_params.processing->settings.ToString().c_str()));
 
   } else {
-    WebRtcLogMessage("Using APM in renderer process.");
+    blink::WebRtcLogMessage("Using APM in renderer process.");
     audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
         audio_processing_properties_, rtc_audio_device);
     params.set_frames_per_buffer(GetBufferSize(device().input.sample_rate()));
@@ -380,7 +381,8 @@ void ProcessedLocalAudioSource::Capture(const media::AudioBus* audio_bus,
 }
 
 void ProcessedLocalAudioSource::OnCaptureError(const std::string& message) {
-  WebRtcLogMessage("ProcessedLocalAudioSource::OnCaptureError: " + message);
+  blink::WebRtcLogMessage("ProcessedLocalAudioSource::OnCaptureError: " +
+                          message);
   StopSourceOnError(message);
 }
 

@@ -247,8 +247,8 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 }
 
 void OAuth2TokenService::Fetcher::Start() {
-  fetcher_.reset(oauth2_token_service_->CreateAccessTokenFetcher(
-      account_id_, url_loader_factory_, this));
+  fetcher_ = oauth2_token_service_->CreateAccessTokenFetcher(
+      account_id_, url_loader_factory_, this);
   DCHECK(fetcher_);
 
   // Stop the timer before starting the fetch, as defense in depth against the
@@ -567,7 +567,8 @@ void OAuth2TokenService::FetchOAuth2Token(
                               client_secret, scopes, request->AsWeakPtr());
 }
 
-OAuth2AccessTokenFetcher* OAuth2TokenService::CreateAccessTokenFetcher(
+std::unique_ptr<OAuth2AccessTokenFetcher>
+OAuth2TokenService::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {

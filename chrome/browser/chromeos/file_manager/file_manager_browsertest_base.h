@@ -63,6 +63,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   virtual bool GetEnableMyFilesVolume() const;
   virtual bool GetEnableDocumentsProvider() const;
   virtual bool GetEnableArc() const;
+  virtual bool GetEnableFormatDialog() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
@@ -91,6 +92,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires Android documents providers.
   bool IsDocumentsProviderTest() const { return GetEnableDocumentsProvider(); }
+
+  // Returns true if the test requires the FormatDialog feature enabled.
+  bool IsFormatDialogTest() const { return GetEnableFormatDialog(); }
 
   // Returns true if the test requires ARC++.
   bool IsArcTest() const { return GetEnableArc(); }

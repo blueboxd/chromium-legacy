@@ -109,7 +109,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream& os,
 
 // When compiling in TimeDelta-based mode, AnimationTimeDelta is equivalent to
 // base::TimeDelta.
-using AnimationTimeDelta = TimeDelta;
+using AnimationTimeDelta = base::TimeDelta;
 
 #endif
 

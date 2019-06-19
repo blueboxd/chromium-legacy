@@ -43,8 +43,8 @@ function createRecord(recordType, mediaType, data) {
   return record;
 }
 
-function createNFCPushOptions(target, timeout, ignoreRead) {
-  return { target, timeout, ignoreRead };
+function createNFCPushOptions(target, timeout, ignoreRead, compatibility) {
+  return { target, timeout, ignoreRead, compatibility};
 }
 
 function createNFCReaderOptions(url, recordType, mediaType, compatibility) {
@@ -220,6 +220,11 @@ function assertNFCPushOptionsEqual(provided, received) {
     assert_equals(toMojoNFCPushTarget(provided.target), received.target);
   else
     assert_equals(received.target, device.mojom.NFCPushTarget.ANY);
+
+  if (provided.compatibility !== undefined)
+    assert_equals(toMojoNDEFCompatibility(provided.compatibility), received.compatibility);
+  else
+    assert_equals(received.compatibility, device.mojom.NDEFCompatibility.NFC_FORUM);
 }
 
 // Compares NFCReaderOptions structures that were provided to API and

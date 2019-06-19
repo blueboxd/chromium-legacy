@@ -654,6 +654,11 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       // in the "succeeding" flow, so verify here, too.
       chromeos::DeviceOAuth2TokenService* token_service =
           chromeos::DeviceOAuth2TokenServiceFactory::Get();
+
+      // For the refresh token for the robot account to be visible, the robot
+      // account ID must not be empty.
+      token_service->set_robot_account_id_for_testing(CoreAccountId("dummy"));
+
       EXPECT_TRUE(token_service->RefreshTokenIsAvailable(
           token_service->GetRobotAccountId()));
       EXPECT_EQ(device_policy_->GetBlob(),

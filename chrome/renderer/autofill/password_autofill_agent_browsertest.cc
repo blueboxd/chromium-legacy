@@ -47,9 +47,9 @@
 #include "third_party/blink/public/web/win/web_font_rendering.h"
 #endif
 
-using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
+using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;

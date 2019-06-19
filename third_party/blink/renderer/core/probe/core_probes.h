@@ -56,13 +56,13 @@ class CORE_EXPORT ProbeBase {
   STACK_ALLOCATED();
 
  public:
-  TimeTicks CaptureStartTime() const;
-  TimeTicks CaptureEndTime() const;
-  TimeDelta Duration() const;
+  base::TimeTicks CaptureStartTime() const;
+  base::TimeTicks CaptureEndTime() const;
+  base::TimeDelta Duration() const;
 
  private:
-  mutable TimeTicks start_time_;
-  mutable TimeTicks end_time_;
+  mutable base::TimeTicks start_time_;
+  mutable base::TimeTicks end_time_;
 };
 
 class CORE_EXPORT AsyncTask {

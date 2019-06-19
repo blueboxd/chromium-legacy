@@ -130,7 +130,7 @@ std::string GetCssColor(ClosedCaptionColor caption_color) {
   }
 }
 
-CaptionStyle InitializeFromSystemSettings() {
+base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   DCHECK_GE(base::win::GetVersion(), base::win::Version::WIN10);
   DCHECK(base::FeatureList::IsEnabled(features::kSystemCaptionStyle));
 
@@ -142,7 +142,7 @@ CaptionStyle InitializeFromSystemSettings() {
   if (!can_use_scoped_hstring) {
     DLOG(ERROR) << "Failed loading functions from combase.dll";
     LogCapStyleWinError(__LINE__, E_FAIL);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   base::win::ScopedHString closed_caption_properties_string =
@@ -157,7 +157,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to Get ActivationFactory for ClosedCaptionProperties"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   ClosedCaptionSize font_size = ClosedCaptionSize_Default;
@@ -166,7 +166,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to retrieve Font Size"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   ClosedCaptionEdgeEffect edge_effect = ClosedCaptionEdgeEffect_Default;
@@ -175,7 +175,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to retrieve Font Effect"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   ClosedCaptionStyle font_family = ClosedCaptionStyle_Default;
@@ -184,7 +184,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to retrieve Font Family"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   ClosedCaptionColor font_color = ClosedCaptionColor_Default;
@@ -193,7 +193,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to retrieve Font Color"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   ClosedCaptionColor background_color = ClosedCaptionColor_Default;
@@ -203,7 +203,7 @@ CaptionStyle InitializeFromSystemSettings() {
     DLOG(ERROR) << "Failed to retrieve Background Color"
                 << ", HRESULT: 0x" << std::hex << hr;
     LogCapStyleWinError(__LINE__, hr);
-    return CaptionStyle();
+    return base::nullopt;
   }
 
   CaptionStyle caption_style;
@@ -219,15 +219,14 @@ CaptionStyle InitializeFromSystemSettings() {
 
 }  // namespace
 
-CaptionStyle CaptionStyle::FromSystemSettings() {
-  CaptionStyle style;
+base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
   if (base::win::GetVersion() >= base::win::Version::WIN10 &&
       base::FeatureList::IsEnabled(features::kSystemCaptionStyle)) {
-    style = InitializeFromSystemSettings();
+    return InitializeFromSystemSettings();
   }
   // Return default CaptionStyle for pre Win10 versions since system settings
   // don't allow caption styling.
-  return style;
+  return base::nullopt;
 }
 
 }  // namespace ui

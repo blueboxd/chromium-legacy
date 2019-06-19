@@ -2145,26 +2145,16 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       builder.SetAdjoiningFloatTypes(container_builder_.AdjoiningFloatTypes());
   }
 
-  LayoutUnit space_available;
   if (ConstraintSpace().HasBlockFragmentation()) {
-    space_available = ConstraintSpace().FragmentainerSpaceAtBfcStart();
-    // If a block establishes a new formatting context we must know our
-    // position in the formatting context, and are able to adjust the
+    LayoutUnit new_bfc_block_offset;
+    // If a block establishes a new formatting context, we must know our
+    // position in the formatting context, to be able to adjust the
     // fragmentation line.
     if (is_new_fc)
-      space_available -= child_data.bfc_offset_estimate.block_offset;
-
-    // The policy regarding collapsing block-start margin with the fragmentainer
-    // block-start is the same throughout the entire fragmentainer (although it
-    // really only matters at the beginning of each fragmentainer, we don't need
-    // to bother to check whether we're actually at the start).
-    builder.SetSeparateLeadingFragmentainerMargins(
-        ConstraintSpace().HasSeparateLeadingFragmentainerMargins());
-    builder.SetFragmentainerBlockSize(
-        ConstraintSpace().FragmentainerBlockSize());
-    builder.SetFragmentainerSpaceAtBfcStart(space_available);
-    builder.SetFragmentationType(ConstraintSpace().BlockFragmentationType());
+      new_bfc_block_offset = child_data.bfc_offset_estimate.block_offset;
+    SetupFragmentation(ConstraintSpace(), new_bfc_block_offset, &builder);
   }
+
   return builder.ToConstraintSpace();
 }
 

@@ -2182,9 +2182,14 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
 
-      configure_counter_value_ = pending_counter_value_;
-      configure_counter_value_is_extended_ = pending_counter_value_is_extended_;
-      pending_counter_value_ = 0;
+      if (pending_counter_value_) {
+        DCHECK(!configure_counter_value_);
+        configure_counter_value_ = pending_counter_value_;
+        configure_counter_value_is_extended_ =
+            pending_counter_value_is_extended_;
+        pending_counter_value_is_extended_ = 0;
+        pending_counter_value_ = 0;
+      }
 
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make

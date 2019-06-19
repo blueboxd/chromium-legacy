@@ -426,9 +426,7 @@ void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
 void SessionControllerImpl::CanSwitchActiveUser(
     CanSwitchActiveUserCallback callback) {
   // Cancel overview mode when switching user profiles.
-  OverviewController* controller = Shell::Get()->overview_controller();
-  if (controller->InOverviewSession())
-    controller->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
 
   ash::Shell::Get()
       ->screen_switch_check_controller()

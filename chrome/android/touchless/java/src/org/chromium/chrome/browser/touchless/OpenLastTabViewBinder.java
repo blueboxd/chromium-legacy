@@ -23,8 +23,6 @@ class OpenLastTabViewBinder {
             view.setTimestamp(model.get(OpenLastTabProperties.OPEN_LAST_TAB_TIMESTAMP));
         } else if (propertyKey == OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS) {
             view.setLoadSuccess(model.get(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS));
-        } else if (propertyKey == OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH) {
-            view.setFirstLaunched(model.get(OpenLastTabProperties.OPEN_LAST_TAB_FIRST_LAUNCH));
         } else if (propertyKey == OpenLastTabProperties.ON_FOCUS_CALLBACK) {
             view.setOnFocusCallback(model.get(OpenLastTabProperties.ON_FOCUS_CALLBACK));
         } else if (propertyKey == OpenLastTabProperties.SHOULD_FOCUS_VIEW) {

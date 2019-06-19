@@ -115,7 +115,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           onEndSession: onEndSession,
           supportedSessionTypes: ['immersive-vr']
         });
-        document.querySelector('header').appendChild(xrButton.domElement);
+        xrButton.addToHeader();
 
         if (navigator.xr) {
           const mode = 'inline';

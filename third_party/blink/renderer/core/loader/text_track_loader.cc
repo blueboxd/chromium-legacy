@@ -97,7 +97,7 @@ void TextTrackLoader::NotifyFinished(Resource* resource) {
   }
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   CancelLoad();
 }
@@ -131,14 +131,14 @@ void TextTrackLoader::NewCuesParsed() {
     return;
 
   new_cues_available_ = true;
-  cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void TextTrackLoader::FileFailedToParse() {
   state_ = kFailed;
 
   if (!cue_load_timer_.IsActive())
-    cue_load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    cue_load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   CancelLoad();
 }

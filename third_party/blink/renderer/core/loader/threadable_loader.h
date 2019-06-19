@@ -121,7 +121,7 @@ class CORE_EXPORT ThreadableLoader final
   // time the request started.
   //
   // Passing a timeout of zero means there should be no timeout.
-  void SetTimeout(const TimeDelta& timeout);
+  void SetTimeout(const base::TimeDelta& timeout);
 
   void Cancel();
 
@@ -213,7 +213,7 @@ class CORE_EXPORT ThreadableLoader final
   Member<ExecutionContext> execution_context_;
   Member<ResourceFetcher> resource_fetcher_;
 
-  TimeDelta timeout_;
+  base::TimeDelta timeout_;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and
   // m_securityOrigin. In such a case, build a ResourceLoaderOptions with
   // up-to-date values from them and this variable, and use it.
@@ -256,7 +256,8 @@ class CORE_EXPORT ThreadableLoader final
   HTTPHeaderMap request_headers_;
 
   TaskRunnerTimer<ThreadableLoader> timeout_timer_;
-  TimeTicks request_started_;  // Time an asynchronous fetch request is started
+  base::TimeTicks
+      request_started_;  // Time an asynchronous fetch request is started
 
   // Max number of times that this ThreadableLoader can follow.
   int redirect_limit_;

@@ -10,7 +10,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,11 +22,7 @@ import org.chromium.chrome.touchless.R;
  * View for the button to open the last tab.
  */
 // TODO(crbug.com/948858): Add render tests for this view.
-public class OpenLastTabView extends FrameLayout {
-    private LinearLayout mPlaceholder;
-    private TextView mPlaceholderText;
-
-    private LinearLayout mLastTabView;
+public class OpenLastTabView extends LinearLayout {
     private ImageView mIconView;
     private TextView mTitleText;
     private TextView mTimestampText;
@@ -43,35 +38,17 @@ public class OpenLastTabView extends FrameLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mPlaceholder = findViewById(R.id.placeholder);
-        mPlaceholderText = findViewById(R.id.placeholder_text);
-
-        mLastTabView = findViewById(R.id.open_last_tab);
         mIconView = findViewById(R.id.favicon);
         mTitleText = findViewById(R.id.title);
         mTimestampText = findViewById(R.id.timestamp);
     }
 
     void setLoadSuccess(boolean loadSuccess) {
-        this.setVisibility(View.VISIBLE);
-
-        if (loadSuccess) {
-            mPlaceholder.setVisibility(View.GONE);
-            mLastTabView.setVisibility(View.VISIBLE);
-        } else {
-            mLastTabView.setVisibility(View.GONE);
-            mPlaceholder.setVisibility(View.VISIBLE);
-        }
-    }
-
-    void setFirstLaunched(boolean firstLaunched) {
-        if (firstLaunched) {
-            mPlaceholderText.setText(R.string.open_last_tab_placeholder_first_launch);
-        }
+        setVisibility(loadSuccess ? View.VISIBLE : View.GONE);
     }
 
     void setOpenLastTabOnClickListener(OnClickListener onClickListener) {
-        mLastTabView.setOnClickListener(onClickListener);
+        setOnClickListener(onClickListener);
     }
 
     void setFavicon(Bitmap favicon) {
@@ -87,7 +64,7 @@ public class OpenLastTabView extends FrameLayout {
     }
 
     void setOnFocusCallback(Runnable callback) {
-        mLastTabView.setOnFocusChangeListener((View view, boolean hasFocus) -> {
+        setOnFocusChangeListener((View view, boolean hasFocus) -> {
             if (hasFocus) {
                 callback.run();
             }
@@ -96,7 +73,7 @@ public class OpenLastTabView extends FrameLayout {
 
     void triggerRequestFocus() {
         if (mAsyncFocusDelegate != null) {
-            mAsyncFocusDelegate.onResult(mLastTabView);
+            mAsyncFocusDelegate.onResult(this);
         }
     }
 
@@ -105,6 +82,6 @@ public class OpenLastTabView extends FrameLayout {
     }
 
     void setContextMenuDelegate(ContextMenuManager.Delegate delegate) {
-        ContextMenuManager.registerViewForTouchlessContextMenu(mLastTabView, delegate);
+        ContextMenuManager.registerViewForTouchlessContextMenu(this, delegate);
     }
 }

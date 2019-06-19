@@ -96,7 +96,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
     return;
 
   had_user_input_before_provisional_first_meaningful_paint_ = had_user_input_;
-  provisional_first_meaningful_paint_swap_ = TimeTicks();
+  provisional_first_meaningful_paint_swap_ = base::TimeTicks();
   RegisterNotifySwapTime(PaintEvent::kProvisionalFirstMeaningfulPaint);
 }
 
@@ -129,7 +129,7 @@ void FirstMeaningfulPaintDetector::OnNetwork2Quiet() {
   network2_quiet_reached_ = true;
 
   if (!provisional_first_meaningful_paint_.is_null()) {
-    TimeTicks first_meaningful_paint2_quiet_swap;
+    base::TimeTicks first_meaningful_paint2_quiet_swap;
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     if (provisional_first_meaningful_paint_ <
         paint_timing_->FirstContentfulPaintRendered()) {
@@ -256,14 +256,14 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
 }
 
 void FirstMeaningfulPaintDetector::NotifyFirstContentfulPaint(
-    TimeTicks swap_stamp) {
+    base::TimeTicks swap_stamp) {
   if (defer_first_meaningful_paint_ != kDeferFirstContentfulPaintNotSet)
     return;
   SetFirstMeaningfulPaint(swap_stamp);
 }
 
 void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
-    TimeTicks swap_stamp) {
+    base::TimeTicks swap_stamp) {
   DCHECK(paint_timing_->FirstMeaningfulPaint().is_null());
   DCHECK(!swap_stamp.is_null());
   DCHECK(network2_quiet_reached_);

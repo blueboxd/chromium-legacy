@@ -145,9 +145,9 @@ base::string16 Accelerator::GetShortcutText() const {
   base::string16 shortcut;
 
 #if defined(OS_MACOSX)
-  shortcut = KeyCodeToMacSymbol(key_code_);
+  shortcut = KeyCodeToMacSymbol();
 #else
-  shortcut = KeyCodeToName(key_code_);
+  shortcut = KeyCodeToName();
 #endif
 
   if (shortcut.empty()) {
@@ -227,54 +227,9 @@ base::string16 Accelerator::GetShortcutText() const {
   return shortcut;
 }
 
-base::string16 Accelerator::ApplyLongFormModifiers(
-    base::string16 shortcut) const {
-  if (IsShiftDown())
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_SHIFT_KEY);
-
-  // Note that we use 'else-if' in order to avoid using Ctrl+Alt as a shortcut.
-  // See http://blogs.msdn.com/oldnewthing/archive/2004/03/29/101121.aspx for
-  // more information.
-  if (IsCtrlDown())
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_CTRL_KEY);
-  else if (IsAltDown())
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_ALT_KEY);
-
-  if (IsCmdDown()) {
 #if defined(OS_MACOSX)
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_COMMAND_KEY);
-#elif defined(OS_CHROMEOS)
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_SEARCH_KEY);
-#elif defined(OS_WIN)
-    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_WINDOWS_KEY);
-#else
-    NOTREACHED();
-#endif
-  }
-
-  return shortcut;
-}
-
-base::string16 Accelerator::ApplyShortFormModifiers(
-    base::string16 shortcut) const {
-  const base::char16 kCommandSymbol[] = {0x2318, 0};
-  const base::char16 kCtrlSymbol[] = {0x2303, 0};
-  const base::char16 kShiftSymbol[] = {0x21e7, 0};
-  const base::char16 kOptionSymbol[] = {0x2325, 0};
-  const base::char16 kNoSymbol[] = {0};
-
-  std::vector<base::string16> parts;
-  parts.push_back(base::string16(IsCtrlDown() ? kCtrlSymbol : kNoSymbol));
-  parts.push_back(base::string16(IsAltDown() ? kOptionSymbol : kNoSymbol));
-  parts.push_back(base::string16(IsShiftDown() ? kShiftSymbol : kNoSymbol));
-  parts.push_back(base::string16(IsCmdDown() ? kCommandSymbol : kNoSymbol));
-  parts.push_back(shortcut);
-  return base::StrCat(parts);
-}
-
-#if defined(OS_MACOSX)
-base::string16 Accelerator::KeyCodeToMacSymbol(KeyboardCode key_code) const {
-  switch (key_code) {
+base::string16 Accelerator::KeyCodeToMacSymbol() const {
+  switch (key_code_) {
     case VKEY_CAPITAL:
       return base::string16({0x21ea, 0});
     case VKEY_RETURN:
@@ -305,12 +260,12 @@ base::string16 Accelerator::KeyCodeToMacSymbol(KeyboardCode key_code) const {
     // "Space" and some other keys are written out; fall back to KeyCodeToName()
     // for those (and any other unhandled keys).
     default:
-      return KeyCodeToName(key_code);
+      return KeyCodeToName();
   }
 }
 #endif  // OS_MACOSX
 
-base::string16 Accelerator::KeyCodeToName(KeyboardCode key_code) const {
+base::string16 Accelerator::KeyCodeToName() const {
   int string_id = 0;
   switch (key_code_) {
     case VKEY_TAB:
@@ -389,6 +344,51 @@ base::string16 Accelerator::KeyCodeToName(KeyboardCode key_code) const {
       break;
   }
   return string_id ? l10n_util::GetStringUTF16(string_id) : base::string16();
+}
+
+base::string16 Accelerator::ApplyLongFormModifiers(
+    base::string16 shortcut) const {
+  if (IsShiftDown())
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_SHIFT_KEY);
+
+  // Note that we use 'else-if' in order to avoid using Ctrl+Alt as a shortcut.
+  // See http://blogs.msdn.com/oldnewthing/archive/2004/03/29/101121.aspx for
+  // more information.
+  if (IsCtrlDown())
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_CTRL_KEY);
+  else if (IsAltDown())
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_ALT_KEY);
+
+  if (IsCmdDown()) {
+#if defined(OS_MACOSX)
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_COMMAND_KEY);
+#elif defined(OS_CHROMEOS)
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_SEARCH_KEY);
+#elif defined(OS_WIN)
+    shortcut = ApplyModifierToAcceleratorString(shortcut, IDS_APP_WINDOWS_KEY);
+#else
+    NOTREACHED();
+#endif
+  }
+
+  return shortcut;
+}
+
+base::string16 Accelerator::ApplyShortFormModifiers(
+    base::string16 shortcut) const {
+  const base::char16 kCommandSymbol[] = {0x2318, 0};
+  const base::char16 kCtrlSymbol[] = {0x2303, 0};
+  const base::char16 kShiftSymbol[] = {0x21e7, 0};
+  const base::char16 kOptionSymbol[] = {0x2325, 0};
+  const base::char16 kNoSymbol[] = {0};
+
+  std::vector<base::string16> parts;
+  parts.push_back(base::string16(IsCtrlDown() ? kCtrlSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsAltDown() ? kOptionSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsShiftDown() ? kShiftSymbol : kNoSymbol));
+  parts.push_back(base::string16(IsCmdDown() ? kCommandSymbol : kNoSymbol));
+  parts.push_back(shortcut);
+  return base::StrCat(parts);
 }
 
 }  // namespace ui

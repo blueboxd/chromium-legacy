@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
@@ -31,6 +30,7 @@
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -431,7 +431,7 @@ void RTCVideoDecoderAdapter::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   webrtc::VideoFrame rtc_frame =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
-              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
+              new rtc::RefCountedObject<blink::WebRtcVideoFrameAdapter>(
                   std::move(frame)))
           .set_timestamp_rtp(timestamp.InMicroseconds())
           .set_timestamp_us(0)

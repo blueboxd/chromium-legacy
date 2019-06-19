@@ -232,7 +232,7 @@ void TestThatReloadIsStartedThenServeReload(
       WrappedResourceResponse(resource_response));
   image_resource->Loader()->DidReceiveData(data, kDataLength);
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kDataLength, kDataLength, kDataLength, false,
+      base::TimeTicks(), kDataLength, kDataLength, kDataLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
 
   // Checks |imageResource|'s status after reloading.
@@ -289,7 +289,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
       reinterpret_cast<const char*>(kJpegImage),
       kJpegImageSubrangeWithDimensionsLength);
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kJpegImageSubrangeWithDimensionsLength,
+      base::TimeTicks(), kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength,
       kJpegImageSubrangeWithDimensionsLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
@@ -333,8 +333,9 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
   image_resource->Loader()->DidReceiveData(
       reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage),
-      false, std::vector<network::cors::PreflightTimingInfo>());
+      base::TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage),
+      sizeof(kJpegImage), false,
+      std::vector<network::cors::PreflightTimingInfo>());
 
   // Checks that |imageResource| is successfully loaded,
   // showing a non-placeholder image.
@@ -432,7 +433,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // This part finishes. The image is created, callbacks are sent, and the data
   // buffer is cleared.
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
   EXPECT_TRUE(image_resource->ResourceBuffer());
   EXPECT_FALSE(image_resource->ErrorOccurred());
@@ -478,7 +479,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
                              sizeof(kJpegImage));
   image_resource->AppendData(kBoundary, strlen(kBoundary));
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
   EXPECT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
@@ -644,285 +645,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
 }
 
-class ImageResourceReloadTest
-    : public testing::TestWithParam<bool>,
-      private ScopedClientPlaceholdersForServerLoFiForTest {
- public:
-  ImageResourceReloadTest()
-      : ScopedClientPlaceholdersForServerLoFiForTest(GetParam()) {}
-  ~ImageResourceReloadTest() override = default;
-
-  bool IsClientPlaceholderForServerLoFiEnabled() const { return GetParam(); }
-
-  void SetUp() override {
-  }
-};
-
-TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->NotifyStartLoad();
-
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  // Send the image response.
-  ResourceResponse resource_response(NullURL());
-  resource_response.SetMimeType("image/jpeg");
-  resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
-                                       "empty-image");
-
-  image_resource->ResponseReceived(resource_response);
-  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
-                             sizeof(kJpegImage));
-  image_resource->FinishForTest();
-  EXPECT_FALSE(image_resource->ErrorOccurred());
-  ASSERT_TRUE(image_resource->GetContent()->HasImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
-  EXPECT_EQ(2, observer->ImageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnLastImageChanged());
-  // The observer should have been notified that the image load completed.
-  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnImageNotifyFinished());
-  EXPECT_NE(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_EQ(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->ShouldShowPlaceholder());
-  EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
-  EXPECT_EQ(kJpegImageHeight,
-            image_resource->GetContent()->GetImage()->height());
-
-  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
-  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
-                                                 Resource::kReloadAlways);
-
-  EXPECT_EQ(3, observer->ImageChangedCount());
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource,
-                                         image_resource->GetContent(),
-                                         observer.get(), false);
-}
-
-TEST_P(ImageResourceReloadTest,
-       ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
-  image_resource->NotifyStartLoad();
-
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  // Send the image response.
-  ResourceResponse resource_response(NullURL());
-  resource_response.SetMimeType("image/jpeg");
-  resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHttpHeaderField("chrome-proxy", "q=low");
-
-  image_resource->ResponseReceived(resource_response);
-  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
-                             sizeof(kJpegImage));
-  image_resource->FinishForTest();
-  EXPECT_FALSE(image_resource->ErrorOccurred());
-  ASSERT_TRUE(image_resource->GetContent()->HasImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
-  EXPECT_EQ(2, observer->ImageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnLastImageChanged());
-  // The observer should have been notified that the image load completed.
-  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnImageNotifyFinished());
-  EXPECT_NE(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_EQ(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->ShouldShowPlaceholder());
-  EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
-  EXPECT_EQ(kJpegImageHeight,
-            image_resource->GetContent()->GetImage()->height());
-
-  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
-  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
-                                                 Resource::kReloadAlways);
-
-  EXPECT_EQ(3, observer->ImageChangedCount());
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource,
-                                         image_resource->GetContent(),
-                                         observer.get(), false);
-}
-
-TEST_P(ImageResourceReloadTest,
-       ReloadIfLoFiOrPlaceholderAfterFinishedWithoutLoFiHeaders) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceRequest request(test_url);
-  request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
-  ImageResource* image_resource = ImageResource::Create(request);
-  image_resource->NotifyStartLoad();
-
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  // Send the image response, without any LoFi image response headers.
-  ResourceResponse resource_response(NullURL());
-  resource_response.SetMimeType("image/jpeg");
-  resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  image_resource->ResponseReceived(resource_response);
-  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
-                             sizeof(kJpegImage));
-  image_resource->FinishForTest();
-  EXPECT_FALSE(image_resource->ErrorOccurred());
-  ASSERT_TRUE(image_resource->GetContent()->HasImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
-  EXPECT_EQ(2, observer->ImageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnLastImageChanged());
-  // The observer should have been notified that the image load completed.
-  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnImageNotifyFinished());
-  EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
-  EXPECT_EQ(kJpegImageHeight,
-            image_resource->GetContent()->GetImage()->height());
-
-  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
-  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
-                                                 Resource::kReloadAlways);
-
-  // The image should not have been reloaded, since it didn't have the LoFi
-  // image response headers.
-  EXPECT_EQ(2, observer->ImageChangedCount());
-  EXPECT_TRUE(image_resource->IsLoaded());
-}
-
-TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-
-  ResourceRequest request = ResourceRequest(test_url);
-  request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
-  FetchParameters fetch_params(request);
-  ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
-  ImageResourceContent* content = image_resource->GetContent();
-
-  auto observer = std::make_unique<MockImageResourceObserver>(content);
-
-  // Send the image response.
-  ResourceResponse resource_response(NullURL());
-  resource_response.SetMimeType("image/jpeg");
-  resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
-                                       "empty-image");
-
-  image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(resource_response));
-  image_resource->Loader()->DidReceiveData(
-      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-  image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage),
-      false, std::vector<network::cors::PreflightTimingInfo>());
-
-  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(image_resource, fetcher->CachedResource(test_url));
-
-  fetcher->ReloadLoFiImages();
-
-  EXPECT_EQ(3, observer->ImageChangedCount());
-
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource, content,
-                                         observer.get(), false);
-
-  GetMemoryCache()->Remove(image_resource);
-}
-
-TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderBeforeResponse) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-
-  ResourceRequest request(test_url);
-  request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
-  FetchParameters fetch_params(request);
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-
-  EXPECT_FALSE(image_resource->ErrorOccurred());
-  EXPECT_EQ(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->ShouldShowPlaceholder());
-
-  // Call reloadIfLoFiOrPlaceholderImage() while the image is still loading.
-  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
-                                                 Resource::kReloadAlways);
-
-  EXPECT_EQ(1, observer->ImageChangedCount());
-  EXPECT_EQ(0, observer->ImageWidthOnLastImageChanged());
-  // The observer should not have been notified of completion yet, since the
-  // image is still loading.
-  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
-
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource,
-                                         image_resource->GetContent(),
-                                         observer.get(), false);
-}
-
-TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-
-  ResourceRequest request(test_url);
-  request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
-  FetchParameters fetch_params(request);
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-
-  // Send the image response.
-  ResourceResponse resource_response(test_url);
-  resource_response.SetMimeType("image/jpeg");
-  resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
-                                       "empty-image");
-
-  image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(resource_response));
-  image_resource->Loader()->DidReceiveData(
-      reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
-
-  EXPECT_FALSE(image_resource->ErrorOccurred());
-  ASSERT_TRUE(image_resource->GetContent()->HasImage());
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
-  EXPECT_EQ(1, observer->ImageChangedCount());
-  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnLastImageChanged());
-  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(IsClientPlaceholderForServerLoFiEnabled(),
-            image_resource->ShouldShowPlaceholder());
-  EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
-  EXPECT_EQ(kJpegImageHeight,
-            image_resource->GetContent()->GetImage()->height());
-
-  // Call reloadIfLoFiOrPlaceholderImage() while the image is still loading.
-  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
-                                                 Resource::kReloadAlways);
-
-  EXPECT_EQ(2, observer->ImageChangedCount());
-  EXPECT_EQ(0, observer->ImageWidthOnLastImageChanged());
-  // The observer should not have been notified of completion yet, since the
-  // image is still loading.
-  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
-
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource,
-                                         image_resource->GetContent(),
-                                         observer.get(), false);
-}
-
-TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
+TEST(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
@@ -946,7 +669,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
                                          observer.get(), false);
 }
 
-TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
+TEST(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceFetcher* fetcher = CreateFetcher();
@@ -975,10 +698,6 @@ TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
   EXPECT_FALSE(placeholder_resource->ShouldShowPlaceholder());
   EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
 }
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         ImageResourceReloadTest,
-                         testing::Bool());
 
 TEST(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");
@@ -1326,7 +1045,7 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   EXPECT_EQ(0, observer->ImageChangedCount());
 
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), 0, 0, 0, false,
+      base::TimeTicks(), 0, 0, 0, false,
       std::vector<network::cors::PreflightTimingInfo>());
 
   EXPECT_EQ(ResourceStatus::kDecodeError, image_resource->GetStatus());
@@ -1372,7 +1091,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   EXPECT_EQ(0, observer->ImageChangedCount());
 
   image_resource->Loader()->DidFinishLoading(
-      TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
+      base::TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength,
       kJpegImageSubrangeWithoutDimensionsLength, false,
       std::vector<network::cors::PreflightTimingInfo>());
@@ -1601,7 +1320,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     EXPECT_EQ(0, observer->ImageChangedCount());
 
     image_resource->Loader()->DidFinishLoading(
-        TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
+        base::TimeTicks(), kJpegImageSubrangeWithoutDimensionsLength,
         kJpegImageSubrangeWithoutDimensionsLength,
         kJpegImageSubrangeWithoutDimensionsLength, false,
         std::vector<network::cors::PreflightTimingInfo>());
@@ -1744,8 +1463,9 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     image_resource->Loader()->DidReceiveData(
         reinterpret_cast<const char*>(kJpegImage), sizeof(kJpegImage));
     image_resource->Loader()->DidFinishLoading(
-        TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage), sizeof(kJpegImage),
-        false, std::vector<network::cors::PreflightTimingInfo>());
+        base::TimeTicks(), sizeof(kJpegImage), sizeof(kJpegImage),
+        sizeof(kJpegImage), false,
+        std::vector<network::cors::PreflightTimingInfo>());
 
     EXPECT_EQ(ResourceStatus::kCached, image_resource->GetStatus());
     EXPECT_EQ(sizeof(kJpegImage), image_resource->EncodedSize());

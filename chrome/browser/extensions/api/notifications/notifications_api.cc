@@ -603,11 +603,6 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
 
   SetResult(std::make_unique<base::Value>(notification_id));
 
-  // TODO(crbug.com/749402): Cap the length of notification Ids to a certain
-  // limit if the histogram indicates that this is safe to do.
-  UMA_HISTOGRAM_COUNTS_1000("Notifications.ExtensionNotificationIdLength",
-                            notification_id.size());
-
   // TODO(dewittj): Add more human-readable error strings if this fails.
   if (!CreateNotification(notification_id, &params_->options))
     return false;

@@ -926,7 +926,7 @@ void TabletModeController::FinishInitTabletMode() {
   const auto state = Shell::Get()->split_view_controller()->state();
   if (state == SplitViewState::kLeftSnapped ||
       state == SplitViewState::kRightSnapped) {
-    Shell::Get()->overview_controller()->ToggleOverview();
+    Shell::Get()->overview_controller()->StartOverview();
   }
 
   state_ = State::kInTabletMode;

@@ -41,7 +41,7 @@ class NullImageResourceInfo final
 
  private:
   const KURL& Url() const override { return url_; }
-  TimeTicks LoadResponseEnd() const override { return TimeTicks(); }
+  base::TimeTicks LoadResponseEnd() const override { return base::TimeTicks(); }
   bool IsSchedulingReload() const override { return false; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
@@ -655,7 +655,7 @@ const KURL& ImageResourceContent::Url() const {
   return info_->Url();
 }
 
-TimeTicks ImageResourceContent::LoadResponseEnd() const {
+base::TimeTicks ImageResourceContent::LoadResponseEnd() const {
   return info_->LoadResponseEnd();
 }
 

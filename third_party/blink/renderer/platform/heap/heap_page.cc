@@ -1467,7 +1467,6 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
       DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
 #endif
   }
-
   return start_of_gap == Payload();
 }
 
@@ -1696,6 +1695,7 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
     return nullptr;
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader(address));
+  DCHECK(header->IsValidOrZapped());
   if (header->IsFree())
     return nullptr;
   DCHECK_LT(0u, header->GcInfoIndex());

@@ -120,10 +120,10 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // The recording stops whenever the playback pauses or the page is unloaded.
 
   // The starting time of autoplaying muted video.
-  TimeTicks muted_video_autoplay_offscreen_start_time_;
+  base::TimeTicks muted_video_autoplay_offscreen_start_time_;
 
   // The duration an autoplaying muted video has been in offscreen.
-  TimeDelta muted_video_autoplay_offscreen_duration_;
+  base::TimeDelta muted_video_autoplay_offscreen_duration_;
 
   // Whether an autoplaying muted video is visible.
   bool is_visible_;
@@ -134,7 +134,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   Member<IntersectionObserver>
       muted_video_offscreen_duration_intersection_observer_;
 
-  TimeTicks load_start_time_;
+  base::TimeTicks load_start_time_;
 };
 
 }  // namespace blink

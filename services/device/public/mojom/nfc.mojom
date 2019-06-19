@@ -81,6 +81,9 @@ struct NFCPushOptions {
   // If the property is true, the push operation will suspend active watchers
   // until its completion.
   bool ignore_read;
+
+  // Defines the accepted kinds of NFC devices.
+  NDEFCompatibility compatibility;
 };
 
 struct NDEFRecordTypeFilter {
@@ -97,7 +100,7 @@ struct NFCReaderOptions {
   // Defines media type filtering constraint.
   string? media_type;
 
-  // Defines the accepted kind of NFC devices.
+  // Defines the accepted kinds of NFC devices.
   NDEFCompatibility compatibility;
 };
 

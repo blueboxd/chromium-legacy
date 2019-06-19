@@ -128,11 +128,11 @@ class ImagePaintTimingDetectorTest
         ->UpdateCandidate();
   }
 
-  TimeTicks LargestPaintStoredResult() {
+  base::TimeTicks LargestPaintStoredResult() {
     return GetPaintTimingDetector().largest_image_paint_time_;
   }
 
-  static constexpr TimeDelta kQuantumOfTime =
+  static constexpr base::TimeDelta kQuantumOfTime =
       base::TimeDelta::FromMilliseconds(10);
 
   void SimulatePassOfTime() {
@@ -209,7 +209,7 @@ class ImagePaintTimingDetectorTest
   std::string base_url_;
 };
 
-constexpr TimeDelta ImagePaintTimingDetectorTest::kQuantumOfTime;
+constexpr base::TimeDelta ImagePaintTimingDetectorTest::kQuantumOfTime;
 
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_NoImage) {
   SetBodyInnerHTML(R"HTML(
@@ -474,32 +474,34 @@ TEST_F(ImagePaintTimingDetectorTest,
   image->setAttribute("id", "target");
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
-  test_task_runner_->FastForwardBy(TimeDelta::FromSecondsD(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record;
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   // UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() moves time forward
   // kQuantumOfTime so we should take that into account.
-  EXPECT_EQ(record->paint_time,
-            base::TimeTicks() + TimeDelta::FromSecondsD(1) + kQuantumOfTime);
+  EXPECT_EQ(
+      record->paint_time,
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1) + kQuantumOfTime);
 
   GetDocument().getElementById("parent")->RemoveChild(image);
-  test_task_runner_->FastForwardBy(TimeDelta::FromSecondsD(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
-  test_task_runner_->FastForwardBy(TimeDelta::FromSecondsD(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
   // UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() moves time forward
   // kQuantumOfTime so we should take that into account.
-  EXPECT_EQ(record->paint_time,
-            base::TimeTicks() + TimeDelta::FromSecondsD(1) + kQuantumOfTime);
+  EXPECT_EQ(
+      record->paint_time,
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(1) + kQuantumOfTime);
 }
 
 // This is to prove that a swap time is assigned only to nodes of the frame who
@@ -535,7 +537,7 @@ TEST_F(ImagePaintTimingDetectorTest, MatchSwapTimeToNodesOfDifferentFrames) {
 
 TEST_F(ImagePaintTimingDetectorTest,
        LargestImagePaint_UpdateResultWhenLargestChanged) {
-  TimeTicks time1 = test_task_runner_->NowTicks();
+  base::TimeTicks time1 = test_task_runner_->NowTicks();
   SetBodyInnerHTML(R"HTML(
     <div id="parent">
       <img id="target1"></img>
@@ -544,15 +546,15 @@ TEST_F(ImagePaintTimingDetectorTest,
   )HTML");
   SetImageAndPaint("target1", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  TimeTicks time2 = test_task_runner_->NowTicks();
-  TimeTicks result1 = LargestPaintStoredResult();
+  base::TimeTicks time2 = test_task_runner_->NowTicks();
+  base::TimeTicks result1 = LargestPaintStoredResult();
   EXPECT_GE(result1, time1);
   EXPECT_GE(time2, result1);
 
   SetImageAndPaint("target2", 10, 10);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  TimeTicks time3 = test_task_runner_->NowTicks();
-  TimeTicks result2 = LargestPaintStoredResult();
+  base::TimeTicks time3 = test_task_runner_->NowTicks();
+  base::TimeTicks result2 = LargestPaintStoredResult();
   EXPECT_GE(result2, time2);
   EXPECT_GE(time3, result2);
 }

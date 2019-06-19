@@ -32,9 +32,10 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
         JNIEnv* env) = 0;
 
     // This method is called on the URLLoader thread (IO thread) if the
-    // result of calling OpenInputStream was null. |restarted| parameter
-    // is set to true if the request was restarted with a new loader.
-    virtual void OnInputStreamOpenFailed(bool* restarted) = 0;
+    // result of calling OpenInputStream was null.
+    // Returns true if the request was restarted with a new loader or
+    // was completed, false otherwise.
+    virtual bool OnInputStreamOpenFailed() = 0;
 
     virtual bool GetMimeType(JNIEnv* env,
                              const GURL& url,

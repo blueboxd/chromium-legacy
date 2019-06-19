@@ -45,6 +45,12 @@ inline bool FailOnError(int options) {
                            ServerCacheReplayer::kOptionFailOnInvalidJsonRecord);
 }
 
+// Determines whether replayer should fail if there is nothing to fill the cache
+// with.
+inline bool FailOnEmpty(int options) {
+  return static_cast<bool>(options & ServerCacheReplayer::kOptionFailOnEmpty);
+}
+
 // Checks the validity of a json value node.
 bool CheckNodeValidity(const base::Value* node,
                        const std::string& name,
@@ -154,43 +160,55 @@ bool PopulateCacheFromJsonRequestsNode(const base::Value& requests_node,
   return true;
 }
 
+struct QueryNode {
+  // Query URL.
+  std::string url = "";
+  // Value node with requests mapped with |url|.
+  const base::Value* node = nullptr;
+};
+
 // TODO(crbug/958125): Add the possibility to retrieve nodes with different
 // Query URLs.
 // Finds the Autofill server Query node in dictionary node. Gives nullptr if
-// cannot find the node or |domain_dict| is invalid.
-const base::Value* FindAutofillQueryNodeInDomainDict(
+// cannot find the node or |domain_dict| is invalid. The |domain_dict| has to
+// outlive any usage of the returned value node pointers.
+std::vector<QueryNode> FindAutofillQueryNodesInDomainDict(
     const base::Value& domain_dict) {
   if (!domain_dict.is_dict()) {
-    return nullptr;
+    return {};
   }
+  std::vector<QueryNode> nodes;
   for (const auto& pair : domain_dict.DictItems()) {
     if (pair.first.find("https://clients1.google.com/tbproxy/af/query") !=
         std::string::npos) {
-      return &pair.second;
+      nodes.push_back(QueryNode{pair.first, &pair.second});
     }
   }
-  return nullptr;
+  return nodes;
 }
 
 // Populates the cache mapping request keys to their corresponding compressed
 // response.
-bool PopulateCacheFromJSONFile(const base::FilePath& json_file_path,
-                               int options,
-                               ServerCache* cache_to_fill) {
+ServerCacheReplayer::Status PopulateCacheFromJSONFile(
+    const base::FilePath& json_file_path,
+    int options,
+    ServerCache* cache_to_fill) {
   // Read json file.
   std::string json_text;
   {
     if (!base::ReadFileToString(json_file_path, &json_text)) {
-      VLOG(1) << "Could not read json file: " << json_file_path;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          "Could not read json file: "};
     }
   }
 
   // Decompress the json text from gzip.
   std::string decompressed_json_text;
   if (!compression::GzipUncompress(json_text, &decompressed_json_text)) {
-    VLOG(1) << "Could not gzip decompress json in file: " << json_file_path;
-    return false;
+    return ServerCacheReplayer::Status{
+        ServerCacheReplayer::StatusCode::kBadRead,
+        "Could not gzip decompress json in file: "};
   }
 
   // Parse json text content to json value node.
@@ -201,35 +219,65 @@ bool PopulateCacheFromJSONFile(const base::FilePath& json_file_path,
             decompressed_json_text, JSONParserOptions::JSON_PARSE_RFC);
     if (value_with_error.error_code !=
         JSONReader::JsonParseError::JSON_NO_ERROR) {
-      VLOG(1) << "Could not load cache from json file " << json_file_path
-              << " because: " << value_with_error.error_message;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          base::StrCat({"Could not load cache from json file ",
+                        "because: ", value_with_error.error_message})};
     }
     if (value_with_error.value == base::nullopt) {
-      VLOG(1) << "JSON Reader could not give any node object from json file "
-              << json_file_path;
-      return false;
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadRead,
+          "JSON Reader could not give any node object from json file"};
     }
     root_node = std::move(value_with_error.value.value());
   }
 
-  // TODO(crbug/958136): It should tolerate a cache with no Queries.
-  // Get requests node and populate the cache.
   {
-    const base::Value* requests_node = FindAutofillQueryNodeInDomainDict(
-        *root_node.FindPath({"Requests", "clients1.google.com"}));
-    if (!CheckNodeValidity(requests_node,
-                           "Requests->clients1.google.com->https://"
-                           "clients1.google.com/tbproxy/af/query?",
-                           base::Value::Type::LIST)) {
-      return false;
+    const char* const domain = "clients1.google.com";
+    const base::Value* domain_node = root_node.FindPath({"Requests", domain});
+    if (domain_node == nullptr) {
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kEmpty,
+          base::StrCat({"there were no nodes with autofill query content in "
+                        "domain node \"",
+                        domain, "\""})};
     }
+    std::vector<QueryNode> query_nodes =
+        FindAutofillQueryNodesInDomainDict(*domain_node);
 
-    // Populate cache.
-    PopulateCacheFromJsonRequestsNode(*requests_node, options, cache_to_fill);
+    // Fill cache with the content of each Query node. There are 3 possible
+    // situations: (1) there is a single Query node that contains POST requests
+    // that share the same URL, (2) there is one Query node per GET request
+    // were each Query node only contains one request, and (3) a mix of (1) and
+    // (2). Exit early with false whenever there is an error parsing a node.
+    for (auto query_node : query_nodes) {
+      if (!CheckNodeValidity(query_node.node,
+                             "Requests->clients1.google.com->clients1.google."
+                             "com/tbproxy/af/query*",
+                             base::Value::Type::LIST)) {
+        return ServerCacheReplayer::Status{
+            ServerCacheReplayer::StatusCode::kBadNode,
+            "could not read node content for node with URL " + query_node.url};
+      }
+
+      // Populate cache from Query node content.
+      PopulateCacheFromJsonRequestsNode(*query_node.node, options,
+                                        cache_to_fill);
+      VLOG(1) << "Filled cache with " << query_node.node->GetList().size()
+              << " requests for Query node with URL: " << query_node.url;
+    }
   }
 
-  return true;
+  // Return error iff there are no Query nodes and replayer is set to fail on
+  // empty.
+  if (cache_to_fill->empty() && FailOnEmpty(options)) {
+    return ServerCacheReplayer::Status{
+        ServerCacheReplayer::StatusCode::kEmpty,
+        "there were no nodes with autofill query content for autofill server "
+        "domains in JSON"};
+  }
+
+  return ServerCacheReplayer::Status{ServerCacheReplayer::StatusCode::kOk, ""};
 }
 
 // Gets a hexadecimal representation of a string.
@@ -324,8 +372,9 @@ ServerCacheReplayer::ServerCacheReplayer(const base::FilePath& json_file_path,
   // Using CHECK is fine here since ServerCacheReplayer will only be used for
   // testing and we prefer the test to crash than being in an inconsistent state
   // when the cache could not be properly populated from the JSON file.
-  CHECK(PopulateCacheFromJSONFile(json_file_path, options, &cache_))
-      << "could not populate cache from invalid json";
+  ServerCacheReplayer::Status status =
+      PopulateCacheFromJSONFile(json_file_path, options, &cache_);
+  CHECK(status.Ok()) << status.message;
 }
 
 ServerCacheReplayer::ServerCacheReplayer(ServerCache server_cache)

@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -86,7 +86,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     Document* document = root->GetDocument();
     DCHECK(document);
     if (LocalFrameView* view = document->View())
-      view->GetJankTracker().NotifyInput(event);
+      view->GetLayoutShiftTracker().NotifyInput(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&

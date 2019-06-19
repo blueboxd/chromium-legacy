@@ -111,8 +111,8 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   void AdjustMenuListStyle(ComputedStyle&, Element*) const override;
   void AdjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
 
-  TimeDelta AnimationRepeatIntervalForProgressBar() const override;
-  TimeDelta AnimationDurationForProgressBar() const override;
+  base::TimeDelta AnimationRepeatIntervalForProgressBar() const override;
+  base::TimeDelta AnimationDurationForProgressBar() const override;
 
   // These methods define the padding for the MenuList's inner block.
   int PopupInternalPaddingStart(const ComputedStyle&) const override;
@@ -145,7 +145,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   int MenuListInternalPadding(const ComputedStyle&, int padding) const;
 
   static const RGBA32 kDefaultTapHighlightColor = 0x2e000000;  // 18% black.
-  static TimeDelta caret_blink_interval_;
+  static base::TimeDelta caret_blink_interval_;
 
   static unsigned active_selection_background_color_;
   static unsigned active_selection_foreground_color_;

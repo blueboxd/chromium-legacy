@@ -117,4 +117,20 @@ public interface AutocompleteCoordinator extends UrlFocusChangeListener, UrlText
      * Trigger autocomplete for the given query.
      */
     void startAutocompleteForQuery(String query);
+
+    /**
+     * Given a search query, this will attempt to see if the query appears to be portion of a
+     * properly formed URL.  If it appears to be a URL, this will return the fully qualified
+     * version (i.e. including the scheme, etc...).  If the query does not appear to be a URL,
+     * this will return null.
+     *
+     * @param query The query to be expanded into a fully qualified URL if appropriate.
+     * @return The fully qualified URL or null.
+     */
+    String qualifyPartialURLQuery(String query);
+
+    /**
+     * Sends a zero suggest request to the server in order to pre-populate the result cache.
+     */
+    void prefetchZeroSuggestResults();
 }

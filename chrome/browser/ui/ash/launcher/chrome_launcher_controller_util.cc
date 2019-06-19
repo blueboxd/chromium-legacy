@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 
+#include "base/stl_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -27,6 +29,17 @@ const extensions::Extension* GetExtensionForAppID(const std::string& app_id,
 AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const std::string& app_id,
     Profile* profile) {
+  // These file manager apps have a shelf presence, but can only be launched
+  // when provided a filename to open. Pinning them creates an item that does
+  // nothing.
+  const char* kUnpinnableAppIds[] = {
+      file_manager::kVideoPlayerAppId,
+      file_manager::kGalleryAppId,
+      file_manager::kAudioPlayerAppId,
+  };
+  if (base::Contains(kUnpinnableAppIds, app_id))
+    return AppListControllerDelegate::NO_PIN;
+
   const base::ListValue* pref =
       profile->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
   if (!pref)

@@ -17,21 +17,19 @@ void XRWorldInformation::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-HeapVector<Member<XRPlane>> XRWorldInformation::detectedPlanes(
-    bool& is_null) const {
+XRPlaneSet* XRWorldInformation::detectedPlanes() const {
   DVLOG(3) << __func__;
 
-  HeapVector<Member<XRPlane>> result;
+  HeapHashSet<Member<XRPlane>> result;
 
-  is_null = is_detected_planes_null_;
-  if (is_null)
-    return result;
+  if (is_detected_planes_null_)
+    return nullptr;
 
   for (auto& plane_id_and_plane : plane_ids_to_planes_) {
-    result.push_back(plane_id_and_plane.value);
+    result.insert(plane_id_and_plane.value);
   }
 
-  return result;
+  return MakeGarbageCollected<XRPlaneSet>(result);
 }
 
 void XRWorldInformation::ProcessPlaneInformation(

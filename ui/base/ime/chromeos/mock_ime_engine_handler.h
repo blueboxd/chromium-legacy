@@ -21,6 +21,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) MockIMEEngineHandler
   MockIMEEngineHandler();
   ~MockIMEEngineHandler() override;
 
+  // ui::IMEEngineHandlerInterface:
   void FocusIn(const InputContext& input_context) override;
   void FocusOut() override;
   void Enable(const std::string& component_id) override;

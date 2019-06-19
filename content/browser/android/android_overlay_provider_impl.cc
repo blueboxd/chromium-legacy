@@ -24,7 +24,7 @@ AndroidOverlayProviderImpl::AndroidOverlayProviderImpl() {}
 
 AndroidOverlayProviderImpl::~AndroidOverlayProviderImpl() {}
 
-bool AndroidOverlayProviderImpl::AreOverlaysSupported() const {
+bool AndroidOverlayProviderImpl::AreOverlaysSupported() {
   JNIEnv* env = AttachCurrentThread();
 
   return Java_AndroidOverlayProviderImpl_areOverlaysSupported(env);

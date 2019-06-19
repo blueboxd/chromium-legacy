@@ -128,7 +128,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-// TODO(crbug.com): Re-enable the test.
+// TODO(crbug.com/929967): Re-enable the test.
 - (void)DISABLED_testSignInDisconnectFromChromeManaged {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(

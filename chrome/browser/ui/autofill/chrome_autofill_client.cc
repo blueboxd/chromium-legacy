@@ -366,7 +366,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
 #endif
 }
 
-void ChromeAutofillClient::CreditCardUploadCompleted() {
+void ChromeAutofillClient::CreditCardUploadCompleted(bool card_saved) {
 #if defined(OS_ANDROID)
   // TODO(hozhng@): Placeholder for Clank Notification.
 #else
@@ -376,10 +376,11 @@ void ChromeAutofillClient::CreditCardUploadCompleted() {
   }
 
   // Do lazy initialization of SaveCardBubbleControllerImpl.
-  // TODO(crbug.com/964127): Add success branch.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
-  autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents())
-      ->UpdateIconForSaveCardFailure();
+  SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
+  card_saved ? controller->UpdateIconForSaveCardSuccess()
+             : controller->UpdateIconForSaveCardFailure();
 #endif
 }
 

@@ -285,7 +285,7 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
 
   ScrollbarThemeOverlayMock& theme =
       (ScrollbarThemeOverlayMock&)scrollable_area->GetPageScrollbarTheme();
-  theme.SetOverlayScrollbarFadeOutDelay(TimeDelta::FromSeconds(1));
+  theme.SetOverlayScrollbarFadeOutDelay(base::TimeDelta::FromSeconds(1));
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
       scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
 

@@ -57,6 +57,10 @@ class SkRefCnt;
 template <typename T>
 class sk_sp;
 
+namespace gfx {
+class Size;
+}
+
 namespace WTF {
 
 template <typename T>
@@ -272,6 +276,12 @@ struct CrossThreadCopier<
   static Type Copy(Type pointer) {
     return pointer;  // This is in fact a move.
   }
+};
+
+template <>
+struct CrossThreadCopier<gfx::Size>
+    : public CrossThreadCopierPassThrough<gfx::Size> {
+  STATIC_ONLY(CrossThreadCopier);
 };
 
 }  // namespace WTF

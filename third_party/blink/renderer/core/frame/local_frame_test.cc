@@ -110,43 +110,11 @@ TEST_F(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
   EXPECT_FALSE(page_holder2->GetFrame().IsUsingDataSavingPreview());
 }
 
-TEST_F(LocalFrameTest,
-       MaybeAllowPlaceholderImageConditionalOnSchemeForServerLoFi) {
-  ResourceRequest request1;
-  request1.SetUrl(KURL("https://secure.com"));
-  request1.SetPreviewsState(WebURLRequest::kPreviewsUnspecified);
-  FetchParameters params1(request1);
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr,
-      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kServerLoFiOn |
-                                                 WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder.get(), params1);
-  EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params1.GetImageRequestOptimization());
-
-  ResourceRequest request2;
-  request2.SetUrl(KURL("http://insecure.com"));
-  request2.SetPreviewsState(WebURLRequest::kPreviewsUnspecified);
-  FetchParameters params2(request2);
-  auto page_holder2 = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr,
-      MakeGarbageCollected<TestLocalFrameClient>(WebURLRequest::kServerLoFiOn |
-                                                 WebURLRequest::kClientLoFiOn));
-  MaybeAllowImagePlaceholder(page_holder2.get(), params2);
-  EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
-}
-
 TEST_F(LocalFrameTest, IsUsingDataSavingPreview) {
   EXPECT_TRUE(std::make_unique<DummyPageHolder>(
                   IntSize(800, 600), nullptr,
                   MakeGarbageCollected<TestLocalFrameClient>(
                       WebURLRequest::kClientLoFiOn))
-                  ->GetFrame()
-                  .IsUsingDataSavingPreview());
-  EXPECT_TRUE(std::make_unique<DummyPageHolder>(
-                  IntSize(800, 600), nullptr,
-                  MakeGarbageCollected<TestLocalFrameClient>(
-                      WebURLRequest::kServerLoFiOn))
                   ->GetFrame()
                   .IsUsingDataSavingPreview());
   EXPECT_TRUE(std::make_unique<DummyPageHolder>(

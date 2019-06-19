@@ -1315,13 +1315,13 @@ TEST_F(TabletModeWindowManagerTest, ExitsOverview) {
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect2));
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->StartOverview());
   ASSERT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
-  ASSERT_TRUE(overview_controller->ToggleOverview());
+  ASSERT_TRUE(overview_controller->StartOverview());
   ASSERT_TRUE(overview_controller->InOverviewSession());
   // Destroy the manager again and check that the windows return to their
   // previous state.
@@ -1769,12 +1769,12 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
   EXPECT_EQ(window->bounds(), rect);
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_EQ(window->bounds(), rect);
 
   // Exit overview mode will update all windows' bounds. However, if the window
   // is minimized, the bounds will not be updated.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_EQ(window->bounds(), rect);
 }
 

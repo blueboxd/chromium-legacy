@@ -53,16 +53,12 @@ void PeerConnectionTrackerHost::OnChannelConnected(int32_t peer_pid) {
   // referenced by RenderProcessHostImpl on the UI thread and ChannelProxy on
   // the IO thread. Using OnChannelConnected and OnChannelClosing guarantees
   // execution on the IO thread.
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 }
 
 void PeerConnectionTrackerHost::OnChannelClosing() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 void PeerConnectionTrackerHost::OnAddPeerConnection(

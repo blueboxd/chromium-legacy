@@ -22,8 +22,34 @@
 
 namespace blink {
 
-// TODO(npm): decide on a reasonable value for the threshold.
-constexpr const float kImageTimingSizeThreshold = 0.15f;
+namespace internal {
+
+// "CORE_EXPORT" is needed to make this function visible to tests.
+bool CORE_EXPORT
+IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
+  DCHECK(layout_object);
+
+  const Node* node = layout_object->GetNode();
+  if (!node)
+    return false;
+
+  if (!node->IsElementNode())
+    return false;
+
+  const Element* element = ToElement(node);
+  if (!element)
+    return false;
+
+  // If the element has no 'elementtiming' attribute or an empty value, do not
+  // generate timing entries for the element. See
+  // https://wicg.github.io/element-timing/#sec-modifications-DOM for report
+  // vs. ignore criteria.
+  const AtomicString& attr =
+      element->FastGetAttribute(html_names::kElementtimingAttr);
+  return !attr.IsEmpty();
+}
+
+}  // namespace internal
 
 // The maximum amount of characters included in Element Timing for inline
 // images.
@@ -59,6 +85,10 @@ void ImageElementTiming::NotifyImagePainted(
     const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(layout_object);
+
+  if (!internal::IsExplicitlyRegisteredForTiming(layout_object))
+    return;
+
   auto result = images_notified_.insert(layout_object);
   if (result.is_new_entry && cached_image) {
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
@@ -92,8 +122,6 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   Element* element = ToElement(node);
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
-  if (!ShouldReportElement(frame, attr, intersection_rect))
-    return;
 
   const AtomicString& id = element->GetIdAttribute();
 
@@ -114,8 +142,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
          performance->ShouldBufferEntries())) {
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
-          ImagePaintString(), url.GetString(), intersection_rect, TimeTicks(),
-          cached_image.LoadResponseEnd(), attr,
+          ImagePaintString(), url.GetString(), intersection_rect,
+          base::TimeTicks(), cached_image.LoadResponseEnd(), attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id,
           element);
     }
@@ -149,8 +177,12 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(node);
   DCHECK(background_image);
+
   const LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object)
+    return;
+
+  if (!internal::IsExplicitlyRegisteredForTiming(layout_object))
     return;
 
   const ImageResourceContent* cached_image = background_image->CachedImage();
@@ -180,21 +212,6 @@ FloatRect ImageElementTiming::ComputeIntersectionRect(
                                                 .LocalBorderBoxProperties(),
                                             visual_rect);
   return visual_rect.Rect();
-}
-
-bool ImageElementTiming::ShouldReportElement(
-    const LocalFrame* frame,
-    const AtomicString& element_timing,
-    const FloatRect& intersection_rect) const {
-  // Create an entry if 'elementtiming' is present or if the fraction of the
-  // viewport occupied by the image is above a certain size threshold.
-  return !element_timing.IsEmpty() ||
-         intersection_rect.Size().Area() > frame->View()
-                                                   ->LayoutViewport()
-                                                   ->VisibleContentRect()
-                                                   .Size()
-                                                   .Area() *
-                                               kImageTimingSizeThreshold;
 }
 
 void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,

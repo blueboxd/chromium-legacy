@@ -150,7 +150,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
 
   void Trace(blink::Visitor*) override;
 
-  uint64_t MonotonicTimeToIntegerMilliseconds(TimeTicks) const;
+  uint64_t MonotonicTimeToIntegerMilliseconds(base::TimeTicks) const;
 
   std::unique_ptr<TracedValue> GetNavigationTracingData();
 

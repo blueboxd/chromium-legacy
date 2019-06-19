@@ -16,7 +16,7 @@ ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
     : io_task_runner_(io_task_runner),
       logging_started_(false),
       message_filter_(message_filter) {
-  content::InitWebRtcLoggingDelegate(this);
+  blink::InitWebRtcLoggingDelegate(this);
 }
 
 ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
@@ -67,7 +67,7 @@ void ChromeWebRtcLogMessageDelegate::OnFilterRemoved() {
 void ChromeWebRtcLogMessageDelegate::OnStartLogging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   logging_started_ = true;
-  content::InitWebRtcLogging();
+  blink::InitWebRtcLogging();
 }
 
 void ChromeWebRtcLogMessageDelegate::OnStopLogging() {

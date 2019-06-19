@@ -30,8 +30,8 @@ namespace {
 // A key used to associate a WKWebViewConfigurationProvider with a BrowserState.
 const char kWKWebViewConfigProviderKeyName[] = "wk_web_view_config_provider";
 
-// Returns an autoreleased instance of WKUserScript to be added to
-// configuration's userContentController.
+// Returns a WKUserScript for JavsScript injected into the main frame at the
+// beginning of the document load.
 WKUserScript* InternalGetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) {
   return [[WKUserScript alloc]
@@ -40,8 +40,18 @@ WKUserScript* InternalGetDocumentStartScriptForMainFrame(
       forMainFrameOnly:YES];
 }
 
-// Returns an autoreleased instance of WKUserScript to be added to
-// configuration's userContentController.
+// Returns a WKUserScript for JavsScript injected into the main frame at the
+// end of the document load.
+WKUserScript* InternalGetDocumentEndScriptForMainFrame(
+    BrowserState* browser_state) {
+  return [[WKUserScript alloc]
+        initWithSource:GetDocumentEndScriptForMainFrame(browser_state)
+         injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+      forMainFrameOnly:YES];
+}
+
+// Returns a WKUserScript for JavsScript injected into all frames at the
+// beginning of the document load.
 WKUserScript* InternalGetDocumentStartScriptForAllFrames(
     BrowserState* browser_state) {
   return [[WKUserScript alloc]
@@ -50,8 +60,8 @@ WKUserScript* InternalGetDocumentStartScriptForAllFrames(
       forMainFrameOnly:NO];
 }
 
-// Returns an autoreleased instance of WKUserScript to be added to
-// configuration's userContentController.
+// Returns a WKUserScript for JavsScript injected into all frames at the
+// end of the document load.
 WKUserScript* InternalGetDocumentEndScriptForAllFrames(
     BrowserState* browser_state) {
   return [[WKUserScript alloc]
@@ -110,6 +120,8 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
                           browser_state_)];
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
+    [[configuration_ userContentController]
+        addUserScript:InternalGetDocumentEndScriptForMainFrame(browser_state_)];
 
     if (!scheme_handler_) {
       scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =

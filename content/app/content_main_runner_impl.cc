@@ -961,9 +961,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
-    // PowerMonitor is needed in reduced mode but is eventually passed on to
-    // BrowserMainLoop.
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
+    // PowerMonitor is needed in reduced mode. BrowserMainLoop will safely skip
+    // initializing it again if it has already been initialized.
+    base::PowerMonitor::Initialize(
         std::make_unique<base::PowerMonitorDeviceSource>());
 
     service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
@@ -986,7 +986,6 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
   DVLOG(0) << "Chrome is running in full browser mode.";
   is_browser_main_loop_started_ = true;
   startup_data_ = service_manager_environment_->CreateBrowserStartupData();
-  startup_data_->power_monitor = std::move(power_monitor_);
   main_params.startup_data = startup_data_.get();
   return RunBrowserProcessMain(main_params, delegate_);
 }

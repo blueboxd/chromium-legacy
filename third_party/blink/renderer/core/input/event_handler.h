@@ -327,13 +327,6 @@ class CORE_EXPORT EventHandler final
 
   // Updates the event, location and result to the adjusted target.
   void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
-  WebInputEventResult HandleGestureTapDown(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureTap(const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongPress(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongTap(
-      const GestureEventWithHitTestResults&);
 
   void PerformHitTest(const HitTestLocation& location,
                       HitTestResult&,
@@ -471,7 +464,7 @@ class CORE_EXPORT EventHandler final
   // It is ok we only record last_show_press_timestamp_ in root frame since
   // root frame will have subframe as active element if subframe has active
   // element.
-  base::Optional<WTF::TimeTicks> last_show_press_timestamp_;
+  base::Optional<base::TimeTicks> last_show_press_timestamp_;
   Member<Element> last_deferred_tap_element_;
 
   // Set on GestureTapDown if unique_touch_event_id_ matches cached adjusted

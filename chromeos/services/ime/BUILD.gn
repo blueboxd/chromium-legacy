@@ -42,6 +42,7 @@ source_set("sandbox_hook") {
 
   deps = [
     "//base",
+    "//chromeos/services/ime/public/cpp:buildflags",
     "//sandbox/linux:sandbox_services",
     "//services/service_manager/sandbox:sandbox",
   ]

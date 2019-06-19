@@ -81,7 +81,7 @@ class CORE_EXPORT AutoscrollController final
   void UpdateAutoscrollLayoutObject();
   void UpdateDragAndDrop(Node* target_node,
                          const FloatPoint& event_position,
-                         TimeTicks event_time);
+                         base::TimeTicks event_time);
 
   // Middle-click autoscroll.
   void StartMiddleClickAutoscroll(LocalFrame*,
@@ -110,7 +110,7 @@ class CORE_EXPORT AutoscrollController final
   LayoutBox* autoscroll_layout_object_ = nullptr;
   LayoutBox* pressed_layout_object_ = nullptr;
   PhysicalOffset drag_and_drop_autoscroll_reference_position_;
-  TimeTicks drag_and_drop_autoscroll_start_time_;
+  base::TimeTicks drag_and_drop_autoscroll_start_time_;
 
   // Middle-click autoscroll.
   FloatPoint middle_click_autoscroll_start_pos_global_;

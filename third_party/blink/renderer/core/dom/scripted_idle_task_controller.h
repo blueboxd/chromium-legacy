@@ -83,26 +83,26 @@ class CORE_EXPORT ScriptedIdleTaskController
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void CallbackFired(CallbackId,
-                     TimeTicks deadline,
+                     base::TimeTicks deadline,
                      IdleDeadline::CallbackType);
 
  private:
   class QueuedIdleTask : public GarbageCollectedFinalized<QueuedIdleTask> {
    public:
     QueuedIdleTask(IdleTask*,
-                   TimeTicks queue_timestamp,
+                   base::TimeTicks queue_timestamp,
                    uint32_t timeout_millis);
     virtual ~QueuedIdleTask() = default;
 
     virtual void Trace(Visitor*);
 
     IdleTask* task() { return task_; }
-    TimeTicks queue_timestamp() const { return queue_timestamp_; }
+    base::TimeTicks queue_timestamp() const { return queue_timestamp_; }
     uint32_t timeout_millis() const { return timeout_millis_; }
 
    private:
     Member<IdleTask> task_;
-    TimeTicks queue_timestamp_;
+    base::TimeTicks queue_timestamp_;
     uint32_t timeout_millis_;
   };
 
@@ -121,10 +121,12 @@ class CORE_EXPORT ScriptedIdleTaskController
            !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  void RunCallback(CallbackId, TimeTicks deadline, IdleDeadline::CallbackType);
+  void RunCallback(CallbackId,
+                   base::TimeTicks deadline,
+                   IdleDeadline::CallbackType);
 
   void RecordIdleTaskMetrics(QueuedIdleTask*,
-                             TimeTicks run_timestamp,
+                             base::TimeTicks run_timestamp,
                              IdleDeadline::CallbackType);
 
   ThreadScheduler* scheduler_;  // Not owned.

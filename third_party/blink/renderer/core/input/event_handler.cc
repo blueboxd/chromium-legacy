@@ -127,8 +127,8 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
 
 // The amount of time to wait for a cursor update on style and layout changes
 // Set to 50Hz, no need to be faster than common screen refresh rate
-static constexpr TimeDelta kCursorUpdateInterval =
-    TimeDelta::FromMilliseconds(20);
+static constexpr base::TimeDelta kCursorUpdateInterval =
+    base::TimeDelta::FromMilliseconds(20);
 
 static const int kMaximumCursorSize = 128;
 
@@ -144,7 +144,8 @@ static const double kMinimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
 // This is roughly 9 frames, which should be long enough to be noticeable.
-constexpr TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
+constexpr base::TimeDelta kMinimumActiveInterval =
+    base::TimeDelta::FromSecondsD(0.15);
 
 EventHandler::EventHandler(LocalFrame& frame)
     : frame_(frame),
@@ -1733,7 +1734,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
 
   HitTestRequest::HitTestRequestType hit_type =
       gesture_manager_->GetHitTypeForGestureType(gesture_event.GetType());
-  TimeDelta active_interval;
+  base::TimeDelta active_interval;
   bool should_keep_active_for_min_interval = false;
   if (read_only) {
     hit_type |= HitTestRequest::kReadOnly;
@@ -1833,15 +1834,6 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // candidates.
   DCHECK(!location.IsRectBasedTest());
 
-  if (ShouldApplyTouchAdjustment(gesture_event) &&
-      (gesture_event.GetType() == WebInputEvent::kGestureTap ||
-       gesture_event.GetType() == WebInputEvent::kGestureLongPress)) {
-    float adjusted_distance = FloatSize(adjusted_event.PositionInRootFrame() -
-                                        gesture_event.PositionInRootFrame())
-                                  .DiagonalLength();
-    UMA_HISTOGRAM_COUNTS_100("Event.Touch.TouchAdjustment.AdjustDistance",
-                             static_cast<int>(adjusted_distance));
-  }
   return GestureEventWithHitTestResults(adjusted_event, location,
                                         hit_test_result);
 }
@@ -2019,7 +2011,7 @@ void EventHandler::ScheduleHoverStateUpdate() {
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!hover_timer_.IsActive() &&
       !mouse_event_manager_->IsMousePositionUnknown())
-    hover_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    hover_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void EventHandler::ScheduleCursorUpdate() {

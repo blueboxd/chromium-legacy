@@ -343,7 +343,7 @@ void TestRenderFrame::BeginNavigation(
     GURL url = info->url_request.Url();
     auto navigation_params = std::make_unique<blink::WebNavigationParams>();
     navigation_params->url = url;
-    if (!url.IsAboutBlank() && url != content::kAboutSrcDocURL) {
+    if (!url.IsAboutBlank() && !url.IsAboutSrcdoc()) {
       std::string mime_type, charset, data;
       if (!net::DataURL::Parse(url, &mime_type, &charset, &data)) {
         // This case is only here to allow cluster fuzz pass any url,

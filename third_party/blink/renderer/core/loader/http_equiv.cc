@@ -57,7 +57,7 @@ bool AllowScriptFromSourceWithoutNotifying(
 
 // Notifies content settings client of persistent client hint headers.
 void NotifyPersistentClientHintsToContentSettingsClient(Document& document) {
-  TimeDelta persist_duration =
+  base::TimeDelta persist_duration =
       document.GetFrame()->GetClientHintsPreferences().GetPersistDuration();
   if (persist_duration.InSeconds() <= 0)
     return;

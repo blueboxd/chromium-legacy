@@ -44,7 +44,7 @@ namespace blink {
 
 // Delay time in second for start autoscroll if pointer is in border edge of
 // scrollable element.
-constexpr TimeDelta kAutoscrollDelay = TimeDelta::FromSecondsD(0.2);
+constexpr base::TimeDelta kAutoscrollDelay = base::TimeDelta::FromSecondsD(0.2);
 
 static const int kNoMiddleClickAutoscrollRadius = 15;
 
@@ -166,7 +166,7 @@ void AutoscrollController::UpdateAutoscrollLayoutObject() {
 
 void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
                                              const FloatPoint& event_position,
-                                             TimeTicks event_time) {
+                                             base::TimeTicks event_time) {
   if (!drop_target_node || !drop_target_node->GetLayoutObject()) {
     StopAutoscroll();
     return;

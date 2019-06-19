@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/input_stream.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace download {
@@ -47,11 +48,12 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
                     const RenameCompletionCallback& callback));
-  MOCK_METHOD5(RenameAndAnnotate,
+  MOCK_METHOD6(RenameAndAnnotate,
                void(const base::FilePath& full_path,
                     const std::string& client_guid,
                     const GURL& source_url,
                     const GURL& referrer_url,
+                    std::unique_ptr<service_manager::Connector> connector,
                     const RenameCompletionCallback& callback));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());

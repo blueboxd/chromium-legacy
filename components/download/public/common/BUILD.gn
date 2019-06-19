@@ -80,6 +80,7 @@ component("public") {
     "//base",
     "//components/download/database",
     "//components/download/internal/common:internal",
+    "//components/services/quarantine:quarantine",
     "//crypto",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -142,6 +143,7 @@ source_set("test_support") {
     ":public",
     "//base",
     "//net",
+    "//services/service_manager/public/cpp:cpp",
     "//testing/gmock",
     "//url",
   ]

@@ -900,6 +900,16 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
 }
 
 void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
+  // Bypass normal handling of alt-space, which would otherwise consume the
+  // corresponding WM_SYSCHAR.  This allows HandleIMEMessage() to show the
+  // system menu in this case.  If we instead showed the system menu here, the
+  // WM_SYSCHAR would trigger a beep when processed by the native event handler.
+  if ((event->type() == ui::ET_KEY_PRESSED) &&
+      (event->key_code() == ui::VKEY_SPACE) &&
+      (event->flags() & ui::EF_ALT_DOWN) && GetWidget()->non_client_view()) {
+    return;
+  }
+
   SendEventToSink(event);
 }
 
@@ -935,6 +945,15 @@ bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param,
                                                 LRESULT* result) {
+  // Show the system menu at an appropriate location on alt-space.
+  if ((message == WM_SYSCHAR) && (w_param == VK_SPACE) &&
+      GetWidget()->non_client_view()) {
+    const auto* frame = GetWidget()->non_client_view()->frame_view();
+    ShowSystemMenuAtScreenPixelLocation(
+        GetHWND(), frame->GetSystemMenuScreenPixelLocation());
+    return true;
+  }
+
   MSG msg = {};
   msg.hwnd = GetHWND();
   msg.message = message;

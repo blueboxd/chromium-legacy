@@ -1,7 +1,7 @@
-include_rules = {
+include_rules = [
   "-chrome",
   "+content/public/android/java/src/org/chromium/content_public",
-}
+]
 
 specific_include_rules = {
   'Tab\.java': [

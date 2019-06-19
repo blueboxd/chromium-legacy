@@ -168,12 +168,12 @@ bool ScrollbarThemeMac::ShouldCenterOnThumb(const Scrollbar& scrollbar,
 ScrollbarThemeMac::~ScrollbarThemeMac() {
 }
 
-TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(s_initial_button_delay);
+base::TimeDelta ScrollbarThemeMac::InitialAutoscrollTimerDelay() {
+  return base::TimeDelta::FromSecondsD(s_initial_button_delay);
 }
 
-TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
-  return TimeDelta::FromSecondsD(s_autoscroll_button_delay);
+base::TimeDelta ScrollbarThemeMac::AutoscrollTimerDelay() {
+  return base::TimeDelta::FromSecondsD(s_autoscroll_button_delay);
 }
 
 bool ScrollbarThemeMac::ShouldDragDocumentInsteadOfThumb(

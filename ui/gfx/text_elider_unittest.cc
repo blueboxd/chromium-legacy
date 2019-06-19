@@ -117,12 +117,12 @@ TEST(TextEliderTest, ElideEmail) {
 }
 
 TEST(TextEliderTest, ElideEmailMoreSpace) {
-  const int test_width_factors[] = {
-      100,
-      10000,
-      1000000,
+  const int test_widths_extra_spaces[] = {
+      10,
+      1000,
+      100000,
   };
-  const std::string test_emails[] = {
+  const char* test_emails[] = {
       "a@c",
       "test@email.com",
       "short@verysuperdupperlongdomain.com",
@@ -130,14 +130,14 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
   };
 
   const FontList font_list;
-  for (size_t i = 0; i < base::size(test_width_factors); ++i) {
-    const int test_width =
-        font_list.GetExpectedTextWidth(test_width_factors[i]);
-    for (size_t j = 0; j < base::size(test_emails); ++j) {
+  for (const auto* test_email : test_emails) {
+    const base::string16 test_email16 = UTF8ToUTF16(test_email);
+    const int mimimum_width = GetStringWidth(test_email16, font_list);
+    for (int extra_space : test_widths_extra_spaces) {
       // Extra space is available: the email should not be elided.
-      const base::string16 test_email = UTF8ToUTF16(test_emails[j]);
-      EXPECT_EQ(test_email,
-                ElideText(test_email, font_list, test_width, ELIDE_EMAIL));
+      EXPECT_EQ(test_email16,
+                ElideText(test_email16, font_list, mimimum_width + extra_space,
+                          ELIDE_EMAIL));
     }
   }
 }

@@ -50,8 +50,6 @@ namespace content {
 class ChildProcessLauncherBrowserTest : public ContentBrowserTest {};
 
 IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-
   GURL url("about:blank");
   Shell* window = shell();
   MockChildProcessLauncherClient* client(nullptr);
@@ -64,7 +62,10 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
                         window->web_contents()->GetMainFrame()->GetProcess())
                         ->child_process_launcher_->ReplaceClientForTest(client);
   client->simulate_failure_ = true;
-  nav_observer1.Wait();
+  {
+    ScopedAllowRendererCrashes allow_renderer_crashes(shell());
+    nav_observer1.Wait();
+  }
   delete client;
   NavigationEntry* last_entry =
       shell()->web_contents()->GetController().GetLastCommittedEntry();

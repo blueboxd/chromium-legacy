@@ -17,6 +17,7 @@ enum class Module {
   kBlank,
   kElementsSwitch,
   kKvStorage,
+  kToast,
   kVirtualScroller,
 };
 

@@ -124,41 +124,6 @@ bool EnumTraits<autofill::mojom::SubmissionSource, autofill::SubmissionSource>::
 }
 
 // static
-autofill::mojom::FillingStatus
-EnumTraits<autofill::mojom::FillingStatus, autofill::FillingStatus>::ToMojom(
-    autofill::FillingStatus input) {
-  switch (input) {
-    case autofill::FillingStatus::SUCCESS:
-      return autofill::mojom::FillingStatus::SUCCESS;
-    case autofill::FillingStatus::ERROR_NO_VALID_FIELD:
-      return autofill::mojom::FillingStatus::ERROR_NO_VALID_FIELD;
-    case autofill::FillingStatus::ERROR_NOT_ALLOWED:
-      return autofill::mojom::FillingStatus::ERROR_NOT_ALLOWED;
-  }
-  NOTREACHED();
-  return autofill::mojom::FillingStatus::SUCCESS;
-}
-
-// static
-bool EnumTraits<autofill::mojom::FillingStatus, autofill::FillingStatus>::
-    FromMojom(autofill::mojom::FillingStatus input,
-              autofill::FillingStatus* output) {
-  switch (input) {
-    case autofill::mojom::FillingStatus::SUCCESS:
-      *output = autofill::FillingStatus::SUCCESS;
-      return true;
-    case autofill::mojom::FillingStatus::ERROR_NO_VALID_FIELD:
-      *output = autofill::FillingStatus::ERROR_NO_VALID_FIELD;
-      return true;
-    case autofill::mojom::FillingStatus::ERROR_NOT_ALLOWED:
-      *output = autofill::FillingStatus::ERROR_NOT_ALLOWED;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
 autofill::mojom::ButtonTitleType EnumTraits<
     autofill::mojom::ButtonTitleType,
     autofill::ButtonTitleType>::ToMojom(autofill::ButtonTitleType input) {

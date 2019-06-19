@@ -35,10 +35,10 @@ namespace {
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
-using autofill::FillingStatus;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
+using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using testing::_;

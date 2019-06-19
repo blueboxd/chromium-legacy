@@ -43,6 +43,7 @@ class StyledLabel;
 
 namespace ash {
 
+class LockScreenMediaControlsView;
 class LoginAuthUserView;
 class LoginBigUserView;
 class LoginDetachableBaseModel;
@@ -78,6 +79,7 @@ class ASH_EXPORT LockContentsView
     LoginBigUserView* primary_big_view() const;
     LoginBigUserView* opt_secondary_big_view() const;
     ScrollableUsersListView* users_list() const;
+    LockScreenMediaControlsView* media_controls_view() const;
     views::View* note_action() const;
     LoginTooltipView* tooltip_bubble() const;
     LoginErrorBubble* auth_error_bubble() const;
@@ -223,6 +225,14 @@ class ASH_EXPORT LockContentsView
   // Focus the next/previous widget.
   void FocusNextWidget(bool reverse);
 
+  // Set |spacing_middle| to the correct size for low density layouts. If there
+  // is less spacing available than desired, use up to the available.
+  void SetLowDensitySpacing(views::View* spacing_middle,
+                            views::View* secondary_view,
+                            int landscape_dist,
+                            int portrait_dist,
+                            bool landscape);
+
   // 1-2 users.
   void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
   // 3-6 users.
@@ -343,6 +353,9 @@ class ASH_EXPORT LockContentsView
   LoginBigUserView* primary_big_view_ = nullptr;
   LoginBigUserView* opt_secondary_big_view_ = nullptr;
   ScrollableUsersListView* users_list_ = nullptr;
+
+  // View for media controls that appear on the lock screen if user enabled.
+  LockScreenMediaControlsView* media_controls_view_ = nullptr;
 
   // View that contains the note action button and the system info labels,
   // placed on the top right corner of the screen without affecting layout of

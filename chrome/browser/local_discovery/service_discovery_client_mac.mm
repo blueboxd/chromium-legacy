@@ -137,11 +137,12 @@ ServiceDiscoveryClientMac::~ServiceDiscoveryClientMac() {}
 
 std::unique_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
     const std::string& service_type,
-    const ServiceWatcher::UpdatedCallback& callback) {
+    ServiceWatcher::UpdatedCallback callback) {
   StartThreadIfNotStarted();
   VLOG(1) << "CreateServiceWatcher: " << service_type;
   return std::make_unique<ServiceWatcherImplMac>(
-      service_type, callback, service_discovery_thread_->task_runner());
+      service_type, std::move(callback),
+      service_discovery_thread_->task_runner());
 }
 
 std::unique_ptr<ServiceResolver>
@@ -177,14 +178,13 @@ void ServiceDiscoveryClientMac::StartThreadIfNotStarted() {
 
 ServiceWatcherImplMac::NetServiceBrowserContainer::NetServiceBrowserContainer(
     const std::string& service_type,
-    const ServiceWatcher::UpdatedCallback& callback,
+    ServiceWatcher::UpdatedCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_type_(service_type),
-      callback_(callback),
+      callback_(std::move(callback)),
       callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       service_discovery_runner_(service_discovery_runner),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServiceWatcherImplMac::NetServiceBrowserContainer::
     ~NetServiceBrowserContainer() {
@@ -249,16 +249,16 @@ void ServiceWatcherImplMac::NetServiceBrowserContainer::DeleteSoon() {
 
 ServiceWatcherImplMac::ServiceWatcherImplMac(
     const std::string& service_type,
-    const ServiceWatcher::UpdatedCallback& callback,
+    ServiceWatcher::UpdatedCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_type_(service_type),
-      callback_(callback),
+      callback_(std::move(callback)),
       started_(false),
       weak_factory_(this) {
   container_.reset(new NetServiceBrowserContainer(
       service_type,
-      base::Bind(&ServiceWatcherImplMac::OnServicesUpdate,
-                 weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&ServiceWatcherImplMac::OnServicesUpdate,
+                          weak_factory_.GetWeakPtr()),
       service_discovery_runner));
 }
 

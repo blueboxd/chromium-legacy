@@ -39,7 +39,13 @@ class GrContext;
 
 namespace cc {
 class ImageDecodeCache;
+class PaintCanvas;
 }  // namespace cc
+
+namespace media {
+class PaintCanvasVideoRenderer;
+class VideoFrame;
+}  // namespace media
 
 namespace gpu {
 struct Capabilities;
@@ -98,6 +104,9 @@ class WebGraphicsContext3DProvider {
   // Return a static software image decode cache for a given color type.
   virtual cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) = 0;
   virtual gpu::SharedImageInterface* SharedImageInterface() = 0;
+  virtual void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                              media::VideoFrame* video_frame,
+                              cc::PaintCanvas* canvas) = 0;
 };
 
 }  // namespace blink

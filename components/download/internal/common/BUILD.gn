@@ -80,6 +80,10 @@ source_set("internal") {
     "//services/service_manager/public/cpp:cpp",
   ]
 
+  if (is_win) {
+    deps += [ "//components/services/quarantine/public/cpp:features" ]
+  }
+
   if (is_android) {
     sources += [
       "android/download_collection_bridge.cc",

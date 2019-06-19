@@ -142,8 +142,8 @@ class ASH_EXPORT OverviewWindowDragController {
   // True if SplitView is enabled.
   const bool should_allow_split_view_;
 
-  // True if the Virtual Desks feature is enabled.
-  const bool virtual_desks_enabled_;
+  // True if the Virtual Desks bar is created and dragging to desks is enabled.
+  const bool virtual_desks_bar_enabled_;
 
   // False if the initial drag location was not a snap region, or if it was in
   // a snap region but the drag has since moved out.

@@ -104,6 +104,18 @@ kioskNextHome.Bridge = class {
   launchIntent(intent) {}
 
   /**
+   * Opens the website in the customized KioskNext Browser.
+   * @param {!url.mojom.Url} url
+   */
+  launchKioskNextWebsite(url) {}
+
+  /**
+   * Opens the website in the tabbed browser.
+   * @param {!url.mojom.Url} url
+   */
+  launchWebsite(url) {}
+
+  /**
    * Shows a prompt to uninstall the app with the given appId.
    *
    * We will notify listeners when the app is uninstalled through a readiness

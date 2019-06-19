@@ -194,10 +194,13 @@ class _ApkDelegate(object):
         device.ForceStop(self._package)
         raise
       # TODO(jbudorick): Remove this after resolving crbug.com/726880
-      logging.info(
-          '%s size on device: %s',
-          stdout_file.name, device.StatPath(stdout_file.name).get('st_size', 0))
-      return device.ReadFile(stdout_file.name).splitlines()
+      if device.PathExists(stdout_file.name):
+        logging.info('%s size on device: %s', stdout_file.name,
+                     device.StatPath(stdout_file.name).get('st_size', 0))
+        return device.ReadFile(stdout_file.name).splitlines()
+      else:
+        logging.info('%s does not exist?', stdout_file.name)
+        return []
 
   def PullAppFiles(self, device, files, directory):
     device_dir = device.GetApplicationDataDirectory(self._package)

@@ -40,6 +40,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature
 // Enables user preference to control media keys on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaKeys;
 
+// Enables lock screen media controls UI.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
+
 // Enables hiding of ARC media notifications. If this is enabled, all ARC
 // notifications that are of the media type will not be shown. This
 // is because they will be replaced by native media session notifications.

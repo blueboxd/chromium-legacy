@@ -868,6 +868,9 @@ const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
+
+// Causes the browser to launch directly in guest mode.
+const char kGuest[] = "guest";
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \

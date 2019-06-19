@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "services/network/public/cpp/features.h"
 
 using content::BrowserThread;
 
@@ -67,11 +66,6 @@ void ChromeDataUseMeasurement::CreateInstance(PrefService* local_state) {
 
   DCHECK(!g_chrome_data_use_measurement);
 
-  // Do not create when NetworkService is disabled, since data use of URLLoader
-  // is reported via the network delegate callbacks.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
       content::GetNetworkConnectionTracker(), local_state);
 }
@@ -105,7 +99,6 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
     int64_t recv_bytes,
     int64_t sent_bytes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // Negative byte numbres is not a critical problem (i.e. should have no security implications) but
   // is not expected. TODO(rajendrant): remove these DCHECKs or consider using uint in Mojo instead.
   DCHECK_GE(recv_bytes, 0);
@@ -160,19 +153,11 @@ void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
     int64_t total_bytes,
     bool is_cellular,
     bool is_metrics_service_usage) {
-  PrefService* local_state;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    local_state = local_state_;
-  } else {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    local_state = g_browser_process->local_state();
-  }
-  DCHECK(local_state);
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(local_state_);
   metrics::DataUseTracker::UpdateMetricsUsagePrefs(
       base::saturated_cast<int>(total_bytes), is_cellular,
-      is_metrics_service_usage, local_state);
+      is_metrics_service_usage, local_state_);
 }
 
 }  // namespace data_use_measurement

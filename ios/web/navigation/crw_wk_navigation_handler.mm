@@ -12,7 +12,6 @@
 #include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
-#import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
@@ -1112,11 +1111,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   [self.navigationStates setState:web::WKNavigationState::FINISHED
                     forNavigation:navigation];
 
-  // Trigger JavaScript driven post-document-load-completion tasks.
-  // TODO(crbug.com/546350): Investigate using
-  // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
-  // appropriate time rather than invoking here.
-  web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
   [self.delegate navigationHandler:self didFinishNavigation:context];
 
   if (web::features::StorePendingItemInContext()) {

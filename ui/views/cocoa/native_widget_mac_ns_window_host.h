@@ -364,9 +364,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void OnDidChangeFocus(View* focused_before, View* focused_now) override;
 
   // ui::internal::InputMethodDelegate:
-  ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* key,
-      DispatchKeyEventPostIMECallback callback) override;
+  ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
 
   // ui::AccessibilityFocusOverrider::Client:
   id GetAccessibilityFocusedUIElement() override;

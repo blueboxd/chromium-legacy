@@ -10,7 +10,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/win/windows_version.h"
@@ -26,7 +25,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/win/hwnd_util.h"
 
 namespace ui {
 namespace {
@@ -297,12 +295,6 @@ LRESULT InputMethodWinBase::OnChar(HWND window_handle,
     }
   }
 
-  // Explicitly show the system menu at a good location on [Alt]+[Space].
-  // Note: Setting |handled| to FALSE for DefWindowProc triggering of the system
-  //       menu causes undesirable titlebar artifacts in the classic theme.
-  if (message == WM_SYSCHAR && wparam == VK_SPACE)
-    gfx::ShowSystemMenu(window_handle);
-
   return 0;
 }
 
@@ -499,8 +491,7 @@ ui::EventDispatchDetails InputMethodWinBase::ProcessUnhandledKeyEvent(
     ui::KeyEvent* event,
     const std::vector<MSG>* char_msgs) {
   DCHECK(event);
-  ui::EventDispatchDetails details =
-      DispatchKeyEventPostIME(event, base::NullCallback());
+  ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
   if (details.dispatcher_destroyed || details.target_destroyed ||
       event->stopped_propagation()) {
     return details;

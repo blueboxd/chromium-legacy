@@ -24,7 +24,6 @@ public class ContextMenuParams {
     private final String mTitleText;
     private final String mUnfilteredLinkUrl;
     private final String mSrcUrl;
-    private final boolean mImageWasFetchedLoFi;
     private final Referrer mReferrer;
 
     private final boolean mIsAnchor;
@@ -77,13 +76,6 @@ public class ContextMenuParams {
      */
     public String getSrcUrl() {
         return mSrcUrl;
-    }
-
-    /**
-     * @return Whether or not an image was fetched using Lo-Fi.
-     */
-    public boolean imageWasFetchedLoFi() {
-        return mImageWasFetchedLoFi;
     }
 
     /**
@@ -165,15 +157,14 @@ public class ContextMenuParams {
 
     public ContextMenuParams(@WebContextMenuMediaType int mediaType, String pageUrl, String linkUrl,
             String linkText, String unfilteredLinkUrl, String srcUrl, String titleText,
-            boolean imageWasFetchedLoFi, Referrer referrer, boolean canSaveMedia,
-            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+            Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp, int triggeringTouchYDp,
+            @MenuSourceType int sourceType) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
         mTitleText = titleText;
         mUnfilteredLinkUrl = unfilteredLinkUrl;
         mSrcUrl = srcUrl;
-        mImageWasFetchedLoFi = imageWasFetchedLoFi;
         mReferrer = referrer;
 
         mIsAnchor = !TextUtils.isEmpty(linkUrl);
@@ -188,13 +179,12 @@ public class ContextMenuParams {
     @CalledByNative
     private static ContextMenuParams create(@WebContextMenuMediaType int mediaType, String pageUrl,
             String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
-            String titleText, boolean imageWasFetchedLoFi, String sanitizedReferrer,
-            int referrerPolicy, boolean canSaveMedia, int triggeringTouchXDp,
-            int triggeringTouchYDp, @MenuSourceType int sourceType) {
+            String titleText, String sanitizedReferrer, int referrerPolicy, boolean canSaveMedia,
+            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
-                srcUrl, titleText, imageWasFetchedLoFi, referrer, canSaveMedia, triggeringTouchXDp,
-                triggeringTouchYDp, sourceType);
+                srcUrl, titleText, referrer, canSaveMedia, triggeringTouchXDp, triggeringTouchYDp,
+                sourceType);
     }
 }

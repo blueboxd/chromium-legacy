@@ -194,9 +194,17 @@ if (enable_java_templates) {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    _base_output_dir = "${target_gen_dir}/${target_name}"
-    _package_output_dir = "${_base_output_dir}/${invoker.jni_package}"
-    _jni_output_dir = "${_package_output_dir}/jni"
+    _jni_output_dir = "${target_gen_dir}/${target_name}"
+
+    # TODO(crbug.com/964169): Stop generating long output paths, remove the
+    # jni_package variable, and remove the config target below once includes
+    # have been updated to use full paths.
+    _use_long_paths = defined(invoker.jni_package)
+    if (_use_long_paths) {
+      _base_output_dir = "${target_gen_dir}/${target_name}"
+      _package_output_dir = "${_base_output_dir}/${invoker.jni_package}"
+      _jni_output_dir = "${_package_output_dir}/jni"
+    }
 
     if (defined(invoker.jni_generator_include)) {
       _jni_generator_include = invoker.jni_generator_include
@@ -280,13 +288,13 @@ if (enable_java_templates) {
       }
     }
 
-    config("jni_includes_${target_name}") {
-      # TODO(crbug.com/963471): Change include paths to be relative to
-      # $root_gen_dir to prevent issues when moving JNI targets.
-      include_dirs = [
-        _base_output_dir,
-        _package_output_dir,
-      ]
+    if (_use_long_paths) {
+      config("jni_includes_${target_name}") {
+        include_dirs = [
+          _base_output_dir,
+          _package_output_dir,
+        ]
+      }
     }
 
     group(target_name) {
@@ -301,7 +309,9 @@ if (enable_java_templates) {
       }
       public_deps += [ ":$_jni_target_name" ]
       public_deps += _jni_generator_include_deps
-      public_configs = [ ":jni_includes_${target_name}" ]
+      if (_use_long_paths) {
+        public_configs = [ ":jni_includes_${target_name}" ]
+      }
     }
   }
 

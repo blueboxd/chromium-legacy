@@ -44,7 +44,7 @@
 <translation id="1260236875608242557">חיפוש ודפדוף</translation>
 <translation id="1264974993859112054">ספורט</translation>
 <translation id="1272079795634619415">הפסק</translation>
-<translation id="1272444412400969138">בוחר המכשירים לשיתוף כרטיסייה.</translation>
+<translation id="1272444412400969138">בורר המכשירים שאיתם תשותף הכרטיסייה.</translation>
 <translation id="1283039547216852943">הקש כדי להרחיב</translation>
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
 <translation id="1291207594882862231">‏ניקוי ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
@@ -403,7 +403,7 @@
 <translation id="4008040567710660924">‏אישור קובצי Cookie של אתר מסוים.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{שעה אחת}two{שעתיים}many{# שעות}other{# שעות}}</translation>
 <translation id="4042870126885713738">הצעות יופיעו כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
-<translation id="4044912625106523635">בוחר המכשירים לשיתוף כרטיסייה נפתח בגובה מלא.</translation>
+<translation id="4044912625106523635">בורר המכשירים שאיתם תשותף הכרטיסייה נפתח בגובה מלא.</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
 <translation id="4048707525896921369">‏ניתן לקבל מידע על נושאים באתרים מבלי לצאת מהדף. התכונה 'הקשה כדי לחפש' שולחת מילה ואת ההקשר שלה אל חיפוש Google, המחזיר הגדרות, תמונות, תוצאות חיפוש ופרטים אחרים.
 
@@ -747,7 +747,7 @@
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="641643625718530986">הדפסה…</translation>
 <translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
-<translation id="6418750371676080905">בוחר המכשירים לשיתוף כרטיסייה נסגר.</translation>
+<translation id="6418750371676080905">בורר המכשירים שאיתם תשותף הכרטיסייה נסגר.</translation>
 <translation id="6427112570124116297">תרגום התוכן באינטרנט</translation>
 <translation id="6433501201775827830">בחירת מנוע החיפוש</translation>
 <translation id="6437478888915024427">פרטי דף</translation>
@@ -787,7 +787,7 @@
 <translation id="666268767214822976">שימוש בשירות חיזוי כדי להציג שאילתות קשורות ואתרים פופולריים תוך כדי ההקלדה בשורת כתובת האתר</translation>
 <translation id="666731172850799929">פתח ב-<ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
-<translation id="6672986458216094438">בוחר המכשירים לשיתוף כרטיסייה נפתח בחצי הגובה.</translation>
+<translation id="6672986458216094438">בורר המכשירים שאיתם תשותף הכרטיסייה נפתח בחצי הגובה.</translation>
 <translation id="6697492270171225480">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
 <translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6698801883190606802">ניהול נתונים מסונכרנים</translation>

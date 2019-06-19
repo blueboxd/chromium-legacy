@@ -6,7 +6,6 @@
 
 #include "chrome/common/net/safe_search_util.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "services/network/public/cpp/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_urls.h"
@@ -69,8 +68,7 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
   // URLLoaderThrottles can only change the redirect URL when the network
   // service is enabled. The non-network service path handles this in
   // ChromeNetworkDelegate.
-  if (dynamic_params_.force_safe_search &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (dynamic_params_.force_safe_search) {
     safe_search_util::ForceGoogleSafeSearch(redirect_info->new_url,
                                             &redirect_info->new_url);
   }

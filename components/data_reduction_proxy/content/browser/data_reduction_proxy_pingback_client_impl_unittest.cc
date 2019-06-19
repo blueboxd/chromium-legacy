@@ -140,9 +140,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     page_id_ = 0u;
   }
 
-  void CreateAndSendPingback(bool lofi_received,
-                             bool client_lofi_requested,
-                             bool lite_page_received,
+  void CreateAndSendPingback(bool lite_page_received,
                              bool app_background_occurred,
                              bool opt_out_occurred,
                              bool crash,
@@ -189,9 +187,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
         net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
     request_data.set_connection_type(
         net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
-    request_data.set_lofi_received(lofi_received);
     request_data.set_black_listed(black_listed);
-    request_data.set_client_lofi_requested(client_lofi_requested);
     request_data.set_lite_page_received(lite_page_received);
     request_data.set_page_id(page_id_);
     static_cast<DataReductionProxyPingbackClient*>(pingback_client())
@@ -266,7 +262,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyPingbackContent) {
   pingback_client()->set_current_time(current_time);
   uint64_t data_page_id = page_id();
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -365,7 +360,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyHoldback) {
   static_cast<DataReductionProxyPingbackClient*>(pingback_client())
       ->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -392,7 +386,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   pingback_client()->set_current_time(current_time);
   // First pingback
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -402,14 +395,12 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
   std::list<uint64_t> page_ids;
   page_ids.push_back(page_id());
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 2);
   page_ids.push_back(page_id());
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -505,13 +496,11 @@ TEST_F(DataReductionProxyPingbackClientImplTest, SendTwoPingbacks) {
   static_cast<DataReductionProxyPingbackClient*>(pingback_client())
       ->SetPingbackReportingFraction(1.0f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -530,7 +519,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, NoPingbackSent) {
   static_cast<DataReductionProxyPingbackClient*>(pingback_client())
       ->SetPingbackReportingFraction(0.0f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -549,7 +537,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
       ->SetPingbackReportingFraction(0.5f);
   pingback_client()->OverrideRandom(true, 0.4f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -562,7 +549,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
   // the pingback is not created.
   pingback_client()->OverrideRandom(true, 0.6f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -576,7 +562,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
       ->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 0.0f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -590,7 +575,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyReportingBehvaior) {
       ->SetPingbackReportingFraction(0.0f);
   pingback_client()->OverrideRandom(true, 1.0f);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -610,7 +594,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, FailedPingback) {
   factory()->ClearResponses();
   factory()->AddResponse(pingback_url().spec(), "", net::HTTP_UNAUTHORIZED);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -618,111 +601,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, FailedPingback) {
   EXPECT_EQ(num_network_requests(), 1);
   WaitForPingbackResponse();
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, false, 1);
-}
-
-TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentNoOptOut) {
-  Init();
-  EXPECT_EQ(num_network_requests(), 0);
-  pingback_client()->OverrideRandom(true, 0.5f);
-  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
-      ->SetPingbackReportingFraction(1.0f);
-  base::Time current_time = base::Time::UnixEpoch();
-  pingback_client()->set_current_time(current_time);
-  CreateAndSendPingback(
-      true /* lofi_received */, false /* client_lofi_requested */,
-      false /* lite_page_received */, false /* app_background_occurred */,
-      false /* opt_out_occurred */, false /* renderer_crash */,
-      false /* black_listed */);
-  EXPECT_EQ(num_network_requests(), 1);
-  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
-  EXPECT_EQ(upload_content_type(), "application/x-protobuf");
-  RecordPageloadMetricsRequest batched_request;
-  batched_request.ParseFromString(upload_data());
-  EXPECT_EQ(batched_request.pageloads_size(), 1);
-  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
-  EXPECT_EQ(PageloadMetrics_PreviewsType_LOFI,
-            pageload_metrics.previews_type());
-  EXPECT_EQ(PageloadMetrics_PreviewsOptOut_NON_OPT_OUT,
-            pageload_metrics.previews_opt_out());
-}
-
-TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentOptOut) {
-  Init();
-  EXPECT_EQ(num_network_requests(), 0);
-  pingback_client()->OverrideRandom(true, 0.5f);
-  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
-      ->SetPingbackReportingFraction(1.0f);
-  base::Time current_time = base::Time::UnixEpoch();
-  pingback_client()->set_current_time(current_time);
-  CreateAndSendPingback(
-      true /* lofi_received */, false /* client_lofi_requested */,
-      false /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */,
-      false /* black_listed */);
-  EXPECT_EQ(num_network_requests(), 1);
-  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
-  EXPECT_EQ(upload_content_type(), "application/x-protobuf");
-  RecordPageloadMetricsRequest batched_request;
-  batched_request.ParseFromString(upload_data());
-  EXPECT_EQ(batched_request.pageloads_size(), 1);
-  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
-  EXPECT_EQ(PageloadMetrics_PreviewsType_LOFI,
-            pageload_metrics.previews_type());
-  EXPECT_EQ(PageloadMetrics_PreviewsOptOut_OPT_OUT,
-            pageload_metrics.previews_opt_out());
-}
-
-TEST_F(DataReductionProxyPingbackClientImplTest,
-       VerifyClientLoFiContentOptOut) {
-  Init();
-  EXPECT_EQ(num_network_requests(), 0);
-  pingback_client()->OverrideRandom(true, 0.5f);
-  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
-      ->SetPingbackReportingFraction(1.0f);
-  base::Time current_time = base::Time::UnixEpoch();
-  pingback_client()->set_current_time(current_time);
-  CreateAndSendPingback(
-      false /* lofi_received */, true /* client_lofi_requested */,
-      false /* lite_page_received */, false /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */,
-      false /* black_listed */);
-  EXPECT_EQ(num_network_requests(), 1);
-  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
-  EXPECT_EQ(upload_content_type(), "application/x-protobuf");
-  RecordPageloadMetricsRequest batched_request;
-  batched_request.ParseFromString(upload_data());
-  EXPECT_EQ(batched_request.pageloads_size(), 1);
-  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
-  EXPECT_EQ(PageloadMetrics_PreviewsType_LOFI,
-            pageload_metrics.previews_type());
-  EXPECT_EQ(PageloadMetrics_PreviewsOptOut_OPT_OUT,
-            pageload_metrics.previews_opt_out());
-}
-
-TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLoFiContentBackground) {
-  Init();
-  EXPECT_EQ(num_network_requests(), 0);
-  pingback_client()->OverrideRandom(true, 0.5f);
-  static_cast<DataReductionProxyPingbackClient*>(pingback_client())
-      ->SetPingbackReportingFraction(1.0f);
-  base::Time current_time = base::Time::UnixEpoch();
-  pingback_client()->set_current_time(current_time);
-  CreateAndSendPingback(
-      true /* lofi_received */, false /* client_lofi_requested */,
-      false /* lite_page_received */, true /* app_background_occurred */,
-      true /* opt_out_occurred */, false /* renderer_crash */,
-      false /* black_listed */);
-  EXPECT_EQ(num_network_requests(), 1);
-  histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
-  EXPECT_EQ(upload_content_type(), "application/x-protobuf");
-  RecordPageloadMetricsRequest batched_request;
-  batched_request.ParseFromString(upload_data());
-  EXPECT_EQ(batched_request.pageloads_size(), 1);
-  PageloadMetrics pageload_metrics = batched_request.pageloads(0);
-  EXPECT_EQ(PageloadMetrics_PreviewsType_LOFI,
-            pageload_metrics.previews_type());
-  EXPECT_EQ(PageloadMetrics_PreviewsOptOut_UNKNOWN,
-            pageload_metrics.previews_opt_out());
 }
 
 TEST_F(DataReductionProxyPingbackClientImplTest, VerifyBlackListContent) {
@@ -734,7 +612,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyBlackListContent) {
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, false /* renderer_crash */,
       true /* black_listed */);
@@ -760,7 +637,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyLitePageContent) {
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
       true /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -786,7 +662,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyTwoLitePagePingbacks) {
   base::Time current_time = base::Time::UnixEpoch();
   pingback_client()->set_current_time(current_time);
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
       true /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -801,7 +676,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyTwoLitePagePingbacks) {
   EXPECT_EQ(PageloadMetrics_PreviewsOptOut_OPT_OUT,
             pageload_metrics.previews_opt_out());
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       true /* lite_page_received */, false /* app_background_occurred */,
       true /* opt_out_occurred */, false /* renderer_crash */,
       false /* black_listed */);
@@ -824,7 +698,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyCrashOomBehavior) {
       ->SetPingbackReportingFraction(1.0f);
 
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, true /* renderer_crash */,
       false /* black_listed */);
@@ -855,7 +728,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest, VerifyCrashNotOomBehavior) {
       ->SetPingbackReportingFraction(1.0f);
 
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, true /* renderer_crash */,
       false /* black_listed */);
@@ -887,7 +759,6 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
       ->SetPingbackReportingFraction(1.0f);
 
   CreateAndSendPingback(
-      false /* lofi_received */, false /* client_lofi_requested */,
       false /* lite_page_received */, false /* app_background_occurred */,
       false /* opt_out_occurred */, true /* renderer_crash */,
       false /* black_listed */);

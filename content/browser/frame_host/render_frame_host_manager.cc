@@ -67,8 +67,7 @@ namespace content {
 namespace {
 
 bool IsDataOrAbout(const GURL& url) {
-  GURL about_srcdoc(content::kAboutSrcDocURL);
-  return url == about_srcdoc || url.IsAboutBlank() ||
+  return url.IsAboutSrcdoc() || url.IsAboutBlank() ||
          url.scheme() == url::kDataScheme;
 }
 
@@ -2809,8 +2808,7 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
       // arbitary requests to those URLs using the chrome.webRequest or
       // chrome.declarativeWebRequest API, which will end up here (for an
       // example, see ExtensionWebRequestApiTest.WebRequestDeclarative1).)
-      if (resolved_url.IsAboutBlank() ||
-          resolved_url == GURL(content::kAboutSrcDocURL)) {
+      if (resolved_url.IsAboutBlank() || resolved_url.IsAboutSrcdoc()) {
         return false;
       }
     }

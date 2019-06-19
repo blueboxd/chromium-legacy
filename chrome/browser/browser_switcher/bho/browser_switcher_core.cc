@@ -338,10 +338,7 @@ bool BrowserSwitcherCore::LoadConfigFile() {
 
   LOG(INFO) << "Loading cache from : " << path_string.c_str() << std::endl;
 
-  const std::locale wloc(std::locale::classic(),
-                         new std::codecvt_utf8_utf16<wchar_t>);
   std::wifstream config_file(path_string.c_str());
-  config_file.imbue(wloc);
   if (config_file.bad()) {
     LOG(ERR) << "Can't open config file : " << ::GetLastError() << std::endl;
     return false;

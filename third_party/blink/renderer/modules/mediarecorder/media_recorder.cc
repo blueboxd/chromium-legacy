@@ -173,7 +173,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
     return;
   }
   DCHECK(stream_->getTracks().size());
-  recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler(
+  recorder_handler_ = MediaRecorderHandler::Create(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   DCHECK(recorder_handler_);
 
@@ -294,9 +294,8 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
 
 bool MediaRecorder::isTypeSupported(ExecutionContext* context,
                                     const String& type) {
-  std::unique_ptr<WebMediaRecorderHandler> handler =
-      Platform::Current()->CreateMediaRecorderHandler(
-          context->GetTaskRunner(TaskType::kInternalMediaRealTime));
+  std::unique_ptr<MediaRecorderHandler> handler = MediaRecorderHandler::Create(
+      context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler)
     return false;
 

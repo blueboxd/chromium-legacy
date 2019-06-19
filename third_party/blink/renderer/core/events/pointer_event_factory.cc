@@ -342,7 +342,7 @@ FloatPoint PointerEventFactory::GetLastPointerPosition(
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
-    TimeTicks platfrom_time_stamp) {
+    base::TimeTicks platfrom_time_stamp) {
   DCHECK(pointer_id_mapping_.Contains(pointer_id));
   pointer_id_mapping_.Set(
       pointer_id,

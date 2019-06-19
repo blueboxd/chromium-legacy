@@ -192,6 +192,8 @@ class ExtensionProtocolsTestBase : public testing::Test {
   void TearDown() override {
     loader_factory_.reset();
     content_verifier_->Shutdown();
+    // Shut down the PowerMonitor if initialized.
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void SetProtocolHandler(bool is_incognito) {
@@ -250,7 +252,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
 
   void SimulateSystemSuspendForRequests() {
     power_monitor_source_ = new base::PowerMonitorTestSource();
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
+    base::PowerMonitor::Initialize(
         std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_));
   }
 
@@ -300,9 +302,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
   std::unique_ptr<content::WebContents> contents_;
   const bool force_incognito_;
 
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
-
-  // |power_monitor_source_| is owned by |power_monitor_|
+  // |power_monitor_source_| is owned by the global PowerMonitor.
   base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
 };
 

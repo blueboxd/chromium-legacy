@@ -61,6 +61,11 @@ class IsolationContextMetrics : public GraphImplObserverDefaultImpl {
   // only one page versus multi-page browsing instances. See
   // BrowsingInstanceDataState for more details.
   static const char kBrowsingInstanceDataByTimeHistogramName[];
+  // This histogram records the number of frames in a renderer over time.
+  static const char kFramesPerRendererByTimeHistogram[];
+  // This histogram records the number of site instances in a renderer over
+  // time.
+  static const char kSiteInstancesPerRendererByTimeHistogram[];
 
   // Tracks the number of distinct site instances being hosted per process.
   struct ProcessData {

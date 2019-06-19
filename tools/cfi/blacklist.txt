@@ -29,6 +29,9 @@ fun:*internal_default_instance*
 # CAtlArray<T> casts to uninitialized T*.
 src:*atlcoll.h
 
+# https://github.com/grpc/grpc/issues/19375
+src:*third_party/grpc/src/src/core/lib/gprpp/inlined_vector.h
+
 #############################################################################
 # Base class's constructor accesses a derived class.
 
@@ -49,7 +52,7 @@ fun:*ThreadSafeRefCountedGarbageCollected*makeKeepAlive*
 fun:*DatabaseContext*contextDestroyed*
 
 # FIXME: Cannot handle template function LifecycleObserver<>::setContext,
-# so exclude source file for now. 
+# so exclude source file for now.
 src:*lifecycle_observer.h*
 
 #############################################################################

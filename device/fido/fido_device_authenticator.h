@@ -151,6 +151,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 
   void OnBioEnroll(pin::TokenResponse,
                    BioEnrollmentCallback callback,
+                   base::Optional<std::vector<uint8_t>> current_template_id,
                    CtapDeviceResponseCode,
                    base::Optional<BioEnrollmentResponse>);
 

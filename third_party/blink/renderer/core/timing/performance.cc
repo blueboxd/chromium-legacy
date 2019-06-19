@@ -95,7 +95,7 @@ constexpr size_t kDefaultElementTimingBufferSize = 150;
 constexpr size_t kDefaultLayoutJankBufferSize = 150;
 
 Performance::Performance(
-    TimeTicks time_origin,
+    base::TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : resource_timing_buffer_size_limit_(kDefaultResourceTimingBufferSize),
       event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
@@ -456,7 +456,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
       result.last_redirect_end_time = last_chained_timing->ReceiveHeadersEnd();
     } else {
       result.allow_redirect_details = false;
-      result.last_redirect_end_time = TimeTicks();
+      result.last_redirect_end_time = base::TimeTicks();
     }
     if (!result.allow_redirect_details) {
       // TODO(https://crbug.com/817691): There was previously a DCHECK that
@@ -470,7 +470,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
     }
   } else {
     result.allow_redirect_details = false;
-    result.last_redirect_end_time = TimeTicks();
+    result.last_redirect_end_time = base::TimeTicks();
   }
 
   result.transfer_size = info.TransferSize();
@@ -505,7 +505,8 @@ void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
   }
   if (!resource_timing_buffer_full_event_pending_) {
     resource_timing_buffer_full_event_pending_ = true;
-    resource_timing_buffer_full_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    resource_timing_buffer_full_timer_.StartOneShot(base::TimeDelta(),
+                                                    FROM_HERE);
   }
   resource_timing_secondary_buffer_.push_back(entry);
 }
@@ -606,17 +607,17 @@ void Performance::setEventTimingBufferMaxSize(unsigned size) {
     DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
-void Performance::AddFirstPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstPaintTiming(base::TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstPaint, start_time);
 }
 
-void Performance::AddFirstContentfulPaintTiming(TimeTicks start_time) {
+void Performance::AddFirstContentfulPaintTiming(base::TimeTicks start_time) {
   AddPaintTiming(PerformancePaintTiming::PaintType::kFirstContentfulPaint,
                  start_time);
 }
 
 void Performance::AddPaintTiming(PerformancePaintTiming::PaintType type,
-                                 TimeTicks start_time) {
+                                 base::TimeTicks start_time) {
   PerformanceEntry* entry = MakeGarbageCollected<PerformancePaintTiming>(
       type, MonotonicTimeToDOMHighResTimeStamp(start_time));
   // Always buffer First Paint & First Contentful Paint.
@@ -633,8 +634,8 @@ bool Performance::CanAddResourceTimingEntry() {
 }
 
 void Performance::AddLongTaskTiming(
-    TimeTicks start_time,
-    TimeTicks end_time,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
     const AtomicString& name,
     const String& frame_src,
     const String& frame_id,
@@ -881,7 +882,7 @@ bool Performance::HasObserverFor(
 
 void Performance::ActivateObserver(PerformanceObserver& observer) {
   if (active_observers_.IsEmpty())
-    deliver_observations_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    deliver_observations_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   active_observers_.insert(&observer);
 }
@@ -919,8 +920,8 @@ double Performance::ClampTimeResolution(double time_seconds) {
 
 // static
 DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
-    TimeTicks time_origin,
-    TimeTicks monotonic_time,
+    base::TimeTicks time_origin,
+    base::TimeTicks monotonic_time,
     bool allow_negative_value) {
   // Avoid exposing raw platform timestamps.
   if (monotonic_time.is_null() || time_origin.is_null())
@@ -935,7 +936,7 @@ DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
 }
 
 DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
-    TimeTicks monotonic_time) const {
+    base::TimeTicks monotonic_time) const {
   return MonotonicTimeToDOMHighResTimeStamp(time_origin_, monotonic_time,
                                             false /* allow_negative_value */);
 }
@@ -985,7 +986,7 @@ DOMHighResTimeStamp Performance::UnifiedClock::GetUnixAtZeroMonotonic() const {
   return unix_at_zero_monotonic_.value();
 }
 
-TimeTicks Performance::UnifiedClock::NowTicks() const {
+base::TimeTicks Performance::UnifiedClock::NowTicks() const {
   return tick_clock_->NowTicks();
 }
 

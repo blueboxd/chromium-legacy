@@ -27,8 +27,6 @@ class HeapProfilerController {
     task_runner_ = std::move(task_runner);
   }
 
-  static bool IsReportingEnabled();
-
  private:
   using StoppedFlag = base::RefCountedData<base::AtomicFlag>;
 

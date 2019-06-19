@@ -225,3 +225,9 @@ class OncMojo {
     return value;
   }
 }
+
+/** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
+OncMojo.DeviceStateProperties;
+
+/** @typedef {chromeos.networkConfig.mojom.NetworkType} */
+OncMojo.NetworkType = chromeos.networkConfig.mojom.NetworkType;

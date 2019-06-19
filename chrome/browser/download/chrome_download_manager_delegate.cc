@@ -102,7 +102,6 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "services/network/public/cpp/features.h"
 #endif
 
 using content::BrowserThread;
@@ -584,16 +583,14 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
     int64_t content_length,
     content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
-                                                                  mime_type)) {
-      offline_pages::OfflinePageUtils::ScheduleDownload(
-          web_contents, offline_pages::kDownloadNamespace, url,
-          offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
-          request_origin);
-      return true;
-    }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
+                                                                mime_type)) {
+    offline_pages::OfflinePageUtils::ScheduleDownload(
+        web_contents, offline_pages::kDownloadNamespace, url,
+        offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
+        request_origin);
+    return true;
   }
 #endif
   return false;

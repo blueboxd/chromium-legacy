@@ -150,7 +150,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   bool geometry_needs_update_;
   bool is_animating_;
-  TimeTicks start_time_;
+  base::TimeTicks start_time_;
   CompositorElementId element_id_;
 };
 

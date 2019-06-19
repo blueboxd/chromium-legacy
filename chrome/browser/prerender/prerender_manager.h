@@ -136,6 +136,15 @@ class PrerenderManager : public content::NotificationObserver,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  // Adds a prerender for the prefetch url from NavigationPredictor on
+  // page load, if NoStatePrefetch and prefetch_after_preconnect are true.
+  // Uses the NavigationPredictor's browser context and the default
+  // SessionStorageNamespace. Returns a PrerenderHandle or NULL.
+  std::unique_ptr<PrerenderHandle> AddPrerenderFromNavigationPredictor(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   std::unique_ptr<PrerenderHandle> AddPrerenderFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,

@@ -229,13 +229,12 @@ void ShellDesktopControllerAura::OnDisplayModeChanged(
 #endif
 
 ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
-    ui::KeyEvent* key_event,
-    DispatchKeyEventPostIMECallback callback) {
+    ui::KeyEvent* key_event) {
   if (key_event->target()) {
     aura::WindowTreeHost* host = static_cast<aura::Window*>(key_event->target())
                                      ->GetRootWindow()
                                      ->GetHost();
-    return host->DispatchKeyEventPostIME(key_event, std::move(callback));
+    return host->DispatchKeyEventPostIME(key_event);
   }
 
   // Send the key event to the focused window.
@@ -243,11 +242,10 @@ ui::EventDispatchDetails ShellDesktopControllerAura::DispatchKeyEventPostIME(
       const_cast<aura::Window*>(focus_controller_->GetActiveWindow());
   if (active_window) {
     return active_window->GetRootWindow()->GetHost()->DispatchKeyEventPostIME(
-        key_event, std::move(callback));
+        key_event);
   }
 
-  return GetPrimaryHost()->DispatchKeyEventPostIME(key_event,
-                                                   std::move(callback));
+  return GetPrimaryHost()->DispatchKeyEventPostIME(key_event);
 }
 
 void ShellDesktopControllerAura::OnKeepAliveStateChanged(

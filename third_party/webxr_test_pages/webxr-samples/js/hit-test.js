@@ -175,11 +175,18 @@ function hitTestPlane(ray, plane, frameOfReference) {
 
 // multiple planes hit test
 export function hitTest(ray, planes, frameOfReference) {
-  const hit_test_results = planes.map(plane => hitTestPlane(ray, plane, frameOfReference));
+  let hit_test_results = [];
+  planes.forEach(plane => {
+    let result = hitTestPlane(ray, plane, frameOfReference);
+    if(result) {
+      // throw away results with no intersection with plane
+      hit_test_results.push(result);
+    }
+  });
 
-  // throw away all strange results (no intersection with plane, ray lies on plane)
+  // throw away all strange results (ray lies on plane)
   let hit_test_results_with_points = hit_test_results.filter(
-    maybe_plane => maybe_plane && typeof maybe_plane.point != "undefined");
+    maybe_plane => typeof maybe_plane.point != "undefined");
 
   // sort results by distance
   hit_test_results_with_points.sort((l, r) => l.distance - r.distance);

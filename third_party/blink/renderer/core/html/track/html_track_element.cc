@@ -163,7 +163,7 @@ void HTMLTrackElement::ScheduleLoad() {
 
   // 4. Run the remainder of these steps in parallel, allowing whatever caused
   // these steps to run to continue.
-  load_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  load_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   // 5. Top: Await a stable state. The synchronous section consists of the
   // following steps. (The steps in the synchronous section are marked with [X])

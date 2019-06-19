@@ -68,9 +68,9 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   // on the main thread. If |observer| is null, then no callbacks will occur.
   void SetTaskQueueSelectorObserver(Observer* observer);
 
-  // Returns true if all the enabled work queues are empty. Returns false
-  // otherwise.
-  bool AllEnabledWorkQueuesAreEmpty() const;
+  // Returns the priority of the most important pending task if one exists.
+  // O(1).
+  Optional<TaskQueue::QueuePriority> GetHighestPendingPriority() const;
 
   // WorkQueueSets::Observer implementation:
   void WorkQueueSetBecameEmpty(size_t set_index) override;

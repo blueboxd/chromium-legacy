@@ -43,55 +43,6 @@ bool IsValidUrlForAttachmentServices(const GURL& url) {
   return url.is_valid() && url.spec().size() <= INTERNET_MAX_URL_LENGTH;
 }
 
-// Sets the Zone Identifier on the file to "Internet" (3). Returns true if the
-// function succeeds, false otherwise. A failure is expected if alternate
-// streams are not supported, like a file on a FAT32 filesystem.  This function
-// does not invoke Windows Attachment Execution Services.
-//
-// On Windows 10 or higher, the ReferrerUrl and HostUrl values are set according
-// to the behavior of the IAttachmentExecute interface.
-//
-// |full_path| is the path to the downloaded file.
-QuarantineFileResult SetInternetZoneIdentifierDirectly(
-    const base::FilePath& full_path,
-    const GURL& source_url,
-    const GURL& referrer_url) {
-  const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  std::wstring path = full_path.value() + kZoneIdentifierStreamSuffix;
-  base::win::ScopedHandle file(::CreateFile(path.c_str(), GENERIC_WRITE, kShare,
-                                            nullptr, OPEN_ALWAYS,
-                                            FILE_ATTRIBUTE_NORMAL, nullptr));
-  if (!file.IsValid())
-    return QuarantineFileResult::ANNOTATION_FAILED;
-
-  static const char kReferrerUrlFormat[] = "ReferrerUrl=%s\r\n";
-  static const char kHostUrlFormat[] = "HostUrl=%s\r\n";
-
-  std::string identifier = "[ZoneTransfer]\r\nZoneId=3\r\n";
-  if (base::win::GetVersion() >= base::win::Version::WIN10) {
-    // Match what the InvokeAttachmentServices() function will output, including
-    // the order of the values.
-    if (IsValidUrlForAttachmentServices(referrer_url)) {
-      identifier.append(
-          base::StringPrintf(kReferrerUrlFormat, referrer_url.spec().c_str()));
-    }
-    identifier.append(base::StringPrintf(
-        kHostUrlFormat, IsValidUrlForAttachmentServices(source_url)
-                            ? source_url.spec().c_str()
-                            : "about:internet"));
-  }
-
-  // Don't include trailing null in data written.
-  DWORD written = 0;
-  BOOL write_result = ::WriteFile(file.Get(), identifier.c_str(),
-                                  identifier.length(), &written, nullptr);
-  BOOL flush_result = FlushFileBuffers(file.Get());
-
-  return write_result && flush_result && written == identifier.length()
-             ? QuarantineFileResult::OK
-             : QuarantineFileResult::ANNOTATION_FAILED;
-}
-
 // Maps a return code from an unsuccessful IAttachmentExecute::Save() call to a
 // QuarantineFileResult.
 //
@@ -227,6 +178,55 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
 }
 
 }  // namespace
+
+// Sets the Zone Identifier on the file to "Internet" (3). Returns true if the
+// function succeeds, false otherwise. A failure is expected if alternate
+// streams are not supported, like a file on a FAT32 filesystem.  This function
+// does not invoke Windows Attachment Execution Services.
+//
+// On Windows 10 or higher, the ReferrerUrl and HostUrl values are set according
+// to the behavior of the IAttachmentExecute interface.
+//
+// |full_path| is the path to the downloaded file.
+QuarantineFileResult SetInternetZoneIdentifierDirectly(
+    const base::FilePath& full_path,
+    const GURL& source_url,
+    const GURL& referrer_url) {
+  const DWORD kShare = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+  std::wstring path = full_path.value() + kZoneIdentifierStreamSuffix;
+  base::win::ScopedHandle file(::CreateFile(path.c_str(), GENERIC_WRITE, kShare,
+                                            nullptr, OPEN_ALWAYS,
+                                            FILE_ATTRIBUTE_NORMAL, nullptr));
+  if (!file.IsValid())
+    return QuarantineFileResult::ANNOTATION_FAILED;
+
+  static const char kReferrerUrlFormat[] = "ReferrerUrl=%s\r\n";
+  static const char kHostUrlFormat[] = "HostUrl=%s\r\n";
+
+  std::string identifier = "[ZoneTransfer]\r\nZoneId=3\r\n";
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
+    // Match what the InvokeAttachmentServices() function will output, including
+    // the order of the values.
+    if (IsValidUrlForAttachmentServices(referrer_url)) {
+      identifier.append(
+          base::StringPrintf(kReferrerUrlFormat, referrer_url.spec().c_str()));
+    }
+    identifier.append(base::StringPrintf(
+        kHostUrlFormat, IsValidUrlForAttachmentServices(source_url)
+                            ? source_url.spec().c_str()
+                            : "about:internet"));
+  }
+
+  // Don't include trailing null in data written.
+  DWORD written = 0;
+  BOOL write_result = ::WriteFile(file.Get(), identifier.c_str(),
+                                  identifier.length(), &written, nullptr);
+  BOOL flush_result = FlushFileBuffers(file.Get());
+
+  return write_result && flush_result && written == identifier.length()
+             ? QuarantineFileResult::OK
+             : QuarantineFileResult::ANNOTATION_FAILED;
+}
 
 QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,

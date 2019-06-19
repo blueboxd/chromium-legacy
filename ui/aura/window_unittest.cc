@@ -1834,10 +1834,10 @@ class WindowObserverTest : public WindowTest,
 
   // Returns a description of the WindowObserver methods that have been invoked.
   std::string WindowObserverCountStateAndClear() {
-    std::string result(
-        base::StringPrintf("added=%d removed=%d",
-        added_count_, removed_count_));
-    added_count_ = removed_count_ = 0;
+    std::string result(base::StringPrintf("added=%d removing=%d removed=%d",
+                                          added_count_, removing_count_,
+                                          removed_count_));
+    added_count_ = removing_count_ = removed_count_ = 0;
     return result;
   }
 
@@ -1858,7 +1858,9 @@ class WindowObserverTest : public WindowTest,
  private:
   void OnWindowAdded(Window* new_window) override { added_count_++; }
 
-  void OnWillRemoveWindow(Window* window) override { removed_count_++; }
+  void OnWillRemoveWindow(Window* window) override { removing_count_++; }
+
+  void OnWindowRemoved(Window* removed_window) override { removed_count_++; }
 
   void OnWindowVisibilityChanged(Window* window, bool visible) override {
     if (!visibility_info_) {
@@ -1926,6 +1928,7 @@ class WindowObserverTest : public WindowTest,
   }
 
   int added_count_ = 0;
+  int removing_count_ = 0;
   int removed_count_ = 0;
   int destroyed_count_ = 0;
   std::unique_ptr<VisibilityInfo> visibility_info_;
@@ -1949,20 +1952,20 @@ TEST_F(WindowObserverTest, WindowObserver) {
 
   // Create a new window as a child of w1, our observer should be notified.
   std::unique_ptr<Window> w2(CreateTestWindowWithId(2, w1.get()));
-  EXPECT_EQ("added=1 removed=0", WindowObserverCountStateAndClear());
+  EXPECT_EQ("added=1 removing=0 removed=0", WindowObserverCountStateAndClear());
 
-  // Delete w2, which should result in the remove notification.
+  // Delete w2, which should result in the remove notifications.
   w2.reset();
-  EXPECT_EQ("added=0 removed=1", WindowObserverCountStateAndClear());
+  EXPECT_EQ("added=0 removing=1 removed=1", WindowObserverCountStateAndClear());
 
   // Create a window that isn't parented to w1, we shouldn't get any
   // notification.
   std::unique_ptr<Window> w3(CreateTestWindowWithId(3, root_window()));
-  EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
+  EXPECT_EQ("added=0 removing=0 removed=0", WindowObserverCountStateAndClear());
 
   // Similarly destroying w3 shouldn't notify us either.
   w3.reset();
-  EXPECT_EQ("added=0 removed=0", WindowObserverCountStateAndClear());
+  EXPECT_EQ("added=0 removing=0 removed=0", WindowObserverCountStateAndClear());
   w1->RemoveObserver(this);
 }
 

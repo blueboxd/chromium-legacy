@@ -4,6 +4,11 @@
 
 #include "chromeos/services/ime/ime_service.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "build/buildflag.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
@@ -24,6 +29,9 @@ ImeService::~ImeService() = default;
 void ImeService::OnStart() {
   binders_.Add(base::BindRepeating(&ImeService::AddInputEngineManagerReceiver,
                                    base::Unretained(this)));
+
+  binders_.Add(base::BindRepeating(
+      &ImeService::BindPlatformAccessClientReceiver, base::Unretained(this)));
 
   manager_receivers_.set_disconnect_handler(base::BindRepeating(
       &ImeService::OnConnectionLost, base::Unretained(this)));
@@ -58,6 +66,18 @@ void ImeService::AddInputEngineManagerReceiver(
     mojo::PendingReceiver<mojom::InputEngineManager> receiver) {
   manager_receivers_.Add(this, std::move(receiver));
   // TODO(https://crbug.com/837156): Reset the cleanup timer.
+}
+
+void ImeService::BindPlatformAccessClientReceiver(
+    mojo::PendingReceiver<mojom::PlatformAccessClient> receiver) {
+  if (!access_receiver_.is_bound()) {
+    access_receiver_.Bind(std::move(receiver));
+  }
+}
+
+void ImeService::SetPlatformAccessProvider(
+    mojo::PendingRemote<mojom::PlatformAccessProvider> access) {
+  platform_access_.Bind(std::move(access));
 }
 
 void ImeService::OnConnectionLost() {

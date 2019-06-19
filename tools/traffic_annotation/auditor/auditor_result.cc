@@ -180,6 +180,12 @@ std::string AuditorResult::ToText() const {
           "at %s.",
           details_[0].c_str(), file_path_.c_str());
 
+    case AuditorResult::Type::ERROR_MUTABLE_TAG:
+      return base::StringPrintf(
+          "Calling CreateMutableNetworkTrafficAnnotationTag() is not "
+          "whitelisted at '%s:%i'",
+          file_path_.c_str(), line_);
+
     default:
       return std::string();
   }

@@ -55,8 +55,6 @@ class TestPowerMonitorSource : public base::PowerMonitorSource {
   TestPowerMonitorSource() = default;
   ~TestPowerMonitorSource() override = default;
 
-  void Shutdown() override {}
-
   void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
 
   void Resume() { ProcessPowerEvent(RESUME_EVENT); }
@@ -75,9 +73,10 @@ class TCPClientSocketTest : public testing::Test {
     std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
         std::make_unique<TestPowerMonitorSource>();
     power_monitor_source_ = power_monitor_source.get();
-    power_monitor_ =
-        std::make_unique<base::PowerMonitor>(std::move(power_monitor_source));
+    base::PowerMonitor::Initialize(std::move(power_monitor_source));
   }
+
+  ~TCPClientSocketTest() override { base::PowerMonitor::ShutdownForTesting(); }
 
   void Suspend() { power_monitor_source_->Suspend(); }
   void Resume() { power_monitor_source_->Resume(); }
@@ -124,7 +123,6 @@ class TCPClientSocketTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
   TestPowerMonitorSource* power_monitor_source_;
 };
 

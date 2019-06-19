@@ -2577,7 +2577,7 @@ CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range,
       unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
     DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
-               .IsEnabled());
+               .IsWebExposed());
 #endif
     range.ConsumeIncludingWhitespace();
     return MakeGarbageCollected<CSSCustomIdentValue>(unresolved_property);

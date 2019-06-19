@@ -1030,12 +1030,13 @@ void InspectorNetworkAgent::DidReceiveEncodedDataLength(
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
 
-void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
-                                             DocumentLoader* loader,
-                                             TimeTicks monotonic_finish_time,
-                                             int64_t encoded_data_length,
-                                             int64_t decoded_body_length,
-                                             bool should_report_corb_blocking) {
+void InspectorNetworkAgent::DidFinishLoading(
+    uint64_t identifier,
+    DocumentLoader* loader,
+    base::TimeTicks monotonic_finish_time,
+    int64_t encoded_data_length,
+    int64_t decoded_body_length,
+    bool should_report_corb_blocking) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
@@ -1060,7 +1061,7 @@ void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
     monotonic_finish_time = CurrentTimeTicks();
 
   is_handling_sync_xhr_ = false;
-  // TODO(npm): Use TimeTicks in Network.h.
+  // TODO(npm): Use base::TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
       request_id, monotonic_finish_time.since_origin().InSecondsF(),
       encoded_data_length, should_report_corb_blocking);
@@ -1073,7 +1074,7 @@ void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
     Resource* resource) {
   // Update the response and finish loading
   DidReceiveResourceResponse(identifier, loader, response, resource);
-  DidFinishLoading(identifier, loader, TimeTicks(),
+  DidFinishLoading(identifier, loader, base::TimeTicks(),
                    WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 

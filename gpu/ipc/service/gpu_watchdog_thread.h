@@ -70,11 +70,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnBackgrounded() override;
   void OnForegrounded() override;
 
-  // Test only functions. Not thread safe - set before arming.
-  void SetAlternativeTerminateFunctionForTesting(
-      base::RepeatingClosure on_terminate);
-  void SetTimeoutForTesting(base::TimeDelta timeout);
-
  protected:
   void Init() override;
   void CleanUp() override;
@@ -214,8 +209,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   FILE* tty_file_;
   int host_tty_;
 #endif
-
-  base::RepeatingClosure alternative_terminate_for_testing_;
 
   base::WeakPtrFactory<GpuWatchdogThreadImplV1> weak_factory_;
 

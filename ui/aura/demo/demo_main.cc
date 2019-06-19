@@ -159,8 +159,8 @@ int DemoMain() {
       &host_frame_sink_manager, &frame_sink_manager);
   context_factory->set_use_test_surface(false);
 
-  base::PowerMonitor power_monitor(
-      base::WrapUnique(new base::PowerMonitorDeviceSource));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
 
   std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();
   env->set_context_factory(context_factory.get());

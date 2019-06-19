@@ -1703,6 +1703,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         // mOmniboxStartupMetrics might be null. ie. ToolbarManager is destroyed. See
         // https://crbug.com/860449
         if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.maybeRecordHistograms();
+
+        mLocationBar.onDeferredStartup();
     }
 
     /**

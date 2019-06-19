@@ -12,7 +12,7 @@ namespace blink {
 
 PointerEvent::PointerEvent(const AtomicString& type,
                            const PointerEventInit* initializer,
-                           TimeTicks platform_time_stamp)
+                           base::TimeTicks platform_time_stamp)
     : MouseEvent(type, initializer, platform_time_stamp),
       pointer_id_(0),
       width_(0),
@@ -111,7 +111,7 @@ HeapVector<Member<PointerEvent>> PointerEvent::getPredictedEvents() {
   return predicted_events_;
 }
 
-TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
+base::TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
   if (coalesced_events_.size() > 0) {
     // Assume that time stamps of coalesced events are in ascending order.
     return coalesced_events_[0]->PlatformTimeStamp();

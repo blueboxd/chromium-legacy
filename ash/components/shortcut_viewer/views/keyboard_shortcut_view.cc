@@ -475,7 +475,6 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
 
 void KeyboardShortcutView::ShowSearchResults(
     const base::string16& search_query) {
-  const base::TimeTicks start_time = base::TimeTicks::Now();
   search_results_container_->RemoveAllChildViews(true);
   auto* search_container_content_view = search_no_result_view_.get();
   auto found_items_list_view = std::make_unique<KeyboardShortcutItemListView>();
@@ -552,21 +551,6 @@ void KeyboardShortcutView::ShowSearchResults(
   search_results_container_->AddChildView(search_container_content_view);
   Layout();
   SchedulePaint();
-  constexpr int kBucketCount = 100;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Keyboard.ShortcutViewer.SearchUpdateTime",
-      base::TimeTicks::Now() - start_time,
-      base::TimeDelta::FromMicroseconds(50), base::TimeDelta::FromSeconds(1),
-      kBucketCount);
-  GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
-      base::BindOnce(
-          [](base::TimeTicks start_time,
-             const gfx::PresentationFeedback& feedback) {
-            UMA_HISTOGRAM_TIMES(
-                "Keyboard.ShortcutViewer.SearchUpdateTimeVisual",
-                feedback.timestamp - start_time);
-          },
-          start_time));
 }
 
 bool KeyboardShortcutView::CanMaximize() const {

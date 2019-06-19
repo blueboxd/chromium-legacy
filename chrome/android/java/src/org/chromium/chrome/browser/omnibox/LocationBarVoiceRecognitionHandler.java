@@ -17,7 +17,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -253,7 +252,7 @@ public class LocationBarVoiceRecognitionHandler {
                 return;
             }
 
-            String url = AutocompleteController.nativeQualifyPartialURLQuery(topResultQuery);
+            String url = autocompleteCoordinator.qualifyPartialURLQuery(topResultQuery);
             if (url == null) {
                 url = TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(topResultQuery);
             }
@@ -277,7 +276,7 @@ public class LocationBarVoiceRecognitionHandler {
 
     /** Convert the android voice intent bundle to a list of result objects. */
     @VisibleForTesting
-    protected static List<VoiceResult> convertBundleToVoiceResults(Bundle extras) {
+    protected List<VoiceResult> convertBundleToVoiceResults(Bundle extras) {
         if (extras == null) return null;
 
         ArrayList<String> strings = extras.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
@@ -285,6 +284,9 @@ public class LocationBarVoiceRecognitionHandler {
 
         if (strings == null || confidences == null) return null;
         if (strings.size() != confidences.length) return null;
+
+        AutocompleteCoordinator autocompleteCoordinator = mDelegate.getAutocompleteCoordinator();
+        assert autocompleteCoordinator != null;
 
         List<VoiceResult> results = new ArrayList<>();
         for (int i = 0; i < strings.size(); ++i) {
@@ -295,7 +297,7 @@ public class LocationBarVoiceRecognitionHandler {
             // If the string appears to be a URL, then use it instead of the string returned from
             // the voice engine.
             String culledString = strings.get(i).replaceAll(" ", "");
-            String url = AutocompleteController.nativeQualifyPartialURLQuery(culledString);
+            String url = autocompleteCoordinator.qualifyPartialURLQuery(culledString);
             results.add(
                     new VoiceResult(url == null ? strings.get(i) : culledString, confidences[i]));
         }

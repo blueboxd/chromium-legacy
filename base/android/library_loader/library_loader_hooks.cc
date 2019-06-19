@@ -13,11 +13,11 @@
 #include "base/android/orderfile/orderfile_buildflags.h"
 #include "base/android/sys_utils.h"
 #include "base/at_exit.h"
+#include "base/base_jni_headers/LibraryLoader_jni.h"
 #include "base/base_switches.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "jni/LibraryLoader_jni.h"
 
 #if BUILDFLAG(ORDERFILE_INSTRUMENTATION)
 #include "base/android/orderfile/orderfile_instrumentation.h"

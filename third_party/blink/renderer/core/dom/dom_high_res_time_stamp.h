@@ -21,12 +21,12 @@ inline double ConvertDOMHighResTimeStampToSeconds(
 }
 
 inline DOMHighResTimeStamp ConvertTimeTicksToDOMHighResTimeStamp(
-    TimeTicks time) {
-  return (time - TimeTicks()).InMillisecondsF();
+    base::TimeTicks time) {
+  return (time - base::TimeTicks()).InMillisecondsF();
 }
 
 inline DOMHighResTimeStamp ConvertTimeDeltaToDOMHighResTimeStamp(
-    TimeDelta delta) {
+    base::TimeDelta delta) {
   return delta.InMillisecondsF();
 }
 

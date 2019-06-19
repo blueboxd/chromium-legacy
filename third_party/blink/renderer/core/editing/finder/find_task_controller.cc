@@ -22,7 +22,8 @@ namespace blink {
 
 namespace {
 const int kFindingTimeoutMS = 100;
-constexpr TimeDelta kFindTaskTestTimeout = TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kFindTaskTestTimeout =
+    base::TimeDelta::FromSeconds(10);
 }  // namespace
 
 class FindTaskController::IdleFindTask
@@ -73,9 +74,9 @@ class FindTaskController::IdleFindTask
                                  PositionInFlatTree(), 0 /* match_count */);
     }
 
-    const TimeDelta time_available =
-        TimeDelta::FromMillisecondsD(deadline->timeRemaining());
-    const TimeTicks start_time = CurrentTimeTicks();
+    const base::TimeDelta time_available =
+        base::TimeDelta::FromMillisecondsD(deadline->timeRemaining());
+    const base::TimeTicks start_time = CurrentTimeTicks();
 
     Document& document = *controller_->GetLocalFrame()->GetDocument();
     PositionInFlatTree search_start =
@@ -147,7 +148,7 @@ class FindTaskController::IdleFindTask
         break;
     }
 
-    const TimeDelta time_spent = CurrentTimeTicks() - start_time;
+    const base::TimeDelta time_spent = CurrentTimeTicks() - start_time;
     UMA_HISTOGRAM_TIMES("WebCore.FindInPage.ScopingTime",
                         time_spent - time_available);
 

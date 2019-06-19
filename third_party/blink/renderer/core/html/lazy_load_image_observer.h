@@ -30,7 +30,7 @@ class LazyLoadImageObserver final
     bool record_visibility_metrics = false;
 
     // Set when the image first becomes visible (i.e. appears in the viewport).
-    TimeTicks time_when_first_visible;
+    base::TimeTicks time_when_first_visible;
   };
 
   LazyLoadImageObserver();

@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,10 +58,10 @@ const char kContactDetailsFreeShippingPage[] =
 // Sets up a credit card with an associated billing address.
 - (void)setUpCreditCard {
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 }
 
 // Completes the Payment Request.
@@ -96,11 +95,11 @@ const char kContactDetailsFreeShippingPage[] =
 
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
+  [self addAutofillProfile:billingAddress];
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
   // Check that the initial use stats were set correctly.
   autofill::CreditCard* initialCard =
@@ -143,7 +142,7 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile shippingAddress = autofill::test::GetFullProfile2();
   shippingAddress.set_use_count(3);
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:shippingAddress]);
+  [self addAutofillProfile:shippingAddress];
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialShipping =
@@ -175,7 +174,7 @@ const char kContactDetailsFreeShippingPage[] =
   // selected as the default shipping address.
   autofill::AutofillProfile contactAddress = autofill::test::GetFullProfile2();
   contactAddress.set_use_count(3);
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:contactAddress]);
+  [self addAutofillProfile:contactAddress];
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialContact =
@@ -207,7 +206,7 @@ const char kContactDetailsFreeShippingPage[] =
   // the default shipping and contact address.
   autofill::AutofillProfile multiAddress = autofill::test::GetFullProfile2();
   multiAddress.set_use_count(3);
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:multiAddress]);
+  [self addAutofillProfile:multiAddress];
 
   // Check that the initial use stats were set correctly.
   autofill::AutofillProfile* initialAddress =

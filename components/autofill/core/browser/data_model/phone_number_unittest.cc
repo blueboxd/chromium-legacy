@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -84,6 +85,35 @@ TEST(PhoneNumberTest, Matcher) {
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(PHONE_HOME_CITY_AND_NUMBER) !=
               matching_types.end());
+}
+
+TEST(PhoneNumberTest, Matcher_DE) {
+  // Verify that the derived types of German numbers are correct.
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                       ASCIIToUTF16("+491741234567"), "DE");
+
+  ServerFieldTypeSet matching_types;
+  phone_number.GetMatchingTypes(ASCIIToUTF16("+491741234567"), "de-DE",
+                                &matching_types);
+  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_WHOLE_NUMBER));
+
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("01741234567"), "de-DE",
+                                &matching_types);
+  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_CITY_AND_NUMBER));
+
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("1234567"), "de-DE",
+                                &matching_types);
+  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_NUMBER));
+
+  // TODO(crbug.com/638795) This is incorrect and should be 0174.
+  matching_types.clear();
+  phone_number.GetMatchingTypes(ASCIIToUTF16("174"), "de-DE", &matching_types);
+  EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_CITY_CODE));
 }
 
 // Verify that PhoneNumber::SetInfo() correctly formats the incoming number.
@@ -231,6 +261,32 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
       number7.SetInfo(AutofillType(PHONE_HOME_NUMBER), ASCIIToUTF16("5682")));
   EXPECT_TRUE(number7.ParseNumber(AutofillProfile(), "en-US", &parsed_phone));
   EXPECT_EQ(ASCIIToUTF16("(650) 234-5682"), parsed_phone);
+}
+
+TEST(PhoneNumberTest, InternationalPhoneHomeCityAndNumber_US) {
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  // Set phone number so country_code == 1, city_code = 650, number = 2345678.
+  base::string16 phone(ASCIIToUTF16("+1 (650) 234-5678"));
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone, "en-US");
+  EXPECT_EQ(ASCIIToUTF16("6502345678"),
+            phone_number.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "en-US"));
+}
+
+// This is a regression test for crbug.com/638795.
+TEST(PhoneNumberTest, InternationalPhoneHomeCityAndNumber_DE) {
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+  // Set phone number so country_code == 49, city_code = 174, number = 12 34
+  // 567.
+  base::string16 phone(ASCIIToUTF16("+49 (174) 12 34 567"));
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone, "en-US");
+  // Note that for German numbers (unlike US numbers), the
+  // PHONE_HOME_CITY_AND_NUMBER should start with a 0.
+  EXPECT_EQ(ASCIIToUTF16("01741234567"),
+            phone_number.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "en-US"));
 }
 
 }  // namespace autofill

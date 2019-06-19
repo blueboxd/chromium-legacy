@@ -491,6 +491,12 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
             result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
           }
           break;
+        case AuditorResult::Type::ERROR_MUTABLE_TAG:
+          if (IsSafeListed(file_path,
+                           AuditorException::ExceptionType::MUTABLE_TAG)) {
+            result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
+          }
+          break;
         default:
           break;
       }
@@ -511,14 +517,9 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
       new_assignment.file_path =
           MakeRelativePath(absolute_source_path_, new_assignment.file_path);
       if (IsSafeListed(new_assignment.file_path,
-                       AuditorException::ExceptionType::ALL)) {
+                       AuditorException::ExceptionType::DIRECT_ASSIGNMENT)) {
         result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
-      }
-      if (result.IsOK() &&
-          !IsSafeListed(base::StringPrintf(
-                            "%s@%s", new_assignment.function_context.c_str(),
-                            new_assignment.file_path.c_str()),
-                        AuditorException::ExceptionType::DIRECT_ASSIGNMENT)) {
+      } else if (result.IsOK()) {
         result = AuditorResult(AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT,
                                std::string(), new_assignment.file_path,
                                new_assignment.line_number);

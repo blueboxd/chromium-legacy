@@ -14,6 +14,12 @@
 
 namespace blink {
 
+namespace internal {
+
+extern bool IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object);
+
+}
+
 class ImageElementTimingTest : public RenderingTest {
  protected:
   // Sets an image resource for the LayoutImage with the given |id| and return
@@ -59,13 +65,63 @@ class ImageElementTimingTest : public RenderingTest {
   }
 };
 
+TEST_F(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
+  EnableCompositing();
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <img id="missing-attribute" style='width: 100px; height: 100px;'/>
+    <img id="unset-attribute" elementtiming style='width: 100px; height: 100px;'/>
+    <img id="empty-attribute" elementtiming="" style='width: 100px; height: 100px;'/>
+    <img id="valid-attribute" elementtiming="valid-id" style='width: 100px; height: 100px;'/>
+  )HTML");
+
+  LayoutObject* without_attribute =
+      GetLayoutObjectByElementId("missing-attribute");
+  bool actual = internal::IsExplicitlyRegisteredForTiming(without_attribute);
+  EXPECT_FALSE(actual) << "Nodes without an 'elementtiming' attribute should "
+                          "not be explicitly registered.";
+
+  LayoutObject* with_undefined_attribute =
+      GetLayoutObjectByElementId("unset-attribute");
+  actual = internal::IsExplicitlyRegisteredForTiming(with_undefined_attribute);
+  EXPECT_FALSE(actual) << "Nodes with undefined 'elementtiming' attribute "
+                          "should not be explicitly registered.";
+
+  LayoutObject* with_empty_attribute =
+      GetLayoutObjectByElementId("empty-attribute");
+  actual = internal::IsExplicitlyRegisteredForTiming(with_empty_attribute);
+  EXPECT_FALSE(actual) << "Nodes with an empty 'elementtiming' attribute "
+                          "should not be explicitly registered.";
+
+  LayoutObject* with_explicit_element_timing =
+      GetLayoutObjectByElementId("valid-attribute");
+  actual =
+      internal::IsExplicitlyRegisteredForTiming(with_explicit_element_timing);
+  EXPECT_TRUE(actual) << "Nodes with a non-empty 'elementtiming' attribute "
+                         "should be explicitly registered.";
+}
+
+TEST_F(ImageElementTimingTest, IgnoresUnmarkedElement) {
+  // Tests that, if the 'elementtiming' attribute is missing, the element isn't
+  // considered by ImageElementTiming.
+  EnableCompositing();
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <img id="target" style='width: 100px; height: 100px;'/>
+  )HTML");
+  LayoutImage* layout_image = SetImageResource("target", 5, 5);
+  ASSERT_TRUE(layout_image);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(GetImagesNotified().Contains(layout_image));
+}
+
 TEST_F(ImageElementTimingTest, ImageInsideSVG) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <svg mask="url(#mask)">
       <mask id="mask">
         <foreignObject width="100" height="100">
-          <img id="target" style='width: 100px; height: 100px;'/>
+          <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
         </foreignObject>
       </mask>
       <rect width="100" height="100" fill="green"/>
@@ -84,7 +140,7 @@ TEST_F(ImageElementTimingTest, ImageRemoved) {
   EnableCompositing();
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
-    <img id="target" style='width: 100px; height: 100px;'/>
+    <img elementtiming="will-be-removed" id="target" style='width: 100px; height: 100px;'/>
   )HTML");
   LayoutImage* layout_image = SetImageResource("target", 5, 5);
   ASSERT_TRUE(layout_image);
@@ -102,7 +158,7 @@ TEST_F(ImageElementTimingTest, SVGImageRemoved) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <svg>
-      <image id="target" style='width: 100px; height: 100px;'/>
+      <image elementtiming="svg-will-be-removed" id="target" style='width: 100px; height: 100px;'/>
     </svg>
   )HTML");
   LayoutSVGImage* layout_image = SetSVGImageResource("target", 5, 5);
@@ -125,7 +181,7 @@ TEST_F(ImageElementTimingTest, BackgroundImageRemoved) {
         background: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
       }
     </style>
-    <div id="target">/div>
+    <div elementtiming="time-my-background-image" id="target">/div>
   )HTML");
   LayoutObject* object = GetLayoutObjectByElementId("target");
   ImageResourceContent* content =

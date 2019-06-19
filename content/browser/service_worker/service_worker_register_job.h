@@ -42,6 +42,11 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                                   ServiceWorkerRegistration* registration)>
       RegistrationCallback;
 
+  enum class UpdateCheckType {
+    kMainScriptDuringStartWorker,  // Only check main script.
+    kAllScriptsBeforeStartWorker,  // Check all scripts.
+  };
+
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -78,11 +83,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
     STORE,
     COMPLETE,
     ABORT,
-  };
-
-  enum class UpdateCheckType {
-    kMainScriptDuringStartWorker,  // Only check main script.
-    kAllScriptsBeforeStartWorker,  // Check all scripts.
   };
 
   // Holds internal state of ServiceWorkerRegistrationJob, to compel use of the

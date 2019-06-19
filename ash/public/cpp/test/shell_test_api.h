@@ -69,9 +69,6 @@ class ASH_EXPORT ShellTestApi {
   // fullscreen button.
   void ToggleFullscreen();
 
-  // Enters or exits overview mode.
-  void ToggleOverviewMode();
-
   // Returns true if it is in overview selecting mode.
   bool IsOverviewSelecting();
 

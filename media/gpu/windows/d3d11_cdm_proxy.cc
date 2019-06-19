@@ -632,13 +632,10 @@ bool D3D11CdmProxy::HardwareEventWatcher::
 }
 
 bool D3D11CdmProxy::HardwareEventWatcher::RegisterPowerEvents() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (!power_monitor) {
+  if (!base::PowerMonitor::AddObserver(this)) {
     DVLOG(1) << "Power monitor not available.";
     return false;
   }
-
-  power_monitor->AddObserver(this);
   return true;
 }
 
@@ -657,9 +654,7 @@ void D3D11CdmProxy::HardwareEventWatcher::StopWatching() {
         teardown_event_cookie_);
   }
   teardown_status_watcher_.StopWatching();
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 }  // namespace media

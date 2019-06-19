@@ -40,9 +40,8 @@ int NaClBrokerMain(const content::MainFunctionParams& parameters) {
 
   mojo::core::Init();
 
-  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
-  base::PowerMonitor power_monitor(std::move(power_monitor_source));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
   NaClBrokerListener listener;

@@ -156,7 +156,7 @@ void ReportingContext::SendToReportingAPI(Report* report,
     const DeprecationReportBody* body =
         static_cast<DeprecationReportBody*>(report->body());
     base::Optional<base::Time> anticipated_removal =
-        WTF::Time::FromDoubleT(body->anticipatedRemoval(is_null));
+        base::Time::FromDoubleT(body->anticipatedRemoval(is_null));
     if (is_null)
       anticipated_removal = base::nullopt;
     GetReportingService()->QueueDeprecationReport(

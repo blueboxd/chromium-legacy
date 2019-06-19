@@ -4,11 +4,33 @@
 
 module quarantine.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
+import "url/mojom/url.mojom";
+
 const string kServiceName = "quarantine";
 const string kQuarantineFileCapability = "quarantine_file";
 
-// The Quarantine interface will define a QuarantineFile
-// method to be called when a file should be annotated with Mark-Of-The-Web.
-// The implementation will be moved from components/download/quarantine.
+enum QuarantineFileResult {
+  OK,             // Success.
+  ACCESS_DENIED,  // Access to the file was denied. The safety of the file
+                  // could not be determined.
+  BLOCKED_BY_POLICY,  // Downloads from the source url are not allowed by
+                      // policy. The file has been deleted.
+  ANNOTATION_FAILED,  // Unable to write the mark-of-the-web or otherwise
+                      // annotate the file as being downloaded from
+                      // the source url.
+  FILE_MISSING,       // The file does not name a valid file.
+  SECURITY_CHECK_FAILED,  // An unknown error occurred while checking the file.
+                          // The file may have been deleted.
+  VIRUS_INFECTED  // The file was found to be infected by a virus and was
+                  // deleted.
+};
+
 interface Quarantine {
+
+ QuarantineFile(mojo_base.mojom.FilePath full_path,
+                url.mojom.Url source_url,
+                url.mojom.Url referrer_url,
+                string client_guid)
+     => (QuarantineFileResult result);
 };

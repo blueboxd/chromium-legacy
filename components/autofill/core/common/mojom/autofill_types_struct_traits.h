@@ -49,13 +49,6 @@ struct EnumTraits<autofill::mojom::SubmissionSource,
 };
 
 template <>
-struct EnumTraits<autofill::mojom::FillingStatus, autofill::FillingStatus> {
-  static autofill::mojom::FillingStatus ToMojom(autofill::FillingStatus input);
-  static bool FromMojom(autofill::mojom::FillingStatus input,
-                        autofill::FillingStatus* output);
-};
-
-template <>
 struct EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType> {
   static autofill::mojom::ButtonTitleType ToMojom(
       autofill::ButtonTitleType input);

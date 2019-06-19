@@ -1367,7 +1367,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   // Tests that the shelf is visible when in overview mode
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kEnterAnimationComplete);
 
@@ -1376,7 +1376,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   EXPECT_EQ(SHELF_BACKGROUND_OVERVIEW, GetShelfWidget()->GetBackgroundType());
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kExitAnimationComplete);
 
@@ -3225,14 +3225,14 @@ TEST_F(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
   TestDisplayObserver observer;
   {
     OverviewAnimationWaiter waiter;
-    overview_controller->ToggleOverview();
+    overview_controller->StartOverview();
     waiter.Wait();
   }
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_EQ(0, observer.metrics_change_count());
   {
     OverviewAnimationWaiter waiter;
-    overview_controller->ToggleOverview();
+    overview_controller->EndOverview();
     waiter.Wait();
   }
   ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
@@ -3254,7 +3254,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   {
     OverviewAnimationWaiter waiter;
-    overview_controller->ToggleOverview();
+    overview_controller->StartOverview();
     shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
     waiter.Wait();
   }
@@ -3263,7 +3263,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
   // Change alignment during overview exit animation.
   {
     OverviewAnimationWaiter waiter;
-    overview_controller->ToggleOverview();
+    overview_controller->EndOverview();
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     waiter.Wait();
   }

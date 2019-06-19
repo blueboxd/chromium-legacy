@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/debug/alias.h"
+#include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -77,7 +78,11 @@ base::UnsafeSharedMemoryRegion* OutputDeviceBacking::GetSharedMemoryRegion(
 
     base::debug::Alias(&max_viewport_bytes);
     region_ = base::UnsafeSharedMemoryRegion::Create(max_viewport_bytes);
-    CHECK(region_.IsValid());
+    if (!region_.IsValid()) {
+      LOG(ERROR) << "Shared memory region create failed on "
+                 << max_viewport_bytes << " bytes";
+      return nullptr;
+    }
     created_shm_bytes_ = max_viewport_bytes;
   } else {
     // Clients must call Resize() for new |viewport_size|.

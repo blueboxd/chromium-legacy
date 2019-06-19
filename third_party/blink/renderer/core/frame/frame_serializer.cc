@@ -408,7 +408,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
                "type", "CSS", "url", url.ElidedString().Utf8());
   // Only report UMA metric if this is not a reentrant CSS serialization call.
-  TimeTicks css_start_time;
+  base::TimeTicks css_start_time;
   if (!is_serializing_css_) {
     is_serializing_css_ = true;
     css_start_time = CurrentTimeTicks();
@@ -448,7 +448,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   for (unsigned i = 0; i < style_sheet.length(); ++i)
     SerializeCSSRule(style_sheet.item(i));
 
-  if (css_start_time != TimeTicks()) {
+  if (css_start_time != base::TimeTicks()) {
     is_serializing_css_ = false;
     DEFINE_STATIC_LOCAL(CustomCountHistogram, css_histogram,
                         ("PageSerialization.SerializationTime.CSSElement", 0,

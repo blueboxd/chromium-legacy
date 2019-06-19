@@ -61,9 +61,7 @@
         </div>
 
         <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-          <network-siminfo editable on-click="doNothing_"
-              network-properties="[[getCellularState_(deviceState)]]"
-              networking-private="[[networkingPrivate]]">
+          <network-siminfo on-click="doNothing_">
           </network-siminfo>
         </template>
 

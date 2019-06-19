@@ -1142,6 +1142,12 @@ interface ContactsManager
     attribute @@toStringTag
     method constructor
     method select
+interface ContentIndex
+    attribute @@toStringTag
+    method add
+    method constructor
+    method delete
+    method getDescriptions
 interface ConvolverNode : AudioNode
     attribute @@toStringTag
     getter buffer
@@ -7391,6 +7397,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter index
     getter installing
     getter navigationPreload
     getter onupdatefound

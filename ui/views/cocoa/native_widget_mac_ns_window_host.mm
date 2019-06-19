@@ -1430,14 +1430,12 @@ void NativeWidgetMacNSWindowHost::OnDidChangeFocus(View* focused_before,
 // NativeWidgetMacNSWindowHost, internal::InputMethodDelegate:
 
 ui::EventDispatchDetails NativeWidgetMacNSWindowHost::DispatchKeyEventPostIME(
-    ui::KeyEvent* key,
-    DispatchKeyEventPostIMECallback callback) {
+    ui::KeyEvent* key) {
   DCHECK(focus_manager_);
   if (!focus_manager_->OnKeyEvent(*key))
     key->StopPropagation();
   else
     native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  RunDispatchKeyEventPostIMECallback(key, std::move(callback));
   return ui::EventDispatchDetails();
 }
 

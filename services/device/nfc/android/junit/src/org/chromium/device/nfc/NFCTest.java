@@ -18,6 +18,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import android.app.Activity;
 import android.content.Context;
@@ -440,6 +441,78 @@ public class NFCTest {
         // Check that cancel request was successfuly completed.
         verify(mockCancelPushCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
+    }
+
+    /**
+     * Test that compatibility is checked for Nfc.push() with NFC_FORUM device.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testPushCompatibilityMatchingNfcForum() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        doReturn(NdefCompatibility.NFC_FORUM).when(mNfcTagHandler).compatibility();
+
+        // Should match, because |compatibility| is set to NdefCompatibility.ANY
+        // in createNfcPushOptions().
+        PushResponse mockCallback_1 = mock(PushResponse.class);
+        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback_1);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback_1).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
+
+        // Should match.
+        PushResponse mockCallback_2 = mock(PushResponse.class);
+        NfcPushOptions options_2 = createNfcPushOptions();
+        options_2.compatibility = NdefCompatibility.NFC_FORUM;
+        nfc.push(createMojoNdefMessage(), options_2, mockCallback_2);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback_2).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
+
+        // Should not match.
+        PushResponse mockCallback_3 = mock(PushResponse.class);
+        NfcPushOptions options_3 = createNfcPushOptions();
+        options_3.compatibility = NdefCompatibility.VENDOR;
+        nfc.push(createMojoNdefMessage(), options_3, mockCallback_3);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verifyZeroInteractions(mockCallback_3);
+    }
+
+    /**
+     * Test that compatibility is checked for Nfc.push() with VENDOR device.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testPushCompatibilityMatchingVendor() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        doReturn(NdefCompatibility.VENDOR).when(mNfcTagHandler).compatibility();
+
+        // Should match, because |compatibility| is set to NdefCompatibility.ANY
+        // in createNfcPushOptions().
+        PushResponse mockCallback_1 = mock(PushResponse.class);
+        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback_1);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback_1).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
+
+        // Should match for NdefCompatibility.VENDOR.
+        PushResponse mockCallback_2 = mock(PushResponse.class);
+        NfcPushOptions options_2 = createNfcPushOptions();
+        options_2.compatibility = NdefCompatibility.VENDOR;
+        nfc.push(createMojoNdefMessage(), options_2, mockCallback_2);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback_2).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
+
+        // Should not match.
+        PushResponse mockCallback_3 = mock(PushResponse.class);
+        NfcPushOptions options_3 = createNfcPushOptions();
+        options_3.compatibility = NdefCompatibility.NFC_FORUM;
+        nfc.push(createMojoNdefMessage(), options_3, mockCallback_3);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verifyZeroInteractions(mockCallback_3);
     }
 
     /**
@@ -1195,11 +1268,7 @@ public class NFCTest {
      * Creates NfcPushOptions with default values.
      */
     private NfcPushOptions createNfcPushOptions() {
-        NfcPushOptions pushOptions = new NfcPushOptions();
-        pushOptions.target = NfcPushTarget.ANY;
-        pushOptions.timeout = Double.POSITIVE_INFINITY;
-        pushOptions.ignoreRead = false;
-        return pushOptions;
+        return createNfcPushOptions(/*timeout=*/Double.POSITIVE_INFINITY);
     }
 
     /**
@@ -1210,6 +1279,7 @@ public class NFCTest {
         pushOptions.target = NfcPushTarget.ANY;
         pushOptions.timeout = timeout;
         pushOptions.ignoreRead = false;
+        pushOptions.compatibility = NdefCompatibility.ANY;
         return pushOptions;
     }
 

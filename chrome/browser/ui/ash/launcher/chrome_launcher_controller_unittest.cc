@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -4508,4 +4509,17 @@ TEST_F(ChromeLauncherControllerTest, CrostiniBrowserWindowsRecogniseShelfItem) {
                     browser()->tab_strip_model()->GetActiveWebContents())
                 .app_id,
             item.id.app_id);
+}
+
+// Tests behavior for ensuring some component apps can be marked unpinnable.
+TEST_F(ChromeLauncherControllerTest, UnpinnableComponentApps) {
+  InitLauncherController();
+
+  const char* kPinnableApp = file_manager::kFileManagerAppId;
+  const char* kUnpinnableApp = file_manager::kGalleryAppId;
+
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(kPinnableApp, profile()));
+  EXPECT_EQ(AppListControllerDelegate::NO_PIN,
+            GetPinnableForAppID(kUnpinnableApp, profile()));
 }

@@ -73,6 +73,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableFormatDialog() {
+    enable_format_dialog.emplace(true);
+    return *this;
+  }
+
   TestCase& EnableArc() {
     enable_arc = true;
     return *this;
@@ -138,6 +143,7 @@ struct TestCase {
   base::Optional<bool> enable_drivefs;
   base::Optional<bool> enable_myfiles_volume;
   base::Optional<bool> enable_documents_provider;
+  base::Optional<bool> enable_format_dialog;
   bool enable_arc = false;
   bool with_browser = false;
   bool needs_zip = false;
@@ -197,6 +203,11 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetEnableDocumentsProvider() const override {
     return GetParam().enable_documents_provider.value_or(
         FileManagerBrowserTestBase::GetEnableDocumentsProvider());
+  }
+
+  bool GetEnableFormatDialog() const override {
+    return GetParam().enable_format_dialog.value_or(
+        FileManagerBrowserTestBase::GetEnableFormatDialog());
   }
 
   bool GetEnableArc() const override { return GetParam().enable_arc; }

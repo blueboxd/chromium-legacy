@@ -139,7 +139,7 @@ bool WriteJSON(const base::FilePath& file_path,
 
 // TODO(vincb): Add extra death tests.
 TEST(AutofillCacheReplayerDeathTest,
-     ServerCacheReplayerConstructorCrashesWhenCannotParseJSON) {
+     ServerCacheReplayerConstructor_CrashesWhenNoDomainNode) {
   // Make death test threadsafe.
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
@@ -150,7 +150,7 @@ TEST(AutofillCacheReplayerDeathTest,
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
   // JSON structure is not right.
-  const std::string invalid_json = "{\"Requests\": \"invalid_field\"}";
+  const std::string invalid_json = "{\"NoDomainNode\": \"invalid_field\"}";
 
   // Write json to file.
   ASSERT_TRUE(
@@ -162,6 +162,61 @@ TEST(AutofillCacheReplayerDeathTest,
       ServerCacheReplayer(file_path,
                           ServerCacheReplayer::kOptionFailOnInvalidJsonRecord),
       ".*");
+}
+
+TEST(AutofillCacheReplayerDeathTest,
+     ServerCacheReplayerConstructor_CrashesWhenNoQueryNodesAndFailOnEmpty) {
+  // Make death test threadsafe.
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  // Make writable file path.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath file_path =
+      temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
+
+  // Make empty request/response pairs to write in cache.
+  std::vector<RequestResponsePair> request_response_pairs;
+
+  // Write cache to json and create replayer.
+  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+
+  // Crash since there are no Query nodes and set to fail on empty.
+  ASSERT_DEATH_IF_SUPPORTED(
+      ServerCacheReplayer(file_path,
+                          ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
+                              ServerCacheReplayer::kOptionFailOnEmpty),
+      ".*");
+}
+
+TEST(AutofillCacheReplayerDeathTest,
+     CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty) {
+  // Make death test threadsafe.
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  // Make writable file path.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath file_path =
+      temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
+
+  // Make empty request/response pairs to write in cache.
+  std::vector<RequestResponsePair> request_response_pairs;
+
+  // Write cache to json and create replayer.
+  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+
+  // Should not crash even if no cache because kOptionFailOnEmpty is not
+  // flipped.
+  ServerCacheReplayer cache_replayer(
+      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+                     (ServerCacheReplayer::kOptionFailOnEmpty & 0));
+
+  // Should be able to read cache, which will give nothing.
+  std::string http_text;
+  AutofillQueryContents query_with_no_match;
+  EXPECT_FALSE(
+      cache_replayer.GetResponseForQuery(query_with_no_match, &http_text));
 }
 
 TEST(AutofillCacheReplayerTest, GetResponseForQueryFillsResponseWhenNoErrors) {
@@ -185,7 +240,8 @@ TEST(AutofillCacheReplayerTest, GetResponseForQueryFillsResponseWhenNoErrors) {
   ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
 
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord);
+      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+                     ServerCacheReplayer::kOptionFailOnEmpty);
 
   // Verify if we can get cached response.
   std::string http_text_response;
@@ -222,7 +278,8 @@ TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseWhenNoKeyMatch) {
   // Write cache to json and create replayer.
   ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord);
+      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+                     ServerCacheReplayer::kOptionFailOnEmpty);
 
   // Verify if we get false when there is no cache for the query.
   std::string http_text;

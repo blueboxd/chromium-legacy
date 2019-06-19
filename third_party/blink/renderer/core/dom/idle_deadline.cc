@@ -11,14 +11,14 @@
 
 namespace blink {
 
-IdleDeadline::IdleDeadline(TimeTicks deadline, CallbackType callback_type)
+IdleDeadline::IdleDeadline(base::TimeTicks deadline, CallbackType callback_type)
     : deadline_(deadline),
       callback_type_(callback_type),
       clock_(base::DefaultTickClock::GetInstance()) {}
 
 double IdleDeadline::timeRemaining() const {
-  TimeDelta time_remaining = deadline_ - clock_->NowTicks();
-  if (time_remaining < TimeDelta() ||
+  base::TimeDelta time_remaining = deadline_ - clock_->NowTicks();
+  if (time_remaining < base::TimeDelta() ||
       ThreadScheduler::Current()->ShouldYieldForHighPriorityWork()) {
     return 0;
   }

@@ -582,6 +582,14 @@ TEST_P(GLES3DecoderTest, WaitSyncValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest, InitFailsIfLostContext) {
+  InitState init;
+  init.extensions = "GL_KHR_robustness";
+  init.lose_context_on_init = true;
+  EXPECT_EQ(ContextResult::kTransientFailure,
+            MaybeInitDecoderWithWorkarounds(init, GpuDriverBugWorkarounds()));
+}
+
 TEST_P(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitState init;
   InitDecoder(init);

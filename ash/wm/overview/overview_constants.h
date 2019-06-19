@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "base/time/time.h"
 
 namespace ash {
 

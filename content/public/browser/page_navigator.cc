@@ -62,21 +62,8 @@ OpenURLParams::OpenURLParams(const GURL& url,
       open_app_window_if_possible(false),
       reload_type(ReloadType::NONE) {}
 
-OpenURLParams::OpenURLParams()
-    : uses_post(false),
-      frame_tree_node_id(RenderFrameHost::kNoFrameTreeNodeId),
-      disposition(WindowOpenDisposition::UNKNOWN),
-      transition(ui::PAGE_TRANSITION_LINK),
-      is_renderer_initiated(false),
-      should_replace_current_entry(false),
-      user_gesture(true),
-      started_from_context_menu(false),
-      open_app_window_if_possible(false),
-      reload_type(ReloadType::NONE) {}
-
 OpenURLParams::OpenURLParams(const OpenURLParams& other) = default;
 
-OpenURLParams::~OpenURLParams() {
-}
+OpenURLParams::~OpenURLParams() = default;
 
 }  // namespace content

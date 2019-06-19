@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -613,6 +613,15 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       # Don't add an example for Google cloud managed ChromeOS policies.
       dd = self._AddPolicyAttribute(dl, 'example_value')
       self._AddExample(dd, policy)
+    if 'atomic_group' in policy:
+      dd = self._AddPolicyAttribute(dl, 'policy_atomic_group')
+      policy_group_ref = './policy-list-3/atomic_groups'
+      if 'local' in self.config and self.config['local']:
+        policy_group_ref = './chrome_policy_atomic_groups_list.html'
+      self.AddText(dd, self.GetLocalizedMessage('policy_in_atomic_group') + ' ')
+      self.AddElement(dd, 'a',
+                      {'href': policy_group_ref + '#' + policy['atomic_group']},
+                      policy['atomic_group'])
 
   def _AddPolicyNote(self, parent, policy):
     '''If a policy has an additional web page assigned with it, then add
@@ -696,6 +705,33 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       return schema['minimum'] != 0
     return False
 
+  def _BeginTemplate(self, intro_message_id):
+    # Add a <div> for the summary section.
+    if self._GetChromiumVersionString() is not None:
+      self.AddComment(self._main_div, self.config['build'] + \
+          ' version: ' + self._GetChromiumVersionString())
+
+    summary_div = self.AddElement(self._main_div, 'div')
+    self.AddElement(summary_div, 'a', {'name': 'top'})
+    self.AddElement(summary_div, 'br')
+    self._AddParagraphs(summary_div, self.GetLocalizedMessage(intro_message_id))
+    self.AddElement(summary_div, 'br')
+    self.AddElement(summary_div, 'br')
+    self.AddElement(summary_div, 'br')
+    # Add the summary table of policies.
+    summary_table = self._AddStyledElement(summary_div, 'table', ['table'])
+    # Add the first row.
+    thead = self.AddElement(summary_table, 'thead')
+    tr = self._AddStyledElement(thead, 'tr', ['tr'])
+    self._AddStyledElement(tr, 'td', ['td', 'td.left', 'thead td'], {},
+                           self.GetLocalizedMessage('name_column_title'))
+    self._AddStyledElement(tr, 'td', ['td', 'td.right', 'thead td'], {},
+                           self.GetLocalizedMessage('description_column_title'))
+    self._summary_tbody = self.AddElement(summary_table, 'tbody')
+
+    # Add a <div> for the detailed policy listing.
+    self._details_div = self.AddElement(self._main_div, 'div')
+
   #
   # Implementation of abstract methods of TemplateWriter:
   #
@@ -715,31 +751,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._indent_level -= 1
 
   def BeginTemplate(self):
-    # Add a <div> for the summary section.
-    if self._GetChromiumVersionString() is not None:
-      self.AddComment(self._main_div, self.config['build'] + \
-          ' version: ' + self._GetChromiumVersionString())
-
-    summary_div = self.AddElement(self._main_div, 'div')
-    self.AddElement(summary_div, 'a', {'name': 'top'})
-    self.AddElement(summary_div, 'br')
-    self._AddParagraphs(summary_div, self.GetLocalizedMessage('intro'))
-    self.AddElement(summary_div, 'br')
-    self.AddElement(summary_div, 'br')
-    self.AddElement(summary_div, 'br')
-    # Add the summary table of policies.
-    summary_table = self._AddStyledElement(summary_div, 'table', ['table'])
-    # Add the first row.
-    thead = self.AddElement(summary_table, 'thead')
-    tr = self._AddStyledElement(thead, 'tr', ['tr'])
-    self._AddStyledElement(tr, 'td', ['td', 'td.left', 'thead td'], {},
-                           self.GetLocalizedMessage('name_column_title'))
-    self._AddStyledElement(tr, 'td', ['td', 'td.right', 'thead td'], {},
-                           self.GetLocalizedMessage('description_column_title'))
-    self._summary_tbody = self.AddElement(summary_table, 'tbody')
-
-    # Add a <div> for the detailed policy listing.
-    self._details_div = self.AddElement(self._main_div, 'div')
+    self._BeginTemplate('intro')
 
   def Init(self):
     dom_impl = minidom.getDOMImplementation('')

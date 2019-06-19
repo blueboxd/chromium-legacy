@@ -548,24 +548,6 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
   DestroyDataReductionProxySettings();
 }
 
-// Verify that the Chrome-Proxy Lo-Fi directive causes the context menu to
-// display the "Load Image" menu item.
-TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
-  SetupDataReductionProxy(true);
-  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.properties[
-      data_reduction_proxy::chrome_proxy_content_transform_header()] =
-          data_reduction_proxy::empty_image_directive();
-  params.unfiltered_link_url = params.link_url;
-  auto menu = std::make_unique<TestRenderViewContextMenu>(
-      web_contents()->GetMainFrame(), params);
-  AppendImageItems(menu.get());
-
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LOAD_IMAGE));
-
-  DestroyDataReductionProxySettings();
-}
-
 // Check that if image is broken "Load image" menu item is present.
 TEST_F(RenderViewContextMenuPrefsTest, LoadBrokenImage) {
   base::test::ScopedFeatureList scoped_feature_list;

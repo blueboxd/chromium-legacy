@@ -854,6 +854,14 @@ const GURL& InputMethodManagerImpl::StateImpl::GetInputViewUrl() const {
   return input_view_url;
 }
 
+void InputMethodManagerImpl::StateImpl::ConnectMojoManager(
+    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+  if (!ime_service_connector_) {
+    ime_service_connector_ = std::make_unique<ImeServiceConnector>(profile);
+  }
+  ime_service_connector_->SetupImeService(std::move(receiver));
+}
+
 // ------------------------ InputMethodManagerImpl
 bool InputMethodManagerImpl::IsLoginKeyboard(
     const std::string& layout) const {
@@ -1149,6 +1157,12 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
   }
 
   DVLOG(1) << "ActivateInputMethodMenuItem: unknown key: " << key;
+}
+
+void InputMethodManagerImpl::ConnectInputEngineManager(
+    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+  DCHECK(state_);
+  state_->ConnectMojoManager(std::move(receiver));
 }
 
 bool InputMethodManagerImpl::IsISOLevel5ShiftUsedByCurrentInputMethod() const {

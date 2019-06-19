@@ -80,7 +80,6 @@ DownloadService::ServiceStatus DownloadServiceImpl::GetStatus() {
 void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {
   stats::LogServiceApiAction(download_params.client,
                              stats::ServiceApiAction::START_DOWNLOAD);
-  stats::LogDownloadParams(download_params);
   if (startup_completed_) {
     controller_->StartDownload(download_params);
   } else {

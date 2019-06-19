@@ -80,7 +80,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(internal::NativeWidgetPrivate*,
                              nullptr)
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
-  window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
+  window->SetProperty(aura::client::kRestoreBoundsKey, bounds);
 }
 
 void SetIcon(aura::Window* window,
@@ -89,7 +89,7 @@ void SetIcon(aura::Window* window,
   if (value.isNull())
     window->ClearProperty(key);
   else
-    window->SetProperty(key, new gfx::ImageSkia(value));
+    window->SetProperty(key, value);
 }
 
 }  // namespace
@@ -363,7 +363,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   if (!window_)
     return;
 
-  window_->SetProperty(aura::client::kPreferredSize, new gfx::Size(size));
+  window_->SetProperty(aura::client::kPreferredSize, size);
 
   gfx::Rect parent_bounds(window_->parent()->GetBoundsInRootWindow());
   // When centering window, we take the intersection of the host and

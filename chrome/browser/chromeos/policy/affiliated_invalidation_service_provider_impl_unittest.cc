@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -55,8 +57,6 @@ const char kAffiliatedUserID1[] = "test_1@example.com";
 const char kAffiliatedUserID2[] = "test_2@example.com";
 const char kUnaffiliatedUserID[] = "test@other_domain.test";
 
-const char kFCMSenderId[] = "112233";
-
 std::unique_ptr<invalidation::InvalidationService>
 CreateInvalidationServiceForSenderId(const std::string& fcm_sender_id) {
   std::unique_ptr<invalidation::FakeInvalidationService> invalidation_service(
@@ -91,9 +91,9 @@ data_decoder::SafeJsonParser* CreateTestingJsonParser(
 }
 
 void SendInvalidatorStateChangeNotification(
+    bool is_fcm_enabled,
     invalidation::InvalidationService* service,
-    syncer::InvalidatorState state,
-    bool is_fcm_enabled) {
+    syncer::InvalidatorState state) {
   if (is_fcm_enabled) {
     static_cast<invalidation::FCMInvalidationService*>(service)
         ->OnInvalidatorStateChange(state);
@@ -172,6 +172,11 @@ class AffiliatedInvalidationServiceProviderImplTest
       bool create);
 
  protected:
+  // If true FCM (Firebase Cloud Messaging) based topics are used when
+  // registering to invalidations, Tango based invalidation topics are used
+  // otherwise.
+  bool is_fcm_enabled() { return GetParam(); }
+
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
   Profile* LogInAndReturnProfile(const std::string& user_id,
                                  bool is_affiliated);
@@ -179,12 +184,10 @@ class AffiliatedInvalidationServiceProviderImplTest
   std::unique_ptr<FakeConsumer> consumer_;
   invalidation::InvalidationService* device_invalidation_service_;
   invalidation::FakeInvalidationService* profile_invalidation_service_;
-  // Boolean param, true if FCM (Firebase Cloud Messaging) is enabled,
-  // and false otherwise.
-  const bool is_fcm_enabled_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedFeatureList feature_list_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
@@ -243,14 +246,15 @@ AffiliatedInvalidationServiceProviderImplTest::
     AffiliatedInvalidationServiceProviderImplTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
-      is_fcm_enabled_(GetParam()),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
       user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
   cros_settings_test_helper_.InstallAttributes()->SetCloudManaged("example.com",
                                                                   "device_id");
+  feature_list_.InitWithFeatureState(features::kPolicyFcmInvalidations,
+                                     is_fcm_enabled());
 
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     data_decoder::SafeJsonParser::SetFactoryForTesting(
         &CreateTestingJsonParser);
 
@@ -263,7 +267,7 @@ AffiliatedInvalidationServiceProviderImplTest::
 
 AffiliatedInvalidationServiceProviderImplTest::
     ~AffiliatedInvalidationServiceProviderImplTest() {
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     content::ServiceManagerConnection::DestroyForProcess();
     data_decoder::SafeJsonParser::SetFactoryForTesting(nullptr);
   }
@@ -278,21 +282,20 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
       test_url_loader_factory_.GetSafeWeakWrapper(),
       TestingBrowserProcess::GetGlobal()->local_state());
 
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     invalidation::ProfileInvalidationProviderFactory::GetInstance()
         ->RegisterTestingFactory(base::BindRepeating(
-            &BuildProfileInvalidationProvider, is_fcm_enabled_));
+            &BuildProfileInvalidationProvider, is_fcm_enabled()));
   } else {
     invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
         ->RegisterTestingFactory(base::BindRepeating(
-            &BuildProfileInvalidationProvider, is_fcm_enabled_));
+            &BuildProfileInvalidationProvider, is_fcm_enabled()));
   }
 
-  provider_ = is_fcm_enabled_
-                  ? std::make_unique<AffiliatedInvalidationServiceProviderImpl>(
-                        is_fcm_enabled_, kFCMSenderId)
-                  : std::make_unique<AffiliatedInvalidationServiceProviderImpl>(
-                        is_fcm_enabled_, "");
+  provider_ =
+      is_fcm_enabled()
+          ? std::make_unique<AffiliatedInvalidationServiceProviderImpl>()
+          : std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
 }
 
 void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
@@ -300,7 +303,7 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   provider_->Shutdown();
   provider_.reset();
 
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     invalidation::ProfileInvalidationProviderFactory::GetInstance()
         ->RegisterTestingFactory(
             BrowserContextKeyedServiceFactory::TestingFactory());
@@ -398,9 +401,9 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // Indicate that the device-global invalidation service has connected. Verify
   // that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
-  SendInvalidatorStateChangeNotification(device_invalidation_service_,
-                                         syncer::INVALIDATIONS_ENABLED,
-                                         is_fcm_enabled_);
+  SendInvalidatorStateChangeNotification(is_fcm_enabled(),
+                                         device_invalidation_service_,
+                                         syncer::INVALIDATIONS_ENABLED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(device_invalidation_service_, consumer_->GetInvalidationService());
 }
@@ -425,7 +428,7 @@ invalidation::FakeInvalidationService*
 AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
     Profile* profile, bool create) {
   invalidation::ProfileInvalidationProvider* invalidation_provider;
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     invalidation_provider =
         static_cast<invalidation::ProfileInvalidationProvider*>(
             invalidation::ProfileInvalidationProviderFactory::GetInstance()
@@ -439,10 +442,10 @@ AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
   }
   if (!invalidation_provider)
     return nullptr;
-  if (is_fcm_enabled_) {
+  if (is_fcm_enabled()) {
     return static_cast<invalidation::FakeInvalidationService*>(
         invalidation_provider->GetInvalidationServiceForCustomSender(
-            kFCMSenderId));
+            policy::kPolicyFCMInvalidationSenderID));
   }
   return static_cast<invalidation::FakeInvalidationService*>(
       invalidation_provider->GetInvalidationService());
@@ -490,8 +493,8 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
   // Verify that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   SendInvalidatorStateChangeNotification(
-      device_invalidation_service_, syncer::INVALIDATION_CREDENTIALS_REJECTED,
-      is_fcm_enabled_);
+      is_fcm_enabled(), device_invalidation_service_,
+      syncer::INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
 

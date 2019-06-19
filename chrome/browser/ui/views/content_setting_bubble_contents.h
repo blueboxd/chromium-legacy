@@ -75,7 +75,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void OnThemeChanged() override;
 
  private:
-  class Favicon;
   class ListItemContainer;
 
   // Applies coloring to the learn more button.

@@ -397,13 +397,20 @@ class CommandHandler {
     const menu = event.menu;
     // Set focus asynchronously to give time for menu "show" event to finish and
     // have all items set up before focusing.
-    setTimeout(() => menu.focusSelectedItem(), 0);
+    setTimeout(() => {
+      if (!menu.hidden) {
+        menu.focusSelectedItem();
+      }
+    }, 0);
   }
 
   /** @param {!Event} event */
   onContextMenuHide_(event) {
     if (this.lastFocusedElement_) {
-      this.lastFocusedElement_.focus();
+      const activeElement = document.activeElement;
+      if (activeElement && activeElement.tagName === 'BODY') {
+        this.lastFocusedElement_.focus();
+      }
       this.lastFocusedElement_ = null;
     }
   }

@@ -44,6 +44,7 @@ async_test((t) => {
     t.step(() => assert_equals(target.id, "outer", "edge hits outer"));
     target = document.elementFromPoint(100, 50);
     t.step(() => assert_equals(target.id, "body", "elsewhere hits body"));
+    t.done();
   }
   window.onload = () => { requestAnimationFrame(runTest); };
 });

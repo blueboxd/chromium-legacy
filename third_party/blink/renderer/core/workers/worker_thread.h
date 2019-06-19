@@ -366,7 +366,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   ThreadState thread_state_ GUARDED_BY(mutex_) = ThreadState::kNotStarted;
   ExitCode exit_code_ GUARDED_BY(mutex_) = ExitCode::kNotTerminated;
 
-  TimeDelta forcible_termination_delay_;
+  base::TimeDelta forcible_termination_delay_;
 
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   base::UnguessableToken devtools_worker_token_;

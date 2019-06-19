@@ -30,17 +30,15 @@
         padding: 16px 0;
       }
 
-      cr-dialog {
-        --cr-dialog-body: {
-          /* Add space for the link focus ring. See https://crbug.com/916939. */
-          padding-bottom: 2px;
-        };
+      #dialog-body {
+        /* Add space for the link focus ring. See https://crbug.com/916939. */
+        padding-bottom: 2px;
       }
     </style>
 
     <cr-dialog id="dialog" ignore-enter-key close-text="$i18n{close}">
       <div slot="title">$i18n{syncDisconnectTitle}</div>
-      <div slot="body">
+      <div id="dialog-body" slot="body">
         <div inner-h-t-m-l="[[
             getDisconnectExplanationHtml_(syncStatus.domain)]]">
         </div>

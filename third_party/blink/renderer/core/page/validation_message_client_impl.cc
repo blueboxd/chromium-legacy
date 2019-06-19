@@ -69,8 +69,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   message_ = message;
   page_->GetChromeClient().RegisterPopupOpeningObserver(this);
   constexpr auto kMinimumTimeToShowValidationMessage =
-      TimeDelta::FromSeconds(5);
-  constexpr auto kTimePerCharacter = TimeDelta::FromMilliseconds(50);
+      base::TimeDelta::FromSeconds(5);
+  constexpr auto kTimePerCharacter = base::TimeDelta::FromMilliseconds(50);
   finish_time_ =
       CurrentTimeTicks() +
       std::max(kMinimumTimeToShowValidationMessage,
@@ -114,7 +114,8 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
       &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.
-  const TimeDelta kHidingAnimationDuration = TimeDelta::FromSecondsD(0.13333);
+  const base::TimeDelta kHidingAnimationDuration =
+      base::TimeDelta::FromSecondsD(0.13333);
   timer_->StartOneShot(kHidingAnimationDuration, FROM_HERE);
 }
 
@@ -131,7 +132,7 @@ void ValidationMessageClientImpl::Reset(TimerBase*) {
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
-  finish_time_ = TimeTicks();
+  finish_time_ = base::TimeTicks();
   overlay_ = nullptr;
   overlay_delegate_ = nullptr;
   page_->GetChromeClient().UnregisterPopupOpeningObserver(this);

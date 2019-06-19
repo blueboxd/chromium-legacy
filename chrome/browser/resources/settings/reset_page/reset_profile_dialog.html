@@ -19,11 +19,9 @@
         margin: 0 8px;
       }
 
-      cr-dialog {
-        --cr-dialog-body: {
-          /* Add space for the link focus ring. See https://crbug.com/909653. */
-          padding-bottom: 2px;
-        };
+      #dialog-body {
+        /* Add space for the link focus ring. See https://crbug.com/909653. */
+        padding-bottom: 2px;
       }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}"
@@ -31,7 +29,7 @@
       <div slot="title">
         [[getPageTitle_(isTriggered_, triggeredResetToolName_)]]
       </div>
-      <div slot="body">
+      <div id="dialog-body" slot="body">
         <span>
           [[getExplanationText_(isTriggered_, triggeredResetToolName_)]]
           <a href="$i18nRaw{resetPageLearnMoreUrl}" target="_blank">

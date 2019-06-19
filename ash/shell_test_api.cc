@@ -195,10 +195,6 @@ void ShellTestApi::ToggleFullscreen() {
   ash::accelerators::ToggleFullscreen();
 }
 
-void ShellTestApi::ToggleOverviewMode() {
-  shell_->overview_controller()->ToggleOverview();
-}
-
 bool ShellTestApi::IsOverviewSelecting() {
   return shell_->overview_controller()->InOverviewSession();
 }

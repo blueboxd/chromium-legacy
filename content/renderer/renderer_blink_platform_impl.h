@@ -40,9 +40,12 @@ namespace scheduler {
 class WebThreadScheduler;
 }
 class WebGraphicsContext3DProvider;
-class WebMediaRecorderHandler;
 class WebSecurityOrigin;
 }  // namespace blink
+
+namespace media {
+class GpuVideoAcceleratorFactories;
+}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -141,8 +144,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
-  std::unique_ptr<blink::WebMediaRecorderHandler> CreateMediaRecorderHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter()
       override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
@@ -214,6 +215,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
+
+  media::GpuVideoAcceleratorFactories* GetGpuFactories() override;
 
   // Returns non-null.
   // It is invalid to call this in an incomplete env where

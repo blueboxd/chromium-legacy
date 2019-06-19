@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"

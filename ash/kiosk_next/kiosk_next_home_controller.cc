@@ -146,7 +146,7 @@ void KioskNextHomeController::OnGestureEvent(ui::GestureEvent* event) {
   if (component == HTCLIENT && event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     auto* overview_controller = Shell::Get()->overview_controller();
     if (!overview_controller->InOverviewSession())
-      overview_controller->ToggleOverview();
+      overview_controller->StartOverview();
     started_handling_events_ = true;
   }
 

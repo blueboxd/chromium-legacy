@@ -328,7 +328,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
 
   // Enable overview mode followed by the magnifier.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
@@ -364,7 +364,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   // Simulate going into split view, by enabling overview mode, and snapping
   // a window to the left.
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_EQ(split_view_controller->state(), SplitViewState::kLeftSnapped);
@@ -401,7 +401,7 @@ TEST_F(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
       CreateTestWindowInShell(SK_ColorWHITE, 200, gfx::Rect(0, 0, 200, 200)));
 
   auto* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   auto* split_view_controller = Shell::Get()->split_view_controller();

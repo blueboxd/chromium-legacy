@@ -28,13 +28,15 @@ namespace blink {
 
 namespace {
 
-constexpr TimeDelta kColdModeTimerInterval = TimeDelta::FromMilliseconds(1000);
-constexpr TimeDelta kConsecutiveColdModeTimerInterval =
-    TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kColdModeTimerInterval =
+    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kConsecutiveColdModeTimerInterval =
+    base::TimeDelta::FromMilliseconds(200);
 const int kHotModeRequestTimeoutMS = 200;
 const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
-constexpr TimeDelta kIdleSpellcheckTestTimeout = TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kIdleSpellcheckTestTimeout =
+    base::TimeDelta::FromSeconds(10);
 
 }  // namespace
 
@@ -140,9 +142,9 @@ void IdleSpellCheckController::SetNeedsColdModeInvocation() {
     return;
 
   DCHECK(!cold_mode_timer_.IsActive());
-  TimeDelta interval = state_ == State::kInColdModeInvocation
-                           ? kConsecutiveColdModeTimerInterval
-                           : kColdModeTimerInterval;
+  base::TimeDelta interval = state_ == State::kInColdModeInvocation
+                                 ? kConsecutiveColdModeTimerInterval
+                                 : kColdModeTimerInterval;
   cold_mode_timer_.StartOneShot(interval, FROM_HERE);
   state_ = State::kColdModeTimerStarted;
 }

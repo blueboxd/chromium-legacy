@@ -269,6 +269,7 @@ extern const char kAllowNaClSocketAPI[];
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kEnableNewAppMenuIcon[];
+extern const char kGuest[];
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \

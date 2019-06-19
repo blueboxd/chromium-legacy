@@ -381,17 +381,10 @@ void BookmarkAppHelper::OnIconsDownloaded(
   // installation code shouldn't have to perform UI work.
   if (for_installable_site_ == web_app::ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
-    if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(
           contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
           base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                          weak_factory_.GetWeakPtr()));
-    } else {
-      chrome::ShowPWAInstallDialog(
-          contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
-          base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
-                         weak_factory_.GetWeakPtr()));
-    }
   } else {
     chrome::ShowBookmarkAppDialog(
         contents_, std::make_unique<WebApplicationInfo>(web_app_info_),

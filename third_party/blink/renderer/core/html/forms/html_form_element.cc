@@ -307,23 +307,25 @@ void HTMLFormElement::PrepareForSubmission(
     }
   }
 
-  bool skip_validation = !GetDocument().GetPage() || NoValidate();
-  if (submit_button && submit_button->FormNoValidate())
-    skip_validation = true;
-
-  UseCounter::Count(GetDocument(), WebFeature::kFormSubmissionStarted);
-  // Interactive validation must be done before dispatching the submit event.
-  if (!skip_validation && !ValidateInteractively())
-    return;
-
   bool should_submit;
   {
     base::AutoReset<bool> submit_event_handler_scope(&in_user_js_submit_event_,
                                                      true);
-    frame->Client()->DispatchWillSendSubmitEvent(this);
-    should_submit =
-        DispatchEvent(*Event::CreateCancelableBubble(
-            event_type_names::kSubmit)) == DispatchEventResult::kNotCanceled;
+
+    bool skip_validation = !GetDocument().GetPage() || NoValidate();
+    if (submit_button && submit_button->FormNoValidate())
+      skip_validation = true;
+
+    UseCounter::Count(GetDocument(), WebFeature::kFormSubmissionStarted);
+    // Interactive validation must be done before dispatching the submit event.
+    if (!skip_validation && !ValidateInteractively()) {
+      should_submit = false;
+    } else {
+      frame->Client()->DispatchWillSendSubmitEvent(this);
+      should_submit =
+          DispatchEvent(*Event::CreateCancelableBubble(
+              event_type_names::kSubmit)) == DispatchEventResult::kNotCanceled;
+    }
   }
   if (should_submit) {
     planned_navigation_ = nullptr;

@@ -25,6 +25,10 @@ namespace data_reduction_proxy {
 class DataReductionProxySettings;
 }
 
+namespace previews {
+class PreviewsOptimizationGuide;
+}
+
 // Manages background preresolving or preconnecting for lite page redirect
 // previews. When a set of conditions are met, this class causes the litepage
 // version of the current committed page URL to be preresolved in a loop so that
@@ -45,7 +49,8 @@ class DataReductionProxySettings;
 // * Chrome is in the foreground.
 // * This' |web_contents| is in the foreground.
 class PreviewsLitePagePredictor
-    : public content::WebContentsObserver,
+    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<PreviewsLitePagePredictor> {
  public:
   ~PreviewsLitePagePredictor() override;
@@ -53,12 +58,23 @@ class PreviewsLitePagePredictor
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
+
+  // network::NetworkQualityTracker::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType ect) override;
 
  protected:
   explicit PreviewsLitePagePredictor(content::WebContents* web_contents);
 
   // Virtual for testing.
   virtual bool DataSaverIsEnabled() const;
+  virtual bool ECTIsSlow() const;
+  virtual bool PageIsBlacklisted(const GURL& url) const;
+
+  // Returns true when this |web_contents| is the active tab and Chrome is in
+  // the foreground. Virtual for testing.
+  virtual bool IsVisible() const;
 
  private:
   friend class content::WebContentsUserData<PreviewsLitePagePredictor>;
@@ -67,8 +83,16 @@ class PreviewsLitePagePredictor
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
                            DataSaverDisabled);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NoNavigation);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, ECTNotSlow);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, PageBlacklisted);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, NotVisible);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, InsecurePage);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
                            ToggleMultipleTimes_Navigations);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+                           ToggleMultipleTimes_ECT);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+                           ToggleMultipleTimes_Visibility);
 
   // Returns true if the current page should be preresolved.
   bool ShouldPreresolveOnPage() const;
@@ -87,6 +111,9 @@ class PreviewsLitePagePredictor
 
   // A reference to the DRP Settings.
   data_reduction_proxy::DataReductionProxySettings* drp_settings_;
+
+  // A reference to the PreviewsOptimizationGuide.
+  previews::PreviewsOptimizationGuide* opt_guide_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

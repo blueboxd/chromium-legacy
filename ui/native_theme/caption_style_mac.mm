@@ -123,7 +123,7 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 }  // namespace
 #endif
 // static
-CaptionStyle CaptionStyle::FromSystemSettings() {
+base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
 
 //  style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();

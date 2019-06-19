@@ -53,6 +53,9 @@
         <item name="rippleColor">@color/text_button_ripple_color</item>
         <item name="buttonRaised">false</item>
     </style>
+    <style name="TextButton.Inverse" tools:ignore="UnusedResources">
+        <item name="android:textAppearance">@style/TextAppearance.ButtonText.Inverse</item>
+    </style>
 
     <!-- Chips -->
     <style name="SuggestionChipThemeOverlay" tools:ignore="UnusedResources">
@@ -197,6 +200,10 @@
     <style name="TextAppearance.Title2.Inverse" parent="TextAppearance.WhiteTitle2"
         tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_inverse</item>
+    </style>
+    <style name="TextAppearance.ButtonText.Inverse" parent="TextAppearance.AccentMediumStyle">
+        <item name="android:textColor">@color/default_text_color_inverse_list</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
 
     <!-- Blue Text Styles -->

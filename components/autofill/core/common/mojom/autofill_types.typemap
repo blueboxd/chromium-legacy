@@ -4,7 +4,6 @@
 
 mojom = "//components/autofill/core/common/mojom/autofill_types.mojom"
 public_headers = [
-  "//components/autofill/core/common/filling_status.h",
   "//components/autofill/core/common/form_data.h",
   "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
@@ -29,7 +28,6 @@ deps = [
 ]
 
 type_mappings = [
-  "autofill.mojom.FillingStatus=autofill::FillingStatus",
   "autofill.mojom.FormData=autofill::FormData",
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",

@@ -31,7 +31,7 @@ UIEventWithKeyState::UIEventWithKeyState(
     AbstractView* view,
     int detail,
     WebInputEvent::Modifiers modifiers,
-    TimeTicks platform_time_stamp,
+    base::TimeTicks platform_time_stamp,
     InputDeviceCapabilities* source_capabilities)
     : UIEvent(type,
               bubbles,
@@ -45,7 +45,7 @@ UIEventWithKeyState::UIEventWithKeyState(
 
 UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type,
                                          const EventModifierInit* initializer,
-                                         TimeTicks platform_time_stamp)
+                                         base::TimeTicks platform_time_stamp)
     : UIEvent(type, initializer, platform_time_stamp), modifiers_(0) {
   if (initializer->ctrlKey())
     modifiers_ |= WebInputEvent::kControlKey;

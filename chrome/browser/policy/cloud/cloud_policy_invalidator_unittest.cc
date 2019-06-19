@@ -17,6 +17,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
@@ -24,6 +25,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
+#include "chrome/common/chrome_features.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -187,9 +189,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Get the policy type that the |invalidator_| is responsible for.
   virtual em::DeviceRegisterRequest::Type GetPolicyType() const;
 
-  // if true FCMInvalidationService is used as InvalidationService and
-  // TiclInvalidationService otherwise.
-  const bool is_fcm_enabled_;
+  bool is_fcm_enabled() { return is_fcm_enabled_; }
 
  private:
   // Checks that the policy was refreshed due to an invalidation with the given
@@ -204,6 +204,9 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  // Fake feature list with custom values.
+  base::test::ScopedFeatureList feature_list_;
+
   // Objects the invalidator depends on.
   invalidation::FakeInvalidationService invalidation_service_;
   MockCloudPolicyStore store_;
@@ -211,6 +214,10 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   MockCloudPolicyClient* client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SimpleTestClock clock_;
+
+  // If true FCM (Firebase Cloud Messaging) based topics used to register to
+  // invalidations and Tango based topics otherwise.
+  const bool is_fcm_enabled_;
 
   // The invalidator which will be tested.
   std::unique_ptr<CloudPolicyInvalidator> invalidator_;
@@ -230,18 +237,20 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
 
 CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase(
     bool is_fcm_enabled)
-    : is_fcm_enabled_(is_fcm_enabled),
-      core_(dm_protocol::kChromeUserPolicyType,
+    : core_(dm_protocol::kChromeUserPolicyType,
             std::string(),
             &store_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
             network::TestNetworkConnectionTracker::CreateGetter()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
+      is_fcm_enabled_(is_fcm_enabled),
       policy_value_a_("asdf"),
       policy_value_b_("zxcv"),
       policy_value_cur_(policy_value_a_) {
-  if (is_fcm_enabled_) {
+  feature_list_.InitWithFeatureState(features::kPolicyFcmInvalidations,
+                                     is_fcm_enabled);
+  if (is_fcm_enabled) {
     object_id_a_ =
         invalidation::ObjectId(syncer::kDeprecatedSourceForFCM, "asdf");
     object_id_b_ =
@@ -264,9 +273,9 @@ void CloudPolicyInvalidatorTestBase::StartInvalidator(
     bool initialize,
     bool start_refresh_scheduler,
     int64_t highest_handled_invalidation_version) {
-  invalidator_.reset(new CloudPolicyInvalidator(
-      GetPolicyType(), &core_, task_runner_, &clock_,
-      highest_handled_invalidation_version, is_fcm_enabled_));
+  invalidator_.reset(
+      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_, &clock_,
+                                 highest_handled_invalidation_version));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -312,7 +321,7 @@ void CloudPolicyInvalidatorTestBase::StorePolicy(PolicyObject object,
     data->set_invalidation_name(GetPolicyObjectId(object).name());
     // When FCM is enabled CloudPolicyInvalidator expects the name in this
     // field.
-    if (is_fcm_enabled_)
+    if (is_fcm_enabled())
       data->set_policy_invalidation_topic(GetPolicyObjectId(object).name());
   }
   data->set_timestamp(time.ToJavaTime());

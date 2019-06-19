@@ -71,6 +71,9 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   viz::TestSharedImageInterface* SharedImageInterface() override {
     return &test_shared_image_interface_;
   }
+  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                      media::VideoFrame* video_frame,
+                      cc::PaintCanvas* canvas) override {}
 
  private:
   cc::StubDecodeCache stub_image_decode_cache_;

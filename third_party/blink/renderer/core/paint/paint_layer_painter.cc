@@ -310,11 +310,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     return result;
 
   // If we're blocked from painting by the display lock, return early.
-  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
+  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockContext::kSelf)) {
     return result;
+  }
+
   // TODO(vmpstr): This should be called after paint succeeds, but due to
   // multiple early outs this is more convenient. We should use RAII here.
-  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
+  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint(
+      DisplayLockContext::kSelf);
 
   // A paint layer should always have LocalBorderBoxProperties when it's ready
   // for paint.
@@ -674,6 +678,10 @@ PaintResult PaintLayerPainter::PaintChildren(
     return result;
   if (!paint_layer_.StackingNode())
     return result;
+  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockContext::kChildren)) {
+    return result;
+  }
 
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutation_checker(paint_layer_.StackingNode());

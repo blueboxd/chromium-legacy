@@ -1,0 +1,14 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/rknoll/content-index
+
+[
+    Exposed=(Window,Worker),
+    RuntimeEnabled=ContentIndex
+] interface ContentIndex {
+    [CallWith=ScriptState] Promise<void> add(ContentDescription description);
+    [CallWith=ScriptState, ImplementedAs=deleteDescription] Promise<void> delete(DOMString id);
+    [CallWith=ScriptState] Promise<sequence<ContentDescription>> getDescriptions();
+};

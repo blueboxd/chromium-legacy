@@ -79,7 +79,7 @@ class ValidationMessageClientImpl final
   Member<Page> page_;
   Member<const Element> current_anchor_;
   String message_;
-  TimeTicks finish_time_;
+  base::TimeTicks finish_time_;
   std::unique_ptr<TimerBase> timer_;
   std::unique_ptr<FrameOverlay> overlay_;
   // Raw pointer. This pointer is valid unless overlay_ is nullptr.

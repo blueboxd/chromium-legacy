@@ -112,8 +112,8 @@ class CORE_EXPORT DisplayLockContext final
   void DidLayout(LifecycleTarget);
   bool ShouldPrePaint(LifecycleTarget) const;
   void DidPrePaint(LifecycleTarget);
-  bool ShouldPaint() const;
-  void DidPaint();
+  bool ShouldPaint(LifecycleTarget) const;
+  void DidPaint(LifecycleTarget);
 
   // Returns true if the last style recalc traversal was blocked at this
   // element, either for itself, its children or its descendants.

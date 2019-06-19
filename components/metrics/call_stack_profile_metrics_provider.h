@@ -42,9 +42,12 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override;
 
+  // Enables reporting of sampling heap profiles.
+  static const base::Feature kHeapProfilerReporting;
+
  protected:
-  // base::Feature for reporting profiles. Provided here for test use.
-  static const base::Feature kEnableReporting;
+  // base::Feature for reporting CPU profiles. Provided here for test use.
+  static const base::Feature kSamplingProfilerReporting;
 
   // Reset the static state to the defaults after startup.
   static void ResetStaticStateForTesting();

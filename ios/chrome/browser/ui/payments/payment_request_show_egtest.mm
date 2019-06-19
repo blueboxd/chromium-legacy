@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 
@@ -50,11 +49,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [super setUp];
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:profile]);
+  [self addAutofillProfile:profile];
 
   autofill::CreditCard localCard = autofill::test::GetCreditCard();  // Visa.
   localCard.set_billing_address_id(profile.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:localCard]);
+  [self addCreditCard:localCard];
 }
 
 #pragma mark - Tests

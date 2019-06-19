@@ -19,6 +19,8 @@
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/isolation_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
@@ -617,4 +619,64 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
   }
 }
 
+TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
+      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    nullptr, &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL("http://whatever/");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_ptr->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                          GURL());
+
+    EXPECT_EQ("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL = kProcessLockURL;
+    const GURL kManifestURL("http://whatever/");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_ptr->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                          kManifestURL);
+
+    EXPECT_EQ("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+}
+
+TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
+      IsolationContext(&browser_context_), kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    nullptr, &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
+
+  // Verify that a document URL from the wrong site triggers a bad message.
+  {
+    const GURL kDocumentURL("http://origin/document");
+    mojo::test::BadMessageObserver bad_message_observer;
+    host_ptr->MarkAsForeignEntry(kDocumentURL,
+                                 blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
+              bad_message_observer.WaitForBadMessage());
+  }
+}
 }  // namespace content

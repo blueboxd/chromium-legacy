@@ -38,15 +38,15 @@ FakeOAuth2TokenServiceDelegate::FakeOAuth2TokenServiceDelegate()
 FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() {
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   auto it = refresh_tokens_.find(account_id);
   DCHECK(it != refresh_tokens_.end());
-  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
-                                          it->second->refresh_token);
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, it->second->refresh_token);
 }
 
 bool FakeOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(

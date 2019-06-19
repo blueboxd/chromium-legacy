@@ -65,7 +65,7 @@ Event::Event() : Event("", Bubbles::kNo, Cancelable::kNo) {
 Event::Event(const AtomicString& event_type,
              Bubbles bubbles,
              Cancelable cancelable,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : Event(event_type,
             bubbles,
             cancelable,
@@ -86,7 +86,7 @@ Event::Event(const AtomicString& event_type,
              Bubbles bubbles,
              Cancelable cancelable,
              ComposedMode composed_mode,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : type_(event_type),
       bubbles_(bubbles == Bubbles::kYes),
       cancelable_(cancelable == Cancelable::kYes),
@@ -109,7 +109,7 @@ Event::Event(const AtomicString& event_type,
 
 Event::Event(const AtomicString& event_type,
              const EventInit* initializer,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : Event(event_type,
             initializer->bubbles() ? Bubbles::kYes : Bubbles::kNo,
             initializer->cancelable() ? Cancelable::kYes : Cancelable::kNo,

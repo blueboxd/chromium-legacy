@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
@@ -114,7 +114,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
   // Fire the timer/trigger a frame update. Since the observer always returns
   // true for shouldPauseAnimation, this will result in the timeline being
   // suspended.
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
@@ -148,7 +148,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
 
   // Fire the timer/trigger a frame update. The timeline will remain
   // suspended and no frame will be scheduled.
-  test::RunDelayedTasks(TimeDelta::FromMillisecondsD(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMillisecondsD(1) +
                         timer->NextFireInterval());
   EXPECT_TRUE(chrome_client.IsSuspended());
   EXPECT_FALSE(timer->IsActive());
@@ -172,14 +172,14 @@ TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
       ToLayoutBoxModelObject(svg_root)->Layer()->SupportsSubsequenceCaching());
 }
 
-TEST_F(SVGImageTest, JankTrackerDisabled) {
+TEST_F(SVGImageTest, LayoutShiftTrackerDisabled) {
   const bool kDontPause = false;
   Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kDontPause);
   LocalFrame* local_frame =
       To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
-  auto& jank_tracker = local_frame->View()->GetJankTracker();
-  EXPECT_FALSE(jank_tracker.IsActive());
+  auto& layout_shift_tracker = local_frame->View()->GetLayoutShiftTracker();
+  EXPECT_FALSE(layout_shift_tracker.IsActive());
 }
 
 TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
@@ -226,7 +226,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
 
   // Wait for the next animation frame to be triggered, and then trigger a new
   // frame. The image animation timeline should be running.
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   Compositor().BeginFrame();
 
@@ -236,7 +236,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // fire. This should suspend the image animation. (Suspend the image's
   // animation timeline.)
   WebView().SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
 
   EXPECT_TRUE(svg_image_chrome_client.IsSuspended());
@@ -244,7 +244,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // Set page visibility to 'visible' - this should schedule a new animation
   // frame and resume the image animation.
   WebView().SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test::RunDelayedTasks(TimeDelta::FromMilliseconds(1) +
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
   Compositor().BeginFrame();
 

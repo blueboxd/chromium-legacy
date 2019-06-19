@@ -347,14 +347,14 @@ testing::AssertionResult SyncFaviconCacheTest::ExpectFaviconEquals(
     const std::string& page_url,
     const std::string& bytes) const {
   GURL gurl(page_url);
-  scoped_refptr<base::RefCountedMemory> favicon =
+  favicon_base::FaviconRawBitmapResult favicon =
       cache_.GetSyncedFaviconForPageURL(gurl);
-  if (!favicon)
+  if (!favicon.is_valid())
     return testing::AssertionFailure() << "Favicon is missing.";
-  if (favicon->size() != bytes.size())
+  if (favicon.bitmap_data->size() != bytes.size())
     return testing::AssertionFailure() << "Favicon sizes don't match.";
-  for (size_t i = 0; i < favicon->size(); ++i) {
-    if (bytes[i] != *(favicon->front() + i))
+  for (size_t i = 0; i < favicon.bitmap_data->size(); ++i) {
+    if (bytes[i] != *(favicon.bitmap_data->front() + i))
       return testing::AssertionFailure() << "Favicon data doesn't match.";
   }
   return testing::AssertionSuccess();

@@ -212,13 +212,11 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     return;
   }
 
-  scoped_refptr<base::RefCountedMemory> sync_bitmap =
+  favicon_base::FaviconRawBitmapResult sync_bitmap_result =
       synced_favicon_getter_.Run(page_url);
-  if (sync_bitmap) {
+  if (sync_bitmap_result.is_valid()) {
     // If request to sync succeeds, send the retrieved bitmap.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kSync);
-    favicon_base::FaviconRawBitmapResult sync_bitmap_result;
-    sync_bitmap_result.bitmap_data = sync_bitmap;
     std::move(response_callback).Run(sync_bitmap_result);
     return;
   }
@@ -266,15 +264,15 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
     return;
   }
 
-  scoped_refptr<base::RefCountedMemory> sync_bitmap =
+  favicon_base::FaviconRawBitmapResult sync_bitmap_result =
       synced_favicon_getter_.Run(page_url);
-  if (sync_bitmap) {
+  if (sync_bitmap_result.is_valid()) {
     // If request to sync succeeds, convert the retrieved bitmap to image and
     // send.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kSync);
     favicon_base::FaviconImageResult sync_image_result;
     sync_image_result.image =
-        gfx::Image::CreateFrom1xPNGBytes(sync_bitmap.get());
+        gfx::Image::CreateFrom1xPNGBytes(sync_bitmap_result.bitmap_data.get());
     std::move(response_callback).Run(sync_image_result);
     return;
   }

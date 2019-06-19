@@ -2672,7 +2672,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Aquesta política permet als administradors proporcionar configuracions d'impressores als usuaris.
 
-      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client i ha d'incloure <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. Representen el fabricant i el model de la impressora. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un client i ha d'incloure <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
 
       <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de contenir el nom de la impressora o bé <ph name="PRINTER_AUTOCONF" /> s'ha d'establir en "true". Les impressores que no tinguin cap d'aquestes propietats o que les tinguin totes dues s'ignoraran.
 
@@ -2680,8 +2680,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Aquesta política no repercuteix en la possibilitat dels usuaris de configurar impressores en dispositius concrets,  sinó que s'ha creat per complementar la configuració d'impressores per part dels usuaris.
 
-      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest directori. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.
-      </translation>
+      En el cas dels dispositius gestionats d'Active Directory, aquesta política permet ampliar <ph name="MACHINE_NAME_VARIABLE" /> per incloure-hi el nom del dispositiu d'Active Directory o una subcadena d'aquest directori. Si, per exemple, el nom del dispositiu és <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se substituirà pels 4 caràcters posteriors a la sisena posició, és a dir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Fixa't que la posició es basa en zero.</translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="6603004149426829878">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària</translation>
 <translation id="6628120204569232711">Informa de l'estat de l'emmagatzematge</translation>

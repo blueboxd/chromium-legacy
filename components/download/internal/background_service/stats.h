@@ -159,9 +159,6 @@ void LogServiceApiAction(DownloadClient client, ServiceApiAction action);
 void LogStartDownloadResult(DownloadClient client,
                             DownloadParams::StartResult result);
 
-// Logs the download parameters when StartDownload() is called.
-void LogDownloadParams(const DownloadParams& params);
-
 // Logs recovery operations that happened when we had to move from one state
 // to another on startup.
 void LogRecoveryOperation(Entry::State to_state);

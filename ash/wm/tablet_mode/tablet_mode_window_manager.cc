@@ -422,10 +422,11 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   // snapped to one side but no window snapped to the other side.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewState state = split_view_controller->state();
-  if (overview_controller->InOverviewSession() !=
-      (state == SplitViewState::kLeftSnapped ||
-       state == SplitViewState::kRightSnapped)) {
-    overview_controller->ToggleOverview();
+  if (state == SplitViewState::kLeftSnapped ||
+      state == SplitViewState::kRightSnapped) {
+    overview_controller->StartOverview();
+  } else {
+    overview_controller->EndOverview();
   }
 }
 

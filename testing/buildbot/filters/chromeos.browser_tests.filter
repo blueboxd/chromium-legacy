@@ -1,2 +1,5 @@
 # TODO(crbug.com/976083): Enable this.
 -MSE_Widevine/EncryptedMediaTest.*
+
+# TODO(crbug.com/976807): Enable this.
+-SiteIsolationFlagHandlingTest.FlagHandlingTest*

@@ -79,6 +79,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     /** Called when the SearchActivity has finished initialization. */
     void onDeferredStartup(boolean isVoiceSearchIntent) {
+        getAutocompleteCoordinator().prefetchZeroSuggestResults();
+
         if (mVoiceRecognitionHandler != null) {
             SearchWidgetProvider.updateCachedVoiceSearchAvailability(
                     mVoiceRecognitionHandler.isVoiceSearchEnabled());

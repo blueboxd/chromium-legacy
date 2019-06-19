@@ -141,16 +141,19 @@ TEST_F(WKWebViewConfigurationProviderTest, Purge) {
 TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
   WKWebViewConfiguration* config = GetProvider().GetWebViewConfiguration();
   NSArray* scripts = config.userContentController.userScripts;
-  ASSERT_EQ(3U, scripts.count);
+  ASSERT_EQ(4U, scripts.count);
   EXPECT_FALSE(((WKUserScript*)[scripts objectAtIndex:0]).isForMainFrameOnly);
   EXPECT_TRUE(((WKUserScript*)[scripts objectAtIndex:1]).isForMainFrameOnly);
   EXPECT_FALSE(((WKUserScript*)[scripts objectAtIndex:2]).isForMainFrameOnly);
+  EXPECT_TRUE(((WKUserScript*)[scripts objectAtIndex:3]).isForMainFrameOnly);
   NSString* early_all_frames_script =
       GetDocumentStartScriptForAllFrames(&browser_state_);
   NSString* main_frame_script =
       GetDocumentStartScriptForMainFrame(&browser_state_);
   NSString* late_all_frames_script =
       GetDocumentEndScriptForAllFrames(&browser_state_);
+  NSString* late_main_frame_script =
+      GetDocumentEndScriptForMainFrame(&browser_state_);
   // The scripts in |userScrips| are wrapped with a "if (!injected)" check to
   // avoid double injections, so a substring check is necessary.
   EXPECT_LT(0U,
@@ -158,6 +161,8 @@ TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
   EXPECT_LT(0U, [[scripts[1] source] rangeOfString:main_frame_script].length);
   EXPECT_LT(0U,
             [[scripts[2] source] rangeOfString:late_all_frames_script].length);
+  EXPECT_LT(0U,
+            [[scripts[3] source] rangeOfString:late_main_frame_script].length);
 }
 
 // Tests that observers methods are correctly triggered when observing the

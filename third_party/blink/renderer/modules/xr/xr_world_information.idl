@@ -10,6 +10,6 @@
     RuntimeEnabled=WebXRPlaneDetection
 ]
 interface XRWorldInformation {
-   readonly attribute FrozenArray<XRPlane>? detectedPlanes;
+   readonly attribute XRPlaneSet? detectedPlanes;
 };
 

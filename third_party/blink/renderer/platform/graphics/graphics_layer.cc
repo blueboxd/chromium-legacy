@@ -301,8 +301,10 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
-  if (client_.PaintBlockedByDisplayLock())
+  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
     return;
+  }
 
   if (PaintsContentOrHitTest()) {
     if (Paint())
@@ -1046,8 +1048,10 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   if (client_.IsUnderSVGHiddenContainer())
     return sk_sp<PaintRecord>(new PaintRecord);
 
-  if (client_.PaintBlockedByDisplayLock())
+  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
     return sk_sp<PaintRecord>(new PaintRecord);
+  }
 
   FloatRect bounds((IntRect(IntPoint(), IntSize(Size()))));
   GraphicsContext graphics_context(GetPaintController());

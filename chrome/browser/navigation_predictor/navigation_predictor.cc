@@ -16,6 +16,9 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
@@ -136,7 +139,11 @@ NavigationPredictor::NavigationPredictor(
           base::GetFieldTrialParamByFeatureAsBool(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
-              false)) {
+              false)),
+      prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor,
+          "prefetch_after_preconnect",
+          false)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -154,6 +161,9 @@ NavigationPredictor::NavigationPredictor(
 NavigationPredictor::~NavigationPredictor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Observe(nullptr);
+  if (prerender_handle_) {
+    prerender_handle_->OnNavigateAway();
+  }
 }
 
 void NavigationPredictor::Create(
@@ -780,6 +790,9 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_origin.host(), prefetch_url_->host());
     MaybePreconnectNow(Action::kPrefetch);
+    if (prefetch_after_preconnect_) {
+      Prerender(prefetch_url_.value());
+    }
     return;
   }
 
@@ -793,6 +806,26 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   }
 
   base::UmaHistogramEnumeration(action_histogram_name, Action::kNone);
+}
+
+void NavigationPredictor::Prerender(const GURL& url) {
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          browser_context_);
+
+  if (prerender_manager) {
+    content::SessionStorageNamespace* session_storage_namespace =
+        web_contents()->GetController().GetDefaultSessionStorageNamespace();
+    gfx::Size size = web_contents()->GetContainerBounds().size();
+
+    if (prerender_handle_) {
+      prerender_handle_->OnCancel();
+    }
+    // TODO(sofiyase): Only prerender when the tab is in the foreground.
+    // https://crbug.com/976071
+    prerender_handle_ = prerender_manager->AddPrerenderFromNavigationPredictor(
+        url, session_storage_namespace, size);
+  }
 }
 
 base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
@@ -825,6 +858,7 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   // threshold, then return.
   if (sorted_navigation_scores[0]->score < prefetch_url_score_threshold_)
     return base::nullopt;
+
   return sorted_navigation_scores[0]->url;
 }
 

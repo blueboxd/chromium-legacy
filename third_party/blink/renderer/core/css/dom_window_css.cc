@@ -61,8 +61,8 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
   }
 
 #if DCHECK_IS_ON()
-  DCHECK(
-      CSSProperty::Get(resolveCSSPropertyID(unresolved_property)).IsEnabled());
+  DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
+             .IsWebExposed());
 #endif
 
   // This will return false when !important is present

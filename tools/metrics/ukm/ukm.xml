@@ -2479,6 +2479,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="DataReductionProxy" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <summary>
+    Data Reduction Proxy related metrics associated with a page load. See
+    //components/data_reduction_proxy/.
+  </summary>
+  <metric name="DataSaverPageUUID">
+    <summary>
+      A unique identifier of this page load to the proxy server. Recorded for
+      each navigation that uses the proxy.
+    </summary>
+  </metric>
+  <metric name="EstimatedOriginalNetworkBytes">
+    <summary>
+      The estimated number of bytes that would have been used if that proxy was
+      disabled on this page load. Recorded for each navigation that uses the
+      proxy.
+    </summary>
+  </metric>
+</event>
+
 <event name="Document.OutliveTimeAfterShutdown">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>keishi@chromium.org</owner>
@@ -5266,6 +5287,12 @@ be describing additional metrics about the same event.
     <summary>
       Measures the Site Engagement Score for the commited URL rounded to the
       nearest 10.
+    </summary>
+  </metric>
+  <metric name="ThirdPartyCookieBlockingEnabledForSite">
+    <summary>
+      Records whether third party cookie blocking was enabled for a site. Only
+      recorded for users who enabled the cookie controls ui.
     </summary>
   </metric>
   <metric name="WasCached">

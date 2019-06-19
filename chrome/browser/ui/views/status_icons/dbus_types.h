@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/memory/ref_counted_memory.h"
 #include "dbus/message.h"
 
 namespace detail {
@@ -114,6 +115,21 @@ class DbusInt32 : public DbusTypeImpl<DbusInt32> {
   int32_t value_;
 };
 
+class DbusUint32 : public DbusTypeImpl<DbusUint32> {
+ public:
+  explicit DbusUint32(uint32_t value);
+  DbusUint32(DbusUint32&& other);
+  ~DbusUint32() override;
+
+  // DbusType:
+  void Write(dbus::MessageWriter* writer) const override;
+
+  static std::string GetSignature();
+
+ private:
+  uint32_t value_;
+};
+
 class DbusString : public DbusTypeImpl<DbusString> {
  public:
   explicit DbusString(const std::string& value);
@@ -152,6 +168,8 @@ class DbusVariant : public DbusTypeImpl<DbusVariant> {
   ~DbusVariant() override;
 
   DbusVariant& operator=(DbusVariant&& other);
+
+  operator bool() const;
 
   // DbusType:
   void Write(dbus::MessageWriter* writer) const override;
@@ -209,7 +227,7 @@ auto MakeDbusArray(Ts&&... ts) {
 class DbusByteArray : public DbusTypeImpl<DbusByteArray> {
  public:
   DbusByteArray();
-  explicit DbusByteArray(std::vector<uint8_t>&& value);
+  explicit DbusByteArray(scoped_refptr<base::RefCountedMemory> value);
   DbusByteArray(DbusByteArray&& other);
   ~DbusByteArray() override;
 
@@ -219,7 +237,7 @@ class DbusByteArray : public DbusTypeImpl<DbusByteArray> {
   static std::string GetSignature();
 
  private:
-  std::vector<uint8_t> value_;
+  scoped_refptr<base::RefCountedMemory> value_;
 };
 
 template <typename... Ts>

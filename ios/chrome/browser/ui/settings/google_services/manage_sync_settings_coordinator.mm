@@ -52,7 +52,7 @@
 // Sync service.
 @property(nonatomic, assign, readonly) syncer::SyncService* syncService;
 // Dismiss callback for Web and app setting details view.
-@property(nonatomic, copy) ios::DismissWebAndAppSettingDetailsControllerBlock
+@property(nonatomic, copy) ios::DismissASMViewControllerBlock
     dismissWebAndAppSettingDetailsControllerBlock;
 
 @end

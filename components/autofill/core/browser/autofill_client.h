@@ -344,10 +344,8 @@ class AutofillClient : public RiskDataLoader {
       UploadSaveCardPromptCallback callback) = 0;
 
   // Called after credit card upload is finished. Will show upload result to
-  // users.
-  // TODO(crbug.com/964127): It handles only failure branch now. Success branch
-  // will be added later.
-  virtual void CreditCardUploadCompleted() = 0;
+  // users. |card_saved| indicates if the card is successfully saved.
+  virtual void CreditCardUploadCompleted(bool card_saved) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.

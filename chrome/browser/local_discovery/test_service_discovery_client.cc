@@ -36,9 +36,9 @@ void TestServiceDiscoveryClient::Start() {
 std::unique_ptr<ServiceWatcher>
 TestServiceDiscoveryClient::CreateServiceWatcher(
     const std::string& service_type,
-    const ServiceWatcher::UpdatedCallback& callback) {
-  return service_discovery_client_impl_->CreateServiceWatcher(service_type,
-                                                              callback);
+    ServiceWatcher::UpdatedCallback callback) {
+  return service_discovery_client_impl_->CreateServiceWatcher(
+      service_type, std::move(callback));
 }
 
 std::unique_ptr<ServiceResolver>

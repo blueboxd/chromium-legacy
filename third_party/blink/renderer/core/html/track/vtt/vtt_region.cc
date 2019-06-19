@@ -69,7 +69,7 @@ constexpr bool kDefaultScroll = false;
 constexpr float kLineHeight = 5.33;
 
 // Default scrolling animation time period (s).
-constexpr TimeDelta kScrollTime = TimeDelta::FromMilliseconds(433);
+constexpr base::TimeDelta kScrollTime = base::TimeDelta::FromMilliseconds(433);
 
 bool IsNonPercentage(double value,
                      const char* method,
@@ -401,7 +401,8 @@ void VTTRegion::StartTimer() {
   if (scroll_timer_.IsActive())
     return;
 
-  TimeDelta duration = IsScrollingRegion() ? kScrollTime : TimeDelta();
+  base::TimeDelta duration =
+      IsScrollingRegion() ? kScrollTime : base::TimeDelta();
   scroll_timer_.StartOneShot(duration, FROM_HERE);
 }
 

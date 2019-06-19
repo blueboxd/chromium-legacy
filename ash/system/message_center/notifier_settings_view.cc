@@ -116,6 +116,8 @@ class NotifierButtonWrapperView : public views::View {
   void OnFocus() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnBlur() override;
   const char* GetClassName() const override;
@@ -190,6 +192,14 @@ bool NotifierButtonWrapperView::OnKeyPressed(const ui::KeyEvent& event) {
 
 bool NotifierButtonWrapperView::OnKeyReleased(const ui::KeyEvent& event) {
   return contents_->OnKeyReleased(event);
+}
+
+bool NotifierButtonWrapperView::OnMousePressed(const ui::MouseEvent& event) {
+  return contents_->OnMousePressed(event);
+}
+
+void NotifierButtonWrapperView::OnMouseReleased(const ui::MouseEvent& event) {
+  contents_->OnMouseReleased(event);
 }
 
 void NotifierButtonWrapperView::OnPaint(gfx::Canvas* canvas) {

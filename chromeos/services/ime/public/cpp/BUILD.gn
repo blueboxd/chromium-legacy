@@ -11,6 +11,7 @@ buildflag_header("buildflags") {
   flags = [
     "ENABLE_CROS_IME_DECODER=$enable_cros_ime_decoder",
     "ENABLE_CROS_IME_EXAMPLE_SO=$enable_cros_ime_example_so",
+    "ENABLE_CROS_IME_SHARED_DATA=$enable_cros_ime_shared_data",
   ]
 }
 

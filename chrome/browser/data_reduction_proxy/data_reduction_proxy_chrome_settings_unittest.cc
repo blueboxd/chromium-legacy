@@ -468,38 +468,4 @@ TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLitePage) {
       &handle, headers.get());
 
   EXPECT_TRUE(data->lite_page_received());
-  EXPECT_FALSE(data->lofi_received());
-  EXPECT_FALSE(data->lofi_policy_received());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiPolicyReceived) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy: page-policies=empty-image\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_FALSE(data->lite_page_received());
-  EXPECT_FALSE(data->lofi_received());
-  EXPECT_TRUE(data->lofi_policy_received());
-}
-
-TEST_F(DataReductionProxyChromeSettingsTest, CreateDataWithLofiReceived) {
-  std::string raw_headers =
-      "HTTP/1.0 200 OK\n"
-      "chrome-proxy-content-transform: empty-image\n";
-  content::MockNavigationHandle handle(GURL(kUrl), main_rfh());
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(raw_headers));
-  handle.set_response_headers(headers);
-  auto data = drp_chrome_settings_->CreateDataFromNavigationHandle(
-      &handle, headers.get());
-
-  EXPECT_FALSE(data->lite_page_received());
-  EXPECT_TRUE(data->lofi_received());
-  EXPECT_FALSE(data->lofi_policy_received());
 }

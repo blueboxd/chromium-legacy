@@ -28,6 +28,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'messages': {},
       'placeholders': [],
       'policy_definitions': [],
+      'policy_atomic_group_definitions': [],
   }
 
   def do_test(self, policy_data, writer):

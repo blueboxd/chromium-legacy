@@ -24,6 +24,7 @@
 
 namespace {
 using autofill::AccessoryAction;
+using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using testing::_;
 using testing::AnyNumber;
@@ -39,7 +40,7 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
       SavePasswordsForOrigin,
       void(const std::map<base::string16, const autofill::PasswordForm*>&,
            const url::Origin&));
-  MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::FillingStatus));
+  MOCK_METHOD1(OnFilledIntoFocusedField, void(FillingStatus));
   MOCK_METHOD2(RefreshSuggestionsForField, void(FocusedFieldType, bool));
   MOCK_METHOD1(OnGenerationRequested, void(bool));
   MOCK_METHOD0(DidNavigateMainFrame, void());
@@ -123,14 +124,12 @@ TEST_F(ManualFillingControllerTest, ClosesViewOnSuccessfullFillingOnly) {
   // If the filling wasn't successful, no call is expected.
   EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
   EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
-  controller()->OnFilledIntoFocusedField(
-      autofill::FillingStatus::ERROR_NOT_ALLOWED);
-  controller()->OnFilledIntoFocusedField(
-      autofill::FillingStatus::ERROR_NO_VALID_FIELD);
+  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
+  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
 
   // If the filling completed successfully, let the view know.
   EXPECT_CALL(*view(), SwapSheetWithKeyboard());
-  controller()->OnFilledIntoFocusedField(autofill::FillingStatus::SUCCESS);
+  controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }
 
 TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {

@@ -15,6 +15,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
+#if defined(OS_WIN)
+#include "ui/display/win/screen_win.h"
+#endif
+
 namespace views {
 
 // The frame view and the client view are always at these specific indices,
@@ -32,6 +36,17 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
                                        SkPath* mask) const {
   return false;
 }
+
+#if defined(OS_WIN)
+gfx::Point NonClientFrameView::GetSystemMenuScreenPixelLocation() const {
+  gfx::Point point(GetMirroredXInView(GetBoundsForClientView().x()),
+                   GetSystemMenuY());
+  View::ConvertPointToScreen(this, &point);
+  point = display::win::ScreenWin::DIPToScreenPoint(point);
+  // The native system menu seems to overlap the titlebar by 1 px.  Match that.
+  return point - gfx::Vector2d(0, 1);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
@@ -321,6 +336,15 @@ bool NonClientFrameView::DoesIntersectRect(const View* target,
   // the client view.
   return !GetWidget()->client_view()->bounds().Intersects(rect);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, private:
+
+#if defined(OS_WIN)
+int NonClientFrameView::GetSystemMenuY() const {
+  return GetBoundsForClientView().y();
+}
+#endif
 
 BEGIN_METADATA(NonClientFrameView)
 METADATA_PARENT_CLASS(View)

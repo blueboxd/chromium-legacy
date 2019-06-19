@@ -144,12 +144,6 @@ bool ShouldUseClientLoFiForRequest(
   if (!(frame_previews_state & WebURLRequest::kClientLoFiOn))
     return false;
 
-  // Even if this frame is using Server Lo-Fi, https:// images won't be
-  // handled by Server Lo-Fi since their requests won't be sent to the Data
-  // Saver proxy, so use Client Lo-Fi instead.
-  if (frame_previews_state & WebURLRequest::kServerLoFiOn)
-    return request.Url().ProtocolIs("https");
-
   return true;
 }
 
@@ -520,9 +514,9 @@ void LocalFrame::DidFreeze() {
 
 void LocalFrame::DidResume() {
   if (GetDocument()) {
-    const TimeTicks resume_event_start = CurrentTimeTicks();
+    const base::TimeTicks resume_event_start = CurrentTimeTicks();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
-    const TimeTicks resume_event_end = CurrentTimeTicks();
+    const base::TimeTicks resume_event_end = CurrentTimeTicks();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
@@ -1367,8 +1361,7 @@ bool LocalFrame::IsUsingDataSavingPreview() const {
       Client()->GetPreviewsStateForFrame();
   // Check for any data saving type of preview.
   return previews_state &
-         (WebURLRequest::kServerLoFiOn | WebURLRequest::kClientLoFiOn |
-          WebURLRequest::kNoScriptOn);
+         (WebURLRequest::kClientLoFiOn | WebURLRequest::kNoScriptOn);
 }
 
 bool LocalFrame::IsAdSubframe() const {

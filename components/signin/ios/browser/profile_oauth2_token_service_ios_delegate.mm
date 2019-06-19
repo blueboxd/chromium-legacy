@@ -267,14 +267,15 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
   ReloadCredentials();
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
-  return new SSOAccessTokenFetcher(consumer, provider_.get(), account_info);
+  return std::make_unique<SSOAccessTokenFetcher>(consumer, provider_.get(),
+                                                 account_info);
 }
 
 std::vector<CoreAccountId> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts()

@@ -173,12 +173,6 @@ void DataReductionProxyMetricsObserverTestBase::ValidateTimes() {
             pingback_client_->timing()->renderer_memory_usage_kb);
 }
 
-void DataReductionProxyMetricsObserverTestBase::ValidateLoFiInPingback(
-    bool lofi_expected) {
-  EXPECT_TRUE(pingback_client_->send_pingback_called());
-  EXPECT_EQ(lofi_expected, pingback_client_->data().lofi_received());
-}
-
 void DataReductionProxyMetricsObserverTestBase::ValidateBlackListInPingback(
     bool black_listed) {
   EXPECT_TRUE(pingback_client_->send_pingback_called());

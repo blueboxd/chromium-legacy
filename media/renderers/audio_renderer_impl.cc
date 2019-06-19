@@ -71,22 +71,18 @@ AudioRendererImpl::AudioRendererImpl(
       is_passthrough_(false),
       weak_factory_(this) {
   DCHECK(create_audio_decoders_cb_);
-  // Tests may not have a power monitor.
-  base::PowerMonitor* monitor = base::PowerMonitor::Get();
-  if (!monitor)
-    return;
 
   // PowerObserver's must be added and removed from the same thread, but we
   // won't remove the observer until we're destructed on |task_runner_| so we
   // must post it here if we're on the wrong thread.
   if (task_runner_->BelongsToCurrentThread()) {
-    monitor->AddObserver(this);
+    base::PowerMonitor::AddObserver(this);
   } else {
     // Safe to post this without a WeakPtr because this class must be destructed
     // on the same thread and construction has not completed yet.
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&base::PowerMonitor::AddObserver,
-                                          base::Unretained(monitor), this));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(IgnoreResult(&base::PowerMonitor::AddObserver), this));
   }
 
   // Do not add anything below this line since the above actions are only safe
@@ -96,8 +92,7 @@ AudioRendererImpl::AudioRendererImpl(
 AudioRendererImpl::~AudioRendererImpl() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (base::PowerMonitor::Get())
-    base::PowerMonitor::Get()->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.

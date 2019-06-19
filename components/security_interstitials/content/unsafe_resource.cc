@@ -45,6 +45,8 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
     // frame load, since they happen after the page is finished loading.
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
+    // Malicious ad activity reporting happens in the background.
+    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
     // Ad sampling happens in the background.
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
     // Sign-in password reuse warning happens after the page is finished

@@ -116,12 +116,6 @@
   </translations>
   <release seq="1">
     <messages fallback_to_english="true">
-      <message name="IDS_OPEN_LAST_TAB_PLACEHOLDER_FIRST_LAUNCH" desc="Message when user is first launching Chrome. [CHAR_LIMIT=NONE]">
-        Welcome to Chrome
-      </message>
-      <message name="IDS_OPEN_LAST_TAB_PLACEHOLDER" desc="Message after user has cleared history. [CHAR_LIMIT=NONE]">
-        Chrome
-      </message>
       <message name="IDS_OPEN_LAST_TAB_JUST_NOW" desc="The present time or moment (noun). Used instead of a timestamp when the site was visited less than a minute ago. [CHAR_LIMIT=12]">
         Now
       </message>

@@ -49,7 +49,6 @@
 #include "net/ssl/ssl_info.h"
 #include "ppapi/shared_impl/test_utils.h"
 #include "rlz/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -359,8 +358,7 @@ TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate_LargeRead)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsInProcessNetworkService())
+  if (content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -1260,8 +1258,7 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
   )
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsInProcessNetworkService())
+  if (content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;

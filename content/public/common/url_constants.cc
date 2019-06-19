@@ -18,8 +18,6 @@ const char kViewSourceScheme[] = "view-source";
 const char kExternalFileScheme[] = "externalfile";
 #endif
 
-const char kAboutSrcDocURL[] = "about:srcdoc";
-
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";

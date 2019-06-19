@@ -39,7 +39,7 @@ class CORE_EXPORT YieldingDisplayLockBudget final : public DisplayLockBudget {
 
  private:
   unsigned first_lifecycle_count_ = 0;
-  TimeTicks deadline_;
+  base::TimeTicks deadline_;
   base::Optional<Phase> last_completed_phase_;
   Phase next_phase_from_start_of_lifecycle_ = Phase::kFirst;
 };

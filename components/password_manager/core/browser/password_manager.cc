@@ -794,18 +794,6 @@ void PasswordManager::CreatePendingLoginManagers(
     if (old_manager_found)
       continue;  // The current form is already managed.
 
-    UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.ParsedUsernameField",
-                          form.username_element.empty());
-
-    // Out of the forms not containing a username field, determine how many
-    // are password change forms.
-    if (form.username_element.empty()) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "PasswordManager.EmptyUsernames."
-          "FormWithoutUsernameFieldIsPasswordChangeForm",
-          form.new_password_element.empty());
-    }
-
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, form);
     auto manager = std::make_unique<PasswordFormManager>(
@@ -1220,10 +1208,6 @@ void PasswordManager::OnLoginSuccessful() {
   }
 
   if (ShouldPromptUserToSavePassword(*submitted_manager)) {
-    bool empty_username =
-        submitted_manager->GetPendingCredentials().username_value.empty();
-    UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.OfferedToSave",
-                          empty_username);
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
     bool update_password = submitted_manager->IsPasswordUpdate();

@@ -20,6 +20,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
@@ -63,6 +64,8 @@ ListInfos GetListInfos() {
 #endif
   const bool kSyncAlways = true;
   const bool kSyncNever = false;
+  const bool kSyncRealTimeLookupList =
+      RealTimePolicyEngine::CanFetchAllowlist();
   return ListInfos({
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
@@ -92,6 +95,9 @@ ListInfos GetListInfos() {
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlSuspiciousSite.store",
                GetUrlSuspiciousSiteId(), SB_THREAT_TYPE_SUSPICIOUS_SITE),
       ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
+      ListInfo(kSyncRealTimeLookupList, "UrlHighConfidenceAllowlist.store",
+               GetUrlHighConfidenceAllowlistId(),
+               SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST),
   });
   // NOTE(vakh): IMPORTANT: Please make sure that the server already supports
   // any list before adding it to this list otherwise the prefix updates break

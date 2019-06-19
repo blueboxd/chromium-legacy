@@ -43,7 +43,7 @@ TEST_F(FrameCaretTest, BlinkAfterTyping) {
   caret.RecreateCaretBlinkTimerForTesting(task_runner.get());
   const double kInterval = 10;
   LayoutTheme::GetTheme().SetCaretBlinkInterval(
-      TimeDelta::FromSecondsD(kInterval));
+      base::TimeDelta::FromSecondsD(kInterval));
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   GetDocument().body()->SetInnerHTMLFromString("<textarea>");

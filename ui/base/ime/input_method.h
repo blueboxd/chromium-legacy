@@ -28,7 +28,6 @@ namespace internal {
 class InputMethodDelegate;
 }  // namespace internal
 
-class AsyncKeyDispatcher;
 class InputMethodKeyboardController;
 class InputMethodObserver;
 class KeyEvent;
@@ -108,12 +107,6 @@ class InputMethod {
   virtual ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event)
       WARN_UNUSED_RESULT = 0;
 
-  // Gets the async key dispatcher interface which is used to dispatch key
-  // events with a callback. Some platforms (e.g. ChromeOS) require a callback
-  // to dispatch the key event, so DispatchKeyEvent() doesn't match the need.
-  // Returns null on platforms that aren't async.
-  virtual AsyncKeyDispatcher* GetAsyncKeyDispatcher() = 0;
-
   // Called by the focused client whenever its text input type is changed.
   // Before calling this method, the focused client must confirm or clear
   // existing composition text and call InputMethod::CancelComposition() when
@@ -191,16 +184,6 @@ class InputMethod {
 
   // Whether the key events will be tracked. Only used for testing.
   bool track_key_events_for_testing_;
-};
-
-// An interface to support dispatch key event with a callback.
-// This is required on certain platforms, e.g. ChromeOS.
-class AsyncKeyDispatcher {
- public:
-  // Dispatches a key event with a callback to receive the result of whether
-  // the event is handled by the input method.
-  virtual void DispatchKeyEventAsync(ui::KeyEvent* event,
-                                     base::OnceCallback<void(bool)> cb) = 0;
 };
 
 }  // namespace ui

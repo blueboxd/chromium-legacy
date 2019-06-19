@@ -35,7 +35,7 @@ std::unique_ptr<PrinterQuery> PrintQueriesQueue::PopPrinterQuery(
   base::AutoLock lock(lock_);
   for (auto it = queued_queries_.begin(); it != queued_queries_.end(); ++it) {
     std::unique_ptr<PrinterQuery>& query = *it;
-    if (query->cookie() != document_cookie || query->is_callback_pending())
+    if (query->cookie() != document_cookie)
       continue;
 
     std::unique_ptr<PrinterQuery> current_query = std::move(query);

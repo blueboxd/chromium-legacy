@@ -970,7 +970,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalWebFeatures,
 
   // Crashes the tab to cause the database set up above to force close with the
   // blocked transactions still open.
-  ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(0);
 
   // Reopens the same page that was just crashed and inspects the database to

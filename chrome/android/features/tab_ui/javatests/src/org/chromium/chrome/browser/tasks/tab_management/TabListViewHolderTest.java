@@ -59,15 +59,15 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
                 @Override
-                public void getTabThumbnailWithCallback(
-                        Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
+                public void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback,
+                        boolean forceUpdate, boolean writeToCache) {
                     Bitmap bitmap = mShouldReturnBitmap
                             ? Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
                             : null;
                     callback.onResult(bitmap);
                     mThumbnailFetchedCount.incrementAndGet();
                 }
-            }, null, false);
+            }, null, false, false);
     private AtomicInteger mThumbnailFetchedCount = new AtomicInteger();
 
     private TabListMediator.TabActionListener mMockCloseListener =
@@ -218,7 +218,6 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
         bitmap = null;
 
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
         Assert.assertFalse(canBeGarbageCollected(ref));
 
         mShouldReturnBitmap = false;
@@ -238,7 +237,6 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         WeakReference<Bitmap> ref = new WeakReference<>(bitmap);
         bitmap = null;
 
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
         Assert.assertFalse(canBeGarbageCollected(ref));
 
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
@@ -276,7 +274,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
 
         Assert.assertFalse(canBeGarbageCollected(ref));
 
-        mGridModel.set(TabProperties.IS_HIDDEN, true);
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
         Assert.assertTrue(canBeGarbageCollected(ref));
         Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
         Assert.assertEquals(1, mThumbnailFetchedCount.get());
@@ -287,45 +285,17 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @UiThreadTest
     public void testHiddenThenShow() throws Exception {
         mShouldReturnBitmap = true;
-        mGridModel.set(TabProperties.IS_HIDDEN, false);
         mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
         Assert.assertEquals(1, mThumbnailFetchedCount.get());
 
-        mGridModel.set(TabProperties.IS_HIDDEN, true);
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
         Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
         Assert.assertEquals(1, mThumbnailFetchedCount.get());
 
-        mGridModel.set(TabProperties.IS_HIDDEN, false);
+        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
         assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
         Assert.assertEquals(2, mThumbnailFetchedCount.get());
-    }
-
-    @Test
-    @MediumTest
-    @UiThreadTest
-    public void testSkipFetchingWhenHidden() throws Exception {
-        mShouldReturnBitmap = true;
-        mGridModel.set(TabProperties.IS_HIDDEN, true);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        Assert.assertNull(mTabGridViewHolder.thumbnail.getDrawable());
-        Assert.assertEquals(0, mThumbnailFetchedCount.get());
-
-        mGridModel.set(TabProperties.IS_HIDDEN, false);
-        assertThat(mTabGridViewHolder.thumbnail.getDrawable(), instanceOf(BitmapDrawable.class));
-        Assert.assertEquals(1, mThumbnailFetchedCount.get());
-
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, null);
-        mGridModel.set(TabProperties.THUMBNAIL_FETCHER, mMockThumbnailProvider);
-        Assert.assertEquals(4, mThumbnailFetchedCount.get());
     }
 
     @Test

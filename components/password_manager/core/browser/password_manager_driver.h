@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/common/filling_status.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 
 namespace autofill {
@@ -79,7 +79,8 @@ class PasswordManagerDriver
   virtual void FillIntoFocusedField(
       bool is_password,
       const base::string16& user_provided_credential,
-      base::OnceCallback<void(autofill::FillingStatus)> compeleted_callback) {}
+      base::OnceCallback<void(autofill::mojom::FillingStatus)>
+          compeleted_callback) {}
 
   // Tells the driver to preview filling form with the |username| and
   // |password|.

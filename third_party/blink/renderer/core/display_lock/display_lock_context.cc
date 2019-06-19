@@ -474,15 +474,15 @@ void DisplayLockContext::DidPrePaint(LifecycleTarget target) {
 #endif
 }
 
-bool DisplayLockContext::ShouldPaint() const {
+bool DisplayLockContext::ShouldPaint(LifecycleTarget target) const {
   // Note that forced updates should never require us to paint, so we don't
   // check |update_forced_| here. In other words, although |update_forced_|
   // could be true here, we still should not paint. This also holds for
   // kUpdating state, since updates should not paint.
-  return state_ == kCommitting || state_ == kUnlocked;
+  return target == kSelf || state_ == kCommitting || state_ == kUnlocked;
 }
 
-void DisplayLockContext::DidPaint() {
+void DisplayLockContext::DidPaint(LifecycleTarget) {
   // This is here for symmetry, but could be removed if necessary.
 }
 
@@ -843,7 +843,7 @@ void DisplayLockContext::RescheduleTimeoutTask(double delay) {
       *GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI),
       FROM_HERE,
       WTF::Bind(&DisplayLockContext::TriggerTimeout, WrapWeakPersistent(this)),
-      TimeDelta::FromMillisecondsD(delay));
+      base::TimeDelta::FromMillisecondsD(delay));
 }
 
 void DisplayLockContext::CancelTimeoutTask() {

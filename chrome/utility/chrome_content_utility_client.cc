@@ -30,7 +30,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/buildflags.h"
@@ -278,7 +277,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       service_name == mirroring::mojom::kServiceName) {
     return std::make_unique<mirroring::MirroringService>(
         std::move(request), content::ChildThread::Get()->GetIOTaskRunner());

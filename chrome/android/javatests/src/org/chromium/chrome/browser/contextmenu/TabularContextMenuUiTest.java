@@ -54,17 +54,15 @@ public class TabularContextMenuUiTest {
         private String mUrl = "";
 
         private MockMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
-                String unfilteredLinkUrl, String srcUrl, String titleText,
-                boolean imageWasFetchedLoFi, Referrer referrer, boolean canSavemedia,
-                int touchPointXDp, int touchPointYDp, @MenuSourceType int sourceType) {
+                String unfilteredLinkUrl, String srcUrl, String titleText, Referrer referrer,
+                boolean canSavemedia, int touchPointXDp, int touchPointYDp,
+                @MenuSourceType int sourceType) {
             super(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl, srcUrl, titleText,
-                    imageWasFetchedLoFi, referrer, canSavemedia, touchPointXDp, touchPointYDp,
-                    sourceType);
+                    referrer, canSavemedia, touchPointXDp, touchPointYDp, sourceType);
         }
 
         private MockMenuParams(String url) {
-            this(0, "", "", "", "", "", "", false, null, true, 0, 0,
-                    MenuSourceType.MENU_SOURCE_TOUCH);
+            this(0, "", "", "", "", "", "", null, true, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
             mUrl = url;
         }
 

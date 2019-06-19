@@ -1014,7 +1014,7 @@ void InspectorOverlayAgent::OnResizeTimer(TimerBase*) {
   SetInspectTool(MakeGarbageCollected<ShowViewSizeTool>());
   resize_timer_active_ = true;
   resize_timer_.Stop();
-  resize_timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
+  resize_timer_.StartOneShot(base::TimeDelta::FromSeconds(1), FROM_HERE);
 }
 
 void InspectorOverlayAgent::Dispatch(const String& message) {
@@ -1028,7 +1028,7 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
     // the main page layout to avoid document lifecycle issues caused by
     // Microtask::PerformCheckpoint() called when we rebuild the overlay page.
     resize_timer_.Stop();
-    resize_timer_.StartOneShot(TimeDelta::FromSeconds(0), FROM_HERE);
+    resize_timer_.StartOneShot(base::TimeDelta::FromSeconds(0), FROM_HERE);
     return;
   }
   ScheduleUpdate();

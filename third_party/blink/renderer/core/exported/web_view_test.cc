@@ -5238,7 +5238,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5251,7 +5251,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5266,7 +5266,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
@@ -5290,7 +5290,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5303,11 +5303,11 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
-  TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
+  base::TimeTicks longest_input_timestamp = test_task_runner_->NowTicks();
 
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5315,7 +5315,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5325,7 +5325,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5337,7 +5337,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 }
 
 TEST_F(WebViewTest, InputDelayReported) {
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
@@ -5352,7 +5352,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   ASSERT_NE(nullptr, document);
   GetTestInteractiveDetector(*document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   HistogramTester histogram_tester;
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
@@ -5361,7 +5361,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5371,7 +5371,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
 
@@ -5381,7 +5381,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3));
 
@@ -5416,7 +5416,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5428,9 +5428,9 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event1_time = test_task_runner_->NowTicks();
+  base::TimeTicks key_event1_time = test_task_runner_->NowTicks();
   key_event1.SetTimeStamp(key_event1_time);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1));
 
@@ -5440,11 +5440,11 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2));
@@ -5470,7 +5470,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5481,7 +5481,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5503,7 +5503,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5511,18 +5511,18 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 
   web_view->SetIsHidden(/*is_hidden=*/true, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
 
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
-  TimeTicks key_event_time = test_task_runner_->NowTicks();
+  base::TimeTicks key_event_time = test_task_runner_->NowTicks();
   key_event.SetTimeStamp(key_event_time);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
@@ -5552,7 +5552,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5564,7 +5564,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   // Set this to the left button, needed for testing to behave properly.
   pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
   pointer_down.button = WebPointerProperties::Button::kLeft;
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_down));
 
@@ -5576,7 +5576,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   WebPointerEvent pointer_up(
       WebInputEvent::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
   pointer_up.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_up));
@@ -5594,7 +5594,7 @@ class MockClockAdvancingWebFrameClient
  public:
   MockClockAdvancingWebFrameClient(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
-      TimeDelta event_handling_delay)
+      base::TimeDelta event_handling_delay)
       : task_runner_(std::move(task_runner)),
         event_handling_delay_(event_handling_delay) {}
   // WebLocalFrameClient overrides:
@@ -5607,15 +5607,15 @@ class MockClockAdvancingWebFrameClient
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  TimeDelta event_handling_delay_;
+  base::TimeDelta event_handling_delay_;
 };
 
 // Check that the input delay is correctly reported to the document.
 TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5644,12 +5644,13 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  TimeDelta first_input_delay = interactive_detector->GetFirstInputDelay();
+  base::TimeDelta first_input_delay =
+      interactive_detector->GetFirstInputDelay();
   EXPECT_EQ(5000, first_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
@@ -5658,9 +5659,9 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
 // Check that the longest input delay is correctly reported to the document.
 TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
   MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, TimeDelta::FromMilliseconds(6000));
+      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5688,12 +5689,13 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
 
-  TimeDelta longest_input_delay = interactive_detector->GetLongestInputDelay();
+  base::TimeDelta longest_input_delay =
+      interactive_detector->GetLongestInputDelay();
   EXPECT_EQ(5000, longest_input_delay.InMillisecondsF());
 
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.

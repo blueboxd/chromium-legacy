@@ -31,7 +31,7 @@ class VIEWS_EXPORT StatusIconLinux {
 
     virtual const gfx::ImageSkia& GetImage() const = 0;
     virtual const base::string16& GetToolTip() const = 0;
-    virtual const ui::MenuModel* GetMenuModel() const = 0;
+    virtual ui::MenuModel* GetMenuModel() const = 0;
 
     // This should be called at most once by the implementation.
     virtual void OnImplInitialized(bool success) = 0;

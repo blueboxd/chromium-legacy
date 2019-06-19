@@ -30,7 +30,7 @@ void ToolbarIconContainerView::AddMainView(views::View* main_view) {
   DCHECK(!main_view_);
   // Set empty margins from this view to negate the default ones set in the
   // constructor.
-  main_view->SetProperty(views::kMarginsKey, new gfx::Insets());
+  main_view->SetProperty(views::kMarginsKey, gfx::Insets());
   main_view_ = main_view;
   AddChildView(main_view_);
 }
@@ -74,11 +74,12 @@ void ToolbarIconContainerView::UpdateHighlight(bool highlighted) {
   if (!uses_highlight_)
     return;
 
-  SetBackground(highlighted
-                    ? views::CreateRoundedRectBackground(
-                          SkColorSetA(GetToolbarInkDropBaseColor(this),
-                                      kToolbarButtonBackgroundAlpha),
-                          ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-                              views::EMPHASIS_MAXIMUM, size()))
-                    : nullptr);
+  SetBorder(highlighted
+                ? views::CreateRoundedRectBorder(
+                      1,
+                      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                          views::EMPHASIS_MAXIMUM, size()),
+                      SkColorSetA(GetToolbarInkDropBaseColor(this),
+                                  kToolbarButtonBackgroundAlpha))
+                : nullptr);
 }

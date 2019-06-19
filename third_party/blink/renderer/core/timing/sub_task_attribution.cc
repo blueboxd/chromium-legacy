@@ -8,8 +8,8 @@ namespace blink {
 
 SubTaskAttribution::SubTaskAttribution(const AtomicString& sub_task_name,
                                        const String& script_url,
-                                       TimeTicks start_time,
-                                       TimeDelta duration)
+                                       base::TimeTicks start_time,
+                                       base::TimeDelta duration)
     : sub_task_name_(sub_task_name),
       script_url_(script_url),
       start_time_(start_time),

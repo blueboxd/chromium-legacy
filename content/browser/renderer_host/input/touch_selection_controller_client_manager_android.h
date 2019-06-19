@@ -78,7 +78,7 @@ class TouchSelectionControllerClientManagerAndroid
   TouchSelectionControllerClient* active_client_;
   gfx::SelectionBound manager_selection_start_;
   gfx::SelectionBound manager_selection_end_;
-  base::ObserverList<TouchSelectionControllerClientManager::Observer>::Unchecked
+  base::ObserverList<TouchSelectionControllerClientManager::Observer>
       observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientManagerAndroid);

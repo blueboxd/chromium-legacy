@@ -66,11 +66,13 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
   base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
-  if (overview_controller->InOverviewSession() &&
-      overview_controller->AcceptSelection()) {
-    return true;
+  if (overview_controller->InOverviewSession()) {
+    if (overview_controller->AcceptSelection())
+      return true;
+    overview_controller->EndOverview();
+  } else {
+    overview_controller->StartOverview();
   }
-  overview_controller->ToggleOverview();
   return true;
 }
 

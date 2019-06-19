@@ -51,13 +51,13 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // its ID.
   static int Install(ExecutionContext*,
                      ScheduledAction*,
-                     TimeDelta timeout,
+                     base::TimeDelta timeout,
                      bool single_shot);
   static void RemoveByID(ExecutionContext*, int timeout_id);
 
   DOMTimer(ExecutionContext*,
            ScheduledAction*,
-           TimeDelta interval,
+           base::TimeDelta interval,
            bool single_shot,
            int timeout_id);
   ~DOMTimer() override;

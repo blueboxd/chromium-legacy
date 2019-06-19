@@ -102,6 +102,7 @@ jumbo_static_library("safe_browsing") {
       "//components/safe_browsing/db:whitelist_checker_client",
       "//components/safe_browsing/password_protection",
       "//components/safe_browsing/triggers",
+      "//components/safe_browsing/triggers:ad_popup_trigger",
       "//components/safe_browsing/triggers:ad_sampler_trigger",
       "//components/safe_browsing/triggers:suspicious_site_trigger",
       "//components/safe_browsing/triggers:trigger_throttler",

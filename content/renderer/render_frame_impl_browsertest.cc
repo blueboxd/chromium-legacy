@@ -285,53 +285,6 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   EXPECT_TRUE(observer.visible());
 }
 
-// Test that LoFi state only updates for new main frame documents. Subframes
-// inherit from the main frame and should not change at commit time.
-TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
-  SetPreviewsState(GetMainRenderFrame(), SERVER_LOFI_ON);
-  SetPreviewsState(frame(), SERVER_LOFI_ON);
-  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-
-  blink::WebHistoryItem item;
-  item.Initialize();
-
-  // The main frame's and subframe's LoFi states should stay the same on
-  // same-document navigations.
-  frame()->DidFinishSameDocumentNavigation(item, blink::kWebStandardCommit,
-                                           false /* content_initiated */);
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-  GetMainRenderFrame()->DidFinishSameDocumentNavigation(
-      item, blink::kWebStandardCommit, false /* content_initiated */);
-  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
-
-  // The subframe's LoFi state should not be reset on commit.
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
-  navigation_state->set_was_within_same_document(false);
-
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
-  frame()->DidCommitProvisionalLoad(
-      item, blink::kWebStandardCommit,
-      mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-
-  // The main frame's LoFi state should be reset to off on commit.
-  navigation_state = NavigationState::FromDocumentLoader(
-      GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
-  navigation_state->set_was_within_same_document(false);
-
-  // Calling didCommitProvisionalLoad is not representative of a full navigation
-  // but serves the purpose of testing the LoFi state logic.
-  GetMainRenderFrame()->DidCommitProvisionalLoad(
-      item, blink::kWebStandardCommit,
-      mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
-  EXPECT_EQ(PREVIEWS_UNSPECIFIED, GetMainRenderFrame()->GetPreviewsState());
-  // The subframe would be deleted here after a cross-document navigation. It
-  // happens to be left around in this test because this does not simulate the
-  // frame detach.
-}
-
 // Test that effective connection type only updates for new main frame
 // documents.
 TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
@@ -558,79 +511,13 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
 }
 #endif
 
-TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
-  const struct {
-    PreviewsState frame_previews_state;
-    WebURLRequest::PreviewsState initial_request_previews_state;
-    WebURLRequest::PreviewsState expected_final_request_previews_state;
-  } tests[] = {
-      // With no previews enabled for the frame, no previews should be
-      // activated.
-      {PREVIEWS_UNSPECIFIED, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kPreviewsOff},
-
-      // If the request already has a previews state set, then it shouldn't be
-      // overridden.
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsNoTransform,
-       WebURLRequest::kPreviewsNoTransform},
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsOff,
-       WebURLRequest::kPreviewsOff},
-
-      // Server Lo-Fi and Server Lite Pages should be enabled for the request
-      // when they're enabled for the frame.
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLoFiOn},
-      {SERVER_LITE_PAGE_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLitePageOn},
-      {SERVER_LITE_PAGE_ON | SERVER_LOFI_ON,
-       WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLitePageOn | WebURLRequest::kServerLoFiOn},
-
-      // The CLIENT_LOFI_ON frame flag should be ignored at this point in the
-      // request.
-      {CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kPreviewsOff},
-      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLoFiOn},
-
-      // A request that's using Client Lo-Fi should continue using Client Lo-Fi.
-      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-      {CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-      {SERVER_LITE_PAGE_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-  };
-
-  for (const auto& test : tests) {
-    SetPreviewsState(frame(), test.frame_previews_state);
-
-    WebURLRequest request;
-    request.SetUrl(GURL("http://example.com"));
-    request.SetPreviewsState(test.initial_request_previews_state);
-
-    frame()->WillSendRequest(request);
-
-    EXPECT_EQ(test.expected_final_request_previews_state,
-              request.GetPreviewsState())
-        << (&test - tests);
-  }
-}
-
 TEST_F(RenderFrameImplTest, GetPreviewsStateForFrame) {
-  SetPreviewsState(frame(), CLIENT_LOFI_ON | SERVER_LOFI_ON);
-  EXPECT_EQ(WebURLRequest::kClientLoFiOn | WebURLRequest::kServerLoFiOn,
-            frame()->GetPreviewsStateForFrame());
-
   SetPreviewsState(frame(), PREVIEWS_OFF);
   EXPECT_EQ(WebURLRequest::kPreviewsOff, frame()->GetPreviewsStateForFrame());
 
   SetPreviewsState(frame(), PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM);
   EXPECT_EQ(WebURLRequest::kPreviewsOff | WebURLRequest::kPreviewsNoTransform,
             frame()->GetPreviewsStateForFrame());
-
-  SetPreviewsState(frame(), CLIENT_LOFI_ON | PREVIEWS_OFF);
-  EXPECT_DCHECK_DEATH(frame()->GetPreviewsStateForFrame());
 }
 
 TEST_F(RenderFrameImplTest, AutoplayFlags) {

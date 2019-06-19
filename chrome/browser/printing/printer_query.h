@@ -72,9 +72,6 @@ class PrinterQuery {
   // Stops the worker thread since the client is done with this object.
   virtual void StopWorker();
 
-  // Returns true if a GetSettings() call is pending completion.
-  bool is_callback_pending() const;
-
   int cookie() const;
   PrintingContext::Result last_status() const { return last_status_; }
 
@@ -86,18 +83,17 @@ class PrinterQuery {
 
  protected:
   // Virtual so that tests can override.
-  virtual void GetSettingsDone(const PrintSettings& new_settings,
+  virtual void GetSettingsDone(base::OnceClosure callback,
+                               const PrintSettings& new_settings,
                                PrintingContext::Result result);
 
-  void PostSettingsDoneToIO(const PrintSettings& new_settings,
+  void PostSettingsDoneToIO(base::OnceClosure callback,
+                            const PrintSettings& new_settings,
                             PrintingContext::Result result);
-
-  // For unit tests to manually set the print callback.
-  void set_callback(base::OnceClosure callback);
 
  private:
   // Lazy create the worker thread. There is one worker thread per print job.
-  void StartWorker(base::OnceClosure callback);
+  void StartWorker();
 
   // Cache of the print context settings for access in the UI thread.
   PrintSettings settings_;
@@ -110,9 +106,6 @@ class PrinterQuery {
 
   // Results from the last GetSettingsDone() callback.
   PrintingContext::Result last_status_ = PrintingContext::FAILED;
-
-  // Callback waiting to be run.
-  base::OnceClosure callback_;
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one

@@ -189,7 +189,10 @@ class OverviewSessionTest : public AshTestBase {
 
   void ToggleOverview(OverviewSession::EnterExitOverviewType type =
                           OverviewSession::EnterExitOverviewType::kNormal) {
-    overview_controller()->ToggleOverview(type);
+    if (overview_controller()->InOverviewSession())
+      overview_controller()->EndOverview(type);
+    else
+      overview_controller()->StartOverview(type);
   }
 
   gfx::Rect GetTransformedBounds(aura::Window* window) {

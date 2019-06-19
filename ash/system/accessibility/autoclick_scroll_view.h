@@ -60,11 +60,11 @@ class AutoclickScrollView : public views::View {
   void Layout() override;
 
   // Unowned. Owned by views hierarchy.
-  AutoclickScrollButton* scroll_up_button_;
-  AutoclickScrollButton* scroll_down_button_;
-  AutoclickScrollButton* scroll_left_button_;
-  AutoclickScrollButton* scroll_right_button_;
-  AutoclickScrollCloseButton* close_scroll_button_;
+  AutoclickScrollButton* const scroll_up_button_;
+  AutoclickScrollButton* const scroll_down_button_;
+  AutoclickScrollButton* const scroll_left_button_;
+  AutoclickScrollButton* const scroll_right_button_;
+  AutoclickScrollCloseButton* const close_scroll_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickScrollView);
 };

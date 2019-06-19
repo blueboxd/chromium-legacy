@@ -1190,9 +1190,11 @@ uint32_t HistoryBackend::GetNextDownloadId() {
 }
 
 // Get all the download entries from the database.
-void HistoryBackend::QueryDownloads(std::vector<DownloadRow>* rows) {
+std::vector<DownloadRow> HistoryBackend::QueryDownloads() {
+  std::vector<DownloadRow> rows;
   if (db_)
-    db_->QueryDownloads(rows);
+    db_->QueryDownloads(&rows);
+  return rows;
 }
 
 // Update a particular download entry.

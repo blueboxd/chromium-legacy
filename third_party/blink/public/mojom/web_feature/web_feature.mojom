@@ -2312,6 +2312,7 @@ enum WebFeature {
   kFeaturePolicySemicolonSeparatedDeclarations = 2923,
   kV8CallSiteAPIGetFunctionSloppyCall = 2924,
   kV8CallSiteAPIGetThisSloppyCall = 2925,
+  kBuiltInModuleToast = 2926,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

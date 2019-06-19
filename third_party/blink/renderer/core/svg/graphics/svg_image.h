@@ -245,7 +245,7 @@ class CORE_EXPORT SVGImage final : public Image {
   FRIEND_TEST_ALL_PREFIXES(ElementFragmentAnchorTest,
                            SVGDocumentDoesntCreateFragment);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SupportsSubsequenceCaching);
-  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, JankTrackerDisabled);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, LayoutShiftTrackerDisabled);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SetSizeOnVisualViewport);
 };
 

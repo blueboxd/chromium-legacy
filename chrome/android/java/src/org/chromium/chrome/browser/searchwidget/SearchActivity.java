@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
@@ -256,7 +255,6 @@ public class SearchActivity extends AsyncInitializationActivity
         mIsActivityUsable = true;
         if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
-        AutocompleteController.nativePrefetchZeroSuggestResults();
         // TODO(tedchoc): Warmup triggers the CustomTab layout to be inflated, but this widget
         //                will navigate to Tabbed mode.  Investigate whether this can inflate
         //                the tabbed mode layout in the background instead of CCTs.

@@ -99,7 +99,7 @@ void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
     }
   }
 
-  window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   item_controller->AddWindow(app_window);
   app_window->SetController(item_controller);
 }

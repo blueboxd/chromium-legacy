@@ -100,7 +100,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EmptyEventsNotRecorded) {
     return;
 
   // There is no BeginMainFrame, so no metrics get recorded.
-  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(10));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ResetAggregator();
 
   EXPECT_EQ(recorder().sources_count(), 0u);
@@ -124,7 +124,7 @@ TEST_F(LocalFrameUkmAggregatorTest, FirstFrameIsRecorded) {
     auto timer =
         aggregator().GetScopedTimer(i % LocalFrameUkmAggregator::kCount);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_for_step));
+        base::TimeDelta::FromMilliseconds(millisecond_for_step));
   }
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
@@ -167,10 +167,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_per_step));
+        base::TimeDelta::FromMilliseconds(millisecond_per_step));
   }
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMilliseconds(millisecond_per_step));
+      base::TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // We should have a sample after the very first step, regardless of the
@@ -186,10 +186,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_per_step));
+        base::TimeDelta::FromMilliseconds(millisecond_per_step));
   }
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMilliseconds(millisecond_per_step));
+      base::TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
@@ -203,10 +203,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_per_step));
+        base::TimeDelta::FromMilliseconds(millisecond_per_step));
   }
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMilliseconds(millisecond_per_step));
+      base::TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
@@ -218,10 +218,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_per_step));
+        base::TimeDelta::FromMilliseconds(millisecond_per_step));
   }
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMilliseconds(millisecond_per_step));
+      base::TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // Should be no more samples.
@@ -234,10 +234,10 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
     test_task_runner_->FastForwardBy(
-        TimeDelta::FromMilliseconds(millisecond_per_step));
+        base::TimeDelta::FromMilliseconds(millisecond_per_step));
   }
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMilliseconds(millisecond_per_step));
+      base::TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // We should have 3 more events, once for the prior interval and 2 for the

@@ -30,8 +30,7 @@ class AffiliatedInvalidationServiceProviderImpl
     : public AffiliatedInvalidationServiceProvider,
       public content::NotificationObserver {
  public:
-  AffiliatedInvalidationServiceProviderImpl(bool is_fcm_enabled,
-                                            std::string fcm_sender_id);
+  AffiliatedInvalidationServiceProviderImpl();
   ~AffiliatedInvalidationServiceProviderImpl() override;
 
   // content::NotificationObserver:
@@ -75,7 +74,7 @@ class AffiliatedInvalidationServiceProviderImpl
   void DestroyDeviceInvalidationService();
 
   // Initializes and returns either TiclInvalidationService or
-  // FCMInvalidationService depending on the value of |is_fcm_enabled|.
+  // FCMInvalidationService depending on the feature kPolicyFcmInvalidations.
   std::unique_ptr<invalidation::InvalidationService>
   InitializeDeviceInvalidationService();
 
@@ -111,15 +110,6 @@ class AffiliatedInvalidationServiceProviderImpl
   int consumer_count_;
 
   bool is_shut_down_;
-
-  // Whether FCM (Firebase Cloud Messaging) should be used for invalidating
-  // policies. If false, TICL (Tango Invalidation Client Library) is used
-  // instead.
-  const bool is_fcm_enabled_;
-
-  // Sender ID coming from the Firebase console. Is set only when
-  // |is_fcm_enabled_| is true.
-  const std::string fcm_sender_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliatedInvalidationServiceProviderImpl);
 };

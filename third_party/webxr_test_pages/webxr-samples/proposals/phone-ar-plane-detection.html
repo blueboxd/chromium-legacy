@@ -412,7 +412,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
-      let all_planes = new Set();
+      // Set with all planes detected in a previous frame.
+      let all_previous_planes = new Set();
 
       // Called every time a XRSession requests that a new frame be drawn.
       async function onXRFrame(t, frame) {
@@ -420,32 +421,37 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let session = frame.session;
         let pose = frame.getViewerPose(xrRefSpace);
 
-        let previous_planes = new Set(all_planes);
         let detected_planes = frame.worldInformation.detectedPlanes;
+
+        // Check if any of the old planes is no longer present in detected planes set.
+        // If it's no longer present, it was removed - clean up after.
+        all_previous_planes.forEach(plane => {
+          if(!detected_planes.has(plane)) {
+            console.log("Removing plane, id:", plane.id);
+
+            let index = all_plane_origins.findIndex(
+              element => element === plane.scene_node.origins);
+            if(index != -1){
+              all_plane_origins.splice(index, 1);
+            }
+
+            index = all_extended_planes.findIndex(
+              element => element === plane.extended_polygon_node);
+            if(index != -1){
+              all_extended_planes.splice(index, 1);
+            }
+
+            scene.removeNode(plane.scene_node);
+          }
+        });
+
+        // Store currently detected planes to check against them in subsequent frame.
+        all_previous_planes = detected_planes;
+
+        // Process all currently detected planes.
         detected_planes.forEach(plane => {
           addPlaneToScene(plane, t);
-          if(previous_planes.has(plane)) {
-            previous_planes.delete(plane);
-          }
         });
-
-        previous_planes.forEach(plane => {
-          console.log("Removing plane, id:", plane.id);
-
-          let index = all_plane_origins.findIndex(element => element === plane.scene_node.origins);
-          if(index != -1){
-            all_plane_origins.splice(index, 1);
-          }
-
-          index = all_extended_planes.findIndex(element => element === plane.extended_polygon_node);
-          if(index != -1){
-            all_extended_planes.splice(index, 1);
-          }
-
-          scene.removeNode(plane.scene_node);
-        });
-
-        all_planes = new Set(detected_planes);
 
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower

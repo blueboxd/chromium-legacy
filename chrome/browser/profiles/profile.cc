@@ -162,6 +162,19 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   base::PathService::Get(base::DIR_HOME, &home);
   registry->RegisterStringPref(prefs::kSelectFileLastDirectory,
                                home.MaybeAsASCII());
+  registry->RegisterStringPref(prefs::kAccessibilityCaptionsTextSize,
+                               std::string());
+  registry->RegisterStringPref(prefs::kAccessibilityCaptionsTextFont,
+                               std::string());
+  registry->RegisterStringPref(prefs::kAccessibilityCaptionsTextColor,
+                               std::string());
+  registry->RegisterIntegerPref(prefs::kAccessibilityCaptionsTextOpacity, 100);
+  registry->RegisterIntegerPref(prefs::kAccessibilityCaptionsBackgroundOpacity,
+                                100);
+  registry->RegisterStringPref(prefs::kAccessibilityCaptionsBackgroundColor,
+                               std::string());
+  registry->RegisterStringPref(prefs::kAccessibilityCaptionsTextShadow,
+                               std::string());
 #if !defined(OS_ANDROID)
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);

@@ -195,7 +195,8 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockContext::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
 
   // If the element is dirty, style recalc would handle it in the next recalc.
@@ -564,7 +565,8 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
       DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockContext::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -662,7 +664,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
       DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockContext::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -687,7 +690,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
       DisplayLockContext::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
       DisplayLockContext::kChildren));
-  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockContext::kChildren));
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -805,7 +809,8 @@ TEST_F(DisplayLockContextTest,
       DisplayLockContext::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
       DisplayLockContext::kChildren));
-  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockContext::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -1406,15 +1411,17 @@ TEST_F(DisplayLockContextTest,
 
   SetHtmlInnerHTML(R"HTML(
     <style>
-    div {
+    #container {
       width: 100px;
       height: 100px;
       contain: style layout;
+    }
+    #composited {
       will-change: transform;
     }
     </style>
     <body>
-    <div id="container">testing</div></body>
+    <div id="container"><div id="composited">testing</div></div></body>
     </body>
   )HTML");
 

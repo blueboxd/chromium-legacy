@@ -147,8 +147,9 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   void CheckSetupNotAllowed() {
     EXPECT_FALSE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
-    EXPECT_EQ(view_->GetBigMessage(),
-              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
+    EXPECT_EQ(
+        view_->GetBigMessage(),
+        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE));
     EXPECT_EQ(
         view_->GetMessage(),
         l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE));

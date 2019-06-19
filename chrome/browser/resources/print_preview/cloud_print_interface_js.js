@@ -198,29 +198,35 @@ cr.define('cloudprint', function() {
      * @private
      */
     buildRequest_(method, action, params, origin, account, callback) {
-      let url = this.baseUrl_ + '/' + action + '?xsrf=';
+      const url = new URL(this.baseUrl_ + '/' + action);
+      const searchParams = url.searchParams;
       if (origin == print_preview.DestinationOrigin.COOKIES) {
         const xsrfToken = this.xsrfTokens_[account];
         if (!xsrfToken) {
+          searchParams.append('xsrf', '');
           // TODO(rltoscano): Should throw an error if not a read-only action or
           // issue an xsrf token request.
         } else {
-          url = url + xsrfToken;
+          searchParams.append('xsrf', xsrfToken);
         }
         if (account) {
           const index = this.userSessionIndex_[account] || 0;
           if (index > 0) {
-            url += '&authuser=' + index;
+            searchParams.append('authuser', index.toString());
           }
         }
+      } else {
+        searchParams.append('xsrf', '');
       }
+
+      // Add locale
+      searchParams.append('hl', window.navigator.language);
       let body = null;
       if (params) {
         if (method == 'GET') {
-          url = params.reduce(function(partialUrl, param) {
-            return partialUrl + '&' + param.name + '=' +
-                encodeURIComponent(param.value);
-          }, url);
+          params.forEach(param => {
+            searchParams.append(param.name, encodeURIComponent(param.value));
+          });
         } else if (method == 'POST') {
           body = params.reduce(function(partialBody, param) {
             return partialBody + 'Content-Disposition: form-data; name=\"' +
@@ -239,7 +245,7 @@ cr.define('cloudprint', function() {
       }
 
       const xhr = new XMLHttpRequest();
-      xhr.open(method, url, true);
+      xhr.open(method, url.toString(), true);
       xhr.withCredentials = (origin == print_preview.DestinationOrigin.COOKIES);
       for (const header in headers) {
         xhr.setRequestHeader(header, headers[header]);

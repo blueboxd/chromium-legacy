@@ -71,6 +71,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     policy_json = '''
       {
         'policy_definitions': [],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -101,6 +102,7 @@ chromium_recommended="Chromium - Recommended"''')
     policy_json = '''
       {
         'policy_definitions': [],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -142,6 +144,7 @@ chromium_recommended="Chromium - Recommended"''')
             'desc': 'Description of main.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -210,6 +213,7 @@ Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
             'desc': 'Description of main.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -266,6 +270,7 @@ With a newline.""",
             'caption': 'Caption of policy.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -332,6 +337,7 @@ StringPolicy_Part="Caption of policy."
             'supported_on': ['chrome.win:8-']
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -400,6 +406,7 @@ IntPolicy_Part="Caption of policy."
           },
         ],
         'placeholders': [],
+        'policy_atomic_group_definitions': [],
         'messages': %s
       }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
@@ -477,6 +484,7 @@ IntPolicy_Part="Caption of policy."
             'features': { 'can_be_recommended': True },
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -562,6 +570,7 @@ ProxyServerAutoDetect_DropDown="Option2"
             'features': { 'can_be_recommended': True },
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -643,6 +652,7 @@ With a newline.""",
             'label': 'Label of list policy.'
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s,
       }''' % MESSAGES
@@ -717,6 +727,7 @@ With a newline.""",
             'label': 'Label of list policy.'
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -783,6 +794,7 @@ ListPolicy_Part="Label of list policy."
             'caption': 'Caption of policy.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -850,6 +862,7 @@ DictionaryPolicy_Part="Caption of policy."
             'caption': 'Caption of policy.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -923,6 +936,7 @@ ExternalPolicy_Part="Caption of policy."
             'desc': 'Desc of list policy.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -960,6 +974,7 @@ chromium_recommended="Chromium - Recommended"
             'desc': 'Description of main.',
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -1031,6 +1046,7 @@ With a newline."""
 With a newline."""
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -1133,6 +1149,7 @@ Policy2_Part="Caption of policy2."
             'supported_on': ['chrome.win:39-'],
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
@@ -1215,6 +1232,7 @@ EnumPolicy_B_Part="Caption of policy B."
             'desc': """Description of policy1."""
           },
         ],
+        'policy_atomic_group_definitions': [],
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES

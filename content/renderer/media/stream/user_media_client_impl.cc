@@ -16,11 +16,11 @@
 #include "content/renderer/media/stream/apply_constraints_processor.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -160,7 +160,7 @@ void UserMediaClientImpl::RequestUserMedia(
   }
 
   int request_id = g_next_request_id++;
-  WebRtcLogMessage(base::StringPrintf(
+  blink::WebRtcLogMessage(base::StringPrintf(
       "UMCI::RequestUserMedia. request_id=%d, audio constraints=%s, "
       "video constraints=%s",
       request_id, web_request.AudioConstraints().ToString().Utf8().c_str(),
@@ -256,7 +256,7 @@ void UserMediaClientImpl::CancelUserMediaRequest(
     // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
     UserMediaRequest* request = user_media_processor_->CurrentRequest();
     if (request && request->web_request == web_request) {
-      WebRtcLogMessage(base::StringPrintf(
+      blink::WebRtcLogMessage(base::StringPrintf(
           "UMCI::CancelUserMediaRequest. request_id=%d", request->request_id));
     }
   }

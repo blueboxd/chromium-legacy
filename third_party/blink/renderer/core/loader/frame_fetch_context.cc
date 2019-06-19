@@ -649,7 +649,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             mojom::FeaturePolicyFeature::kClientHintRTT, resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
-    base::Optional<TimeDelta> http_rtt =
+    base::Optional<base::TimeDelta> http_rtt =
         GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
     if (!http_rtt) {
       http_rtt = GetNetworkStateNotifier().HttpRtt();

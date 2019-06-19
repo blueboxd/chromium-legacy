@@ -47,12 +47,6 @@ Polymer({
     },
 
     /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {!NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
-    /**
      * Title line describing the network type to appear in the row's top line.
      * If it is undefined, the title text is a default from CrOncStrings (see
      * this.getTitleText_() below).
@@ -184,27 +178,6 @@ Polymer({
         deviceState.SIMLockStatus ? deviceState.SIMLockStatus.LockType : '';
     return simLockType == CrOnc.LockType.PIN ||
         simLockType == CrOnc.LockType.PUK;
-  },
-
-  /**
-   * Returns a NetworkProperties object for <network-siminfo> built from
-   * the device properties (since there will be no active network).
-   * @param {!CrOnc.DeviceStateProperties|undefined} deviceState
-   * @return {!CrOnc.NetworkProperties|undefined}
-   * @private
-   */
-  getCellularState_: function(deviceState) {
-    if (!deviceState) {
-      return undefined;
-    }
-    return {
-      GUID: '',
-      Type: CrOnc.Type.CELLULAR,
-      Cellular: {
-        SIMLockStatus: deviceState.SIMLockStatus,
-        SIMPresent: deviceState.SIMPresent,
-      },
-    };
   },
 
   /**

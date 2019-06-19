@@ -31,7 +31,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
             CanvasAsyncBlobCreator::GetImageEncodeOptionsForMimeType(mime_type),
             kHTMLCanvasToBlobCallback,
             nullptr,
-            TimeTicks(),
+            base::TimeTicks(),
             document,
             nullptr) {
     if (fail_encoder_initialization)
@@ -102,10 +102,10 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
-                  WrapPersistent(this), quality, TimeTicks::Max()));
+                  WrapPersistent(this), quality, base::TimeTicks::Max()));
   }
 
-  void IdleEncodeRows(TimeTicks deadline) override {
+  void IdleEncodeRows(base::TimeTicks deadline) override {
     // Deliberately make idleEncodeRows do nothing so that idle task never
     // completes
   }
@@ -292,7 +292,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
                   source_bitmap_image, options,
                   CanvasAsyncBlobCreator::ToBlobFunctionType::
                       kHTMLCanvasConvertToBlobPromise,
-                  TimeTicks(), &GetDocument(), nullptr);
+                  base::TimeTicks(), &GetDocument(), nullptr);
           ASSERT_TRUE(async_blob_creator->EncodeImageForConvertToBlobTest());
 
           sk_sp<SkData> sk_data = SkData::MakeWithCopy(

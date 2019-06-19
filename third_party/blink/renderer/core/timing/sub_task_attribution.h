@@ -23,12 +23,12 @@ class SubTaskAttribution {
 
   SubTaskAttribution(const AtomicString& sub_task_name,
                      const String& script_url,
-                     TimeTicks start_time,
-                     TimeDelta duration);
+                     base::TimeTicks start_time,
+                     base::TimeDelta duration);
   inline AtomicString subTaskName() const { return sub_task_name_; }
   inline String scriptURL() const { return script_url_; }
-  inline TimeTicks startTime() const { return start_time_; }
-  inline TimeDelta duration() const { return duration_; }
+  inline base::TimeTicks startTime() const { return start_time_; }
+  inline base::TimeDelta duration() const { return duration_; }
 
   inline DOMHighResTimeStamp highResStartTime() const {
     return high_res_start_time_;
@@ -46,8 +46,8 @@ class SubTaskAttribution {
  private:
   AtomicString sub_task_name_;
   String script_url_;
-  TimeTicks start_time_;
-  TimeDelta duration_;
+  base::TimeTicks start_time_;
+  base::TimeDelta duration_;
   DOMHighResTimeStamp high_res_start_time_;
   DOMHighResTimeStamp high_res_duration_;
 };

@@ -120,7 +120,9 @@ base::FilePath ProfileHelper::GetProfilePathByUserIdHash(
   // you start a guest session or Chrome crashes. Be sure to add
   //   "--login-profile=user@example.com-hash"
   // to the command line flags.
-  DCHECK(!user_id_hash.empty());
+  DCHECK(!user_id_hash.empty())
+      << "user_id_hash is empty, probably need to add "
+         "--login-profile=user@example.com-hash to command line parameters";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath profile_path = profile_manager->user_data_dir();
 

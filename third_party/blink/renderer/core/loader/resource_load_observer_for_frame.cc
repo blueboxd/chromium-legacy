@@ -220,7 +220,7 @@ void ResourceLoadObserverForFrame::DidDownloadToBlob(uint64_t identifier,
 
 void ResourceLoadObserverForFrame::DidFinishLoading(
     uint64_t identifier,
-    TimeTicks finish_time,
+    base::TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
     bool should_report_corb_blocking,

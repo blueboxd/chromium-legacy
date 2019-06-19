@@ -587,33 +587,34 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
       continue;
 
     DocumentLoadTiming& timing = loader->GetTiming();
-    TimeTicks commit_timestamp = timing.ResponseEnd();
+    base::TimeTicks commit_timestamp = timing.ResponseEnd();
     if (!commit_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "commit",
                      commit_timestamp.since_origin().InSecondsF());
     }
 
-    TimeTicks domcontentloaded_timestamp =
+    base::TimeTicks domcontentloaded_timestamp =
         document->GetTiming().DomContentLoadedEventEnd();
     if (!domcontentloaded_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "DOMContentLoaded",
                      domcontentloaded_timestamp.since_origin().InSecondsF());
     }
 
-    TimeTicks load_timestamp = timing.LoadEventEnd();
+    base::TimeTicks load_timestamp = timing.LoadEventEnd();
     if (!load_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "load",
                      load_timestamp.since_origin().InSecondsF());
     }
 
     IdlenessDetector* idleness_detector = frame->GetIdlenessDetector();
-    TimeTicks network_almost_idle_timestamp =
+    base::TimeTicks network_almost_idle_timestamp =
         idleness_detector->GetNetworkAlmostIdleTime();
     if (!network_almost_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkAlmostIdle",
                      network_almost_idle_timestamp.since_origin().InSecondsF());
     }
-    TimeTicks network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
+    base::TimeTicks network_idle_timestamp =
+        idleness_detector->GetNetworkIdleTime();
     if (!network_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkIdle",
                      network_idle_timestamp.since_origin().InSecondsF());

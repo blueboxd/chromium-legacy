@@ -4,6 +4,16 @@
 
 module chromeos.ime.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
+import "url/mojom/url.mojom";
+
+// IME on ChromeOS consists of three parts:
+// - The IME running in an extension to provide a soft keyboard
+// - The sandboxed, core IME service running in ChromeOS (responsible for
+//   processing input and turning it into characters/symbols)
+// - The IME framework running in the Chrome browser process, that brokers
+//   between the IME extension and the IME service. It also provides additional
+//   functionality to the IME service (for downloading IME data as needed).
 
 // Method of an operation to apply to a text field
 enum OperationMethod {
@@ -49,7 +59,10 @@ struct KeypressInfo {
   bool alt;
 };
 
-// Manages access to a set of IME engines.
+// Manages access to a set of IME engines, implemented by the IME service
+// itself. The IME framework in the browser process is responsible for brokering
+// the connection between the IME service and the IME extension, but does not
+// otherwise participate.
 interface InputEngineManager {
   // Sets up the connection by binding the |to_engine_request| to the input
   // engine identified by the |ime_spec|. The |extra| is an optional serialized
@@ -65,8 +78,9 @@ interface InputEngineManager {
                      => (bool success);
 };
 
-// A message channel is a paired message sender and receiver, representing
-// the communication channel between an client and the input engine connected.
+// A message channel is a paired message sender and receiver. It provides the
+// communication channel between the IME extension process and the core IME
+// service in ChromeOS.
 // In order to encapsulate all the communication, (e.g. access to some
 // closed-sourced input engine with decoders), implement the method that takes
 // a serialized protobuf message (instead of a plaintext) as its argument.
@@ -89,4 +103,22 @@ interface InputChannel {
 
   // Gets the keypress count for rulebased logic
   GetRulebasedKeypressCountForTesting() => (int32 count);
+};
+
+// Implemented in the browser process, used to perform network requests or
+// access privileged resources on behalf of the core IME service in ChromeOS.
+interface PlatformAccessProvider {
+  // Download language module from a whitelisted url to a given path.
+  // Provider will validate the url and return an empty file path if it's
+  // invalid or downloading fails.
+  DownloadImeFileTo(url.mojom.Url url,
+                    mojo_base.mojom.FilePath file_path) =>
+                        (mojo_base.mojom.FilePath file_path);
+};
+
+// A client on the input engine side that requires access to the IME-specific
+// resources on the platform.
+interface PlatformAccessClient {
+  // Set a platform access provider.
+  SetPlatformAccessProvider(pending_remote<PlatformAccessProvider> provider);
 };

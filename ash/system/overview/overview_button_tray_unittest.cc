@@ -266,11 +266,11 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
-  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(GetTray()->is_active());
 
-  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->EndOverview());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(GetTray()->is_active());
 }
@@ -355,7 +355,7 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 
   // Enter splitview mode. Snap |window1| to the left, this will be the default
   // splitview window.
-  Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->StartOverview();
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);

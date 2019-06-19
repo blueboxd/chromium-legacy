@@ -133,7 +133,7 @@ class PpdLineReaderImpl : public PpdLineReader {
       // uses it, we should never see the callback used.
       int result = input_->Read(
           read_buf_.get(), kReadBufCapacity,
-          base::Bind([](int) { LOG(FATAL) << "Unexpected async read"; }));
+          base::BindOnce([](int) { LOG(FATAL) << "Unexpected async read"; }));
       if (result == 0) {
         eof_ = true;
         return '\0';

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,7 +18,6 @@
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator.h"
-#include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "crypto/hkdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,36 +48,13 @@ size_t NumBytesForSymmetricKeyType(cryptauthv2::KeyType key_type) {
   }
 }
 
-class FakeSecureMessageDelegateFactory
-    : public multidevice::SecureMessageDelegateImpl::Factory {
- public:
-  FakeSecureMessageDelegateFactory() = default;
-
-  ~FakeSecureMessageDelegateFactory() override = default;
-
-  multidevice::FakeSecureMessageDelegate* instance() { return instance_; }
-
- private:
-  // multidevice::SecureMessageDelegateImpl::Factory:
-  std::unique_ptr<multidevice::SecureMessageDelegate> BuildInstance() override {
-    auto instance = std::make_unique<multidevice::FakeSecureMessageDelegate>();
-    instance_ = instance.get();
-
-    return instance;
-  }
-
-  multidevice::FakeSecureMessageDelegate* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSecureMessageDelegateFactory);
-};
-
 }  // namespace
 
 class DeviceSyncCryptAuthKeyCreatorImplTest : public testing::Test {
  protected:
   DeviceSyncCryptAuthKeyCreatorImplTest()
       : fake_secure_message_delegate_factory_(
-            std::make_unique<FakeSecureMessageDelegateFactory>()),
+            std::make_unique<multidevice::FakeSecureMessageDelegateFactory>()),
         fake_server_ephemeral_dh_(CryptAuthKey(
             kFakeServerEphemeralDhPublicKeyMaterial,
             fake_secure_message_delegate()->GetPrivateKeyForPublicKey(
@@ -161,7 +139,7 @@ class DeviceSyncCryptAuthKeyCreatorImplTest : public testing::Test {
     client_ephemeral_dh_ = client_ephemeral_dh;
   }
 
-  std::unique_ptr<FakeSecureMessageDelegateFactory>
+  std::unique_ptr<multidevice::FakeSecureMessageDelegateFactory>
       fake_secure_message_delegate_factory_;
   std::unique_ptr<CryptAuthKeyCreator> key_creator_;
 

@@ -69,7 +69,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   // Because we're using the internal padding to keep track of the changes we
   // make to the leading margin to handle Fitts' Law, it's easier to just
   // allocate the property once and modify the value.
-  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
+  SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
   UpdateHighlightBackgroundAndInsets();
 }

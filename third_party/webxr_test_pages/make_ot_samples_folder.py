@@ -24,8 +24,7 @@ other_pages = [
 
 copy_folders = [
   'css',
-  'js',
-  'media' # Won't be uploaded.
+  'js'
 ]
 
 def make_ot_samples_folder(source, dest):
@@ -39,6 +38,12 @@ def make_ot_samples_folder(source, dest):
   shutil.copy(
     os.path.join(source, 'index.published.html'),
     os.path.join(dest, 'index.html'))
+  shutil.make_archive('source', 'zip', dest)
+  shutil.move('source.zip', dest)
+
+  # media folder won't be included in the zip file or uploaded in any way as
+  # part of this process
+  shutil.copytree(os.path.join(source, 'media'), os.path.join(dest, 'media'))
 
 def main():
   make_ot_samples_folder(sys.argv[1], sys.argv[2])

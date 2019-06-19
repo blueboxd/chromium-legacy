@@ -59,6 +59,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -1774,6 +1775,13 @@ void DownloadItemImpl::OnDownloadCompleting() {
     return;
   }
 #endif  // defined(OS_ANDROID)
+
+  std::unique_ptr<service_manager::Connector> new_connector;
+  service_manager::Connector* connector =
+      delegate_->GetServiceManagerConnector();
+  if (connector)
+    new_connector = connector->Clone();
+
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndAnnotate,
@@ -1782,7 +1790,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
                      delegate_->GetApplicationClientIdForFileScanning(),
                      delegate_->IsOffTheRecord() ? GURL() : GetURL(),
                      delegate_->IsOffTheRecord() ? GURL() : GetReferrerUrl(),
-                     std::move(callback)));
+                     std::move(new_connector), std::move(callback)));
 }
 
 void DownloadItemImpl::OnDownloadRenamedToFinalName(

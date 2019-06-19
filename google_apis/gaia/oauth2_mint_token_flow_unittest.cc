@@ -142,7 +142,8 @@ class MockMintTokenFlow : public OAuth2MintTokenFlow {
       : OAuth2MintTokenFlow(delegate, parameters) {}
   ~MockMintTokenFlow() override {}
 
-  MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher*());
+  MOCK_METHOD0(CreateAccessTokenFetcher,
+               std::unique_ptr<OAuth2AccessTokenFetcher>());
 };
 
 }  // namespace
@@ -168,9 +169,9 @@ class OAuth2MintTokenFlowTest : public testing::Test {
     std::string ext_id = "ext1";
     std::string client_id = "client1";
     std::vector<std::string> scopes(CreateTestScopes());
-    flow_.reset(new MockMintTokenFlow(
+    flow_ = std::make_unique<MockMintTokenFlow>(
         delegate, OAuth2MintTokenFlow::Parameters(ext_id, client_id, scopes,
-                                                  device_id, mode)));
+                                                  device_id, mode));
   }
 
   // Helper to parse the given string to DictionaryValue.

@@ -141,6 +141,12 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface ContentIndex
+    attribute @@toStringTag
+    method add
+    method constructor
+    method delete
+    method getDescriptions
 interface CookieStore : EventTarget
     attribute @@toStringTag
     method constructor
@@ -1216,6 +1222,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter index
     getter installing
     getter navigationPreload
     getter onupdatefound

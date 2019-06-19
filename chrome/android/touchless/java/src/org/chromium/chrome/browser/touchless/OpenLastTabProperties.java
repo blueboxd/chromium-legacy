@@ -29,9 +29,6 @@ class OpenLastTabProperties {
     public static final PropertyModel.WritableBooleanPropertyKey OPEN_LAST_TAB_LOAD_SUCCESS =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyModel.WritableBooleanPropertyKey OPEN_LAST_TAB_FIRST_LAUNCH =
-            new PropertyModel.WritableBooleanPropertyKey();
-
     public static final PropertyModel.WritableObjectPropertyKey<Runnable> ON_FOCUS_CALLBACK =
             new PropertyModel.WritableObjectPropertyKey<>();
 
@@ -49,6 +46,6 @@ class OpenLastTabProperties {
     // Property keys for the open last tab button.
     public static final PropertyKey[] ALL_KEYS = {OPEN_LAST_TAB_ON_CLICK_LISTENER,
             OPEN_LAST_TAB_FAVICON, OPEN_LAST_TAB_TITLE, OPEN_LAST_TAB_TIMESTAMP,
-            OPEN_LAST_TAB_LOAD_SUCCESS, OPEN_LAST_TAB_FIRST_LAUNCH, ON_FOCUS_CALLBACK,
-            SHOULD_FOCUS_VIEW, ASYNC_FOCUS_DELEGATE, CONTEXT_MENU_DELEGATE};
+            OPEN_LAST_TAB_LOAD_SUCCESS, ON_FOCUS_CALLBACK, SHOULD_FOCUS_VIEW, ASYNC_FOCUS_DELEGATE,
+            CONTEXT_MENU_DELEGATE};
 }

@@ -4,6 +4,7 @@
 
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
@@ -13,8 +14,11 @@ namespace chromeos {
 namespace network_config {
 
 CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
-  cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
+  network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
       network_state_helper_.network_state_handler());
+  cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
+      network_state_helper_.network_state_handler(),
+      network_device_handler_.get());
   SetupService();
 }
 

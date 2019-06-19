@@ -10,15 +10,11 @@
 namespace device {
 
 PowerMonitorMessageBroadcaster::PowerMonitorMessageBroadcaster() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 }
 
 PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 // static
@@ -30,11 +26,8 @@ void PowerMonitorMessageBroadcaster::Bind(
 void PowerMonitorMessageBroadcaster::AddClient(
     device::mojom::PowerMonitorClientPtr power_monitor_client) {
   clients_.AddPtr(std::move(power_monitor_client));
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  // Unit tests does not initialize the PowerMonitor.
-  if (power_monitor) {
-    OnPowerStateChange(power_monitor->IsOnBatteryPower());
-  }
+  if (base::PowerMonitor::IsInitialized())
+    OnPowerStateChange(base::PowerMonitor::IsOnBatteryPower());
 }
 
 void PowerMonitorMessageBroadcaster::OnPowerStateChange(bool on_battery_power) {

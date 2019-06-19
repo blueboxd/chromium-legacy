@@ -99,6 +99,14 @@ int DefaultTypographyProvider::GetLineHeight(int context, int style) const {
   return 0;
 }
 
+int DefaultTypographyProvider::GetExpectedTextWidth(int context,
+                                                    int style,
+                                                    int length) const {
+  // TODO(etienneb): Do not rely on font.GetExpectedTextWidth(...) to retrieve
+  // the expected text width.
+  return GetFont(context, style).GetExpectedTextWidth(length);
+}
+
 // static
 void DefaultTypographyProvider::GetDefaultFont(int context,
                                                int style,

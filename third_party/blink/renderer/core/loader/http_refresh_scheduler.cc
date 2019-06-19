@@ -124,7 +124,7 @@ void HttpRefreshScheduler::MaybeStartTimer() {
   navigate_task_handle_ = PostDelayedCancellableTask(
       *document_->GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
       WTF::Bind(&HttpRefreshScheduler::NavigateTask, WrapWeakPersistent(this)),
-      TimeDelta::FromSecondsD(refresh_->delay));
+      base::TimeDelta::FromSecondsD(refresh_->delay));
 
   probe::FrameScheduledNavigation(document_->GetFrame(), refresh_->url,
                                   refresh_->delay, refresh_->reason);

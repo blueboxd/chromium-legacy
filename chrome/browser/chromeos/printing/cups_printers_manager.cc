@@ -379,8 +379,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
           ppd_resolution_tracker_.MarkResolutionPending(detected_printer_id);
           ppd_provider_->ResolvePpdReference(
               detected.ppd_search_data,
-              base::Bind(&CupsPrintersManagerImpl::ResolvePpdReferenceDone,
-                         weak_ptr_factory_.GetWeakPtr(), detected_printer_id));
+              base::BindOnce(&CupsPrintersManagerImpl::ResolvePpdReferenceDone,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             detected_printer_id));
         }
       }
     }

@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
@@ -1503,7 +1504,7 @@ class VEAClientBase : public VideoEncodeAccelerator::Client {
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
 
-  std::vector<std::unique_ptr<base::SharedMemory>> output_shms_;
+  std::vector<std::unique_ptr<base::UnsafeSharedMemoryRegion>> output_shms_;
   int32_t next_output_buffer_id_;
 };
 
@@ -1547,7 +1548,7 @@ class VEAClient : public VEAClientBase {
   void FeedEncoderWithOneInput();
 
   // Provide the encoder with a new output buffer.
-  void FeedEncoderWithOutput(base::SharedMemory* shm);
+  void FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm);
 
   // Called on finding a complete frame (with |keyframe| set to true for
   // keyframes, |visible_size| for the visible size of encoded frame) in the
@@ -1632,7 +1633,7 @@ class VEAClient : public VEAClientBase {
   std::queue<size_t> keyframe_indices_;
 
   // Ids for output BitstreamBuffers.
-  typedef std::map<int32_t, base::SharedMemory*> IdToSHM;
+  typedef std::map<int32_t, base::UnsafeSharedMemoryRegion*> IdToSHM;
   IdToSHM output_buffers_at_client_;
 
   // Current offset into input stream.
@@ -1948,8 +1949,9 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   ASSERT_GT(output_buffer_size_, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = std::make_unique<base::SharedMemory>();
-    LOG_ASSERT(shm->CreateAndMapAnonymous(output_buffer_size_));
+    auto shm = std::make_unique<base::UnsafeSharedMemoryRegion>();
+    *shm = base::UnsafeSharedMemoryRegion::Create(output_buffer_size_);
+    LOG_ASSERT(shm->IsValid());
     FeedEncoderWithOutput(shm.get());
     output_shms_.push_back(std::move(shm));
   }
@@ -1987,7 +1989,8 @@ void VEAClient::BitstreamBufferReady(
 
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
   ASSERT_NE(it, output_buffers_at_client_.end());
-  base::SharedMemory* shm = it->second;
+  base::UnsafeSharedMemoryRegion* shm = it->second;
+  LOG_ASSERT(shm->IsValid());
   output_buffers_at_client_.erase(it);
 
   if (state_ == CS_FLUSHED || state_ == CS_VALIDATED)
@@ -2001,7 +2004,9 @@ void VEAClient::BitstreamBufferReady(
 
   encoded_stream_size_since_last_check_ += metadata.payload_size_bytes;
 
-  const uint8_t* stream_ptr = static_cast<const uint8_t*>(shm->memory());
+  base::WritableSharedMemoryMapping mapping = shm->Map();
+  LOG_ASSERT(mapping.IsValid());
+  const uint8_t* stream_ptr = static_cast<const uint8_t*>(mapping.memory());
   if (metadata.payload_size_bytes > 0) {
     if (stream_validator_) {
       stream_validator_->ProcessStreamBuffer(stream_ptr,
@@ -2014,7 +2019,7 @@ void VEAClient::BitstreamBufferReady(
 
     if (quality_validator_) {
       scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-          static_cast<const uint8_t*>(shm->memory()),
+          static_cast<const uint8_t*>(mapping.memory()),
           static_cast<int>(metadata.payload_size_bytes)));
       quality_validator_->AddDecodeBuffer(buffer);
     }
@@ -2033,7 +2038,7 @@ void VEAClient::BitstreamBufferReady(
 
       EXPECT_TRUE(base::AppendToFile(
           base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
-          static_cast<char*>(shm->memory()),
+          static_cast<char*>(mapping.memory()),
           base::checked_cast<int>(metadata.payload_size_bytes)));
     }
   }
@@ -2202,7 +2207,7 @@ void VEAClient::FeedEncoderWithOneInput() {
   }
 }
 
-void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
+void VEAClient::FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
@@ -2210,8 +2215,11 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (state_ != CS_ENCODING && state_ != CS_FLUSHING)
     return;
 
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, shm->handle(),
-                                   false /* read_only */, output_buffer_size_);
+  BitstreamBuffer bitstream_buffer(
+      next_output_buffer_id_++,
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          shm->Duplicate()),
+      output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
@@ -2456,7 +2464,8 @@ class SimpleVEAClientBase : public VEAClientBase {
   void SetState(ClientState new_state) override;
 
   // Provide the encoder with a new output buffer.
-  void FeedEncoderWithOutput(base::SharedMemory* shm, size_t output_size);
+  void FeedEncoderWithOutput(base::UnsafeSharedMemoryRegion* shm,
+                             size_t output_size);
 
   const int width_;
   const int height_;
@@ -2517,24 +2526,26 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
   ASSERT_GT(output_size, 0UL);
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
-    auto shm = std::make_unique<base::SharedMemory>();
-    LOG_ASSERT(shm->CreateAndMapAnonymous(output_size));
+    auto shm = std::make_unique<base::UnsafeSharedMemoryRegion>();
+    *shm = base::UnsafeSharedMemoryRegion::Create(output_size);
+    LOG_ASSERT(shm->IsValid());
     FeedEncoderWithOutput(shm.get(), output_size);
     output_shms_.push_back(std::move(shm));
   }
 }
 
-void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
-                                                size_t output_size) {
+void SimpleVEAClientBase::FeedEncoderWithOutput(
+    base::UnsafeSharedMemoryRegion* shm,
+    size_t output_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
 
-  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
-  LOG_ASSERT(dup_handle.IsValid());
-
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   false /* read_only */, output_size);
+  BitstreamBuffer bitstream_buffer(
+      next_output_buffer_id_++,
+      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          shm->Duplicate()),
+      output_size);
   encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
 }
 

@@ -35,8 +35,8 @@ class DisplayLockBudgetTest : public RenderingTest,
   void ResetDeadlineForTesting(YieldingDisplayLockBudget& budget,
                                const LifecycleData& lifecycle_data) {
     budget.deadline_ =
-        CurrentTimeTicks() +
-        TimeDelta::FromMillisecondsD(budget.GetCurrentBudgetMs(lifecycle_data));
+        CurrentTimeTicks() + base::TimeDelta::FromMillisecondsD(
+                                 budget.GetCurrentBudgetMs(lifecycle_data));
   }
 
   void ResetBudget(std::unique_ptr<DisplayLockBudget> budget,
@@ -365,8 +365,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
   EXPECT_TRUE(budget.NeedsLifecycleUpdates());
 
   // Advancing the clock a bit will make us still want to the phases.
-  test_task_runner_->FastForwardBy(
-      TimeDelta::FromMillisecondsD(GetBudgetMs(budget, lifecycle_data) / 2));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMillisecondsD(
+      GetBudgetMs(budget, lifecycle_data) / 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle,
                                         lifecycle_data));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout,
@@ -376,7 +376,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   // However, once we're out of budget, we will only do the next phase.
   test_task_runner_->FastForwardBy(
-      TimeDelta::FromMillisecondsD(GetBudgetMs(budget, lifecycle_data)));
+      base::TimeDelta::FromMillisecondsD(GetBudgetMs(budget, lifecycle_data)));
 
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle,
                                         lifecycle_data));
@@ -409,8 +409,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
 
   // Now that we're out of budget, phases performed previously should remain
   // true.
-  test_task_runner_->FastForwardBy(
-      TimeDelta::FromMillisecondsD(GetBudgetMs(budget, lifecycle_data) * 2));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMillisecondsD(
+      GetBudgetMs(budget, lifecycle_data) * 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle,
                                         lifecycle_data));
   EXPECT_FALSE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout,
@@ -433,8 +433,8 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
                                         lifecycle_data));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint,
                                         lifecycle_data));
-  test_task_runner_->FastForwardBy(
-      TimeDelta::FromMillisecondsD(GetBudgetMs(budget, lifecycle_data) * 2));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMillisecondsD(
+      GetBudgetMs(budget, lifecycle_data) * 2));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kStyle,
                                         lifecycle_data));
   EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kLayout,
@@ -454,7 +454,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudget) {
                                           lifecycle_data));
     EXPECT_TRUE(budget.ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint,
                                           lifecycle_data));
-    test_task_runner_->FastForwardBy(TimeDelta::FromMillisecondsD(10000));
+    test_task_runner_->FastForwardBy(base::TimeDelta::FromMillisecondsD(10000));
   }
 }
 
@@ -525,7 +525,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   EXPECT_TRUE(parent->NeedsStyleRecalc() || parent->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc() || element->ChildNeedsStyleRecalc());
 
-  test_task_runner_->FastForwardBy(TimeDelta::FromMillisecondsD(
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMillisecondsD(
       GetBudgetMs(*budget, GetDocument().View()->CurrentLifecycleData()) * 2));
   EXPECT_TRUE(
       budget->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle,

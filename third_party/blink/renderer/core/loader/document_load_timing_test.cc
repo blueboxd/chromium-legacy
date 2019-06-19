@@ -23,7 +23,7 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
                                                     embedder_navigation_start));
 
   double real_wall_time = CurrentTime();
-  TimeDelta adjusted_wall_time =
+  base::TimeDelta adjusted_wall_time =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
 
   EXPECT_NEAR(adjusted_wall_time.InSecondsF(), real_wall_time + delta, .001);
@@ -45,13 +45,13 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   // dominated by the navigationStartDelta, but similar to currentTime().
   timing.MarkLoadEventEnd();
   double real_wall_load_event_end = CurrentTime();
-  TimeDelta adjusted_load_event_end =
+  base::TimeDelta adjusted_load_event_end =
       timing.MonotonicTimeToPseudoWallTime(timing.LoadEventEnd());
 
   EXPECT_NEAR(adjusted_load_event_end.InSecondsF(), real_wall_load_event_end,
               .001);
 
-  TimeDelta adjusted_navigation_start =
+  base::TimeDelta adjusted_navigation_start =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
   EXPECT_NEAR(
       (adjusted_load_event_end - adjusted_navigation_start).InSecondsF(),

@@ -18,6 +18,9 @@ class Connector;
 }
 
 namespace chromeos {
+
+class NetworkDeviceHandler;
+
 namespace network_config {
 
 class CrosNetworkConfig;
@@ -53,6 +56,7 @@ class CrosNetworkConfigTestHelper {
 
   NetworkStateTestHelper network_state_helper_{
       false /* use_default_devices_and_services */};
+  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_impl_;
 
   // Service connector for testing.

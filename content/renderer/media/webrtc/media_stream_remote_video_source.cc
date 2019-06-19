@@ -11,14 +11,14 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/webrtc/track_observer.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
 #include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
@@ -105,7 +105,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
 
   switch (buffer->type()) {
     case webrtc::VideoFrameBuffer::Type::kNative: {
-      video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
+      video_frame = static_cast<blink::WebRtcVideoFrameAdapter*>(buffer.get())
                         ->getMediaVideoFrame();
       video_frame->set_timestamp(elapsed_timestamp);
       break;
@@ -207,7 +207,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
-    std::unique_ptr<TrackObserver> observer)
+    std::unique_ptr<blink::TrackObserver> observer)
     : observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.

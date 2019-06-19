@@ -510,7 +510,6 @@ jumbo_component("platform") {
     "exported/web_media_player_client.cc",
     "exported/web_media_player_encrypted_media_client.cc",
     "exported/web_media_player_source.cc",
-    "exported/web_media_recorder_handler.cc",
     "exported/web_media_stream.cc",
     "exported/web_media_stream_audio_sink.cc",
     "exported/web_media_stream_source.cc",
@@ -1355,6 +1354,10 @@ jumbo_component("platform") {
     "weborigin/security_policy.h",
     "weborigin/security_violation_reporting_policy.h",
     "weborigin/url_security_origin_map.h",
+    "webrtc/peer_connection_remote_audio_source.cc",
+    "webrtc/track_observer.cc",
+    "webrtc/webrtc_logging.cc",
+    "webrtc/webrtc_video_frame_adapter.cc",
     "windows_keyboard_codes.h",
   ]
 

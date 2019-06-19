@@ -71,16 +71,16 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // promise to calculate the |duration| attribute when such promise is
   // resolved.
   void RegisterEventTiming(const AtomicString& event_type,
-                           TimeTicks start_time,
-                           TimeTicks processing_start,
-                           TimeTicks processing_end,
+                           base::TimeTicks start_time,
+                           base::TimeTicks processing_start,
+                           base::TimeTicks processing_end,
                            bool cancelable);
 
   void AddElementTiming(const AtomicString& name,
                         const String& url,
                         const FloatRect& rect,
-                        TimeTicks start_time,
-                        TimeTicks response_end,
+                        base::TimeTicks start_time,
+                        base::TimeTicks response_end,
                         const AtomicString& identifier,
                         const IntSize& intrinsic_size,
                         const AtomicString& id,
@@ -111,7 +111,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   // Method called once swap promise is resolved. It will add all event timings
   // that have not been added since the last swap promise.
   void ReportEventTimings(WebWidgetClient::SwapResult result,
-                          TimeTicks timestamp);
+                          base::TimeTicks timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
 

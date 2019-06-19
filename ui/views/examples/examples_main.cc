@@ -104,8 +104,8 @@ int main(int argc, char** argv) {
   base::DiscardableMemoryAllocator::SetInstance(
       g_discardable_memory_allocator.Pointer());
 
-  base::PowerMonitor power_monitor(
-      base::WrapUnique(new base::PowerMonitorDeviceSource));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
 
 #if defined(OS_WIN)
   gfx::win::InitializeDirectWrite();

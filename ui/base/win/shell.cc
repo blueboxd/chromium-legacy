@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_switches.h"
@@ -53,6 +54,11 @@ bool InvokeShellExecute(const base::string16 path,
   sei.lpDirectory =
       (working_directory.empty() ? nullptr : working_directory.c_str());
   sei.lpParameters = (args.empty() ? nullptr : args.c_str());
+
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+
   return ::ShellExecuteExW(&sei);
 }
 

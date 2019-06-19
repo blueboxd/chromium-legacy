@@ -2194,7 +2194,7 @@ TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
   ShelfID shelf_id("123");
-  window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   ShelfAppButton* button = GetButtonByID(shelf_id);
   ASSERT_TRUE(button);
@@ -2210,7 +2210,7 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
   ShelfID shelf_id("123");
-  window->SetProperty(kShelfIDKey, new std::string(shelf_id.Serialize()));
+  window->SetProperty(kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
   ShelfAppButton* button = GetButtonByID(shelf_id);
   ASSERT_TRUE(button);

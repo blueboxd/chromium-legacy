@@ -185,7 +185,7 @@ TEST_F(
   auto* mock_bluetooth_device =
       AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
   EXPECT_CALL(*mock_bluetooth_device, GetDeviceType)
-      .WillOnce(testing::Return(BluetoothDeviceType::AUDIO));
+      .WillRepeatedly(testing::Return(BluetoothDeviceType::AUDIO));
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
                                   1u /* num_expected_remaining_devices */);
@@ -206,6 +206,42 @@ TEST_F(
   EnableAggressiveAppearanceFilter();
 
   AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
+
+  VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
+                                  0u /* num_expected_remaining_devices */);
+}
+
+TEST_F(
+    BluetoothUtilsTest,
+    TestFilterBluetoothDeviceList_FilterKnown_AppearanceComputer_KeepWithFilterFlagDisabled) {
+  auto* mock_bluetooth_device =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_CLASSIC);
+  ON_CALL(*mock_bluetooth_device, GetDeviceType)
+      .WillByDefault(testing::Return(BluetoothDeviceType::COMPUTER));
+
+  VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
+                                  1u /* num_expected_remaining_devices */);
+}
+
+TEST_F(
+    BluetoothUtilsTest,
+    TestFilterBluetoothDeviceList_FilterKnown_AppearanceComputer_RemoveWithFilterFlagEnabled) {
+  EnableAggressiveAppearanceFilter();
+
+  auto* mock_bluetooth_device_1 =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_CLASSIC);
+  EXPECT_CALL(*mock_bluetooth_device_1, GetDeviceType)
+      .WillOnce(testing::Return(BluetoothDeviceType::COMPUTER));
+
+  auto* mock_bluetooth_device_2 =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_LE);
+  EXPECT_CALL(*mock_bluetooth_device_2, GetDeviceType)
+      .WillOnce(testing::Return(BluetoothDeviceType::COMPUTER));
+
+  auto* mock_bluetooth_device_3 =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_DUAL);
+  EXPECT_CALL(*mock_bluetooth_device_3, GetDeviceType)
+      .WillOnce(testing::Return(BluetoothDeviceType::COMPUTER));
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
                                   0u /* num_expected_remaining_devices */);

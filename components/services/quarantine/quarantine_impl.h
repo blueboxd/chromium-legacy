@@ -18,6 +18,14 @@ class QuarantineImpl : public mojom::Quarantine {
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~QuarantineImpl() override;
 
+  // mojom::Quarantine:
+  void QuarantineFile(
+      const base::FilePath& full_path,
+      const GURL& source_url,
+      const GURL& referrer_url,
+      const std::string& client_guid,
+      mojom::Quarantine::QuarantineFileCallback callback) override;
+
  private:
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 };

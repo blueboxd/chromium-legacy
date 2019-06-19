@@ -45,10 +45,6 @@ ui::EventDispatchDetails DummyInputMethod::DispatchKeyEvent(
   return ui::EventDispatchDetails();
 }
 
-AsyncKeyDispatcher* DummyInputMethod::GetAsyncKeyDispatcher() {
-  return nullptr;
-}
-
 void DummyInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
 }
 

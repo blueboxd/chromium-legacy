@@ -1519,34 +1519,11 @@ class PreviewsStateBrowserTest : public ContentBrowserTest {
   std::unique_ptr<PreviewsStateContentBrowserClient> client_;
 };
 
-// Test that navigating calls GetPreviewsState with SERVER_LOFI_ON.
-IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOn) {
-  // Navigate with LoFi on.
-  Reset(SERVER_LOFI_ON);
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
-  CheckResourcesRequested();
-}
-
 // Test that navigating calls GetPreviewsState returning PREVIEWS_OFF.
-IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeOff) {
+IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnablePreviewsOff) {
   // Navigate with No Previews.
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), embedded_test_server()->GetURL("/title1.html"), 1);
-  CheckResourcesRequested();
-}
-
-// Test that reloading calls GetPreviewsState again and changes the Previews
-// state.
-IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnableLoFiModeReload) {
-  // Navigate with GetPreviewsState returning PREVIEWS_OFF.
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
-  CheckResourcesRequested();
-
-  // Reload. GetPreviewsState should be called.
-  Reset(SERVER_LOFI_ON);
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
   CheckResourcesRequested();
 }
 

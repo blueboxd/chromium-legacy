@@ -870,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   SendCommand("Inspector.enable", nullptr);
 
   {
-    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
     shell()->LoadURL(GURL(content::kChromeUICrashURL));
     WaitForNotification("Inspector.targetCrashed");
   }
@@ -894,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   SendCommand("Inspector.enable", nullptr);
 
   {
-    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
     shell()->LoadURL(GURL(content::kChromeUICrashURL));
     WaitForNotification("Inspector.targetCrashed");
   }
@@ -1774,7 +1774,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationTest,
   EmulateDeviceSize(gfx::Size(200, 200));
 
   {
-    ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
     NavigateToURLBlockUntilNavigationsComplete(
         shell(), GURL(content::kChromeUICrashURL), 1);
   }

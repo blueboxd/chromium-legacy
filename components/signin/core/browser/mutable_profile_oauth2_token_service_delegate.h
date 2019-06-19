@@ -46,7 +46,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Overridden from OAuth2TokenServiceDelegate.
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;

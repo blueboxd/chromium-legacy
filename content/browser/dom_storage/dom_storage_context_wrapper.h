@@ -47,7 +47,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
     : public DOMStorageContext,
       public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
  public:
-  // If |data_path| is empty, nothing will be saved to disk.
+  // If |profile_path| is empty, nothing will be saved to disk.
   static scoped_refptr<DOMStorageContextWrapper> Create(
       service_manager::Connector* connector,
       const base::FilePath& profile_path,

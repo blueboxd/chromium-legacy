@@ -45,6 +45,7 @@ class TestSharedBitmapManager;
 namespace cc {
 class FakeOutputSurfaceClient;
 class OutputSurface;
+class VulkanSkiaRenderer;
 
 class PixelTest : public testing::Test {
  protected:
@@ -151,6 +152,10 @@ class RendererPixelTest : public PixelTest {
 
   bool use_gpu() { return !!child_context_provider_; }
 
+  bool use_vulkan() {
+    return std::is_base_of<VulkanSkiaRenderer, RendererType>::value;
+  }
+
  protected:
   void SetUp() override;
 };
@@ -221,7 +226,7 @@ class VulkanSkiaRenderer : public viz::SkiaRenderer {
                      mode) {}
 };
 
-class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
+class VulkanSkiaRendererWithFlippedSurface : public VulkanSkiaRenderer {
  public:
   VulkanSkiaRendererWithFlippedSurface(
       const viz::RendererSettings* settings,
@@ -229,11 +234,11 @@ class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
       viz::DisplayResourceProvider* resource_provider,
       viz::SkiaOutputSurface* skia_output_surface,
       DrawMode mode)
-      : SkiaRenderer(settings,
-                     output_surface,
-                     resource_provider,
-                     skia_output_surface,
-                     mode) {}
+      : VulkanSkiaRenderer(settings,
+                           output_surface,
+                           resource_provider,
+                           skia_output_surface,
+                           mode) {}
 };
 
 template <>

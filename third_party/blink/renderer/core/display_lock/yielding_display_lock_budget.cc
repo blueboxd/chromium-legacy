@@ -44,8 +44,9 @@ void YieldingDisplayLockBudget::OnLifecycleChange(
     const LifecycleData& lifecycle_data) {
   if (first_lifecycle_count_ == 0)
     first_lifecycle_count_ = lifecycle_data.count;
-  deadline_ = lifecycle_data.start_time +
-              TimeDelta::FromMillisecondsD(GetCurrentBudgetMs(lifecycle_data));
+  deadline_ =
+      lifecycle_data.start_time +
+      base::TimeDelta::FromMillisecondsD(GetCurrentBudgetMs(lifecycle_data));
 
   // Figure out the next phase we would run. If we had completed a phase before,
   // then we should try to complete the next one, otherwise we'll start with the
@@ -79,7 +80,7 @@ bool YieldingDisplayLockBudget::NeedsLifecycleUpdates() const {
 double YieldingDisplayLockBudget::GetCurrentBudgetMs(
     const LifecycleData& lifecycle_data) const {
   int lifecycle_count = lifecycle_data.count - first_lifecycle_count_ + 1;
-  if (TimeTicks::IsHighResolution()) {
+  if (base::TimeTicks::IsHighResolution()) {
     if (lifecycle_count < 3)
       return 4.;
     if (lifecycle_count < 10)

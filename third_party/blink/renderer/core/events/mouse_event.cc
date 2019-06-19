@@ -119,7 +119,7 @@ MouseEvent* MouseEvent::Create(ScriptState* script_state,
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                const MouseEventInit* initializer,
-                               TimeTicks platform_time_stamp,
+                               base::TimeTicks platform_time_stamp,
                                SyntheticEventType synthetic_event_type,
                                WebMenuSourceType menu_source_type) {
   return MakeGarbageCollected<MouseEvent>(
@@ -157,8 +157,9 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
   initializer->setButtons(
       MouseEvent::WebInputEventModifiersToButtons(modifiers));
 
-  TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
-                                         : CurrentTimeTicks();
+  base::TimeTicks timestamp = underlying_event
+                                  ? underlying_event->PlatformTimeStamp()
+                                  : CurrentTimeTicks();
   MouseEvent* created_event = MakeGarbageCollected<MouseEvent>(
       event_type, initializer, timestamp, synthetic_type);
 
@@ -183,7 +184,7 @@ MouseEvent::MouseEvent()
 
 MouseEvent::MouseEvent(const AtomicString& event_type,
                        const MouseEventInit* initializer,
-                       TimeTicks platform_time_stamp,
+                       base::TimeTicks platform_time_stamp,
                        SyntheticEventType synthetic_event_type,
                        WebMenuSourceType menu_source_type)
     : UIEventWithKeyState(event_type, initializer, platform_time_stamp),

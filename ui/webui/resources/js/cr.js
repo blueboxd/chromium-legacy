@@ -200,6 +200,10 @@ var cr = cr || function(global) {
    * @param {PropertyKind=} opt_kind What kind of underlying storage to use.
    * @param {function(*, *):void=} opt_setHook A function to run after the
    *     property is set, but before the propertyChange event is fired.
+   *
+   * TODO(crbug.com/425829): This function makes use of deprecated getter or
+   * setter functions.
+   * @suppress {deprecated}
    */
   function defineProperty(obj, name, opt_kind, opt_setHook) {
     if (typeof obj == 'function') {
@@ -208,6 +212,9 @@ var cr = cr || function(global) {
 
     const kind = /** @type {PropertyKind} */ (opt_kind || PropertyKind.JS);
 
+    // TODO(crbug.com/425829): Remove above suppression once we no longer use
+    // deprecated functions lookupGetter, defineGetter, lookupSetter, and
+    // defineSetter.
     if (!obj.__lookupGetter__(name)) {
       obj.__defineGetter__(name, getGetter(name, kind));
     }

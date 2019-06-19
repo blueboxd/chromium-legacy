@@ -1,8 +1,4 @@
 include_rules = [
-    # TODO(crbug.com/923394): Remove this dependency once STL types are
-    # migrated to WTF types in mediastream.
-    "+base/stl_util.h",
-
     "+base/memory/singleton.h",
     "+base/sequence_checker.h",
     "+media/base",

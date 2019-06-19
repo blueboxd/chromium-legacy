@@ -18,18 +18,19 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Delay between each invocations of |UpdateBreakpadMemoryValues|.
+// Delay between each invocations of |UpdateMemoryValues|.
 const int64_t kMemoryMonitorDelayInSeconds = 30;
 
 // Checks the values of free RAM and free disk space and updates breakpad with
-// these values.
-void UpdateBreakpadMemoryValues() {
+// these values. Also updates available free disk space for PreviousSessionInfo.
+void UpdateMemoryValues() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   const int free_memory =
@@ -48,12 +49,14 @@ void UpdateBreakpadMemoryValues() {
     free_disk_space_kilobytes = [available_bytes integerValue] / 1024;
   }
   breakpad_helper::SetCurrentFreeDiskInKB(free_disk_space_kilobytes);
+  [[PreviousSessionInfo sharedInstance]
+      updateAvailableDeviceStorage:(NSInteger)free_disk_space_kilobytes];
 }
 
-// Invokes |UpdateBreakpadMemoryValues| and schedules itself to be called
-// after |kMemoryMonitorDelayInSeconds|.
+// Invokes |UpdateMemoryValues| and schedules itself to be called after
+// |kMemoryMonitorDelayInSeconds|.
 void AsynchronousFreeMemoryMonitor() {
-  UpdateBreakpadMemoryValues();
+  UpdateMemoryValues();
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AsynchronousFreeMemoryMonitor),

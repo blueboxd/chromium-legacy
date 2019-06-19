@@ -30,7 +30,6 @@ namespace chromeos {
 
 namespace {
 
-const char kSimPuk[] = "12345678";  // Matches pseudomodem.
 const int kSimPinMinLength = 4;
 const int kSimPukRetryCount = 10;
 const char kFailedMessage[] = "Failed";
@@ -53,6 +52,9 @@ void PostNotFoundError(const ShillDeviceClient::ErrorCallback& error_callback) {
 }
 
 }  // namespace
+
+// Matches pseudomodem.
+const char FakeShillDeviceClient::kSimPuk[] = "12345678";
 
 const char FakeShillDeviceClient::kDefaultSimPin[] = "1111";
 const int FakeShillDeviceClient::kSimPinRetryCount = 3;

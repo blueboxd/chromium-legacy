@@ -47,19 +47,19 @@ void* AsyncId(void* task) {
 }
 }  // namespace
 
-TimeTicks ProbeBase::CaptureStartTime() const {
+base::TimeTicks ProbeBase::CaptureStartTime() const {
   if (start_time_.is_null())
     start_time_ = CurrentTimeTicks();
   return start_time_;
 }
 
-TimeTicks ProbeBase::CaptureEndTime() const {
+base::TimeTicks ProbeBase::CaptureEndTime() const {
   if (end_time_.is_null())
     end_time_ = CurrentTimeTicks();
   return end_time_;
 }
 
-TimeDelta ProbeBase::Duration() const {
+base::TimeDelta ProbeBase::Duration() const {
   DCHECK(!start_time_.is_null());
   return CaptureEndTime() - start_time_;
 }

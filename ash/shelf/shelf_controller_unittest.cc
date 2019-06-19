@@ -80,11 +80,11 @@ TEST_F(ShelfControllerTest, ShelfIDUpdate) {
 
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
-  window->SetProperty(kShelfIDKey, new std::string(id1.Serialize()));
+  window->SetProperty(kShelfIDKey, id1.Serialize());
   wm::ActivateWindow(window.get());
   EXPECT_EQ(id1, model->active_shelf_id());
 
-  window->SetProperty(kShelfIDKey, new std::string(id2.Serialize()));
+  window->SetProperty(kShelfIDKey, id2.Serialize());
   EXPECT_EQ(id2, model->active_shelf_id());
 
   window->ClearProperty(kShelfIDKey);

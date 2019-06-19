@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -634,13 +634,15 @@ public class IntentHandler {
                 results.add(testResult);
             }
         }
+        // The logic in this method should be moved to ChromeTabbedActivity eventually. We should
+        // support async handling of voice search when native finishes initializing.
         if (results == null || results.size() == 0
                 || !BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                             .isStartupSuccessfullyCompleted()) {
             return null;
         }
         String query = results.get(0);
-        String url = AutocompleteController.nativeQualifyPartialURLQuery(query);
+        String url = AutocompleteCoordinatorFactory.qualifyPartialURLQuery(query);
         if (url == null) {
             List<String> urls = IntentUtils.safeGetStringArrayListExtra(
                     intent, RecognizerResultsIntent.EXTRA_VOICE_SEARCH_RESULT_URLS);

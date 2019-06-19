@@ -4082,6 +4082,18 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
   }
 
+  if (CheckResetStatus()) {
+    // If the context was lost at any point before or during initialization, the
+    // values queried from the driver could be bogus, and potentially
+    // inconsistent between various ContextStates on the same underlying real GL
+    // context. Make sure to report the failure early, to not allow virtualized
+    // context switches in that case.
+    LOG(ERROR)
+        << "  GLES2DecoderImpl: Context reset detected after initialization.";
+    group_->LoseContexts(error::kUnknown);
+    return gpu::ContextResult::kTransientFailure;
+  }
+
   return gpu::ContextResult::kSuccess;
 }
 

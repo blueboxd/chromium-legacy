@@ -5,6 +5,7 @@
 #include "chromeos/services/network_config/cros_network_config.h"
 
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -293,8 +294,11 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 
 }  // namespace
 
-CrosNetworkConfig::CrosNetworkConfig(NetworkStateHandler* network_state_handler)
-    : network_state_handler_(network_state_handler) {
+CrosNetworkConfig::CrosNetworkConfig(
+    NetworkStateHandler* network_state_handler,
+    NetworkDeviceHandler* network_device_handler)
+    : network_state_handler_(network_state_handler),
+      network_device_handler_(network_device_handler) {
   CHECK(network_state_handler);
 }
 
@@ -410,6 +414,97 @@ void CrosNetworkConfig::SetNetworkTypeEnabledState(
   network_state_handler_->SetTechnologyEnabled(
       pattern, enabled, chromeos::network_handler::ErrorCallback());
   std::move(callback).Run(true);
+}
+
+void CrosNetworkConfig::SetCellularSimState(
+    mojom::CellularSimStatePtr sim_state,
+    SetCellularSimStateCallback callback) {
+  const DeviceState* device_state =
+      network_state_handler_->GetDeviceStateByType(
+          NetworkTypePattern::Cellular());
+  if (!device_state || device_state->IsSimAbsent()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  const std::string& lock_type = device_state->sim_lock_type();
+
+  // When unblocking a PUK locked SIM, a new PIN must be provided.
+  if (lock_type == shill::kSIMLockPuk && !sim_state->new_pin) {
+    NET_LOG(ERROR) << "SetCellularSimState: PUK locked and no pin provided.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  int callback_id = set_cellular_sim_state_callback_id_++;
+  set_cellular_sim_state_callbacks_[callback_id] = std::move(callback);
+
+  if (lock_type == shill::kSIMLockPuk) {
+    // Unblock a PUK locked SIM.
+    network_device_handler_->UnblockPin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        *sim_state->new_pin,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  if (lock_type == shill::kSIMLockPin) {
+    // Unlock locked SIM.
+    network_device_handler_->EnterPin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  if (sim_state->new_pin) {
+    // Change the SIM PIN.
+    network_device_handler_->ChangePin(
+        device_state->path(), sim_state->current_pin_or_puk,
+        *sim_state->new_pin,
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                   weak_factory_.GetWeakPtr(), callback_id));
+    return;
+  }
+
+  // Enable or disable SIM locking.
+  network_device_handler_->RequirePin(
+      device_state->path(), sim_state->require_pin,
+      sim_state->current_pin_or_puk,
+      base::Bind(&CrosNetworkConfig::SetCellularSimStateSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::SetCellularSimStateFailure,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::SetCellularSimStateSuccess(int callback_id) {
+  auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
+  if (iter == set_cellular_sim_state_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(true);
+  set_cellular_sim_state_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SetCellularSimStateFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = set_cellular_sim_state_callbacks_.find(callback_id);
+  if (iter == set_cellular_sim_state_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(false);
+  set_cellular_sim_state_callbacks_.erase(iter);
 }
 
 void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {

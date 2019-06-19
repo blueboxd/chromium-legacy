@@ -688,11 +688,11 @@ void ToolbarView::OnTouchUiChanged() {
     const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
     layout_manager_->SetDefaultChildMargins(gfx::Insets(0, default_margin));
-    *location_bar_->GetProperty(views::kMarginsKey) =
-        gfx::Insets(0, location_bar_margin);
+    location_bar_->SetProperty(views::kMarginsKey,
+                               gfx::Insets(0, location_bar_margin));
     if (browser_actions_) {
-      *browser_actions_->GetProperty(views::kInternalPaddingKey) =
-          gfx::Insets(0, location_bar_margin);
+      browser_actions_->SetProperty(views::kInternalPaddingKey,
+                                    gfx::Insets(0, location_bar_margin));
     }
 
     LoadImages();
@@ -731,9 +731,9 @@ void ToolbarView::InitLayout() {
   if (browser_actions_) {
     layout_manager_->SetFlexForView(browser_actions_,
                                     browser_actions_flex_rule);
-    browser_actions_->SetProperty(views::kMarginsKey, new gfx::Insets(0, 0));
+    browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
     browser_actions_->SetProperty(views::kInternalPaddingKey,
-                                  new gfx::Insets(0, location_bar_margin));
+                                  gfx::Insets(0, location_bar_margin));
   }
 
   LayoutCommon();

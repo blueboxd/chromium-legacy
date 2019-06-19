@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -20,8 +21,12 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_timing_info.h"
@@ -249,6 +254,13 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       GetRoundedSiteEngagementScore(info);
   if (rounded_site_engagement_score) {
     builder.SetSiteEngagementScore(rounded_site_engagement_score.value());
+  }
+
+  base::Optional<bool> third_party_cookie_blocking_enabled =
+      GetThirdPartyCookieBlockingEnabled(info);
+  if (third_party_cookie_blocking_enabled) {
+    builder.SetThirdPartyCookieBlockingEnabledForSite(
+        third_party_cookie_blocking_enabled.value());
   }
 
   if (timing.input_to_navigation_start) {
@@ -587,6 +599,23 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
              engagement_service->GetMaxPoints());
 
   return rounded_document_engagement_score;
+}
+
+base::Optional<bool>
+UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled(
+    const page_load_metrics::PageLoadExtraInfo& info) const {
+  if (!browser_context_)
+    return base::nullopt;
+
+  if (!base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
+    return base::nullopt;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  if (!profile->GetPrefs()->GetBoolean(prefs::kCookieControlsEnabled))
+    return base::nullopt;
+
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  return !cookie_settings->IsThirdPartyAccessAllowed(info.url);
 }
 
 void UkmPageLoadMetricsObserver::OnTimingUpdate(

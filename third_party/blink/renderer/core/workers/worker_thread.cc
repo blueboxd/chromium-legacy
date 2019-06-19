@@ -69,7 +69,8 @@ using ExitCode = WorkerThread::ExitCode;
 namespace {
 
 // TODO(nhiroki): Adjust the delay based on UMA.
-constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kForcibleTerminationDelay =
+    base::TimeDelta::FromSeconds(2);
 
 }  // namespace
 

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -30,7 +29,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -87,11 +85,6 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   ~SafeBrowsingUIManagerTest() override {}
 
   void SetUp() override {
-    // Need to use the network service path because we've removed the
-    // URLRequestContext path in src/chrome and unit_tests currently are running
-    // with network service disabled. https://crbug.com/966633
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
 
@@ -175,7 +168,6 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
-  base::test::ScopedFeatureList feature_list_;
   ScopedTestingLocalState scoped_testing_local_state_;
 };
 

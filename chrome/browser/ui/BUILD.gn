@@ -476,6 +476,7 @@ jumbo_split_static_library("ui") {
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/db:util",
     "//components/safe_browsing/password_protection",
+    "//components/safe_browsing/triggers:ad_popup_trigger",
     "//components/safe_browsing/web_ui",
     "//components/search",
     "//components/search_engines",
@@ -2393,6 +2394,10 @@ jumbo_split_static_library("ui") {
 
     if (use_dbus) {
       sources += [
+        "views/status_icons/concat_menu_model.cc",
+        "views/status_icons/concat_menu_model.h",
+        "views/status_icons/dbus_menu.cc",
+        "views/status_icons/dbus_menu.h",
         "views/status_icons/dbus_properties_interface.cc",
         "views/status_icons/dbus_properties_interface.h",
         "views/status_icons/dbus_types.cc",
@@ -2645,12 +2650,8 @@ jumbo_split_static_library("ui") {
       "views/extensions/extensions_toolbar_button.h",
       "views/extensions/extensions_toolbar_container.cc",
       "views/extensions/extensions_toolbar_container.h",
-      "views/extensions/pwa_confirmation.cc",
-      "views/extensions/pwa_confirmation.h",
       "views/extensions/pwa_confirmation_bubble_view.cc",
       "views/extensions/pwa_confirmation_bubble_view.h",
-      "views/extensions/pwa_confirmation_dialog_view.cc",
-      "views/extensions/pwa_confirmation_dialog_view.h",
       "views/extensions/web_app_info_image_source.cc",
       "views/extensions/web_app_info_image_source.h",
       "views/feature_promos/feature_promo_bubble_timeout.cc",

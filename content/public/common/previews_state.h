@@ -23,10 +23,12 @@ typedef int PreviewsState;
 enum PreviewsTypes {
   PREVIEWS_UNSPECIFIED = 0,  // Let the browser process decide whether or
                              // not to request Preview types.
-  SERVER_LOFI_ON = 1 << 0,   // Request a Lo-Fi version of the resource
-                             // from the server.
-  CLIENT_LOFI_ON = 1 << 1,   // Request a Lo-Fi version of the resource
-                             // from the client.
+  // DEPRECATED: SERVER_LOFI_ON = 1 << 0, Request a Lo-Fi version of the
+  // resource from the server. This preview type has been deprecated and should
+  // no longer be used.
+  // DEPRECATED: CLIENT_LOFI_ON = 1 << 1, Request a Lo-Fi version of the
+  // resource from the client. This preview type has been deprecated and should
+  // no longer be used.
   CLIENT_LOFI_AUTO_RELOAD = 1 << 2,  // Request the original version of the
                                      // resource after a decoding error occurred
                                      // when attempting to use Client Lo-Fi.
@@ -55,7 +57,8 @@ enum PreviewsTypes {
 
 // Combination of all previews that are guaranteed not to provide partial
 // content.
-const PreviewsState PARTIAL_CONTENT_SAFE_PREVIEWS = SERVER_LOFI_ON;
+// const PreviewsState PARTIAL_CONTENT_SAFE_PREVIEWS = SERVER_LOFI_ON;
+// deprecated
 
 // Combination of all currently supported previews.
 const PreviewsState ALL_SUPPORTED_PREVIEWS =
@@ -66,10 +69,6 @@ const PreviewsState ALL_SUPPORTED_PREVIEWS =
 // are kept in sync.
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_UNSPECIFIED,
                             blink::WebURLRequest::kPreviewsUnspecified);
-STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LOFI_ON,
-                            blink::WebURLRequest::kServerLoFiOn);
-STATIC_ASSERT_PREVIEWS_ENUM(CLIENT_LOFI_ON,
-                            blink::WebURLRequest::kClientLoFiOn);
 STATIC_ASSERT_PREVIEWS_ENUM(CLIENT_LOFI_AUTO_RELOAD,
                             blink::WebURLRequest::kClientLoFiAutoReload);
 STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LITE_PAGE_ON,

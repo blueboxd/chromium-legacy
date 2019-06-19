@@ -35,7 +35,7 @@ class AnimationEffectStackTest : public PageTestBase {
     return animation;
   }
 
-  void UpdateTimeline(TimeDelta time) {
+  void UpdateTimeline(base::TimeDelta time) {
     GetDocument().GetAnimationClock().UpdateTime(
         GetDocument().Timeline().ZeroTime() + time);
     timeline->ServiceAnimations(kTimingUpdateForAnimationFrame);
@@ -180,7 +180,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   // to keep the ActiveInterpolationsMap in a Persistent.
   Persistent<ActiveInterpolationsMap> interpolations;
 
-  UpdateTimeline(TimeDelta::FromSeconds(11));
+  UpdateTimeline(base::TimeDelta::FromSeconds(11));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -190,7 +190,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(TimeDelta::FromSeconds(13));
+  UpdateTimeline(base::TimeDelta::FromSeconds(13));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -200,7 +200,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(TimeDelta::FromSeconds(15));
+  UpdateTimeline(base::TimeDelta::FromSeconds(15));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -210,7 +210,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(2u, SampledEffectCount());
 
-  UpdateTimeline(TimeDelta::FromSeconds(17));
+  UpdateTimeline(base::TimeDelta::FromSeconds(17));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(

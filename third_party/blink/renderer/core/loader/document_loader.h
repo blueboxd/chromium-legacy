@@ -337,7 +337,7 @@ class CORE_EXPORT DocumentLoader
   ContentSecurityPolicy* CreateCSP(const ResourceResponse&,
                                    const String& origin_policy_string);
   void StartLoadingInternal();
-  void FinishedLoading(TimeTicks finish_time);
+  void FinishedLoading(base::TimeTicks finish_time);
   void CancelLoadAfterCSPDenied(const ResourceResponse&);
 
   enum class HistoryNavigationType {
@@ -367,7 +367,7 @@ class CORE_EXPORT DocumentLoader
   // WebNavigationBodyLoader::Client
   void BodyCodeCacheReceived(base::span<const uint8_t>) override;
   void BodyDataReceived(base::span<const char> data) override;
-  void BodyLoadingFinished(TimeTicks completion_time,
+  void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,
                            int64_t total_encoded_body_length,
                            int64_t total_decoded_body_length,
@@ -440,7 +440,7 @@ class CORE_EXPORT DocumentLoader
 
   DocumentLoadTiming document_load_timing_;
 
-  TimeTicks time_of_last_data_received_;
+  base::TimeTicks time_of_last_data_received_;
 
   Member<ApplicationCacheHost> application_cache_host_;
 

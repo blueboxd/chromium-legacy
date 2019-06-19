@@ -70,7 +70,6 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
 
   SAMLOfflineSigninLimiter* limiter_;  // Owned.
   base::PowerMonitorTestSource* power_source_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   TestingPrefServiceSimple testing_local_state_;
 
@@ -84,8 +83,7 @@ SAMLOfflineSigninLimiterTest::SAMLOfflineSigninLimiterTest()
       limiter_(nullptr) {
   auto power_source = std::make_unique<base::PowerMonitorTestSource>();
   power_source_ = power_source.get();
-  power_monitor_ =
-      std::make_unique<base::PowerMonitor>(std::move(power_source));
+  base::PowerMonitor::Initialize(std::move(power_source));
 }
 
 SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
@@ -97,6 +95,7 @@ SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   // Finish any pending tasks before deleting the TestingBrowserProcess.
   thread_bundle_.RunUntilIdle();
   TestingBrowserProcess::DeleteInstance();
+  base::PowerMonitor::ShutdownForTesting();
 }
 
 void SAMLOfflineSigninLimiterTest::DestroyLimiter() {

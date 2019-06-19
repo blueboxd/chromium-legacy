@@ -694,7 +694,11 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   }
 
   if (supports_angle_vulkan) {
-    if (requested_renderer == kANGLEImplementationVulkanName) {
+    if (use_angle_default) {
+      if (!supports_angle_d3d && !supports_angle_opengl) {
+        AddInitDisplay(init_displays, ANGLE_VULKAN);
+      }
+    } else if (requested_renderer == kANGLEImplementationVulkanName) {
       AddInitDisplay(init_displays, ANGLE_VULKAN);
     } else if (requested_renderer == kANGLEImplementationVulkanNULLName) {
       AddInitDisplay(init_displays, ANGLE_VULKAN_NULL);

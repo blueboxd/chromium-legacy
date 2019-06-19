@@ -4726,7 +4726,7 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
 }
 
 bool SrcDocRewriter(GURL* url, BrowserContext* browser_context) {
-  if (*url == GURL("about:srcdoc")) {
+  if (url->IsAboutSrcdoc()) {
     *url = GURL("chrome://srcdoc");
     return true;
   }

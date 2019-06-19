@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/safe_browsing/triggers/ad_popup_trigger.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 
@@ -91,7 +92,33 @@ bool MaybeBlockPopup(content::WebContents* web_contents,
   auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
   if (popup_blocker && block_type != PopupBlockType::kNotBlocked) {
     popup_blocker->AddBlockedPopup(params, window_features, block_type);
+    if (safe_browsing::AdPopupTrigger::FromWebContents(web_contents)) {
+      content::RenderFrameHost* source_frame =
+          GetSourceFrameForPopup(params, open_url_params, web_contents);
+      safe_browsing::AdPopupTrigger::FromWebContents(web_contents)
+          ->PopupWasBlocked(source_frame);
+    }
     return true;
   }
   return false;
+}
+
+content::RenderFrameHost* GetSourceFrameForPopup(
+    NavigateParams* params,
+    const content::OpenURLParams* open_url_params,
+    content::WebContents* web_contents) {
+  if (params->opener)
+    return params->opener;
+  // Make sure the source render frame host is alive before we attempt to
+  // retrieve it from |open_url_params|.
+  if (open_url_params) {
+    content::RenderFrameHost* source = content::RenderFrameHost::FromID(
+        open_url_params->source_render_frame_id,
+        open_url_params->source_render_process_id);
+    if (source)
+      return source;
+  }
+  // The focused frame is not always the frame initiating the popup navigation
+  // and is used as a fallback in case opener information is not available.
+  return web_contents->GetFocusedFrame();
 }

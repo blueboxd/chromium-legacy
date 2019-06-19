@@ -521,6 +521,25 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   EXPECT_EQ(160, sizes.max_size);
 }
 
+TEST_F(NGInlineNodeTest, MinMaxSizeTabulationWithBreakWord) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+    #t {
+      font: 10px Ahem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    </style>
+    <div id=t>&#9;&#9;<span>X</span></div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = ComputeMinMaxSize(node);
+  EXPECT_EQ(160, sizes.min_size);
+  EXPECT_EQ(170, sizes.max_size);
+}
+
 TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   SetBodyInnerHTML(
       "<pre id=t style='-webkit-rtl-ordering:visual'>ab\nde</pre>");

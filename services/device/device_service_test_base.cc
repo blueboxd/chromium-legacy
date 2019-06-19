@@ -72,4 +72,8 @@ void DeviceServiceTestBase::SetUp() {
       test_connector_factory_.RegisterInstance(mojom::kServiceName));
 }
 
+void DeviceServiceTestBase::DestroyDeviceService() {
+  service_.reset();
+}
+
 }  // namespace device

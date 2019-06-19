@@ -155,10 +155,6 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // A property key to store the title of the window; sometimes shown to users.
 AURA_EXPORT extern const WindowProperty<base::string16*>* const kTitleKey;
 
-// Indicates if the title of the window should be shown. This is only used for
-// top-levels that show a title. Default is false.
-AURA_EXPORT extern const WindowProperty<bool>* const kTitleShownKey;
-
 // The inset of the topmost view in the client view from the top of the
 // non-client view. The topmost view depends on the window type. The topmost
 // view is the tab strip for tabbed browser windows, the toolbar for popups,

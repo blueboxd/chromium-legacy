@@ -45,12 +45,12 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -1326,7 +1326,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
                                 update_context.parent_object_offset_delta;
   if (!layout_object_delta.IsZero()) {
     LocalFrameView* frame_view = layout_object.View()->GetFrameView();
-    frame_view->GetJankTracker().NotifyCompositedLayerMoved(
+    frame_view->GetLayoutShiftTracker().NotifyCompositedLayerMoved(
         layout_object,
         FloatRect(FloatPoint(), FloatSize(old_size - old_object_offset)),
         FloatRect(FloatPoint(layout_object_delta),
@@ -3529,9 +3529,19 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
   frame_view->GraphicsLayersDidChange();
 }
 
-bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
+bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
+    DisplayLockContextLifecycleTarget target) const {
   auto* node = GetLayoutObject().GetNode();
-  return node && DisplayLockUtilities::NearestLockedInclusiveAncestor(*node);
+  if (!node)
+    return false;
+  if (target == DisplayLockContextLifecycleTarget::kSelf &&
+      node->IsElementNode()) {
+    if (auto* context = ToElement(node)->GetDisplayLockContext()) {
+      if (!context->ShouldPaint(DisplayLockContext::kSelf))
+        return true;
+    }
+  }
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
 }
 
 void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {

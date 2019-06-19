@@ -626,24 +626,21 @@ TEST_F(TaskQueueSelectorTest,
   EXPECT_NE(chosen_work_queue->task_queue(), task_queues_[3].get());
 }
 
-TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty) {
-  EXPECT_TRUE(selector_.AllEnabledWorkQueuesAreEmpty());
+TEST_F(TaskQueueSelectorTest, GetHighestPendingPriority) {
+  EXPECT_FALSE(selector_.GetHighestPendingPriority().has_value());
   size_t queue_order[] = {0, 1};
   PushTasks(queue_order, 2);
 
-  EXPECT_FALSE(selector_.AllEnabledWorkQueuesAreEmpty());
+  selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
+
+  EXPECT_EQ(TaskQueue::kHighPriority, *selector_.GetHighestPendingPriority());
   PopTasksAndReturnQueueIndices();
-  EXPECT_TRUE(selector_.AllEnabledWorkQueuesAreEmpty());
-}
+  EXPECT_FALSE(selector_.GetHighestPendingPriority().has_value());
 
-TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty_ControlPriority) {
-  size_t queue_order[] = {0};
   PushTasks(queue_order, 1);
-
-  selector_.SetQueuePriority(task_queues_[0].get(),
-                             TaskQueue::kControlPriority);
-
-  EXPECT_FALSE(selector_.AllEnabledWorkQueuesAreEmpty());
+  EXPECT_EQ(TaskQueue::kNormalPriority, *selector_.GetHighestPendingPriority());
+  PopTasksAndReturnQueueIndices();
+  EXPECT_FALSE(selector_.GetHighestPendingPriority().has_value());
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseWithPriority_Empty) {

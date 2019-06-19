@@ -61,27 +61,44 @@ class TestGetParts(unittest.TestCase):
     def test_part_options(self):
         parts = signing.get_parts(test_config.TestConfig())
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT), set(parts['app'].options))
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.LIBRARY_VALIDATION +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
+            set(parts['app'].options))
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT),
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.LIBRARY_VALIDATION +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-app'].options))
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT),
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-renderer-app'].options))
         self.assertEqual(
-            set(model.CodeSignOptions.RESTRICT),
+            set(model.CodeSignOptions.RESTRICT +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['helper-plugin-app'].options))
         self.assertEqual(
             set(model.CodeSignOptions.RESTRICT +
-                model.CodeSignOptions.LIBRARY_VALIDATION),
+                model.CodeSignOptions.LIBRARY_VALIDATION +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['crashpad'].options))
         self.assertEqual(
             set(model.CodeSignOptions.RESTRICT +
-                model.CodeSignOptions.LIBRARY_VALIDATION),
+                model.CodeSignOptions.LIBRARY_VALIDATION +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['notification-xpc'].options))
         self.assertEqual(
             set(model.CodeSignOptions.RESTRICT +
-                model.CodeSignOptions.LIBRARY_VALIDATION),
+                model.CodeSignOptions.LIBRARY_VALIDATION +
+                model.CodeSignOptions.KILL +
+                model.CodeSignOptions.HARDENED_RUNTIME),
             set(parts['app-mode-app'].options))
 
 

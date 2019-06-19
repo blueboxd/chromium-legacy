@@ -111,6 +111,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
+[Worker] interface ContentIndex
+[Worker]     attribute @@toStringTag
+[Worker]     method add
+[Worker]     method constructor
+[Worker]     method delete
+[Worker]     method getDescriptions
 [Worker] interface CountQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
@@ -1123,6 +1129,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
 [Worker]     getter backgroundFetch
+[Worker]     getter index
 [Worker]     getter installing
 [Worker]     getter navigationPreload
 [Worker]     getter onupdatefound

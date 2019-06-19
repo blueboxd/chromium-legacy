@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/url_formatter/url_formatter.h"
 #include "url/gurl.h"
 
@@ -51,9 +52,11 @@ Scheme GetScheme(const GURL& url) {
   return Scheme::UNKNOWN;
 }
 
-void RecordMainFrameNavigation(const GURL& url,
-                               bool is_same_document,
-                               bool is_off_the_record) {
+void RecordMainFrameNavigation(
+    const GURL& url,
+    bool is_same_document,
+    bool is_off_the_record,
+    profile_metrics::BrowserProfileType profile_type) {
   Scheme scheme = GetScheme(url);
   UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme", scheme,
                             Scheme::COUNT);
@@ -76,9 +79,8 @@ void RecordMainFrameNavigation(const GURL& url,
       UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR",
                                 scheme, Scheme::COUNT);
     }
-
-    base::RecordAction(base::UserMetricsAction("PageLoadInIncognito"));
   }
+  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameProfileType", profile_type);
 }
 
 void RecordOmniboxURLNavigation(const GURL& url) {

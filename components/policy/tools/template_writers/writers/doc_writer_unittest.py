@@ -135,6 +135,12 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'doc_bla': {
             'text': '_test_bla'
         },
+        'doc_policy_atomic_group': {
+            'text': '_test_policy_atomic_group'
+        },
+        'doc_policy_in_atomic_group': {
+            'text': '_test_policy_in_atomic_group'
+        }
     }
     self.writer.Init()
 
@@ -1032,6 +1038,65 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<div style="margin-left: 0px">'
         '<h2><a name="PolicyName"/>PolicyCaption</h2>'
         '<div style="style_div.group_desc;">PolicyDesc</div>'
+        '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+        '</root>')
+
+  def testAddPolicySectionWithAtomicGroup(self):
+    # Test if policy details are correctly added to the document.
+    policy = {
+        'name':
+            'PolicyName',
+        'caption':
+            'PolicyCaption',
+        'desc':
+            'PolicyDesc',
+        'type':
+            'string',
+        'supported_on': [{
+            'product': 'chrome',
+            'platforms': ['win', 'mac', 'chrome_os'],
+            'since_version': '7',
+            'until_version': '',
+        }],
+        'features': {
+            'dynamic_refresh': False
+        },
+        'example_value':
+            'False',
+        'atomic_group':
+            'PolicyGroup'
+    }
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+        self.doc_root.toxml(), '<root>'
+        '<div style="margin-left: 0px">'
+        '<h3><a name="PolicyName"/>PolicyName</h3>'
+        '<span>PolicyCaption</span>'
+        '<dl>'
+        '<dt style="style_dt;">_test_data_type</dt>'
+        '<dd>String [Windows:REG_SZ]</dd>'
+        '<dt style="style_dt;">_test_win_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKeyCrOS\\PolicyName</dd>'
+        '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
+        '<dd style="style_.monospace;">PolicyName</dd>'
+        '<dt style="style_dt;">_test_supported_on</dt>'
+        '<dd>'
+        '<ul style="style_ul;">'
+        '<li>Chrome (Windows, Mac, Chrome OS) ..7..</li>'
+        '</ul>'
+        '</dd>'
+        '<dt style="style_dt;">_test_supported_features</dt>'
+        '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
+        '<dt style="style_dt;">_test_description</dt>'
+        '<dd><p>PolicyDesc</p></dd>'
+        '<dt style="style_dt;">_test_example_value</dt>'
+        '<dd>&quot;False&quot;</dd>'
+        '<dt style="style_dt;">_test_policy_atomic_group</dt>'
+        '<dd>_test_policy_in_atomic_group <a href="./policy-list-3/atomic_groups#PolicyGroup">PolicyGroup</a></dd>'
+        '</dl>'
         '<a href="#top">_test_back_to_top</a>'
         '</div>'
         '</root>')

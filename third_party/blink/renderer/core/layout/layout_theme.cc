@@ -446,12 +446,12 @@ void LayoutTheme::AdjustInnerSpinButtonStyle(ComputedStyle&) const {}
 
 void LayoutTheme::AdjustMenuListStyle(ComputedStyle&, Element*) const {}
 
-TimeDelta LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
-  return TimeDelta();
+base::TimeDelta LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
+  return base::TimeDelta();
 }
 
-TimeDelta LayoutTheme::AnimationDurationForProgressBar() const {
-  return TimeDelta();
+base::TimeDelta LayoutTheme::AnimationDurationForProgressBar() const {
+  return base::TimeDelta();
 }
 
 bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {
@@ -489,14 +489,14 @@ void LayoutTheme::PlatformColorsDidChange() {
   Page::PlatformColorsChanged();
 }
 
-void LayoutTheme::SetCaretBlinkInterval(TimeDelta interval) {
+void LayoutTheme::SetCaretBlinkInterval(base::TimeDelta interval) {
   caret_blink_interval_ = interval;
 }
 
-TimeDelta LayoutTheme::CaretBlinkInterval() const {
+base::TimeDelta LayoutTheme::CaretBlinkInterval() const {
   // Disable the blinking caret in web test mode, as it introduces
   // a race condition for the pixel tests. http://b/1198440
-  return WebTestSupport::IsRunningWebTest() ? TimeDelta()
+  return WebTestSupport::IsRunningWebTest() ? base::TimeDelta()
                                             : caret_blink_interval_;
 }
 

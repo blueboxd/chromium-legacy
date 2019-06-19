@@ -172,6 +172,13 @@ extern const char kContextualSearchEnabledValue[];
 extern const char kShowInternalAccessibilityTree[];
 extern const char kAccessibilityImageLabelsEnabled[];
 extern const char kAccessibilityImageLabelsOptInAccepted[];
+extern const char kAccessibilityCaptionsTextSize[];
+extern const char kAccessibilityCaptionsTextFont[];
+extern const char kAccessibilityCaptionsTextColor[];
+extern const char kAccessibilityCaptionsTextOpacity[];
+extern const char kAccessibilityCaptionsBackgroundColor[];
+extern const char kAccessibilityCaptionsTextShadow[];
+extern const char kAccessibilityCaptionsBackgroundOpacity[];
 #if defined(OS_MACOSX)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];

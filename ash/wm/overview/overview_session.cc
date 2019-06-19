@@ -38,6 +38,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
@@ -958,8 +959,8 @@ void OverviewSession::ResetFocusRestoreWindow(bool focus) {
 
   if (features::IsVirtualDesksEnabled()) {
     // Do not restore focus to a window that exists on an inactive desk.
-    focus &= DesksController::Get()->active_desk()->windows().contains(
-        restore_focus_window_);
+    focus &= base::Contains(DesksController::Get()->active_desk()->windows(),
+                            restore_focus_window_);
   }
 
   // Ensure the window is still in the window hierarchy and not in the middle

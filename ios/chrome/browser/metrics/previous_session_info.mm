@@ -60,6 +60,9 @@ DeviceThermalState GetThermalStateFromNSProcessInfoThermalState(
 NSString* const kLastRanVersion = @"LastRanVersion";
 // - The (string) device language.
 NSString* const kLastRanLanguage = @"LastRanLanguage";
+// - The (integer) available device storage, in kilobytes.
+NSString* const kPreviousSessionInfoAvailableDeviceStorage =
+    @"PreviousSessionInfoAvailableDeviceStorage";
 // - The (float) battery charge level.
 NSString* const kPreviousSessionInfoBatteryLevel =
     @"PreviousSessionInfoBatteryLevel";
@@ -67,6 +70,8 @@ NSString* const kPreviousSessionInfoBatteryLevel =
 //   the device battery state.
 NSString* const kPreviousSessionInfoBatteryState =
     @"PreviousSessionInfoBatteryState";
+// - The (Date) of the estimated end of the session.
+NSString* const kPreviousSessionInfoEndTime = @"PreviousSessionInfoEndTime";
 // - The (string) OS version.
 NSString* const kPreviousSessionInfoOSVersion = @"PreviousSessionInfoOSVersion";
 // - The (integer) underlying value of the DeviceThermalState enum representing
@@ -90,6 +95,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL didBeginRecordingCurrentSession;
 
 // Redefined to be read-write.
+@property(nonatomic, assign) NSInteger availableDeviceStorage;
 @property(nonatomic, assign) float deviceBatteryLevel;
 @property(nonatomic, assign) DeviceBatteryState deviceBatteryState;
 @property(nonatomic, assign) DeviceThermalState deviceThermalState;
@@ -98,11 +104,13 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL isFirstSessionAfterOSUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
+@property(nonatomic, strong) NSDate* sessionEndTime;
 
 @end
 
 @implementation PreviousSessionInfo
 
+@synthesize availableDeviceStorage = _availableDeviceStorage;
 @synthesize deviceBatteryLevel = _deviceBatteryLevel;
 @synthesize deviceBatteryState = _deviceBatteryState;
 @synthesize deviceThermalState = _deviceThermalState;
@@ -114,6 +122,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @synthesize isFirstSessionAfterUpgrade = _isFirstSessionAfterUpgrade;
 @synthesize isFirstSessionAfterLanguageChange =
     _isFirstSessionAfterLanguageChange;
+@synthesize sessionEndTime = _sessionEndTime;
 
 // Singleton PreviousSessionInfo.
 static PreviousSessionInfo* gSharedInstance = nil;
@@ -124,6 +133,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
     // Load the persisted information.
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    gSharedInstance.availableDeviceStorage =
+        [defaults integerForKey:kPreviousSessionInfoAvailableDeviceStorage];
     gSharedInstance.didSeeMemoryWarningShortlyBeforeTerminating =
         [defaults boolForKey:previous_session_info_constants::
                                  kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -135,6 +146,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
         [defaults floatForKey:kPreviousSessionInfoBatteryLevel];
     gSharedInstance.deviceThermalState = static_cast<DeviceThermalState>(
         [defaults integerForKey:kPreviousSessionInfoThermalState]);
+    gSharedInstance.sessionEndTime =
+        [defaults objectForKey:kPreviousSessionInfoEndTime];
 
     NSString* versionOfOSAtLastRun =
         [defaults stringForKey:kPreviousSessionInfoOSVersion];
@@ -220,10 +233,28 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [defaults synchronize];
 }
 
+- (void)updateAvailableDeviceStorage:(NSInteger)availableStorage {
+  if (!self.didBeginRecordingCurrentSession)
+    return;
+
+  [[NSUserDefaults standardUserDefaults]
+      setInteger:availableStorage
+          forKey:kPreviousSessionInfoAvailableDeviceStorage];
+
+  [self updateSessionEndTime];
+}
+
+- (void)updateSessionEndTime {
+  [[NSUserDefaults standardUserDefaults] setObject:[NSDate date]
+                                            forKey:kPreviousSessionInfoEndTime];
+}
+
 - (void)updateStoredBatteryLevel {
   [[NSUserDefaults standardUserDefaults]
       setFloat:[UIDevice currentDevice].batteryLevel
         forKey:kPreviousSessionInfoBatteryLevel];
+
+  [self updateSessionEndTime];
 }
 
 - (void)updateStoredBatteryState {
@@ -238,6 +269,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [[NSUserDefaults standardUserDefaults]
       setInteger:batteryStateValue
           forKey:kPreviousSessionInfoBatteryState];
+
+  [self updateSessionEndTime];
 }
 
 - (void)updateStoredLowPowerMode {
@@ -246,6 +279,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [[NSUserDefaults standardUserDefaults]
       setInteger:isLowPoweredModeEnabled
           forKey:kPreviousSessionInfoLowPowerMode];
+
+  [self updateSessionEndTime];
 }
 
 - (void)updateStoredThermalState {
@@ -260,6 +295,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
   [[NSUserDefaults standardUserDefaults]
       setInteger:thermalStateValue
           forKey:kPreviousSessionInfoThermalState];
+
+  [self updateSessionEndTime];
 }
 
 - (void)setMemoryWarningFlag {

@@ -103,9 +103,9 @@ class TestResponseDelegate
     return std::move(input_stream_);
   }
 
-  void OnInputStreamOpenFailed(bool* restarted) override {
+  bool OnInputStreamOpenFailed() override {
     EXPECT_TRUE(thread_checker_.CalledOnValidThread());
-    *restarted = false;
+    return false;
   }
 
   bool GetMimeType(JNIEnv* env,

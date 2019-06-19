@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_bitrate_allocation.h"
@@ -35,6 +34,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/modules/video_coding/include/video_error_codes.h"
@@ -648,7 +648,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   scoped_refptr<media::VideoFrame> frame;
   if (next_frame->video_frame_buffer()->type() ==
       webrtc::VideoFrameBuffer::Type::kNative) {
-    frame = static_cast<WebRtcVideoFrameAdapter*>(
+    frame = static_cast<blink::WebRtcVideoFrameAdapter*>(
                 next_frame->video_frame_buffer().get())
                 ->getMediaVideoFrame();
     requires_copy = RequiresSizeChange(*frame) ||

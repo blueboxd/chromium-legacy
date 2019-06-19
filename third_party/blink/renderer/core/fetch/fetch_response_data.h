@@ -74,7 +74,7 @@ class CORE_EXPORT FetchResponseData final
   // returns |m_buffer|.
   BodyStreamBuffer* InternalBuffer() const;
   String InternalMIMEType() const;
-  Time ResponseTime() const { return response_time_; }
+  base::Time ResponseTime() const { return response_time_; }
   String CacheStorageCacheName() const { return cache_storage_cache_name_; }
   const WebHTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
@@ -92,7 +92,9 @@ class CORE_EXPORT FetchResponseData final
     status_message_ = status_message;
   }
   void SetMimeType(const String& type) { mime_type_ = type; }
-  void SetResponseTime(Time response_time) { response_time_ = response_time; }
+  void SetResponseTime(base::Time response_time) {
+    response_time_ = response_time;
+  }
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;
   }
@@ -122,7 +124,7 @@ class CORE_EXPORT FetchResponseData final
   Member<FetchResponseData> internal_response_;
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
-  Time response_time_;
+  base::Time response_time_;
   String cache_storage_cache_name_;
   WebHTTPHeaderSet cors_exposed_header_names_;
 

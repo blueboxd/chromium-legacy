@@ -98,7 +98,7 @@ class TaskSession : public GarbageCollectedFinalized<TaskSession> {
     // This is for the metrics to record the total node that has been sent.
     size_t total_sent_nodes_ = 0;
     // Histogram could be disabed in low time resolution OS, see
-    // TimeTicks::IsHighResolution and ContentCaptureTask.
+    // base::TimeTicks::IsHighResolution and ContentCaptureTask.
     base::Optional<SentNodeCountCallback> callback_;
   };
 

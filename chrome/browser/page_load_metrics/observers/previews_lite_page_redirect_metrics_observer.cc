@@ -55,9 +55,6 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
   data->set_request_url(handle->GetURL());
   data->set_black_listed(previews_data->black_listed_for_lite_page());
   data->set_used_data_reduction_proxy(true);
-  data->set_client_lofi_requested(false);
-  data->set_lofi_policy_received(false);
-  data->set_lofi_received(false);
   data->set_was_cached_data_reduction_proxy_response(false);
 
   base::TimeDelta penalty =

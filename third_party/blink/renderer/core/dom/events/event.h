@@ -111,18 +111,18 @@ class CORE_EXPORT Event : public ScriptWrappable {
         Bubbles,
         Cancelable,
         ComposedMode,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
         Bubbles,
         Cancelable,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type,
         Bubbles,
         Cancelable,
         ComposedMode = ComposedMode::kScoped);
   Event(const AtomicString& type,
         const EventInit*,
-        TimeTicks platform_time_stamp);
+        base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type, const EventInit* init)
       : Event(type, init, CurrentTimeTicks()) {}
   ~Event() override;
@@ -185,7 +185,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // using the platform timestamp (see |platform_time_stamp_|).
   // For more info see http://crbug.com/160524
   double timeStamp(ScriptState*) const;
-  TimeTicks PlatformTimeStamp() const { return platform_time_stamp_; }
+  base::TimeTicks PlatformTimeStamp() const { return platform_time_stamp_; }
 
   void stopPropagation() { propagation_stopped_ = true; }
   void SetStopPropagation(bool stop_propagation) {
@@ -356,7 +356,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // The monotonic platform time in seconds, for input events it is the
   // event timestamp provided by the host OS and reported in the original
   // WebInputEvent instance.
-  TimeTicks platform_time_stamp_;
+  base::TimeTicks platform_time_stamp_;
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName)                          \

@@ -316,19 +316,17 @@ void CreditCardSaveManager::OnDidUploadCard(
     // removed.
     GetCreditCardSaveStrikeDatabase()->ClearStrikes(
         base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
-  } else {
-    if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
-      // If the upload failed and the bubble was actually shown (NOT just the
-      // icon), count that as a strike against offering upload in the future.
-      int nth_strike_added = GetCreditCardSaveStrikeDatabase()->AddStrike(
-          base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
-      // Notify the browsertests that a strike was added.
-      OnStrikeChangeComplete(nth_strike_added);
-    }
-
-    // Show credit card upload feedback.
-    client_->CreditCardUploadCompleted();
+  } else if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
+    // If the upload failed and the bubble was actually shown (NOT just the
+    // icon), count that as a strike against offering upload in the future.
+    int nth_strike_added = GetCreditCardSaveStrikeDatabase()->AddStrike(
+        base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
+    // Notify the browsertests that a strike was added.
+    OnStrikeChangeComplete(nth_strike_added);
   }
+
+  // Show credit card upload feedback.
+  client_->CreditCardUploadCompleted(result == AutofillClient::SUCCESS);
 }
 
 CreditCardSaveStrikeDatabase*

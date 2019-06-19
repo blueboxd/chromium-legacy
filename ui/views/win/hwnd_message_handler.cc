@@ -61,6 +61,7 @@
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
+#include "ui/views/win/hwnd_util.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
 namespace views {
@@ -2837,6 +2838,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
+    // TODO(pkasting): Maybe handle this in DesktopWindowTreeHostWin, where we
+    // handle alt-space, or in the frame itself.
     is_right_mouse_pressed_on_caption_ = false;
     ReleaseCapture();
     // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
@@ -2846,7 +2849,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     w_param = SendMessage(hwnd(), WM_NCHITTEST, 0,
                           MAKELPARAM(screen_point.x, screen_point.y));
     if (w_param == HTCAPTION || w_param == HTSYSMENU) {
-      gfx::ShowSystemMenuAtPoint(hwnd(), gfx::Point(screen_point));
+      ShowSystemMenuAtScreenPixelLocation(hwnd(), gfx::Point(screen_point));
       return 0;
     }
   } else if (message == WM_NCLBUTTONDOWN &&

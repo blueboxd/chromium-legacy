@@ -16,6 +16,7 @@
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/wm/public/activation_client.h"
@@ -28,7 +29,7 @@ namespace {
 // session such that the most-recently used window is added first. If
 // |should_animate| is true, the windows will animate to their positions in the
 // overview grid.
-void AppendWindowsToOverview(const base::flat_set<aura::Window*>& windows,
+void AppendWindowsToOverview(const std::vector<aura::Window*>& windows,
                              bool should_animate) {
   DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
 
@@ -36,8 +37,10 @@ void AppendWindowsToOverview(const base::flat_set<aura::Window*>& windows,
       Shell::Get()->overview_controller()->overview_session();
   for (auto* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
-    if (!windows.contains(window) || wm::ShouldExcludeForOverview(window))
+    if (!base::Contains(windows, window) ||
+        wm::ShouldExcludeForOverview(window)) {
       continue;
+    }
 
     overview_session->AppendItem(window, /*reposition=*/true, should_animate);
   }
@@ -132,7 +135,7 @@ void DesksController::RemoveDesk(const Desk* desk) {
 
   const bool in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
-  const base::flat_set<aura::Window*> removed_desk_windows =
+  const std::vector<aura::Window*> removed_desk_windows =
       removed_desk->windows();
 
   // No need to spend time refreshing the mini_views of the removed desk.
@@ -223,7 +226,7 @@ void DesksController::ActivateDesk(const Desk* desk) {
     if (overview_controller->InOverviewSession()) {
       // Selecting the active desk's mini_view in overview mode is allowed and
       // should just exit overview mode normally.
-      overview_controller->ToggleOverview();
+      overview_controller->EndOverview();
     }
     return;
   }
@@ -248,7 +251,6 @@ void DesksController::ActivateDesk(const Desk* desk) {
 
 void DesksController::MoveWindowFromActiveDeskTo(aura::Window* window,
                                                  Desk* target_desk) {
-  DCHECK(active_desk_->windows().contains(window));
   DCHECK_NE(active_desk_, target_desk);
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
@@ -294,7 +296,7 @@ void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
     // Exit overview mode immediately without any animations before taking the
     // ending desk screenshot. This makes sure that the ending desk
     // screenshot will only show the windows in that desk, not overview stuff.
-    Shell::Get()->overview_controller()->ToggleOverview(
+    Shell::Get()->overview_controller()->EndOverview(
         OverviewSession::EnterExitOverviewType::kImmediateExit);
   }
 
@@ -402,7 +404,7 @@ const Desk* DesksController::FindDeskOfWindow(aura::Window* window) const {
   DCHECK(window);
 
   for (const auto& desk : desks_) {
-    if (desk->windows().contains(window))
+    if (base::Contains(desk->windows(), window))
       return desk.get();
   }
 

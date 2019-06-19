@@ -9,15 +9,12 @@
 
 std::wostream* gLogStream = &std::wcout;
 std::wofstream gLogFileStream;
-const std::locale gLocale(std::locale::classic(),
-                          new std::codecvt_utf8_utf16<wchar_t>);
 
 LogLevels gLogLevel = INFO;
 
 // Must be called before the first logging call is made.
 void InitLog(const std::wstring& file) {
   gLogFileStream.open(file.c_str(), std::ios_base::out | std::ios_base::trunc);
-  gLogFileStream.imbue(gLocale);
   gLogStream = &gLogFileStream;
 }
 

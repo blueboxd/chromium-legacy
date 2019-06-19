@@ -16,7 +16,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
  public:
   static PointerEvent* Create(const AtomicString& type,
                               const PointerEventInit* initializer,
-                              TimeTicks platform_time_stamp) {
+                              base::TimeTicks platform_time_stamp) {
     return MakeGarbageCollected<PointerEvent>(type, initializer,
                                               platform_time_stamp);
   }
@@ -27,7 +27,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   PointerEvent(const AtomicString&,
                const PointerEventInit*,
-               TimeTicks platform_time_stamp);
+               base::TimeTicks platform_time_stamp);
 
   PointerId pointerId() const { return pointer_id_; }
   double width() const { return width_; }
@@ -63,7 +63,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   HeapVector<Member<PointerEvent>> getCoalescedEvents();
   HeapVector<Member<PointerEvent>> getPredictedEvents();
-  TimeTicks OldestPlatformTimeStamp() const;
+  base::TimeTicks OldestPlatformTimeStamp() const;
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 

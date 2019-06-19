@@ -78,7 +78,7 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
               base_file.AppendDataToFile(kTestFileContents,
                                          base::size(kTestFileContents)));
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              base_file.AnnotateWithSourceInformation(
+              base_file.AnnotateWithSourceInformationSync(
                   "7B2CEE7C-DC81-4160-86F1-9C968597118F", url, referrer));
     base_file.Detach();
     base_file.Finish();

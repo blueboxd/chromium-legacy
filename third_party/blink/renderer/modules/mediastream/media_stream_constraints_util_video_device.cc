@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
 #include "media/base/limits.h"
 #include "media/mojo/interfaces/display_media_information.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"

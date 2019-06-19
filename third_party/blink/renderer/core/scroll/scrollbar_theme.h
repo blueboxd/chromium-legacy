@@ -117,8 +117,8 @@ class CORE_EXPORT ScrollbarTheme {
   int ThumbPosition(const Scrollbar& scrollbar) {
     return ThumbPosition(scrollbar, scrollbar.CurrentPos());
   }
-  virtual TimeDelta OverlayScrollbarFadeOutDelay() const;
-  virtual TimeDelta OverlayScrollbarFadeOutDuration() const;
+  virtual base::TimeDelta OverlayScrollbarFadeOutDelay() const;
+  virtual base::TimeDelta OverlayScrollbarFadeOutDuration() const;
   // The position the thumb would have, relative to the track, at the specified
   // scroll position.
   virtual int ThumbPosition(const Scrollbar&, float scroll_position);
@@ -181,8 +181,8 @@ class CORE_EXPORT ScrollbarTheme {
     return std::numeric_limits<int>::max();
   }
 
-  virtual TimeDelta InitialAutoscrollTimerDelay();
-  virtual TimeDelta AutoscrollTimerDelay();
+  virtual base::TimeDelta InitialAutoscrollTimerDelay();
+  virtual base::TimeDelta AutoscrollTimerDelay();
 
   virtual IntRect ConstrainTrackRectToTrackPieces(const Scrollbar&,
                                                   const IntRect& rect) {

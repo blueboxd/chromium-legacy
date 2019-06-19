@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/aura/window.h"
@@ -120,6 +121,12 @@ aura::Window* GetDeskContainerForContext(aura::Window* context) {
   }
 
   return nullptr;
+}
+
+bool ShouldDesksBarBeCreated() {
+  return features::IsVirtualDesksEnabled() &&
+         (!TabletMode::Get()->IsEnabled() ||
+          DesksController::Get()->desks().size() > 1);
 }
 
 }  // namespace desks_util

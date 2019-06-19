@@ -75,7 +75,6 @@ void FontFaceSetDocument::DidLayout() {
 }
 
 void FontFaceSetDocument::BeginFontLoading(FontFace* font_face) {
-  histogram_.IncrementCount();
   AddToLoadingFonts(font_face);
 }
 
@@ -224,12 +223,6 @@ void FontFaceSetDocument::FontLoadHistogram::UpdateStatus(FontFace* font_face) {
 }
 
 void FontFaceSetDocument::FontLoadHistogram::Record() {
-  if (!recorded_) {
-    recorded_ = true;
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, web_fonts_in_page_histogram,
-                        ("WebFont.WebFontsInPage", 1, 100, 50));
-    web_fonts_in_page_histogram.Count(count_);
-  }
   if (status_ == kHadBlankText || status_ == kDidNotHaveBlankText) {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, had_blank_text_histogram,
                         ("WebFont.HadBlankText", 2));

@@ -114,7 +114,6 @@ VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
       screen_observer_delegate_(
           ScreenObserverDelegate::Create(this, ui_task_runner)),
       lens_facing_(device_descriptor.facing),
-      camera_orientation_(0),
       // External cameras have lens_facing as MEDIA_VIDEO_FACING_NONE.
       // We don't want to rotate the frame even if the device rotates.
       rotates_with_device_(lens_facing_ !=
@@ -293,9 +292,7 @@ void VideoCaptureDeviceChromeOSHalv3::SetRotation(int rotation) {
     // Therefore, for back camera, we need to rotate (360 - |rotation|).
     rotation = (360 - rotation) % 360;
   }
-  // Take into account camera orientation w.r.t. the display. External cameras
-  // would have camera_orientation_ as 0.
-  rotation_ = (rotation + camera_orientation_) % 360;
+  rotation_ = rotation;
   if (camera_device_ipc_thread_.IsRunning()) {
     camera_device_ipc_thread_.task_runner()->PostTask(
         FROM_HERE,

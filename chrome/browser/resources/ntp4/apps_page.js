@@ -261,6 +261,10 @@ cr.define('ntp', function() {
     /**
      * Initialize the app object.
      * @param {Object} appData The data object that describes the app.
+     *
+     * TODO(crbug.com/425829): This function makes use of deprecated getter or
+     * setter functions.
+     * @suppress {deprecated}
      */
     initialize: function(appData) {
       this.appData = appData;
@@ -310,6 +314,9 @@ cr.define('ntp', function() {
       // This hack is here so that appContents.contextMenu will be the same as
       // this.contextMenu.
       const self = this;
+
+      // TODO(crbug.com/425829): Remove above suppression once we no longer use
+      // deprecated function defineGetter.
       this.appContents_.__defineGetter__('contextMenu', function() {
         return self.contextMenu;
       });

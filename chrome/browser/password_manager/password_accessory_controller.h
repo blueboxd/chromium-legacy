@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autofill/accessory_controller.h"
-#include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -68,7 +67,8 @@ class PasswordAccessoryController
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
+  virtual void OnFilledIntoFocusedField(
+      autofill::mojom::FillingStatus status) = 0;
 
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus.

@@ -43,8 +43,10 @@
 
 namespace blink {
 
-static constexpr TimeDelta kTwentyMinutes = TimeDelta::FromMinutes(20);
-static constexpr TimeDelta kFiftyMs = TimeDelta::FromMilliseconds(50);
+static constexpr base::TimeDelta kTwentyMinutes =
+    base::TimeDelta::FromMinutes(20);
+static constexpr base::TimeDelta kFiftyMs =
+    base::TimeDelta::FromMilliseconds(50);
 
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
@@ -86,10 +88,10 @@ class HeapSizeCache {
     // to make it more difficult for attackers to compare memory usage before
     // and after some event. We limit to once every 50 ms in the Precise case to
     // avoid exposing precise GC timings.
-    TimeTicks now = clock_->NowTicks();
-    TimeDelta delta_allowed = precision == MemoryInfo::Precision::Bucketized
-                                  ? kTwentyMinutes
-                                  : kFiftyMs;
+    base::TimeTicks now = clock_->NowTicks();
+    base::TimeDelta delta_allowed =
+        precision == MemoryInfo::Precision::Bucketized ? kTwentyMinutes
+                                                       : kFiftyMs;
     if (!last_update_time_.has_value() ||
         now - last_update_time_.value() >= delta_allowed) {
       Update(precision);
@@ -111,7 +113,7 @@ class HeapSizeCache {
         QuantizeMemorySize(info_.total_js_heap_size_without_external_memory);
   }
 
-  base::Optional<TimeTicks> last_update_time_;
+  base::Optional<base::TimeTicks> last_update_time_;
   const base::TickClock* clock_;
 
   HeapInfo info_;

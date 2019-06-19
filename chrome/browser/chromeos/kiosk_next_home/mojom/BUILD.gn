@@ -9,10 +9,12 @@ mojom("mojom") {
     "app_controller.mojom",
     "identity_controller.mojom",
     "kiosk_next_home_interface_broker.mojom",
+    "website_controller.mojom",
   ]
 
   public_deps = [
     "//chrome/services/app_service/public/mojom:types",
     "//services/identity/public/mojom",
+    "//url/mojom:url_mojom_gurl",
   ]
 }

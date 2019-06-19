@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
@@ -46,9 +45,7 @@ base::File GetDictionaryFile(const std::string& locale) {
 #endif
   std::string filename = base::StringPrintf("hyph-%s.hyb", locale.c_str());
   base::FilePath path = dir.AppendASCII(filename);
-  base::ElapsedTimer timer;
   file.Initialize(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  UMA_HISTOGRAM_TIMES("Hyphenation.Open.File", timer.Elapsed());
   return file.Duplicate();
 }
 

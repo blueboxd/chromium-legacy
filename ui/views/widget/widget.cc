@@ -1637,8 +1637,8 @@ void Widget::UnlockPaintAsActive() {
 }
 
 void Widget::UpdatePaintAsActiveState(bool paint_as_active) {
-  if (non_client_view())
-    non_client_view()->frame_view()->PaintAsActiveChanged(paint_as_active);
+  if (non_client_view_)
+    non_client_view_->frame_view()->PaintAsActiveChanged(paint_as_active);
   if (widget_delegate())
     widget_delegate()->OnPaintAsActiveChanged(paint_as_active);
 }

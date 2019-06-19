@@ -168,6 +168,7 @@ static_library("v4_local_database_manager") {
     ":v4_update_protocol_manager",
     "//base",
     "//components/safe_browsing:webui_proto",
+    "//components/safe_browsing/realtime:policy_engine",
     "//content/public/browser",
     "//crypto",
     "//net",

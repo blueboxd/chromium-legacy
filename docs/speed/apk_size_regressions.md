@@ -94,6 +94,9 @@ If the regression is >50kb, add ReleaseBlock-Stable **M-##** (next branch cut).*
 
 # Debugging Apk Size Increase
 
+It typically takes about a week of engineering time to reduce binary size by
+50kb so it's important that an effort is made to address all new regressions.
+
 ## Step 1: Identify what Grew
 
 Figure out which file within the `.apk` increased (native library, dex, pak
@@ -122,7 +125,8 @@ for a description of binary size tools.**
 ### Growth is from Images
 
   * Would [a VectorDrawable](https://codereview.chromium.org/2857893003/) be better?
-  * If it's lossy, consider [using webp](https://codereview.chromium.org/2615243002/).
+  * If it's lossy, consider [using webp](https://codereview.chromium.org/2615243002/),
+    and including fewer densities (e.g. add only an xxhdpi version).
   * Ensure you've optimized with
     [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
   * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
@@ -152,6 +156,22 @@ for a description of binary size tools.**
 ### You Would Like Assistance
 
  * Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).
+
+## Step 3: Give Up :/
+
+If you have spent O(days) trying to reduce the size overhead of your patch and
+are pretty sure that your implementation is efficient, then add a comment to the
+bug with the following:
+
+1) A description of where the size is coming from (show that you spent the time
+   to understand why your code translated to a large binary size).
+2) What things you tried to reduce the size (show that you've at least read this
+   doc and tried any relevant guidance).
+3) Why your commit is "worth" the size increase. For new features, feel free
+   to link to a design doc (which presumably includes the motivation for adding
+   the feature).
+   
+Close the bug as "Won't Fix".
 
 # For Binary Size Sheriffs
 

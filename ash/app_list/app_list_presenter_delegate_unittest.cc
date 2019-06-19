@@ -1678,13 +1678,13 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
 
   // Enable overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
 
   // Test that the AppListView is transparent.
   DCHECK_EQ(0.0f, GetAppListView()->GetWidget()->GetLayer()->opacity());
 
   // Disable overview mode.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
 
   // Show the launcher, test that the opacity is restored.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -1701,13 +1701,13 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, OpacityInOverviewMode) {
 
   // Enable overview mode.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   ui::Layer* layer = GetAppListView()->GetWidget()->GetNativeWindow()->layer();
   EXPECT_EQ(0.0f, layer->opacity());
 
   // Disable overview mode.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(1.0f, layer->opacity());
 }
@@ -1747,12 +1747,12 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   wallpaper_test_api.StartWallpaperPreview();
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
   // Disable overview mode. Verify the app list is still hidden because
   // wallpaper preview is still active.
-  overview_controller->ToggleOverview();
+  overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
   // End preview by confirming the wallpaper. Verify the app list is shown.
@@ -1824,7 +1824,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, AppListButtonEndOverviewMode) {
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->ToggleOverview();
+  overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Press app list button.

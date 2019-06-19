@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/memory/weak_ptr.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -96,7 +97,11 @@ void CreateWindowsOnThread(const gfx::Size& size,
       reinterpret_cast<wchar_t*>(g_window_class), L"",
       WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, size.width(),
       size.height(), *parent_window, nullptr, nullptr, nullptr);
-  CHECK(window);
+  if (!window) {
+    logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
+    base::debug::Alias(&error);
+    CHECK(false);
+  }
   *child_window = window;
   event->Signal();
 }

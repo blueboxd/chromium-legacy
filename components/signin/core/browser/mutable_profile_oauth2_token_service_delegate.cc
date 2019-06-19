@@ -372,7 +372,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kTokenServiceDiceCompatible, false);
 }
 
-OAuth2AccessTokenFetcher*
+std::unique_ptr<OAuth2AccessTokenFetcher>
 MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -382,18 +382,19 @@ MutableProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   if (refresh_tokens_[account_id].last_auth_error.IsPersistentError()) {
     VLOG(1) << "Request for token has been rejected due to persistent error #"
             << refresh_tokens_[account_id].last_auth_error.state();
-    return new OAuth2AccessTokenFetcherImmediateError(
+    return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
         consumer, refresh_tokens_[account_id].last_auth_error);
   }
   if (backoff_entry_.ShouldRejectRequest()) {
     VLOG(1) << "Request for token has been rejected due to backoff rules from"
             << " previous error #" << backoff_error_.state();
-    return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
+    return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
+        consumer, backoff_error_);
   }
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
-  return new OAuth2AccessTokenFetcherImpl(consumer, url_loader_factory,
-                                          refresh_token);
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, refresh_token);
 }
 
 GoogleServiceAuthError MutableProfileOAuth2TokenServiceDelegate::GetAuthError(

@@ -1802,16 +1802,13 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
 }
 
 void SplitViewController::StartOverview(bool window_drag) {
-  if (!Shell::Get()->overview_controller()->InOverviewSession()) {
-    Shell::Get()->overview_controller()->ToggleOverview(
-        window_drag ? OverviewSession::EnterExitOverviewType::kWindowDragged
-                    : OverviewSession::EnterExitOverviewType::kNormal);
-  }
+  Shell::Get()->overview_controller()->StartOverview(
+      window_drag ? OverviewSession::EnterExitOverviewType::kWindowDragged
+                  : OverviewSession::EnterExitOverviewType::kNormal);
 }
 
 void SplitViewController::EndOverview() {
-  if (Shell::Get()->overview_controller()->InOverviewSession())
-    Shell::Get()->overview_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
 }
 
 void SplitViewController::FinishWindowResizing(aura::Window* window) {

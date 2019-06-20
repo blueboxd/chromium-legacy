@@ -340,33 +340,26 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
 
 // static
 bool WaitableEvent::PeekPort(mach_port_t port, bool dequeue) {
-  if (dequeue) {
-    mach_msg_empty_rcv_t msg{};
-    msg.header.msgh_local_port = port;
-    kern_return_t kr = mach_msg(&msg.header, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0,
-                                sizeof(msg), port, 0, MACH_PORT_NULL);
-    if (kr == KERN_SUCCESS) {
-      return true;
-    } else {
-      MACH_CHECK(kr == MACH_RCV_TIMED_OUT, kr) << "mach_msg";
-      return false;
-    }
+  mach_msg_empty_rcv_t msg{};
+  msg.header.msgh_local_port = port;
+  kern_return_t kr = mach_msg(&msg.header, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0,
+                              sizeof(msg), port, 0, MACH_PORT_NULL);
+  if (kr == KERN_SUCCESS) {
+    if(!dequeue) {
+      mach_msg_empty_send_t sendmsg{};
+      sendmsg.header.msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND);
+      sendmsg.header.msgh_size = sizeof(&sendmsg);
+      sendmsg.header.msgh_remote_port = port;
+      // If the event is already signaled, this will time out because the queue
+      // has a length of one.
+      kr = mach_msg(&sendmsg.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT, sizeof(sendmsg), 0,
+                    MACH_PORT_NULL, 0, MACH_PORT_NULL);
+      MACH_CHECK(kr == KERN_SUCCESS || kr == MACH_SEND_TIMED_OUT, kr) << "mach_msg";
+	}
+    return true;
   } else {
-//    mach_port_seqno_t seqno = 0;
-//    mach_msg_size_t size;
-//    mach_msg_id_t id;
-//    mach_msg_trailer_t trailer;
-//    mach_msg_type_number_t trailer_size = sizeof(trailer);
-//    kern_return_t kr = mach_port_peek(
-//        mach_task_self(), port, MACH_RCV_TRAILER_TYPE(MACH_RCV_TRAILER_NULL),
-//        &seqno, &size, &id, reinterpret_cast<mach_msg_trailer_info_t>(&trailer),
-//        &trailer_size);
-//    if (kr == KERN_SUCCESS) {
-//      return true;
-//    } else {
-//      MACH_CHECK(kr == KERN_FAILURE, kr) << "mach_port_peek";
-      return false;
-//    }
+    MACH_CHECK(kr == MACH_RCV_TIMED_OUT, kr) << "mach_msg";
+    return false;
   }
 }
 

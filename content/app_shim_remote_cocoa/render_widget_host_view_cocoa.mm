@@ -325,7 +325,7 @@ void ExtractUnderlines(NSAttributedString* string,
   [self.spellChecker
       showCorrectionIndicatorOfType:NSCorrectionIndicatorTypeDefault
                       primaryString:candidateResult.replacementString
-                 alternativeStrings:candidateResult.alternativeStrings
+                 alternativeStrings:@[]//candidateResult.alternativeStrings
                     forStringInRect:textRectInViewCoordinates
                                view:self
                   completionHandler:^(NSString* acceptedString) {
@@ -416,10 +416,12 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (NSTextCheckingType)enabledTextCheckingTypes {
   NSTextCheckingType checkingTypes = 0;
-  if (NSSpellChecker.automaticQuoteSubstitutionEnabled)
-    checkingTypes |= NSTextCheckingTypeQuote;
-  if (NSSpellChecker.automaticDashSubstitutionEnabled)
-    checkingTypes |= NSTextCheckingTypeDash;
+  if(@available(macOS 10.9, *)){
+    if (NSSpellChecker.automaticQuoteSubstitutionEnabled)
+      checkingTypes |= NSTextCheckingTypeQuote;
+    if (NSSpellChecker.automaticDashSubstitutionEnabled)
+      checkingTypes |= NSTextCheckingTypeDash;
+  }
   if (NSSpellChecker.automaticTextReplacementEnabled)
     checkingTypes |= NSTextCheckingTypeReplacement;
   checkingTypes |= userEnabledTextCheckingTypes_;
@@ -1637,7 +1639,11 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (NSArray*)accessibilityContents {
-  return self.accessibilityChildren;
+  if(@available(macOS 10.10, *)) {
+    return self.accessibilityChildren;
+  } else {
+    return nil;
+  }
 }
 
 - (id)accessibilityParent {

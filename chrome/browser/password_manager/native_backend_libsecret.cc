@@ -254,15 +254,20 @@ bool NativeBackendLibsecret::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(delete_begin, delete_end, CREATION_TIMESTAMP,
-                             changes);
-}
+  changes->clear();
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
+  if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
+    return false;
 
-bool NativeBackendLibsecret::RemoveLoginsSyncedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
+  for (const auto& saved_form : all_forms) {
+    if (delete_begin <= saved_form->date_created &&
+        (delete_end.is_null() || saved_form->date_created < delete_end) &&
+        !RemoveLogin(*saved_form, changes)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool NativeBackendLibsecret::DisableAutoSignInForOrigins(
@@ -435,47 +440,6 @@ bool NativeBackendLibsecret::GetLoginsList(
           changes.back().type() != password_manager::PasswordStoreChange::ADD)
         return false;
     }
-  }
-  return true;
-}
-
-bool NativeBackendLibsecret::GetLoginsBetween(
-    base::Time get_begin,
-    base::Time get_end,
-    TimestampToCompare date_to_compare,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  forms->clear();
-  std::vector<std::unique_ptr<PasswordForm>> all_forms;
-  if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
-    return false;
-
-  base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
-                                              ? &PasswordForm::date_created
-                                              : &PasswordForm::date_synced;
-  for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
-    if (get_begin <= saved_form.get()->*date_member &&
-        (get_end.is_null() || saved_form.get()->*date_member < get_end)) {
-      forms->push_back(std::move(saved_form));
-    }
-  }
-
-  return true;
-}
-
-bool NativeBackendLibsecret::RemoveLoginsBetween(
-    base::Time get_begin,
-    base::Time get_end,
-    TimestampToCompare date_to_compare,
-    password_manager::PasswordStoreChangeList* changes) {
-  DCHECK(changes);
-  changes->clear();
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
-    return false;
-
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (!RemoveLogin(*forms[i], changes))
-      return false;
   }
   return true;
 }

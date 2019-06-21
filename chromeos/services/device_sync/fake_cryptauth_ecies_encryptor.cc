@@ -4,8 +4,6 @@
 
 #include "chromeos/services/device_sync/fake_cryptauth_ecies_encryptor.h"
 
-#include <utility>
-
 namespace chromeos {
 
 namespace device_sync {
@@ -28,6 +26,20 @@ void FakeCryptAuthEciesEncryptor::FinishAttempt(
   DCHECK_NE(Action::kUndefined, action_);
   DCHECK_EQ(expected_action, action_);
   OnAttemptFinished(id_to_output_map);
+}
+
+FakeCryptAuthEciesEncryptorFactory::FakeCryptAuthEciesEncryptorFactory() =
+    default;
+
+FakeCryptAuthEciesEncryptorFactory::~FakeCryptAuthEciesEncryptorFactory() =
+    default;
+
+std::unique_ptr<CryptAuthEciesEncryptor>
+FakeCryptAuthEciesEncryptorFactory::BuildInstance() {
+  auto instance = std::make_unique<FakeCryptAuthEciesEncryptor>();
+  instance_ = instance.get();
+
+  return instance;
 }
 
 }  // namespace device_sync

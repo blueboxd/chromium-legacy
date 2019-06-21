@@ -412,6 +412,8 @@ jumbo_split_static_library("browser") {
     "download/download_manager_utils.h",
     "download/download_offline_content_provider.cc",
     "download/download_offline_content_provider.h",
+    "download/download_offline_content_provider_factory.cc",
+    "download/download_offline_content_provider_factory.h",
     "download/download_permission_request.cc",
     "download/download_permission_request.h",
     "download/download_prefs.cc",

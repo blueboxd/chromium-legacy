@@ -94,6 +94,11 @@ class AutofillDriver {
   virtual void RendererShouldPreviewFieldWithValue(
       const base::string16& value) = 0;
 
+  // Tells the renderer to set the currently focused node's corresponding
+  // accessibility node to |autofill_suggestions_available|.
+  virtual void RendererShouldSetSuggestionAvailability(
+      bool autofill_suggestions_available) = 0;
+
   // Informs the renderer that the popup has been hidden.
   virtual void PopupHidden() = 0;
 

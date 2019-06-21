@@ -1436,8 +1436,6 @@ if (enable_java_templates) {
   #   input_jars_paths: A list of paths to the jars that should be included
   #     in the compile-time classpath. These are in addition to library .jars
   #     that appear in deps.
-  #   classpath_deps: Deps that should added to the classpath for this target,
-  #     but not linked into the apk (use this for annotation processors).
   #
   #   chromium_code: If true, extra analysis warning/errors will be enabled.
   #   enable_errorprone: If true, enables the errorprone compiler.
@@ -2695,7 +2693,6 @@ if (enable_java_templates) {
                                "apk_under_test",
                                "base_module_target",
                                "chromium_code",
-                               "classpath_deps",
                                "jacoco_never_instrument",
                                "enable_class_deps_output",
                                "java_files",
@@ -3280,7 +3277,6 @@ if (enable_java_templates) {
                                "app_as_shared_lib",
                                "build_hooks_android_impl_deps",
                                "chromium_code",
-                               "classpath_deps",
                                "command_line_flags_file",
                                "create_apk_script",
                                "data",
@@ -3406,7 +3402,6 @@ if (enable_java_templates) {
                                "app_as_shared_lib",
                                "base_module_target",
                                "chromium_code",
-                               "classpath_deps",
                                "data",
                                "data_deps",
                                "deps",

@@ -1578,6 +1578,13 @@ void WebAXObject::Swap(WebAXObject& other) {
   other = temp;
 }
 
+void WebAXObject::HandleAutofillStateChanged(bool suggestions_available) const {
+  if (IsDetached() || !private_->IsAXLayoutObject())
+    return;
+
+  private_->HandleAutofillStateChanged(suggestions_available);
+}
+
 WebString WebAXObject::ToString() const {
   if (IsDetached())
     return WebString();

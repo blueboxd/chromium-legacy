@@ -843,7 +843,7 @@ ScriptPromise Performance::profile(ScriptState* script_state,
   auto* profiler = profiler_group->CreateProfiler(
       script_state, *options, time_origin_, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   return ScriptPromise::Cast(script_state, ToV8(profiler, script_state));
 }

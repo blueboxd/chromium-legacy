@@ -21,7 +21,7 @@ namespace {
 // detect the condition which may be delayed depending on the capacity of the
 // target mojo data pipe.
 const base::Feature kBlobReaderEagerCompletion{
-    "BlobReaderEagerCompletion", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlobReaderEagerCompletion", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 

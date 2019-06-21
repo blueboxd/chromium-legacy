@@ -13,12 +13,12 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "content/public/android/content_jni_headers/SpeechRecognitionImpl_jni.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
-#include "jni/SpeechRecognitionImpl_jni.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 using base::android::AppendJavaStringArrayToStringVector;

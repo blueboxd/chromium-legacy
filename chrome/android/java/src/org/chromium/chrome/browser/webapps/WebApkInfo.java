@@ -179,16 +179,6 @@ public class WebApkInfo extends WebappInfo {
             return null;
         }
 
-        String url = urlFromIntent(intent);
-        int source = sourceFromIntent(intent);
-
-        if (source == ShortcutSource.EXTERNAL_INTENT) {
-            if (IntentHandler.determineExternalIntentSource(intent)
-                    == IntentHandler.ExternalAppId.CHROME) {
-                source = ShortcutSource.EXTERNAL_INTENT_FROM_CHROME;
-            }
-        }
-
         // Force navigation if the extra is not specified to avoid breaking deep linking for old
         // WebAPKs which don't specify the {@link ShortcutHelper#EXTRA_FORCE_NAVIGATION} intent
         // extra.
@@ -215,6 +205,22 @@ public class WebApkInfo extends WebappInfo {
                 }
             }
         }
+
+        String url = urlFromIntent(intent);
+        int source = sourceFromIntent(intent);
+
+        if (source == ShortcutSource.EXTERNAL_INTENT) {
+            if (IntentHandler.determineExternalIntentSource(intent)
+                    == IntentHandler.ExternalAppId.CHROME) {
+                source = ShortcutSource.EXTERNAL_INTENT_FROM_CHROME;
+            }
+        }
+
+        if (source == ShortcutSource.WEBAPK_SHARE_TARGET && shareData != null
+                && shareData.files != null && shareData.files.size() > 0) {
+            source = ShortcutSource.WEBAPK_SHARE_TARGET_FILE;
+        }
+
         boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(
                 intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
 

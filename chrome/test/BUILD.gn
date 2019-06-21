@@ -3918,7 +3918,6 @@ test("unit_tests") {
       "../browser/ui/ash/network/network_state_notifier_unittest.cc",
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
-      "../browser/ui/ash/tablet_mode_client_unittest.cc",
       "../browser/ui/ash/wallpaper_controller_client_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]

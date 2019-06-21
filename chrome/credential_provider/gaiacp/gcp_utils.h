@@ -232,9 +232,18 @@ void SecurelyClearBuffer(void* buffer, size_t length);
 
 // Helpers to get strings from base::Values that are expected to be
 // DictionaryValues.
+
 base::string16 GetDictString(const base::Value& dict, const char* name);
 base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
                              const char* name);
+// Perform a recursive search on a nested dictionary object. Note that the
+// names provided in the input should be in order. Below is an example : Lets
+// say the json object is {"key1": {"key2": {"key3": "value1"}}, "key4":
+// "value2"}. Then to search for the key "key3", this method should be called
+// by providing the names vector as {"key1", "key2", "key3"}.
+std::string SearchForKeyInStringDictUTF8(
+    const std::string& json_string,
+    const std::initializer_list<base::StringPiece>& path);
 std::string GetDictStringUTF8(const base::Value& dict, const char* name);
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);

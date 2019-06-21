@@ -38,7 +38,7 @@ double CurrentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-TimeTicks CurrentTimeTicks() {
+base::TimeTicks CurrentTimeTicks() {
   return base::TimeTicks::Now();
 }
 

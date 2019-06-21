@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
-#include "jni/ChromeBluetoothDevice_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothDevice_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

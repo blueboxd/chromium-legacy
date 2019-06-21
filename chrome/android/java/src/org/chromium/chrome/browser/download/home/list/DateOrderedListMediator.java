@@ -11,7 +11,7 @@ import android.support.v4.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.OfflineItemSource;
@@ -182,9 +182,10 @@ class DateOrderedListMediator {
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
-        mThumbnailProvider = new ThumbnailProviderImpl(ChromeApplication.getReferencePool(),
-                config.inMemoryThumbnailCacheSizeBytes,
-                ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
+        mThumbnailProvider =
+                new ThumbnailProviderImpl(GlobalDiscardableReferencePool.getReferencePool(),
+                        config.inMemoryThumbnailCacheSizeBytes,
+                        ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);

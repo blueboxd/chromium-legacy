@@ -25,10 +25,20 @@ namespace {
 
 // GMock matcher that checks that the consistency cookie has the expected value.
 MATCHER_P(CookieHasValueMatcher, value, "") {
+  net::CookieOptions cookie_options;
+  cookie_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
   return arg.Name() == "CHROME_ID_CONSISTENCY_STATE" && arg.Value() == value &&
          arg.IncludeForRequestURL(GaiaUrls::GetInstance()->gaia_url(),
-                                  net::CookieOptions()) ==
+                                  cookie_options) ==
              net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+}
+
+MATCHER(SetPermittedInContext, "") {
+  const net::CanonicalCookie& cookie = testing::get<0>(arg);
+  const net::CookieOptions& cookie_options = testing::get<1>(arg);
+  return cookie.IsSetPermittedInContext(cookie_options) ==
+         net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 class MockCookieManager
@@ -38,7 +48,8 @@ class MockCookieManager
   // specified value.
   void ExpectSetCookieCall(const std::string& value) {
     EXPECT_CALL(*this, SetCanonicalCookie(CookieHasValueMatcher(value), "https",
-                                          testing::_, testing::_));
+                                          testing::_, testing::_))
+        .With(testing::Args<0, 2>(SetPermittedInContext()));
   }
 
   MOCK_METHOD4(

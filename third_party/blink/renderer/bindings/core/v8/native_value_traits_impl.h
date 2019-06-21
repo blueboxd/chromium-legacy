@@ -452,13 +452,14 @@ struct NativeValueTraits<IDLSequence<T>>
     }
     result.ReserveInitialCapacity(length);
     v8::TryCatch block(isolate);
-    for (uint32_t i = 0; i < length; ++i) {
+    // Array length may change if array is mutated during iteration.
+    for (uint32_t i = 0; i < v8_array->Length(); ++i) {
       v8::Local<v8::Value> element;
       if (!v8_array->Get(isolate->GetCurrentContext(), i).ToLocal(&element)) {
         exception_state.RethrowV8Exception(block.Exception());
         return;
       }
-      result.UncheckedAppend(
+      result.push_back(
           NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
       if (exception_state.HadException())
         return;

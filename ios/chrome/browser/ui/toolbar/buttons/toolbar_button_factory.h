@@ -9,10 +9,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_style.h"
 
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-@protocol OmniboxFocuser;
 @class ToolbarButton;
+@class ToolbarButtonActionsHandler;
 @class ToolbarButtonVisibilityConfiguration;
 @class ToolbarTabGridButton;
 @class ToolbarToolsMenuButton;
@@ -31,10 +29,8 @@
 // of the buttons title.
 @property(nonatomic, strong, readonly)
     ToolbarConfiguration* toolbarConfiguration;
-// Dispatcher used to initialize targets for the buttons.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
-        dispatcher;
+// Handler for the actions.
+@property(nonatomic, weak) ToolbarButtonActionsHandler* actionHandler;
 // Configuration object for the visibility of the buttons.
 @property(nonatomic, strong)
     ToolbarButtonVisibilityConfiguration* visibilityConfiguration;

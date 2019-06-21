@@ -19,7 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -111,8 +110,6 @@ void SetupStabilityDebugging() {
           browser_watcher::kStabilityDebuggingFeature)) {
     return;
   }
-
-  SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Record.SetupTime");
 
   // TODO(bcwhite): Adjust these numbers once there is real data to show
   // just how much of an arena is necessary.

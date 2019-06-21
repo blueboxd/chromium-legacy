@@ -72,9 +72,6 @@ class TestPasswordStore : public PasswordStore {
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
-  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) override;
   PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) override;
   bool RemoveStatisticsByOriginAndTimeImpl(

@@ -7,11 +7,13 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 
@@ -32,7 +34,8 @@ class SkBitmap;
 // SimpleDownloadManagerCoordinator and notifies UI about updates about various
 // downloads.
 class DownloadOfflineContentProvider
-    : public OfflineContentProvider,
+    : public KeyedService,
+      public OfflineContentProvider,
       public DownloadItem::Observer,
       public SimpleDownloadManagerCoordinator::Observer {
  public:

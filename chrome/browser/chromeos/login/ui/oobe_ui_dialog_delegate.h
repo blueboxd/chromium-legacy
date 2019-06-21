@@ -8,19 +8,21 @@
 #include <string>
 
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/display/display_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-class TabletModeClient;
+namespace ash {
+class TabletMode;
+}
 
 namespace content {
 class WebContents;
@@ -54,7 +56,7 @@ class CaptivePortalDialogDelegate;
 //         V
 //   clientView---->Widget's view hierarchy
 class OobeUIDialogDelegate : public display::DisplayObserver,
-                             public TabletModeClientObserver,
+                             public ash::TabletModeToggleObserver,
                              public ui::WebDialogDelegate,
                              public ChromeKeyboardControllerClient::Observer,
                              public CaptivePortalWindowProxy::Observer {
@@ -93,7 +95,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
-  // TabletModeClientObserver:
+  // ash::TabletModeToggleObserver:
   void OnTabletModeToggled(bool enabled) override;
 
   // ui::WebDialogDelegate:
@@ -135,7 +137,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
       this};
-  ScopedObserver<TabletModeClient, TabletModeClientObserver>
+  ScopedObserver<ash::TabletMode, ash::TabletModeToggleObserver>
       tablet_mode_observer_{this};
   ScopedObserver<ChromeKeyboardControllerClient,
                  ChromeKeyboardControllerClient::Observer>

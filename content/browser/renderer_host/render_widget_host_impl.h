@@ -1039,7 +1039,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       input_event_observers_;
 
   // The observers watching us.
-  base::ObserverList<RenderWidgetHostObserver>::Unchecked observers_;
+  base::ObserverList<RenderWidgetHostObserver> observers_;
 
   // This is true if the renderer is currently unresponsive.
   bool is_unresponsive_ = false;

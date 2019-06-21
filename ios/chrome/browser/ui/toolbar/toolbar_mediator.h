@@ -7,15 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol ToolbarConsumer;
-
 namespace bookmarks {
 class BookmarkModel;
 }
 namespace web {
 class WebState;
 }
+
 class TemplateURLService;
+@protocol ToolbarConsumer;
 class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state

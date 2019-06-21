@@ -12,8 +12,8 @@ import android.view.View;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -151,10 +151,9 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         }
 
         if (mImageFetcher == null) {
-            mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.IN_MEMORY_ONLY,
-                    ((ChromeApplication) mContext.getApplicationContext()).getReferencePool(),
-                    MAX_CACHE_SIZE);
+            mImageFetcher =
+                    ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
+                            GlobalDiscardableReferencePool.getReferencePool(), MAX_CACHE_SIZE);
         }
 
         List<PropertyModel> models = new ArrayList<>();

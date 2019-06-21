@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
@@ -340,9 +339,9 @@
 
 - (void)printTab {
   DCHECK(self.printController);
-  Tab* currentTab = self.tabModel.currentTab;
-  [self.printController printView:[currentTab viewForPrinting]
-                        withTitle:tab_util::GetTabTitle(currentTab.webState)];
+  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  [self.printController printView:webState->GetView()
+                        withTitle:tab_util::GetTabTitle(webState)];
 }
 
 - (void)showReadingList {

@@ -388,6 +388,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
@@ -413,7 +414,6 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/services/cups_proxy/cups_proxy_service.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
@@ -1535,8 +1535,7 @@ bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() {
 #if defined(OS_ANDROID)
   return true;
 #elif defined(OS_CHROMEOS)
-  return TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
+  return ash::TabletMode::Get()->InTabletMode();
 #else
   return false;
 #endif  // defined(OS_ANDROID)
@@ -2514,10 +2513,16 @@ void ChromeContentBrowserClient::OnCookiesRead(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
-                     first_party_url, cookie_list, blocked_by_policy));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    // Internal calls from AllowGetCookie are on IO thread, so need to jump.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
+                       first_party_url, cookie_list, blocked_by_policy));
+  } else {
+    TabSpecificContentSettings::CookiesRead(wc_getter, url, first_party_url,
+                                            cookie_list, blocked_by_policy);
+  }
 }
 
 void ChromeContentBrowserClient::OnCookieChange(
@@ -2530,10 +2535,16 @@ void ChromeContentBrowserClient::OnCookieChange(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
-                     first_party_url, cookie, blocked_by_policy));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    // Internal calls from AllowSetCookie are on IO thread, so need to jump.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter,
+                       url, first_party_url, cookie, blocked_by_policy));
+  } else {
+    TabSpecificContentSettings::CookieChanged(wc_getter, url, first_party_url,
+                                              cookie, blocked_by_policy);
+  }
 }
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(

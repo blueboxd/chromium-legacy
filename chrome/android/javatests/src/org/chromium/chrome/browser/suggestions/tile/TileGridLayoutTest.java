@@ -35,9 +35,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -300,7 +300,7 @@ public class TileGridLayoutTest {
         SuggestionsUiDelegate uiDelegate = new SuggestionsUiDelegateImpl(
                 mSuggestionsDeps.getFactory().createSuggestionSource(null),
                 mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,
-                ChromeApplication.getReferencePool(), activity.getSnackbarManager());
+                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
 
         FakeOfflinePageBridge offlinePageBridge = new FakeOfflinePageBridge();
         List<OfflinePageItem> offlinePageItems = new ArrayList<>();

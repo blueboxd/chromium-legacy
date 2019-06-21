@@ -278,7 +278,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 // instead respect the source/destination direction as expected by IETF QUIC.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
-          false)
+          true)
 
 // Do not send STOP_WAITING if no_stop_waiting_frame_ is true.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, true)

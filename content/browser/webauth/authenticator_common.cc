@@ -55,6 +55,7 @@
 #include "net/der/parser.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
@@ -111,7 +112,8 @@ enum class RelyingPartySecurityCheckFailure {
   kRelyingPartyIdInvalid = 1,
   kAppIdExtensionInvalid = 2,
   kAppIdExtensionDomainMismatch = 3,
-  kMaxValue = kAppIdExtensionDomainMismatch,
+  kIconUrlInvalid = 4,
+  kMaxValue = kIconUrlInvalid,
 };
 
 void ReportSecurityCheckFailure(RelyingPartySecurityCheckFailure error) {
@@ -179,6 +181,26 @@ bool IsRelyingPartyIdValid(const std::string& relying_party_id,
     // relying_party_id: "awesomecompany".
     return false;
   return true;
+}
+
+// Checks if the icon URL is an a-priori authenticated URL.
+// https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
+bool IsAPrioriAuthenticatedUrl(const base::Optional<GURL>& url_opt) {
+  if (!url_opt)
+    return true;
+
+  const auto& url = *url_opt;
+  if (url.is_empty())
+    return true;
+
+  if (!url.is_valid()) {
+    return false;
+  }
+
+  // https://www.w3.org/TR/mixed-content/#a-priori-authenticated-url
+  return url.IsAboutSrcdoc() || url.IsAboutBlank() ||
+         url.SchemeIs(url::kDataScheme) ||
+         network::IsUrlPotentiallyTrustworthy(url);
 }
 
 // Validates whether the given origin is authorized to use the provided App
@@ -685,6 +707,19 @@ void AuthenticatorCommon::MakeCredential(
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                              nullptr, Focus::kDontCheck);
+    return;
+  }
+
+  if (!IsAPrioriAuthenticatedUrl(options->user.icon_url) ||
+      !IsAPrioriAuthenticatedUrl(options->relying_party.icon_url)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kIconUrlInvalid);
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
+                                    bad_message::AUTH_INVALID_ICON_URL);
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        blink::mojom::AuthenticatorStatus::INVALID_ICON_URL, nullptr,
+        Focus::kDontCheck);
     return;
   }
 

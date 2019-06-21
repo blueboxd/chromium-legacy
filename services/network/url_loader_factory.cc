@@ -134,6 +134,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
+      context_->client(),
       base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
       std::move(request), options, url_request, std::move(client),

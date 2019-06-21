@@ -208,6 +208,7 @@ std::string VAProfileToString(VAProfile va_profile) {
       return "VAProfileVP9Profile2";
     case VAProfileVP9Profile3:
       return "VAProfileVP9Profile3";
+#if VA_MAJOR_VERSION >= 2 || (VA_MAJOR_VERSION == 1 && VA_MINOR_VERSION >= 2)
     case VAProfileHEVCMain12:
       return "VAProfileHEVCMain12";
     case VAProfileHEVCMain422_10:
@@ -226,6 +227,7 @@ std::string VAProfileToString(VAProfile va_profile) {
       return "VAProfileHEVCSccMain10";
     case VAProfileHEVCSccMain444:
       return "VAProfileHEVCSccMain444";
+#endif
     default:
       NOTREACHED();
       return "";
@@ -353,8 +355,9 @@ bool VADisplayState::Initialize() {
 }
 
 bool VADisplayState::InitializeOnce() {
-  static_assert(VA_MAJOR_VERSION >= 1 && VA_MINOR_VERSION >= 1,
-                "Requires VA-API >= 1.1.0");
+  static_assert(
+      VA_MAJOR_VERSION >= 2 || (VA_MAJOR_VERSION == 1 && VA_MINOR_VERSION >= 1),
+      "Requires VA-API >= 1.1.0");
 
   switch (gl::GetGLImplementation()) {
     case gl::kGLImplementationEGLGLES2:

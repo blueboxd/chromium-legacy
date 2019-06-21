@@ -37,7 +37,8 @@ namespace {
 bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
                                    scoped_refptr<Image> image) {
   DCHECK(image);
-  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
+  if (!RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(
+          &layout_image.GetDocument()))
     return false;
 
   DoubleSize layout_size(layout_image.ContentSize());

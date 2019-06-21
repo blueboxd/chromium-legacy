@@ -70,6 +70,9 @@ void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
 }
 
+void TestAutofillDriver::RendererShouldSetSuggestionAvailability(
+    bool available) {}
+
 void TestAutofillDriver::PopupHidden() {
 }
 

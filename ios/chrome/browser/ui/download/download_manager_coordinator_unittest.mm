@@ -157,6 +157,39 @@ TEST_F(DownloadManagerCoordinatorTest, Stop) {
   EXPECT_FALSE(coordinator_.downloadTask);
 }
 
+// Tests destroying coordinator during the download.
+TEST_F(DownloadManagerCoordinatorTest, DestructionDuringDownload) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  coordinator_.downloadTask = &task;
+  [coordinator_ start];
+
+  EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
+  DownloadManagerViewController* viewController =
+      base_view_controller_.childViewControllers.firstObject;
+  ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+
+  // Start the download.
+  base::FilePath path;
+  ASSERT_TRUE(base::GetTempDir(&path));
+  task.Start(std::make_unique<net::URLFetcherFileWriter>(
+      base::ThreadTaskRunnerHandle::Get(), path));
+
+  @autoreleasepool {
+    // These calls will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+
+    // Destroy coordinator before destroying the download task.
+    coordinator_ = nil;
+  }
+
+  // Verify that child view controller is removed.
+  EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileResult",
+      static_cast<base::HistogramBase::Sample>(DownloadFileResult::Other), 1);
+}
+
 // Tests downloadManagerTabHelper:didCreateDownload:webStateIsVisible: callback
 // for visible web state. Verifies that coordinator's properties are set up and
 // that DownloadManagerViewController is properly configured and presented with

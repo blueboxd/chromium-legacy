@@ -153,14 +153,9 @@ class FakeProfileSessionDurationsService
 
 @interface CallTrackingStubBrowserInterfaceProvider
     : StubBrowserInterfaceProvider
-@property(nonatomic) BOOL tabsHalted;
 @property(nonatomic) BOOL deviceManagerCleaned;
 @end
 @implementation CallTrackingStubBrowserInterfaceProvider
-
-- (void)haltAllTabs {
-  self.tabsHalted = YES;
-}
 
 - (void)cleanDeviceSharingManager {
   self.deviceManagerCleaned = YES;
@@ -574,7 +569,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   EXPECT_OCMOCK_VERIFY(application);
   EXPECT_FALSE(interfaceProvider.mainInterface.userInteractionEnabled);
   EXPECT_TRUE(interfaceProvider.deviceManagerCleaned);
-  EXPECT_TRUE(interfaceProvider.tabsHalted);
   FakeAppDistributionProvider* provider =
       static_cast<FakeAppDistributionProvider*>(
           ios::GetChromeBrowserProvider()->GetAppDistributionProvider());

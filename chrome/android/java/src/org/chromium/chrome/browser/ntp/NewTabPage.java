@@ -26,7 +26,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -299,8 +299,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
-                navigationDelegate, profile, nativePageHost, ChromeApplication.getReferencePool(),
-                activity.getSnackbarManager());
+                navigationDelegate, profile, nativePageHost,
+                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);

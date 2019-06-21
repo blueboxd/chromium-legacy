@@ -376,7 +376,6 @@ java_cpp_strings("content_public_android_java_switches_srcjar") {
 }
 
 generate_jar_jni("jar_jni") {
-  jni_package = "content"
   classes = [
     "java/util/HashSet.class",
     "android/view/DragEvent.class",
@@ -435,7 +434,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
   ]
-  jni_package = "content"
 }
 
 group("jni") {

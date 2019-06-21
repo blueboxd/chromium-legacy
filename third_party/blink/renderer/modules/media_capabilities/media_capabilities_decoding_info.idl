@@ -5,5 +5,5 @@
 // https://wicg.github.io/media-capabilities/#dictdef-mediacapabilitiesdecodinginfo
 
 dictionary MediaCapabilitiesDecodingInfo : MediaCapabilitiesInfo {
-    [OriginTrialEnabled=MediaCapabilitiesEncryptedMedia] MediaKeySystemAccess? keySystemAccess = null;
+    [RuntimeEnabled=MediaCapabilitiesEncryptedMedia] MediaKeySystemAccess? keySystemAccess = null;
 };

@@ -222,7 +222,6 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsByURLAndTimeImpl(
   if (use_native_backend() &&
       RemoveLoginsByURLAndTimeFromBackend(backend_.get(), url_filter,
                                           delete_begin, delete_end, &changes)) {
-    LogStatsForBulkDeletion(changes.size());
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
@@ -240,27 +239,10 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
   if (use_native_backend() &&
       backend_->RemoveLoginsCreatedBetween(
           delete_begin, delete_end, &changes)) {
-    LogStatsForBulkDeletion(changes.size());
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(delete_begin,
                                                                    delete_end);
-  }
-  return changes;
-}
-
-PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
-    base::Time delete_begin,
-    base::Time delete_end) {
-  CheckMigration();
-  PasswordStoreChangeList changes;
-  if (use_native_backend() &&
-      backend_->RemoveLoginsSyncedBetween(delete_begin, delete_end, &changes)) {
-    LogStatsForBulkDeletionDuringRollback(changes.size());
-    allow_fallback_ = false;
-  } else if (allow_default_store()) {
-    changes = PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(delete_begin,
-                                                                  delete_end);
   }
   return changes;
 }

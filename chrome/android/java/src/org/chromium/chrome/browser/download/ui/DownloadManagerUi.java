@@ -28,8 +28,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
@@ -192,10 +192,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             SnackbarManager snackbarManager) {
         TraceEvent.startAsync("DownloadManagerUi shown", hashCode());
         mActivity = activity;
-        ChromeApplication application = (ChromeApplication) activity.getApplication();
-        mBackendProvider = sProviderForTests == null
-                ? new DownloadBackendProvider(ChromeApplication.getReferencePool(), this)
-                : sProviderForTests;
+        mBackendProvider = sProviderForTests == null ? new DownloadBackendProvider(
+                                   GlobalDiscardableReferencePool.getReferencePool(), this)
+                                                     : sProviderForTests;
         mSnackbarManager = snackbarManager;
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);

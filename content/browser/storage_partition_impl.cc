@@ -61,6 +61,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -283,64 +284,192 @@ BrowserContext* GetBrowserContextFromStoragePartition(
   return weak_partition_ptr ? weak_partition_ptr->browser_context() : nullptr;
 }
 
-void OnServiceWorkerCookieChangeOnIO(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Notify all the frames associated with this service worker of its cookie
-  // activity.
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
-      service_worker_context->GetProviderHostIds(url.GetOrigin());
-  for (const GlobalFrameRoutingId& id : *host_ids) {
-    GetContentClient()->browser()->OnCookieChange(
-        id.child_id, id.frame_routing_id, url, site_for_cookies, cookie,
-        blocked_by_policy);
+// TODO(crbug.com/977040): Remove when no longer needed.
+void DeprecateSameSiteCookies(int process_id,
+                              int routing_id,
+                              const net::CookieStatusList& cookie_list) {
+  // Navigation requests start in the browser, before process_id is assigned, so
+  // the id is set to network::mojom::kBrowserProcessId. In these situations,
+  // the routing_id is the frame tree node id, and can be used directly.
+  RenderFrameHostImpl* frame = nullptr;
+  if (process_id == network::mojom::kBrowserProcessId) {
+    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
+    if (ftn)
+      frame = ftn->current_frame_host();
+  } else {
+    frame = RenderFrameHostImpl::FromID(process_id, routing_id);
+  }
+
+  if (!frame)
+    return;
+
+  // Because of the nature of mojo and calling cross process, there's the
+  // possibility of calling this method after the page has already been
+  // navigated away from, which is DCHECKed against in
+  // LogWebFeatureForCurrentPage. We're replicating the DCHECK here and
+  // returning early should this be the case.
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+
+  // |web_contents| will be null on interstitial pages, which means the frame
+  // has been navigated away from and the function should return early.
+  if (!web_contents)
+    return;
+
+  RenderFrameHostImpl* root_frame_host = frame;
+  while (root_frame_host->GetParent() != nullptr)
+    root_frame_host = root_frame_host->GetParent();
+
+  if (root_frame_host != web_contents->GetMainFrame())
+    return;
+
+  bool samesite_treated_as_lax_cookies = false;
+  bool samesite_none_insecure_cookies = false;
+
+  bool emit_messages =
+      base::FeatureList::IsEnabled(features::kCookieDeprecationMessages);
+
+  for (const net::CookieWithStatus& excluded_cookie : cookie_list) {
+    std::string cookie_url =
+        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
+                                            excluded_cookie.cookie.IsSecure())
+            .possibly_invalid_spec();
+
+    if (excluded_cookie.status ==
+        net::CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+      samesite_treated_as_lax_cookies = true;
+    }
+    if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
+                                      EXCLUDE_SAMESITE_NONE_INSECURE) {
+      samesite_none_insecure_cookies = true;
+    }
+    if (emit_messages) {
+      root_frame_host->AddSameSiteCookieDeprecationMessage(
+          cookie_url, excluded_cookie.status);
+    }
+  }
+
+  if (samesite_treated_as_lax_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieNoSameSite);
+  }
+
+  if (samesite_none_insecure_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
   }
 }
 
-void OnWindowCookieChangeOnIO(int32_t process_id,
-                              int32_t routing_id,
-                              const GURL& url,
-                              const GURL& site_for_cookies,
-                              const net::CanonicalCookie& cookie,
-                              bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetContentClient()->browser()->OnCookieChange(
-      process_id, routing_id, url, site_for_cookies, cookie, blocked_by_policy);
+void ReportCookiesChangedOnUI(
+    std::vector<GlobalFrameRoutingId> destinations,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CookieWithStatus>& cookie_list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  for (const GlobalFrameRoutingId& id : destinations) {
+    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list);
+  }
+
+  for (const auto& cookie_and_status : cookie_list) {
+    switch (cookie_and_status.status) {
+      case net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_USER_PREFERENCES:
+        for (const GlobalFrameRoutingId& id : destinations) {
+          GetContentClient()->browser()->OnCookieChange(
+              id.child_id, id.frame_routing_id, url, site_for_cookies,
+              cookie_and_status.cookie, /* blocked_by_policy = */ true);
+        }
+        break;
+      case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+        for (const GlobalFrameRoutingId& id : destinations) {
+          GetContentClient()->browser()->OnCookieChange(
+              id.child_id, id.frame_routing_id, url, site_for_cookies,
+              cookie_and_status.cookie, /* blocked_by_policy = */ false);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+void ReportCookiesReadOnUI(
+    std::vector<GlobalFrameRoutingId> destinations,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CookieWithStatus>& cookie_list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (const GlobalFrameRoutingId& id : destinations) {
+    DeprecateSameSiteCookies(id.child_id, id.frame_routing_id, cookie_list);
+  }
+
+  net::CookieList accepted, blocked;
+  for (auto& cookie_and_status : cookie_list) {
+    switch (cookie_and_status.status) {
+      case net::CanonicalCookie::CookieInclusionStatus::
+          EXCLUDE_USER_PREFERENCES:
+        blocked.push_back(std::move(cookie_and_status.cookie));
+        break;
+      case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+        accepted.push_back(std::move(cookie_and_status.cookie));
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (!accepted.empty()) {
+    for (const GlobalFrameRoutingId& id : destinations) {
+      GetContentClient()->browser()->OnCookiesRead(
+          id.child_id, id.frame_routing_id, url, site_for_cookies, accepted,
+          /* blocked_by_policy = */ false);
+    }
+  }
+
+  if (!blocked.empty()) {
+    for (const GlobalFrameRoutingId& id : destinations) {
+      GetContentClient()->browser()->OnCookiesRead(
+          id.child_id, id.frame_routing_id, url, site_for_cookies, blocked,
+          /* blocked_by_policy = */ true);
+    }
+  }
 }
 
 void OnServiceWorkerCookiesReadOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& url,
     const GURL& site_for_cookies,
-    const std::vector<net::CanonicalCookie>& cookie_list,
-    bool blocked_by_policy) {
+    const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Notify all the frames associated with this service worker of its cookie
   // activity.
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
       service_worker_context->GetProviderHostIds(url.GetOrigin());
-  for (const GlobalFrameRoutingId& id : *host_ids) {
-    GetContentClient()->browser()->OnCookiesRead(
-        id.child_id, id.frame_routing_id, url, site_for_cookies, cookie_list,
-        blocked_by_policy);
+  if (!host_ids->empty()) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(ReportCookiesReadOnUI, *host_ids, url, site_for_cookies,
+                       cookie_list));
   }
 }
 
-void OnWindowCookiesReadOnIO(
-    int32_t process_id,
-    int32_t routing_id,
+void OnServiceWorkerCookiesChangedOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& url,
     const GURL& site_for_cookies,
-    const std::vector<net::CanonicalCookie>& cookie_list,
-    bool blocked_by_policy) {
+    const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetContentClient()->browser()->OnCookiesRead(process_id, routing_id, url,
-                                               site_for_cookies, cookie_list,
-                                               blocked_by_policy);
+  // Notify all the frames associated with this service worker of its cookie
+  // activity.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
+      service_worker_context->GetProviderHostIds(url.GetOrigin());
+  if (!host_ids->empty()) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(ReportCookiesChangedOnUI, *host_ids, url,
+                       site_for_cookies, cookie_list));
+  }
 }
 
 }  // namespace
@@ -1078,25 +1207,24 @@ void StoragePartitionImpl::OnClearSiteData(uint32_t process_id,
                                      load_flags, std::move(callback));
 }
 
-void StoragePartitionImpl::OnCookieChange(bool is_service_worker,
-                                          int32_t process_id,
-                                          int32_t routing_id,
-                                          const GURL& url,
-                                          const GURL& site_for_cookies,
-                                          const net::CanonicalCookie& cookie,
-                                          bool blocked_by_policy) {
+void StoragePartitionImpl::OnCookiesChanged(
+    bool is_service_worker,
+    int32_t process_id,
+    int32_t routing_id,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_service_worker) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&OnServiceWorkerCookieChangeOnIO,
-                       service_worker_context_, url, site_for_cookies, cookie,
-                       blocked_by_policy));
+        base::BindOnce(&OnServiceWorkerCookiesChangedOnIO,
+                       service_worker_context_, url, site_for_cookies,
+                       std::move(cookie_list)));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&OnWindowCookieChangeOnIO, process_id, routing_id, url,
-                       site_for_cookies, cookie, blocked_by_policy));
+    std::vector<GlobalFrameRoutingId> destination;
+    destination.emplace_back(process_id, routing_id);
+    ReportCookiesChangedOnUI(destination, url, site_for_cookies, cookie_list);
   }
 }
 
@@ -1106,19 +1234,17 @@ void StoragePartitionImpl::OnCookiesRead(
     int32_t routing_id,
     const GURL& url,
     const GURL& site_for_cookies,
-    const std::vector<net::CanonicalCookie>& cookie_list,
-    bool blocked_by_policy) {
+    const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_service_worker) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&OnServiceWorkerCookiesReadOnIO, service_worker_context_,
-                       url, site_for_cookies, cookie_list, blocked_by_policy));
+                       url, site_for_cookies, std::move(cookie_list)));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&OnWindowCookiesReadOnIO, process_id, routing_id, url,
-                       site_for_cookies, cookie_list, blocked_by_policy));
+    std::vector<GlobalFrameRoutingId> destination;
+    destination.emplace_back(process_id, routing_id);
+    ReportCookiesReadOnUI(destination, url, site_for_cookies, cookie_list);
   }
 }
 

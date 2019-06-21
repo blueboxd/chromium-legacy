@@ -1274,26 +1274,6 @@
             ]
         }
     ],
-    "BlobReaderEagerCompletion": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "enabled1",
-                    "enable_features": [
-                        "BlobReaderEagerCompletion"
-                    ]
-                }
-            ]
-        }
-    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [

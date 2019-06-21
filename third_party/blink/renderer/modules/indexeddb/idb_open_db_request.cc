@@ -56,7 +56,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(
       transaction_backend_(std::move(transaction_backend)),
       transaction_id_(transaction_id),
       version_(version),
-      start_time_(WTF::Time::Now()) {
+      start_time_(base::Time::Now()) {
   DCHECK(!ResultAsAny());
 }
 
@@ -200,7 +200,7 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event& event) {
     // EnqueueResponse(int64_t) above).
     open_time_recorded_ = true;
     IDBDatabase* idb_database = ResultAsAny()->IdbDatabase();
-    WTF::TimeDelta time_diff = base::Time::Now() - start_time_;
+    base::TimeDelta time_diff = base::Time::Now() - start_time_;
     if (idb_database->Metadata().was_cold_open)
       UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.OpenTime.Cold", time_diff);
     else

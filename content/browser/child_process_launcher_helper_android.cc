@@ -17,13 +17,13 @@
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/ChildProcessLauncherHelperImpl_jni.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "jni/ChildProcessLauncherHelperImpl_jni.h"
 #include "services/service_manager/sandbox/switches.h"
 
 using base::android::AttachCurrentThread;

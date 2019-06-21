@@ -293,7 +293,6 @@ TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
   store()->RemoveLogin(*form);
   store()->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                       base::Closure());
-  store()->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
   FinishAsyncProcessing();
 
   // Verify no notifications are fired during shutdown either.

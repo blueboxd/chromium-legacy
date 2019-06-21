@@ -14,6 +14,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -75,13 +75,11 @@ bool IsKioskNextHomeWindow(const AppWindow* app_window) {
 ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     : exclusive_access_manager_(
           std::make_unique<ExclusiveAccessManager>(this)) {
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
+  ash::TabletMode::Get()->AddObserver(this);
 }
 
 ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
+  ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -519,7 +517,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   if (app_window()->IsOsFullscreen())
     return true;
 
-  TabletModeClient* client = TabletModeClient::Get();
   // Windows in tablet mode which are resizable have their title bars
   // hidden in ash for more size, so enable immersive mode so users
   // have access to window controls. Non resizable windows do not gain
@@ -527,7 +524,7 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   // is no need for immersive mode.
   // TODO(crbug.com/801619): This adds a little extra animation
   // when minimizing or unminimizing window.
-  return client && client->tablet_mode_enabled() && CanResize() &&
+  return ash::TabletMode::Get()->InTabletMode() && CanResize() &&
          !IsMinimized();
 }
 

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -35,8 +35,7 @@
 namespace {
 
 bool IsTabletModeEnabled() {
-  return TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
+  return ash::TabletMode::Get()->InTabletMode();
 }
 
 bool IsSpokenFeedbackEnabled() {
@@ -304,9 +303,7 @@ TopControlsSlideControllerChromeOS::TopControlsSlideControllerChromeOS(
   registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                  content::NotificationService::AllSources());
 
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
-
+  ash::TabletMode::Get()->AddObserver(this);
   browser_view_->browser()->tab_strip_model()->AddObserver(this);
 
   chromeos::AccessibilityManager* accessibility_manager =
@@ -325,9 +322,7 @@ TopControlsSlideControllerChromeOS::~TopControlsSlideControllerChromeOS() {
   OnEnabledStateChanged(false);
 
   browser_view_->browser()->tab_strip_model()->RemoveObserver(this);
-
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
+  ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 bool TopControlsSlideControllerChromeOS::IsEnabled() const {

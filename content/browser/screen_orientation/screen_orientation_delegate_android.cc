@@ -6,7 +6,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
-#include "jni/ScreenOrientationProviderImpl_jni.h"
+#include "content/public/android/content_jni_headers/ScreenOrientationProviderImpl_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/native_widget_types.h"
 

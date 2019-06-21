@@ -54,12 +54,12 @@ TEST(WebApkActivityTest, InvalidMultipartBody) {
 // Test that multipart/form-data body is correctly computed for accepted
 // file inputs.
 TEST(WebApkActivityTest, ValidMultipartBodyForFile) {
-  std::vector<std::string> names = {"name\""};
-  std::vector<std::string> values = {"mock-file-path"};
-  std::vector<bool> is_value_file_uris = {true};
+  std::vector<std::string> names = {"share-file\"", "share-file\""};
+  std::vector<std::string> values = {"mock-file-path", "mock-shared-text"};
+  std::vector<bool> is_value_file_uris = {true, false};
 
-  std::vector<std::string> filenames = {"filename\r\n"};
-  std::vector<std::string> types = {"type"};
+  std::vector<std::string> filenames = {"filename\r\n", "shared.txt"};
+  std::vector<std::string> types = {"type", "type"};
   std::string boundary = "boundary";
   scoped_refptr<network::ResourceRequestBody> multipart_body =
       webapk::ComputeMultipartBody(names, values, is_value_file_uris, filenames,
@@ -69,11 +69,16 @@ TEST(WebApkActivityTest, ValidMultipartBodyForFile) {
       network::mojom::DataElementType::kBytes,
       network::mojom::DataElementType::kFile,
       network::mojom::DataElementType::kBytes,
+      network::mojom::DataElementType::kBytes,
       network::mojom::DataElementType::kBytes};
   std::vector<std::string> expected = {
-      "--boundary\r\nContent-Disposition: form-data; name=\"name%22\"; "
+      "--boundary\r\nContent-Disposition: form-data; name=\"share-file%22\"; "
       "filename=\"filename%0D%0A\"\r\nContent-Type: type\r\n\r\n",
-      "mock-file-path", "\r\n", "--boundary--\r\n"};
+      "mock-file-path", "\r\n",
+      "--boundary\r\nContent-Disposition: form-data; name=\"share-file%22\"; "
+      "filename=\"shared.txt\"\r\nContent-Type: "
+      "type\r\n\r\nmock-shared-text\r\n",
+      "--boundary--\r\n"};
 
   CheckDataElements(multipart_body, expected_types, expected);
 }
@@ -104,12 +109,16 @@ TEST(WebApkActivityTest, ValidMultipartBodyForText) {
 // Test that multipart/form-data body is correctly computed for a mixture
 // of file and non-file inputs.
 TEST(WebApkActivityTest, ValidMultipartBodyForTextAndFile) {
-  std::vector<std::string> names = {"name1\"", "name2", "name3", "name4"};
+  std::vector<std::string> names = {"name1\"", "name2", "name3",
+                                    "name4",   "name5", "name6"};
   std::vector<std::string> values = {"value1", "file_uri2", "file_uri3",
-                                     "value4"};
-  std::vector<bool> is_value_file_uris = {false, true, true, false};
-  std::vector<std::string> filenames = {"", "filename2\r\n", "filename3", ""};
-  std::vector<std::string> types = {"type1", "type2", "type3", "type4"};
+                                     "value4", "file_uri5", "value6"};
+  std::vector<bool> is_value_file_uris = {false, true, true,
+                                          false, true, false};
+  std::vector<std::string> filenames = {"", "filename2\r\n", "filename3", "",
+                                        "", "shared.txt"};
+  std::vector<std::string> types = {"type1", "type2", "type3",
+                                    "type4", "type5", "type6"};
   std::string boundary = "boundary";
 
   scoped_refptr<network::ResourceRequestBody> body =
@@ -117,32 +126,48 @@ TEST(WebApkActivityTest, ValidMultipartBodyForTextAndFile) {
                                    types, boundary);
 
   std::vector<network::mojom::DataElementType> expected_types = {
+      // item 1
       network::mojom::DataElementType::kBytes,
-
-      network::mojom::DataElementType::kBytes,
-      network::mojom::DataElementType::kFile,
-      network::mojom::DataElementType::kBytes,
-
+      // item 2
       network::mojom::DataElementType::kBytes,
       network::mojom::DataElementType::kFile,
       network::mojom::DataElementType::kBytes,
-
+      // item 3
       network::mojom::DataElementType::kBytes,
-
+      network::mojom::DataElementType::kFile,
+      network::mojom::DataElementType::kBytes,
+      // item 4
+      network::mojom::DataElementType::kBytes,
+      // item 5
+      network::mojom::DataElementType::kBytes,
+      network::mojom::DataElementType::kFile,
+      network::mojom::DataElementType::kBytes,
+      // item 6
+      network::mojom::DataElementType::kBytes,
+      // ending
       network::mojom::DataElementType::kBytes};
   std::vector<std::string> expected = {
+      // item 1
       "--boundary\r\nContent-Disposition: form-data; "
       "name=\"name1%22\"\r\nContent-Type: type1\r\n\r\nvalue1\r\n",
+      // item 2
       "--boundary\r\nContent-Disposition: form-data; name=\"name2\"; "
       "filename=\"filename2%0D%0A\"\r\nContent-Type: type2\r\n\r\n",
-      "file_uri2",
-      "\r\n",
+      "file_uri2", "\r\n",
+      // item 3
       "--boundary\r\nContent-Disposition: form-data; name=\"name3\"; "
       "filename=\"filename3\"\r\nContent-Type: type3\r\n\r\n",
-      "file_uri3",
-      "\r\n",
+      "file_uri3", "\r\n",
+      // item 4
       "--boundary\r\nContent-Disposition: form-data; "
       "name=\"name4\"\r\nContent-Type: type4\r\n\r\nvalue4\r\n",
+      // item 5
+      "--boundary\r\nContent-Disposition: form-data; "
+      "name=\"name5\"\r\nContent-Type: type5\r\n\r\n",
+      "file_uri5", "\r\n",
+      // item 6
+      "--boundary\r\nContent-Disposition: form-data; name=\"name6\"; "
+      "filename=\"shared.txt\"\r\nContent-Type: type6\r\n\r\nvalue6\r\n",
       "--boundary--\r\n"};
   CheckDataElements(body, expected_types, expected);
 }

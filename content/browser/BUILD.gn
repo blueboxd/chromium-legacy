@@ -2747,7 +2747,6 @@ buildflag_header("accessibility_buildflags") {
 
 if (is_android) {
   generate_jar_jni("reflection_jni_headers") {
-    jni_package = "content"
     classes = [
       "java/lang/Class.class",
       "java/lang/Object.class",

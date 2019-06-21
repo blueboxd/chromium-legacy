@@ -4790,6 +4790,7 @@ Unknown properties are collapsed to zero. -->
   <int value="214" label="RFHI_BEGIN_NAVIGATION_MISSING_INITIATOR_ORIGIN"/>
   <int value="215" label="RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION"/>
   <int value="216" label="RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT"/>
+  <int value="217" label="AUTH_INVALID_ICON_URL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -32610,6 +32611,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="12" label="Trusted Web Activity"/>
   <int value="13" label="WebShareTarget (WebAPK)"/>
   <int value="14" label="External intent from Chrome (WebAPK)"/>
+  <int value="15" label="WebShareTarget for Files (WebAPK)"/>
 </enum>
 
 <enum name="LaunchIntentFlags">
@@ -59871,6 +59873,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Relying Party Id Invalid"/>
   <int value="2" label="AppId Extension Invalid"/>
   <int value="3" label="AppId Extension Domain Mismatch"/>
+  <int value="4" label="User Icon URL Invalid"/>
 </enum>
 
 <enum name="WebAuthenticationU2FAttestationPromptResult">

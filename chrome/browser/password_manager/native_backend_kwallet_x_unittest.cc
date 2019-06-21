@@ -300,14 +300,6 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   void CheckPasswordForms(const std::string& folder,
                           const ExpectationArray& sorted_expected);
 
-  enum RemoveBetweenMethod {
-    CREATED,
-    SYNCED,
-  };
-
-  // Tests RemoveLoginsCreatedBetween or RemoveLoginsSyncedBetween.
-  void TestRemoveLoginsBetween(RemoveBetweenMethod date_to_test);
-
   scoped_refptr<dbus::MockBus> mock_session_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_klauncher_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_kwallet_proxy_;
@@ -385,72 +377,6 @@ void NativeBackendKWalletTest::SetUp() {
 
   EXPECT_CALL(*mock_session_bus_.get(), ShutdownAndBlock()).WillOnce(Return())
       .WillRepeatedly(Return());
-}
-
-void NativeBackendKWalletTest::TestRemoveLoginsBetween(
-    RemoveBetweenMethod date_to_test) {
-  NativeBackendKWalletStub backend(42, desktop_env_);
-  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
-
-  form_google_.date_synced = base::Time();
-  form_isc_.date_synced = base::Time();
-  form_google_.date_created = base::Time();
-  form_isc_.date_created = base::Time();
-  base::Time now = base::Time::Now();
-  base::Time next_day = now + base::TimeDelta::FromDays(1);
-  if (date_to_test == CREATED) {
-    form_google_.date_created = now;
-    form_isc_.date_created = next_day;
-  } else {
-    form_google_.date_synced = now;
-    form_isc_.date_synced = next_day;
-  }
-
-  backend.GetBackgroundTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                     base::Unretained(&backend), form_google_));
-  backend.GetBackgroundTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                     base::Unretained(&backend), form_isc_));
-
-  PasswordStoreChangeList expected_changes;
-  expected_changes.push_back(
-      PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-  PasswordStoreChangeList changes;
-  bool (NativeBackendKWallet::*method)(
-      base::Time, base::Time, password_manager::PasswordStoreChangeList*) =
-      date_to_test == CREATED
-          ? &NativeBackendKWalletStub::RemoveLoginsCreatedBetween
-          : &NativeBackendKWalletStub::RemoveLoginsSyncedBetween;
-  base::PostTaskAndReplyWithResult(
-      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(method, base::Unretained(&backend), base::Time(), next_day,
-                 &changes),
-      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-
-  scoped_task_environment_.RunUntilIdle();
-
-  std::vector<const PasswordForm*> forms;
-  forms.push_back(&form_isc_);
-  ExpectationArray expected;
-  expected.push_back(make_pair(std::string(form_isc_.signon_realm), forms));
-  CheckPasswordForms("Chrome Form Data (42)", expected);
-
-  // Remove form_isc_.
-  expected_changes.clear();
-  expected_changes.push_back(
-      PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
-  base::PostTaskAndReplyWithResult(
-      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
-      base::Bind(method, base::Unretained(&backend), next_day, base::Time(),
-                 &changes),
-      base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
-
-  scoped_task_environment_.RunUntilIdle();
-
-  CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
 
 std::unique_ptr<dbus::Response> NativeBackendKWalletTest::KLauncherMethodCall(
@@ -956,11 +882,57 @@ TEST_P(NativeBackendKWalletTest, AndroidCredentials) {
 }
 
 TEST_P(NativeBackendKWalletTest, RemoveLoginsCreatedBetween) {
-  TestRemoveLoginsBetween(CREATED);
-}
+  NativeBackendKWalletStub backend(42, desktop_env_);
+  EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
-TEST_P(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
-  TestRemoveLoginsBetween(SYNCED);
+  form_google_.date_synced = base::Time();
+  form_isc_.date_synced = base::Time();
+  form_google_.date_created = base::Time();
+  form_isc_.date_created = base::Time();
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  form_google_.date_created = now;
+  form_isc_.date_created = next_day;
+
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_isc_));
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_google_);
+  PasswordStoreChangeList changes;
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&NativeBackendKWalletStub::RemoveLoginsCreatedBetween,
+                     base::Unretained(&backend), base::Time(), next_day,
+                     &changes),
+      base::BindOnce(&CheckPasswordChangesWithResult, &expected_changes,
+                     &changes));
+
+  scoped_task_environment_.RunUntilIdle();
+
+  ExpectationArray expected = {{form_isc_.signon_realm, {&form_isc_}}};
+  CheckPasswordForms("Chrome Form Data (42)", expected);
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_isc_);
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&NativeBackendKWalletStub::RemoveLoginsCreatedBetween,
+                     base::Unretained(&backend), next_day, base::Time(),
+                     &changes),
+      base::BindOnce(&CheckPasswordChangesWithResult, &expected_changes,
+                     &changes));
+
+  scoped_task_environment_.RunUntilIdle();
+
+  CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
 
 TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {

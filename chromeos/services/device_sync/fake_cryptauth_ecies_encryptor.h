@@ -5,17 +5,18 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_ECIES_ENCRYPTOR_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_ECIES_ENCRYPTOR_H_
 
-#include <string>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor.h"
+#include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
-class FakeCryptAuthEciesEncryptor : CryptAuthEciesEncryptor {
+class FakeCryptAuthEciesEncryptor : public CryptAuthEciesEncryptor {
  public:
   enum class Action { kUndefined, kEncryption, kDecryption };
 
@@ -35,6 +36,23 @@ class FakeCryptAuthEciesEncryptor : CryptAuthEciesEncryptor {
   Action action_ = Action::kUndefined;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthEciesEncryptor);
+};
+
+class FakeCryptAuthEciesEncryptorFactory
+    : public CryptAuthEciesEncryptorImpl::Factory {
+ public:
+  FakeCryptAuthEciesEncryptorFactory();
+  ~FakeCryptAuthEciesEncryptorFactory() override;
+
+  FakeCryptAuthEciesEncryptor* instance() { return instance_; }
+
+ private:
+  // CryptAuthEciesEncryptorImpl::Factory:
+  std::unique_ptr<CryptAuthEciesEncryptor> BuildInstance() override;
+
+  FakeCryptAuthEciesEncryptor* instance_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthEciesEncryptorFactory);
 };
 
 }  // namespace device_sync

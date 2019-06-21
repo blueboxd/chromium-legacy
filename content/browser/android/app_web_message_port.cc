@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/AppWebMessagePort_jni.h"
+#include "content/public/android/content_jni_headers/AppWebMessagePort_jni.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 using blink::MessagePortChannel;

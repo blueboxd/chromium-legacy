@@ -1966,23 +1966,28 @@ bool RTCPeerConnection::IsRemoteStream(MediaStream* stream) const {
   return false;
 }
 
-ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state) {
+ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
+                                          ExceptionState& exception_state) {
   return getStats(
       script_state,
       ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
-}
-
-ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
-                                          ScriptValue callback_or_selector) {
-  return getStats(
-      script_state, std::move(callback_or_selector),
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
+      exception_state);
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
                                           ScriptValue callback_or_selector,
-                                          ScriptValue legacy_selector) {
+                                          ExceptionState& exception_state) {
+  return getStats(
+      script_state, std::move(callback_or_selector),
+      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
+      exception_state);
+}
+
+ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
+                                          ScriptValue callback_or_selector,
+                                          ScriptValue legacy_selector,
+                                          ExceptionState& exception_state) {
   auto* isolate = script_state->GetIsolate();
   auto first_argument = callback_or_selector.V8Value();
   // Custom binding for legacy "getStats(RTCStatsCallback callback)".
@@ -2006,12 +2011,10 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
   if (track)
     return PromiseBasedGetStats(script_state, track);
 
-  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
-                                 "RTCPeerConnection", "getStats");
   exception_state.ThrowTypeError(
       "The argument provided as parameter 1 is neither a callback (function) "
       "or selector (MediaStreamTrack or null).");
-  return ScriptPromise::Reject(script_state, exception_state);
+  return ScriptPromise();
 }
 
 ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(

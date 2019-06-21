@@ -60,9 +60,6 @@ class PasswordStoreDefault : public PasswordStore {
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) override;
   PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) override;
   bool RemoveStatisticsByOriginAndTimeImpl(

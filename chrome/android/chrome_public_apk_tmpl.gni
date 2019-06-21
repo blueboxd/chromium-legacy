@@ -95,7 +95,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
         target_cpu == "arm" ||
         (_is_monochrome && target_cpu == "arm64" && build_apk_secondary_abi)
     _add_unwind_tables =
-        _needs_32bit_lib && _add_unwind_tables_in_chrome_32bit_apk
+        _needs_32bit_lib && _add_unwind_tables_in_chrome_32bit_apk &&
+        defined(invoker.shared_libraries)
   }
 
   if (_add_unwind_tables) {

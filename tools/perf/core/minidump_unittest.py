@@ -7,7 +7,9 @@ import time
 
 from telemetry.testing import tab_test_case
 from telemetry import decorators
-from telemetry.core import util
+
+import py_utils
+
 
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
@@ -131,4 +133,4 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
         script_to_evaluate_on_commit=script)
     # Wait until the javascript has run ensuring that
     # the new browser has restarted before we crash it again
-    util.WaitFor(lambda: new_tab.EvaluateJavaScript(value), 60)
+    py_utils.WaitFor(lambda: new_tab.EvaluateJavaScript(value), 60)

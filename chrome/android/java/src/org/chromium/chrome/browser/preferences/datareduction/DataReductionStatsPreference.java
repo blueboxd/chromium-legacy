@@ -14,9 +14,10 @@ import static org.chromium.third_party.android.datausagechart.ChartDataUsageView
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.preference.Preference;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -291,28 +292,28 @@ public class DataReductionStatsPreference extends Preference {
 
     /**
      * Sets up a data usage chart and text views containing data reduction statistics.
-     * @param view The current view.
+     * @param holder The current view holder.
      */
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
 
-        initializeViewBounds(view);
+        initializeViewBounds(holder.itemView);
 
-        mInitialDataSavingsTextView = (TextView) view.findViewById(R.id.initial_data_savings);
+        mInitialDataSavingsTextView = (TextView) holder.findViewById(R.id.initial_data_savings);
         mInitialDataSavingsTextView.setCompoundDrawablesWithIntrinsicBounds(null,
                 VectorDrawableCompat.create(getContext().getResources(),
                         R.drawable.data_reduction_big, getContext().getTheme()),
                 null, null);
 
         mDataReductionStatsContainer =
-                (LinearLayout) view.findViewById(R.id.data_reduction_stats_container);
-        mDataUsageTextView = (TextView) view.findViewById(R.id.data_reduction_usage);
-        mDataSavingsTextView = (TextView) view.findViewById(R.id.data_reduction_savings);
-        mStartDateTextView = (TextView) view.findViewById(R.id.data_reduction_start_date);
-        mEndDateTextView = (TextView) view.findViewById(R.id.data_reduction_end_date);
+                (LinearLayout) holder.findViewById(R.id.data_reduction_stats_container);
+        mDataUsageTextView = (TextView) holder.findViewById(R.id.data_reduction_usage);
+        mDataSavingsTextView = (TextView) holder.findViewById(R.id.data_reduction_savings);
+        mStartDateTextView = (TextView) holder.findViewById(R.id.data_reduction_start_date);
+        mEndDateTextView = (TextView) holder.findViewById(R.id.data_reduction_end_date);
         mDataReductionBreakdownView =
-                (DataReductionSiteBreakdownView) view.findViewById(R.id.breakdown);
+                (DataReductionSiteBreakdownView) holder.findViewById(R.id.breakdown);
         forceLayoutGravityOfGraphLabels();
         if (mOriginalNetworkStatsHistory == null) {
             // This will query data usage. Only set mSiteBreakdownItems if the statistics are not
@@ -322,7 +323,7 @@ public class DataReductionStatsPreference extends Preference {
             mDataReductionBreakdownView.setAndDisplayDataUseItems(mSiteBreakdownItems);
         }
 
-        mChartDataUsageView = (ChartDataUsageView) view.findViewById(R.id.chart);
+        mChartDataUsageView = (ChartDataUsageView) holder.findViewById(R.id.chart);
         mChartDataUsageView.bindNetworkStats(
                 mOriginalNetworkStatsHistory, mReceivedNetworkStatsHistory);
         mChartDataUsageView.setVisibleRange(mVisibleStartTimeMillis, mVisibleEndTimeMillis);
@@ -332,7 +333,7 @@ public class DataReductionStatsPreference extends Preference {
             Log.w(TAG, "Data Saver proxy unreachable when user viewed Data Saver stats");
         }
 
-        mResetStatisticsButton = (Button) view.findViewById(R.id.data_reduction_reset_statistics);
+        mResetStatisticsButton = (Button) holder.findViewById(R.id.data_reduction_reset_statistics);
         if (mResetStatisticsButton != null) {
             setUpResetStatisticsButton();
         }

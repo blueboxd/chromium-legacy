@@ -12,6 +12,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -34,8 +35,8 @@ enum AnalyzerCreationError {
 };
 
 void LogAnalyzerCreationError(AnalyzerCreationError error) {
-  UMA_HISTOGRAM_ENUMERATION("ActivityTracker.Collect.AnalyzerCreationError",
-                            error, kAnalyzerCreationErrorMax);
+  UmaHistogramEnumeration("ActivityTracker.Collect.AnalyzerCreationError",
+                          error, kAnalyzerCreationErrorMax);
 }
 
 }  // namespace

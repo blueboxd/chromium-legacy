@@ -48,6 +48,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element_collection.h"
@@ -61,8 +62,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-using blink::WebAutofillState;
 using blink::WebAutofillClient;
+using blink::WebAutofillState;
+using blink::WebAXObject;
 using blink::WebConsoleMessage;
 using blink::WebDocument;
 using blink::WebElement;
@@ -522,6 +524,16 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value) {
   WebInputElement* input_element = ToWebInputElement(&element_);
   if (input_element)
     DoPreviewFieldWithValue(value, input_element);
+}
+
+void AutofillAgent::SetSuggestionAvailability(bool available) {
+  if (element_.IsNull())
+    return;
+
+  WebInputElement* input_element = ToWebInputElement(&element_);
+  if (input_element)
+    WebAXObject::FromWebNode(*input_element)
+        .HandleAutofillStateChanged(available);
 }
 
 void AutofillAgent::AcceptDataListSuggestion(const base::string16& value) {

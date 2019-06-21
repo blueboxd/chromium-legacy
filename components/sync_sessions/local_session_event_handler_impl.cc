@@ -370,8 +370,8 @@ void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
         tab_specifics->navigation(i).unique_id());
 
     tab_specifics->mutable_navigation(i)->set_task_id(task_id);
-    tab_specifics->mutable_navigation(i)->add_ancestor_task_id(parent_task_id);
     tab_specifics->mutable_navigation(i)->add_ancestor_task_id(root_task_id);
+    tab_specifics->mutable_navigation(i)->add_ancestor_task_id(parent_task_id);
 #endif
   }
 }

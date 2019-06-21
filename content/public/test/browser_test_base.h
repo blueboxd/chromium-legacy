@@ -23,16 +23,8 @@ class CommandLine;
 class FilePath;
 }
 
-#if defined(OS_ANDROID)
-namespace discardable_memory {
-class DiscardableSharedMemoryManager;
-}
-#endif  // defined(OS_ANDROID)
-
 namespace content {
-
 class BrowserMainParts;
-class ServiceManagerEnvironment;
 class WebContents;
 
 class BrowserTestBase : public testing::Test {
@@ -167,14 +159,6 @@ class BrowserTestBase : public testing::Test {
   // When using the network process, update the host resolver rules that were
   // added in SetUpOnMainThread.
   void InitializeNetworkProcess();
-
-#if defined(OS_ANDROID)
-  // On Android we don't use ContentMainRunner for browser tests, so we bring
-  // our own DiscardableSharedMemoryManager and ServiceManagerEnvironment.
-  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
-  std::unique_ptr<ServiceManagerEnvironment> service_manager_environment_;
-#endif
 
   // Testing server, started on demand.
   std::unique_ptr<net::SpawnedTestServer> spawned_test_server_;

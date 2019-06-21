@@ -280,7 +280,6 @@ class TestRunner : public WebTestRunner {
 
   void SetJavaScriptCanAccessClipboard(bool can_access);
   void SetXSSAuditorEnabled(bool enabled);
-  void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(gin::Arguments* arguments);
 

@@ -12,9 +12,6 @@ import("//chrome/common/features.gni")
 android_library("animated_poodle_java") {
   deps = [
     ":animated_poodle_resources",
-  ]
-
-  classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
@@ -32,11 +29,11 @@ android_resources("animated_poodle_resources") {
 android_library("java") {
   deps = [
     ":java_resources",
-  ]
-
-  classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
+    "//chrome/android:chrome_public_java",
+    "//chrome/android/public/profiles:java",
+    "//chrome/lib/image_fetcher/public/android:java",
     "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:java",
     "//components/url_formatter/android:url_formatter_java",

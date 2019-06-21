@@ -3,16 +3,19 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto" >
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
-        android:title="@string/data_reduction_benefits_description_lite_mode" />
+    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
+        android:title="@string/data_reduction_benefits_description_lite_mode"
+        app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
-        android:title="@string/data_reduction_description_lite_mode" />
+    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
+        android:title="@string/data_reduction_description_lite_mode"
+        app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.preferences.LearnMorePreference
+    <org.chromium.chrome.browser.preferences.LearnMorePreferenceCompat
         android:key="data_reduction_learn_more"
-        app:helpContext="@string/help_context_data_reduction" />
-</PreferenceScreen>
+        app:helpContext="@string/help_context_data_reduction"
+        app:allowDividerBelow="false" />
+</android.support.v7.preference.PreferenceScreen>

@@ -62,6 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
+      mojom::NetworkContextClient* network_context_client,
       DeleteCallback delete_callback,
       mojom::URLLoaderRequest url_loader_request,
       int32_t options,
@@ -236,6 +237,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
+  mojom::NetworkContextClient* network_context_client_;
   DeleteCallback delete_callback_;
 
   int32_t options_;

@@ -237,6 +237,9 @@ DOMException* CredentialManagerErrorToDOMException(
     case CredentialManagerError::INVALID_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "This is an invalid domain.");
+    case CredentialManagerError::INVALID_ICON_URL:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "The icon should be a secure URL");
     case CredentialManagerError::CREDENTIAL_EXCLUDED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,

@@ -2295,9 +2295,9 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   }
 }
 
-void AXLayoutObject::HandleAutofillStateChanged(bool is_available) {
-  if (is_autofill_available_ != is_available) {
-    is_autofill_available_ = is_available;
+void AXLayoutObject::HandleAutofillStateChanged(bool available) {
+  if (is_autofill_available_ != available) {
+    is_autofill_available_ = available;
     AXObjectCache().MarkAXObjectDirty(this, false);
   }
 }

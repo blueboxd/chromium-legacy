@@ -362,7 +362,6 @@ if (is_android) {
 
   generate_jni("bluetooth_test_jni_headers") {
     sources = bluetooth_java_sources_needing_jni
-    jni_package = "bluetooth"
   }
 
   android_library("bluetooth_test_java") {

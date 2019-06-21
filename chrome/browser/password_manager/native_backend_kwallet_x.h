@@ -50,10 +50,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool RemoveLoginsSyncedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) override;
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
@@ -85,11 +81,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
     INIT_SUCCESS,    // Init succeeded.
     TEMPORARY_FAIL,  // Init failed, but might succeed after StartKWalletd().
     PERMANENT_FAIL   // Init failed, and is not likely to work later either.
-  };
-
-  enum TimestampToCompare {
-    CREATION_TIMESTAMP,
-    SYNC_TIMESTAMP,
   };
 
   enum class BlacklistOptions { AUTOFILLABLE, BLACKLISTED };
@@ -127,13 +118,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
       const std::string& signon_realm,
       int wallet_handle);
-
-  // Removes password created/synced in the time interval. Returns |true| if the
-  // operation succeeded. |changes| will contain the changes applied.
-  bool RemoveLoginsBetween(base::Time delete_begin,
-                           base::Time delete_end,
-                           TimestampToCompare date_to_compare,
-                           password_manager::PasswordStoreChangeList* changes);
 
   // Opens the wallet and ensures that the "Chrome Form Data" folder exists.
   // Returns kInvalidWalletHandle on error.

@@ -120,6 +120,9 @@ std::string TokenServiceLoadCredentialsStateToLabel(
       return "Load credentials in progress";
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
       return "Load credentials finished with success";
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED:
+      return "Load credentials failed with datase cannot be opened error";
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
       return "Load credentials failed with database errors";
     case OAuth2TokenServiceDelegate::

@@ -4,7 +4,7 @@
 
 #include "content/browser/android/android_overlay_provider_impl.h"
 
-#include "jni/AndroidOverlayProviderImpl_jni.h"
+#include "content/public/android/content_jni_headers/AndroidOverlayProviderImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

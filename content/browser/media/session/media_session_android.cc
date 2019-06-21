@@ -11,8 +11,8 @@
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/MediaSessionImpl_jni.h"
 #include "content/public/browser/media_session.h"
-#include "jni/MediaSessionImpl_jni.h"
 #include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 

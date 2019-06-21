@@ -296,8 +296,6 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   bad_store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                         run_loop.QuitClosure());
   run_loop.Run();
-
-  bad_store->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
   delegate.FinishAsyncProcessing();
 
   // Ensure no notifications and no explosions during shutdown either.

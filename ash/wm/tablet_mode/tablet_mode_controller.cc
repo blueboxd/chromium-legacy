@@ -13,7 +13,6 @@
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -332,13 +331,6 @@ void TabletModeController::StopObservingAnimation(bool record_stats,
     DeleteScreenshot();
 }
 
-void TabletModeController::SetTabletModeToggleObserver(
-    TabletModeToggleObserver* observer) {
-  DCHECK(observer);
-  DCHECK(!toggle_observer_);
-  toggle_observer_ = observer;
-}
-
 bool TabletModeController::InTabletMode() const {
   return !!tablet_mode_window_manager_;
 }
@@ -628,8 +620,7 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
       observer.OnTabletModeEnded();
 
     state_ = State::kInClamshellMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(false);
+    TabletMode::Get()->NotifyTabletModeChanged();
     VLOG(1) << "Exit tablet mode.";
   }
 
@@ -928,8 +919,7 @@ void TabletModeController::FinishInitTabletMode() {
   }
 
   state_ = State::kInTabletMode;
-  if (toggle_observer_)  // Null at startup and in tests.
-    toggle_observer_->OnTabletModeToggled(true);
+  TabletMode::Get()->NotifyTabletModeChanged();
   VLOG(1) << "Enter tablet mode.";
 }
 

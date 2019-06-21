@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
-#include "jni/MemoryMonitorAndroid_jni.h"
+#include "content/public/android/content_jni_headers/MemoryMonitorAndroid_jni.h"
 
 namespace content {
 

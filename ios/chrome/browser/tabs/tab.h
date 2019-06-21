@@ -33,15 +33,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// The view that generates print data when printing. It can be nil when printing
-// is not supported with this tab. It can be different from |Tab view|.
-- (UIView*)viewForPrinting;
-
-// Halts the tab's network activity without closing it. This should only be
-// called during shutdown, since the tab will be unusable but still present
-// after this method completes.
-- (void)terminateNetworkActivity;
-
 // Dismisses all modals owned by the tab.
 - (void)dismissModals;
 

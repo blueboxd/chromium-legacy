@@ -33,7 +33,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
@@ -361,7 +361,8 @@ public class FeedNewTabPage extends NewTabPage {
         ChromeActivity chromeActivity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
-        mImageLoader = new FeedImageLoader(chromeActivity, ChromeApplication.getReferencePool());
+        mImageLoader = new FeedImageLoader(
+                chromeActivity, GlobalDiscardableReferencePool.getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
         Runnable consumptionObserver = () -> {

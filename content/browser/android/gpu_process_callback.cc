@@ -9,7 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 
-#include "jni/GpuProcessCallback_jni.h"
+#include "content/public/android/content_jni_headers/GpuProcessCallback_jni.h"
 
 namespace content {
 

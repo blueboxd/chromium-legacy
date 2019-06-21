@@ -1007,6 +1007,8 @@ IN_PROC_BROWSER_TEST_P(
 
     VerifyPreviewNotLoaded();
     ClearDeciderState();
+    histogram_tester.ExpectTotalCount(
+        "Previews.ServerLitePage.PreresolvedToPreviewServer", 0);
 
     // Reset ECT for future tests.
     g_browser_process->network_quality_tracker()
@@ -1145,6 +1147,25 @@ IN_PROC_BROWSER_TEST_P(
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(PreresolverShownAndHidden)) {
+  base::HistogramTester histogram_tester;
+  GetWebContents()->WasHidden();
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  histogram_tester.ExpectTotalCount(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", 0);
+
+  GetWebContents()->WasShown();
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  // We expect a value of 2 because the timer will be triggered twice, once when
+  // the web contents is shown, and once when a new page is committed.
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", false, 2);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -1809,12 +1830,12 @@ IN_PROC_BROWSER_TEST_P(
       PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen, 1);
 }
 
-class PreviewsLitePageNotificationDSDisabledBrowserTest
+class PreviewsLitePageDSDisabledBrowserTest
     : public PreviewsLitePageServerBrowserTest {
  public:
-  PreviewsLitePageNotificationDSDisabledBrowserTest() = default;
+  PreviewsLitePageDSDisabledBrowserTest() = default;
 
-  ~PreviewsLitePageNotificationDSDisabledBrowserTest() override = default;
+  ~PreviewsLitePageDSDisabledBrowserTest() override = default;
 
   void SetUp() override {
     SetUpLitePageTest(false /* use_timeout */, false /* is_control */);
@@ -1845,16 +1866,19 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
 
 // True if testing using the URLLoader Interceptor implementation.
 INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageNotificationDSDisabledBrowserTest,
+                         PreviewsLitePageDSDisabledBrowserTest,
                          testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageNotificationDSDisabledBrowserTest,
+    PreviewsLitePageDSDisabledBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarNonDataSaverUser)) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   ClearDeciderState();
   EXPECT_EQ(0U, GetInfoBarService()->infobar_count());
+  histogram_tester.ExpectTotalCount(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", 0);
 }
 
 class PreviewsLitePageControlBrowserTest

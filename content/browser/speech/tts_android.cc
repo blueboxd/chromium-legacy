@@ -11,8 +11,8 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/buildflags.h"
+#include "content/public/android/content_jni_headers/TtsPlatformImpl_jni.h"
 #include "content/public/browser/tts_controller.h"
-#include "jni/TtsPlatformImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

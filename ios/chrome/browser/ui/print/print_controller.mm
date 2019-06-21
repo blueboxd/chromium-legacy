@@ -19,12 +19,11 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/loading_alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -184,9 +183,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
 #pragma mark - WebStatePrinter
 
 - (void)printWebState:(web::WebState*)webState {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  DCHECK(tab);
-  [self printView:[tab viewForPrinting]
+  [self printView:webState->GetView()
         withTitle:tab_util::GetTabTitle(webState)];
 }
 

@@ -6,6 +6,7 @@
 
 #include <sddl.h>  // For ConvertSidToStringSid()
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
@@ -15,6 +16,8 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -820,6 +823,287 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
 
   ASSERT_STREQ(W2COLE(L"_.com"), test->GetFinalUsername());
   EXPECT_EQ(test->GetFinalEmail(), email);
+}
+
+/** Test various active directory sign in scenarios. */
+
+class GcpGaiaCredentialBaseAdScenariosTest : public GcpGaiaCredentialBaseTest {
+ protected:
+  void SetUp() override;
+
+  // Create provider and start logon.
+  CComPtr<ICredentialProviderCredential> cred_;
+  // The admin sdk users directory get URL.
+  std::string get_cd_user_url_ = base::StringPrintf(
+      "https://www.googleapis.com/admin/directory/v1/users/"
+      "%s?projection=full&viewType=domain_public",
+      net::EscapeUrlEncodedData(kDefaultEmail, true).c_str());
+  GaiaUrls* gaia_urls_ = GaiaUrls::GetInstance();
+};
+
+void GcpGaiaCredentialBaseAdScenariosTest::SetUp() {
+  GcpGaiaCredentialBaseTest::SetUp();
+
+  // Set the device as a domain joined machine.
+  fake_os_user_manager()->SetIsDeviceDomainJoined(true);
+
+  // Override registry to enable AD association with google.
+  constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation, 1));
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred_));
+}
+
+// Fetching downscoped access token required for calling admin sdk failed.
+// The login attempt would fail in this scenario.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_CallToFetchDownscopedAccessTokenFailed) {
+  // Attempt to fetch the token from gaia fails.
+  fake_http_url_fetcher_factory()->SetFakeFailedResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()), E_FAIL);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure no user was created and the login attempt failed.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // No new user is created.
+  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
+
+  // TODO(crbug.com/976406): Set the error message appropriately for failure
+  // scenarios.
+  ASSERT_EQ(S_OK, FinishLogonProcess(
+                      /*expected_success=*/false,
+                      /*expected_credentials_change_fired=*/false,
+                      /*expected_error_message=*/0));
+}
+
+// Empty access token returned.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_EmptyAccessTokenReturned) {
+  // Set token result to not contain any access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure no user was created and the login attempt failed.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // No new user is created.
+  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
+
+  ASSERT_EQ(S_OK, FinishLogonProcess(
+                      /*expected_success=*/false,
+                      /*expected_credentials_change_fired=*/false,
+                      /*expected_error_message=*/0));
+}
+
+// Empty AD UPN entry is returned via admin sdk.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_NoAdUpnFoundFromAdminSdk) {
+  // Set token result a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  // Set empty response from admin sdk.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure a "foo" user was created.
+  PSID sid;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
+                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
+                      &sid));
+  ::LocalFree(sid);
+
+  // New user should be created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+}
+
+// Call to the admin sdk to fetch the AD UPN failed.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_CallToAdminSdkFailed) {
+  // Set token result a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  // Fail the call from admin sdk.
+  fake_http_url_fetcher_factory()->SetFakeFailedResponse(
+      GURL(get_cd_user_url_.c_str()), E_FAIL);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure no user was created and the login attempt failed.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // No new user is created.
+  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
+
+  ASSERT_EQ(S_OK, FinishLogonProcess(
+                      /*expected_success=*/false,
+                      /*expected_credentials_change_fired=*/false,
+                      /*expected_error_message=*/0));
+}
+
+// Customer configured invalid ad upn.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithAD_InvalidADUPNConfigured) {
+  // Add the user as a domain joined user.
+  const wchar_t user_name[] = L"ad_user";
+  const wchar_t domain_name[] = L"ad_domain";
+  const wchar_t password[] = L"password";
+
+  CComBSTR ad_sid;
+  DWORD error;
+  HRESULT add_domain_user_hr = fake_os_user_manager()->AddUser(
+      user_name, password, L"fullname", L"comment", true, domain_name, &ad_sid,
+      &error);
+  ASSERT_EQ(S_OK, add_domain_user_hr);
+  ASSERT_EQ(0u, error);
+
+  // Set token result a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  // Invalid configuration in admin sdk. Don't set the username.
+  std::string admin_sdk_response = base::StringPrintf(
+      "{\"customSchemas\": {\"employeeData\": {\"ad_upn\":"
+      " \"%ls/\"}}}",
+      domain_name);
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
+      admin_sdk_response);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure no user was created and the login attempt failed.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // No new user is created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  ASSERT_EQ(S_OK, FinishLogonProcess(
+                      /*expected_success=*/false,
+                      /*expected_credentials_change_fired=*/false,
+                      /*expected_error_message=*/0));
+}
+
+// This is the success scenario where all preconditions are met in the
+// AD login scenario. The user is successfully logged in.
+TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
+       GetSerialization_WithADSuccessScenario) {
+  // Add the user as a domain joined user.
+  const wchar_t user_name[] = L"ad_user";
+  const wchar_t domain_name[] = L"ad_domain";
+  const wchar_t password[] = L"password";
+
+  CComBSTR ad_sid;
+  DWORD error;
+  HRESULT add_domain_user_hr = fake_os_user_manager()->AddUser(
+      user_name, password, L"fullname", L"comment", true, domain_name, &ad_sid,
+      &error);
+  ASSERT_EQ(S_OK, add_domain_user_hr);
+  ASSERT_EQ(0u, error);
+
+  // Set token result as a valid access token.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
+      FakeWinHttpUrlFetcher::Headers(), "{\"access_token\": \"dummy_token\"}");
+
+  // Set valid response from admin sdk.
+  std::string admin_sdk_response = base::StringPrintf(
+      "{\"customSchemas\": {\"employeeData\": {\"ad_upn\":"
+      " \"%ls/%ls\"}}}",
+      domain_name, user_name);
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
+      admin_sdk_response);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  // Make sure no user was created and the login happens on the
+  // existing user instead.
+  PSID sid = nullptr;
+  EXPECT_EQ(
+      HRESULT_FROM_WIN32(NERR_UserNotFound),
+      fake_os_user_manager()->GetUserSID(
+          OSUserManager::GetLocalDomain().c_str(), kDefaultUsername, &sid));
+  ASSERT_EQ(nullptr, sid);
+
+  // Finishing logon process should trigger credential changed and trigger
+  // GetSerialization.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  // Verify that the registry entry for the user was created.
+  wchar_t gaia_id[256];
+  ULONG length = base::size(gaia_id);
+  std::wstring sid_str(ad_sid, SysStringLen(ad_sid));
+  ::SysFreeString(ad_sid);
+
+  HRESULT gaia_id_hr =
+      GetUserProperty(sid_str.c_str(), kUserId, gaia_id, &length);
+  ASSERT_EQ(S_OK, gaia_id_hr);
+  ASSERT_TRUE(gaia_id[0]);
+
+  // Verify that the authentication results dictionary is now empty.
+  ASSERT_TRUE(test->IsAuthenticationResultsEmpty());
 }
 
 // Tests various sign in scenarios with consumer and non-consumer domains.

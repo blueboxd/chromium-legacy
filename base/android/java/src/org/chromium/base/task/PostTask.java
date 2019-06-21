@@ -82,7 +82,7 @@ public class PostTask {
      */
     public static void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
         synchronized (sLock) {
-            if (sPreNativeTaskRunners != null) {
+            if (sPreNativeTaskRunners != null || taskTraits.mIsChoreographerFrame) {
                 getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
             } else {
                 nativePostDelayedTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,

@@ -160,7 +160,7 @@ bool CheckForUnoptimizedImagePolicy(const Document& document,
   // Render the image as a placeholder image if the image is not sufficiently
   // well-compressed, according to the unoptimized image feature policies on
   // |document|.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+  if (RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(&document) &&
       !new_image->IsAcceptableCompressionRatio(document)) {
     return true;
   }

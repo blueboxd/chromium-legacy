@@ -8,7 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/java/jni_reflect.h"
 
-#include "jni/Object_jni.h"
+#include "content/browser/reflection_jni_headers/Object_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaObjectArrayReader;

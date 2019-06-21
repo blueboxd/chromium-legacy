@@ -499,15 +499,55 @@ bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(
-      delete_begin, delete_end, CREATION_TIMESTAMP, changes);
-}
+  DCHECK(changes);
+  changes->clear();
+  int wallet_handle = WalletHandle();
+  if (wallet_handle == kInvalidKWalletHandle)
+    return false;
 
-bool NativeBackendKWallet::RemoveLoginsSyncedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
+  // We could probably also use readEntryList here.
+  std::vector<std::string> realm_list;
+  KWalletDBus::Error error = kwallet_dbus_.EntryList(
+      wallet_handle, folder_name_, app_name_, &realm_list);
+  if (error)
+    return false;
+
+  bool ok = true;
+  for (const auto& signon_realm : realm_list) {
+    std::vector<uint8_t> bytes;
+    KWalletDBus::Error error = kwallet_dbus_.ReadEntry(
+        wallet_handle, folder_name_, signon_realm, app_name_, &bytes);
+    if (error)
+      continue;
+    if (bytes.empty() ||
+        !CheckSerializedValue(bytes.data(), bytes.size(), signon_realm)) {
+      continue;
+    }
+
+    // Can't we all just agree on whether bytes are signed or not? Please?
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes.data()),
+                        bytes.size());
+    std::vector<std::unique_ptr<PasswordForm>> all_forms =
+        DeserializeValue(signon_realm, pickle);
+
+    std::vector<std::unique_ptr<PasswordForm>> kept_forms;
+    kept_forms.reserve(all_forms.size());
+    for (auto& saved_form : all_forms) {
+      if (delete_begin <= saved_form->date_created &&
+          (delete_end.is_null() || saved_form->date_created < delete_end)) {
+        changes->emplace_back(password_manager::PasswordStoreChange::REMOVE,
+                              *saved_form);
+      } else {
+        kept_forms.push_back(std::move(saved_form));
+      }
+    }
+
+    if (!SetLoginsList(kept_forms, signon_realm, wallet_handle)) {
+      ok = false;
+      changes->clear();
+    }
+  }
+  return ok;
 }
 
 bool NativeBackendKWallet::DisableAutoSignInForOrigins(
@@ -709,67 +749,6 @@ bool NativeBackendKWallet::SetLoginsList(
   if (ret != 0)
     LOG(ERROR) << "Bad return code " << ret << " from KWallet writeEntry";
   return ret == 0;
-}
-
-bool NativeBackendKWallet::RemoveLoginsBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    TimestampToCompare date_to_compare,
-    password_manager::PasswordStoreChangeList* changes) {
-  DCHECK(changes);
-  changes->clear();
-  int wallet_handle = WalletHandle();
-  if (wallet_handle == kInvalidKWalletHandle)
-    return false;
-
-  // We could probably also use readEntryList here.
-  std::vector<std::string> realm_list;
-  KWalletDBus::Error error = kwallet_dbus_.EntryList(
-      wallet_handle, folder_name_, app_name_, &realm_list);
-  if (error)
-    return false;
-
-  bool ok = true;
-  for (size_t i = 0; i < realm_list.size(); ++i) {
-    const std::string& signon_realm = realm_list[i];
-
-    std::vector<uint8_t> bytes;
-    KWalletDBus::Error error = kwallet_dbus_.ReadEntry(
-        wallet_handle, folder_name_, signon_realm, app_name_, &bytes);
-    if (error)
-      continue;
-    if (bytes.size() == 0 ||
-        !CheckSerializedValue(bytes.data(), bytes.size(), signon_realm))
-      continue;
-
-    // Can't we all just agree on whether bytes are signed or not? Please?
-    base::Pickle pickle(reinterpret_cast<const char*>(bytes.data()),
-                        bytes.size());
-    std::vector<std::unique_ptr<PasswordForm>> all_forms =
-        DeserializeValue(signon_realm, pickle);
-
-    std::vector<std::unique_ptr<PasswordForm>> kept_forms;
-    kept_forms.reserve(all_forms.size());
-    base::Time PasswordForm::*date_member =
-        date_to_compare == CREATION_TIMESTAMP ? &PasswordForm::date_created
-                                              : &PasswordForm::date_synced;
-    for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
-      if (delete_begin <= saved_form.get()->*date_member &&
-          (delete_end.is_null() ||
-           saved_form.get()->*date_member < delete_end)) {
-        changes->push_back(password_manager::PasswordStoreChange(
-            password_manager::PasswordStoreChange::REMOVE, *saved_form));
-      } else {
-        kept_forms.push_back(std::move(saved_form));
-      }
-    }
-
-    if (!SetLoginsList(kept_forms, signon_realm, wallet_handle)) {
-      ok = false;
-      changes->clear();
-    }
-  }
-  return ok;
 }
 
 // static

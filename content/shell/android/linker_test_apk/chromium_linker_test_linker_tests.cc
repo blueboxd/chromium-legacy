@@ -18,7 +18,7 @@
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "jni/LinkerTests_jni.h"
+#include "content/shell/android/linker_test_jni_headers/LinkerTests_jni.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using base::android::JavaParamRef;

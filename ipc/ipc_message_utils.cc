@@ -36,8 +36,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include "base/fuchsia/fuchsia_logging.h"
 #include "ipc/handle_attachment_fuchsia.h"
-#include "ipc/handle_fuchsia.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -635,7 +635,7 @@ void ParamTraits<zx::vmo>::Write(base::Pickle* m, const param_type& p) {
     return;
 
   if (!m->WriteAttachment(new internal::HandleAttachmentFuchsia(
-          const_cast<param_type&>(p).release()))) {
+          std::move(const_cast<param_type&>(p))))) {
     NOTREACHED();
   }
 }
@@ -758,8 +758,17 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   HandleWin handle_win(p.GetHandle());
   WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
-  HandleFuchsia handle_fuchsia(p.GetHandle());
-  WriteParam(m, handle_fuchsia);
+  zx::vmo vmo;
+  if (p.OwnershipPassesToIPC()) {
+    vmo = zx::vmo(p.GetHandle());
+  } else {
+    zx_status_t result =
+        zx::unowned_vmo(p.GetHandle())->duplicate(ZX_RIGHT_SAME_RIGHTS, &vmo);
+    if (result != ZX_OK)
+      ZX_DLOG(ERROR, result) << "zx_handle_duplicate";
+  }
+
+  WriteParam(m, vmo);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   MachPortMac mach_port_mac(p.GetMemoryObject());
   WriteParam(m, mach_port_mac);
@@ -814,8 +823,8 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &handle_win))
     return false;
 #elif defined(OS_FUCHSIA)
-  HandleFuchsia handle_fuchsia;
-  if (!ReadParam(m, iter, &handle_fuchsia))
+  zx::vmo vmo;
+  if (!ReadParam(m, iter, &vmo))
     return false;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   MachPortMac mach_port_mac;
@@ -848,8 +857,7 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   *r = base::SharedMemoryHandle(handle_win.get_handle(),
                                 static_cast<size_t>(size), guid);
 #elif defined(OS_FUCHSIA)
-  *r = base::SharedMemoryHandle(handle_fuchsia.get_handle(),
-                                static_cast<size_t>(size), guid);
+  *r = base::SharedMemoryHandle(vmo.release(), static_cast<size_t>(size), guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
                                 static_cast<size_t>(size), guid);
@@ -994,9 +1002,8 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
   HandleWin handle_win(h.Get());
   WriteParam(m, handle_win);
 #elif defined(OS_FUCHSIA)
-  zx::handle h = const_cast<param_type&>(p).PassPlatformHandle();
-  HandleFuchsia handle_fuchsia(h.get());
-  WriteParam(m, handle_fuchsia);
+  zx::vmo vmo = const_cast<param_type&>(p).PassPlatformHandle();
+  WriteParam(m, vmo);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::mac::ScopedMachSendRight h =
       const_cast<param_type&>(p).PassPlatformHandle();
@@ -1046,11 +1053,11 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
   *r = base::subtle::PlatformSharedMemoryRegion::Take(
       base::win::ScopedHandle(handle_win.get_handle()), mode, size, guid);
 #elif defined(OS_FUCHSIA)
-  HandleFuchsia handle_fuchsia;
-  if (!ReadParam(m, iter, &handle_fuchsia))
+  zx::vmo vmo;
+  if (!ReadParam(m, iter, &vmo))
     return false;
-  *r = base::subtle::PlatformSharedMemoryRegion::Take(
-      zx::vmo(handle_fuchsia.get_handle()), mode, size, guid);
+  *r = base::subtle::PlatformSharedMemoryRegion::Take(std::move(vmo), mode,
+                                                      size, guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   MachPortMac mach_port_mac;
   if (!ReadParam(m, iter, &mach_port_mac))

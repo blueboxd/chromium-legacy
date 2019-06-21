@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/default_tick_clock.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
@@ -121,11 +122,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
  public:
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
-  LocalFrame(LocalFrameClient*,
-             Page&,
-             FrameOwner*,
-             WindowAgentFactory* inheriting_agent_factory,
-             InterfaceRegistry*);
+  LocalFrame(
+      LocalFrameClient*,
+      Page&,
+      FrameOwner*,
+      WindowAgentFactory* inheriting_agent_factory,
+      InterfaceRegistry*,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
 
   void Init();
   void SetView(LocalFrameView*);

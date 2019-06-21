@@ -73,7 +73,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
-  TimeDelta duration = EstimateFrameDuration(*frame);
+  base::TimeDelta duration = EstimateFrameDuration(*frame);
   const media::WebmMuxer::VideoParameters video_params(frame);
 
   if (!IsInitialized(codec_config_) ||
@@ -150,7 +150,7 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
                           int u_stride,
                           uint8_t* const v_plane,
                           int v_stride,
-                          const TimeDelta& duration,
+                          const base::TimeDelta& duration,
                           bool force_keyframe,
                           std::string* const output_data,
                           bool* const keyframe) {
@@ -289,14 +289,14 @@ bool VpxEncoder::IsInitialized(const vpx_codec_enc_cfg_t& codec_config) const {
   return codec_config.g_timebase.den != 0;
 }
 
-TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
+base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   using base::TimeDelta;
-  TimeDelta predicted_frame_duration;
+  base::TimeDelta predicted_frame_duration;
   if (!frame.metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
                                       &predicted_frame_duration) ||
-      predicted_frame_duration <= TimeDelta()) {
+      predicted_frame_duration <= base::TimeDelta()) {
     // The source of the video frame did not provide the frame duration.  Use
     // the actual amount of time between the current and previous frame as a
     // prediction for the next frame's duration.
@@ -307,8 +307,10 @@ TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
   }
   last_frame_timestamp_ = frame.timestamp();
   // Make sure |predicted_frame_duration| is in a safe range of values.
-  const TimeDelta kMaxFrameDuration = TimeDelta::FromSecondsD(1.0 / 8);
-  const TimeDelta kMinFrameDuration = TimeDelta::FromMilliseconds(1);
+  const base::TimeDelta kMaxFrameDuration =
+      base::TimeDelta::FromSecondsD(1.0 / 8);
+  const base::TimeDelta kMinFrameDuration =
+      base::TimeDelta::FromMilliseconds(1);
   return std::min(kMaxFrameDuration,
                   std::max(predicted_frame_duration, kMinFrameDuration));
 }

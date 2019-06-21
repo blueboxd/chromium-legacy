@@ -112,14 +112,4 @@ void TestNetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-void TestNetworkServiceClient::OnFlaggedRequestCookies(
-    int32_t process_id,
-    int32_t routing_id,
-    const net::CookieStatusList& excluded_cookies) {}
-
-void TestNetworkServiceClient::OnFlaggedResponseCookies(
-    int32_t process_id,
-    int32_t routing_id,
-    const net::CookieAndLineStatusList& excluded_cookies) {}
-
 }  // namespace network

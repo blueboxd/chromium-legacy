@@ -136,10 +136,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Closes ALL the tabs.
 - (void)closeAllTabs;
 
-// Halts all tabs (terminating active requests) without closing them. Used
-// when the app is shutting down.
-- (void)haltAllTabs;
-
 // Resets all session counters.
 - (void)resetSessionMetrics;
 

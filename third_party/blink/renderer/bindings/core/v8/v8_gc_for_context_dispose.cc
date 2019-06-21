@@ -102,7 +102,7 @@ void V8GCForContextDispose::NotifyIdle() {
   if (!did_dispose_context_for_main_frame_ && !pseudo_idle_timer_.IsActive() &&
       last_context_disposal_time_ + max_time_since_last_context_disposal >=
           WTF::CurrentTime()) {
-    pseudo_idle_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    pseudo_idle_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 

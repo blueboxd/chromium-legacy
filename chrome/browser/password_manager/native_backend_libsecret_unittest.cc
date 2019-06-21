@@ -281,10 +281,6 @@ class NativeBackendLibsecretTest : public testing::Test {
     UPDATE_BY_UPDATELOGIN,
     UPDATE_BY_ADDLOGIN,
   };
-  enum RemoveBetweenMethod {  // Used in CheckRemoveLoginsBetween().
-    CREATED,
-    SYNCED,
-  };
 
   NativeBackendLibsecretTest()
       : scoped_task_environment_(
@@ -566,57 +562,6 @@ class NativeBackendLibsecretTest : public testing::Test {
     // Do match non-HTML forms from the same origin.
     EXPECT_TRUE(CheckCredentialAvailability(
         other_auth_, GURL("http://www.example.com/"), scheme, nullptr));
-  }
-
-  void CheckRemoveLoginsBetween(RemoveBetweenMethod date_to_test) {
-    NativeBackendLibsecret backend(42);
-
-    base::Time now = base::Time::Now();
-    base::Time next_day = now + base::TimeDelta::FromDays(1);
-    form_google_.date_synced = base::Time();
-    form_isc_.date_synced = base::Time();
-    form_google_.date_created = now;
-    form_isc_.date_created = now;
-    if (date_to_test == CREATED) {
-      form_google_.date_created = now;
-      form_isc_.date_created = next_day;
-    } else {
-      form_google_.date_synced = now;
-      form_isc_.date_synced = next_day;
-    }
-
-    VerifiedAdd(&backend, form_google_);
-    VerifiedAdd(&backend, form_isc_);
-
-    PasswordStoreChangeList expected_changes;
-    expected_changes.push_back(
-        PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-    PasswordStoreChangeList changes;
-    bool (NativeBackendLibsecret::*method)(
-        base::Time, base::Time, password_manager::PasswordStoreChangeList*) =
-        date_to_test == CREATED
-            ? &NativeBackendLibsecret::RemoveLoginsCreatedBetween
-            : &NativeBackendLibsecret::RemoveLoginsSyncedBetween;
-
-    EXPECT_TRUE(base::Bind(method, base::Unretained(&backend), base::Time(),
-                           next_day, &changes).Run());
-    CheckPasswordChanges(expected_changes, changes);
-
-    EXPECT_EQ(1u, global_mock_libsecret_items->size());
-    if (!global_mock_libsecret_items->empty() > 0)
-      CheckMockSecretItem((*global_mock_libsecret_items)[0].get(), form_isc_,
-                          "chrome-42");
-
-    // Remove form_isc_.
-    expected_changes.clear();
-    expected_changes.push_back(
-        PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
-
-    EXPECT_TRUE(base::Bind(method, base::Unretained(&backend), next_day,
-                           base::Time(), &changes).Run());
-    CheckPasswordChanges(expected_changes, changes);
-
-    EXPECT_TRUE(global_mock_libsecret_items->empty());
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -942,11 +887,36 @@ TEST_F(NativeBackendLibsecretTest, AndroidCredentials) {
 }
 
 TEST_F(NativeBackendLibsecretTest, RemoveLoginsCreatedBetween) {
-  CheckRemoveLoginsBetween(CREATED);
-}
+  NativeBackendLibsecret backend(42);
 
-TEST_F(NativeBackendLibsecretTest, RemoveLoginsSyncedBetween) {
-  CheckRemoveLoginsBetween(SYNCED);
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  form_google_.date_created = now;
+  form_isc_.date_created = next_day;
+
+  VerifiedAdd(&backend, form_google_);
+  VerifiedAdd(&backend, form_isc_);
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_google_);
+  PasswordStoreChangeList changes;
+  EXPECT_TRUE(
+      backend.RemoveLoginsCreatedBetween(base::Time(), next_day, &changes));
+  CheckPasswordChanges(expected_changes, changes);
+
+  ASSERT_EQ(1u, global_mock_libsecret_items->size());
+  CheckMockSecretItem((*global_mock_libsecret_items)[0].get(), form_isc_,
+                      "chrome-42");
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_isc_);
+
+  EXPECT_TRUE(
+      backend.RemoveLoginsCreatedBetween(next_day, base::Time(), &changes));
+  CheckPasswordChanges(expected_changes, changes);
+
+  EXPECT_TRUE(global_mock_libsecret_items->empty());
 }
 
 TEST_F(NativeBackendLibsecretTest, DisableAutoSignInForOrigins) {

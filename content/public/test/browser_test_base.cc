@@ -188,13 +188,6 @@ BrowserTestBase::BrowserTestBase()
 }
 
 BrowserTestBase::~BrowserTestBase() {
-#if defined(OS_ANDROID)
-  // RemoteTestServer can cause wait on the UI thread.
-  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
-  spawned_test_server_.reset();
-  discardable_shared_memory_manager_.reset();
-#endif
-
   CHECK(set_up_called_ || IsSkipped())
       << "SetUp was not called. This probably means that the "
          "developer has overridden the method and not called "
@@ -416,12 +409,12 @@ void BrowserTestBase::SetUp() {
     delegate->PostTaskSchedulerStart();
   }
 
-  discardable_shared_memory_manager_ =
+  auto discardable_shared_memory_manager =
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
-
-  service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
+  auto service_manager_env = std::make_unique<ServiceManagerEnvironment>(
       BrowserTaskExecutor::CreateIOThread());
-  auto startup_data = service_manager_environment_->CreateBrowserStartupData();
+  std::unique_ptr<StartupDataImpl> startup_data =
+      service_manager_env->CreateBrowserStartupData();
 
   // ContentMain would normally call RunProcess() on the delegate and fallback
   // to BrowserMain() if it did not run it (or equivalent) itself. On Android,
@@ -436,14 +429,19 @@ void BrowserTestBase::SetUp() {
     DCHECK_EQ(exit_code, 0);
   }
 
+  {
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
+    // Shutting these down will block the thread.
+    service_manager_env.reset();
+    discardable_shared_memory_manager.reset();
+    spawned_test_server_.reset();
+  }
+  BrowserTaskExecutor::ResetForTesting();
+
   // Normally the BrowserMainLoop does this during shutdown but on Android we
   // don't go through shutdown, so this doesn't happen there. We do need it
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
-
-  BrowserMainLoop::GetInstance()->ShutdownThreadsAndCleanUp();
-
-  BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =

@@ -13,7 +13,7 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -68,8 +68,8 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void onNativeInitialized() {
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                ImageFetcherConfig.IN_MEMORY_ONLY, ChromeApplication.getReferencePool());
+        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
+                GlobalDiscardableReferencePool.getReferencePool());
     }
 
     @Override

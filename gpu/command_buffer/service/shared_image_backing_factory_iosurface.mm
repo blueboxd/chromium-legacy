@@ -95,10 +95,10 @@ base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
     case viz::LUMINANCE_8:
       return DAWN_TEXTURE_FORMAT_R8_UNORM;
     case viz::RG_88:
-      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
     case viz::RGBA_8888:
     case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
     default:
       return {};
   }
@@ -109,11 +109,11 @@ base::Optional<DawnTextureFormat> GetDawnFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::R_8:
       return DAWN_TEXTURE_FORMAT_R8_UNORM;
     case gfx::BufferFormat::RG_88:
-      return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
-      return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
     default:
       return {};
   }

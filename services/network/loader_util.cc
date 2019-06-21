@@ -30,44 +30,6 @@ const char kFrameAcceptHeader[] =
     "image/apng,*/*;q=0.8";
 const char kDefaultAcceptHeader[] = "*/*";
 
-// Headers that consumers are not trusted to set. All "Proxy-" prefixed messages
-// are blocked inline. The"Authorization" auth header is deliberately not
-// included, since OAuth requires websites be able to set it directly.
-const char* kUnsafeHeaders[] = {
-    // This is determined by the upload body and set by net/. A consumer
-    // overriding that could allow for Bad Things.
-    net::HttpRequestHeaders::kContentLength,
-
-    // Disallow setting the Host header because it can conflict with specified
-    // URL and logic related to isolating sites.
-    net::HttpRequestHeaders::kHost,
-
-    // Trailers are not supported.
-    "Trailer",
-
-    // Websockets use a different API.
-    "Upgrade",
-
-    // TODO(mmenke): Gather stats on the following headers before adding them:
-    // Cookie, Cookie2, Referer, TE, Keep-Alive, Via.
-};
-
-// Headers that consumers are currently allowed to set, with the exception of
-// certain values could cause problems.
-// TODO(mmenke): Gather stats on these, and see if these headers can be banned
-// outright instead.
-const struct {
-  const char* name;
-  const char* value;
-} kUnsafeHeaderValues[] = {
-    // Websockets use a different API.
-    {net::HttpRequestHeaders::kConnection, "Upgrade"},
-
-    // Telling a server a non-chunked upload is chunked has similar implications
-    // as sending the wrong Content-Length.
-    {net::HttpRequestHeaders::kTransferEncoding, "Chunked"},
-};
-
 // Concerning headers that consumers probably shouldn't be allowed to set.
 // Gathering numbers on these before adding them to kUnsafeHeaders.
 const struct {
@@ -169,31 +131,6 @@ std::string ComputeReferrer(const GURL& referrer) {
   }
 
   return referrer.spec();
-}
-
-bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers) {
-  net::HttpRequestHeaders::Iterator it(request_headers);
-
-  while (it.GetNext()) {
-    for (const auto* header : kUnsafeHeaders) {
-      if (base::EqualsCaseInsensitiveASCII(header, it.name()))
-        return false;
-    }
-
-    for (const auto& header : kUnsafeHeaderValues) {
-      if (base::EqualsCaseInsensitiveASCII(header.name, it.name()) &&
-          base::EqualsCaseInsensitiveASCII(header.value, it.value())) {
-        return false;
-      }
-    }
-
-    // Proxy headers are destined for the proxy, so shouldn't be set by callers.
-    if (base::StartsWith(it.name(), "Proxy-",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 void LogConcerningRequestHeaders(const net::HttpRequestHeaders& request_headers,

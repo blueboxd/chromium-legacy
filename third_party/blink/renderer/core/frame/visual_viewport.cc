@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -63,6 +64,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
 
@@ -366,6 +368,9 @@ void VisualViewport::SetSize(const IntSize& size) {
   size_ = size;
   needs_paint_property_update_ = true;
 
+  TRACE_EVENT_INSTANT1("loading", "viewport", TRACE_EVENT_SCOPE_THREAD, "data",
+                       ViewportToTracedValue());
+
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetSize(gfx::Size(size_));
     inner_viewport_scroll_layer_->CcLayer()->SetScrollable(
@@ -569,7 +574,10 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
   ClampToBoundaries();
 
   needs_paint_property_update_ = true;
-
+  if (notify_page_scale_factor_changed) {
+    TRACE_EVENT_INSTANT1("loading", "viewport", TRACE_EVENT_SCOPE_THREAD,
+                         "data", ViewportToTracedValue());
+  }
   return true;
 }
 
@@ -1185,6 +1193,18 @@ const ScrollableArea* VisualViewport::GetScrollableAreaForTesting(
   if (layer == inner_viewport_scroll_layer_.get())
     return this;
   return nullptr;
+}
+
+std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
+  auto value = std::make_unique<TracedValue>();
+  IntRect viewport = VisibleContentRect();
+  value->SetInteger("x", clampTo<int>(roundf(viewport.X())));
+  value->SetInteger("y", clampTo<int>(roundf(viewport.Y())));
+  value->SetInteger("width", clampTo<int>(roundf(viewport.Width())));
+  value->SetInteger("height", clampTo<int>(roundf(viewport.Height())));
+  value->SetString("frameID",
+                   IdentifiersFactory::FrameId(GetPage().MainFrame()));
+  return value;
 }
 
 }  // namespace blink

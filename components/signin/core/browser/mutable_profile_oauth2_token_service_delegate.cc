@@ -557,7 +557,8 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     set_load_credentials_state(LoadCredentialsStateFromTokenResult(
         token_result->GetValue().db_result));
   } else {
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
+    set_load_credentials_state(
+        LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED);
   }
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the

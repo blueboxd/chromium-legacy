@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/BrowserAccessibilityState_jni.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/BrowserAccessibilityState_jni.h"
 #include "ui/gfx/animation/animation.h"
 
 using base::android::AttachCurrentThread;

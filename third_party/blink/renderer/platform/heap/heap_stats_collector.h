@@ -289,7 +289,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     current_.scope_data[id] += time;
   }
 
-  void IncreaseConcurrentScopeTime(ConcurrentId id, TimeDelta time) {
+  void IncreaseConcurrentScopeTime(ConcurrentId id, base::TimeDelta time) {
     using Atomic32 = base::subtle::Atomic32;
     DCHECK(is_started_);
     const int64_t ms = time.InMicroseconds();

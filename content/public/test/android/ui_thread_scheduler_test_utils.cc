@@ -4,7 +4,7 @@
 
 #include "base/android/jni_android.h"
 #include "content/browser/browser_main_loop.h"
-#include "jni/UiThreadSchedulerTestUtils_jni.h"
+#include "content/public/test/android/content_test_jni/UiThreadSchedulerTestUtils_jni.h"
 
 namespace content {
 

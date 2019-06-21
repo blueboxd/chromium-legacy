@@ -2955,6 +2955,45 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="IOS.RendererGone">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Logged when WKWebView process is reported gone. Metrics will give
+    information of the context in which some website present sad tabs. It will
+    help debug some renderer issues either in Chrome or in WebKit.
+  </summary>
+  <metric name="AliveRecentlyRendererCount">
+    <summary>
+      The number of WKWebView alive in the last 2 seconds.
+    </summary>
+  </metric>
+  <metric name="AliveRendererCount">
+    <summary>
+      The number of WKWebView alive at the moment this renderer is gone.
+    </summary>
+  </metric>
+  <metric name="InForeground" enum="TabForegroundState">
+    <summary>
+      Whether the app/tab was in foregound or background. 0: tab in foreground,
+      app in foreground, 1: tab in background, app in foreground, 2: tab in
+      foreground, app in background, 3: tab in background, app in background.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SawMemoryWarning" enum="Boolean">
+    <summary>
+      Whether a memory warning was received less than 5 seconds before the
+      renderer process is gone.
+    </summary>
+  </metric>
+</event>
+
 <event name="IOS.URLMismatchInLegacyAndSlimNavigationManager">
   <owner>eugenebut@chromium.org</owner>
   <owner>danyao@chromium.org</owner>

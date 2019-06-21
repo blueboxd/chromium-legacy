@@ -190,13 +190,6 @@ void PasswordStore::RemoveLoginsCreatedBetween(
                      delete_begin, delete_end, completion));
 }
 
-void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                              base::Time delete_end) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsSyncedBetweenInternal,
-                              this, delete_begin, delete_end));
-}
-
 void PasswordStore::RemoveStatisticsByOriginAndTime(
     const base::Callback<bool(const GURL&)>& origin_filter,
     base::Time delete_begin,
@@ -531,16 +524,6 @@ bool PasswordStore::InitOnBackgroundSequence(
   return true;
 }
 
-void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
-  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.NumPasswordsDeletedByBulkDelete",
-                          num_deletions);
-}
-
-void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
-  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.NumPasswordsDeletedDuringRollback",
-                          num_deletions);
-}
-
 PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form,
                                                     AddLoginError* error) {
   // There is no good way to check if the password is actually up to date, or
@@ -778,20 +761,6 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
   CommitTransaction();
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
-}
-
-void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
-                                                      base::Time delete_end) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  BeginTransaction();
-  PasswordStoreChangeList changes =
-      RemoveLoginsSyncedBetweenImpl(delete_begin, delete_end);
-  NotifyLoginsChanged(changes);
-  // Sync metadata get updated in NotifyLoginsChanged(). Therefore,
-  // CommitTransaction() must be called after NotifyLoginsChanged(), because
-  // sync codebase needs to update metadata atomically together with the login
-  // data.
-  CommitTransaction();
 }
 
 void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(

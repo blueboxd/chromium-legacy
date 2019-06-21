@@ -29,7 +29,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/ServiceManagerConnectionImpl_jni.h"
+#include "content/public/android/content_jni_headers/ServiceManagerConnectionImpl_jni.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #endif

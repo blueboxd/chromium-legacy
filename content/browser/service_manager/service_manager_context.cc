@@ -96,7 +96,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "jni/ContentNfcDelegate_jni.h"
+#include "content/public/android/content_jni_headers/ContentNfcDelegate_jni.h"
 #endif
 
 #if defined(OS_LINUX)

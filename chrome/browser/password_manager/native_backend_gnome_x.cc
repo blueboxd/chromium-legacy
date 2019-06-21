@@ -629,15 +629,21 @@ bool NativeBackendGnome::RemoveLoginsCreatedBetween(
     base::Time delete_begin,
     base::Time delete_end,
     password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(
-      delete_begin, delete_end, CREATION_TIMESTAMP, changes);
-}
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  changes->clear();
+  std::vector<std::unique_ptr<PasswordForm>> all_forms;
+  if (!GetAllLogins(&all_forms))
+    return false;
 
-bool NativeBackendGnome::RemoveLoginsSyncedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    password_manager::PasswordStoreChangeList* changes) {
-  return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
+  for (const auto& saved_form : all_forms) {
+    if (delete_begin <= saved_form->date_created &&
+        (delete_end.is_null() || saved_form->date_created < delete_end) &&
+        !RemoveLogin(*saved_form, changes)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool NativeBackendGnome::DisableAutoSignInForOrigins(
@@ -750,51 +756,4 @@ bool NativeBackendGnome::GetAllLogins(
 scoped_refptr<base::SequencedTaskRunner>
 NativeBackendGnome::GetBackgroundTaskRunner() {
   return background_task_runner_;
-}
-
-bool NativeBackendGnome::GetLoginsBetween(
-    base::Time get_begin,
-    base::Time get_end,
-    TimestampToCompare date_to_compare,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  forms->clear();
-  // We could walk the list and add items as we find them, but it is much
-  // easier to build the list and then filter the results.
-  std::vector<std::unique_ptr<PasswordForm>> all_forms;
-  if (!GetAllLogins(&all_forms))
-    return false;
-
-  base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
-                                              ? &PasswordForm::date_created
-                                              : &PasswordForm::date_synced;
-  for (std::unique_ptr<PasswordForm>& saved_form : all_forms) {
-    if (get_begin <= saved_form.get()->*date_member &&
-        (get_end.is_null() || saved_form.get()->*date_member < get_end)) {
-      forms->push_back(std::move(saved_form));
-    }
-  }
-
-  return true;
-}
-
-bool NativeBackendGnome::RemoveLoginsBetween(
-    base::Time get_begin,
-    base::Time get_end,
-    TimestampToCompare date_to_compare,
-    password_manager::PasswordStoreChangeList* changes) {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(changes);
-  changes->clear();
-  // We could walk the list and delete items as we find them, but it is much
-  // easier to build the list and use RemoveLogin() to delete them.
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
-    return false;
-
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (!RemoveLogin(*forms[i], changes))
-      return false;
-  }
-  return true;
 }

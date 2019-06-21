@@ -115,7 +115,8 @@ include_rules = [
   "+storage/common",
 
   # For generated JNI includes.
-  "+jni",
+  "+content/public/android/content_jni_headers",
+  "+content/public/android/jar_jni",
 ]
 
 specific_include_rules = {

@@ -2422,9 +2422,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /**
      * @return the reference pool for this activity.
-     * @deprecated Use {@link ChromeApplication#getReferencePool} instead.
+     * @deprecated Use {@link GlobalDiscardableReferencePool#getReferencePool} instead.
      */
-    // TODO(bauerb): Migrate clients to ChromeApplication#getReferencePool.
+    // TODO(bauerb): Migrate clients to GlobalDiscardableReferencePool#getReferencePool.
     @Deprecated
     public DiscardableReferencePool getReferencePool() {
         return mReferencePool;

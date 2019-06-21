@@ -19,7 +19,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
-#include "jni/Fakes_jni.h"
+#include "device/bluetooth_test_jni_headers/Fakes_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

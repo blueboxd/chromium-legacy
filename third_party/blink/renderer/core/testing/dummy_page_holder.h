@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -66,10 +67,12 @@ class DummyPageHolder {
   USING_FAST_MALLOC(DummyPageHolder);
 
  public:
-  DummyPageHolder(const IntSize& initial_view_size = IntSize(),
-                  Page::PageClients* = nullptr,
-                  LocalFrameClient* = nullptr,
-                  FrameSettingOverrideFunction setting_overrider = nullptr);
+  DummyPageHolder(
+      const IntSize& initial_view_size = IntSize(),
+      Page::PageClients* = nullptr,
+      LocalFrameClient* = nullptr,
+      FrameSettingOverrideFunction setting_overrider = nullptr,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
   ~DummyPageHolder();
 
   Page& GetPage() const;

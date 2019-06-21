@@ -74,6 +74,9 @@ NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
 #endif
 
+NET_EXPORT extern const base::Feature
+    kAppendInitiatingFrameOriginToNetworkIsolationKey;
+
 }  // namespace features
 }  // namespace net
 

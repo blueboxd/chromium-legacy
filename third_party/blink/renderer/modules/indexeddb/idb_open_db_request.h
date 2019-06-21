@@ -83,7 +83,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   const int64_t transaction_id_;
   int64_t version_;
 
-  WTF::Time start_time_;
+  base::Time start_time_;
   bool open_time_recorded_ = false;
 };
 

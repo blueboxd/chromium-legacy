@@ -169,8 +169,14 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  bool blocked =
+      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
+
   std::vector<net::CanonicalCookie> result;
-  result.reserve(cookie_list.size());
+  std::vector<net::CookieWithStatus> result_with_status;
+
+  if (!blocked)
+    result.reserve(cookie_list.size());
   mojom::CookieMatchType match_type = options->match_type;
   const std::string& match_name = options->name;
   for (size_t i = 0; i < cookie_list.size(); ++i) {
@@ -188,16 +194,23 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     } else {
       NOTREACHED();
     }
-    result.emplace_back(cookie);
-  }
 
-  bool blocked =
-      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
+    if (blocked) {
+      result_with_status.push_back(
+          {cookie, net::CanonicalCookie::CookieInclusionStatus::
+                       EXCLUDE_USER_PREFERENCES});
+    } else {
+      result.push_back(cookie);
+      result_with_status.push_back(
+          {cookie, net::CanonicalCookie::CookieInclusionStatus::INCLUDE});
+    }
+  }
 
   network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
                                          frame_id_, url, site_for_cookies,
-                                         result, blocked);
+                                         result_with_status);
   if (blocked) {
+    DCHECK(result.empty());
     std::move(callback).Run({});
     return;
   }
@@ -220,9 +233,16 @@ void RestrictedCookieManager::SetCanonicalCookie(
   bool blocked =
       !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
 
-  network_context_client_->OnCookieChange(is_service_worker_, process_id_,
-                                          frame_id_, url, site_for_cookies,
-                                          cookie, blocked);
+  std::vector<net::CookieWithStatus> result_with_status;
+  net::CanonicalCookie::CookieInclusionStatus status_for_cookie_list =
+      blocked ? net::CanonicalCookie::CookieInclusionStatus::
+                    EXCLUDE_USER_PREFERENCES
+              : net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+  result_with_status.push_back({cookie, status_for_cookie_list});
+
+  network_context_client_->OnCookiesChanged(is_service_worker_, process_id_,
+                                            frame_id_, url, site_for_cookies,
+                                            result_with_status);
   if (blocked) {
     std::move(callback).Run(false);
     return;

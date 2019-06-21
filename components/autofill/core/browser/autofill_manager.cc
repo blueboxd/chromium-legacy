@@ -818,17 +818,28 @@ void AutofillManager::FillProfileForm(const autofill::AutofillProfile& profile,
 
 void AutofillManager::OnFocusNoLongerOnForm() {
   ProcessPendingFormForUpload();
+
+#if defined(OS_CHROMEOS)
+  // There is no way of determining whether ChromeVox is in use, so assume it's
+  // being used.
+  external_delegate_->OnAutofillAvailabilityEvent(false);
+#else
   if (external_delegate_->HasActiveScreenReader())
     external_delegate_->OnAutofillAvailabilityEvent(false);
+#endif
 }
 
 void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
                                              const FormFieldData& field,
                                              const gfx::RectF& bounding_box) {
   // Notify installed screen readers if the focus is on a field for which there
-  // are suggestions to present. Ignore if a screen reader is not present.
+  // are suggestions to present. Ignore if a screen reader is not present. If
+  // the platform is ChromeOS, then assume ChromeVox is in use as there is no
+  // way of determining whether it's being used from this point in the code.
+#if !defined(OS_CHROMEOS)
   if (!external_delegate_->HasActiveScreenReader())
     return;
+#endif
 
   // TODO(https://crbug.com/848427): Add metrics for performance impact.
   std::vector<Suggestion> suggestions;

@@ -27,14 +27,14 @@ TEST(MemoryUsageMonitorTest, StartStopMonitor) {
   EXPECT_TRUE(MemoryUsageMonitor::Instance().TimerIsActive());
   EXPECT_EQ(0, observer->count());
 
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, observer->count());
 
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(2, observer->count());
   MemoryUsageMonitor::Instance().RemoveObserver(observer.get());
 
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(2, observer->count());
   EXPECT_FALSE(MemoryUsageMonitor::Instance().TimerIsActive());
 }
@@ -56,10 +56,10 @@ TEST(MemoryUsageMonitorTest, RemoveObserverFromNotification) {
   MemoryUsageMonitor::Instance().AddObserver(observer2.get());
   EXPECT_EQ(0, observer1->count());
   EXPECT_EQ(0, observer2->count());
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, observer1->count());
   EXPECT_EQ(1, observer2->count());
-  test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, observer1->count());
   EXPECT_EQ(2, observer2->count());
 }

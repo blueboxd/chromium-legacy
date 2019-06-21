@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/base64.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
@@ -1033,6 +1034,7 @@ TEST_F(PreviewsUKMObserverTest, LogOptimizationGuideHintVersion_NoHintSource) {
   hint_version.mutable_generation_timestamp()->set_seconds(123);
   std::string hint_version_string;
   hint_version.SerializeToString(&hint_version_string);
+  base::Base64Encode(hint_version_string, &hint_version_string);
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::NONE,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
@@ -1063,6 +1065,7 @@ TEST_F(PreviewsUKMObserverTest,
       optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT);
   std::string hint_version_string;
   hint_version.SerializeToString(&hint_version_string);
+  base::Base64Encode(hint_version_string, &hint_version_string);
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::NONE,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,

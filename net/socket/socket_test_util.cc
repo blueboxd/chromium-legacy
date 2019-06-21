@@ -442,7 +442,8 @@ SequencedSocketData::SequencedSocketData(const MockConnect& connect,
 
 MockRead SequencedSocketData::OnRead() {
   CHECK_EQ(IDLE, read_state_);
-  CHECK(!helper_.AllReadDataConsumed());
+  CHECK(!helper_.AllReadDataConsumed())
+      << "Application tried to read but there is no read data left";
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockRead& next_read = helper_.PeekRead();

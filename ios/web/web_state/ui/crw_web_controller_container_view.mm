@@ -227,4 +227,16 @@
   [self.contentViewProxy reconnectScrollProxy];
 }
 
+#pragma mark UIView (printing)
+
+// Only print the web view by returning the web view printformatter.
+- (UIViewPrintFormatter*)viewPrintFormatter {
+  return [self.webViewContentView.webView viewPrintFormatter];
+}
+
+- (void)drawRect:(CGRect)rect
+    forViewPrintFormatter:(UIViewPrintFormatter*)formatter {
+  [self.webViewContentView.webView drawRect:rect];
+}
+
 @end

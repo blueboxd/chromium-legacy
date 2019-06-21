@@ -10,16 +10,14 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
+#include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_ui_controller.h"
-#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -74,7 +72,9 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
-  auto* download_provider = CreateDownloadOfflineContentProvider();
+  DownloadOfflineContentProvider* download_provider =
+      DownloadOfflineContentProviderFactory::GetForKey(
+          profile_->GetProfileKey());
   download_provider->SetSimpleDownloadManagerCoordinator(coordinator);
 
   // Pass an empty delegate when constructing the DownloadUIController. The
@@ -93,23 +93,6 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   g_browser_process->download_status_updater()->AddManager(manager);
 
   return manager_delegate_.get();
-}
-
-DownloadOfflineContentProvider*
-DownloadCoreServiceImpl::CreateDownloadOfflineContentProvider() {
-#if defined(OS_ANDROID)
-  return DownloadUtils::GetDownloadOfflineContentProvider(
-      profile_->GetProfileKey());
-#else
-  download_provider_.reset(new DownloadOfflineContentProvider(
-      OfflineContentAggregatorFactory::GetForKey(
-          profile_->GetOriginalProfile()->GetProfileKey()),
-      offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
-          OfflineItemUtils::GetDownloadNamespacePrefix(
-              profile_->IsOffTheRecord()),
-          profile_->IsOffTheRecord())));
-  return download_provider_.get();
-#endif
 }
 
 DownloadHistory* DownloadCoreServiceImpl::GetDownloadHistory() {

@@ -108,18 +108,20 @@ class ShellApkVersion(unittest.TestCase):
 class OverlappingResourceFileNames(unittest.TestCase):
    RESOURCES_SHOULD_HAVE_DIFFERENT_FILE_NAMES_MESSAGE = (
        'Resources in different top level res/ directories [\'shell_apk/res\', '
-       '\'shell_apk/res_template\', \'libs/common/res_splash\'] should have '
-       'different names:')
+       '\'shell_apk/to_upload/res\', \'shell_apk/to_upload/res_template\', '
+       '\'libs/common/to_upload/res_splash\'] should have different names:')
 
    def testAddFileSameNameWithinResDirectory(self):
      # Files within a res/ directory can have same file name.
-     MOCK_FILE_SYSTEM_FILES = ['shell_apk/res/values/colors.xml',
-                               'libs/common/res_splash/values/dimens.xml']
+     MOCK_FILE_SYSTEM_FILES = [
+         'shell_apk/to_upload/res/values/colors.xml',
+         'libs/common/to_upload/res_splash/values/dimens.xml'
+     ]
      input_api = CustomMockInputApi()
      input_api.os_walk = MockOsWalkFileSystem(MOCK_FILE_SYSTEM_FILES).walk
 
      input_api.files = input_api.makeMockAffectedFiles([
-         'shell_apk/res/values-v22/values.xml'])
+         'shell_apk/to_upload/res/values-v22/values.xml'])
      errors = PRESUBMIT._CheckNoOverlappingFileNamesInResourceDirsRule(
          input_api, MockOutputApi())
      self.assertEqual(0, len(errors))
@@ -127,13 +129,15 @@ class OverlappingResourceFileNames(unittest.TestCase):
    def testAddFileSameNameAcrossResDirectories(self):
      # Adding a file to a res/ directory with the same file name as a file in a
      # different res/ directory is illegal.
-     MOCK_FILE_SYSTEM_FILES = ['shell_apk/res/values/colors.xml',
-                               'libs/common/res_splash/values/dimens.xml']
+     MOCK_FILE_SYSTEM_FILES = [
+         'shell_apk/to_upload/res/values/colors.xml',
+         'libs/common/to_upload/res_splash/values/dimens.xml'
+     ]
      input_api = CustomMockInputApi()
      input_api.os_walk = MockOsWalkFileSystem(MOCK_FILE_SYSTEM_FILES).walk
      input_api.files = input_api.makeMockAffectedFiles([
-         'shell_apk/res/values-v17/dimens.xml',
-         'libs/common/res_splash/values-v22/colors.xml'])
+         'shell_apk/to_upload/res/values-v17/dimens.xml',
+         'libs/common/to_upload/res_splash/values-v22/colors.xml'])
      errors = PRESUBMIT._CheckNoOverlappingFileNamesInResourceDirsRule(
          input_api, MockOutputApi())
      self.assertEqual(1, len(errors))
@@ -145,13 +149,15 @@ class OverlappingResourceFileNames(unittest.TestCase):
    def testAddTwoFilesWithSameNameDifferentResDirectories(self):
      # Adding two files with the same file name but in different res/
      # directories is illegal.
-     MOCK_FILE_SYSTEM_FILES = ['shell_apk/res/values/colors.xml',
-                               'libs/common/res_splash/values/dimens.xml']
+     MOCK_FILE_SYSTEM_FILES = [
+         'shell_apk/to_upload/res/values/colors.xml',
+         'libs/common/to_upload/res_splash/values/dimens.xml'
+     ]
      input_api = CustomMockInputApi()
      input_api.os_walk = MockOsWalkFileSystem(MOCK_FILE_SYSTEM_FILES).walk
      input_api.files = input_api.makeMockAffectedFiles([
-         'shell_apk/res/values/values.xml',
-         'libs/common/res_splash/values-v22/values.xml'])
+         'shell_apk/to_upload/res/values/values.xml',
+         'libs/common/to_upload/res_splash/values-v22/values.xml'])
      errors = PRESUBMIT._CheckNoOverlappingFileNamesInResourceDirsRule(
          input_api, MockOutputApi())
      self.assertEqual(1, len(errors))

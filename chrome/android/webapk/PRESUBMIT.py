@@ -38,8 +38,9 @@ TRIGGER_CURRENT_VERSION_UPDATE_LOCAL_PATHS = [
 
 RES_DIR_LOCAL_PATHS = [
     'shell_apk/res',
-    'shell_apk/res_template',
-    'libs/common/res_splash'
+    'shell_apk/to_upload/res',
+    'shell_apk/to_upload/res_template',
+    'libs/common/to_upload/res_splash'
 ]
 
 def _DoChangedContentsContain(changed_contents, key):
@@ -126,7 +127,7 @@ def _CheckNoOverlappingFileNamesInResourceDirsRule(input_api, output_api):
     res/values/dimens.xml and libs/common/res_splash/values/dimens.xml -> BAD
   """
   res_dir_file_names_map = {}
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(include_deletes=False):
     local_path = input_api.os_path.relpath(f.AbsoluteLocalPath(),
                                            input_api.PresubmitLocalPath())
     for res_dir_local_path in RES_DIR_LOCAL_PATHS:

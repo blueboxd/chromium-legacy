@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
+#include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -285,10 +286,14 @@ void PreviewsUKMObserver::RecordOptimizationGuideInfo(
   }
 
   // Deserialize the serialized version string into its protobuffer.
-  optimization_guide::proto::Version hint_version;
-  if (!hint_version.ParseFromString(serialized_hint_version_string_.value())) {
+  std::string binary_version_pb;
+  if (!base::Base64Decode(serialized_hint_version_string_.value(),
+                          &binary_version_pb))
     return;
-  }
+
+  optimization_guide::proto::Version hint_version;
+  if (!hint_version.ParseFromString(binary_version_pb))
+    return;
 
   ukm::builders::OptimizationGuide builder(info.source_id);
   if (hint_version.has_generation_timestamp() &&

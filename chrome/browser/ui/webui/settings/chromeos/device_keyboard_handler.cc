@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "content/public/browser/web_ui.h"
@@ -115,8 +115,7 @@ void KeyboardHandler::HandleKeyboardChange(const base::ListValue* args) {
 void KeyboardHandler::UpdateKeyboards() {
   bool physical_keyboard = false;
   // In tablet mode, physical keybards are disabled / ignored.
-  if (!TabletModeClient::Get() ||
-      !TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (!ash::TabletMode::Get()->InTabletMode()) {
     physical_keyboard = true;
   }
   if (!physical_keyboard) {

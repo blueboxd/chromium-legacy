@@ -229,15 +229,15 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
 
     gl::GLImage* image;
     unsigned target = GL_TEXTURE_2D;
-    gles2::Texture::ImageState image_state;
     if (texture_) {
+      gles2::Texture::ImageState image_state;
       image = texture_->GetLevelImage(target, 0, &image_state);
+      DCHECK_EQ(image_state, gles2::Texture::BOUND);
     } else {
       DCHECK(texture_passthrough_);
       image = texture_passthrough_->GetLevelImage(target, 0);
     }
     DCHECK(image);
-    DCHECK_EQ(image_state, gles2::Texture::BOUND);
 
     if (!image->BindTexImage(target)) {
       DLOG(ERROR) << "Failed to rebind texture to new surface.";
@@ -314,6 +314,10 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
 
   auto image = base::MakeRefCounted<gl::GLImageDXGISwapChain>(
       size, viz::BufferFormat(format), d3d11_texture, swap_chain);
+  if (!image->Initialize()) {
+    DLOG(ERROR) << "Failed to create EGL image";
+    return nullptr;
+  }
   if (!image->BindTexImage(target)) {
     DLOG(ERROR) << "Failed to bind image to swap chain D3D11 texture.";
     return nullptr;
@@ -393,7 +397,7 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
   desc.Stereo = FALSE;
   desc.SampleDesc.Count = 1;
   desc.BufferCount = 2;
-  desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
   desc.Flags = 0;

@@ -209,7 +209,7 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
     timeout_.Cancel();
     return;
   }
-  DVLOG(1) << "Connectivity check failed: " << http_response_code;
+  LOG(ERROR) << "Connectivity check failed: " << http_response_code;
   OnUrlRequestError(ErrorType::BAD_HTTP_STATUS);
   timeout_.Cancel();
 }

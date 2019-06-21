@@ -405,11 +405,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return static_cast<id<CRWWebViewNavigationProxy>>(self.webView);
 }
 
-- (UIView*)viewForPrinting {
-  // Printing is not supported for native controllers.
-  return self.webView;
-}
-
 - (double)loadingProgress {
   return [self.webView estimatedProgress];
 }
@@ -621,14 +616,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [_containerView clearTransientContentView];
 }
 
-// Stop doing stuff, especially network stuff. Close the request tracker.
-- (void)terminateNetworkActivity {
-  // Cancel all outstanding perform requests, and clear anything already queued
-  // (since this may be called from within the handling loop) to prevent any
-  // asynchronous JavaScript invocation handling from continuing.
-  [NSObject cancelPreviousPerformRequestsWithTarget:self];
-}
-
 - (void)dismissModals {
   [self.legacyNativeController dismissModals];
 }
@@ -644,8 +631,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
-
-  [self terminateNetworkActivity];
 
   // Mark the destruction sequence has started, in case someone else holds a
   // strong reference and tries to continue using the tab.

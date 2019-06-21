@@ -171,20 +171,6 @@ interface NetworkServiceClient {
                                    string auth_negotiate_android_account_type,
                                    string spn) =>
                                    (int32 result, string auth_token);
-
-  // Called to send information about cookies flagged to be excluded or as a
-  // warning as it's sent in the request.
-  OnFlaggedRequestCookies(
-    int32 process_id,
-    int32 routing_id,
-    array<CookieWithStatus> excluded_cookies);
-
-  // Called to send information about cookies flagged to be excluded from
-  // storage or as a warning from a received response.
-  OnFlaggedResponseCookies(
-    int32 process_id,
-    int32 routing_id,
-    array<CookieAndLineWithStatus> excluded_cookies);
 };
 
 // Values for configuring HTTP authentication that can only be set once.

@@ -12,7 +12,7 @@
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device_android.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_android.h"
-#include "jni/ChromeBluetoothRemoteGattService_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothRemoteGattService_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

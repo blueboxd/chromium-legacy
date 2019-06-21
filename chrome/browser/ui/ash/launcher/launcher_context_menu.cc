@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -107,7 +107,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         controller_->Close(item_.id);
       }
       base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
-      if (TabletModeClient::Get()->tablet_mode_enabled()) {
+      if (ash::TabletMode::Get()->InTabletMode()) {
         base::RecordAction(
             base::UserMetricsAction("Tablet_WindowCloseFromContextMenu"));
       }

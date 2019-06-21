@@ -71,28 +71,28 @@ template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum == "rgba8unorm") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UNORM;
+    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
   }
   if (webgpu_enum == "rg8unorm") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_UNORM;
+    return DAWN_TEXTURE_FORMAT_RG8_UNORM;
   }
   if (webgpu_enum == "r8unorm") {
     return DAWN_TEXTURE_FORMAT_R8_UNORM;
   }
   if (webgpu_enum == "rgba8uint") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_B8_A8_UINT;
+    return DAWN_TEXTURE_FORMAT_RGBA8_UINT;
   }
   if (webgpu_enum == "r8g8uint") {
-    return DAWN_TEXTURE_FORMAT_R8_G8_UINT;
+    return DAWN_TEXTURE_FORMAT_RG8_UINT;
   }
   if (webgpu_enum == "r8uint") {
     return DAWN_TEXTURE_FORMAT_R8_UINT;
   }
   if (webgpu_enum == "bgra8unorm") {
-    return DAWN_TEXTURE_FORMAT_B8_G8_R8_A8_UNORM;
+    return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
   }
   if (webgpu_enum == "depth32float-stencil8") {
-    return DAWN_TEXTURE_FORMAT_D32_FLOAT_S8_UINT;
+    return DAWN_TEXTURE_FORMAT_DEPTH24_PLUS_STENCIL8;
   }
   // TODO(crbug.com/dawn/128): Implement the remaining texture formats.
   NOTREACHED();

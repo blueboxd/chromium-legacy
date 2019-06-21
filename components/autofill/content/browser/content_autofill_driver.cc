@@ -162,6 +162,13 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
   GetAutofillAgent()->PreviewFieldWithValue(value);
 }
 
+void ContentAutofillDriver::RendererShouldSetSuggestionAvailability(
+    bool available) {
+  if (!RendererIsAvailable())
+    return;
+  GetAutofillAgent()->SetSuggestionAvailability(available);
+}
+
 void ContentAutofillDriver::PopupHidden() {
   // If the unmask prompt is showing, keep showing the preview. The preview
   // will be cleared when the prompt closes.

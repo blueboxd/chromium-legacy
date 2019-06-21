@@ -541,6 +541,111 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   }
 }
 
+// Test that MakeCredential request returns INVALID_ICON_URL if the RP or user
+// icon URLs are not a priori-authenticated URLs.
+TEST_F(AuthenticatorImplTest, MakeCredentialInvalidIconUrl) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  const GURL kInvalidIconUrlTestCases[] = {
+      GURL("http://insecure-origin.com/kitten.png"),
+      GURL("invalid:/url"),
+  };
+
+  // Test relying party icons.
+  for (auto test_case : kInvalidIconUrlTestCases) {
+    SCOPED_TRACE(test_case.possibly_invalid_spec());
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.icon_url = test_case;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::INVALID_ICON_URL,
+              callback_receiver.status());
+  }
+
+  // Test user icons.
+  for (auto test_case : kInvalidIconUrlTestCases) {
+    SCOPED_TRACE(test_case.possibly_invalid_spec());
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->user.icon_url = test_case;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::INVALID_ICON_URL,
+              callback_receiver.status());
+  }
+}
+
+// Test that MakeCredential request does not return INVALID_ICON_URL for a
+// priori-authenticated URLs.
+TEST_F(AuthenticatorImplTest, MakeCredentialValidIconUrl) {
+  const GURL kValidUrlTestCases[] = {
+      GURL(),
+      GURL("https://secure-origin.com/kitten.png"),
+      GURL("about:blank"),
+      GURL("about:srcdoc"),
+      GURL("data:image/"
+           "png;base64,"
+           "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAC4jAAAuIwF"
+           "4pT92AAAAB3RJTUUH4wYUETEs5V5U8gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
+           "ggR0lNUFeBDhcAAABGSURBVCjPY/z//"
+           "z8DKYAJmcPYyICHi0UDyTYMDg2MFIUSnsAZAp5mbGT4X49DBcxLEAUsBMxrRCiFABb8"
+           "gYNpLTXiAT8AAEeHFZvhj9g8AAAAAElFTkSuQmCC"),
+  };
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  // Test relying party icons.
+  for (auto test_case : kValidUrlTestCases) {
+    SCOPED_TRACE(test_case.possibly_invalid_spec());
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
+    options->relying_party.icon_url = test_case;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+  }
+
+  // Test user icons.
+  for (auto test_case : kValidUrlTestCases) {
+    SCOPED_TRACE(test_case.possibly_invalid_spec());
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
+    options->user.icon_url = test_case;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+  }
+}
+
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if no
 // parameters contain a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {

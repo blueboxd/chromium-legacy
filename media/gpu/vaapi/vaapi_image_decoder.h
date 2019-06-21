@@ -66,7 +66,7 @@ class VaapiImageDecoder {
       VaapiImageDecodeStatus* status) = 0;
 
  protected:
-  VaapiImageDecoder(VAProfile va_profile);
+  explicit VaapiImageDecoder(VAProfile va_profile);
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 

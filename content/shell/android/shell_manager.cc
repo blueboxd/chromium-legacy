@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/shell/android/content_shell_jni_headers/ShellManager_jni.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "jni/ShellManager_jni.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;

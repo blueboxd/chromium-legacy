@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/core/css/font_face_descriptors.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
@@ -22,7 +23,8 @@ PageTestBase::~PageTestBase() = default;
 
 void PageTestBase::SetUp() {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(
+      IntSize(800, 600), nullptr, nullptr, nullptr, GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -33,7 +35,8 @@ void PageTestBase::SetUp() {
 
 void PageTestBase::SetUp(IntSize size) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = std::make_unique<DummyPageHolder>(size);
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(
+      size, nullptr, nullptr, nullptr, GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -48,7 +51,8 @@ void PageTestBase::SetupPageWithClients(
     FrameSettingOverrideFunction setting_overrider) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), clients, local_frame_client, setting_overrider);
+      IntSize(800, 600), clients, local_frame_client, setting_overrider,
+      GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -164,6 +168,11 @@ void PageTestBase::EnablePlatform() {
   DCHECK(!platform_);
   platform_ = std::make_unique<
       ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>();
+}
+
+const base::TickClock* PageTestBase::GetTickClock() {
+  return platform_ ? platform()->test_task_runner()->GetMockTickClock()
+                   : base::DefaultTickClock::GetInstance();
 }
 
 }  // namespace blink

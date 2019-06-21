@@ -188,7 +188,8 @@ base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
-TimeDelta ThreadHeapStatsCollector::Event::concurrent_sweeping_time() const {
+base::TimeDelta ThreadHeapStatsCollector::Event::concurrent_sweeping_time()
+    const {
   return base::TimeDelta::FromMicroseconds(
       concurrent_scope_data[kConcurrentSweep]);
 }

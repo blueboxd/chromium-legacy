@@ -371,6 +371,9 @@ class WebAXObject {
   // role and name.
   BLINK_EXPORT WebString ToString() const;
 
+  BLINK_EXPORT void HandleAutofillStateChanged(
+      bool suggestions_available) const;
+
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);
   WebAXObject& operator=(AXObject*);

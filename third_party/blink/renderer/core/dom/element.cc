@@ -4518,7 +4518,14 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   if (pseudo_id == kPseudoIdBackdrop)
     GetDocument().AddToTopLayer(pseudo_element, this);
 
-  pseudo_element->SetComputedStyle(std::move(pseudo_style));
+  pseudo_element->SetComputedStyle(pseudo_style);
+
+  // Most pseudo elements get their style calculated upon insertion, which means
+  // that we don't get to RecalcOwnStyle() (regular DOM nodes do get there,
+  // since their style isn't calculated directly upon insertion). Need to check
+  // now if the element requires legacy layout.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    pseudo_element->UpdateForceLegacyLayout(*pseudo_style, nullptr);
 
   probe::PseudoElementCreated(pseudo_element);
 

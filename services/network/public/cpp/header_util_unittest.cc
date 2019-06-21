@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/header_util.h"
 
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -11,7 +11,38 @@
 
 namespace network {
 
-TEST(LoaderUtilTest, AreRequestHeadersSafe) {
+TEST(HeaderUtilTest, IsRequestHeaderSafe) {
+  const struct HeaderKeyValuePair {
+    const char* key;
+    const char* value;
+    bool is_safe;
+  } kHeaders[] = {
+      {"foo", "bar", true},
+
+      {net::HttpRequestHeaders::kContentLength, "42", false},
+      {net::HttpRequestHeaders::kHost, "foo.test", false},
+      {"Trailer", "header-names", false},
+      {"Upgrade", "websocket", false},
+      {"Upgrade", "webbedsocket", false},
+      {"hOsT", "foo.test", false},
+
+      {net::HttpRequestHeaders::kConnection, "Upgrade", false},
+      {net::HttpRequestHeaders::kConnection, "Close", true},
+      {net::HttpRequestHeaders::kTransferEncoding, "Chunked", false},
+      {net::HttpRequestHeaders::kTransferEncoding, "Chunky", true},
+      {"cOnNeCtIoN", "uPgRaDe", false},
+
+      {net::HttpRequestHeaders::kProxyAuthorization,
+       "Basic Zm9vOmJhcg==", false},
+      {"Proxy-Foo", "bar", false},
+      {"PrOxY-FoO", "bar", false},
+  };
+
+  for (const auto& header : kHeaders)
+    EXPECT_EQ(header.is_safe, IsRequestHeaderSafe(header.key, header.value));
+}
+
+TEST(HeaderUtilTest, AreRequestHeadersSafe) {
   const struct HeaderKeyValuePair {
     const char* key;
     const char* value;

@@ -177,7 +177,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/device/gamepad/GamepadList.java",
     ]
-    jni_package = "gamepad"
   }
 
   android_library("java") {

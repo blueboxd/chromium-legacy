@@ -94,7 +94,7 @@ message CloudTokenData {
   optional int32 exp_year = 3;
 
   // URL of the card art to be displayed for CPAN.
-  optional string art_file_url = 4;
+  optional string art_fife_url = 4;
 }
 
 message WalletMaskedCreditCard {

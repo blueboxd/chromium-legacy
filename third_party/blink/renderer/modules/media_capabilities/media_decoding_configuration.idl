@@ -13,5 +13,5 @@ enum MediaDecodingType {
 
 dictionary MediaDecodingConfiguration : MediaConfiguration {
     required MediaDecodingType type;
-    [OriginTrialEnabled=MediaCapabilitiesEncryptedMedia] MediaCapabilitiesKeySystemConfiguration keySystemConfiguration;
+    [RuntimeEnabled=MediaCapabilitiesEncryptedMedia] MediaCapabilitiesKeySystemConfiguration keySystemConfiguration;
 };

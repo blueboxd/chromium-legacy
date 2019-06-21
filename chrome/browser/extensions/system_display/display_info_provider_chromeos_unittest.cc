@@ -10,16 +10,16 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/common/api/system_display.h"
@@ -79,20 +79,10 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     DisplayInfoProvider::InitializeForTesting(
         new DisplayInfoProviderChromeOS(connector_.get()));
 
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
-    tablet_mode_client_->Init();
-
     // Wait for TabletModeController to take its initial state from the power
     // manager.
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(ash::Shell::Get()->tablet_mode_controller()->InTabletMode());
-  }
-
-  void TearDown() override {
-    ChromeAshTestBase::TearDown();
-    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
-    // after Shell.
-    tablet_mode_client_.reset();
+    EXPECT_FALSE(ash::TabletMode::Get()->InTabletMode());
   }
 
   void AddCrosDisplayConfigControllerBinding(
@@ -125,9 +115,7 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
   }
 
   void EnableTabletMode(bool enable) {
-    ash::TabletModeController* controller =
-        ash::Shell::Get()->tablet_mode_controller();
-    controller->SetEnabledForTest(enable);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(enable);
   }
 
   display::DisplayManager* GetDisplayManager() const {
@@ -205,7 +193,6 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
   content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ash::CrosDisplayConfig> cros_display_config_;
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeosTest);
 };

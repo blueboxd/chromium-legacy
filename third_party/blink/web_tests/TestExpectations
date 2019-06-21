@@ -1554,7 +1554,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rect-nested
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects-crossing-boundaries-nested.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects-rtl.html [ Crash Failure ]
-crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/clone-block-children-inline-mismatch-crash.html [ Crash ]
 crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/column-break-with-balancing.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/column-count-with-rules.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/column-rules.html [ Failure ]
@@ -1595,7 +1594,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spa
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before-following-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/invalid-spanner-container-becomes-valid.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relayout-abspos-in-relpos-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-abspos-next-to-spanner.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-after-spanner.html [ Failure ]
@@ -1763,7 +1761,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/outline.html 
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/overflow-on-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/overflow-on-viewport.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/percent-margins.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/span/positioned-objects-not-removed-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-after-then-content.html [ Failure ]
@@ -4492,9 +4489,6 @@ crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 # Off-the-main-thread classic worker script fetch.
 # This fails because running a worker on an opaque origin is blocked.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.html [ Timeout ]
-# This fails because off-the-main-thread script loading goes through different
-# loading path. Although we could remove this test. disable it for now.
-crbug.com/835717 virtual/omt-worker-fetch/fast/workers/chromium/worker-crash-with-invalid-location.html [ Skip ]
 # Needs investigation. These are timing out.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Skip ]
@@ -5961,9 +5955,6 @@ crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.
 # Sheriff 2019-04-16
 crbug.com/953153 virtual/speech-with-unified-autoplay/external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
 crbug.com/953153 external/wpt/speech-api/idlharness.window.html [ Pass Failure Timeout ]
-
-# portals-adopt-predecessor occasionally times out.
-crbug.com/952584 external/wpt/portals/portals-adopt-predecessor.html [ Pass Timeout ]
 
 # portals/csp/frame-src.sub.html crashes because of a race between cancelling a
 # speculative navigation in the browser, and committing the navigation in the

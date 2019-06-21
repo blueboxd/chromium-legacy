@@ -1010,54 +1010,6 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_EQ(0U, result.size());
 }
 
-TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
-  std::vector<std::unique_ptr<PasswordForm>> result;
-
-  base::Time now = base::Time::Now();
-  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
-
-  // Create one with a 0 time.
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://1.com", "foo1", base::Time(), false));
-  // Create one for now and +/- 1 day.
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://2.com", "foo2", now - one_day, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db(), "http://3.com", "foo3", now, false));
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://4.com", "foo4", now + one_day, false));
-
-  // Verify inserts worked.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  EXPECT_EQ(4U, result.size());
-  result.clear();
-
-  // Delete everything from today's date and on.
-  PasswordStoreChangeList changes;
-  EXPECT_TRUE(db().RemoveLoginsSyncedBetween(now, base::Time(), &changes));
-  ASSERT_EQ(2U, changes.size());
-  EXPECT_EQ("http://3.com", changes[0].form().signon_realm);
-  EXPECT_EQ(3, changes[0].primary_key());
-  EXPECT_EQ("http://4.com", changes[1].form().signon_realm);
-  EXPECT_EQ(4, changes[1].primary_key());
-
-  // Should have deleted half of what we inserted.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("http://1.com", result[0]->signon_realm);
-  EXPECT_EQ("http://2.com", result[1]->signon_realm);
-  result.clear();
-
-  // Delete with 0 date (should delete all).
-  db().RemoveLoginsSyncedBetween(base::Time(), now, &changes);
-  ASSERT_EQ(2U, changes.size());
-  EXPECT_EQ(1, changes[0].primary_key());
-  EXPECT_EQ(2, changes[1].primary_key());
-
-  // Verify nothing is left.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  EXPECT_EQ(0U, result.size());
-}
-
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
   std::vector<std::unique_ptr<PasswordForm>> result;
 

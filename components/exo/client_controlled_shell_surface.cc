@@ -306,7 +306,8 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
 ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
                                                            bool can_minimize,
                                                            int container)
-    : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container) {
+    : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container),
+      current_pin_(ash::WindowPinType::kNone) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -317,6 +318,8 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
     GetWindowState()->SetDelegate(nullptr);
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
+  if (current_pin_ != ash::WindowPinType::kNone)
+    SetPinned(ash::WindowPinType::kNone);
 }
 
 void ClientControlledShellSurface::SetBounds(int64_t display_id,
@@ -378,6 +381,7 @@ void ClientControlledShellSurface::SetPinned(ash::WindowPinType type) {
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
   widget_->GetNativeWindow()->SetProperty(ash::kWindowPinTypeKey, type);
+  current_pin_ = type;
 }
 
 void ClientControlledShellSurface::SetSystemUiVisibility(bool autohide) {

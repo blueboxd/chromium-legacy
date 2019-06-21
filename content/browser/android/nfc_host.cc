@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "content/public/android/content_jni_headers/NfcHost_jni.h"
 #include "content/public/browser/system_connector.h"
-#include "jni/NfcHost_jni.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

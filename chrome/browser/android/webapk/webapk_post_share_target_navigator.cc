@@ -52,7 +52,11 @@ void AddFile(const std::string& value_name,
   mime_header.append("--" + boundary + delimiter);
   // Next line is the Content-disposition.
   mime_header.append("Content-Disposition: form-data; name=\"" + value_name +
-                     "\"; filename=\"" + file_name + "\"" + delimiter);
+                     "\"");
+  if (!file_name.empty()) {
+    mime_header.append("; filename=\"" + file_name + "\"");
+  }
+  mime_header.append(delimiter);
 
   if (!content_type.empty()) {
     // If Content-type is specified, the next line is that.

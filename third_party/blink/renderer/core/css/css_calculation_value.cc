@@ -691,72 +691,65 @@ class CSSCalcExpressionNodeParser {
   CSSCalcExpressionNodeParser() {}
 
   CSSCalcExpressionNode* ParseCalc(CSSParserTokenRange tokens) {
-    Value result;
     tokens.ConsumeWhitespace();
-    bool ok = ParseValueExpression(tokens, 0, &result);
-    if (!ok || !tokens.AtEnd())
+    CSSCalcExpressionNode* result = ParseValueExpression(tokens, 0);
+    if (!result || !tokens.AtEnd())
       return nullptr;
-    return result.value;
+    return result;
   }
 
  private:
-  struct Value {
-    STACK_ALLOCATED();
-
-   public:
-    Member<CSSCalcExpressionNode> value;
-  };
-
   char OperatorValue(const CSSParserToken& token) {
     if (token.GetType() == kDelimiterToken)
       return token.Delimiter();
     return 0;
   }
 
-  bool ParseValue(CSSParserTokenRange& tokens, Value* result) {
+  CSSCalcExpressionNode* ParseValue(CSSParserTokenRange& tokens) {
     CSSParserToken token = tokens.ConsumeIncludingWhitespace();
     if (!(token.GetType() == kNumberToken ||
           token.GetType() == kPercentageToken ||
           token.GetType() == kDimensionToken))
-      return false;
+      return nullptr;
 
     CSSPrimitiveValue::UnitType type = token.GetUnitType();
     if (UnitCategory(type) == kCalcOther)
-      return false;
+      return nullptr;
 
-    result->value = CSSCalcPrimitiveValue::Create(
+    return CSSCalcPrimitiveValue::Create(
         CSSPrimitiveValue::Create(token.NumericValue(), type),
         token.GetNumericValueType() == kIntegerValueType);
-
-    return true;
   }
 
-  bool ParseValueTerm(CSSParserTokenRange& tokens, int depth, Value* result) {
+  CSSCalcExpressionNode* ParseValueTerm(CSSParserTokenRange& tokens,
+                                        int depth) {
     if (CheckDepthAndIndex(&depth, tokens) != OK)
-      return false;
+      return nullptr;
 
     if (tokens.Peek().GetType() == kLeftParenthesisToken ||
         tokens.Peek().FunctionId() == CSSValueID::kCalc) {
       CSSParserTokenRange inner_range = tokens.ConsumeBlock();
       tokens.ConsumeWhitespace();
       inner_range.ConsumeWhitespace();
-      if (!ParseValueExpression(inner_range, depth, result))
-        return false;
-      result->value->SetIsNestedCalc();
-      return true;
+      CSSCalcExpressionNode* result = ParseValueExpression(inner_range, depth);
+      if (!result)
+        return nullptr;
+      result->SetIsNestedCalc();
+      return result;
     }
 
-    return ParseValue(tokens, result);
+    return ParseValue(tokens);
   }
 
-  bool ParseValueMultiplicativeExpression(CSSParserTokenRange& tokens,
-                                          int depth,
-                                          Value* result) {
+  CSSCalcExpressionNode* ParseValueMultiplicativeExpression(
+      CSSParserTokenRange& tokens,
+      int depth) {
     if (CheckDepthAndIndex(&depth, tokens) != OK)
-      return false;
+      return nullptr;
 
-    if (!ParseValueTerm(tokens, depth, result))
-      return false;
+    CSSCalcExpressionNode* result = ParseValueTerm(tokens, depth);
+    if (!result)
+      return nullptr;
 
     while (!tokens.AtEnd()) {
       char operator_character = OperatorValue(tokens.Peek());
@@ -765,60 +758,60 @@ class CSSCalcExpressionNodeParser {
         break;
       tokens.ConsumeIncludingWhitespace();
 
-      Value rhs;
-      if (!ParseValueTerm(tokens, depth, &rhs))
-        return false;
+      CSSCalcExpressionNode* rhs = ParseValueTerm(tokens, depth);
+      if (!rhs)
+        return nullptr;
 
-      result->value = CSSCalcBinaryOperation::CreateSimplified(
-          result->value, rhs.value,
-          static_cast<CalcOperator>(operator_character));
+      result = CSSCalcBinaryOperation::CreateSimplified(
+          result, rhs, static_cast<CalcOperator>(operator_character));
 
-      if (!result->value)
-        return false;
+      if (!result)
+        return nullptr;
     }
 
-    return true;
+    return result;
   }
 
-  bool ParseAdditiveValueExpression(CSSParserTokenRange& tokens,
-                                    int depth,
-                                    Value* result) {
+  CSSCalcExpressionNode* ParseAdditiveValueExpression(
+      CSSParserTokenRange& tokens,
+      int depth) {
     if (CheckDepthAndIndex(&depth, tokens) != OK)
-      return false;
+      return nullptr;
 
-    if (!ParseValueMultiplicativeExpression(tokens, depth, result))
-      return false;
+    CSSCalcExpressionNode* result =
+        ParseValueMultiplicativeExpression(tokens, depth);
+    if (!result)
+      return nullptr;
 
     while (!tokens.AtEnd()) {
       char operator_character = OperatorValue(tokens.Peek());
       if (operator_character != kCalcAdd && operator_character != kCalcSubtract)
         break;
       if ((&tokens.Peek() - 1)->GetType() != kWhitespaceToken)
-        return false;  // calc(1px+ 2px) is invalid
+        return nullptr;  // calc(1px+ 2px) is invalid
       tokens.Consume();
       if (tokens.Peek().GetType() != kWhitespaceToken)
-        return false;  // calc(1px +2px) is invalid
+        return nullptr;  // calc(1px +2px) is invalid
       tokens.ConsumeIncludingWhitespace();
 
-      Value rhs;
-      if (!ParseValueMultiplicativeExpression(tokens, depth, &rhs))
-        return false;
+      CSSCalcExpressionNode* rhs =
+          ParseValueMultiplicativeExpression(tokens, depth);
+      if (!rhs)
+        return nullptr;
 
-      result->value = CSSCalcBinaryOperation::CreateSimplified(
-          result->value, rhs.value,
-          static_cast<CalcOperator>(operator_character));
+      result = CSSCalcBinaryOperation::CreateSimplified(
+          result, rhs, static_cast<CalcOperator>(operator_character));
 
-      if (!result->value)
-        return false;
+      if (!result)
+        return nullptr;
     }
 
-    return true;
+    return result;
   }
 
-  bool ParseValueExpression(CSSParserTokenRange& tokens,
-                            int depth,
-                            Value* result) {
-    return ParseAdditiveValueExpression(tokens, depth, result);
+  CSSCalcExpressionNode* ParseValueExpression(CSSParserTokenRange& tokens,
+                                              int depth) {
+    return ParseAdditiveValueExpression(tokens, depth);
   }
 };
 

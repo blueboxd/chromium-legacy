@@ -208,12 +208,14 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // Calls LegacyCallbackBasedGetStats() or PromiseBasedGetStats() (or rejects
   // with an exception) depending on type, see rtc_peer_connection.idl.
-  ScriptPromise getStats(ScriptState* script_state);
-  ScriptPromise getStats(ScriptState* script_state,
-                         ScriptValue callback_or_selector);
+  ScriptPromise getStats(ScriptState* script_state, ExceptionState&);
   ScriptPromise getStats(ScriptState* script_state,
                          ScriptValue callback_or_selector,
-                         ScriptValue legacy_selector);
+                         ExceptionState&);
+  ScriptPromise getStats(ScriptState* script_state,
+                         ScriptValue callback_or_selector,
+                         ScriptValue legacy_selector,
+                         ExceptionState&);
   ScriptPromise LegacyCallbackBasedGetStats(
       ScriptState*,
       V8RTCStatsCallback* success_callback,

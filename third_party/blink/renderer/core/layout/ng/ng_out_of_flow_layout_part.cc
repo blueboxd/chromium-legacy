@@ -85,7 +85,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
     const NGBoxStrut& border_scrollbar,
     NGBoxFragmentBuilder* container_builder,
     base::Optional<LogicalSize> initial_containing_block_fixed_size)
-    : container_builder_(container_builder),
+    : container_space_(container_space),
+      container_builder_(container_builder),
       contains_absolute_(contains_absolute),
       contains_fixed_(contains_fixed) {
   if (!container_builder->HasOutOfFlowDescendantCandidates() &&
@@ -158,6 +159,14 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
                              &placed_objects);
 
   if (only_layout)
+    return;
+
+  // If we're in a block fragmentation context, we've already ruled out the
+  // possibility of having legacy objects in here. The code below would pick up
+  // every OOF descendant not in placed_objects, and treat them as a legacy
+  // object (even if they aren't one), while in fact it could be an NG object
+  // that we have finished laying out in an earlier fragmentainer. Just bail.
+  if (container_space_.HasBlockFragmentation())
     return;
 
   while (SweepLegacyDescendants(&placed_objects)) {

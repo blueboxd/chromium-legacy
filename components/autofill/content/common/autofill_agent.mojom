@@ -35,6 +35,10 @@ interface AutofillAgent {
   // Sets the suggested value for the currently previewed node.
   PreviewFieldWithValue(mojo_base.mojom.String16 value);
 
+  // Sets the currently selected node's corresponding accessibility node's
+  // suggestion availability.
+  SetSuggestionAvailability(bool available);
+
   // Sets the currently selected node's value to be the given data list value.
   AcceptDataListSuggestion(mojo_base.mojom.String16 value);
 

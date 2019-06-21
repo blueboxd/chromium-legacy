@@ -74,10 +74,6 @@ class ChromeBrowserState;
 // The incognito interface. Its |incognito| property must be YES.
 @property(nonatomic, readonly) id<BrowserInterface> incognitoInterface;
 
-// Legacy methods that affect multiple (or no) interfaces.
-// Halts all tabs from all interfaces.
-- (void)haltAllTabs;
-
 // Clean up the device sharing manager.
 - (void)cleanDeviceSharingManager;
 

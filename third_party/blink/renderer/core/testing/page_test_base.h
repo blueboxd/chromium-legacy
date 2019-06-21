@@ -9,6 +9,10 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class Document;
@@ -61,6 +65,13 @@ class PageTestBase : public testing::Test {
  protected:
   void LoadAhem();
   void EnablePlatform();
+
+  // Used by subclasses to provide a different tick clock. At the moment is only
+  // used to initialize DummyPageHolder. Note that subclasses calling
+  // EnablePlatform() do not need to redefine this because the platform's mock
+  // tick clock will be automatically used (see the default implementation in
+  // the source file).
+  virtual const base::TickClock* GetTickClock();
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>&
   platform() {

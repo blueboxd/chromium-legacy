@@ -18,6 +18,7 @@
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler_client.h"

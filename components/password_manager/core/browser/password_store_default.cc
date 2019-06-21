@@ -107,8 +107,6 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
                   std::back_inserter(changes));
       }
     }
-    if (!changes.empty())
-      LogStatsForBulkDeletion(changes.size());
   }
   return changes;
 }
@@ -121,19 +119,6 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
                         delete_begin, delete_end, &changes)) {
     return PasswordStoreChangeList();
   }
-  LogStatsForBulkDeletion(changes.size());
-  return changes;
-}
-
-PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
-    base::Time delete_begin,
-    base::Time delete_end) {
-  PasswordStoreChangeList changes;
-  if (!login_db_ || !login_db_->RemoveLoginsSyncedBetween(
-                        delete_begin, delete_end, &changes)) {
-    return PasswordStoreChangeList();
-  }
-  LogStatsForBulkDeletionDuringRollback(changes.size());
   return changes;
 }
 

@@ -39,15 +39,18 @@ class InteractiveDetectorTest : public testing::Test {
  public:
   InteractiveDetectorTest() {
     platform_->AdvanceClockSeconds(1);
-    dummy_page_holder_ = std::make_unique<DummyPageHolder>();
+
+    auto test_task_runner = platform_->test_task_runner();
+    auto* tick_clock = test_task_runner->GetMockTickClock();
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(
+        IntSize(), nullptr, nullptr, nullptr, tick_clock);
 
     Document* document = &dummy_page_holder_->GetDocument();
 
     detector_ = MakeGarbageCollected<InteractiveDetector>(
         *document, new NetworkActivityCheckerForTest(document));
-    auto test_task_runner = platform_->test_task_runner();
     detector_->SetTaskRunnerForTesting(test_task_runner);
-    detector_->SetTickClockForTesting(test_task_runner->GetMockTickClock());
+    detector_->SetTickClockForTesting(tick_clock);
 
     // By this time, the DummyPageHolder has created an InteractiveDetector, and
     // sent DOMContentLoadedEnd. We overwrite it with our new

@@ -44,6 +44,7 @@
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -302,11 +303,31 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
 
+bool ShouldNotifyAboutCookie(
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  // Notify about cookies actually used, and those blocked by preferences ---
+  // for purposes of cookie UI --- as well those pertaining to the
+  // samesite-by-default and samesite-none-must-be-secure features, in order
+  // to issue a deprecation warning for them.
+  switch (status) {
+    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 URLLoader::URLLoader(
     net::URLRequestContext* url_request_context,
     mojom::NetworkServiceClient* network_service_client,
+    mojom::NetworkContextClient* network_context_client,
     DeleteCallback delete_callback,
     mojom::URLLoaderRequest url_loader_request,
     int32_t options,
@@ -321,6 +342,7 @@ URLLoader::URLLoader(
     mojom::TrustedURLLoaderHeaderClient* url_loader_header_client)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
+      network_context_client_(network_context_client),
       delete_callback_(std::move(delete_callback)),
       options_(options),
       corb_detachable_(request.corb_detachable),
@@ -1351,30 +1373,24 @@ void URLLoader::SetRawResponseHeaders(
 
 void URLLoader::SetRawRequestHeadersAndNotify(
     net::HttpRawRequestHeaders headers) {
-  if (network_service_client_) {
-    // TODO(crbug.com/856777): Add OnRawRequest once implemented
-
-    // For now we're only using excluded/flagged cookies pertaining to the
-    // samesite-by-default and samesite-none-must-be-secure features, so the
-    // flagged cookies are being further filtered before sending.
-    net::CookieStatusList flagged_cookies;
+  if (network_context_client_) {
+    net::CookieStatusList reported_cookies;
     for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
-      if (cookie_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-          cookie_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_NONE_INSECURE) {
-        flagged_cookies.push_back(
+      if (ShouldNotifyAboutCookie(cookie_and_status.status)) {
+        reported_cookies.push_back(
             {cookie_and_status.cookie, cookie_and_status.status});
       }
     }
 
-    if (!flagged_cookies.empty()) {
-      network_service_client_->OnFlaggedRequestCookies(
-          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    if (!reported_cookies.empty()) {
+      network_context_client_->OnCookiesRead(
+          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
+          url_request_->url(), url_request_->site_for_cookies(),
+          reported_cookies);
     }
   }
+
+  // TODO(crbug.com/856777): Add OnRawRequest once implemented
 
   if (want_raw_headers_)
     raw_request_headers_.Assign(std::move(headers));
@@ -1538,32 +1554,27 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
 }
 
 void URLLoader::ReportFlaggedResponseCookies() {
-  if (network_service_client_) {
-    // For now we're only using excluded/flagged cookies pertaining to the
-    // samesite-by-default and samesite-none-must-be-secure features, so the
-    // flagged cookies are being further filtered beofre sending.
-    net::CookieAndLineStatusList flagged_cookies;
+  if (network_context_client_) {
+    net::CookieStatusList reported_cookies;
     for (const auto& cookie_line_and_status :
          url_request_->maybe_stored_cookies()) {
-      if (cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-          cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_NONE_INSECURE) {
-        flagged_cookies.emplace_back(cookie_line_and_status.cookie,
-                                     cookie_line_and_status.cookie_string,
-                                     cookie_line_and_status.status);
+      if (ShouldNotifyAboutCookie(cookie_line_and_status.status) &&
+          cookie_line_and_status.cookie) {
+        reported_cookies.push_back({cookie_line_and_status.cookie.value(),
+                                    cookie_line_and_status.status});
       }
     }
 
-    if (!flagged_cookies.empty()) {
-      // TODO(crbug.com/856777): add OnRawResponse once implemented.
-      // (might want to change method name at that point).
-      network_service_client_->OnFlaggedResponseCookies(
-          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    if (!reported_cookies.empty()) {
+      network_context_client_->OnCookiesChanged(
+          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
+          url_request_->url(), url_request_->site_for_cookies(),
+          reported_cookies);
     }
   }
+
+  // TODO(crbug.com/856777): add OnRawResponse once implemented.
+  // (might want to change method name at that point).
 }
 
 }  // namespace network

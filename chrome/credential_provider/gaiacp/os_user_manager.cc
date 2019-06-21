@@ -73,6 +73,11 @@ void OSUserManager::SetInstanceForTesting(OSUserManager* instance) {
 }
 
 // static
+bool OSUserManager::IsDeviceDomainJoined() {
+  return base::win::IsEnrolledToDomain();
+}
+
+// static
 base::string16 OSUserManager::GetLocalDomain() {
   // If the domain is the current computer, then there is no domain controller.
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1];

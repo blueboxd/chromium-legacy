@@ -188,6 +188,11 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
+  void SetSuggestionAvailability(bool value) override {
+    suggestions_available_ = value;
+    CallDone();
+  }
+
   void AcceptDataListSuggestion(const base::string16& value) override {
     value_accept_data_ = value;
     CallDone();
@@ -236,6 +241,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   base::Optional<base::string16> value_preview_field_;
   // Records string received from AcceptDataListSuggestion() call.
   base::Optional<base::string16> value_accept_data_;
+  // Records bool received from SetSuggestionAvailability() call.
+  bool suggestions_available_;
 };
 
 }  // namespace

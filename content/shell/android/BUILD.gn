@@ -11,7 +11,6 @@ content_shell_manifest =
     "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
 
 generate_jni("content_shell_jni_headers") {
-  jni_package = "content/shell"
   sources = [
     "java/src/org/chromium/content_shell/Shell.java",
     "java/src/org/chromium/content_shell/ShellManager.java",
@@ -323,7 +322,6 @@ if (current_cpu != "x64") {
 
   generate_jni("linker_test_jni_headers") {
     testonly = true
-    jni_package = "content/shell"
     sources = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
     ]

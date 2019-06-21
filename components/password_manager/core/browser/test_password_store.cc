@@ -184,13 +184,6 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsCreatedBetweenImpl(
   return PasswordStoreChangeList();
 }
 
-PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
-    base::Time begin,
-    base::Time end) {
-  NOTIMPLEMENTED();
-  return PasswordStoreChangeList();
-}
-
 PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForOriginsImpl(
     const base::Callback<bool(const GURL&)>& origin_filter) {
   NOTIMPLEMENTED();

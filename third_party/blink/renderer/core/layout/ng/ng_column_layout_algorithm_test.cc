@@ -2920,5 +2920,32 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedLimitedHeight) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, AbsposFitsInOneColumn) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      <div style="columns:3; width:320px; height:100px; column-gap:10px; column-fill:auto;">
+        <div style="position:relative; width:222px; height:250px;">
+          <div style="position:absolute; width:111px; height:50px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:222x100
+          offset:0,0 size:0x0
+          offset:0,0 size:111x50
+      offset:110,0 size:100x100
+        offset:0,0 size:222x100
+      offset:220,0 size:100x50
+        offset:0,0 size:222x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

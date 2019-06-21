@@ -62,6 +62,7 @@ class Page;
 class PaintArtifactCompositor;
 class RootFrameViewport;
 class ScrollPaintPropertyNode;
+class TracedValue;
 class TransformPaintPropertyNode;
 struct PaintPropertyTreeBuilderFragmentContext;
 
@@ -320,6 +321,8 @@ class CORE_EXPORT VisualViewport final
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
   CompositorElementId GetCompositorScrollElementId() const;
+
+  std::unique_ptr<TracedValue> ViewportToTracedValue() const;
 
   // Contracts the given size by the thickness of any visible scrollbars. Does
   // not contract the size if the scrollbar is overlay.

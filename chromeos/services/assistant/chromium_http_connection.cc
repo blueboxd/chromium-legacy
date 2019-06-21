@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
@@ -80,6 +81,12 @@ void ChromiumHttpConnection::AddHeader(const std::string& name,
                                        const std::string& value) {
   ENSURE_MAIN_THREAD(&ChromiumHttpConnection::AddHeader, name, value);
   DCHECK_EQ(state_, State::NEW);
+
+  if (!network::IsRequestHeaderSafe(name, value)) {
+    VLOG(2) << "Ignoring unsafe request header: " << name;
+    return;
+  }
+
   // From https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2:
   // "Multiple message-header fields with the same field-name MAY be present in
   // a message if and only if the entire field-value for that header field is

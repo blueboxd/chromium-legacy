@@ -1210,46 +1210,6 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
   return true;
 }
 
-bool LoginDatabase::RemoveLoginsSyncedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    PasswordStoreChangeList* changes) {
-  if (changes) {
-    changes->clear();
-  }
-  ScopedTransaction transaction(this);
-  PrimaryKeyToFormMap key_to_form_map;
-  if (!GetLoginsSyncedBetween(delete_begin, delete_end, &key_to_form_map)) {
-    return false;
-  }
-
-#if defined(OS_IOS)
-  for (const auto& pair : key_to_form_map) {
-    DeleteEncryptedPassword(*pair.second);
-  }
-#endif
-
-  sql::Statement s(db_.GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM logins WHERE date_synced >= ? AND date_synced < ?"));
-  s.BindInt64(0, delete_begin.ToInternalValue());
-  s.BindInt64(1,
-              delete_end.is_null() ? base::Time::Max().ToInternalValue()
-                                   : delete_end.ToInternalValue());
-
-  if (!s.Run()) {
-    return false;
-  }
-  if (changes) {
-    for (const auto& pair : key_to_form_map) {
-      changes->emplace_back(PasswordStoreChange::REMOVE,
-                            /*form=*/std::move(*pair.second),
-                            /*primary_key=*/pair.first);
-    }
-  }
-  return true;
-}
-
 bool LoginDatabase::GetAutoSignInLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
@@ -1449,23 +1409,6 @@ bool LoginDatabase::GetLoginsCreatedBetween(
   s.BindInt64(0, begin.ToInternalValue());
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64_t>::max()
                                : end.ToInternalValue());
-
-  return StatementToForms(&s, nullptr, key_to_form_map) ==
-         FormRetrievalResult::kSuccess;
-}
-
-bool LoginDatabase::GetLoginsSyncedBetween(
-    const base::Time begin,
-    const base::Time end,
-    PrimaryKeyToFormMap* key_to_form_map) {
-  DCHECK(key_to_form_map);
-  DCHECK(!synced_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, synced_statement_.c_str()));
-  s.BindInt64(0, begin.ToInternalValue());
-  s.BindInt64(1,
-              end.is_null() ? base::Time::Max().ToInternalValue()
-                            : end.ToInternalValue());
 
   return StatementToForms(&s, nullptr, key_to_form_map) ==
          FormRetrievalResult::kSuccess;
@@ -1912,10 +1855,6 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
       "SELECT " + all_column_names +
       " FROM logins WHERE date_created >= ? AND date_created < "
       "? ORDER BY origin_url";
-  DCHECK(synced_statement_.empty());
-  synced_statement_ = "SELECT " + all_column_names +
-                      " FROM logins WHERE date_synced >= ? AND date_synced < "
-                      "? ORDER BY origin_url";
   DCHECK(blacklisted_statement_.empty());
   blacklisted_statement_ =
       "SELECT " + all_column_names +

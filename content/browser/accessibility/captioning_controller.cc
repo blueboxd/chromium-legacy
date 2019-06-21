@@ -7,7 +7,7 @@
 #include "base/android/jni_string.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "jni/CaptioningController_jni.h"
+#include "content/public/android/content_jni_headers/CaptioningController_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;

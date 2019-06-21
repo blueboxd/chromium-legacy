@@ -6,6 +6,8 @@
 // files. This is a parameterized test, so the single test method will actually
 // produce one test case for each case listed inside each golden file.
 
+#include <memory.h>
+
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_converter.h"
@@ -28,7 +30,7 @@ TEST_P(TimeLimitConsistencyTest, OutputMatchesGolden) {
   const ConsistencyGoldenCurrentState current_state =
       golden_case.current_state();
 
-  icu::TimeZone* timezone(
+  std::unique_ptr<icu::TimeZone> timezone(
       icu::TimeZone::createTimeZone(current_state.timezone().c_str()));
   base::Time current_time =
       base::Time::FromJavaTime(current_state.time_millis());
@@ -42,7 +44,7 @@ TEST_P(TimeLimitConsistencyTest, OutputMatchesGolden) {
   usage_time_limit::State state = usage_time_limit::GetState(
       policy, /* local_override */ nullptr,
       base::TimeDelta::FromMilliseconds(current_state.usage_millis()),
-      usage_timestamp, current_time, timezone, previous_state);
+      usage_timestamp, current_time, timezone.get(), previous_state);
   ConsistencyGoldenOutput actual_output =
       ConvertProcessorOutputToGoldenOutput(state);
 

@@ -51,5 +51,9 @@ const base::Feature kCertVerifierBuiltinFeature{
     "CertVerifierBuiltin", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kAppendInitiatingFrameOriginToNetworkIsolationKey{
+    "AppendInitiatingFrameOriginToNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net

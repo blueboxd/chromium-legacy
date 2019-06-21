@@ -30,7 +30,6 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -161,7 +160,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
 - (void)didFinishPasswordFormExtraction:
-    (const std::vector<autofill::PasswordForm>&)forms;
+    (const std::vector<autofill::FormData>&)forms;
 
 // Finds all password forms in DOM and sends them to the password store for
 // fetching stored credentials.
@@ -319,8 +318,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
-    [self
-        didFinishPasswordFormExtraction:std::vector<autofill::PasswordForm>()];
+    [self didFinishPasswordFormExtraction:std::vector<autofill::FormData>()];
   }
 
   [self findPasswordFormsAndSendThemToPasswordStore];
@@ -588,16 +586,20 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 #pragma mark - PasswordFormHelperDelegate
 
 - (void)formHelper:(PasswordFormHelper*)formHelper
-     didSubmitForm:(const PasswordForm&)form
+     didSubmitForm:(const FormData&)form
        inMainFrame:(BOOL)inMainFrame {
+  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
+  // parser is gone.
+  PasswordForm password_form;
+  password_form.form_data = form;
   if (inMainFrame) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
-                                                  form);
+                                                  password_form);
   } else {
     // Show a save prompt immediately because for iframes it is very hard to
     // figure out correctness of password forms submission.
     self.passwordManager->OnPasswordFormSubmittedNoChecks(
-        self.passwordManagerDriver, form);
+        self.passwordManagerDriver, password_form);
   }
 }
 
@@ -610,19 +612,24 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 #pragma mark - Private methods
 
-- (void)didFinishPasswordFormExtraction:
-    (const std::vector<autofill::PasswordForm>&)forms {
+- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms {
   // Do nothing if |self| has been detached.
   if (!self.passwordManager)
     return;
 
-  if (!forms.empty()) {
+  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
+  // parser is gone.
+  std::vector<PasswordForm> password_forms(forms.size());
+  for (size_t i = 0; i < forms.size(); ++i)
+    password_forms[i].form_data = forms[i];
+
+  if (!password_forms.empty()) {
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
 
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
-                                                forms);
+                                                password_forms);
   } else {
     [self onNoSavedCredentials];
   }
@@ -633,7 +640,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // and OnPasswordFormsRendered(). Bling has to improvised a bit on the
   // ordering of these two calls.
   self.passwordManager->OnPasswordFormsRendered(self.passwordManagerDriver,
-                                                forms, true);
+                                                password_forms, true);
 }
 
 - (void)findPasswordFormsAndSendThemToPasswordStore {
@@ -641,7 +648,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // manager.
   __weak PasswordController* weakSelf = self;
   [self.formHelper findPasswordFormsWithCompletionHandler:^(
-                       const std::vector<autofill::PasswordForm>& forms) {
+                       const std::vector<autofill::FormData>& forms) {
     [weakSelf didFinishPasswordFormExtraction:forms];
   }];
 }

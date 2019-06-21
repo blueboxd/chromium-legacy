@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/android/content_jni_headers/TracingControllerAndroidImpl_jni.h"
 #include "content/public/browser/tracing_controller.h"
-#include "jni/TracingControllerAndroidImpl_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

@@ -84,13 +84,6 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return false;
   }
 
-  bool RemoveLoginsSyncedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) override {
-    return false;
-  }
-
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override {
@@ -190,22 +183,6 @@ class MockBackend : public PasswordStoreX::NativeBackend {
       if (delete_begin <= all_forms_[i].date_created &&
           (delete_end.is_null() || all_forms_[i].date_created < delete_end))
         erase(i--);
-    }
-    return true;
-  }
-
-  bool RemoveLoginsSyncedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) override {
-    DCHECK(changes);
-    for (size_t i = 0; i < all_forms_.size(); ++i) {
-      if (delete_begin <= all_forms_[i].date_synced &&
-          (delete_end.is_null() || all_forms_[i].date_synced < delete_end)) {
-        changes->push_back(password_manager::PasswordStoreChange(
-            password_manager::PasswordStoreChange::REMOVE, all_forms_[i]));
-        erase(i--);
-      }
     }
     return true;
   }

@@ -76,7 +76,7 @@ void BlinkLeakDetector::PerformLeakDetection(
   // so previous document is still held by the loader until the next event loop.
   // Complete all pending tasks before proceeding to gc.
   number_of_gc_needed_ = 3;
-  delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  delayed_gc_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
@@ -93,7 +93,7 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
 
   // Inspect counters on the next event loop.
   if (--number_of_gc_needed_ > 0) {
-    delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    delayed_gc_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   } else if (number_of_gc_needed_ > -1 &&
              DedicatedWorkerMessagingProxy::ProxyCount()) {
     // It is possible that all posted tasks for finalizing in-process proxy
@@ -104,7 +104,7 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
     // TODO(sof): use proxyCount() to always decide if another GC needs to be
     // scheduled.  Some debug bots running browser unit tests disagree
     // (crbug.com/616714)
-    delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    delayed_gc_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   } else {
     ReportResult();
   }

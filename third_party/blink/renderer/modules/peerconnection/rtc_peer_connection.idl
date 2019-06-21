@@ -136,7 +136,7 @@ enum RTCPeerConnectionState {
     //    List of implemented stats:
     //    https://cs.chromium.org/chromium/src/third_party/webrtc/api/stats/rtcstats_objects.h
     //    See also RTCRtpSender.getStats() and RTCRtpReceiver.getStats().
-    [CallWith=ScriptState] Promise<any> getStats(optional any callbackOrSelector, optional any legacySelector);
+    [CallWith=ScriptState, RaisesException] Promise<any> getStats(optional any callbackOrSelector, optional any legacySelector);
 
     // RTP Media API
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-gettransceivers

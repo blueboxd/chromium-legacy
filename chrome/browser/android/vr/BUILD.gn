@@ -201,15 +201,12 @@ loadable_module("vr_ui_dummy_lib") {
 
 android_library("ar_java") {
   deps = [
+    "//base:base_java",
+    "//chrome/android:chrome_java",
     "//third_party/android_deps:com_google_ar_core_java",
   ]
 
   java_files = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
-
-  classpath_deps = [
-    "//base:base_java",
-    "//chrome/android:chrome_java",
-  ]
 
   # TODO(crbug.com/938909): chromium_code.flags is not used as a proguard
   # config when proguarding asynchronously. This results in AR crashing
@@ -231,7 +228,7 @@ if (enable_arcore) {
 
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("jni_registration") {
-    target = "//chrome/android/features/vr:java"
+    target = "//chrome/android:vr_public_bundle_module"
     header_output = "$target_gen_dir/${target_name}.h"
     namespace = "vr"
   }

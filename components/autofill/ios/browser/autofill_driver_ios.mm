@@ -128,6 +128,9 @@ void AutofillDriverIOS::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
 }
 
+void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
+    bool available) {}
+
 void AutofillDriverIOS::PopupHidden() {
 }
 

@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 using metrics::ChromeOSAppListLaunchEventProto;
@@ -114,10 +114,8 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
 
   // Launching apps can take some time. It looks nicer to dismiss the app list.
   // Do not close app list for home launcher.
-  if (!TabletModeClient::Get() ||
-      !TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (!ash::TabletMode::Get()->InTabletMode())
     list_controller_->DismissView();
-  }
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,

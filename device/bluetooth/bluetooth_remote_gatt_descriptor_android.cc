@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_android.h"
-#include "jni/ChromeBluetoothRemoteGattDescriptor_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothRemoteGattDescriptor_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

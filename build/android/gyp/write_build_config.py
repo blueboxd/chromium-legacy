@@ -638,6 +638,21 @@ def GetAllDepsConfigsInOrder(deps_config_paths):
   return build_utils.GetSortedTransitiveDependencies(deps_config_paths, GetDeps)
 
 
+def GetObjectByPath(obj, key_path):
+  """Given an object, return its nth child based on a key path.
+  """
+  return GetObjectByPath(obj[key_path[0]], key_path[1:]) if key_path else obj
+
+
+def RemoveObjDups(obj, base, *key_path):
+  """Remove array items from an object[*kep_path] that are also
+     contained in the base[*kep_path] (duplicates).
+  """
+  base_target = set(GetObjectByPath(base, key_path))
+  target = GetObjectByPath(obj, key_path)
+  target[:] = [x for x in target if x not in base_target]
+
+
 class Deps(object):
   def __init__(self, direct_deps_config_paths):
     self.all_deps_config_paths = GetAllDepsConfigsInOrder(
@@ -821,10 +836,6 @@ def main(argv):
   parser.add_option(
       '--annotation-processor-configs',
       help='GN-list of build_config files for annotation processors.')
-  parser.add_option(
-      '--classpath-deps-configs',
-      help='GN-list of build_config files for libraries to include as '
-           'build-time-only classpath.')
 
   # android_resources options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
@@ -1089,13 +1100,9 @@ def main(argv):
   processor_deps = _DepsFromPaths(
       build_utils.ParseGnList(options.annotation_processor_configs or ''),
       options.type, filter_root_targets=False)
-  classpath_deps = _DepsFromPaths(
-      build_utils.ParseGnList(options.classpath_deps_configs or ''),
-      options.type)
 
   all_inputs = sorted(
       set(deps.AllConfigPaths() + processor_deps.AllConfigPaths() +
-          classpath_deps.AllConfigPaths() +
           list(static_library_dependent_configs_by_path)))
 
   system_library_deps = deps.Direct('system_java_library')
@@ -1104,7 +1111,6 @@ def main(argv):
   all_group_deps = deps.All('group')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
-  all_classpath_library_deps = classpath_deps.All('java_library')
 
   base_module_build_config = None
   if options.base_module_build_config:
@@ -1283,7 +1289,7 @@ def main(argv):
       if srcjar:
         owned_resource_srcjars.add(srcjar)
 
-    for c in itertools.chain(all_library_deps, all_classpath_library_deps):
+    for c in all_library_deps:
       if c['requires_android']:
         owned_resource_dirs.difference_update(c['owned_resources_dirs'])
         owned_resource_zips.difference_update(c['owned_resources_zips'])
@@ -1390,13 +1396,9 @@ def main(argv):
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
     # TODO(agrieve): Might be less confusing to fold these into bootclasspath.
-    javac_extra_jars = [
-        c['unprocessed_jar_path'] for c in classpath_deps.All('java_library')
-    ]
-    extra_jars = [c['jar_path'] for c in classpath_deps.All('java_library')]
-    interface_extra_jars = [
-        c['interface_jar_path'] for c in classpath_deps.All('java_library')
-    ]
+    javac_extra_jars = []
+    extra_jars = []
+    interface_extra_jars = []
 
     # These are jars specified by input_jars_paths that almost never change.
     # Just add them directly to all the *extra_jars.
@@ -1767,6 +1769,18 @@ def main(argv):
 
   if options.java_resources_jar_path:
     deps_info['java_resources_jar'] = options.java_resources_jar_path
+
+  # DYNAMIC FEATURE MODULES:
+  # Make sure that dependencies that exist on the base module
+  # are not duplicated on the feature module.
+  if base_module_build_config:
+    base = base_module_build_config
+    RemoveObjDups(config, base, 'deps_info', 'java_runtime_classpath')
+    RemoveObjDups(config, base, 'deps_info', 'javac_full_classpath')
+    RemoveObjDups(config, base, 'deps_info', 'javac_full_interface_classpath')
+    RemoveObjDups(config, base, 'deps_info', 'jni', 'all_source')
+    RemoveObjDups(config, base, 'final_dex', 'dependency_dex_files')
+    RemoveObjDups(config, base, 'extra_android_manifests')
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 

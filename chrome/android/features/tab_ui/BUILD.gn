@@ -67,9 +67,6 @@ android_library("java") {
 
   deps = [
     ":java_resources",
-  ]
-
-  classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_strings_grd",
@@ -78,15 +75,15 @@ android_library("java") {
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/policy/android:policy_java",
-    "//content/public/android:content_java_resources",
     "//content/public/android:content_java",
+    "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_arch_lifecycle_runtime_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_v13_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//ui/android:ui_java",
   ]
 

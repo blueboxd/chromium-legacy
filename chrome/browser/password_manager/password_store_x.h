@@ -91,10 +91,6 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
         base::Time delete_begin,
         base::Time delete_end,
         password_manager::PasswordStoreChangeList* changes) = 0;
-    virtual bool RemoveLoginsSyncedBetween(
-        base::Time delete_begin,
-        base::Time delete_end,
-        password_manager::PasswordStoreChangeList* changes) = 0;
 
     // Sets the 'skip_zero_click' flag to 'true' for all logins in the database
     // that match |origin_filter|.
@@ -167,9 +163,6 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       base::Time delete_begin,
       base::Time delete_end) override;
   password_manager::PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) override;
-  password_manager::PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
   password_manager::PasswordStoreChangeList DisableAutoSignInForOriginsImpl(

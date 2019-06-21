@@ -121,6 +121,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const base::Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition& node_position);
 
+  const NGConstraintSpace& container_space_;
   NGBoxFragmentBuilder* container_builder_;
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;

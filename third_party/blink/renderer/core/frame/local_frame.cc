@@ -831,7 +831,8 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
                        Page& page,
                        FrameOwner* owner,
                        WindowAgentFactory* inheriting_agent_factory,
-                       InterfaceRegistry* interface_registry)
+                       InterfaceRegistry* interface_registry,
+                       const base::TickClock* clock)
     : Frame(client,
             page,
             owner,
@@ -885,7 +886,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
-  idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this);
+  idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this, clock);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 
   if (ad_tracker_) {

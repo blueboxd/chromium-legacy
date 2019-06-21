@@ -280,11 +280,6 @@
 
 #pragma mark - BrowserViewInformation methods
 
-- (void)haltAllTabs {
-  [self.mainBrowser->GetTabModel() haltAllTabs];
-  [self.otrBrowser->GetTabModel() haltAllTabs];
-}
-
 - (void)cleanDeviceSharingManager {
   [self.deviceSharingManager updateBrowserState:NULL];
 }

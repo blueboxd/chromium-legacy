@@ -1525,7 +1525,6 @@ jumbo_split_static_library("ui") {
       "ash/tab_scrubber.h",
       "ash/tablet_mode_client.cc",
       "ash/tablet_mode_client.h",
-      "ash/tablet_mode_client_observer.h",
       "ash/test_ime_controller.cc",
       "ash/test_ime_controller.h",
       "ash/vpn_list_forwarder.cc",
@@ -3923,8 +3922,6 @@ static_library("test_support") {
     sources += [
       "ash/ash_test_util.cc",
       "ash/ash_test_util.h",
-      "ash/fake_tablet_mode_controller.cc",
-      "ash/fake_tablet_mode_controller.h",
       "ash/test_login_screen.cc",
       "ash/test_login_screen.h",
       "ash/test_login_screen_model.cc",

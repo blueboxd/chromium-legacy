@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "jni/AudioFocusDelegate_jni.h"
+#include "content/public/android/content_jni_headers/AudioFocusDelegate_jni.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 

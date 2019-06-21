@@ -9,21 +9,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
-// Provides thin wrappers around the following basic time types from
-// base/time package:
-//
-//  - WTF::TimeDelta is an alias for base::TimeDelta and represents a duration
-//    of time.
-//  - WTF::TimeTicks wraps base::TimeTicks and represents a monotonic time
-//    value.
-//  - WTF::Time is an alias for base::Time and represents a wall time value.
-//
-// For usage guideline please see the documentation in base/time/time.h
-
-using TimeDelta = base::TimeDelta;
-using TimeTicks = base::TimeTicks;
-using Time = base::Time;
-using TimeTicks = base::TimeTicks;
 
 // Returns the current UTC time in seconds, counted from January 1, 1970.
 // Precision varies depending on platform but is usually as good or better
@@ -37,7 +22,7 @@ inline double CurrentTimeMS() {
 
 // Monotonically increasing clock time since an arbitrary and unspecified origin
 // time. Mockable using SetTimeFunctionsForTesting().
-WTF_EXPORT TimeTicks CurrentTimeTicks();
+WTF_EXPORT base::TimeTicks CurrentTimeTicks();
 // Convenience functions that return seconds and milliseconds since the origin
 // time. Prefer CurrentTimeTicks() where possible to avoid potential unit
 // confusion errors.
@@ -51,8 +36,5 @@ using WTF::CurrentTimeMS;
 using WTF::CurrentTimeTicks;
 using WTF::CurrentTimeTicksInMilliseconds;
 using WTF::CurrentTimeTicksInSeconds;
-using WTF::Time;
-using WTF::TimeDelta;
-using WTF::TimeTicks;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_

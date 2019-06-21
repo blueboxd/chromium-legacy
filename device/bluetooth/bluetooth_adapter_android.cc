@@ -20,7 +20,7 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_android.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
-#include "jni/ChromeBluetoothAdapter_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothAdapter_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;

@@ -67,7 +67,7 @@ class TabletModeWindowManager;
 class ASH_EXPORT TabletModeController
     : public AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public TabletMode,
+      public TabletMode::Delegate,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
@@ -121,8 +121,7 @@ class ASH_EXPORT TabletModeController
   // clamshell.
   void StopObservingAnimation(bool record_stats, bool delete_screenshot);
 
-  // TabletMode:
-  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
+  // TabletMode::Delegate:
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
@@ -359,10 +358,6 @@ class ASH_EXPORT TabletModeController
   // incorrect calculations of hinge angles.
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
-
-  // A simplified observer that only gets notified of entering or exiting tablet
-  // mode.
-  TabletModeToggleObserver* toggle_observer_ = nullptr;
 
   // Tracks whether a flag is used to force ui mode.
   UiMode force_ui_mode_ = UiMode::kNone;

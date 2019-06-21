@@ -50,7 +50,7 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
     }
   }
 
-  BOOL is_page_printable = [tab viewForPrinting] != nil;
+  BOOL is_page_printable = [tab.webState->GetView() viewPrintFormatter] != nil;
   ThumbnailGeneratorBlock thumbnail_generator =
       activity_services::ThumbnailGeneratorForTab(tab);
   const GURL& finalURLToShare =

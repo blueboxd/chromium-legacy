@@ -101,12 +101,6 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::CookieList& cookie_list,
     bool allowed_from_caller) {
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader && network_context_->client()) {
-    network_context_->client()->OnCookiesRead(
-        false /* is_service_worker */, url_loader->GetProcessId(),
-        url_loader->GetRenderFrameId(), request.url(),
-        request.site_for_cookies(), cookie_list, !allowed_from_caller);
-  }
   if (url_loader && allowed_from_caller) {
     return url_loader->AllowCookies(request.url(), request.site_for_cookies());
   }
@@ -125,12 +119,6 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     net::CookieOptions* options,
     bool allowed_from_caller) {
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader && network_context_->client()) {
-    network_context_->client()->OnCookieChange(
-        false /* is_service_worker */, url_loader->GetProcessId(),
-        url_loader->GetRenderFrameId(), request.url(),
-        request.site_for_cookies(), cookie, !allowed_from_caller);
-  }
   if (url_loader && allowed_from_caller) {
     return url_loader->AllowCookies(request.url(), request.site_for_cookies());
   }

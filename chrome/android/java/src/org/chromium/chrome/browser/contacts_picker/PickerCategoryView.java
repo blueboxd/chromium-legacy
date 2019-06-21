@@ -20,7 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.util.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -164,7 +164,7 @@ public class PickerCategoryView extends RelativeLayout
         // available memory, but cap it at 5MB.
         final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
         int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
-        mBitmapCache = new BitmapCache(ChromeApplication.getReferencePool(),
+        mBitmapCache = new BitmapCache(GlobalDiscardableReferencePool.getReferencePool(),
                 Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
     }
 

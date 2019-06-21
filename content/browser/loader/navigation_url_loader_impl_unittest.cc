@@ -88,13 +88,14 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
     params.process_id = network::mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
     url_loader_ = std::make_unique<network::URLLoader>(
-        context_.get(), nullptr,
+        context_.get(), nullptr /* network_service_client */,
+        nullptr /* network_context_client */,
         base::BindOnce(&TestNavigationLoaderInterceptor::DeleteURLLoader,
                        base::Unretained(this)),
         std::move(request), 0 /* options */, resource_request,
         std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
         0, /* request_id */
-        resource_scheduler_client_, nullptr,
+        resource_scheduler_client_, nullptr /* keepalive_statistics_recorder */,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */);
   }
 

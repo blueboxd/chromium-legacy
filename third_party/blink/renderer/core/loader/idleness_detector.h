@@ -7,13 +7,10 @@
 
 #include "base/macros.h"
 #include "base/task/sequence_manager/task_time_observer.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
-
-namespace base {
-class TickClock;
-}
 
 namespace blink {
 
@@ -29,7 +26,9 @@ class CORE_EXPORT IdlenessDetector
     : public GarbageCollectedFinalized<IdlenessDetector>,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  explicit IdlenessDetector(LocalFrame*);
+  IdlenessDetector(
+      LocalFrame*,
+      const base::TickClock* = base::DefaultTickClock::GetInstance());
 
   void Shutdown();
   void WillCommitLoad();
@@ -42,9 +41,6 @@ class CORE_EXPORT IdlenessDetector
   base::TimeTicks GetNetworkAlmostIdleTime();
   base::TimeTicks GetNetworkIdleTime();
   bool NetworkIsAlmostIdle();
-
-  // The caller owns the |clock| which must outlive the IdlenessDetector.
-  static void SetTickClockForTesting(const base::TickClock* clock);
 
   void Trace(blink::Visitor*);
 
@@ -72,6 +68,8 @@ class CORE_EXPORT IdlenessDetector
 
   bool in_network_0_quiet_period_ = true;
   bool in_network_2_quiet_period_ = true;
+
+  const base::TickClock* clock_;
 
   base::TimeDelta network_quiet_window_ = kNetworkQuietWindow;
   // Store the accumulated time of network quiet.

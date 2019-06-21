@@ -522,6 +522,23 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesForTesting {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowBaseSyncPrimitivesForTesting);
 };
 
+// Counterpart to base::DisallowUnresponsiveTasks() for tests to allow them to
+// block their thread after it was banned.
+class BASE_EXPORT ScopedAllowUnresponsiveTasksForTesting {
+ public:
+  ScopedAllowUnresponsiveTasksForTesting() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ~ScopedAllowUnresponsiveTasksForTesting() EMPTY_BODY_IF_DCHECK_IS_OFF;
+
+ private:
+#if DCHECK_IS_ON()
+  const bool was_disallowed_base_sync_;
+  const bool was_disallowed_blocking_;
+  const bool was_disallowed_cpu_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowUnresponsiveTasksForTesting);
+};
+
 namespace internal {
 
 // Asserts that waiting on a //base sync primitive is allowed in the current

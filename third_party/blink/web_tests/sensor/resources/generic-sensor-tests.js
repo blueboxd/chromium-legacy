@@ -271,9 +271,10 @@ function runGenericSensorTests(sensorType,
     sensorObject.start();
 
     // Create a focused editbox inside a cross-origin iframe, sensor notification must suspend.
-    const iframeSrc = 'data:text/html;charset=utf-8,<html><body><input type="text" autofocus></body></html>';
+    const iframeSrc = 'data:text/html;charset=utf-8,<html><body><input id="edit" type="text"><script>document.getElementById("edit").focus();</script></body></html>';
     let iframe = document.createElement('iframe');
     iframe.src = encodeURI(iframeSrc);
+    iframe.allow = "focus-without-user-activation";
 
     let mockSensor = await sensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);

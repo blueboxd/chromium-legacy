@@ -96,6 +96,10 @@ public class WebApkShareTargetUtilTest {
 
         @Implementation
         public static String getFileTypeFromContentUri(Uri uri) {
+            String uriString = uri.toString();
+            if (uriString.startsWith("text")) {
+                return "text/plain";
+            }
             return "image/gif";
         }
 
@@ -343,6 +347,251 @@ public class WebApkShareTargetUtilTest {
                 new String[] {"text/plain", "text/plain", "image/gif"});
     }
 
+    /**
+     * Test that when SHARE_PARAM_ACCEPTS doesn't accept text, but we receive a text file, and that
+     * we don't receive shared text, that we send the text file as shared text.
+     */
+    @Test
+    public void testPostMultipartSharedTextFileMimeTypeNotInAccepts() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-file-mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
+                new String[] {"text-file-mock-uri"}, new String[] {""},
+                new String[] {"text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_ACCEPTS doesn't accept text, but we receive multiple text files,
+     * and that we don't receive shared text, that we send only one text file as shared text.
+     */
+    @Test
+    public void testPostMultipartSharedTextFileMimeTypeNotInAcceptsMultiple() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-file-mock-uri"));
+        uris.add(Uri.parse("text-file-mock-uri2"));
+        uris.add(Uri.parse("text-file-mock-uri3"));
+
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text"}, new boolean[] {true},
+                new String[] {"text-file-mock-uri"}, new String[] {""},
+                new String[] {"text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_ACCEPTS doesn't accept text, and that we DO receive shared text;
+     * even though we received a text file, we should ignore it, because in the end, a web page
+     * expects a single value (not an array) in the "share-text" field.
+     */
+    @Test
+    public void testPostMultipartSharedTextFileAndSharedSelection() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-file-mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text"}, new boolean[] {false},
+                new String[] {"shared_text_value"}, new String[] {""}, new String[] {"text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_ACCEPTS DOES accept text, we don't accidentally send the text file
+     * as shared text.
+     */
+    @Test
+    public void testPostMultipartSharedTextFileMimeTypeInAccepts() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(
+                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
+                new String[] {"text-mock-uri"}, new String[] {"file-name-for-text-mock-uri"},
+                new String[] {"text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_TEXT is missing but we receive a text selection, we send it as a
+     * file, along with other files.
+     */
+    @Test
+    public void testPostMultipartSharedTextSelectionNoParamTextPlainInAccepts() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(
+                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text-file", "share-text-file"},
+                new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
+                new String[] {"shared.txt", "file-name-for-text-mock-uri"},
+                new String[] {"text/plain", "text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_TEXT is present and  we receive a text selection, we don't
+     * mistakenly send it as a file. File sharing should not be affected either.
+     */
+    @Test
+    public void testPostMultipartSharedTextSelectionHasParamText() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(
+                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"text/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("text-mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text", "share-text-file"},
+                new boolean[] {false, true}, new String[] {"shared_text_value", "text-mock-uri"},
+                new String[] {"", "file-name-for-text-mock-uri"},
+                new String[] {"text/plain", "text/plain"});
+    }
+
+    /**
+     * Test that when SHARE_PARAM_TEXT is missing, we receive a text selection, and we can't find a
+     * SHARE_PARAM_ACCEPTS that matches text (such as "text/plain" or "text/*"), we don't mistakenly
+     * send the text as a file. In addition, file sharing should not be affected.
+     *
+     * Ideally this should never happens if the WebAPK Minting server minted WebAPK correctly.
+     */
+    @Test
+    public void testPostMultipartSharedTextSelectionNoParamTextPlainNotInAccepts() {
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(
+                WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"share-text-file\"]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
+        registerWebApk(shareActivityBundle);
+
+        Intent intent = createBasicShareIntent();
+        intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("mock-uri"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
+
+        assertPostData(postData, new String[] {"share-text-file"}, new boolean[] {true},
+                new String[] {"mock-uri"}, new String[] {"file-name-for-mock-uri"},
+                new String[] {"image/gif"});
+    }
+
     @Test
     public void testPostMultipartWithFileAndInValidParamNames() {
         Bundle shareActivityBundle = new Bundle();
@@ -362,7 +611,7 @@ public class WebApkShareTargetUtilTest {
         intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
 
         ArrayList<Uri> uris = new ArrayList<>();
-        uris.add(null);
+        uris.add(Uri.parse("mock-uri"));
         intent.putExtra(Intent.EXTRA_STREAM, uris);
 
         WebApkInfo info = WebApkInfo.create(intent);

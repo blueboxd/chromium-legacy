@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
@@ -28,6 +29,7 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -426,6 +428,33 @@ public class WebApkInfoTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
         Assert.assertEquals(ShortcutSource.EXTERNAL_INTENT, info.source());
+    }
+
+    /**
+     * Test that ShortcutSource#SHARE_TARGET is rewritten to
+     * ShortcutSource#WEBAPK_SHARE_TARGET_FILE if the WebAPK is launched as a result of user sharing
+     * a binary file.
+     */
+    @Test
+    public void testOverrideShareTargetSourceIfLaunchedFromFileSharing() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
+                "something");
+        ArrayList<Uri> uris = new ArrayList<>();
+        uris.add(Uri.parse("mock-uri-3"));
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.WEBAPK_SHARE_TARGET);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(ShortcutSource.WEBAPK_SHARE_TARGET_FILE, info.source());
     }
 
     /**

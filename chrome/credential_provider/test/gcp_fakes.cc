@@ -141,6 +141,7 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
   return AddUser(username, password, fullname, comment, add_to_users_group,
                  OSUserManager::GetLocalDomain().c_str(), sid, error);
 }
+
 HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
                                    const wchar_t* password,
                                    const wchar_t* fullname,
@@ -269,6 +270,10 @@ HRESULT FakeOSUserManager::CreateLogonToken(const wchar_t* domain,
                         FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
                         nullptr));
   return token->IsValid() ? S_OK : HRESULT_FROM_WIN32(::GetLastError());
+}
+
+bool FakeOSUserManager::IsDeviceDomainJoined() {
+  return is_device_domain_joined_;
 }
 
 HRESULT FakeOSUserManager::GetUserSID(const wchar_t* domain,
@@ -579,17 +584,30 @@ void FakeWinHttpUrlFetcherFactory::SetFakeResponse(
       Response(headers, response, send_response_event_handle);
 }
 
+void FakeWinHttpUrlFetcherFactory::SetFakeFailedResponse(const GURL& url,
+                                                         HRESULT failed_hr) {
+  // Make sure that the HRESULT set is a failed attempt.
+  DCHECK(FAILED(failed_hr));
+  failed_http_fetch_hr_[url] = failed_hr;
+}
+
 std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
     const GURL& url) {
-  if (fake_responses_.count(url) == 0)
+  if (fake_responses_.count(url) == 0 && failed_http_fetch_hr_.count(url) == 0)
     return nullptr;
 
-  const Response& response = fake_responses_[url];
-
   FakeWinHttpUrlFetcher* fetcher = new FakeWinHttpUrlFetcher(std::move(url));
-  fetcher->response_headers_ = response.headers;
-  fetcher->response_ = response.response;
-  fetcher->send_response_event_handle_ = response.send_response_event_handle;
+
+  if (fake_responses_.count(url) != 0) {
+    const Response& response = fake_responses_[url];
+
+    fetcher->response_headers_ = response.headers;
+    fetcher->response_ = response.response;
+    fetcher->send_response_event_handle_ = response.send_response_event_handle;
+  } else {
+    DCHECK(failed_http_fetch_hr_.count(url) > 0);
+    fetcher->response_hr_ = failed_http_fetch_hr_[url];
+  }
   ++requests_created_;
 
   return std::unique_ptr<WinHttpUrlFetcher>(fetcher);
@@ -605,6 +623,9 @@ bool FakeWinHttpUrlFetcher::IsValid() const {
 }
 
 HRESULT FakeWinHttpUrlFetcher::Fetch(std::vector<char>* response) {
+  if (FAILED(response_hr_))
+    return response_hr_;
+
   if (send_response_event_handle_ != INVALID_HANDLE_VALUE)
     ::WaitForSingleObject(send_response_event_handle_, INFINITE);
 

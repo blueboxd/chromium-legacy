@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Process;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
@@ -71,8 +70,6 @@ public class NativeTest {
     }
 
     public void postCreate(Activity activity) {
-        CommandLine.init(new String[]{});
-
         parseArgumentsFromIntent(activity, activity.getIntent());
         mReporter = new TestStatusReporter(activity);
         mReporter.testRunStarted(Process.myPid());

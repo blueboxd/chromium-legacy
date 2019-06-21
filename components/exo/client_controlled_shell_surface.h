@@ -37,10 +37,9 @@ enum class Orientation { PORTRAIT, LANDSCAPE };
 // controlled by a remote shell client rather than the window manager. The
 // position specified as part of the geometry is relative to the origin of
 // the screen coordinate system.
-class ClientControlledShellSurface
-    : public ShellSurfaceBase,
-      public display::DisplayObserver,
-      public ui::CompositorLockClient {
+class ClientControlledShellSurface : public ShellSurfaceBase,
+                                     public display::DisplayObserver,
+                                     public ui::CompositorLockClient {
  public:
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
@@ -302,6 +301,8 @@ class ClientControlledShellSurface
   ash::wm::ClientControlledState* client_controlled_state_ = nullptr;
 
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
+
+  ash::WindowPinType current_pin_;
 
   bool can_maximize_ = true;
 

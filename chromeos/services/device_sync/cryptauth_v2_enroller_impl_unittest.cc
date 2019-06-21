@@ -114,28 +114,6 @@ const CryptAuthKey kClientEphemeralDh(kClientDhPublicKey,
                                       CryptAuthKey::Status::kActive,
                                       KeyType::P256);
 
-class FakeCryptAuthKeyCreatorFactory : public CryptAuthKeyCreatorImpl::Factory {
- public:
-  FakeCryptAuthKeyCreatorFactory() = default;
-
-  ~FakeCryptAuthKeyCreatorFactory() override = default;
-
-  FakeCryptAuthKeyCreator* instance() { return instance_; }
-
- private:
-  // CryptAuthKeyCreatorImpl::Factory:
-  std::unique_ptr<CryptAuthKeyCreator> BuildInstance() override {
-    auto instance = std::make_unique<FakeCryptAuthKeyCreator>();
-    instance_ = instance.get();
-
-    return instance;
-  }
-
-  FakeCryptAuthKeyCreator* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthKeyCreatorFactory);
-};
-
 class FakeCryptAuthKeyProofComputerFactory
     : public CryptAuthKeyProofComputerImpl::Factory {
  public:

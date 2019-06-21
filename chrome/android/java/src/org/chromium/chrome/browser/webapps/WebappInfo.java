@@ -406,6 +406,7 @@ public class WebappInfo {
         int source = source();
         return source != ShortcutSource.NOTIFICATION && source != ShortcutSource.EXTERNAL_INTENT
                 && source != ShortcutSource.EXTERNAL_INTENT_FROM_CHROME
-                && source != ShortcutSource.WEBAPK_SHARE_TARGET;
+                && source != ShortcutSource.WEBAPK_SHARE_TARGET
+                && source != ShortcutSource.WEBAPK_SHARE_TARGET_FILE;
     }
 }

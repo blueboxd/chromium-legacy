@@ -24,6 +24,7 @@
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
+#include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
@@ -394,7 +395,7 @@ void DownloadController::OnDownloadStarted(
   ProfileKey* profile_key =
       profile ? profile->GetProfileKey() : ::android::GetMainProfileKey();
 
-  DownloadUtils::GetDownloadOfflineContentProvider(profile_key)
+  DownloadOfflineContentProviderFactory::GetForKey(profile_key)
       ->OnDownloadStarted(download_item);
 
   OnDownloadUpdated(download_item);

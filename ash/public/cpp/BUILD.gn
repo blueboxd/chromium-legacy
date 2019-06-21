@@ -290,6 +290,7 @@ source_set("unit_tests") {
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
+    "tablet_mode_unittest.cc",
     "voice_interaction_controller_unittest.cc",
   ]
 

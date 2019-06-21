@@ -107,14 +107,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
                                   base::Time delete_end,
                                   PasswordStoreChangeList* changes);
 
-  // Removes all logins synced from |delete_begin| onwards (inclusive) and
-  // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction. If |changes| is not be null, it will be used to
-  // populate the change list of the removed forms if any.
-  bool RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                 base::Time delete_end,
-                                 PasswordStoreChangeList* changes);
-
   // Sets the 'skip_zero_click' flag on all forms on |origin| to 'true'.
   bool DisableAutoSignInForOrigin(const GURL& origin);
 
@@ -270,15 +262,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
-  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
-  // You may use a null Time value to do an unbounded search in either
-  // direction. |key_to_form_map| must not be null and will be used to return
-  // the results. The key of the map is the DB primary key.
-  bool GetLoginsSyncedBetween(base::Time begin,
-                              base::Time end,
-                              PrimaryKeyToFormMap* key_to_form_map)
-      WARN_UNUSED_RESULT;
-
   // Returns the DB primary key for the specified |form|.  Returns -1 if the row
   // for this |form| is not found.
   int GetPrimaryKey(const autofill::PasswordForm& form) const;
@@ -328,7 +311,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string get_statement_federated_;
   std::string get_statement_psl_federated_;
   std::string created_statement_;
-  std::string synced_statement_;
   std::string blacklisted_statement_;
   std::string encrypted_statement_;
   std::string encrypted_password_statement_by_id_;

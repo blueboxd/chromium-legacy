@@ -211,6 +211,8 @@ bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
       // LoadCredentials has not finished.
       return false;
+    case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED:
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
     case OAuth2TokenServiceDelegate::
         LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:

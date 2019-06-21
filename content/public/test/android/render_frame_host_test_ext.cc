@@ -11,7 +11,7 @@
 #include "content/browser/frame_host/render_frame_host_android.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/RenderFrameHostTestExt_jni.h"
+#include "content/public/test/android/content_test_jni/RenderFrameHostTestExt_jni.h"
 
 using base::android::JavaParamRef;
 

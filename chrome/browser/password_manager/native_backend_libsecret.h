@@ -41,10 +41,6 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool RemoveLoginsSyncedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) override;
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
@@ -60,11 +56,6 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
   scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() override;
 
  private:
-  enum TimestampToCompare {
-    CREATION_TIMESTAMP,
-    SYNC_TIMESTAMP,
-  };
-
   // Returns credentials matching |lookup_form| via |forms|.
   bool AddUpdateLoginSearch(
       const autofill::PasswordForm& lookup_form,
@@ -87,21 +78,6 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend {
       GetLoginsListOptions options,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
-
-  // Retrieves password created/synced in the time interval into |forms|,
-  // overwriting the original contents of |forms|. Returns true on success.
-  bool GetLoginsBetween(base::Time get_begin,
-                        base::Time get_end,
-                        TimestampToCompare date_to_compare,
-                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                            forms) WARN_UNUSED_RESULT;
-
-  // Removes password created/synced in the time interval. Returns |true| if the
-  // operation succeeded. |changes| will contain the changes applied.
-  bool RemoveLoginsBetween(base::Time get_begin,
-                           base::Time get_end,
-                           TimestampToCompare date_to_compare,
-                           password_manager::PasswordStoreChangeList* changes);
 
   // Convert data get from Libsecret to Passwordform. Uses |lookup_form| for
   // additional (PSL) matching, if present.

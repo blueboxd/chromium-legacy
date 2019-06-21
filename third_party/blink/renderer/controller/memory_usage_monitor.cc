@@ -11,7 +11,7 @@
 namespace blink {
 
 namespace {
-constexpr TimeDelta kPingInterval = TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kPingInterval = base::TimeDelta::FromSeconds(1);
 }
 
 MemoryUsageMonitor::MemoryUsageMonitor()

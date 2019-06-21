@@ -378,6 +378,9 @@ class QuicTestPacketMaker {
 
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
+  quic::QuicConnectionId DestinationConnectionId() const;
+  quic::QuicConnectionId SourceConnectionId() const;
+
   quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
   quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
 

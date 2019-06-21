@@ -7,10 +7,10 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/DialogOverlayImpl_jni.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
-#include "jni/DialogOverlayImpl_jni.h"
 #include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 

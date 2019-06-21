@@ -86,14 +86,6 @@ class CONTENT_EXPORT NetworkServiceClient
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-  void OnFlaggedRequestCookies(
-      int32_t process_id,
-      int32_t routing_id,
-      const net::CookieStatusList& excluded_cookies) override;
-  void OnFlaggedResponseCookies(
-      int32_t process_id,
-      int32_t routing_id,
-      const net::CookieAndLineStatusList& excluded_cookies) override;
   // net::CertDatabase::Observer implementation:
   void OnCertDBChanged() override;
 

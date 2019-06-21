@@ -339,7 +339,7 @@ android_library("java") {
   ]
   # Put other Chrome libs into the classpath so that you can call into the rest
   # of Chrome from the Foo DFM.
-  classpath_deps = [
+  deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
     # etc.

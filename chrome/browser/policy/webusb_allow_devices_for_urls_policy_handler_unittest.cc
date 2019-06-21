@@ -361,7 +361,8 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"(ROOT)\": Unknown property: serialNumber");
+      "Schema validation error at \"items[0].devices.items[0]\": Unknown "
+      "property: serialNumber");
   EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 

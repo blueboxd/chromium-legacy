@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/android/content_jni_headers/RenderFrameHostImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
-#include "jni/RenderFrameHostImpl_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

@@ -216,7 +216,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAllowFileAccessFromFileURLs(bool allow);
   void SetAllowRunningOfInsecureContent(bool allowed);
   void SetAutoplayAllowed(bool allowed);
-  void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetBlockThirdPartyCookies(bool block);
   void SetAudioData(const gin::ArrayBufferView& view);
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
@@ -516,8 +515,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAllowRunningOfInsecureContent",
                  &TestRunnerBindings::SetAllowRunningOfInsecureContent)
       .SetMethod("setAutoplayAllowed", &TestRunnerBindings::SetAutoplayAllowed)
-      .SetMethod("setAllowUniversalAccessFromFileURLs",
-                 &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
       .SetMethod("setBlockThirdPartyCookies",
                  &TestRunnerBindings::SetBlockThirdPartyCookies)
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
@@ -950,11 +947,6 @@ void TestRunnerBindings::SetJavaScriptCanAccessClipboard(bool can_access) {
 void TestRunnerBindings::SetXSSAuditorEnabled(bool enabled) {
   if (runner_)
     runner_->SetXSSAuditorEnabled(enabled);
-}
-
-void TestRunnerBindings::SetAllowUniversalAccessFromFileURLs(bool allow) {
-  if (runner_)
-    runner_->SetAllowUniversalAccessFromFileURLs(allow);
 }
 
 void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
@@ -2136,11 +2128,6 @@ void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
 
 void TestRunner::SetXSSAuditorEnabled(bool enabled) {
   delegate_->Preferences()->xss_auditor_enabled = enabled;
-  delegate_->ApplyPreferences();
-}
-
-void TestRunner::SetAllowUniversalAccessFromFileURLs(bool allow) {
-  delegate_->Preferences()->allow_universal_access_from_file_urls = allow;
   delegate_->ApplyPreferences();
 }
 

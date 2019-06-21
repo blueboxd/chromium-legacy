@@ -8,9 +8,9 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/supports_user_data.h"
+#include "content/public/android/content_jni_headers/SmartSelectionClient_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SmartSelectionClient_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;

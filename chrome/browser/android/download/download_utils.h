@@ -13,9 +13,7 @@ namespace download {
 class DownloadItem;
 }
 
-class DownloadOfflineContentProvider;
 class GURL;
-class ProfileKey;
 
 // Native side of DownloadUtils.java.
 class DownloadUtils {
@@ -26,8 +24,6 @@ class DownloadUtils {
   static std::string RemapGenericMimeType(const std::string& mime_type,
                                           const GURL& url,
                                           const std::string& file_name);
-  static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
-      ProfileKey* profile_key);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_

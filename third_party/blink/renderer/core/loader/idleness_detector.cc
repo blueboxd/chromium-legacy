@@ -20,10 +20,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
-namespace {
-const base::TickClock* g_clock = nullptr;
-}  // namespace
-
 namespace blink {
 
 constexpr base::TimeDelta IdlenessDetector::kNetworkQuietWindow;
@@ -98,7 +94,7 @@ void IdlenessDetector::OnDidLoadResource() {
   if (request_count > 2)
     return;
 
-  base::TimeTicks timestamp = g_clock->NowTicks();
+  base::TimeTicks timestamp = clock_->NowTicks();
   // Arriving at =2 updates the quiet_2 base timestamp.
   // Arriving at <2 sets the quiet_2 base timestamp only if
   // it was not already set.
@@ -197,15 +193,15 @@ void IdlenessDetector::DidProcessTask(base::TimeTicks start_time,
     network_0_quiet_ += end_time - start_time;
 }
 
-IdlenessDetector::IdlenessDetector(LocalFrame* local_frame)
+IdlenessDetector::IdlenessDetector(LocalFrame* local_frame,
+                                   const base::TickClock* clock)
     : local_frame_(local_frame),
       task_observer_added_(false),
+      clock_(clock),
       network_quiet_timer_(
           local_frame->GetTaskRunner(TaskType::kInternalLoading),
           this,
           &IdlenessDetector::NetworkQuietTimerFired) {
-  if (!g_clock)
-    g_clock = base::DefaultTickClock::GetInstance();
   if (local_frame->GetSettings()) {
     network_quiet_window_ = base::TimeDelta::FromSecondsD(
         local_frame->GetSettings()->GetNetworkQuietTimeout());
@@ -226,11 +222,6 @@ void IdlenessDetector::NetworkQuietTimerFired(TimerBase*) {
       (in_network_2_quiet_period_ && !network_2_quiet_.is_null())) {
     network_quiet_timer_.StartOneShot(kNetworkQuietWatchdog, FROM_HERE);
   }
-}
-
-// static
-void IdlenessDetector::SetTickClockForTesting(const base::TickClock* clock) {
-  g_clock = clock;
 }
 
 void IdlenessDetector::Trace(blink::Visitor* visitor) {

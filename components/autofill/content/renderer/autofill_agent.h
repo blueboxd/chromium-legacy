@@ -78,6 +78,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void ClearPreviewedForm() override;
   void FillFieldWithValue(const base::string16& value) override;
   void PreviewFieldWithValue(const base::string16& value) override;
+  void SetSuggestionAvailability(bool available) override;
   void AcceptDataListSuggestion(const base::string16& value) override;
   void FillPasswordSuggestion(const base::string16& username,
                               const base::string16& password) override;

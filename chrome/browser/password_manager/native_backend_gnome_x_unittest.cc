@@ -350,10 +350,6 @@ class NativeBackendGnomeTest : public testing::Test {
     UPDATE_BY_UPDATELOGIN,
     UPDATE_BY_ADDLOGIN,
   };
-  enum RemoveBetweenMethod {  // Used in CheckRemoveLoginsBetween().
-    CREATED,
-    SYNCED,
-  };
 
   NativeBackendGnomeTest() {}
 
@@ -670,71 +666,6 @@ class NativeBackendGnomeTest : public testing::Test {
     // Do match non-HTML forms from the same origin.
     EXPECT_TRUE(CheckCredentialAvailability(
         other_auth_, GURL("http://www.example.com/"), scheme, nullptr));
-  }
-
-  void CheckRemoveLoginsBetween(RemoveBetweenMethod date_to_test) {
-    NativeBackendGnome backend(42);
-    backend.Init();
-
-    base::Time now = base::Time::Now();
-    base::Time next_day = now + base::TimeDelta::FromDays(1);
-    form_google_.date_synced = base::Time();
-    form_isc_.date_synced = base::Time();
-    form_google_.date_created = now;
-    form_isc_.date_created = now;
-    if (date_to_test == CREATED) {
-      form_google_.date_created = now;
-      form_isc_.date_created = next_day;
-    } else {
-      form_google_.date_synced = now;
-      form_isc_.date_synced = next_day;
-    }
-
-    backend.GetBackgroundTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                       base::Unretained(&backend), form_google_));
-    backend.GetBackgroundTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                       base::Unretained(&backend), form_isc_));
-
-    PasswordStoreChangeList expected_changes;
-    expected_changes.push_back(
-        PasswordStoreChange(PasswordStoreChange::REMOVE, form_google_));
-    PasswordStoreChangeList changes;
-    bool (NativeBackendGnome::*method)(
-        base::Time, base::Time, password_manager::PasswordStoreChangeList*) =
-        date_to_test == CREATED
-            ? &NativeBackendGnome::RemoveLoginsCreatedBetween
-            : &NativeBackendGnome::RemoveLoginsSyncedBetween;
-    base::PostTaskAndReplyWithResult(
-        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
-        base::Bind(method, base::Unretained(&backend), base::Time(), next_day,
-                   &changes),
-        base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
-                   &changes));
-
-    test_browser_thread_bundle_.RunUntilIdle();
-
-    EXPECT_EQ(1u, mock_keyring_items.size());
-    if (mock_keyring_items.size() > 0)
-      CheckMockKeyringItem(&mock_keyring_items[0], form_isc_, "chrome-42");
-
-    // Remove form_isc_.
-    expected_changes.clear();
-    expected_changes.push_back(
-        PasswordStoreChange(PasswordStoreChange::REMOVE, form_isc_));
-    base::PostTaskAndReplyWithResult(
-        backend.GetBackgroundTaskRunner().get(), FROM_HERE,
-        base::Bind(method, base::Unretained(&backend), next_day, base::Time(),
-                   &changes),
-        base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
-                   &changes));
-
-    test_browser_thread_bundle_.RunUntilIdle();
-
-    EXPECT_EQ(0u, mock_keyring_items.size());
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -1158,11 +1089,53 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
 }
 
 TEST_F(NativeBackendGnomeTest, RemoveLoginsCreatedBetween) {
-  CheckRemoveLoginsBetween(CREATED);
-}
+  NativeBackendGnome backend(42);
+  backend.Init();
 
-TEST_F(NativeBackendGnomeTest, RemoveLoginsSyncedBetween) {
-  CheckRemoveLoginsBetween(SYNCED);
+  base::Time now = base::Time::Now();
+  base::Time next_day = now + base::TimeDelta::FromDays(1);
+  form_google_.date_created = now;
+  form_isc_.date_created = next_day;
+
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
+  backend.GetBackgroundTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_isc_));
+
+  PasswordStoreChangeList expected_changes;
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_google_);
+  PasswordStoreChangeList changes;
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&NativeBackendGnome::RemoveLoginsCreatedBetween,
+                     base::Unretained(&backend), base::Time(), next_day,
+                     &changes),
+      base::BindOnce(&CheckPasswordChangesWithResult, &expected_changes,
+                     &changes));
+
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  ASSERT_EQ(1u, mock_keyring_items.size());
+  CheckMockKeyringItem(&mock_keyring_items[0], form_isc_, "chrome-42");
+
+  // Remove form_isc_.
+  expected_changes.clear();
+  expected_changes.emplace_back(PasswordStoreChange::REMOVE, form_isc_);
+  base::PostTaskAndReplyWithResult(
+      backend.GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&NativeBackendGnome::RemoveLoginsCreatedBetween,
+                     base::Unretained(&backend), next_day, base::Time(),
+                     &changes),
+      base::BindOnce(&CheckPasswordChangesWithResult, &expected_changes,
+                     &changes));
+
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  EXPECT_TRUE(mock_keyring_items.empty());
 }
 
 TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {

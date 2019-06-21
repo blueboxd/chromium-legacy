@@ -30,20 +30,20 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
                        const std::string& header_value,
                        int32_t load_flags,
                        OnClearSiteDataCallback callback) override {}
-  void OnCookieChange(bool is_service_worker,
-                      int32_t process_id,
-                      int32_t routing_id,
-                      const GURL& url,
-                      const GURL& site_for_cookies,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {}
-  void OnCookiesRead(bool is_service_worker,
-                     int32_t process_id,
-                     int32_t routing_id,
-                     const GURL& url,
-                     const GURL& site_for_cookies,
-                     const std::vector<net::CanonicalCookie>& cookie_list,
-                     bool blocked_by_policy) override {}
+  void OnCookiesChanged(
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const std::vector<net::CookieWithStatus>& cookie_list) override {}
+  void OnCookiesRead(
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const std::vector<net::CookieWithStatus>& cookie_list) override {}
 };
 
 }  // namespace network

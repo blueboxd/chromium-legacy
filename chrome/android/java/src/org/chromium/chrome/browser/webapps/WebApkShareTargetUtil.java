@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 
@@ -15,13 +14,10 @@ import org.json.JSONException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.net.MimeTypeFilter;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * Computes data for Post Share Target.
@@ -55,10 +51,11 @@ public class WebApkShareTargetUtil {
             types.add("text/plain");
         }
 
-        private void addFileUri(String name, String fileUri, String fileName, String type) {
+        private void add(
+                String name, String value, boolean isValueAFileUri, String fileName, String type) {
             names.add(name);
-            isValueFileUri.add(true);
-            values.add(fileUri);
+            values.add(value);
+            isValueFileUri.add(isValueAFileUri);
             filenames.add(fileName);
             types.add(type);
         }
@@ -123,43 +120,76 @@ public class WebApkShareTargetUtil {
         return null;
     }
 
-    protected static boolean methodFromShareTargetMetaDataIsPost(Bundle metaData) {
-        String method = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_METHOD);
-        return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
+    /**
+     * Given a list of share target params file names, and the mime types each file name can
+     * accept, returns the first share target params file name which accepts the passed-in file URI.
+     */
+    private static String findFormFieldToShareFile(Uri fileUri, String fileType,
+            String[] shareTargetParamsFileNames, String[][] shareTargetParamsFileAccepts) {
+        if (shareTargetParamsFileNames == null || shareTargetParamsFileAccepts == null
+                || shareTargetParamsFileNames.length != shareTargetParamsFileAccepts.length) {
+            return null;
+        }
+        for (int i = 0; i < shareTargetParamsFileNames.length; i++) {
+            String[] mimeTypeList = shareTargetParamsFileAccepts[i];
+            MimeTypeFilter mimeTypeFilter = new MimeTypeFilter(Arrays.asList(mimeTypeList), false);
+            if (mimeTypeFilter.accept(fileUri, fileType)) {
+                return shareTargetParamsFileNames[i];
+            }
+        }
+        return null;
     }
 
     protected static void addFilesToMultipartPostData(PostData postData,
-            String[] shareTargetParamsFileNames, String[][] shareTargetParamsFileAccepts,
-            ArrayList<Uri> shareFiles) {
-        if (shareTargetParamsFileNames == null || shareTargetParamsFileAccepts == null
-                || shareFiles == null) {
+            String fallbackNameForPlainTextFile, String[] shareTargetParamsFileNames,
+            String[][] shareTargetParamsFileAccepts, ArrayList<Uri> shareFiles) {
+        if (shareFiles == null) {
             return;
         }
 
-        if (shareTargetParamsFileNames.length != shareTargetParamsFileAccepts.length) {
-            return;
-        }
+        for (Uri fileUri : shareFiles) {
+            String fileType, fileName;
 
-        try (StrictModeContext strictModeContextUnused = StrictModeContext.allowDiskReads()) {
-            for (Uri fileUri : shareFiles) {
-                String fileType = getFileTypeFromContentUri(fileUri);
-                String fileName = getFileNameFromContentUri(fileUri);
-
-                if (fileType == null || fileName == null) {
-                    continue;
-                }
-
-                for (int i = 0; i < shareTargetParamsFileNames.length; i++) {
-                    String[] mimeTypeList = shareTargetParamsFileAccepts[i];
-                    MimeTypeFilter mimeTypeFilter =
-                            new MimeTypeFilter(Arrays.asList(mimeTypeList), false);
-                    if (mimeTypeFilter.accept(fileUri, fileType)) {
-                        postData.addFileUri(shareTargetParamsFileNames[i], fileUri.toString(),
-                                fileName, fileType);
-                        break;
-                    }
-                }
+            try (StrictModeContext strictModeContextUnused = StrictModeContext.allowDiskReads()) {
+                fileType = getFileTypeFromContentUri(fileUri);
+                fileName = getFileNameFromContentUri(fileUri);
             }
+
+            if (fileType == null || fileName == null) {
+                continue;
+            }
+
+            String fieldName = findFormFieldToShareFile(
+                    fileUri, fileType, shareTargetParamsFileNames, shareTargetParamsFileAccepts);
+
+            if (fieldName != null) {
+                postData.add(fieldName, fileUri.toString(), true /* isValueAFileUri */, fileName,
+                        fileType);
+            } else if (fallbackNameForPlainTextFile != null && fileType.equals("text/plain")) {
+                postData.add(
+                        fallbackNameForPlainTextFile, fileUri.toString(), true, "", "text/plain");
+                // we should only add one text file as a fake text selection
+                fallbackNameForPlainTextFile = null;
+            }
+        }
+    }
+
+    /**
+     * If a WebAPK has a share target parameter file name that receives sharing of text files, adds
+     * the share text selection as if it's a text file.
+     */
+    private static void tryAddShareTextAsFakeFile(PostData postData,
+            String[] shareTargetParamsFileNames, String[][] shareTargetParamsFileAccepts,
+            String shareText) {
+        if (TextUtils.isEmpty(shareText)) {
+            return;
+        }
+
+        String fieldName = findFormFieldToShareFile(
+                null, "text/plain", shareTargetParamsFileNames, shareTargetParamsFileAccepts);
+        if (fieldName != null) {
+            postData.add(
+                    fieldName, shareText, false /* isValueFileUri */, "shared.txt", "text/plain");
         }
     }
 
@@ -172,11 +202,12 @@ public class WebApkShareTargetUtil {
 
         PostData postData = new PostData(shareTarget.isShareEncTypeMultipart());
 
-        if (!TextUtils.isEmpty(shareTarget.getParamTitle()) && shareData.subject != null) {
+        if (!TextUtils.isEmpty(shareTarget.getParamTitle())
+                && !TextUtils.isEmpty(shareData.subject)) {
             postData.addPlainText(shareTarget.getParamTitle(), shareData.subject);
         }
 
-        if (!TextUtils.isEmpty(shareTarget.getParamText()) && shareData.text != null) {
+        if (!TextUtils.isEmpty(shareTarget.getParamText()) && !TextUtils.isEmpty(shareData.text)) {
             postData.addPlainText(shareTarget.getParamText(), shareData.text);
         }
 
@@ -184,8 +215,22 @@ public class WebApkShareTargetUtil {
             return postData;
         }
 
-        addFilesToMultipartPostData(postData, shareTarget.getFileNames(),
-                shareTarget.getFileAccepts(), shareData.files);
+        // When a WebAPK doesn't expect a shared text selection, but receives one (because Android
+        // intent filters don't distinguish between text selections and text files), we send the
+        // text selection as if it's a text file.
+        if (TextUtils.isEmpty(shareTarget.getParamText()) && !TextUtils.isEmpty(shareData.text)) {
+            tryAddShareTextAsFakeFile(postData, shareTarget.getFileNames(),
+                    shareTarget.getFileAccepts(), shareData.text);
+        }
+
+        boolean enableAddingFileAsFakePlainText =
+                !TextUtils.isEmpty(shareTarget.getParamText()) && TextUtils.isEmpty(shareData.text);
+
+        // We allow adding a file as fake shared text only when shared text is absent, because the
+        // web page expects a single value (not an array) in the "param text" field.
+        addFilesToMultipartPostData(postData,
+                enableAddingFileAsFakePlainText ? shareTarget.getParamText() : null,
+                shareTarget.getFileNames(), shareTarget.getFileAccepts(), shareData.files);
 
         return postData;
     }

@@ -91,6 +91,7 @@ bool EnumTraits<blink::mojom::CredentialManagerError,
     case blink::mojom::CredentialManagerError::
         ANDROID_USER_VERIFICATION_UNSUPPORTED:
     case blink::mojom::CredentialManagerError::INVALID_DOMAIN:
+    case blink::mojom::CredentialManagerError::INVALID_ICON_URL:
     case blink::mojom::CredentialManagerError::CREDENTIAL_EXCLUDED:
     case blink::mojom::CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
     case blink::mojom::CredentialManagerError::NOT_IMPLEMENTED:

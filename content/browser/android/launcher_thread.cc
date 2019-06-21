@@ -4,7 +4,7 @@
 
 #include "content/browser/android/launcher_thread.h"
 
-#include "jni/LauncherThread_jni.h"
+#include "content/public/android/content_jni_headers/LauncherThread_jni.h"
 
 namespace content {
 namespace android {

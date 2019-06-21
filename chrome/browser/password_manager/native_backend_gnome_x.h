@@ -44,10 +44,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool RemoveLoginsSyncedBetween(
-      base::Time delete_begin,
-      base::Time delete_end,
-      password_manager::PasswordStoreChangeList* changes) override;
   bool DisableAutoSignInForOrigins(
       const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
@@ -63,11 +59,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() override;
 
  private:
-  enum TimestampToCompare {
-    CREATION_TIMESTAMP,
-    SYNC_TIMESTAMP,
-  };
-
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);
 
@@ -77,21 +68,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   bool GetLoginsList(bool autofillable,
                      std::vector<std::unique_ptr<autofill::PasswordForm>>*
                          forms) WARN_UNUSED_RESULT;
-
-  // Retrieves password created/synced in the time interval. Returns |true| if
-  // the operation succeeded.
-  bool GetLoginsBetween(base::Time get_begin,
-                        base::Time get_end,
-                        TimestampToCompare date_to_compare,
-                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                            forms) WARN_UNUSED_RESULT;
-
-  // Removes password created/synced in the time interval. Returns |true| if the
-  // operation succeeded. |changes| will contain the changes applied.
-  bool RemoveLoginsBetween(base::Time get_begin,
-                           base::Time get_end,
-                           TimestampToCompare date_to_compare,
-                           password_manager::PasswordStoreChangeList* changes);
 
   // The app string, possibly based on the local profile id.
   std::string app_string_;

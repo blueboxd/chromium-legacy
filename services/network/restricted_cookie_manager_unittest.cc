@@ -34,8 +34,10 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
     bool get = false;
     GURL url;
     GURL site_for_cookies;
-    net::CookieList cookies;
-    bool blocked_by_policy;
+    // The vector is merely to permit use of MatchesCookieLine, there is always
+    // one thing.
+    std::vector<net::CanonicalCookie> cookie;
+    net::CanonicalCookie::CookieInclusionStatus status;
   };
 
   RecordingNetworkContextClient() {}
@@ -45,41 +47,45 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
     return recorded_activity_;
   }
 
-  void OnCookieChange(bool is_service_worker,
-                      int32_t process_id,
-                      int32_t routing_id,
-                      const GURL& url,
-                      const GURL& site_for_cookies,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
+  void OnCookiesChanged(
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const std::vector<net::CookieWithStatus>& cookie_list) override {
     EXPECT_EQ(false, is_service_worker);
     EXPECT_EQ(kProcessId, process_id);
     EXPECT_EQ(kRoutingId, routing_id);
-    CookieOp set;
-    set.url = url;
-    set.site_for_cookies = site_for_cookies;
-    set.cookies.push_back(cookie);
-    set.blocked_by_policy = blocked_by_policy;
-    recorded_activity_.push_back(set);
+    for (const auto& cookie_and_status : cookie_list) {
+      CookieOp set;
+      set.url = url;
+      set.site_for_cookies = site_for_cookies;
+      set.cookie.push_back(cookie_and_status.cookie);
+      set.status = cookie_and_status.status;
+      recorded_activity_.push_back(set);
+    }
   }
 
-  void OnCookiesRead(bool is_service_worker,
-                     int32_t process_id,
-                     int32_t routing_id,
-                     const GURL& url,
-                     const GURL& site_for_cookies,
-                     const std::vector<net::CanonicalCookie>& cookie_list,
-                     bool blocked_by_policy) override {
+  void OnCookiesRead(
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const std::vector<net::CookieWithStatus>& cookie_list) override {
     EXPECT_EQ(false, is_service_worker);
     EXPECT_EQ(kProcessId, process_id);
     EXPECT_EQ(kRoutingId, routing_id);
-    CookieOp get;
-    get.get = true;
-    get.url = url;
-    get.site_for_cookies = site_for_cookies;
-    get.cookies = cookie_list;
-    get.blocked_by_policy = blocked_by_policy;
-    recorded_activity_.push_back(get);
+    for (const auto& cookie_and_status : cookie_list) {
+      CookieOp get;
+      get.get = true;
+      get.url = url;
+      get.site_for_cookies = site_for_cookies;
+      get.cookie.push_back(cookie_and_status.cookie);
+      get.status = cookie_and_status.status;
+      recorded_activity_.push_back(get);
+    }
   }
 
  private:
@@ -373,16 +379,19 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
   EXPECT_EQ(recorded_activity()[0].get, true);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[0].cookies,
+  EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[0].blocked_by_policy, false);
+  EXPECT_EQ(recorded_activity()[0].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
   EXPECT_EQ(recorded_activity()[1].get, true);
   EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookies,
+  EXPECT_THAT(recorded_activity()[1].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[1].blocked_by_policy, true);
+  EXPECT_EQ(
+      recorded_activity()[1].status,
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 }
 
 TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -455,21 +464,25 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ(recorded_activity()[0].get, false);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[0].cookies, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[0].blocked_by_policy, false);
+  EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[0].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
   EXPECT_EQ(recorded_activity()[1].get, false);
   EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[1].site_for_cookies,
             "http://otherexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookies, net::MatchesCookieLine("A2=B2"));
-  EXPECT_EQ(recorded_activity()[1].blocked_by_policy, true);
+  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A2=B2"));
+  EXPECT_EQ(
+      recorded_activity()[1].status,
+      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 
   EXPECT_EQ(recorded_activity()[2].get, true);
   EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://example.com/");
-  EXPECT_THAT(recorded_activity()[2].cookies, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[2].blocked_by_policy, false);
+  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[2].status,
+            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 namespace {

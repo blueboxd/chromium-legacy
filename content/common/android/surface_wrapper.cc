@@ -4,7 +4,7 @@
 
 #include "content/common/android/surface_wrapper.h"
 
-#include "jni/SurfaceWrapper_jni.h"
+#include "content/public/android/content_jni_headers/SurfaceWrapper_jni.h"
 
 namespace content {
 

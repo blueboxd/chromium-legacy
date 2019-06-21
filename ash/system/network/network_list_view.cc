@@ -259,6 +259,11 @@ NetworkListView::UpdateNetworkListEntries() {
       ++index;
     index += new_cellular_guids->size();
     new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
+  } else if (mobile_header_view_) {
+    scroll_content()->RemoveChildView(mobile_header_view_);
+    delete mobile_header_view_;
+    mobile_header_view_ = nullptr;
+    needs_relayout_ = true;
   }
 
   if (!wifi_header_view_)

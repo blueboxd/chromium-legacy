@@ -20,7 +20,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -58,8 +57,8 @@ public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
-    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-    private static ChromeApplication sInstance;
+    private final GlobalDiscardableReferencePool mReferencePool =
+            new GlobalDiscardableReferencePool();
 
     /** Lock on creation of sComponent. */
     private static final Object sLock = new Object();
@@ -79,7 +78,6 @@ public class ChromeApplication extends Application {
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        sInstance = this;
         boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
@@ -179,7 +177,10 @@ public class ChromeApplication extends Application {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        if (isSevereMemorySignal(level) && mReferencePool != null) mReferencePool.drain();
+        if (isSevereMemorySignal(level)
+                && GlobalDiscardableReferencePool.getReferencePool() != null) {
+            GlobalDiscardableReferencePool.getReferencePool().drain();
+        }
         CustomTabsConnection.onTrimMemory(level);
     }
 
@@ -204,14 +205,6 @@ public class ChromeApplication extends Application {
             return;
         }
         InvalidStartupDialog.show(activity, e.getErrorCode());
-    }
-
-    /**
-     * @return The DiscardableReferencePool for the application.
-     */
-    @MainDex
-    public static DiscardableReferencePool getReferencePool() {
-        return sInstance.mReferencePool;
     }
 
     @Override

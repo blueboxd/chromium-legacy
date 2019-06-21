@@ -111,7 +111,7 @@ class OomInterventionImplTest : public testing::Test {
     intervention_->StartDetection(std::move(host_ptr), std::move(args),
                                   renderer_pause_enabled, navigate_ads_enabled,
                                   purge_v8_memory_enabled);
-    test::RunDelayedTasks(TimeDelta::FromSeconds(1));
+    test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
   }
 
  protected:
@@ -342,7 +342,7 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   usage.private_footprint_bytes =
       initial_private_footprint_bytes + 2 * 1024 * 1024;
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
-  test::RunDelayedTasks(TimeDelta::FromSeconds(10));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
       "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs2", 2,
       1);
@@ -353,7 +353,7 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   usage.v8_bytes = initial_blink_usage_bytes - 1;
   usage.private_footprint_bytes = initial_private_footprint_bytes + 1;
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
-  test::RunDelayedTasks(TimeDelta::FromSeconds(10));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
       "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs2", 0,
       1);
@@ -365,7 +365,7 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   usage.private_footprint_bytes =
       initial_private_footprint_bytes + 800 * 1024 * 1024;
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
-  test::RunDelayedTasks(TimeDelta::FromSeconds(10));
+  test::RunDelayedTasks(base::TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
       "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs2", 500,
       1);

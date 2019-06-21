@@ -499,14 +499,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
-- (void)haltAllTabs {
-  for (int index = 0; index < _webStateList->count(); ++index) {
-    web::WebState* webState = _webStateList->GetWebStateAt(index);
-    Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-    [tab terminateNetworkActivity];
-  }
-}
-
 - (void)resetSessionMetrics {
   if (_webStateListMetricsObserver)
     _webStateListMetricsObserver->ResetSessionMetrics();

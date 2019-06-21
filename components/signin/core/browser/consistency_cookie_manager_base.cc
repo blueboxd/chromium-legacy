@@ -70,9 +70,13 @@ void ConsistencyCookieManagerBase::UpdateCookie() {
       kCookieName, cookie_value, GaiaUrls::GetInstance()->gaia_url().host(),
       /*path=*/"/", /*creation=*/now, /*expiration=*/expiry,
       /*last_access=*/now, /*secure=*/true, /*httponly=*/false,
-      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::LAX_MODE, net::COOKIE_PRIORITY_DEFAULT);
+  net::CookieOptions cookie_options;
+  // Permit to set SameSite cookies.
+  cookie_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->SetCanonicalCookie(
-      cookie, "https", net::CookieOptions(),
+      cookie, "https", cookie_options,
       network::mojom::CookieManager::SetCanonicalCookieCallback());
 }
 

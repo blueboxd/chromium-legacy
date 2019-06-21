@@ -60,10 +60,6 @@ class WebStateImpl;
 @property(weak, nonatomic, readonly) id<CRWWebViewNavigationProxy>
     webViewNavigationProxy;
 
-// The view that generates print data when printing. It is nil if printing
-// is not supported.
-@property(weak, nonatomic, readonly) UIView* viewForPrinting;
-
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;
@@ -108,12 +104,6 @@ class WebStateImpl;
 // of allowing WKBasedNavigationManagerImpl to reset the back-forward history.
 // Please reconsider before using this method.
 - (void)removeWebView;
-
-// Call to stop the CRWWebController from doing stuff, in particular to
-// stop all network requests. Called as part of the close sequence if it hasn't
-// already been halted; also called from [Tab halt] as part of the shutdown
-// sequence (which doesn't call -close).
-- (void)terminateNetworkActivity;
 
 // Dismisses all modals owned by the web view or native view.
 - (void)dismissModals;

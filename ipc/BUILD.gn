@@ -157,8 +157,6 @@ component("message_support") {
     sources += [
       "handle_attachment_fuchsia.cc",
       "handle_attachment_fuchsia.h",
-      "handle_fuchsia.cc",
-      "handle_fuchsia.h",
     ]
   }
 

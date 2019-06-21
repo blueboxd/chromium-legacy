@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
@@ -28,16 +29,12 @@
 @property(nonatomic, assign) BOOL started;
 // Mediator for updating the toolbar when the WebState changes.
 @property(nonatomic, strong) ToolbarMediator* mediator;
+// Actions handler for the toolbar buttons.
+@property(nonatomic, strong) ToolbarButtonActionsHandler* actionHandler;
 
 @end
 
 @implementation AdaptiveToolbarCoordinator
-@synthesize dispatcher = _dispatcher;
-@synthesize longPressDelegate = _longPressDelegate;
-@synthesize mediator = _mediator;
-@synthesize started = _started;
-@synthesize viewController = _viewController;
-@synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
 
@@ -114,9 +111,12 @@
   BOOL isIncognito = self.browserState->IsOffTheRecord();
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
 
+  self.actionHandler = [[ToolbarButtonActionsHandler alloc] init];
+  self.actionHandler.dispatcher = self.dispatcher;
+
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
-  buttonFactory.dispatcher = self.dispatcher;
+  buttonFactory.actionHandler = self.actionHandler;
   buttonFactory.visibilityConfiguration =
       [[ToolbarButtonVisibilityConfiguration alloc] initWithType:type];
 

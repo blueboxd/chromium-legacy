@@ -23,6 +23,8 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
@@ -46,11 +48,13 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace credential_provider {
@@ -58,6 +62,23 @@ namespace credential_provider {
 namespace {
 
 constexpr wchar_t kEmailDomainsKey[] = L"ed";
+constexpr char kGetAccessTokenBodyWithScopeFormat[] =
+    "client_id=%s&"
+    "client_secret=%s&"
+    "grant_type=refresh_token&"
+    "refresh_token=%s&"
+    "scope=%s";
+constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
+// The access scopes should be separated by single space.
+constexpr char kAccessScopes[] =
+    "https://www.googleapis.com/auth/admin.directory.user";
+constexpr int kHttpTimeout = 3000;  // in milliseconds
+
+// Names of keys used to fetch the custom attributes from google admin sdk
+// users directory api.
+constexpr char kKeyCustomSchemas[] = "customSchemas";
+constexpr char kKeyEmployeeData[] = "employeeData";
+constexpr char kKeyAdUpn[] = "ad_upn";
 
 base::string16 GetEmailDomains() {
   std::vector<wchar_t> email_domains(16);
@@ -73,6 +94,178 @@ base::string16 GetEmailDomains() {
     }
   }
   return base::string16(&email_domains[0]);
+}
+
+bool EnableAdToGoogleAssociation() {
+  DWORD enable_ad_association = 0;
+  HRESULT hr = GetGlobalFlag(kRegEnableADAssociation, &enable_ad_association);
+  return SUCCEEDED(hr) && enable_ad_association;
+}
+
+// Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
+// directory UPN from the admin configured custom attributes.
+HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
+                                   const std::string& access_token,
+                                   std::string* ad_upn) {
+  DCHECK(email.size() > 0);
+  DCHECK(access_token.size() > 0);
+  DCHECK(ad_upn);
+
+  std::string escape_url_encoded_email =
+      net::EscapeUrlEncodedData(base::UTF16ToUTF8(email), true);
+  std::string get_cd_user_url = base::StringPrintf(
+      "https://www.googleapis.com/admin/directory/v1/users/"
+      "%s?projection=full&viewType=domain_public",
+      escape_url_encoded_email.c_str());
+  LOGFN(INFO) << "Encoded URL : " << get_cd_user_url;
+  auto fetcher = WinHttpUrlFetcher::Create(GURL(get_cd_user_url));
+  fetcher->SetRequestHeader("Accept", "application/json");
+  fetcher->SetHttpRequestTimeout(kHttpTimeout);
+
+  std::string access_token_header =
+      base::StringPrintf("Bearer %s", access_token.c_str());
+  fetcher->SetRequestHeader("Authorization", access_token_header.c_str());
+  std::vector<char> cd_user_response;
+  HRESULT hr = fetcher->Fetch(&cd_user_response);
+  std::string cd_user_response_json_string =
+      std::string(cd_user_response.begin(), cd_user_response.end());
+  if (FAILED(hr)) {
+    LOGFN(INFO) << "fetcher->Fetch hr=" << putHR(hr);
+    return hr;
+  }
+
+  *ad_upn = SearchForKeyInStringDictUTF8(
+      cd_user_response_json_string,
+      {kKeyCustomSchemas, kKeyEmployeeData, kKeyAdUpn});
+  return S_OK;
+}
+
+// Request a downscoped access token using the refresh token provided in the
+// input.
+HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
+                                     std::string* access_token) {
+  DCHECK(refresh_token.size() > 0);
+  DCHECK(access_token);
+
+  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
+  std::string enc_client_id =
+      net::EscapeUrlEncodedData(gaia_urls->oauth2_chrome_client_id(), true);
+  std::string enc_client_secret =
+      net::EscapeUrlEncodedData(gaia_urls->oauth2_chrome_client_secret(), true);
+  std::string enc_refresh_token =
+      net::EscapeUrlEncodedData(refresh_token, true);
+  std::string get_access_token_body = base::StringPrintf(
+      kGetAccessTokenBodyWithScopeFormat, enc_client_id.c_str(),
+      enc_client_secret.c_str(), enc_refresh_token.c_str(),
+      net::EscapeUrlEncodedData(kAccessScopes, true).c_str());
+  std::string get_oauth_token_url =
+      base::StringPrintf("%s", gaia_urls->oauth2_token_url().spec().c_str());
+
+  auto oauth_fetcher = WinHttpUrlFetcher::Create(GURL(get_oauth_token_url));
+  oauth_fetcher->SetRequestBody(get_access_token_body.c_str());
+  oauth_fetcher->SetRequestHeader("content-type",
+                                  "application/x-www-form-urlencoded");
+  oauth_fetcher->SetHttpRequestTimeout(kHttpTimeout);
+
+  std::vector<char> oauth_response;
+  HRESULT oauth_hr = oauth_fetcher->Fetch(&oauth_response);
+  if (FAILED(oauth_hr)) {
+    LOGFN(ERROR) << "oauth_fetcher.Fetch hr=" << putHR(oauth_hr);
+    return oauth_hr;
+  }
+
+  std::string oauth_response_json_string =
+      std::string(oauth_response.begin(), oauth_response.end());
+  *access_token = SearchForKeyInStringDictUTF8(oauth_response_json_string,
+                                               {kKeyAccessToken});
+  if (access_token->empty()) {
+    LOGFN(ERROR) << "Fetched access token with new scopes is empty.";
+    return E_FAIL;
+  }
+  return S_OK;
+}
+
+// Find an AD account associated with GCPW user if one exists.
+// (1) Verifies if the gaia user has a corresponding mapping in Google
+//   Admin SDK Users Directory and contains the custom_schema that contains
+//   the ad_upn or local_user_name for the corresponding user.
+// (2) If there is an entry in cloud directory, gcpw would search for the SID
+//   corresponding to that user entry on the device.
+// (3) If a SID is found, then it would log the user onto the device using
+//   username extracted from Google Admin SDK Users Directory and password
+//   being the same as the gaia entity.
+// (4) If there is no entry found in cloud directory, gcpw would fallback to
+//   attempting creation of a new user on the device.
+//
+// Below are the failure scenarios :
+// (1) If an invalid upn is set in the custom attributes, the login would fail.
+// (2) If an attempt to find SID from domain controller failed, then we fail
+//     the login.
+// Note that if an empty upn is found in the custom attribute, then the login
+// would try and attempt to create local user.
+HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
+                                 const base::string16& email,
+                                 wchar_t* sid,
+                                 const DWORD sid_length) {
+  // Step 1: Get the downscoped access token with required admin sdk scopes.
+  std::string access_token;
+  HRESULT hr = RequestDownscopedAccessToken(refresh_token, &access_token);
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "RequestDownscopedAccessToken hr=" << putHR(hr);
+    return hr;
+  }
+
+  // Step 2: Make a get call to admin sdk using the fetched access_token and
+  // retrieve the ad_upn.
+  std::string ad_upn;
+  hr = GetAdUpnFromCloudDirectory(email, access_token, &ad_upn);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetAdUpnFromCloudDirectory hr=" << putHR(hr);
+    return hr;
+  }
+
+  base::string16 ad_domain;
+  base::string16 ad_user;
+  if (ad_upn.empty()) {
+    LOGFN(INFO) << "Found empty ad_upn in cloud directory. Fall back to "
+                   "creating local account";
+    return S_FALSE;
+  }
+
+  // The format for ad_upn custom attribute is domainName/userName.
+  const base::char16 kSlashDelimiter[] = STRING16_LITERAL("/");
+  std::vector<base::string16> tokens =
+      base::SplitString(base::UTF8ToUTF16(ad_upn), kSlashDelimiter,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // Values fetched from custom attribute shouldn't be empty.
+  if (tokens.size() != 2) {
+    LOGFN(ERROR) << "Found unparseable ad_upn in cloud directory : " << ad_upn;
+    return E_FAIL;
+  }
+
+  ad_domain = tokens.at(0);
+  ad_user = tokens.at(1);
+
+  OSUserManager* os_user_manager = OSUserManager::Get();
+  DCHECK(os_user_manager);
+  base::string16 existing_sid = base::string16();
+
+  LOGFN(INFO) << "Get user sid for user " << ad_user << " and domain name "
+              << ad_domain;
+  hr = os_user_manager->GetUserSID(ad_domain.c_str(), ad_user.c_str(),
+                                   &existing_sid);
+  LOGFN(INFO) << "GetUserSID result=" << hr;
+
+  if (existing_sid.length() > 0) {
+    LOGFN(INFO) << "Found existing SID = " << existing_sid;
+    wcscpy_s(sid, sid_length, existing_sid.c_str());
+    return S_OK;
+  } else {
+    LOGFN(ERROR) << "No existing sid found with UPN : " << ad_upn;
+    return E_FAIL;
+  }
 }
 
 // Tries to find a user associated to the gaia_id stored in |result| under the
@@ -108,15 +301,44 @@ void MakeUsernameForAccount(const base::Value& result,
   *is_consumer_account = consumer_domain_pos != base::string16::npos;
 
   *gaia_id = GetDictString(result, kKeyId);
+
   // First try to detect if this gaia account has been used to create an OS
   // user already.  If so, return the OS username of that user.
   HRESULT hr = GetSidFromId(*gaia_id, sid, sid_length);
+
+  bool has_existing_user_sid = false;
+  // Check if the machine is domain joined and get the domain name if domain
+  // joined.
   if (SUCCEEDED(hr)) {
-    hr = OSUserManager::Get()->FindUserBySID(sid, username, username_length,
-                                             domain, domain_length);
+    // This makes sure that we don't invoke the network calls on every login
+    // attempt and instead fallback to the SID to gaia id mapping created by
+    // GCPW.
+    LOGFN(INFO) << "Found existing SID created in GCPW registry entry = "
+                << sid;
+    has_existing_user_sid = true;
+  } else if (EnableAdToGoogleAssociation() &&
+             OSUserManager::Get()->IsDeviceDomainJoined()) {
+    LOGFN(INFO) << "No existing SID found in the GCPW registry.";
+
+    std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
+    hr = FindAdUserSidIfAvailable(refresh_token, email, sid, sid_length);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed finding AD user sid for GCPW user.";
+      return;
+    } else if (hr == S_OK) {
+      has_existing_user_sid = true;
+    }
+  } else {
+    LOGFN(INFO) << "Falling back to creation of new user";
+  }
+
+  if (has_existing_user_sid) {
+    HRESULT hr = OSUserManager::Get()->FindUserBySID(
+        sid, username, username_length, domain, domain_length);
     if (SUCCEEDED(hr))
       return;
   }
+
   LOGFN(INFO) << "No existing user found associated to gaia id:" << *gaia_id;
   wcscpy_s(domain, domain_length, OSUserManager::GetLocalDomain().c_str());
   username[0] = 0;
@@ -164,7 +386,7 @@ void MakeUsernameForAccount(const base::Value& result,
   wcscpy_s(username, username_length, os_username.c_str());
 }
 
-// Waits for the login UI to completes and returns the result of the operation.
+// Waits for the login UI to complete and returns the result of the operation.
 // This function returns S_OK on success, E_UNEXPECTED on failure, and E_ABORT
 // if the user aborted or timed out (or was killed during cleanup).
 HRESULT WaitForLoginUIAndGetResult(

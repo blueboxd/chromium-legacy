@@ -40,6 +40,13 @@ _ANDROID_TO_CHROMIUM_LANGUAGE_MAP = {
     'no': 'nb',  # 'no' is not a real language. http://crbug.com/920960
 }
 
+_ALL_RESOURCE_TYPES = {
+    'anim', 'animator', 'array', 'attr', 'bool', 'color', 'dimen', 'drawable',
+    'font', 'fraction', 'id', 'integer', 'interpolator', 'layout', 'menu',
+    'mipmap', 'plurals', 'raw', 'string', 'style', 'styleable', 'transition',
+    'xml'
+}
+
 
 def ToAndroidLocaleName(chromium_locale):
   """Convert an Chromium locale name into a corresponding Android one."""
@@ -370,9 +377,13 @@ def CreateRJavaFiles(srcjar_dir,
   # Contains the correct values for resources.
   all_resources = {}
   all_resources_by_type = collections.defaultdict(list)
+
   for entry in _ParseTextSymbolsFile(main_r_txt_file, fix_package_ids=True):
     all_resources[(entry.resource_type, entry.name)] = entry
     all_resources_by_type[entry.resource_type].append(entry)
+    assert entry.resource_type in _ALL_RESOURCE_TYPES, (
+        'Unknown resource type: %s, add to _ALL_RESOURCE_TYPES!' %
+        entry.resource_type)
 
   if custom_root_package_name:
     # Custom package name is available, thus use it for root_r_java_package.
@@ -483,7 +494,7 @@ public final class R {
   return template.render(
       package=package,
       resources=resources_by_type,
-      resource_types=sorted(resources_by_type),
+      resource_types=sorted(_ALL_RESOURCE_TYPES),
       root_package=root_r_java_package,
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded)
 
@@ -580,7 +591,7 @@ public final class R {
       lstrip_blocks=True)
   return template.render(
       package=package,
-      resource_types=sorted(all_resources_by_type),
+      resource_types=sorted(_ALL_RESOURCE_TYPES),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
       non_final_resources=non_final_resources_by_type,

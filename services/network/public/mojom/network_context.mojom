@@ -510,33 +510,48 @@ interface NetworkContextClient {
                   string header_value,
                   int32 load_flags) => ();
 
-  // Called when an attempt has been made to set |cookie|.
+  // Called when an attempt has been made to set cookies |cookie_list|, with the
+  // status field indicating whether the cookies as set, or blocked, and for
+  // what reason. Currently blocked cookies are included if they are blocked by
+  // user preference, or if they warrant a console deprecation warning.
   //
-  // If the cookie is set by a network transfer, |url| is the URL being loaded;
-  // if it's set by a script it's the URL of window or service worker script
-  // making the change.
+  // If the set attempt is due to a network transfer, |url| is the URL being
+  // loaded; if it's set by a script it's the URL of window or service worker
+  // script making the change.
+  //
+  // |is_service_worker| is true if the cookie is directly set by a service
+  // worker action via cookie store API; this doesn't include those
+  // set as a side effect of passed through fetches. In that case, there is
+  // no frame associated with the action, so it should be attributed by |url|.
   //
   // If |is_service_worker| is false, |process_id| and |routing_id| identify
-  // the relevant frame. If it's true, the change should be attributed by |url|.
-  OnCookieChange(
+  // the relevant frame.
+  OnCookiesChanged(
       bool is_service_worker, int32 process_id, int32 routing_id,
-      url.mojom.Url url,
-      url.mojom.Url site_for_cookies, CanonicalCookie cookie,
-      bool blocked_by_policy);
+      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      array<CookieWithStatus> cookie_list);
 
-  // Called when an attempt has been made to read the cookies in |cookie_list|.
+  // Called when an attempt has been made to read the cookies in |cookie_list|,
+  // with the status indicating whether the cookies were actually used or
+  // blocked, and if so, gives the reason. Currently blocked cookies are
+  // included if they are blocked by user preference, or if they warrant a
+  // console deprecation warning.
   //
-  // If the cookie are accessed by a network transfer, |url| is the URL being
+  // If the cookies are accessed by a network transfer, |url| is the URL being
   // loaded; if they're read by a script, it's the URL of window or service
   // worker script looking them up.
   //
+  // |is_service_worker| is true if the cookie is directly read by a service
+  // worker action via cookie store API; this doesn't include those
+  // read as a side effect of passed through fetches. In that case, there is
+  // no frame associated with the action, so it should be attributed by |url|.
+  //
   // If |is_service_worker| is false, |process_id| and |routing_id| identify
-  // the relevant frame. If it's true, the change should be attributed by |url|.
+  // the relevant frame.
   OnCookiesRead(
       bool is_service_worker, int32 process_id, int32 routing_id,
       url.mojom.Url url, url.mojom.Url site_for_cookies,
-      array<CanonicalCookie> cookie_list,
-      bool blocked_by_policy);
+      array<CookieWithStatus> cookie_list);
 };
 
 // Represents a distinct context for making network requests, with its own

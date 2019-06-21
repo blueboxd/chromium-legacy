@@ -78,7 +78,7 @@ UserLevelMemoryPressureSignalGenerator::UserLevelMemoryPressureSignalGenerator()
     memory_threshold_mb_ = k512MBDeviceMemoryThresholdParam.Get();
 
   minimum_interval_ =
-      WTF::TimeDelta::FromSeconds(kMinimumIntervalSeconds.Get());
+      base::TimeDelta::FromSeconds(kMinimumIntervalSeconds.Get());
 
   // Can be disabled for certain device classes by setting the field param to an
   // empty string.
@@ -116,7 +116,7 @@ void UserLevelMemoryPressureSignalGenerator::OnMemoryPing(MemoryUsage usage) {
   if (usage.private_footprint_bytes / 1024 / 1024 < memory_threshold_mb_)
     return;
   base::TimeDelta elapsed = clock_->NowTicks() - last_generated_;
-  if (elapsed >= WTF::TimeDelta::FromSeconds(kMinimumIntervalSeconds.Get()))
+  if (elapsed >= base::TimeDelta::FromSeconds(kMinimumIntervalSeconds.Get()))
     Generate(usage);
 }
 
@@ -131,7 +131,8 @@ void UserLevelMemoryPressureSignalGenerator::Generate(MemoryUsage usage) {
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   last_generated_ = clock_->NowTicks();
 
-  delayed_report_timer_.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
+  delayed_report_timer_.StartOneShot(base::TimeDelta::FromSeconds(10),
+                                     FROM_HERE);
 }
 
 void UserLevelMemoryPressureSignalGenerator::OnTimerFired(TimerBase*) {

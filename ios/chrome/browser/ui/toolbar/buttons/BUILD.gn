@@ -6,6 +6,8 @@ source_set("buttons") {
   sources = [
     "toolbar_button.h",
     "toolbar_button.mm",
+    "toolbar_button_actions_handler.h",
+    "toolbar_button_actions_handler.mm",
     "toolbar_button_factory.h",
     "toolbar_button_factory.mm",
     "toolbar_button_visibility_configuration.h",

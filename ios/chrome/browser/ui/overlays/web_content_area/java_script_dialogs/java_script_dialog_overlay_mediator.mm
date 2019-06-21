@@ -9,7 +9,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -25,6 +24,13 @@
     DCHECK(_request);
   }
   return self;
+}
+
+#pragma mark - Accessors
+
+- (const JavaScriptDialogSource*)requestSource {
+  NOTREACHED() << "Subclasses must implement.";
+  return nullptr;
 }
 
 - (void)setConsumer:(id<AlertConsumer>)consumer {
@@ -46,15 +52,6 @@
         IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
   }
   [_consumer setTitle:consumerTitle];
-}
-
-@end
-
-@implementation JavaScriptDialogOverlayMediator (Subclassing)
-
-- (const JavaScriptDialogSource*)requestSource {
-  NOTREACHED() << "Subclasses must implement.";
-  return nullptr;
 }
 
 @end

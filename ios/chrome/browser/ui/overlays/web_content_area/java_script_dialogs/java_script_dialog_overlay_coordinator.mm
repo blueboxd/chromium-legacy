@@ -9,6 +9,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/overlays/overlay_ui_dismissal_delegate.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
@@ -62,7 +63,6 @@
 - (void)startAnimated:(BOOL)animated {
   if (self.started)
     return;
-  self.started = YES;
   self.alertViewController = [[AlertViewController alloc] init];
   self.alertViewController.modalPresentationStyle =
       UIModalPresentationOverCurrentContext;
@@ -73,12 +73,12 @@
   [self.baseViewController presentViewController:self.alertViewController
                                         animated:animated
                                       completion:nil];
+  self.started = YES;
 }
 
 - (void)stopAnimated:(BOOL)animated {
   if (!self.started)
     return;
-  self.started = NO;
   __weak __typeof__(self) weakSelf = self;
   [self.baseViewController
       dismissViewControllerAnimated:animated
@@ -90,6 +90,7 @@
                            strongSelf.dismissalDelegate
                                ->OverlayUIDidFinishDismissal(weakSelf.request);
                          }];
+  self.started = NO;
 }
 
 @end

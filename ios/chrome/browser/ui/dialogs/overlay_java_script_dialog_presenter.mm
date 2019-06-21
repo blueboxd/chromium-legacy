@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_prompt_overlay.h"
+#import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,33 +31,39 @@ void OverlayJavaScriptDialogPresenter::RunJavaScriptDialog(
     NSString* message_text,
     NSString* default_prompt_text,
     web::DialogClosedCallback callback) {
+  JavaScriptDialogBlockingState::CreateForWebState(web_state);
+  if (JavaScriptDialogBlockingState::FromWebState(web_state)->blocked()) {
+    // Block the dialog if needed.
+    std::move(callback).Run(NO, nil);
+    return;
+  }
+
   std::unique_ptr<OverlayRequest> request;
   bool from_main_frame_origin =
       origin_url.GetOrigin() == web_state->GetLastCommittedURL().GetOrigin();
+  const JavaScriptDialogSource source(web_state, origin_url,
+                                      from_main_frame_origin);
   switch (dialog_type) {
     case web::JAVASCRIPT_DIALOG_TYPE_ALERT:
       request =
           OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
-              origin_url, from_main_frame_origin,
-              base::SysNSStringToUTF8(message_text));
+              source, base::SysNSStringToUTF8(message_text));
       break;
     case web::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
       request = OverlayRequest::CreateWithConfig<
           JavaScriptConfirmationOverlayRequestConfig>(
-          origin_url, from_main_frame_origin,
-          base::SysNSStringToUTF8(message_text));
+          source, base::SysNSStringToUTF8(message_text));
       break;
     case web::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       request = OverlayRequest::CreateWithConfig<
           JavaScriptPromptOverlayRequestConfig>(
-          origin_url, from_main_frame_origin,
-          base::SysNSStringToUTF8(message_text),
+          source, base::SysNSStringToUTF8(message_text),
           base::SysNSStringToUTF8(default_prompt_text));
       break;
   }
   request->set_callback(base::BindOnce(
       &OverlayJavaScriptDialogPresenter::HandleJavaScriptDialogResponse,
-      weak_factory_.GetWeakPtr(), std::move(callback), dialog_type));
+      weak_factory_.GetWeakPtr(), std::move(callback), source, dialog_type));
   OverlayRequestQueue::FromWebState(web_state, OverlayModality::kWebContentArea)
       ->AddRequest(std::move(request));
 }
@@ -68,8 +75,16 @@ void OverlayJavaScriptDialogPresenter::CancelDialogs(web::WebState* web_state) {
 
 void OverlayJavaScriptDialogPresenter::HandleJavaScriptDialogResponse(
     web::DialogClosedCallback callback,
+    JavaScriptDialogSource source,
     web::JavaScriptDialogType dialog_type,
     OverlayResponse* response) {
+  // Notify the blocking state that the dialog was shown.
+  web::WebState* web_state = source.web_state();
+  if (web_state) {
+    JavaScriptDialogBlockingState::FromWebState(web_state)
+        ->JavaScriptDialogWasShown();
+  }
+
   if (!response) {
     std::move(callback).Run(false, nil);
     return;

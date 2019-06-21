@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,6 +27,10 @@
 
 #pragma mark - Accessors
 
+- (const JavaScriptDialogSource*)requestSource {
+  return &self.config->source();
+}
+
 - (JavaScriptAlertOverlayRequestConfig*)config {
   return self.request->GetConfig<JavaScriptAlertOverlayRequestConfig>();
 }
@@ -37,21 +41,16 @@
   [super setConsumer:consumer];
   [self.consumer setMessage:base::SysUTF8ToNSString(self.config->message())];
   __weak __typeof__(self) weakSelf = self;
-  [self.consumer setActions:@[
-    [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
-                           style:UIAlertActionStyleDefault
-                         handler:^(AlertAction* action) {
-                           [weakSelf.delegate stopDialogForMediator:weakSelf];
-                         }],
-  ]];
-}
-
-@end
-
-@implementation JavaScriptAlertOverlayMediator (Subclassing)
-
-- (const JavaScriptDialogSource*)requestSource {
-  return &self.config->source();
+  NSMutableArray* actions = [@[ [AlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                style:UIAlertActionStyleDefault
+              handler:^(AlertAction* action) {
+                [weakSelf.delegate stopDialogForMediator:weakSelf];
+              }] ] mutableCopy];
+  AlertAction* blockingAction = GetBlockingAlertAction(self);
+  if (blockingAction)
+    [actions addObject:blockingAction];
+  [self.consumer setActions:actions];
 }
 
 @end

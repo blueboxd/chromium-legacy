@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_coordinator_test.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,10 +24,12 @@ using JavaScriptConfirmationOverlayCoordinatorTest =
 // Tests that JavaScriptConfirmationOverlayCoordinator creates an alert and
 // presents it non-modally.
 TEST_F(JavaScriptConfirmationOverlayCoordinatorTest, StartAndStop) {
+  web::TestWebState web_state;
   std::unique_ptr<OverlayRequest> passed_request =
       OverlayRequest::CreateWithConfig<
           JavaScriptConfirmationOverlayRequestConfig>(
-          GURL("https://chromium.test"), /*is_main_frame=*/true,
+          JavaScriptDialogSource(&web_state, GURL("https://chromium.test"),
+                                 /*is_main_frame=*/true),
           "Message Text");
   OverlayRequest* request = passed_request.get();
   SetRequest(std::move(passed_request));

@@ -8,8 +8,8 @@ source_set("web_content_area") {
     "java_script_alert_overlay.mm",
     "java_script_confirmation_overlay.h",
     "java_script_confirmation_overlay.mm",
-    "java_script_dialog_source.cc",
     "java_script_dialog_source.h",
+    "java_script_dialog_source.mm",
     "java_script_prompt_overlay.h",
     "java_script_prompt_overlay.mm",
   ]
@@ -19,6 +19,8 @@ source_set("web_content_area") {
   deps = [
     "//base",
     "//ios/chrome/browser/overlays",
+    "//ios/web/public",
+    "//ios/web/public:web_state_types",
     "//url",
   ]
 }

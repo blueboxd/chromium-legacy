@@ -25,8 +25,7 @@ class JavaScriptPromptOverlayRequestConfig
 
  private:
   OVERLAY_USER_DATA_SETUP(JavaScriptPromptOverlayRequestConfig);
-  JavaScriptPromptOverlayRequestConfig(const GURL& url,
-                                       bool is_main_frame,
+  JavaScriptPromptOverlayRequestConfig(const JavaScriptDialogSource& source,
                                        const std::string& message,
                                        const std::string& default_prompt_value);
 

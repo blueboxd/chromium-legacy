@@ -21,9 +21,9 @@ class JavaScriptConfirmationOverlayRequestConfig
 
  private:
   OVERLAY_USER_DATA_SETUP(JavaScriptConfirmationOverlayRequestConfig);
-  JavaScriptConfirmationOverlayRequestConfig(const GURL& url,
-                                             bool is_main_frame,
-                                             const std::string& message);
+  JavaScriptConfirmationOverlayRequestConfig(
+      const JavaScriptDialogSource& source,
+      const std::string& message);
 
   const JavaScriptDialogSource source_;
   const std::string message_;

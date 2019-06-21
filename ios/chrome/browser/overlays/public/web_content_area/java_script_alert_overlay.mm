@@ -13,10 +13,9 @@
 OVERLAY_USER_DATA_SETUP_IMPL(JavaScriptAlertOverlayRequestConfig);
 
 JavaScriptAlertOverlayRequestConfig::JavaScriptAlertOverlayRequestConfig(
-    const GURL& url,
-    bool is_main_frame,
+    const JavaScriptDialogSource& source,
     const std::string& message)
-    : source_(url, is_main_frame), message_(message) {}
+    : source_(source), message_(message) {}
 
 JavaScriptAlertOverlayRequestConfig::~JavaScriptAlertOverlayRequestConfig() =
     default;

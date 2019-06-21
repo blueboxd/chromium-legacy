@@ -21,8 +21,7 @@ class JavaScriptAlertOverlayRequestConfig
 
  private:
   OVERLAY_USER_DATA_SETUP(JavaScriptAlertOverlayRequestConfig);
-  JavaScriptAlertOverlayRequestConfig(const GURL& url,
-                                      bool is_main_frame,
+  JavaScriptAlertOverlayRequestConfig(const JavaScriptDialogSource& source,
                                       const std::string& message);
 
   const JavaScriptDialogSource source_;

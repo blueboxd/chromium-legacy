@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_coordinator_test.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,9 +25,11 @@ using JavaScriptAlertOverlayCoordinatorTest =
 // Tests that JavaScriptAlertOverlayCoordinator creates an alert and presents it
 // non-modally.
 TEST_F(JavaScriptAlertOverlayCoordinatorTest, StartAndStop) {
+  web::TestWebState web_state;
   std::unique_ptr<OverlayRequest> passed_request =
       OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
-          GURL("https://chromium.test"), /*is_main_frame=*/true,
+          JavaScriptDialogSource(&web_state, GURL("https://chromium.test"),
+                                 /*is_main_frame=*/true),
           "Message Text");
   OverlayRequest* request = passed_request.get();
   SetRequest(std::move(passed_request));

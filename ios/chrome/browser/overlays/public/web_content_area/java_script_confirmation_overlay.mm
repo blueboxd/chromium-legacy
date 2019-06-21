@@ -13,10 +13,10 @@
 OVERLAY_USER_DATA_SETUP_IMPL(JavaScriptConfirmationOverlayRequestConfig);
 
 JavaScriptConfirmationOverlayRequestConfig::
-    JavaScriptConfirmationOverlayRequestConfig(const GURL& url,
-                                               bool is_main_frame,
-                                               const std::string& message)
-    : source_(url, is_main_frame), message_(message) {}
+    JavaScriptConfirmationOverlayRequestConfig(
+        const JavaScriptDialogSource& source,
+        const std::string& message)
+    : source_(source), message_(message) {}
 
 JavaScriptConfirmationOverlayRequestConfig::
     ~JavaScriptConfirmationOverlayRequestConfig() = default;

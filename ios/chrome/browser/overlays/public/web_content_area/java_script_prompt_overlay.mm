@@ -13,11 +13,10 @@
 OVERLAY_USER_DATA_SETUP_IMPL(JavaScriptPromptOverlayRequestConfig);
 
 JavaScriptPromptOverlayRequestConfig::JavaScriptPromptOverlayRequestConfig(
-    const GURL& url,
-    bool is_main_frame,
+    const JavaScriptDialogSource& source,
     const std::string& message,
     const std::string& default_prompt_value)
-    : source_(url, is_main_frame),
+    : source_(source),
       message_(message),
       default_prompt_value_(default_prompt_value) {}
 

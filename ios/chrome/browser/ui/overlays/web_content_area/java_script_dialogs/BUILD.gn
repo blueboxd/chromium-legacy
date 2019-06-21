@@ -4,10 +4,11 @@
 
 source_set("common") {
   sources = [
+    "java_script_dialog_blocking_action.h",
+    "java_script_dialog_blocking_action.mm",
     "java_script_dialog_overlay_coordinator+subclassing.h",
     "java_script_dialog_overlay_coordinator.h",
     "java_script_dialog_overlay_coordinator.mm",
-    "java_script_dialog_overlay_mediator+subclassing.h",
     "java_script_dialog_overlay_mediator.h",
     "java_script_dialog_overlay_mediator.mm",
   ]
@@ -22,6 +23,7 @@ source_set("common") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/ui/alert_view_controller",
+    "//ios/chrome/browser/ui/dialogs",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
     "//ui/base",
@@ -128,6 +130,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/alert_view_controller/test",
+    "//ios/chrome/browser/ui/dialogs",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays/test",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",

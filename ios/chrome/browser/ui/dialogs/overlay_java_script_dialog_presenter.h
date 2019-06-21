@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_DIALOGS_OVERLAY_JAVA_SCRIPT_DIALOG_PRESENTER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 #include "ios/web/public/java_script_dialog_presenter.h"
 
 class OverlayResponse;
@@ -30,6 +31,7 @@ class OverlayJavaScriptDialogPresenter final
  private:
   // Executes |callback| using the user interaction information from |response|.
   void HandleJavaScriptDialogResponse(web::DialogClosedCallback callback,
+                                      JavaScriptDialogSource source,
                                       web::JavaScriptDialogType dialog_type,
                                       OverlayResponse* response);
 

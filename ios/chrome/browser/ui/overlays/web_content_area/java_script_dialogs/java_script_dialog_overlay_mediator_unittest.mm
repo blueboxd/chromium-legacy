@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -14,6 +13,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,6 +24,7 @@
 
 @interface FakeJavaScriptDialogOverlayMediator
     : JavaScriptDialogOverlayMediator {
+  web::TestWebState _webState;
   std::unique_ptr<JavaScriptDialogSource> _source;
 }
 // Initializer for a mediator that has a JavaScriptDialogSource with |sourceURL|
@@ -39,7 +40,8 @@
                       sourceURL:(const GURL&)sourceURL
                     isMainFrame:(BOOL)isMainFrame {
   if (self = [super initWithRequest:request]) {
-    _source = std::make_unique<JavaScriptDialogSource>(sourceURL, isMainFrame);
+    _source = std::make_unique<JavaScriptDialogSource>(&_webState, sourceURL,
+                                                       isMainFrame);
   }
   return self;
 }

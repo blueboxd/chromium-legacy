@@ -12,9 +12,11 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,22 +28,29 @@ class JavaScriptConfirmationOverlayMediatorTest
     : public JavaScriptDialogOverlayMediatorTest {
  public:
   JavaScriptConfirmationOverlayMediatorTest()
-      : url_("https://chromium.test"), message_("Message") {}
+      : url_("https://chromium.test"), message_("Message") {
+    JavaScriptDialogBlockingState::CreateForWebState(&web_state_);
+  }
 
   // Creates a mediator and sets it for testing.
   void CreateMediator() {
     request_ = OverlayRequest::CreateWithConfig<
         JavaScriptConfirmationOverlayRequestConfig>(
-        url_, /*is_main_frame=*/true, message_);
+        JavaScriptDialogSource(&web_state_, url_, /*is_main_frame=*/true),
+        message_);
     SetMediator([[JavaScriptConfirmationOverlayMediator alloc]
         initWithRequest:request_.get()]);
   }
 
+  JavaScriptDialogBlockingState* blocking_state() {
+    return JavaScriptDialogBlockingState::FromWebState(&web_state_);
+  }
   const GURL& url() const { return url_; }
   const std::string& message() const { return message_; }
   const OverlayRequest* request() const { return request_.get(); }
 
  private:
+  web::TestWebState web_state_;
   const GURL url_;
   const std::string message_;
   std::unique_ptr<OverlayRequest> request_;
@@ -59,6 +68,27 @@ TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmationSetup) {
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
   EXPECT_EQ(UIAlertActionStyleCancel, consumer().actions[1].style);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_CANCEL), consumer().actions[1].title);
+}
+
+// Tests that the consumer values are set correctly for confirmations when the
+// blocking option is shown.
+TEST_F(JavaScriptConfirmationOverlayMediatorTest,
+       ConfirmationSetupWithBlockingOption) {
+  blocking_state()->JavaScriptDialogWasShown();
+  CreateMediator();
+
+  // Verify the consumer values.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().message);
+  EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
+  ASSERT_EQ(3U, consumer().actions.count);
+  EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
+  EXPECT_EQ(UIAlertActionStyleCancel, consumer().actions[1].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_CANCEL), consumer().actions[1].title);
+  EXPECT_EQ(UIAlertActionStyleDestructive, consumer().actions[2].style);
+  NSString* action_title =
+      l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
+  EXPECT_NSEQ(action_title, consumer().actions[2].title);
 }
 
 // Tests that the correct response is provided for the confirm action.

@@ -13,8 +13,8 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/overlays/overlay_ui_dismissal_delegate.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,6 +34,10 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
 
 #pragma mark - Accessors
 
+- (const JavaScriptDialogSource*)requestSource {
+  return &self.config->source();
+}
+
 - (JavaScriptPromptOverlayRequestConfig*)config {
   return self.request->GetConfig<JavaScriptPromptOverlayRequestConfig>();
 }
@@ -44,7 +48,7 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
   [super setConsumer:consumer];
   [self.consumer setMessage:base::SysUTF8ToNSString(self.config->message())];
   __weak __typeof__(self) weakSelf = self;
-  [self.consumer setActions:@[
+  NSArray* actions = @[
     [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
                            style:UIAlertActionStyleDefault
                          handler:^(AlertAction* action) {
@@ -60,7 +64,12 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
                          handler:^(AlertAction* action) {
                            [weakSelf.delegate stopDialogForMediator:weakSelf];
                          }],
-  ]];
+  ];
+  AlertAction* blockingAction = GetBlockingAlertAction(self);
+  if (blockingAction)
+    actions = [actions arrayByAddingObject:blockingAction];
+  [self.consumer setActions:actions];
+
   NSString* defaultPromptValue =
       base::SysUTF8ToNSString(self.config->default_prompt_value());
   [self.consumer setTextFieldConfigurations:@[
@@ -79,14 +88,6 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
   self.request->set_response(
       OverlayResponse::CreateWithInfo<JavaScriptPromptOverlayResponseInfo>(
           base::SysNSStringToUTF8(textInput)));
-}
-
-@end
-
-@implementation JavaScriptPromptOverlayMediator (Subclassing)
-
-- (const JavaScriptDialogSource*)requestSource {
-  return &self.config->source();
 }
 
 @end

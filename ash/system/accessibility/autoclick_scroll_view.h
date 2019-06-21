@@ -55,6 +55,9 @@ class AutoclickScrollView : public views::View {
   AutoclickScrollView();
   ~AutoclickScrollView() override = default;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   // views::View:
   void Layout() override;

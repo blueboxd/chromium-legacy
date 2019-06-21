@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -315,11 +316,26 @@ public final class DownloadNotificationFactory {
         if (!downloadUpdate.getIsTransient() && downloadUpdate.getNotificationId() != -1
                 && downloadStatus != DownloadNotificationService.DownloadStatus.COMPLETED
                 && downloadStatus != DownloadNotificationService.DownloadStatus.FAILED) {
-            Intent downloadHomeIntent = buildActionIntent(
-                    context, ACTION_NOTIFICATION_CLICKED, null, downloadUpdate.getIsOffTheRecord());
-            builder.setContentIntent(
-                    PendingIntentProvider.getService(context, downloadUpdate.getNotificationId(),
-                            downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+            if (FeatureUtilities.isNoTouchModeEnabled()) {
+                assert downloadUpdate.getContentId() != null;
+                ComponentName component = new ComponentName(
+                        context.getPackageName(), TouchlessDownloadActivity.class.getName());
+                Intent intent = new Intent(ACTION_NOTIFICATION_CLICKED);
+                intent.setComponent(component);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, downloadUpdate.getContentId().id);
+                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE,
+                        downloadUpdate.getContentId().namespace);
+                builder.setContentIntent(PendingIntentProvider.getActivity(context,
+                        downloadUpdate.getNotificationId(), intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT));
+            } else {
+                Intent downloadHomeIntent = buildActionIntent(context, ACTION_NOTIFICATION_CLICKED,
+                        null, downloadUpdate.getIsOffTheRecord());
+                builder.setContentIntent(PendingIntentProvider.getService(context,
+                        downloadUpdate.getNotificationId(), downloadHomeIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT));
+            }
         }
 
         if (downloadUpdate.getIsOffTheRecord()) {

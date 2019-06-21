@@ -19,7 +19,7 @@ BrowserSigninPolicyHandler::BrowserSigninPolicyHandler(Schema chrome_schema)
     : SchemaValidatingPolicyHandler(
           key::kBrowserSignin,
           chrome_schema.GetKnownProperty(key::kBrowserSignin),
-          SCHEMA_STRICT) {}
+          SCHEMA_ALLOW_UNKNOWN) {}
 
 BrowserSigninPolicyHandler::~BrowserSigninPolicyHandler() {}
 

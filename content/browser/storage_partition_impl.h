@@ -239,7 +239,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   class URLLoaderFactoryForBrowserProcess;
 
   friend class BackgroundSyncManagerTest;
-  friend class BackgroundSyncServiceImplTest;
+  friend class BackgroundSyncServiceImplTestHarness;
   friend class CookieStoreManagerTest;
   friend class PaymentAppContentUnitTestBase;
   friend class StoragePartitionImplMap;

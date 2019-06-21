@@ -74,7 +74,7 @@ class MODULES_EXPORT NotificationImageLoader final
 
   Type type_;
   bool stopped_;
-  TimeTicks start_time_;
+  base::TimeTicks start_time_;
   scoped_refptr<SharedBuffer> data_;
   ImageCallback image_callback_;
   Member<ThreadableLoader> threadable_loader_;

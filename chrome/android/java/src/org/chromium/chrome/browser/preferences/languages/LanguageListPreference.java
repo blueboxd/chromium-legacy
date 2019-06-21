@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.preferences.languages;
 
 import android.content.Context;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.TextView;
 
@@ -122,7 +121,6 @@ public class LanguageListPreference extends Preference {
         }
     }
 
-    private View mView;
     private TextView mAddLanguageButton;
     private RecyclerView mRecyclerView;
     private LanguageListAdapter mAdapter;
@@ -135,14 +133,12 @@ public class LanguageListPreference extends Preference {
     }
 
     @Override
-    public View onCreateView(ViewGroup parent) {
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+
         assert mLauncher != null;
 
-        if (mView != null) return mView;
-
-        mView = super.onCreateView(parent);
-
-        mAddLanguageButton = (TextView) mView.findViewById(R.id.add_language);
+        mAddLanguageButton = (TextView) holder.findViewById(R.id.add_language);
         mAddLanguageButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 TintedDrawable.constructTintedDrawable(
                         getContext(), R.drawable.plus, R.color.pref_accent_color),
@@ -153,7 +149,7 @@ public class LanguageListPreference extends Preference {
                     LanguagesManager.LanguageSettingsActionType.CLICK_ON_ADD_LANGUAGE);
         });
 
-        mRecyclerView = (RecyclerView) mView.findViewById(R.id.language_list);
+        mRecyclerView = (RecyclerView) holder.findViewById(R.id.language_list);
         LinearLayoutManager layoutMangager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(layoutMangager);
         mRecyclerView.addItemDecoration(
@@ -172,13 +168,6 @@ public class LanguageListPreference extends Preference {
             }
             mAdapter.notifyDataSetChanged();
         });
-
-        return mView;
-    }
-
-    @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
 
         // We do not want the RecyclerView to be announced by screen readers every time
         // the view is bound.

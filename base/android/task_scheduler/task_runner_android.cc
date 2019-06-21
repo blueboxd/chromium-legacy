@@ -29,13 +29,13 @@ jlong JNI_TaskRunnerImpl_Init(
   scoped_refptr<TaskRunner> task_runner;
   switch (static_cast<TaskRunnerType>(task_runner_type)) {
     case TaskRunnerType::BASE:
-      task_runner = CreateTaskRunnerWithTraits(task_traits);
+      task_runner = CreateTaskRunner(task_traits);
       break;
     case TaskRunnerType::SEQUENCED:
-      task_runner = CreateSequencedTaskRunnerWithTraits(task_traits);
+      task_runner = CreateSequencedTaskRunner(task_traits);
       break;
     case TaskRunnerType::SINGLE_THREAD:
-      task_runner = CreateSingleThreadTaskRunnerWithTraits(task_traits);
+      task_runner = CreateSingleThreadTaskRunner(task_traits);
       break;
   }
   return reinterpret_cast<intptr_t>(new TaskRunnerAndroid(task_runner));

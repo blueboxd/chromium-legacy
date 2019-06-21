@@ -72,6 +72,19 @@ class WKBackForwardListItemHolder;
                                           (web::WKBackForwardListItemHolder*)
                                               holder;
 
+// Loads |data| of type |MIMEType| and replaces last committed URL with the
+// given |URL|.
+- (void)loadData:(NSData*)data
+         webView:(WKWebView*)webView
+        MIMEType:(NSString*)MIMEType
+          forURL:(const GURL&)URL;
+
+// Loads |HTML| into the page and use |URL| to resolve relative URLs within the
+// document.
+- (void)loadHTML:(NSString*)HTML
+         webView:(WKWebView*)webView
+          forURL:(const GURL&)URL;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WEB_REQUEST_CONTROLLER_H_

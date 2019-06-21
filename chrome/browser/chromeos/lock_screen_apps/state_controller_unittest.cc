@@ -388,7 +388,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     SetUpStylusAvailability();
 
     session_manager_ = std::make_unique<session_manager::SessionManager>();
-    session_manager_->SessionStarted();
     session_manager_->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 

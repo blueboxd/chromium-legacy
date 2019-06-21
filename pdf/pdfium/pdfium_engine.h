@@ -144,7 +144,6 @@ class PDFiumEngine : public PDFEngine,
 #endif  // defined(PDF_ENABLE_XFA)
 
   void UnsupportedFeature(const std::string& feature);
-  void FontSubstituted();
 
   FPDF_AVAIL fpdf_availability() const;
   FPDF_DOCUMENT doc() const;
@@ -659,19 +658,6 @@ class PDFiumEngine : public PDFEngine,
   PDFiumPrint print_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
-};
-
-// Create a local variable of this when calling PDFium functions which can call
-// our global callback when a substitute font is mapped.
-class ScopedSubstFont {
- public:
-  explicit ScopedSubstFont(PDFiumEngine* engine);
-  ~ScopedSubstFont();
-
- private:
-  PDFiumEngine* const old_engine_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSubstFont);
 };
 
 }  // namespace chrome_pdf

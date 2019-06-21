@@ -51,5 +51,30 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsFlagsAndText) {
   EXPECT_TRUE(filter.ShouldInvertTextColor(Color::kBlack));
 }
 
+TEST(DarkModeFilterTest, ApplyFilterToDarkTextOnly) {
+  DarkModeFilter filter;
+
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.text_brightness_threshold = 200;
+  filter.UpdateSettings(settings);
+
+  EXPECT_FALSE(filter.ShouldInvertTextColor(Color::kWhite));
+  EXPECT_TRUE(filter.ShouldInvertTextColor(Color::kBlack));
+
+  EXPECT_FALSE(filter.ShouldInvertTextColor(Color(
+      settings.text_brightness_threshold, settings.text_brightness_threshold,
+      settings.text_brightness_threshold)));
+
+  EXPECT_TRUE(filter.ShouldInvertTextColor(
+      Color(settings.text_brightness_threshold - 5,
+            settings.text_brightness_threshold - 5,
+            settings.text_brightness_threshold - 5)));
+  EXPECT_FALSE(filter.ShouldInvertTextColor(
+      Color(settings.text_brightness_threshold + 5,
+            settings.text_brightness_threshold + 5,
+            settings.text_brightness_threshold + 5)));
+}
+
 }  // namespace
 }  // namespace blink

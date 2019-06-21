@@ -62,23 +62,37 @@ namespace {
 static constexpr base::TimeDelta kGracefulShutdownDelay =
     base::TimeDelta::FromSeconds(5);
 
+std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
+  std::vector<float> flattened;
+  for (const auto& rect : areas) {
+    flattened.emplace_back(rect.left);
+    flattened.emplace_back(rect.top);
+    flattened.emplace_back(rect.right);
+    flattened.emplace_back(rect.bottom);
+  }
+  return flattened;
+}
+
 }  // namespace
 
 // static
 std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
   auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
       env, web_contents->GetJavaWebContents());
   if (!jactivity) {
     return nullptr;
   }
-  return std::make_unique<UiControllerAndroid>(env, jactivity);
+  return std::make_unique<UiControllerAndroid>(env, jactivity,
+                                               joverlay_coordinator);
 }
 
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& jactivity)
+    const base::android::JavaRef<jobject>& jactivity,
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
       header_delegate_(this),
       payment_request_delegate_(this),
@@ -88,7 +102,7 @@ UiControllerAndroid::UiControllerAndroid(
       env, jactivity,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
-      reinterpret_cast<intptr_t>(this));
+      reinterpret_cast<intptr_t>(this), joverlay_coordinator);
 
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
@@ -135,9 +149,11 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
+    std::vector<RectF> restricted_area;
+    ui_delegate->GetRestrictedArea(&restricted_area);
     RectF visual_viewport;
     ui_delegate->GetVisualViewport(&visual_viewport);
-    OnTouchableAreaChanged(visual_viewport, area);
+    OnTouchableAreaChanged(visual_viewport, area, restricted_area);
     OnResizeViewportChanged(ui_delegate->GetResizeViewport());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
@@ -530,21 +546,20 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
 
 void UiControllerAndroid::OnTouchableAreaChanged(
     const RectF& visual_viewport,
-    const std::vector<RectF>& areas) {
+    const std::vector<RectF>& touchable_areas,
+    const std::vector<RectF>& restricted_areas) {
   JNIEnv* env = AttachCurrentThread();
   Java_AssistantOverlayModel_setVisualViewport(
       env, GetOverlayModel(), visual_viewport.left, visual_viewport.top,
       visual_viewport.right, visual_viewport.bottom);
 
-  std::vector<float> flattened;
-  for (const auto& rect : areas) {
-    flattened.emplace_back(rect.left);
-    flattened.emplace_back(rect.top);
-    flattened.emplace_back(rect.right);
-    flattened.emplace_back(rect.bottom);
-  }
   Java_AssistantOverlayModel_setTouchableArea(
-      env, GetOverlayModel(), base::android::ToJavaFloatArray(env, flattened));
+      env, GetOverlayModel(),
+      base::android::ToJavaFloatArray(env, ToFloatVector(touchable_areas)));
+
+  Java_AssistantOverlayModel_setRestrictedArea(
+      AttachCurrentThread(), GetOverlayModel(),
+      base::android::ToJavaFloatArray(env, ToFloatVector(restricted_areas)));
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
@@ -565,14 +580,6 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 }
 
 // Other methods.
-
-void UiControllerAndroid::ShowOnboarding(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobject>& on_accept) {
-  Java_AutofillAssistantUiController_onShowOnboarding(
-      env, java_object_, jexperiment_ids, on_accept);
-}
 
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
   if (reason == Metrics::CUSTOM_TAB_CLOSED) {

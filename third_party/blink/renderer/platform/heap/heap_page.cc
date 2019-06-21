@@ -110,6 +110,11 @@ bool HeapObjectHeader::HasNonTrivialFinalizer() const {
   return gc_info->finalize;
 }
 
+const char* HeapObjectHeader::Name() const {
+  const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
+  return gc_info->name(Payload()).value;
+}
+
 BaseArena::BaseArena(ThreadState* state, int index)
     : thread_state_(state), index_(index) {}
 
@@ -573,7 +578,10 @@ void NormalPageArena::VerifyMarking() {
   // for incremental marking the application is running between steps and
   // might set up a new area.
   SetAllocationPoint(nullptr, 0);
-  for (BasePage* page : swept_pages_) {
+  DCHECK(swept_unfinalized_pages_.IsEmpty());
+  DCHECK(swept_unfinalized_empty_pages_.IsEmpty());
+  // There may be objects on swept_pages_ as pre-finalizers may allocate.
+  for (BasePage* page : unswept_pages_) {
     static_cast<NormalPage*>(page)->VerifyMarking();
   }
 #endif  // DCHECK_IS_ON()

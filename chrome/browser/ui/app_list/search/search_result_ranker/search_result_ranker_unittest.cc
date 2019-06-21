@@ -191,5 +191,34 @@ TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
                                               HasId("A"), HasId("B"))));
 }
 
+// URL IDs should ignore the query and fragment, and URLs for google docs should
+// ignore a trailing /view or /edit.
+TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
+  // We want |url_1| and |_3| to be equivalent to |url_2| and |_4|. So, train on
+  // 1 and 3 but rank 2 and 4. Even with zero relevance, they should be at the
+  // top of the rankings.
+  const std::string& url_1 = "http://docs.google.com/mydoc/edit?query";
+  const std::string& url_2 = "http://docs.google.com/mydoc/view#fragment";
+  const std::string& url_3 = "some.domain.com?query#edit";
+  const std::string& url_4 = "some.domain.com";
+
+  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+
+  for (int i = 0; i < 5; ++i) {
+    ranker->Train(url_1, RankingItemType::kOmniboxHistory);
+    ranker->Train(url_3, RankingItemType::kOmniboxHistory);
+  }
+  ranker->FetchRankings(base::string16());
+
+  auto results = MakeSearchResults(
+      {url_2, url_4, "untrained id"},
+      {ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kOmnibox},
+      {0.0f, 0.0f, 0.1f});
+
+  ranker->Rank(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId(url_4), HasId(url_2),
+                                              HasId("untrained id"))));
+}
+
 }  // namespace test
 }  // namespace app_list

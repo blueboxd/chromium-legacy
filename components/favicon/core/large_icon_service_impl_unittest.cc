@@ -14,6 +14,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
@@ -24,7 +25,6 @@
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
-#include "components/variations/variations_params_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -226,14 +226,14 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerForDesktop) {
 }
 
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
-  variations::testing::VariationParamsManager variation_params(
-      "LargeIconServiceFetching",
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kLargeIconServiceFetchingFeature,
       {{"request_format",
         "https://t0.gstatic.com/"
         "faviconV2?%ssize=%d&min_size=%d&max_size=%d&url=%s"},
        {"enforced_min_size_in_pixel", "43"},
-       {"desired_to_max_size_factor", "6.5"}},
-      {"LargeIconServiceFetching"});
+       {"desired_to_max_size_factor", "6.5"}});
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?check_seen=true&"
       "size=61&min_size=43&max_size=396&url=http://www.example.com/");

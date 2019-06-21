@@ -8,11 +8,13 @@ import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
@@ -456,4 +458,9 @@ public class ViewAndroidDelegate {
     private static void fallbackCursorModeSetCursorVisibility(boolean visible) {
         TouchlessEventHandler.fallbackCursorModeSetCursorVisibility(visible);
     }
+
+    /**
+     * @see InputConnection#performPrivateCommand(java.lang.String, android.os.Bundle)
+     */
+    public void performPrivateImeCommand(String action, Bundle data) {}
 }

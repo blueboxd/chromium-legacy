@@ -1129,24 +1129,22 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ProxyPolicyHandler>());
   handlers->AddHandler(std::make_unique<URLBlacklistPolicyHandler>());
 
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForUrls,
       certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForCas,
       certificate_transparency::prefs::kCTExcludedSPKIs, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForLegacyCas,
       certificate_transparency::prefs::kCTExcludedLegacySPKIs, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
@@ -1221,11 +1219,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kWebAppInstallForceList, prefs::kWebAppInstallForceList,
-      chrome_schema, SCHEMA_STRICT,
+      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif
@@ -1248,11 +1244,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());
 
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kRegisteredProtocolHandlers,
-      prefs::kPolicyRegisteredProtocolHandlers, chrome_schema, SCHEMA_STRICT,
+      prefs::kPolicyRegisteredProtocolHandlers, chrome_schema,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
 
@@ -1263,14 +1258,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kSafeBrowsingExtendedReportingOptInAllowed,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed,
       base::Value::Type::BOOLEAN));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(sber_legacy_policy),
       std::make_unique<SimpleSchemaValidatingPolicyHandler>(
           key::kSafeBrowsingExtendedReportingEnabled,
           prefs::kSafeBrowsingScoutReportingEnabled, chrome_schema,
-          SCHEMA_STRICT,
+          SCHEMA_ALLOW_UNKNOWN,
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED)));
 
@@ -1432,10 +1425,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kNativePrintersBulkConfiguration));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kDeviceWilcoDtcConfiguration));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kSessionLocales, nullptr, chrome_schema, SCHEMA_STRICT,
+      key::kSessionLocales, nullptr, chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
   handlers->AddHandler(
@@ -1447,11 +1438,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
   if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
-    // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-    // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
     handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
         key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
-        SCHEMA_STRICT,
+        SCHEMA_ALLOW_UNKNOWN,
         SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
         SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   }
@@ -1473,17 +1462,15 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kParentAccessCodeConfig, prefs::kParentAccessCodeConfig,
-      chrome_schema, SCHEMA_STRICT,
+      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(

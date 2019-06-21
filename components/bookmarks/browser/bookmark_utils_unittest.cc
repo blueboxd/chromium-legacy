@@ -270,7 +270,7 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
 
   // Write blank text to clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(base::string16());
   }
   // Now we shouldn't be able to paste from the clipboard.
@@ -278,7 +278,7 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
 
   // Write some valid url to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(url_text);
   }
   // Now we should be able to paste from the clipboard.
@@ -308,8 +308,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
   // Write some text to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(
-        ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(ASCIIToUTF16("foo"));
   }
 

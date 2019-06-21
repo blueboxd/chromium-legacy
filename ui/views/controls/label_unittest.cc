@@ -1053,7 +1053,7 @@ TEST_F(LabelSelectionTest, MouseDrag) {
   EXPECT_STR_EQ(" mouse drag", GetSelectedText());
 
   event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
-  EXPECT_STR_EQ(" mouse drag", GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
+  EXPECT_STR_EQ(" mouse drag", GetClipboardText(ui::ClipboardType::kCopyPaste));
 }
 
 TEST_F(LabelSelectionTest, MouseDragMultilineLTR) {
@@ -1249,14 +1249,14 @@ TEST_F(LabelSelectionTest, SelectionClipboard) {
   // selection clipboard.
   label()->SelectRange(gfx::Range(2, 5));
   EXPECT_STR_EQ("bel", GetSelectedText());
-  EXPECT_TRUE(GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION).empty());
+  EXPECT_TRUE(GetClipboardText(ui::ClipboardType::kSelection).empty());
 
   // Verify text selection using the mouse updates the selection clipboard.
   PerformMousePress(GetCursorPoint(5));
   PerformMouseDragTo(GetCursorPoint(0));
   PerformMouseRelease(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
-  EXPECT_STR_EQ("Label", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
+  EXPECT_STR_EQ("Label", GetClipboardText(ui::ClipboardType::kSelection));
 }
 #endif
 
@@ -1275,7 +1275,7 @@ TEST_F(LabelSelectionTest, KeyboardActions) {
   EXPECT_EQ(initial_text, GetSelectedText());
 
   event_generator()->PressKey(ui::VKEY_C, kControlCommandModifier);
-  EXPECT_EQ(initial_text, GetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE));
+  EXPECT_EQ(initial_text, GetClipboardText(ui::ClipboardType::kCopyPaste));
 
   // The selection should get cleared on changing the text, but focus should not
   // be affected.

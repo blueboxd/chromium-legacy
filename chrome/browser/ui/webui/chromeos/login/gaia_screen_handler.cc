@@ -542,8 +542,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_DIALOG_TEXT);
   builder->Add("offlineLoginCloseBtn", IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT);
   builder->Add("enterpriseInfoMessage", IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE);
-  builder->Add("samlInterstitialMessage",
-                IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
+  builder->Add("samlInterstitialMessage", IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
   builder->Add("samlInterstitialChangeAccountLink",
                IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT);
   builder->Add("samlInterstitialNextBtn",
@@ -824,8 +823,6 @@ void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
   UserContext user_context(user_type,
                            GetAccountId(email, gaia_id, AccountType::GOOGLE));
   user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. See https://crbug.com/386606 for details.
   user_context.SetPasswordKey(Key(password));
   user_context.SetAuthCode(auth_code);
   user_context.SetAuthFlow(using_saml
@@ -857,8 +854,8 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
   SetSAMLPrincipalsAPIUsed(false);
   // Use a histogram that has 11 buckets, one for each of the values in [0, 9]
   // and an overflow bucket at the end.
-  UMA_HISTOGRAM_ENUMERATION(
-      "ChromeOS.SAML.Scraping.PasswordCount", std::min(password_count, 10), 11);
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SAML.Scraping.PasswordCount",
+                            std::min(password_count, 10), 11);
   if (password_count == 0)
     HandleScrapedPasswordVerificationFailed();
 }
@@ -969,18 +966,6 @@ void GaiaScreenHandler::DoCompleteLogin(
       user ? UserContext(*user)
            : UserContext(CalculateUserType(account_id), account_id);
   user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. If the user's OpenNetworkConfiguration policy contains a
-  // ${PASSWORD} variable, then the user's password will be used to authenticate
-  // to the specified network.
-  //
-  // The user's password needs to be saved in memory until the policy can be
-  // examined. When the policy comes in, if it does not contain the ${PASSWORD}
-  // variable, the user's password will be discarded. If it contains the
-  // password, it will be sent to the session manager, which will then save it
-  // in a keyring so it can be retrieved for authenticating to the network.
-  //
-  // More details can be found in https://crbug.com/386606
   user_context.SetPasswordKey(Key(password));
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
@@ -1059,6 +1044,7 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   std::string code =
       "document.getElementById('identifier').value = '" + test_user_ + "';"
       "document.getElementById('nextButton').click();";
+
   frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
                                    base::NullCallback());
 
@@ -1245,10 +1231,8 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
   CallJS("login.GaiaSigninScreen.showWhitelistCheckFailedError", true, params);
 }
 
-void GaiaScreenHandler::LoadAuthExtension(bool force,
-                                          bool offline) {
-  VLOG(1) << "LoadAuthExtension, force: " << force
-          << ", offline: " << offline;
+void GaiaScreenHandler::LoadAuthExtension(bool force, bool offline) {
+  VLOG(1) << "LoadAuthExtension, force: " << force << ", offline: " << offline;
 
   if (auth_extension_being_loaded_) {
     VLOG(1) << "Skip loading the Auth extension as it's already being loaded";

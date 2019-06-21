@@ -18,10 +18,6 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,18 +30,11 @@ using testing::InvokeWithoutArgs;
 
 namespace {
 
-void OnNetworkServiceCookiesReceived(net::CookieList* output,
-                                     base::OnceClosure on_received_cb,
-                                     const net::CookieList& cookies) {
-  *output = cookies;
-  std::move(on_received_cb).Run();
-}
-
 void OnCookiesReceived(net::CookieList* output,
                        base::OnceClosure on_received_cb,
-                       const net::CookieList& cookies,
-                       const net::CookieStatusList& cookie_status) {
-  OnNetworkServiceCookiesReceived(output, std::move(on_received_cb), cookies);
+                       const net::CookieList& cookies) {
+  *output = cookies;
+  std::move(on_received_cb).Run();
 }
 
 // Defines a suite of tests that exercise browser-level configuration and
@@ -66,30 +55,13 @@ class ContextImplTest : public cr_fuchsia::WebEngineBrowserTest {
     base::RunLoop run_loop;
     net::CookieList cookies;
     network::mojom::CookieManagerPtr cookie_manager;
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      content::BrowserContext::GetDefaultStoragePartition(
-          context_impl()->browser_context_for_test())
-          ->GetNetworkContext()
-          ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
-      cookie_manager->GetAllCookies(
-          base::BindOnce(&OnNetworkServiceCookiesReceived,
-                         base::Unretained(&cookies), run_loop.QuitClosure()));
-    } else {
-      net::CookieStore* cookie_store =
-          content::BrowserContext::GetDefaultStoragePartition(
-              context_impl()->browser_context_for_test())
-              ->GetURLRequestContext()
-              ->GetURLRequestContext()
-              ->cookie_store();
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(
-              &net::CookieStore::GetAllCookiesAsync,
-              base::Unretained(cookie_store),
-              base::BindOnce(&OnCookiesReceived, base::Unretained(&cookies),
-                             run_loop.QuitClosure())));
-    }
-
+    content::BrowserContext::GetDefaultStoragePartition(
+        context_impl()->browser_context_for_test())
+        ->GetNetworkContext()
+        ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+    cookie_manager->GetAllCookies(base::BindOnce(&OnCookiesReceived,
+                                                 base::Unretained(&cookies),
+                                                 run_loop.QuitClosure()));
     run_loop.Run();
     return cookies;
   }

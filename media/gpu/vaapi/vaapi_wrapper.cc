@@ -156,6 +156,82 @@ static const struct {
       VAProfileH264ConstrainedBaseline}},
 };
 
+// Converts the given |va_profile| to the corresponding string.
+// See: http://go/gh/intel/libva/blob/master/va/va.h#L359
+std::string VAProfileToString(VAProfile va_profile) {
+  switch (va_profile) {
+    case VAProfileNone:
+      return "VAProfileNone";
+    case VAProfileMPEG2Simple:
+      return "VAProfileMPEG2Simple";
+    case VAProfileMPEG2Main:
+      return "VAProfileMPEG2Main";
+    case VAProfileMPEG4Simple:
+      return "VAProfileMPEG4Simple";
+    case VAProfileMPEG4AdvancedSimple:
+      return "VAProfileMPEG4AdvancedSimple";
+    case VAProfileMPEG4Main:
+      return "VAProfileMPEG4Main";
+    case VAProfileH264Baseline:
+      return "VAProfileH264Baseline";
+    case VAProfileH264Main:
+      return "VAProfileH264Main";
+    case VAProfileH264High:
+      return "VAProfileH264High";
+    case VAProfileVC1Simple:
+      return "VAProfileVC1Simple";
+    case VAProfileVC1Main:
+      return "VAProfileVC1Main";
+    case VAProfileVC1Advanced:
+      return "VAProfileVC1Advanced";
+    case VAProfileH263Baseline:
+      return "VAProfileH263Baseline";
+    case VAProfileJPEGBaseline:
+      return "VAProfileJPEGBaseline";
+    case VAProfileH264ConstrainedBaseline:
+      return "VAProfileH264ConstrainedBaseline";
+    case VAProfileVP8Version0_3:
+      return "VAProfileVP8Version0_3";
+    case VAProfileH264MultiviewHigh:
+      return "VAProfileH264MultiviewHigh";
+    case VAProfileH264StereoHigh:
+      return "VAProfileH264StereoHigh";
+    case VAProfileHEVCMain:
+      return "VAProfileHEVCMain";
+    case VAProfileHEVCMain10:
+      return "VAProfileHEVCMain10";
+    case VAProfileVP9Profile0:
+      return "VAProfileVP9Profile0";
+    case VAProfileVP9Profile1:
+      return "VAProfileVP9Profile1";
+    case VAProfileVP9Profile2:
+      return "VAProfileVP9Profile2";
+    case VAProfileVP9Profile3:
+      return "VAProfileVP9Profile3";
+    case VAProfileHEVCMain12:
+      return "VAProfileHEVCMain12";
+    case VAProfileHEVCMain422_10:
+      return "VAProfileHEVCMain422_10";
+    case VAProfileHEVCMain422_12:
+      return "VAProfileHEVCMain422_12";
+    case VAProfileHEVCMain444:
+      return "VAProfileHEVCMain444";
+    case VAProfileHEVCMain444_10:
+      return "VAProfileHEVCMain444_10";
+    case VAProfileHEVCMain444_12:
+      return "VAProfileHEVCMain444_12";
+    case VAProfileHEVCSccMain:
+      return "VAProfileHEVCSccMain";
+    case VAProfileHEVCSccMain10:
+      return "VAProfileHEVCSccMain10";
+    case VAProfileHEVCSccMain444:
+      return "VAProfileHEVCSccMain444";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 bool IsBlackListedDriver(const std::string& va_vendor_string,
                          VaapiWrapper::CodecMode mode,
                          VAProfile va_profile) {
@@ -422,7 +498,8 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
     VAStatus va_res =
         vaGetConfigAttributes(va_display, profile, entrypoint, &attrib, 1);
     if (va_res != VA_STATUS_SUCCESS) {
-      LOG(ERROR) << "GetConfigAttributes failed for va_profile " << profile;
+      LOG(ERROR) << "GetConfigAttributes failed for va_profile "
+                 << VAProfileToString(profile);
       return false;
     }
 
@@ -593,7 +670,8 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
                                 &profile_info)) {
       LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
-                 << va_profile << " and entrypoint " << entrypoint;
+                 << VAProfileToString(va_profile) << " and entrypoint "
+                 << entrypoint;
       continue;
     }
     supported_profile_infos.push_back(profile_info);
@@ -993,7 +1071,8 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     if (vaapi_wrapper->Initialize(mode, va_profile))
       return vaapi_wrapper;
   }
-  LOG(ERROR) << "Failed to create VaapiWrapper for va_profile: " << va_profile;
+  LOG(ERROR) << "Failed to create VaapiWrapper for va_profile: "
+             << VAProfileToString(va_profile);
   return nullptr;
 }
 

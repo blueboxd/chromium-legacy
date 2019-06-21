@@ -167,6 +167,8 @@ class CORE_EXPORT TextPaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
+  friend class LargestContentfulPaintCalculatorTest;
+
   void PopulateTraceValue(TracedValue&, const TextRecord& first_text_paint);
   void TimerFired(TimerBase*);
   void UpdateCandidate();

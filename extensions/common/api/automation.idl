@@ -592,12 +592,12 @@
     // The start index of each word within the node's name. This is different
     // from wordStarts because it is not restricted to inline text boxes and can
     // be used for any type of element.
-    long[]? wordStartOffsets;
+    long[]? nonInlineTextWordStarts;
 
     // The end index of each word within the node's name. This is different
     // from wordEnds because it is not restricted to inline text boxes and can
     // be used for any type of element.
-    long[]? wordEndOffsets;
+    long[]? nonInlineTextWordEnds;
 
     // The nodes, if any, which this node is specified to control via
     // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">

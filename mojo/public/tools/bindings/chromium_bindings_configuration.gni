@@ -16,6 +16,7 @@ _typemap_imports = [
   "//components/chromeos_camera/common/typemaps.gni",
   "//components/sync/mojo/typemaps.gni",
   "//components/typemaps.gni",
+  "//content/browser/typemaps.gni",
   "//content/common/typemaps.gni",
   "//content/public/common/typemaps.gni",
   "//device/bluetooth/public/mojom/typemaps.gni",

@@ -29,7 +29,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
 
   // PictureLayerTilingClient implementation.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override;
   bool HasValidTilePriorities() const override;
 
   void SetTileSize(const gfx::Size& tile_size);

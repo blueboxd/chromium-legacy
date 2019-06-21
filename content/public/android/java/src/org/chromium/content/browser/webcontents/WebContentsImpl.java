@@ -745,6 +745,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public void setSpatialNavigationDisabled(boolean disabled) {
+        checkNotDestroyed();
+        nativeSetSpatialNavigationDisabled(mNativeWebContentsAndroid, disabled);
+    }
+
+    @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
         checkNotDestroyed();
@@ -1030,6 +1036,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
+    private native void nativeSetSpatialNavigationDisabled(
+            long nativeWebContentsAndroid, boolean disabled);
     private native void nativeWriteContentBitmapToDisk(long nativeWebContentsAndroid, int width,
             int height, String path, Callback<String> callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);

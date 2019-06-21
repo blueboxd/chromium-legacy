@@ -64,7 +64,6 @@ class CONTENT_EXPORT BrowserIOTaskEnvironment
   std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
 
   std::unique_ptr<BrowserTaskQueues> task_queues_;
-  scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 };
 

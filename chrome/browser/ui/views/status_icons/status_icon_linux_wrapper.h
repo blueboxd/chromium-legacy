@@ -34,7 +34,7 @@ class StatusIconLinuxWrapper : public StatusIcon,
   const gfx::ImageSkia& GetImage() const override;
   const base::string16& GetToolTip() const override;
   ui::MenuModel* GetMenuModel() const override;
-  void OnImplInitialized(bool success) override;
+  void OnImplInitializationFailed() override;
 
   // StatusIconMenuModel::Observer overrides:
   void OnMenuStateChanged() override;

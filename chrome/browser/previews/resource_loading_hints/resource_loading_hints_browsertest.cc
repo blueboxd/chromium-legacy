@@ -93,6 +93,14 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     https_url_ = https_server_->GetURL("/resource_loading_hints.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
+    https_url_iframe_ =
+        https_server_->GetURL("/resource_loading_hints_iframe.html");
+    ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
+    https_url_iframe_preload_ =
+        https_server_->GetURL("/resource_loading_hints_iframe_preload.html");
+    ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+
     https_url_preload_ =
         https_server_->GetURL("/resource_loading_hints_preload.html");
 
@@ -255,7 +263,19 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
   virtual const GURL& https_url() const { return https_url_; }
+
+  // URL that loads blocked resources uses link-rel preload in <head>.
   const GURL& https_url_preload() const { return https_url_preload_; }
+
+  // URL that loads a woff2 resource and https_url() webpage in an iframe.
+  virtual const GURL& https_url_iframe() const { return https_url_iframe_; }
+
+  // URL that loads a woff2 resource and https_url_preload() webpage in an
+  // iframe.
+  virtual const GURL& https_url_iframe_preload() const {
+    return https_url_iframe_preload_;
+  }
+
   const GURL& https_second_url() const { return https_second_url_; }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& https_hint_setup_url() const { return https_hint_setup_url_; }
@@ -270,6 +290,10 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void SetExpectedBarJpgRequest(bool expect_bar_jpg_requested) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     subresource_expected_["/bar.jpg"] = expect_bar_jpg_requested;
+  }
+  void SetExpectedBazWoff2Request(bool expect_woff_requested) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    subresource_expected_["/baz.woff2"] = expect_woff_requested;
   }
 
   bool resource_loading_hint_intervention_header_seen() const {
@@ -327,7 +351,9 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
       if (gurl.path() == expect.first) {
         // Verify that |gurl| is expected to be fetched. This ensures that a
         // resource whose loading is blocked is not loaded.
-        EXPECT_TRUE(expect.second);
+        EXPECT_TRUE(expect.second)
+            << " GURL " << gurl
+            << " was expected to be blocked, but was actually fetched";
         // Subresource should not be fetched again.
         subresource_expected_[gurl.path()] = false;
         return;
@@ -342,6 +368,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
   GURL https_url_preload_;
+  GURL https_url_iframe_;
+  GURL https_url_iframe_preload_;
   GURL https_second_url_;
   GURL https_no_transform_url_;
   GURL https_hint_setup_url_;
@@ -388,6 +416,12 @@ class ResourceLoadingHintsBrowserTest
     if (GetParam())
       return ResourceLoadingNoFeaturesBrowserTest::https_url_preload();
     return ResourceLoadingNoFeaturesBrowserTest::https_url();
+  }
+
+  const GURL& https_url_iframe() const override {
+    if (GetParam())
+      return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe_preload();
+    return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe();
   }
 
  private:
@@ -471,6 +505,80 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectBucketCount(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns", 3, 2);
   EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+// The test loads https_url_iframe() which is whitelisted for resource blocking.
+// This webpage loads a woff2 resource whose loading should be blocked.
+// https_url_iframe() also loads https_url() in an iframe. https_url()
+// contains two resources whose URL match blocked patterns. However, since
+// https_url() is inside an iframe, loading of those two resources should not
+// be blocked.
+IN_PROC_BROWSER_TEST_P(
+    ResourceLoadingHintsBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted_Iframe)) {
+  GURL url = https_url_iframe();
+
+  // Whitelist resource loading hints for https_url_iframe()'s' host.
+  SetDefaultOnlyResourceLoadingHints(https_url_iframe());
+
+  // Loading of these two resources should not be blocked since they are loaded
+  // by a webpage inside an iframe.
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+
+  // Woff2 subresource is loaded by the https_url_iframe() and its loading
+  // should be blocked.
+  SetExpectedBazWoff2Request(false);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 1);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_TRUE(resource_loading_hint_intervention_header_seen());
+}
+
+// The test loads https_url_iframe() which is NOT whitelisted for resource
+// blocking. This webpage loads a woff2 resource whose loading should NOT be
+// blocked. https_url_iframe() also loads https_url() in an iframe. https_url()
+// contains two resources whose URL match blocked patterns. Loading of those two
+// resources should not be blocked either since https_url_iframe() is not
+// whitelisted.
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                           ResourceLoadingHintsHttpsNotWhitelisted_Iframe)) {
+  GURL url = https_url_iframe();
+
+  // Do not whitelist resource loading hints for https_url_iframe()'s' host.
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+
+  // Woff2 subresource is loaded by the https_url_iframe(). The other two
+  // resources are loaded by the webpage inside the iframe. None of these
+  // resources should be blocked from loading.
+  SetExpectedBazWoff2Request(true);
+  ResetResourceLoadingHintInterventionHeaderSeen();
+
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.ResourceLoadingHints",
+      static_cast<int>(previews::PreviewsEligibilityReason::ALLOWED), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.PreviewShown.ResourceLoadingHints", 0);
+  histogram_tester.ExpectTotalCount(
+      "ResourceLoadingHints.CountBlockedSubresourcePatterns", 0);
+  EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
 // Sets only the experimental hints, but does not enable the matching

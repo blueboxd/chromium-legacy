@@ -72,17 +72,7 @@ void PermissionStatus::ContextDestroyed(ExecutionContext*) {
 }
 
 String PermissionStatus::state() const {
-  switch (status_) {
-    case MojoPermissionStatus::GRANTED:
-      return "granted";
-    case MojoPermissionStatus::DENIED:
-      return "denied";
-    case MojoPermissionStatus::ASK:
-      return "prompt";
-  }
-
-  NOTREACHED();
-  return "denied";
+  return PermissionStatusToString(status_);
 }
 
 void PermissionStatus::StartListening() {

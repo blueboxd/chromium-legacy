@@ -28,6 +28,7 @@ class MarkingVerifier final : public Visitor {
         !info->has_v_table || blink::VTableInitialized(header->Payload());
     if (can_verify) {
       CHECK(header->IsValid());
+      parent_ = header;
       info->trace(this, header->Payload());
     }
   }
@@ -76,8 +77,23 @@ class MarkingVerifier final : public Visitor {
     // state meaning that there are unmarked objects reachable from marked
     // ones.
     CHECK(child_header);
-    CHECK(child_header->IsMarked());
+    if (!child_header->IsMarked()) {
+      // Pre-finalizers may allocate. In that case the newly allocated objects
+      // reside on a page that is not scheduled for sweeping.
+      if (PageFromObject(child_header->Payload())->HasBeenSwept())
+        return;
+
+      LOG(FATAL)
+          << "MarkingVerifier: Encountered unmarked object. " << std::endl
+          << std::endl
+          << "Hint (use v8_enable_raw_heap_snapshots for better naming): "
+          << std::endl
+          << parent_->Name() << std::endl
+          << "\\-> " << child_header->Name() << std::endl;
+    }
   }
+
+  HeapObjectHeader* parent_ = nullptr;
 };
 
 }  // namespace blink

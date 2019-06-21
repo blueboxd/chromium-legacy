@@ -11,7 +11,7 @@
 #include "components/services/patch/public/interfaces/file_patcher.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/unzipper.mojom.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -23,10 +23,6 @@ class ServicesTest : public testing::Test {
  public:
   ServicesTest()
       : thread_bundle_(content::TestBrowserThreadBundle::MainThreadType::IO) {}
-
-  ~ServicesTest() override {
-    content::ServiceManagerConnection::DestroyForProcess();
-  }
 
   template <typename Interface>
   bool CanAccessInterfaceFromBrowser(const std::string& service_name) {
@@ -46,7 +42,7 @@ class ServicesTest : public testing::Test {
 
  private:
   service_manager::Connector* connector() {
-    return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    return content::GetSystemConnector();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

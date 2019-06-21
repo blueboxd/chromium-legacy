@@ -3128,6 +3128,9 @@ void Document::open(Document* entered_document,
   if (ignore_opens_during_unload_count_)
     return;
 
+  if (ignore_opens_and_writes_for_abort_)
+    return;
+
   // Change |document|'s URL to the URL of the responsible document specified
   // by the entry settings object.
   if (entered_document && this != entered_document) {
@@ -3213,6 +3216,14 @@ void Document::DetachParser() {
 }
 
 void Document::CancelParsing() {
+  // There appears to be an unspecced assumption that a document.open()
+  // or document.write() immediately after a navigation start won't cancel
+  // the navigation. Firefox avoids cancelling the navigation by ignoring an
+  // open() or write() after an active parser is aborted. See
+  // https://github.com/whatwg/html/issues/4723 for discussion about
+  // standardizing this behavior.
+  if (parser_ && parser_->IsParsing())
+    ignore_opens_and_writes_for_abort_ = true;
   DetachParser();
   SetParsingState(kFinishedParsing);
   SetReadyState(kComplete);
@@ -3535,35 +3546,8 @@ bool Document::ShouldComplete() {
          AllDescendantsAreComplete(this);
 }
 
-void Document::Abort(bool for_form_submission) {
-  // The spec says that form submissions should start navigating
-  // asynchronously, but we currently start the navigation immediately. This
-  // mostly works. However, starting a navigation entails aborting the current
-  // document (i.e., this function), and compatibility seems to require a very
-  // weird kind of abort for form submissions. In
-  // https://bugs.webkit.org/show_bug.cgi?id=45627, we concluded that form
-  // submission should synchronously cancel parsing, and added a regression test
-  // for that behavior in fast/loader/form-submit-aborts-parsing.html, However,
-  // https://crbug.com/955556 shows that a document.write() immediately after a
-  // form submission should not implicitly open() a new document, thus
-  // cancelling the form submission, as tested in
-  // fast/loader/document-write-after-form-submit.html. Firefox passes both
-  // these tests, so matching their behavior seems to make sense. It appears
-  // that, unlike other aborts, we don't want to hard-detach the parser, but
-  // want it to let it unwind slightly more gently. Therefore, call
-  // DocumentParser::StopParsing() and suppress the load event, instead of
-  // calling CancelParsing().
-  // TODO(japhet): This special case is designed to be mergeable to M75, but
-  // should be fixed before M76 branches.
-  if (for_form_submission) {
-    if (!LoadEventFinished())
-      load_event_progress_ = kLoadEventCompleted;
-    if (parser_)
-      parser_->StopParsing();
-    SetParsingState(kFinishedParsing);
-  } else {
-    CancelParsing();
-  }
+void Document::Abort() {
+  CancelParsing();
   CheckCompletedInternal();
 }
 
@@ -3903,6 +3887,9 @@ void Document::write(const String& text,
         "Can only call write() on same-origin documents.");
     return;
   }
+
+  if (ignore_opens_and_writes_for_abort_)
+    return;
 
   NestingLevelIncrementer nesting_level_incrementer(write_recursion_depth_);
 
@@ -6063,48 +6050,23 @@ namespace {
 using resource_coordinator::mojom::InterventionPolicy;
 using resource_coordinator::mojom::PolicyControlledIntervention;
 
-typedef bool (*InterventionPolicyGetter)(const FeatureContext*);
-struct InterventionPolicyGetters {
-  InterventionPolicyGetter opt_in_getter;
-  InterventionPolicyGetter opt_out_getter;
-};
-
-// A helper function for setting intervention policy values on a frame en masse.
+// A helper function for setting intervention policy values on a frame.
 void SetInitialInterventionPolicies(
     DocumentResourceCoordinator* document_resource_coordinator,
-    const ExecutionContext* context) {
-  DEFINE_STATIC_LOCAL(Vector<InterventionPolicyGetters>,
-                      kInterventionPolicyGetters, ());
-  if (kInterventionPolicyGetters.IsEmpty()) {
-    InterventionPolicyGetters getters = {
-        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled,
-        &RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled};
-    kInterventionPolicyGetters.push_back(getters);
-    const wtf_size_t kInterventionPolicyGettersSize = 1;
-    static_assert(
-        kInterventionPolicyGettersSize ==
-            static_cast<wtf_size_t>(PolicyControlledIntervention::kMaxValue) +
-                1,
-        "kInterventionPolicyGetters array must be kept in sync with "
-        "mojom::PolicyControlledIntervention enum.");
+    ExecutionContext* context) {
+  // An explicit opt-out overrides an explicit opt-in if both are present.
+  InterventionPolicy policy = InterventionPolicy::kDefault;
+  if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptOutEnabled(context)) {
+    policy = InterventionPolicy::kOptOut;
+    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptOut);
+  } else if (RuntimeEnabledFeatures::PageLifecycleTransitionsOptInEnabled(
+                 context)) {
+    policy = InterventionPolicy::kOptIn;
+    UseCounter::Count(context, WebFeature::kPageLifecycleTransitionsOptIn);
   }
-  // Note that these must be emitted in order, as the *last* policy being set
-  // is used as a sentinel in the browser-side logic to infer that the frame has
-  // transmitted all of its policy data.
-  for (wtf_size_t i = 0; i < kInterventionPolicyGetters.size(); ++i) {
-    bool opt_in = (*kInterventionPolicyGetters[i].opt_in_getter)(context);
-    bool opt_out = (*kInterventionPolicyGetters[i].opt_out_getter)(context);
 
-    // An explicit opt-out overrides an explicit opt-in if both are present.
-    InterventionPolicy policy = InterventionPolicy::kDefault;
-    if (opt_out)
-      policy = InterventionPolicy::kOptOut;
-    else if (opt_in)
-      policy = InterventionPolicy::kOptIn;
-
-    document_resource_coordinator->SetInterventionPolicy(
-        static_cast<PolicyControlledIntervention>(i), policy);
-  }
+  document_resource_coordinator->SetInterventionPolicy(
+      PolicyControlledIntervention::kPageLifecycleTransitions, policy);
 }
 
 }  // namespace

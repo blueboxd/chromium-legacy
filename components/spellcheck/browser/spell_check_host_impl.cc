@@ -32,7 +32,7 @@ void SpellCheckHostImpl::NotifyChecked(const base::string16& word,
   return;
 }
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheckHostImpl::CallSpellingService(
     const base::string16& text,
     CallSpellingServiceCallback callback) {
@@ -44,7 +44,7 @@ void SpellCheckHostImpl::CallSpellingService(
   // This API requires Chrome-only features.
   std::move(callback).Run(false, std::vector<SpellCheckResult>());
 }
-#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheckHostImpl::RequestTextCheck(const base::string16& text,

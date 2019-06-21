@@ -21,8 +21,8 @@ class ASH_PUBLIC_EXPORT TabletMode {
   virtual void SetTabletModeToggleObserver(
       TabletModeToggleObserver* observer) = 0;
 
-  // Returns whether the system is in tablet mode.
-  virtual bool IsEnabled() const = 0;
+  // Returns true if the system is in tablet mode.
+  virtual bool InTabletMode() const = 0;
 
   virtual void SetEnabledForTest(bool enabled) = 0;
 

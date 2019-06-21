@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
+#import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/reading_list/features.h"
@@ -110,6 +111,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ReadingListWebStateObserver::CreateForWebState(web_state, model);
   }
 
+  OpenInTabHelper::CreateForWebState(web_state);
   ios::ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
   favicon::WebFaviconDriver::CreateForWebState(

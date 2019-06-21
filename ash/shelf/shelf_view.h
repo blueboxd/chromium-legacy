@@ -77,38 +77,33 @@ enum ShelfAlignmentUmaEnumValue {
 //
 // If there is enough screen space, all icons can fit:
 //
-// -------------------------------------------------------------------------
-// | 1 |         | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
-// -------------------------------------------------------------------------
-//   ^                                                        ^
-//   |                                                        |
-// first_visible_index = 1 (app list)                 last_visible_index = 12
-// (back button = 0 is hidden)
+// ------------------------------------------------------------
+// | o |         | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+// ------------------------------------------------------------
+//                 ^                                        ^
+//                 |                                        |
+//             first_visible_index = 0            last_visible_index = 10
 //
-// Where:
-//     0 = back button (only shown in tablet mode)
-//     1 = app list button
+// Where "o" is the home button (back button is hidden).
 //
 // If screen space is more constrained, some icons are placed in an overflow
 // menu (which holds its own instance of ShelfView):
 //
-//             first_visible_index = 10          last_visible_index = 13
-//                    (for the overflow)         (for overflow)
-//                                     |               |
-//                                     v               v
+//                first_visible_index = 8        last_visible_index = 11
+//                     (for the overflow)        (for overflow)
+//                                     |             |
+//                                     v             v
 //                                   ---------------------
-//                                   | 10 | 11 | 12 | 13 |
+//                                   | 8 | 9 | 10 | 11 |
 //                                   ---------------------
-//                                           ^
+//                                             ^
 // --------------------------------------------------
-// | 1 |    | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
+// | o |    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | ... |
 // --------------------------------------------------
-//   ^                                    ^    ^
-//   |                                    |    L-- overflow button
-// first_visible_index = 1                |
-//   (for the main shelf)        last_visible_index = 9
-//   (back button = 0
-//             is hidden)
+//            ^                           ^    ^
+//            |                           |    L-- overflow button
+//     first_visible_index = 0            |
+//      (for the main shelf)        last_visible_index = 7
 //
 
 class ASH_EXPORT ShelfView : public views::View,
@@ -320,9 +315,9 @@ class ASH_EXPORT ShelfView : public views::View,
   int last_visible_index() const { return last_visible_index_; }
   int number_of_visible_apps() const {
     if (is_overflow_mode())
-      return last_visible_index_ - first_visible_index_ + 1;
+      return std::max(0, last_visible_index_ - first_visible_index_ + 1);
     else
-      return last_visible_index_ - 1;
+      return std::max(0, last_visible_index_ + 1);
   }
   ShelfWidget* shelf_widget() const { return shelf_widget_; }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
@@ -554,15 +549,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // item in |model_|.
   std::unique_ptr<views::ViewModel> view_model_;
 
-  // Index of the first visible launcher item. This is either:
-  // * 0 (back button) for the main shelf when tablet mode is on
-  // * 1 (app list button) for the main shelf when tablet mode is off
-  // * > 1 when this shelf view is the overflow shelf view and only shows a
+  // Index of the first visible app item. This is either:
+  // * -1 if there are no apps.
+  // * 0 if there is at least one app.
+  // > 0 when this shelf view is the overflow shelf view and only shows a
   //   subset of items.
-  int first_visible_index_ = 0;
+  int first_visible_index_ = -1;
 
-  // Last index of a launcher button that is visible (does not go into
-  // overflow).
+  // Last index of an app launcher button that is visible (does not go into
+  // overflow), or -1 if there are no apps.
   int last_visible_index_ = -1;
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;

@@ -893,6 +893,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_SUMMARY" desc="Summary of the preference that allows the user to use a simplified tab switcher. The simplified tab switcher is recommended for use with TalkBack and Switch Access which are accessibility services provided by Android. TalkBack does not need to be translated. 'Switch Access' translation should match TC ID 382005103867249841.">
        Recommended when TalkBack or Switch Access are on
       </message>
+      <message name="IDS_ACCESSIBILITY_CAPTIONS_TITLE" desc="Title of the preference that allows the user to update caption settings.">
+        Captions
+      </message>
 
       <!-- Site settings -->
       <message name="IDS_PREFS_SITE_SETTINGS" desc="Title of the Website Settings screen. [CHAR-LIMIT=32]">
@@ -3912,17 +3915,17 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
         Open
       </message>
-      <message name="IDS_SEND_TAB_TO_SELF_CONTENT_DESCRIPTION" desc="Content description for the target device picker.">
-        Device picker to share a tab with.
+      <message name="IDS_SEND_TAB_TO_SELF_CONTENT_DESCRIPTION" desc="Accessibility string read when the bottom sheet is opened. It describes the bottom sheet where a user can pick a device to share the tab with.">
+        List of devices to share a tab with.
       </message>
-      <message name="IDS_SEND_TAB_TO_SELF_SHEET_HALF_HEIGHT" desc="Accessibility string read when the target device picker sheet is opened at half height. The sheet will occupy the bottom half the screen.">
-        Device picker to share a tab with is opened at half height.
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_HALF_HEIGHT" desc="Accessibility string read when the bottom sheet showing a list of the user's devices is opened at half height. The sheet will occupy the bottom half the screen.">
+        List of devices to share a tab with opened at half height.
       </message>
-      <message name="IDS_SEND_TAB_TO_SELF_SHEET_FULL_HEIGHT" desc="Accessibility string read when the target device picker sheet is opened at full height. The sheet will occupy the entire screen.">
-        Device picker to share a tab with is opened at full height.
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_FULL_HEIGHT" desc="Accessibility string read when the bottom sheet showing a list of the user's devices is opened at full height. The sheet will occupy the entire screen.">
+        List of devices to share a tab with opened at full height.
       </message>
-      <message name="IDS_SEND_TAB_TO_SELF_SHEET_CLOSED" desc="Accessibility string read when the target device picker sheet is closed.">
-        Device picker to share a tab with is closed.
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_CLOSED" desc="Accessibility string read when the bottom sheet showing a list of the user's devices is closed.">
+        List of devices to share a tab with is closed.
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_SHEET_TOOLBAR" desc="Header for device picker sheet where users can pick a device to send a tab to.">
         Send to

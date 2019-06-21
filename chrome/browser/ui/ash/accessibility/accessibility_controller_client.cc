@@ -9,8 +9,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tts_controller.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,9 +34,8 @@ AccessibilityControllerClient::AccessibilityControllerClient()
 AccessibilityControllerClient::~AccessibilityControllerClient() = default;
 
 void AccessibilityControllerClient::Init() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller_);
   BindAndSetClient();
 }
 

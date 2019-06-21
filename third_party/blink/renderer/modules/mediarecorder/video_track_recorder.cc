@@ -263,8 +263,9 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
       WTF::BindRepeating(&VideoTrackRecorder::Counter::DecreaseCount,
                          num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(ConvertToBaseCallback(CrossThreadBind(
-      [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame))));
+  wrapped_frame->AddDestructionObserver(ConvertToBaseCallback(
+      CrossThreadBindRepeating([](scoped_refptr<VideoFrame> video_frame) {},
+                               std::move(video_frame))));
   num_frames_in_encode_->IncreaseCount();
 
   PostCrossThreadTask(*encoding_task_runner_.get(), FROM_HERE,
@@ -540,7 +541,7 @@ void VideoTrackRecorder::InitializeEncoder(
   // StartFrameEncode() will be called on Render IO thread.
   MediaStreamVideoSink::ConnectToTrack(
       track_,
-      ConvertToBaseCallback(CrossThreadBind(
+      ConvertToBaseCallback(CrossThreadBindRepeating(
           &VideoTrackRecorder::Encoder::StartFrameEncode, encoder_)),
       false);
 }

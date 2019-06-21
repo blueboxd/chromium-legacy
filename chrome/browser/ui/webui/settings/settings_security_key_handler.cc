@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "device/fido/pin.h"
 #include "device/fido/reset_request_handler.h"
 #include "device/fido/set_pin_request_handler.h"
@@ -92,8 +92,7 @@ void SecurityKeysHandler::HandleStartSetPIN(const base::ListValue* args) {
   callback_id_ = args->GetList()[0].GetString();
   state_ = State::kStartSetPIN;
   set_pin_ = std::make_unique<device::SetPINRequestHandler>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      supported_transports(),
+      content::GetSystemConnector(), supported_transports(),
       base::BindOnce(&SecurityKeysHandler::OnGatherPIN,
                      weak_factory_->GetWeakPtr()),
       base::BindRepeating(&SecurityKeysHandler::OnSetPINComplete,
@@ -166,8 +165,7 @@ void SecurityKeysHandler::HandleReset(const base::ListValue* args) {
 
   state_ = State::kStartReset;
   reset_ = std::make_unique<device::ResetRequestHandler>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      supported_transports(),
+      content::GetSystemConnector(), supported_transports(),
       base::BindOnce(&SecurityKeysHandler::OnResetSent,
                      weak_factory_->GetWeakPtr()),
       base::BindOnce(&SecurityKeysHandler::OnResetFinished,

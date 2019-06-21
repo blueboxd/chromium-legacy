@@ -18,9 +18,6 @@ static ShelfModel* g_shelf_model = nullptr;
 
 int ShelfItemTypeToWeight(ShelfItemType type) {
   switch (type) {
-    case TYPE_APP_LIST_DEPRECATED:
-    case TYPE_BACK_BUTTON_DEPRECATED:
-      return 0;
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_PINNED_APP:
       return 1;
@@ -56,25 +53,7 @@ void ShelfModel::SetInstance(ShelfModel* shelf_model) {
   g_shelf_model = shelf_model;
 }
 
-ShelfModel::ShelfModel() {
-  // Add the back button and app list item; its title and delegate are set in
-  // ShelfController. This avoids an ash/public dep on ash/strings, and a
-  // Chrome-side delegate.
-  // TODO(manucornet): The back button and the app list shelf items are now
-  // ignored at the view level and handled separately. Remove the creation bit
-  // here as well.
-  ShelfItem back_button_item;
-  back_button_item.type = TYPE_BACK_BUTTON_DEPRECATED;
-  back_button_item.id = ShelfID(kBackButtonId);
-  const int back_button_index = Add(back_button_item);
-  DCHECK_EQ(0, back_button_index);
-
-  ShelfItem app_list_item;
-  app_list_item.type = TYPE_APP_LIST_DEPRECATED;
-  app_list_item.id = ShelfID(kAppListId);
-  const int app_list_index = Add(app_list_item);
-  DCHECK_EQ(1, app_list_index);
-}
+ShelfModel::ShelfModel() = default;
 
 ShelfModel::~ShelfModel() = default;
 

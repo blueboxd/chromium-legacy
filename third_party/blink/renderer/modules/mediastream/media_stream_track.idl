@@ -31,6 +31,7 @@ enum MediaStreamTrackState {
 };
 
 [
+    Exposed=Window,
     ActiveScriptWrappable
 ] interface MediaStreamTrack : EventTarget {
     readonly attribute DOMString kind;

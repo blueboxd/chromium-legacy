@@ -49,6 +49,16 @@ wayland_templater("harness_cc_tmpl") {
   protocols = kDefaultWaylandProtocols
 }
 
+# We make the seed corpus by enumerating call sequences to all requests
+# using the wayland_sequencer script.
+wayland_templater("corpus") {
+  sources = [
+    "corpus.tmpl",
+  ]
+  protocols = kDefaultWaylandProtocols
+  script_override = "wayland_sequencer.py"
+}
+
 if (use_libfuzzer) {
   fuzzer_test("wayland_fuzzer") {
     sources = [
@@ -64,6 +74,10 @@ if (use_libfuzzer) {
     ]
 
     libfuzzer_options = [ "len_control=0" ]
+
+    corpus_target_outputs = get_target_outputs(":corpus")
+    seed_corpus = corpus_target_outputs[0]
+    seed_corpus_deps = [ ":corpus" ]
   }
 }
 

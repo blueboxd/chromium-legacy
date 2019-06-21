@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "url/gurl.h"
 
@@ -129,8 +128,6 @@ bool IsBrowserLockedFullscreen(const Browser* browser) {
   // |window| can be nullptr inside of unit tests.
   if (!window)
     return false;
-  if (features::IsUsingWindowService())
-    window = window->GetRootWindow();
   return window->GetProperty(ash::kWindowPinTypeKey) ==
          ash::WindowPinType::kTrustedPinned;
 }

@@ -46,6 +46,7 @@ class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
       mojom::FileSystemHost::OnFileSelectorEventCallback callback);
 
   void GetFileSelectorElements(
+      mojom::GetFileSelectorElementsRequestPtr request,
       mojom::FileSystemHost::GetFileSelectorElementsCallback callback);
 
   // ui::SelectFileDialog::Listener overrides:
@@ -84,6 +85,7 @@ class SelectFileDialogHolder {
   virtual void SelectFile(ui::SelectFileDialog::Type type,
                           const base::FilePath& default_path,
                           const ui::SelectFileDialog::FileTypeInfo* file_types,
+                          int task_id,
                           bool show_android_picker_apps);
 
   virtual void ExecuteJavaScript(

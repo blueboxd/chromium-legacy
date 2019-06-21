@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -204,15 +205,9 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   Commit(std::move(batch));
 
-  if (!removed.empty()) {
-    NotifyRemoteSendTabToSelfEntryDeleted(removed);
-  }
-  if (!added.empty()) {
-    NotifyRemoteSendTabToSelfEntryAdded(added);
-  }
-  if (!opened.empty()) {
-    NotifyRemoteSendTabToSelfEntryOpened(opened);
-  }
+  NotifyRemoteSendTabToSelfEntryDeleted(removed);
+  NotifyRemoteSendTabToSelfEntryAdded(added);
+  NotifyRemoteSendTabToSelfEntryOpened(opened);
 
   return base::nullopt;
 }
@@ -249,6 +244,25 @@ std::string SendTabToSelfBridge::GetClientTag(
 std::string SendTabToSelfBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   return entity_data.specifics.send_tab_to_self().guid();
+}
+
+void SendTabToSelfBridge::ApplyStopSyncChanges(
+    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
+  // If |delete_metadata_change_list| is null, it indicates that sync metadata
+  // shouldn't be deleted, for example chrome is shutting down.
+  if (!delete_metadata_change_list) {
+    return;
+  }
+
+  DCHECK(store_);
+
+  store_->DeleteAllDataAndMetadata(base::DoNothing());
+
+  std::vector<std::string> all_guids = GetAllGuids();
+
+  entries_.clear();
+  mru_entry_ = nullptr;
+  NotifyRemoteSendTabToSelfEntryDeleted(all_guids);
 }
 
 std::vector<std::string> SendTabToSelfBridge::GetAllGuids() const {
@@ -474,16 +488,22 @@ void SendTabToSelfBridge::SetLocalDeviceNameForTest(
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  if (new_entries.empty()) {
+    return;
+  }
+
   std::vector<const SendTabToSelfEntry*> new_local_entries;
 
   if (base::FeatureList::IsEnabled(kSendTabToSelfBroadcast)) {
     new_local_entries = new_entries;
   } else {
-    // Only pass along entries that are targeted at this device.
+    // Only pass along entries that are targeted at this device, and not
+    // dismissed or opened.
     DCHECK(!change_processor()->TrackedCacheGuid().empty());
     for (const SendTabToSelfEntry* entry : new_entries) {
       if (entry->GetTargetDeviceSyncCacheGuid() ==
-          change_processor()->TrackedCacheGuid()) {
+              change_processor()->TrackedCacheGuid() &&
+          !entry->GetNotificationDismissed() && !entry->IsOpened()) {
         new_local_entries.push_back(entry);
       }
     }
@@ -496,6 +516,10 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
     const std::vector<std::string>& guids) {
+  if (guids.empty()) {
+    return;
+  }
+
   // TODO(crbug.com/956216): Only send the entries that targeted this device.
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.EntriesRemovedRemotely(guids);
@@ -504,6 +528,9 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryOpened(
     const std::vector<const SendTabToSelfEntry*>& opened_entries) {
+  if (opened_entries.empty()) {
+    return;
+  }
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.EntriesOpenedRemotely(opened_entries);
   }
@@ -707,12 +734,10 @@ void SendTabToSelfBridge::DeleteEntries(const std::vector<GURL>& urls) {
     }
   }
   Commit(std::move(batch));
-  if (!removed_guids.empty()) {
-    // To err on the side of completeness this notifies all clients that these
-    // entries have been removed. Regardless of if these entries were removed
-    // "remotely".
-    NotifyRemoteSendTabToSelfEntryDeleted(removed_guids);
-  }
+  // To err on the side of completeness this notifies all clients that these
+  // entries have been removed. Regardless of if these entries were removed
+  // "remotely".
+  NotifyRemoteSendTabToSelfEntryDeleted(removed_guids);
 }
 
 }  // namespace send_tab_to_self

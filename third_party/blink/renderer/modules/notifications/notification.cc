@@ -178,7 +178,7 @@ Notification::~Notification() = default;
 void Notification::SchedulePrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
 
-  prepare_show_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  prepare_show_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void Notification::PrepareShow(TimerBase*) {

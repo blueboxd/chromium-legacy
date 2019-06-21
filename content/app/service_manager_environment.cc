@@ -11,7 +11,6 @@
 #include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/startup_data_impl.h"
-#include "content/browser/system_connector_impl.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -37,8 +36,6 @@ ServiceManagerEnvironment::ServiceManagerEnvironment(
   auto* system_connection = ServiceManagerConnection::GetForProcess();
   RegisterCommonBrowserInterfaces(system_connection);
   system_connection->Start();
-
-  SetSystemConnector(system_connection->GetConnector()->Clone());
 }
 
 ServiceManagerEnvironment::~ServiceManagerEnvironment() = default;

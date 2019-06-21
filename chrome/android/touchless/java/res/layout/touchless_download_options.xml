@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="12dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:ellipsize="middle"
+        android:padding="8dp"
+        android:singleLine="true"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.BlackTitle1"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingHorizontal="8dp"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp"
+        android:layout_gravity="center"
+        android:scrollbars="none">
+
+        <!-- TODO(976819): Use TextViewWithCompoundDrawables instead of these LinearLayouts. -->
+        <LinearLayout
+            android:id="@+id/pause_resume_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:background="@color/modern_primary_color"
+            android:clickable="true"
+            android:focusable="true"
+            android:theme="@style/Theme.AppCompat.Light">
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:id="@+id/pause_resume_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:scaleType="centerInside"
+                android:duplicateParentState="true"/>
+
+            <TextView
+                android:id="@+id/pause_resume_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                style="@style/TextAppearance.BlackBodyDefault.Touchless"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cancel_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:orientation="horizontal"
+            android:background="@color/modern_primary_color"
+            android:clickable="true"
+            android:focusable="true"
+            android:theme="@style/Theme.AppCompat.Light">
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/ic_cancel_circle"
+                android:duplicateParentState="true"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                style="@style/TextAppearance.BlackBodyDefault.Touchless"
+                android:text="@string/cancel"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -6403,6 +6403,10 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SiteIsolation.XSD.Browser.Blocked">
+  <obsolete>
+    Removed in June 2019 / M77. Some old data has been saved in a
+    Google-internal doc at go/xsdb-ukm-results (ask owners below for access).
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <owner>chrome-site-isolation@google.com</owner>
   <summary>

@@ -54,6 +54,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -339,8 +340,8 @@ void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
     const GURL& site,
     const base::Closure& on_gc_required) {
-  GetStoragePartitionMap(browser_context)->AsyncObliterate(site,
-                                                           on_gc_required);
+  GetStoragePartitionMap(browser_context)
+      ->AsyncObliterate(site, on_gc_required);
 }
 
 // static
@@ -352,8 +353,7 @@ void BrowserContext::GarbageCollectStoragePartitions(
       ->GarbageCollect(std::move(active_paths), done);
 }
 
-DownloadManager* BrowserContext::GetDownloadManager(
-    BrowserContext* context) {
+DownloadManager* BrowserContext::GetDownloadManager(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context->GetUserData(kDownloadManagerKeyName)) {
     DownloadManager* download_manager = new DownloadManagerImpl(context);
@@ -431,8 +431,8 @@ StoragePartition* BrowserContext::GetStoragePartition(
 
   if (site_instance) {
     GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-        browser_context, site_instance->GetSiteURL(), true,
-        &partition_domain, &partition_name, &in_memory);
+        browser_context, site_instance->GetSiteURL(), true, &partition_domain,
+        &partition_name, &in_memory);
   }
 
   return GetStoragePartitionFromConfig(browser_context, partition_domain,
@@ -633,9 +633,8 @@ void BrowserContext::SetDownloadManagerForTesting(
 }
 
 // static
-void BrowserContext::Initialize(
-    BrowserContext* browser_context,
-    const base::FilePath& path) {
+void BrowserContext::Initialize(BrowserContext* browser_context,
+                                const base::FilePath& path) {
   const base::Token new_group = base::Token::CreateRandom();
   ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
       browser_context->GetUserData(kServiceInstanceGroup));
@@ -650,9 +649,8 @@ void BrowserContext::Initialize(
       kServiceInstanceGroup,
       std::make_unique<ServiceInstanceGroupHolder>(new_group));
 
-  ServiceManagerConnection* service_manager_connection =
-      ServiceManagerConnection::GetForProcess();
-  if (service_manager_connection && base::ThreadTaskRunnerHandle::IsSet()) {
+  auto* system_connector = GetSystemConnector();
+  if (system_connector && base::ThreadTaskRunnerHandle::IsSet()) {
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global service manager connection.
 
@@ -663,7 +661,7 @@ void BrowserContext::Initialize(
     service_manager::Identity identity(mojom::kBrowserServiceName, new_group,
                                        base::Token{},
                                        base::Token::CreateRandom());
-    service_manager_connection->GetConnector()->RegisterServiceInstance(
+    system_connector->RegisterServiceInstance(
         identity, std::move(service), metadata.BindNewPipeAndPassReceiver());
     metadata->SetPID(base::GetCurrentProcId());
 
@@ -836,6 +834,11 @@ BrowserContext::GetSharedCorsOriginAccessList() const {
 }
 
 SmsService* BrowserContext::GetSmsService() {
+  return nullptr;
+}
+
+NativeFileSystemPermissionContext*
+BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;
 }
 

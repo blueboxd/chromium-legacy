@@ -235,14 +235,17 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
-  Address Payload();
+  Address Payload() const;
   size_t PayloadSize();
-  Address PayloadEnd();
+  Address PayloadEnd() const;
 
   void Finalize(Address, size_t);
 
   // Returns true if object has finalizer.
   bool HasNonTrivialFinalizer() const;
+
+  // Returns a human-readable name of this object.
+  const char* Name() const;
 
   // Returns true if magic number is valid.
   bool IsValid() const;
@@ -1061,12 +1064,14 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::CheckHeader() const {
 #endif
 }
 
-inline Address HeapObjectHeader::Payload() {
-  return reinterpret_cast<Address>(this) + sizeof(HeapObjectHeader);
+inline Address HeapObjectHeader::Payload() const {
+  return reinterpret_cast<Address>(const_cast<HeapObjectHeader*>(this)) +
+         sizeof(HeapObjectHeader);
 }
 
-inline Address HeapObjectHeader::PayloadEnd() {
-  return reinterpret_cast<Address>(this) + size();
+inline Address HeapObjectHeader::PayloadEnd() const {
+  return reinterpret_cast<Address>(const_cast<HeapObjectHeader*>(this)) +
+         size();
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {

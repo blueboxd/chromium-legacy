@@ -1219,6 +1219,33 @@
   <message name="IDS_SUPERVISED_USER_EXPIRING_NOTIFICATION_LEARN_MORE" desc="Learn more text for button on Supervised User expiration notification.">
     Learn more
   </message>
+  <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_TITLE" desc="The title of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
+    Battery isn't charging
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
+    To charge this Chromebook, use a compatible OEM battery.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
+    Power adapter issue
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
+    To avoid charging and performance issues use a compatible OEM or USB Type-C power adapter.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
+    Dock isn't compatible
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE" desc="The message of the notification shown to inform the user that attached dock is incompatible.">
+    Use a OEM docking station designed to work with this Chromebook.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE" desc="The title of the notification shown to inform the user that attached dock presents hardware failures.">
+    Dock has an issue
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
+    Try disconnecting and reconnecting your docking station cable. If that doesn't help, have your dock serviced.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_LEARN_MORE" desc="Label on button in various Wilco notification.">
+    Learn More
+  </message>
   <message name="IDS_MULTI_PROFILES_RESTRICTED_POLICY_TITLE" desc="Text that is shown on the title of the bubble shown for user pod which is not allowed in multi-profiles session.">
     Can't set up multiple sign-in
   </message>

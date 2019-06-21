@@ -21,6 +21,10 @@
 
 class Profile;
 
+namespace service_manager {
+class Connector;
+}
+
 namespace apps {
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
@@ -40,6 +44,10 @@ class AppServiceProxyImpl : public KeyedService,
   // For regular (non-test) code, use AppServiceProxyFactory::GetForProfile
   // instead.
   static AppServiceProxyImpl* GetImplForTesting(Profile* profile);
+
+  static AppServiceProxyImpl* CreateForTesting(
+      Profile* profile,
+      service_manager::Connector* connector);
 
   explicit AppServiceProxyImpl(Profile* profile);
 
@@ -131,6 +139,8 @@ class AppServiceProxyImpl : public KeyedService,
 
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
+
+  AppServiceProxyImpl(Profile* profile, service_manager::Connector* connector);
 
   // KeyedService overrides.
   void Shutdown() override;

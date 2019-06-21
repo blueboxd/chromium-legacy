@@ -114,7 +114,7 @@ void EventSource::ScheduleInitialConnect() {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(!loader_);
 
-  connect_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  connect_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void EventSource::Connect() {
@@ -167,8 +167,8 @@ void EventSource::NetworkRequestEnded() {
 
 void EventSource::ScheduleReconnect() {
   state_ = kConnecting;
-  connect_timer_.StartOneShot(TimeDelta::FromMilliseconds(reconnect_delay_),
-                              FROM_HERE);
+  connect_timer_.StartOneShot(
+      base::TimeDelta::FromMilliseconds(reconnect_delay_), FROM_HERE);
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 

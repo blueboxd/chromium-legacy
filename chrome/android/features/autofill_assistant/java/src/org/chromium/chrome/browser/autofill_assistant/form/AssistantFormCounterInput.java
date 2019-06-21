@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +78,12 @@ class AssistantFormCounterInput extends AssistantFormInput {
         mMinimizeText = minimizeText;
         mCounters = counters;
 
-        // Don't show the expandable section if there is no text to show when minimized/expanded.
-        mMinimizedCount =
-                expandText.isEmpty() || minimizeText.isEmpty() ? Integer.MAX_VALUE : minimizedCount;
+        // Don't show the expandable section if there is no text to show when minimized/expanded, or
+        // when TalkBack is enabled.
+        mMinimizedCount = expandText.isEmpty() || minimizeText.isEmpty()
+                        || AccessibilityUtil.isAccessibilityEnabled()
+                ? Integer.MAX_VALUE
+                : minimizedCount;
         mMinCountersSum = minCountersSum;
         mMaxCountersSum = maxCountersSum;
         mDelegate = delegate;

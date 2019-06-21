@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "url/url_constants.h"
 
@@ -118,14 +118,14 @@ bool IntentConfigHelper::IsIntentAllowed(const GURL& intent_uri) const {
 }
 
 void IntentConfigHelper::ParseConfig(const std::string& json_config) {
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  // Service manager connection may not be bound in tests.
-  if (!connection)
+  auto* connector = content::GetSystemConnector();
+  // Service manager may not be initialized in tests.
+  if (!connector)
     return;
 
   // Parse JSON in utility process via Data Decoder Service.
   data_decoder::SafeJsonParser::Parse(
-      connection->GetConnector(), json_config,
+      connector, json_config,
       base::BindOnce(&IntentConfigHelper::ParseConfigDone,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&IntentConfigHelper::ParseConfigFailed,

@@ -135,12 +135,12 @@ void ThreadHeapStatsCollector::NotifySweepingCompleted() {
                 current_.object_size_in_bytes_before_sweeping
           : 0.0;
   current_.gc_nested_in_v8_ = gc_nested_in_v8_;
-  previous_ = std::move(current_);
-  // Reset the current state.
-  static_assert(!std::is_polymorphic<Event>::value,
-                "Event should not be polymorphic");
-  memset(&current_, 0, sizeof(current_));
   gc_nested_in_v8_ = base::TimeDelta();
+  // Reset the current state.
+  static_assert(std::is_trivially_copyable<Event>::value,
+                "Event should be trivially copyable");
+  previous_ = std::move(current_);
+  current_ = Event();
 }
 
 void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
@@ -186,6 +186,11 @@ double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
 base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
   return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
+}
+
+TimeDelta ThreadHeapStatsCollector::Event::concurrent_sweeping_time() const {
+  return base::TimeDelta::FromMicroseconds(
+      concurrent_scope_data[kConcurrentSweep]);
 }
 
 int64_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {

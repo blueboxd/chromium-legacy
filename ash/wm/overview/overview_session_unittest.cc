@@ -1077,7 +1077,8 @@ TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
   ToggleOverview();
   OverviewItem* item = GetWindowItemForWindow(0, window.get());
   gfx::PointF drag_point = item->target_bounds().CenterPoint();
-  overview_session()->InitiateDrag(item, drag_point);
+  overview_session()->InitiateDrag(item, drag_point,
+                                   /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item, drag_point);
   ::wm::ActivateWindow(window.get());
@@ -1095,7 +1096,8 @@ TEST_F(OverviewSessionTest,
   ToggleOverview();
   OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
   gfx::PointF drag_point = item1->target_bounds().CenterPoint();
-  overview_session()->InitiateDrag(item1, drag_point);
+  overview_session()->InitiateDrag(item1, drag_point,
+                                   /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item1, drag_point);
   ::wm::ActivateWindow(window2.get());
@@ -1115,7 +1117,8 @@ TEST_F(OverviewSessionTest,
   ToggleOverview();
   OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
   gfx::PointF drag_point = item1->target_bounds().CenterPoint();
-  overview_session()->InitiateDrag(item1, drag_point);
+  overview_session()->InitiateDrag(item1, drag_point,
+                                   /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item1, drag_point);
   ::wm::ActivateWindow(window2.get());
@@ -1401,7 +1404,8 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   gfx::PointF drag_point = primary_screen_item->target_bounds().CenterPoint();
-  overview_session()->InitiateDrag(primary_screen_item, drag_point);
+  overview_session()->InitiateDrag(primary_screen_item, drag_point,
+                                   /*allow_drag_to_close=*/false);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   drag_point.Offset(5.f, 0.f);
@@ -1413,7 +1417,8 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   drag_point = secondary_screen_item->target_bounds().CenterPoint();
-  overview_session()->InitiateDrag(secondary_screen_item, drag_point);
+  overview_session()->InitiateDrag(secondary_screen_item, drag_point,
+                                   /*allow_drag_to_close=*/false);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   drag_point.Offset(5.f, 0.f);
@@ -1444,7 +1449,8 @@ TEST_F(OverviewSessionTest,
       [this, &drag_start_point, &drag_end_point](aura::Window* selected_window,
                                                  OverviewItem* dragged_item) {
         EXPECT_TRUE(SelectWindow(selected_window));
-        overview_session()->InitiateDrag(dragged_item, drag_start_point);
+        overview_session()->InitiateDrag(dragged_item, drag_start_point,
+                                         /*allow_drag_to_close=*/false);
         overview_session()->Drag(dragged_item, drag_end_point);
         EXPECT_EQ(selected_window, GetSelectedWindow());
         overview_session()->CompleteDrag(dragged_item, drag_end_point);
@@ -1465,7 +1471,8 @@ TEST_F(OverviewSessionTest,
 
   // Test the case where the drop target becomes selected during the drag.
   EXPECT_TRUE(SelectWindow(window4.get()));
-  overview_session()->InitiateDrag(item2, drag_start_point);
+  overview_session()->InitiateDrag(item2, drag_start_point,
+                                   /*allow_drag_to_close=*/false);
   overview_session()->Drag(item2, drag_end_point);
   EXPECT_TRUE(SelectWindow(GetDropTarget(0)->GetWindow()));
   overview_session()->CompleteDrag(item2, drag_end_point);
@@ -3231,7 +3238,8 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
         NOTREACHED();
         break;
     }
-    overview_session()->InitiateDrag(item, start_location);
+    overview_session()->InitiateDrag(item, start_location,
+                                     /*allow_drag_to_close=*/true);
     if (long_press)
       overview_session()->StartNormalDragMode(start_location);
     overview_session()->Drag(item, end_location);
@@ -3372,14 +3380,14 @@ TEST_F(SplitViewOverviewSessionTest, DragToClose) {
 
   // This drag has not covered enough distance, so the widget is not closed and
   // we remain in overview mode.
-  overview_session()->InitiateDrag(item, start);
+  overview_session()->InitiateDrag(item, start, /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, start + gfx::Vector2dF(0, 80));
   overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 80));
   ASSERT_TRUE(overview_session());
 
   // Verify that the second drag has enough vertical distance, so the widget
   // will be closed and overview mode will be exited.
-  overview_session()->InitiateDrag(item, start);
+  overview_session()->InitiateDrag(item, start, /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, start + gfx::Vector2dF(0, 180));
   overview_session()->CompleteDrag(item, start + gfx::Vector2dF(0, 180));
   base::RunLoop().RunUntilIdle();
@@ -3402,21 +3410,21 @@ TEST_F(SplitViewOverviewSessionTest, FlingToClose) {
   ASSERT_TRUE(item);
 
   // Verify that items flung horizontally do not close the item.
-  overview_session()->InitiateDrag(item, start);
+  overview_session()->InitiateDrag(item, start, /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
   overview_session()->Fling(item, start, 2500, 0);
   ASSERT_TRUE(overview_session());
 
   // Verify that items flung vertically but without enough velocity do not
   // close the item.
-  overview_session()->InitiateDrag(item, start);
+  overview_session()->InitiateDrag(item, start, /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
   overview_session()->Fling(item, start, 0, 1500);
   ASSERT_TRUE(overview_session());
 
   // Verify that flinging the item closes it, and since it is the last item in
   // overview mode, overview mode is exited.
-  overview_session()->InitiateDrag(item, start);
+  overview_session()->InitiateDrag(item, start, /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, start + gfx::Vector2dF(0, 50));
   overview_session()->Fling(item, start, 0, 2500);
   base::RunLoop().RunUntilIdle();
@@ -3449,7 +3457,8 @@ TEST_F(SplitViewOverviewSessionTest, BasicNudging) {
 
   // Drag |item1| vertically. |item2| and |item3| bounds should change as they
   // should be nudging towards their final bounds.
-  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint());
+  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
+                                   /*allow_drag_to_close=*/true);
   overview_session()->Drag(item1,
                            item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
   EXPECT_NE(item2_bounds, item2->target_bounds());
@@ -3462,7 +3471,8 @@ TEST_F(SplitViewOverviewSessionTest, BasicNudging) {
 
   // Drag |item3| vertically. |item1| and |item2| bounds should change as they
   // should be nudging towards their final bounds.
-  overview_session()->InitiateDrag(item3, item3_bounds.CenterPoint());
+  overview_session()->InitiateDrag(item3, item3_bounds.CenterPoint(),
+                                   /*allow_drag_to_close=*/true);
   overview_session()->Drag(item3,
                            item3_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
   EXPECT_NE(item1_bounds, item1->target_bounds());
@@ -3496,7 +3506,8 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
 
   // Drag |item1| past the drag to swipe threshold. None of the other window
   // bounds should change, as none of them should be nudged.
-  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint());
+  overview_session()->InitiateDrag(item1, item1_bounds.CenterPoint(),
+                                   /*allow_drag_to_close=*/true);
   overview_session()->Drag(item1,
                            item1_bounds.CenterPoint() + gfx::Vector2dF(0, 160));
   EXPECT_EQ(item2_bounds, item2->target_bounds());
@@ -3532,7 +3543,8 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   // window bounds should change, as none of them should be nudged, because
   // deleting the fourth item will cause the third item to drop down from the
   // first row to the second.
-  overview_session()->InitiateDrag(items[3], item_bounds[3].CenterPoint());
+  overview_session()->InitiateDrag(items[3], item_bounds[3].CenterPoint(),
+                                   /*allow_drag_to_close=*/true);
   overview_session()->Drag(
       items[3], item_bounds[3].CenterPoint() + gfx::Vector2dF(0, 160));
   EXPECT_EQ(item_bounds[0], items[0]->target_bounds());
@@ -3549,7 +3561,8 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   // items should nudge as expected as there is no item dropping down to their
   // row. The fourth and fifth items should not nudge as they are in a different
   // row than the first item.
-  overview_session()->InitiateDrag(items[0], item_bounds[0].CenterPoint());
+  overview_session()->InitiateDrag(items[0], item_bounds[0].CenterPoint(),
+                                   /*allow_drag_to_close=*/true);
   overview_session()->Drag(
       items[0], item_bounds[0].CenterPoint() + gfx::Vector2dF(0, 160));
   EXPECT_NE(item_bounds[1], items[1]->target_bounds());
@@ -3578,7 +3591,8 @@ TEST_F(SplitViewOverviewSessionTest,
       GetWindowItemForWindow(grid_index, window1.get());
   gfx::RectF overview_item_bounds = overview_item->target_bounds();
   gfx::PointF start_location(overview_item_bounds.CenterPoint());
-  overview_session()->InitiateDrag(overview_item, start_location);
+  overview_session()->InitiateDrag(overview_item, start_location,
+                                   /*allow_drag_to_close=*/false);
 
   // Verify that when dragged to the left, the window grid is located where the
   // right window of split view mode should be.
@@ -3612,7 +3626,8 @@ TEST_F(SplitViewOverviewSessionTest,
   overview_item = GetWindowItemForWindow(grid_index, window2.get());
   overview_item_bounds = overview_item->target_bounds();
   start_location = overview_item_bounds.CenterPoint();
-  overview_session()->InitiateDrag(overview_item, start_location);
+  overview_session()->InitiateDrag(overview_item, start_location,
+                                   /*allow_drag_to_close=*/false);
 
   // Verify that when there is a snapped window, the window grid bounds remain
   // constant despite overview items being dragged left and right.
@@ -3643,8 +3658,9 @@ TEST_F(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
   // the window grid bounds do not change.
   OverviewItem* overview_item =
       GetWindowItemForWindow(0, unsnappable_window.get());
-  overview_session()->InitiateDrag(
-      overview_item, overview_item->target_bounds().CenterPoint());
+  overview_session()->InitiateDrag(overview_item,
+                                   overview_item->target_bounds().CenterPoint(),
+                                   /*allow_drag_to_close=*/false);
   overview_session()->Drag(overview_item, gfx::PointF());
   EXPECT_EQ(expected_grid_bounds, GetGridBounds());
   overview_session()->Drag(overview_item,
@@ -4086,14 +4102,16 @@ TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
   // Verify that when a overview item receives a resetting gesture, we
   // stay in overview mode and the bounds of the item are the same as they were
   // before the press sequence started.
-  overview_session()->InitiateDrag(overview_item, start_location);
+  overview_session()->InitiateDrag(overview_item, start_location,
+                                   /*allow_drag_to_close=*/true);
   overview_session()->ResetDraggedWindowGesture();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_EQ(original_bounds, overview_item->target_bounds());
 
   // Verify that when a overview item is tapped, we exit overview mode,
   // and the current active window is the item.
-  overview_session()->InitiateDrag(overview_item, start_location);
+  overview_session()->InitiateDrag(overview_item, start_location,
+                                   /*allow_drag_to_close=*/true);
   overview_session()->ActivateDraggedWindow();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_EQ(window1.get(), wm::GetActiveWindow());

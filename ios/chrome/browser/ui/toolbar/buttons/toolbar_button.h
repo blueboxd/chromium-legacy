@@ -41,12 +41,6 @@ const NSUInteger ControlStateSpotlighted = 0x00010000;
 // changed to have a lower alpha.
 @property(nonatomic, assign) BOOL dimmed;
 
-// Returns a ToolbarButton using the three images parameters for their
-// respective state.
-+ (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
-                            imageForHighlightedState:(UIImage*)highlightedImage
-                               imageForDisabledState:(UIImage*)disabledImage;
-
 // Returns a ToolbarButton with a type system, using the |image| as image for
 // normal state.
 + (instancetype)toolbarButtonWithImage:(UIImage*)image;

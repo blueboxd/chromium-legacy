@@ -72,10 +72,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -90,7 +90,6 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "url/gurl.h"
@@ -324,15 +323,12 @@ AccessibilityManager::AccessibilityManager()
                           weak_ptr_factory_.GetWeakPtr())));
 
   // Connect to ash's AccessibilityController interface.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller_);
 
   // Connect to the media session service.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(media_session::mojom::kServiceName,
-                      &audio_focus_manager_ptr_);
+  content::GetSystemConnector()->BindInterface(
+      media_session::mojom::kServiceName, &audio_focus_manager_ptr_);
 
   ash::AcceleratorController::SetVolumeAdjustmentSoundCallback(
       base::BindRepeating(&AccessibilityManager::PlayVolumeAdjustSound,
@@ -392,10 +388,6 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
 
 void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
   if (!profile_)
-    return;
-
-  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (features::IsMultiProcessMash())
     return;
 
   // Update system tray menu visibility.
@@ -991,13 +983,9 @@ void AccessibilityManager::InputMethodChanged(
     input_method::InputMethodManager* manager,
     Profile* /* profile */,
     bool show_message) {
-  // Sticky keys is implemented only in ash.
-  // TODO(crbug.com/678820): Mash support.
-  if (!features::IsMultiProcessMash()) {
     ash::Shell::Get()->sticky_keys_controller()->SetModifiersEnabled(
         manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
         manager->IsAltGrUsedByCurrentInputMethod());
-  }
   const chromeos::input_method::InputMethodDescriptor descriptor =
       manager->GetActiveIMEState()->GetCurrentInputMethod();
   braille_ime_current_ =
@@ -1161,10 +1149,6 @@ AccessibilityManager::RegisterCallback(const AccessibilityStatusCallback& cb) {
 void AccessibilityManager::NotifyAccessibilityStatusChanged(
     const AccessibilityStatusEventDetails& details) {
   callback_list_.Notify(details);
-
-  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (features::IsMultiProcessMash())
-    return;
 
   if (details.notification_type == ACCESSIBILITY_TOGGLE_DICTATION) {
     ash::Shell::Get()->accessibility_controller()->SetDictationActive(

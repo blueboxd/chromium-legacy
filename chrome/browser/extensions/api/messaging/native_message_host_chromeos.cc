@@ -146,6 +146,7 @@ bool MatchesSecurityOrigin(const BuiltInHost& host,
 }  // namespace
 
 std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
+    content::BrowserContext* browser_context,
     gfx::NativeView native_view,
     const std::string& source_extension_id,
     const std::string& native_host_name,

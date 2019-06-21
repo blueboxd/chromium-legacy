@@ -1446,6 +1446,24 @@
             ]
         }
     ],
+    "ClipboardMaximumAge": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "UIClipboardMaximumAge": "600"
+                    },
+                    "enable_features": [
+                        "ClipboardMaximumAge"
+                    ]
+                }
+            ]
+        }
+    ],
     "CompositorImageAnimation": [
         {
             "platforms": [
@@ -1548,22 +1566,6 @@
                     "enable_features": [
                         "D3D11VideoDecoder"
                     ]
-                }
-            ]
-        }
-    ],
-    "DataCompressionProxyLoFi": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "hysteresis_period_seconds": "120",
-                        "rtt_msec": "2000"
-                    }
                 }
             ]
         }
@@ -4173,25 +4175,6 @@
                     "name": "Enabled_20190410",
                     "enable_features": [
                         "PrerenderFallbackToPreconnect"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PreviewsClientLoFi": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_2G_Replace_Server_Placeholders",
-                    "params": {
-                        "max_allowed_effective_connection_type": "2G",
-                        "replace_server_placeholders": "true"
-                    },
-                    "enable_features": [
-                        "ClientLoFi"
                     ]
                 }
             ]

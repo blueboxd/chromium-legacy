@@ -617,8 +617,8 @@ int Textfield::GetBaseline() const {
 gfx::Size Textfield::CalculatePreferredSize() const {
   DCHECK_GE(default_width_in_chars_, minimum_width_in_chars_);
   return gfx::Size(
-      views::style::GetExpectedTextWidth(
-          style::CONTEXT_TEXTFIELD, GetTextStyle(), default_width_in_chars_),
+      GetFontList().GetExpectedTextWidth(default_width_in_chars_) +
+          GetInsets().width(),
       LayoutProvider::GetControlHeightForFont(style::CONTEXT_TEXTFIELD,
                                               GetTextStyle(), GetFontList()));
 }
@@ -626,11 +626,10 @@ gfx::Size Textfield::CalculatePreferredSize() const {
 gfx::Size Textfield::GetMinimumSize() const {
   DCHECK_LE(minimum_width_in_chars_, default_width_in_chars_);
   gfx::Size minimum_size = View::GetMinimumSize();
-  if (minimum_width_in_chars_ >= 0) {
-    int expected_text_width = views::style::GetExpectedTextWidth(
-        style::CONTEXT_TEXTFIELD, GetTextStyle(), minimum_width_in_chars_);
-    minimum_size.set_width(expected_text_width + GetInsets().width());
-  }
+  if (minimum_width_in_chars_ >= 0)
+    minimum_size.set_width(
+        GetFontList().GetExpectedTextWidth(minimum_width_in_chars_) +
+        GetInsets().width());
   return minimum_size;
 }
 
@@ -1705,7 +1704,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return readable && model_->HasSelection();
     case ui::TextEditCommand::PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+          ui::ClipboardType::kCopyPaste, &result);
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
       return !text().empty() && GetSelectedRange().length() != text().length();
@@ -1803,7 +1802,7 @@ gfx::Point Textfield::GetLastClickRootLocation() const {
 
 base::string16 Textfield::GetSelectionClipboardText() const {
   base::string16 selection_clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_SELECTION,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kSelection,
                                                  &selection_clipboard_text);
   return selection_clipboard_text;
 }
@@ -2104,10 +2103,10 @@ bool Textfield::PasteSelectionClipboard() {
 void Textfield::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_SELECTION)
+    ui::ScopedClipboardWriter(ui::ClipboardType::kSelection)
         .WriteText(GetSelectedText());
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_SELECTION);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kSelection);
   }
 #endif
 }
@@ -2263,7 +2262,7 @@ bool Textfield::Cut() {
   if (!read_only() && text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
       model_->Cut()) {
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kCopyPaste);
     return true;
   }
   return false;
@@ -2272,7 +2271,7 @@ bool Textfield::Cut() {
 bool Textfield::Copy() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD && model_->Copy()) {
     if (controller_)
-      controller_->OnAfterCutOrCopy(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      controller_->OnAfterCutOrCopy(ui::ClipboardType::kCopyPaste);
     return true;
   }
   return false;

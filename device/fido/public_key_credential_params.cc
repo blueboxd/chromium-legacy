@@ -8,6 +8,11 @@
 
 namespace device {
 
+bool PublicKeyCredentialParams::CredentialInfo::operator==(
+    const CredentialInfo& other) const {
+  return type == other.type && algorithm == other.algorithm;
+}
+
 // static
 base::Optional<PublicKeyCredentialParams>
 PublicKeyCredentialParams::CreateFromCBORValue(const cbor::Value& cbor_value) {

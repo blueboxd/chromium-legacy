@@ -16,7 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -341,9 +341,8 @@ class MediaInternalsAudioFocusTest : public RenderViewHostTestHarness,
                             base::Unretained(this));
     run_loop_ = std::make_unique<base::RunLoop>();
 
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr_);
+    content::GetSystemConnector()->BindInterface(
+        media_session::mojom::kServiceName, &audio_focus_ptr_);
 
     content::MediaInternals::GetInstance()->AddUpdateCallback(update_cb_);
   }

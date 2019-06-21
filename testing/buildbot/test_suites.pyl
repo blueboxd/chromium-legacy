@@ -2601,7 +2601,8 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-14.04'
+              'os': 'Ubuntu-14.04',
+              'cpu': 'x86'
             },
           ],
         },
@@ -2618,7 +2619,8 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-14.04'
+              'os': 'Ubuntu-14.04',
+              'cpu': 'x86'
             },
           ],
         },
@@ -3420,7 +3422,6 @@
       }
     },
 
-
     'gpu_skia_renderer_telemetry_tests': {
       'skia_renderer_pixel_skia_gold_test': {
         'name': 'skia_renderer_pixel_skia_gold_test',
@@ -3457,6 +3458,23 @@
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
         'telemetry_test_name': 'pixel',
+      },
+    },
+
+    'gpu_skia_renderer_vulkan_gtests': {
+      'vulkan_content_browsertests': {
+        'args': [
+          '--use-vulkan=native',
+          '--disable-vulkan-fallback-to-gl-for-testing',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'android_swarming': {
+          'shards': 12,
+        },
+        'test': 'content_browsertests',
       },
     },
 
@@ -5163,19 +5181,10 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
-    # TODO(https://crbug.com/850107): Merge this back into
-    # gpu_fyi_mac_release_telemetry_tests once Gold is stabilized.
-    'gpu_nexus5x_gold_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
-      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
     'gpu_nexus5x_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -5206,6 +5215,7 @@
     'gpu_v8_desktop_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],

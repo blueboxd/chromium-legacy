@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -31,6 +32,7 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
+#include "content/browser/system_connector_impl.h"
 #include "content/browser/utility_process_host.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -69,6 +71,7 @@
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -160,8 +163,9 @@ void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 class ContentChildServiceProcessHost
     : public service_manager::ServiceProcessHost {
  public:
-  explicit ContentChildServiceProcessHost(bool run_in_gpu_process)
-      : run_in_gpu_process_(run_in_gpu_process) {}
+  ContentChildServiceProcessHost(bool run_in_gpu_process,
+                                 base::Optional<int> child_flags)
+      : run_in_gpu_process_(run_in_gpu_process), child_flags_(child_flags) {}
   ~ContentChildServiceProcessHost() override = default;
 
   // service_manager::ServiceProcessHost:
@@ -200,6 +204,8 @@ class ContentChildServiceProcessHost
     process_host->SetMetricsName(identity.name());
     process_host->SetServiceIdentity(identity);
     process_host->SetSandboxType(sandbox_type);
+    if (child_flags_.has_value())
+      process_host->set_child_flags(child_flags_.value());
     process_host->Start();
     process_host->RunService(
         identity.name(), std::move(receiver),
@@ -214,6 +220,7 @@ class ContentChildServiceProcessHost
 
  private:
   const bool run_in_gpu_process_;
+  const base::Optional<int> child_flags_;
   DISALLOW_COPY_AND_ASSIGN(ContentChildServiceProcessHost);
 };
 
@@ -450,13 +457,23 @@ class BrowserServiceManagerDelegate
     // TODO(crbug.com/895615): Package these services in content_gpu instead
     // of using this hack.
     bool run_in_gpu_process = false;
+    base::Optional<int> child_flags;
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
     if (identity.name() == media::mojom::kMediaServiceName)
       run_in_gpu_process = true;
 #endif
     if (identity.name() == shape_detection::mojom::kServiceName)
       run_in_gpu_process = true;
-    return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process);
+#if defined(OS_MACOSX)
+    // The proxy_resolver service runs V8, so it needs to run in the helper
+    // application that has the com.apple.security.cs.allow-jit code signing
+    // entitlement, which is CHILD_RENDERER. The service still runs under the
+    // utility process sandbox.
+    if (identity.name() == proxy_resolver::mojom::kProxyResolverServiceName)
+      child_flags = ChildProcessHost::CHILD_RENDERER;
+#endif
+    return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process,
+                                                            child_flags);
   }
 
   std::unique_ptr<service_manager::ServiceProcessHost>
@@ -618,6 +635,7 @@ ServiceManagerContext::ServiceManagerContext(
       system_remote.InitWithNewPipeAndPassReceiver(),
       service_manager_thread_task_runner_));
   auto* system_connection = ServiceManagerConnection::GetForProcess();
+  SetSystemConnector(system_connection->GetConnector()->Clone());
 
   RegisterInProcessService(
       resource_coordinator::mojom::kServiceName,

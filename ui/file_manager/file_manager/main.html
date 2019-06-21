@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="foreground/css/file_status.css">
     <link rel="stylesheet" href="foreground/css/file_types.css">
     <link rel="stylesheet" href="foreground/css/common.css">
+    <link rel="stylesheet" href="foreground/elements/files_xf_elements.css">
     <link rel="stylesheet" href="cws_widget/cws_widget_container.css">
 
     <script src="foreground/js/elements_importer.js"></script>
@@ -77,6 +78,7 @@
             background-color: black;
           };
           --files-toggle-ripple-activated: {
+            background-color: black;
             opacity: 0.08;
           };
         }
@@ -550,6 +552,12 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="feedback-panels">
+      <xf-display-panel id="completed-panel">
+      </xf-display-panel>
+      <xf-display-panel id="progress-panel">
+      </xf-display-panel>
     </div>
     <div class="dialog-footer progressable" tabindex="-1"
          visibleif="saveas-file open-file open-multi-file folder upload-folder">

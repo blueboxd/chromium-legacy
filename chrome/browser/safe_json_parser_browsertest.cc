@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -78,14 +78,13 @@ class SafeJsonParserTest : public InProcessBrowserTest {
     }
 
     if (batch_id) {
-      SafeJsonParser::ParseBatch(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          json, std::move(success_callback), std::move(error_callback),
-          *batch_id);
+      SafeJsonParser::ParseBatch(content::GetSystemConnector(), json,
+                                 std::move(success_callback),
+                                 std::move(error_callback), *batch_id);
     } else {
-      SafeJsonParser::Parse(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          json, std::move(success_callback), std::move(error_callback));
+      SafeJsonParser::Parse(content::GetSystemConnector(), json,
+                            std::move(success_callback),
+                            std::move(error_callback));
     }
 
     message_loop_runner_->Run();

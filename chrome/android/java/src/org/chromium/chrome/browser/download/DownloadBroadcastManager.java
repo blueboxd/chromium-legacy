@@ -298,7 +298,7 @@ public class DownloadBroadcastManager extends Service {
      * @return A {@link ContentId} built by pulling extras from {@code intent}.  This will be
      *         {@code null} if {@code intent} is missing any required extras.
      */
-    private static ContentId getContentIdFromIntent(Intent intent) {
+    static ContentId getContentIdFromIntent(Intent intent) {
         if (!intent.hasExtra(EXTRA_DOWNLOAD_CONTENTID_ID)
                 || !intent.hasExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE)) {
             return null;

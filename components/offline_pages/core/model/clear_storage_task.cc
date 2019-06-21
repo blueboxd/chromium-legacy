@@ -54,9 +54,8 @@ class PageClearCriteria {
     const std::string& name_space = page.client_id.name_space;
     const OfflinePageClientPolicy& policy =
         policy_controller_->GetPolicy(name_space);
-    const size_t page_limit = policy.lifetime_policy.page_limit;
-    const base::TimeDelta expiration_period =
-        policy.lifetime_policy.expiration_period;
+    const size_t page_limit = policy.page_limit;
+    const base::TimeDelta expiration_period = policy.expiration_period;
 
     // If the cached pages exceed the storage limit, we need to clear more than
     // just expired pages to make the storage usage below the threshold.

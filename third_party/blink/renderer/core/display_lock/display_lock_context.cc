@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
@@ -205,20 +206,13 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   update_budget_.reset();
   state_ = kLocked;
 
-  // If we're already connected then we need to ensure that we update our layout
-  // size based on the options and we have cleared the painted output.
+  // If we're already connected then we need to ensure that we update our style
+  // to check for containment later, layout size based on the options, and
+  // also clear the painted output.
   if (ConnectedToView()) {
-    if (auto* reason = ShouldForceUnlock()) {
-      // The element has up-to-date style and doesn't satisfy the containment
-      // or display type requirement, so we unlock and reject now.
-      // If the style needs recalc we would instead check the requirements after
-      // style recalc for this element.
-      DCHECK(!element_->NeedsStyleRecalc());
-      CancelTimeoutTask();
-      state_ = kUnlocked;
-      return GetRejectedPromise(script_state, reason);
-    }
-
+    element_->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
     MakeResolver(script_state, &acquire_resolver_);
     is_horizontal_writing_mode_ = true;
     if (auto* layout_object = element_->GetLayoutObject()) {
@@ -504,8 +498,6 @@ bool DisplayLockContext::ShouldCommitForActivation() const {
 void DisplayLockContext::DidAttachLayoutTree() {
   if (state_ >= kUnlocked)
     return;
-  if (ForceUnlockIfNeeded())
-    return;
 
   if (auto* layout_object = element_->GetLayoutObject())
     is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
@@ -749,8 +741,6 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
 
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
   if (acquire_resolver_) {
-    if (ForceUnlockIfNeeded())
-      return;
     FinishAcquireResolver(kResolve);
     // TODO(vmpstr): When size: auto is supported, we need to get the size from
     // the layout object here.
@@ -860,36 +850,55 @@ void DisplayLockContext::TriggerTimeout() {
 
 const char* DisplayLockContext::ShouldForceUnlock() const {
   DCHECK(element_);
-  // The style can be dirty if we're in a nested lock.
+  // This function is only called after style, layout tree, or lifecycle
+  // updates, so the style should be up-to-date, except in the case of nested
+  // locks, where the style recalc will never actually get to |element_|.
   // TODO(vmpstr): We need to figure out what to do here, since we don't know
   // what the style is and whether this element has proper containment. However,
   // forcing an update from the ancestor locks seems inefficient. For now, we
   // just optimistically assume that we have all of the right containment in
   // place. See crbug.com/926276 for more information.
-  if (element_->NeedsStyleRecalc())
+  if (element_->NeedsStyleRecalc()) {
+    DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_));
     return nullptr;
+  }
 
   if (element_->HasDisplayContentsStyle())
     return rejection_names::kUnsupportedDisplay;
 
-  // If we have a layout object, check that since it's a more authoritative
-  // source of containment information.
-  if (auto* layout_object = element_->GetLayoutObject()) {
-    if (layout_object->ShouldApplyStyleContainment() &&
-        layout_object->ShouldApplyLayoutContainment())
-      return nullptr;
-    return rejection_names::kContainmentNotSatisfied;
-  }
-
-  // Otherwise, fallback on just checking style.
   auto* style = element_->GetComputedStyle();
   // Note that if for whatever reason we don't have computed style, then
   // optimistically assume that we have containment.
-  // TODO(vmpstr): Perhaps we need to add render=lockable which will ensure
-  // containment.
-  if (!style || (style->ContainsStyle() && style->ContainsLayout()))
+  if (!style)
     return nullptr;
-  return rejection_names::kContainmentNotSatisfied;
+  if (!style->ContainsStyle() || !style->ContainsLayout())
+    return rejection_names::kContainmentNotSatisfied;
+
+  // We allow replaced elements to be locked. This check is similar to the check
+  // in DefinitelyNewFormattingContext() in element.cc, but in this case we
+  // allow object element to get locked.
+  if (IsHTMLObjectElement(element_) || IsHTMLImageElement(element_) ||
+      element_->IsFormControlElement() || element_->IsMediaElement() ||
+      element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
+    return nullptr;
+  }
+
+  // From https://www.w3.org/TR/css-contain-1/#containment-layout
+  // If the element does not generate a principal box (as is the case with
+  // display: contents or display: none), or if the element is an internal
+  // table element other than display: table-cell, if the element is an
+  // internal ruby element, or if the element’s principal box is a
+  // non-atomic inline-level box, layout containment has no effect.
+  // (Note we're allowing display:none for display locked elements, and a bit
+  // more restrictive on ruby - banning <ruby> elements entirely).
+  if ((style->IsDisplayTableType() &&
+       style->Display() != EDisplay::kTableCell) ||
+      (!element_->IsHTMLElement() ||
+       IsHTMLRubyElement(ToHTMLElement(element_))) ||
+      (style->IsDisplayInlineType() && !style->IsDisplayReplacedType())) {
+    return rejection_names::kContainmentNotSatisfied;
+  }
+  return nullptr;
 }
 
 bool DisplayLockContext::ForceUnlockIfNeeded() {

@@ -10,6 +10,8 @@ blink_core_sources("timing") {
     "dom_window_performance.h",
     "event_timing.cc",
     "event_timing.h",
+    "largest_contentful_paint.cc",
+    "largest_contentful_paint.h",
     "layout_shift.cc",
     "layout_shift.h",
     "memory_info.cc",

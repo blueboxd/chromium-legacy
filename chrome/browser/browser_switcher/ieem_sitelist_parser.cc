@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -163,9 +163,8 @@ ParsedXml::~ParsedXml() = default;
 
 void ParseIeemXml(const std::string& xml,
                   base::OnceCallback<void(ParsedXml)> callback) {
-  data_decoder::ParseXml(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(), xml,
-      base::BindOnce(&RawXmlParsed, std::move(callback)));
+  data_decoder::ParseXml(content::GetSystemConnector(), xml,
+                         base::BindOnce(&RawXmlParsed, std::move(callback)));
 }
 
 }  // namespace browser_switcher

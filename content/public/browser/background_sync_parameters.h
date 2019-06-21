@@ -44,6 +44,10 @@ struct CONTENT_EXPORT BackgroundSyncParameters {
 
   // The maximum amount of time that a sync event can run for.
   base::TimeDelta max_sync_event_duration;
+
+  // The minimum time interval between first attempts of Periodic Background
+  // Sync events for a given registration.
+  base::TimeDelta min_periodic_sync_events_interval;
 };
 
 }  // namespace content

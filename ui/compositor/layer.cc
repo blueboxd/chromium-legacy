@@ -400,6 +400,10 @@ bool Layer::GetMasksToBounds() const {
   return cc_layer_->masks_to_bounds();
 }
 
+void Layer::SetClipRect(const gfx::Rect& clip_rect) {
+  cc_layer_->SetClipRect(clip_rect);
+}
+
 void Layer::SetOpacity(float opacity) {
   GetAnimator()->SetOpacity(opacity);
 }

@@ -9,7 +9,7 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
 #include "components/safe_search_api/url_checker.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -62,10 +62,9 @@ GeneralAudienceBrowsingService::GeneralAudienceBrowsingService(
   mojom::GeneralAudienceBrowsingAPIKeyObserverPtr observer_ptr;
   general_audience_browsing_api_key_observer_binding_.Bind(
       mojo::MakeRequest(&observer_ptr));
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(mojom::kChromecastServiceName,
-                      &general_audience_browsing_api_key_subject_ptr_);
+  content::GetSystemConnector()->BindInterface(
+      mojom::kChromecastServiceName,
+      &general_audience_browsing_api_key_subject_ptr_);
   general_audience_browsing_api_key_subject_ptr_
       ->AddGeneralAudienceBrowsingAPIKeyObserver(std::move(observer_ptr));
 }

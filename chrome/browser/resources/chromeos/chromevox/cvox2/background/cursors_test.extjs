@@ -126,6 +126,11 @@ simpleDoc: function() {/*!
   multiInlineDoc: function() {/*!
     <p style='max-width: 5px'>start diff line</p>
     <p>end
+  */},
+
+  buttonAndInlineTextDoc: function() {/*!
+    <div>Inline text content</div>
+    <div role="button">Button example content</div>
   */}
 };
 
@@ -595,4 +600,36 @@ TEST_F('ChromeVoxCursorsTest', 'SelectionAdjustmentsNonRichText', function() {
     testEditable(textArea);
 
   });
+});
+
+TEST_F('ChromeVoxCursorsTest', 'MovementByWordThroughNonInlineText',
+  function() {this.runCursorMovesOnDocument(this.buttonAndInlineTextDoc,
+    [
+    // Move forward by word.
+    // 'text' start and end indices.
+    [WORD, DIRECTIONAL, FORWARD, {index: 7, value: 'Inline text content'}],
+    [WORD, BOUND, FORWARD, {index: 11, value: 'Inline text content'}],
+    // 'content' start and end incies.
+    [WORD, DIRECTIONAL, FORWARD, {index: 12, value: 'Inline text content'}],
+    [WORD, BOUND, FORWARD, {index: 19, value: 'Inline text content'}],
+    // 'Button' start and end indices.
+    [WORD, DIRECTIONAL, FORWARD, {index: 0, value: 'Button example content'}],
+    [WORD, BOUND, FORWARD, {index: 6, value: 'Button example content'}],
+    // 'example' start and end indices.
+    [WORD, DIRECTIONAL, FORWARD, {index: 7, value: 'Button example content'}],
+    [WORD, BOUND, FORWARD, {index: 14, value: 'Button example content'}],
+    // 'content' start index. Reached last word of last object.
+    [WORD, DIRECTIONAL, FORWARD, {index: 15, value: 'Button example content'}],
+    [WORD, DIRECTIONAL, FORWARD, {index: 15, value: 'Button example content'}],
+
+    // Move backward by word.
+    // Only test start indices.
+    [WORD, DIRECTIONAL, BACKWARD, {index: 7, value: 'Button example content'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'Button example content'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 12, value: 'Inline text content'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 7, value: 'Inline text content'}],
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'Inline text content'}],
+    // Reached first word of first object.
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'Inline text content'}]
+    ]);
 });

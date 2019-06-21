@@ -21,10 +21,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/webrtc_event_logger.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_debug_recording_session.h"
 #include "media/audio/audio_manager.h"
@@ -567,10 +567,7 @@ void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!audio_debug_recording_session_);
   audio_debug_recording_session_ = audio::CreateAudioDebugRecordingSession(
-      audio_debug_recordings_file_path_,
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+      audio_debug_recordings_file_path_, GetSystemConnector()->Clone());
 
   for (RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
@@ -640,12 +637,9 @@ device::mojom::WakeLock* WebRTCInternals::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
     device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-    // In some testing contexts, the service manager connection isn't
-    // initialized.
-    if (ServiceManagerConnection::GetForProcess()) {
-      service_manager::Connector* connector =
-          ServiceManagerConnection::GetForProcess()->GetConnector();
-      DCHECK(connector);
+    // In some testing environments, the system Connector isn't initialized.
+    service_manager::Connector* connector = GetSystemConnector();
+    if (connector) {
       device::mojom::WakeLockProviderPtr wake_lock_provider;
       connector->BindInterface(device::mojom::kServiceName,
                                mojo::MakeRequest(&wake_lock_provider));

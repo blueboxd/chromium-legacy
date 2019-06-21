@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import re
+import mock
 
 def _ParseANGLEGpuVendorString(device_string):
   if not device_string:
@@ -95,3 +96,24 @@ def GetSkiaRenderer(extra_browser_args):
       if "UseSkiaRenderer" in o:
         return 'skia-renderer'
   return 'no-skia-renderer'
+
+# used by unittests to create a mock arguments object
+def GetMockArgs(is_asan=False, webgl_version='1.0.0'):
+  args = mock.MagicMock()
+  args.is_asan = is_asan
+  args.webgl_conformance_version = webgl_version
+  args.webgl2_only = False
+  args.url = 'https://www.google.com'
+  args.duration = 10
+  args.delay = 10
+  args.resolution = 100
+  args.fullscreen = False
+  args.underlay = False
+  args.logdir = '/tmp'
+  args.repeat = 1
+  args.outliers = 0
+  args.bypass_ipg = False
+  args.expected_vendor_id = 0
+  args.expected_device_id = 0
+  args.browser_options = []
+  return args

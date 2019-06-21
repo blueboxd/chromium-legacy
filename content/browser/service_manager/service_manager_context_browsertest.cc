@@ -12,7 +12,7 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -103,9 +103,7 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
 
   // Launch a test service.
   echo::mojom::EchoPtr echo_ptr;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(echo::mojom::kServiceName, &echo_ptr);
+  GetSystemConnector()->BindInterface(echo::mojom::kServiceName, &echo_ptr);
 
   base::RunLoop loop;
   // Terminate the service. Browser should exit in response with an error.
@@ -150,8 +148,7 @@ IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
   service_manager::mojom::ServiceManagerListenerPtr listener_proxy;
   ServiceInstanceListener listener(mojo::MakeRequest(&listener_proxy));
 
-  auto* connector = ServiceManagerConnection::GetForProcess()->GetConnector();
-
+  auto* connector = GetSystemConnector();
   service_manager::mojom::ServiceManagerPtr service_manager;
   connector->BindInterface(service_manager::mojom::kServiceName,
                            &service_manager);

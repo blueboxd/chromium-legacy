@@ -569,6 +569,17 @@ void Controller::OnGetScripts(const GURL& url,
 
   DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
            << scripts.size() << " scripts";
+  if (VLOG_IS_ON(3)) {
+    for (const auto& script : scripts) {
+      // Strip domain from beginning if possible (redundant with log above).
+      auto pos = script->handle.path.find(script_domain_);
+      if (pos == 0) {
+        DVLOG(3) << "\t" << script->handle.path.substr(script_domain_.length());
+      } else {
+        DVLOG(3) << "\t" << script->handle.path;
+      }
+    }
+  }
   script_tracker()->SetScripts(std::move(scripts));
   script_tracker()->CheckScripts();
   StartPeriodicScriptChecks();
@@ -945,7 +956,12 @@ void Controller::UpdatePaymentRequestActions() {
 
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
-    touchable_element_area_->GetRectangles(area);
+    touchable_element_area_->GetTouchableRectangles(area);
+}
+
+void Controller::GetRestrictedArea(std::vector<RectF>* area) const {
+  if (touchable_element_area_)
+    touchable_element_area_->GetRestrictedRectangles(area);
 }
 
 void Controller::GetVisualViewport(RectF* visual_viewport) const {
@@ -1126,9 +1142,12 @@ bool Controller::IsCookieExperimentEnabled() const {
          iter->second == "1";
 }
 
-void Controller::OnTouchableAreaChanged(const RectF& visual_viewport,
-                                        const std::vector<RectF>& areas) {
-  GetUiController()->OnTouchableAreaChanged(visual_viewport, areas);
+void Controller::OnTouchableAreaChanged(
+    const RectF& visual_viewport,
+    const std::vector<RectF>& touchable_areas,
+    const std::vector<RectF>& restricted_areas) {
+  GetUiController()->OnTouchableAreaChanged(visual_viewport, touchable_areas,
+                                            restricted_areas);
 }
 
 void Controller::SetPaymentRequestOptions(

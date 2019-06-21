@@ -11,6 +11,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -19,7 +20,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -347,8 +347,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   // TODO(crbug.com/901026): Make sure the network process is started to avoid a
   // deadlock on Android.
   network_service_test.FlushForTesting();
@@ -376,8 +376,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   network::mojom::NetworkServiceTestPtrInfo network_service_test_info =
       network_service_test.PassInterface();
 
@@ -405,8 +405,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
   network_service_test->CrashOnGetCookieList();
 
   NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));

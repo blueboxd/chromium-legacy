@@ -18,7 +18,6 @@
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -168,11 +167,6 @@ void OnStatusLogCollected(
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.
 void CollectTouchHudDebugLog(system_logs::SystemLogsResponse* response) {
-  // TODO(crbug.com/807408): Collect this data from window server over mojo.
-  if (features::IsMultiProcessMash()) {
-    NOTIMPLEMENTED();
-    return;
-  }
   std::unique_ptr<base::DictionaryValue> dictionary =
       ash::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {

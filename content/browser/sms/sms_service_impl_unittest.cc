@@ -25,9 +25,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 
-using blink::mojom::SmsManagerPtr;
+using blink::mojom::SmsReceiverPtr;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -65,7 +65,7 @@ TEST_F(SmsServiceImplTest, Basic) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   GURL url("http://google.com");
   impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
   base::RunLoop loop;
@@ -74,11 +74,12 @@ TEST_F(SmsServiceImplTest, Basic) {
     mock->NotifyReceive(url::Origin::Create(url), "hi");
   }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        EXPECT_EQ("hi", sms->content);
-        EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms->status);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        EXPECT_EQ("hi", sms.value());
+        EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
         loop.Quit();
       }));
 
@@ -103,17 +104,18 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoSerially) {
         mock->NotifyReceive(url::Origin::Create(url), "second");
       }));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
 
   {
     base::RunLoop loop;
 
-    service_ptr->GetNextMessage(
+    service_ptr->Receive(
         base::TimeDelta::FromSeconds(10),
-        base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-          EXPECT_EQ("first", sms->content);
-          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms->status);
+        base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                       const base::Optional<std::string>& sms) {
+          EXPECT_EQ("first", sms.value());
+          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
           loop.Quit();
         }));
 
@@ -123,11 +125,12 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoSerially) {
   {
     base::RunLoop loop;
 
-    service_ptr->GetNextMessage(
+    service_ptr->Receive(
         base::TimeDelta::FromSeconds(10),
-        base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-          EXPECT_EQ("second", sms->content);
-          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms->status);
+        base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                       const base::Optional<std::string>& sms) {
+          EXPECT_EQ("second", sms.value());
+          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
           loop.Quit();
         }));
 
@@ -141,12 +144,13 @@ TEST_F(SmsServiceImplTest, IgnoreFromOtherOrigins) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   GURL url("http://a.com");
   url::Origin origin = url::Origin::Create(url);
   impl->Bind(mojo::MakeRequest(&service_ptr), origin);
 
-  blink::mojom::SmsMessagePtr response;
+  blink::mojom::SmsStatus sms_status;
+  base::Optional<std::string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
@@ -154,16 +158,18 @@ TEST_F(SmsServiceImplTest, IgnoreFromOtherOrigins) {
     listen_loop.Quit();
   }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status = status;
+        response = sms;
         sms_loop.Quit();
       }));
 
   listen_loop.Run();
 
-  // Delivers an SMS from an unrelated origin first and expect the manager to
+  // Delivers an SMS from an unrelated origin first and expect the receiver to
   // ignore it.
   GURL another_url("http://b.com");
   mock->NotifyReceive(url::Origin::Create(another_url), "wrong");
@@ -172,8 +178,8 @@ TEST_F(SmsServiceImplTest, IgnoreFromOtherOrigins) {
 
   sms_loop.Run();
 
-  EXPECT_EQ("right", response->content);
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, response->status);
+  EXPECT_EQ("right", response.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
 }
 
 TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
@@ -182,12 +188,13 @@ TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   GURL url("http://a.com");
   url::Origin origin = url::Origin::Create(url);
   impl->Bind(mojo::MakeRequest(&service_ptr), origin);
 
-  blink::mojom::SmsMessagePtr response;
+  blink::mojom::SmsStatus sms_status;
+  base::Optional<std::string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
@@ -195,10 +202,12 @@ TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
     listen_loop.Quit();
   }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status = status;
+        response = sms;
         sms_loop.Quit();
       }));
 
@@ -211,8 +220,8 @@ TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
 
   sms_loop.Run();
 
-  EXPECT_EQ("first", response->content);
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, response->status);
+  EXPECT_EQ("first", response.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
 }
 
 TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
@@ -221,33 +230,39 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   GURL url("http://a.com");
   url::Origin origin = url::Origin::Create(url);
   impl->Bind(mojo::MakeRequest(&service_ptr), origin);
 
-  blink::mojom::SmsMessagePtr response1;
-  blink::mojom::SmsMessagePtr response2;
+  blink::mojom::SmsStatus sms_status1;
+  base::Optional<std::string> response1;
+  blink::mojom::SmsStatus sms_status2;
+  base::Optional<std::string> response2;
 
   base::RunLoop listen_loop, sms1_loop, sms2_loop;
 
-  // Expects two GetNextMessage() calls to be made before any of them gets
+  // Expects two Receive() calls to be made before any of them gets
   // an SMS to resolve them.
   EXPECT_CALL(*mock, Retrieve())
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen_loop]() { listen_loop.Quit(); }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response1 = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status1 = status;
+        response1 = sms;
         sms1_loop.Quit();
       }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response2 = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status2 = status;
+        response2 = sms;
         sms2_loop.Quit();
       }));
 
@@ -259,8 +274,8 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
 
   sms1_loop.Run();
 
-  EXPECT_EQ("first", response1->content);
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, response1->status);
+  EXPECT_EQ("first", response1.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status1);
 
   // Delivers the second SMS.
 
@@ -268,8 +283,8 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
 
   sms2_loop.Run();
 
-  EXPECT_EQ("second", response2->content);
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, response2->status);
+  EXPECT_EQ("second", response2.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
 }
 
 TEST_F(SmsServiceImplTest, Timeout) {
@@ -278,7 +293,7 @@ TEST_F(SmsServiceImplTest, Timeout) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr;
+  blink::mojom::SmsReceiverPtr service_ptr;
   GURL url("http://a.com");
   impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
 
@@ -288,10 +303,11 @@ TEST_F(SmsServiceImplTest, Timeout) {
     mock->NotifyTimeout();
   }));
 
-  service_ptr->GetNextMessage(
+  service_ptr->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms->status);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, status);
         loop.Quit();
       }));
 
@@ -304,16 +320,18 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
 
-  blink::mojom::SmsManagerPtr service_ptr1;
+  blink::mojom::SmsReceiverPtr service_ptr1;
   GURL url1("http://a.com");
   impl->Bind(mojo::MakeRequest(&service_ptr1), url::Origin::Create(url1));
 
-  blink::mojom::SmsManagerPtr service_ptr2;
+  blink::mojom::SmsReceiverPtr service_ptr2;
   GURL url2("http://b.com");
   impl->Bind(mojo::MakeRequest(&service_ptr2), url::Origin::Create(url2));
 
-  blink::mojom::SmsMessagePtr response1;
-  blink::mojom::SmsMessagePtr response2;
+  blink::mojom::SmsStatus sms_status1;
+  base::Optional<std::string> response1;
+  blink::mojom::SmsStatus sms_status2;
+  base::Optional<std::string> response2;
 
   base::RunLoop listen, sms_loop1, sms_loop2;
 
@@ -321,17 +339,21 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen]() { listen.Quit(); }));
 
-  service_ptr1->GetNextMessage(
+  service_ptr1->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response1 = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status1 = status;
+        response1 = sms;
         sms_loop1.Quit();
       }));
 
-  service_ptr2->GetNextMessage(
+  service_ptr2->Receive(
       base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsMessagePtr sms) {
-        response2 = std::move(sms);
+      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+        sms_status2 = status;
+        response2 = sms;
         sms_loop2.Quit();
       }));
 
@@ -343,7 +365,7 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
 
   sms_loop1.Run();
 
-  EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, response1->status);
+  EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms_status1);
 
   // Delivers the second SMS.
 
@@ -351,8 +373,8 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
 
   sms_loop2.Run();
 
-  EXPECT_EQ("second", response2->content);
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, response2->status);
+  EXPECT_EQ("second", response2.value());
+  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
 }
 
 }  // namespace content

@@ -12,6 +12,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -120,8 +121,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   DCHECK(view_);
 
   is_target_visibility_show_ = false;
-  const int64_t display_id = GetDisplayId();
-  RequestPresentationTime(display_id, event_time_stamp);
+  RequestPresentationTime(GetDisplayId(), event_time_stamp);
 
   // Hide the active window if it is a transient descendant of |view_|'s widget.
   aura::Window* window = view_->GetWidget()->GetNativeWindow();
@@ -152,7 +152,8 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
     view_->GetWidget()->Deactivate();
 
   delegate_->OnClosing();
-  ScheduleDismissAnimation();
+  view_->SetState(ash::AppListViewState::kClosed);
+
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
@@ -336,17 +337,6 @@ void AppListPresenterImpl::ResetView() {
   view_->GetAppsPaginationModel()->RemoveObserver(this);
 
   view_ = nullptr;
-}
-
-void AppListPresenterImpl::ScheduleDismissAnimation() {
-  aura::Window* root_window =
-      view_->GetWidget()->GetNativeView()->GetRootWindow();
-  view_->StartCloseAnimation(dismiss_without_animation_
-                                 ? base::TimeDelta::FromMilliseconds(0)
-                                 : delegate_->GetVisibilityAnimationDuration(
-
-                                       root_window, /*is_visible=*/false),
-                             this);
 }
 
 int64_t AppListPresenterImpl::GetDisplayId() {

@@ -69,7 +69,7 @@ void TestingSpellCheckProvider::RequestDictionary() {}
 void TestingSpellCheckProvider::NotifyChecked(const base::string16& word,
                                               bool misspelled) {}
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void TestingSpellCheckProvider::CallSpellingService(
     const base::string16& text,
     CallSpellingServiceCallback callback) {
@@ -100,7 +100,7 @@ void TestingSpellCheckProvider::OnCallSpellingService(
 void TestingSpellCheckProvider::ResetResult() {
   text_.clear();
 }
-#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void TestingSpellCheckProvider::RequestTextCheck(

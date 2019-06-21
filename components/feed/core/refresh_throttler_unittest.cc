@@ -7,13 +7,13 @@
 #include <limits>
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -34,10 +34,9 @@ class RefreshThrottlerTest : public testing::Test {
     EXPECT_TRUE(base::Time::FromUTCString(kNowString, &now));
     test_clock_.SetNow(now);
 
-    variations::testing::VariationParamsManager variation_params(
-        kInterestFeedContentSuggestions.name,
-        {{"quota_SuggestionFetcherActiveNTPUser", "2"}},
-        {kInterestFeedContentSuggestions.name});
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kInterestFeedContentSuggestions,
+        {{"quota_SuggestionFetcherActiveNTPUser", "2"}});
 
     throttler_ = std::make_unique<RefreshThrottler>(
         UserClassifier::UserClass::kActiveSuggestionsViewer, &test_prefs_,
@@ -48,6 +47,7 @@ class RefreshThrottlerTest : public testing::Test {
   TestingPrefServiceSimple test_prefs_;
   base::SimpleTestClock test_clock_;
   std::unique_ptr<RefreshThrottler> throttler_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RefreshThrottlerTest);

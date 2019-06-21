@@ -168,7 +168,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (message_labels_.size() == 1u && message_labels_[0]->selectable())
     return false;
 
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
   scw.WriteText(std::accumulate(
       message_labels_.cbegin(), message_labels_.cend(), base::string16(),
       [](base::string16& left, Label* right) { return left + right->text(); }));

@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
@@ -164,6 +165,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_fixed_position_descendant_(false),
       has_sticky_position_descendant_(false),
       has_non_contained_absolute_position_descendant_(false),
+      has_stacked_descendant_in_current_stacking_context_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
       backdrop_filter_on_effect_node_dirty_(false),
@@ -176,6 +178,9 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       descendant_needs_compositing_layer_assignment_(false),
       has_self_painting_layer_descendant_(false),
       is_non_stacked_with_in_flow_stacked_descendant_(false),
+#if DCHECK_IS_ON()
+      layer_list_mutation_allowed_(true),
+#endif
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -655,6 +660,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_fixed_position_descendant_ = false;
     has_sticky_position_descendant_ = false;
     has_non_contained_absolute_position_descendant_ = false;
+    has_stacked_descendant_in_current_stacking_context_ = false;
     has_self_painting_layer_descendant_ = false;
     is_non_stacked_with_in_flow_stacked_descendant_ = false;
 
@@ -662,7 +668,6 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         GetLayoutObject().CanContainAbsolutePositionObjects();
 
     const ComputedStyle& style = GetLayoutObject().StyleRef();
-    bool needs_stacking_node = style.IsStackingContext();
     bool is_stacked = style.IsStacked();
 
     for (PaintLayer* child = FirstChild(); child;
@@ -675,9 +680,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         has_visible_descendant_ = true;
 
       has_non_isolated_descendant_with_blend_mode_ |=
-          (!child->GetLayoutObject().StyleRef().IsStackingContext() &&
+          (!child_style.IsStackingContext() &&
            child->HasNonIsolatedDescendantWithBlendMode()) ||
-          child->GetLayoutObject().StyleRef().HasBlendMode();
+          child_style.HasBlendMode();
 
       has_descendant_with_clip_path_ |= child->HasDescendantWithClipPath() ||
                                         child->GetLayoutObject().HasClipPath();
@@ -695,7 +700,14 @@ void PaintLayer::UpdateDescendantDependentFlags() {
              child_style.GetPosition() == EPosition::kAbsolute);
       }
 
-      needs_stacking_node = needs_stacking_node || !child_style.IsStacked();
+      if (!has_stacked_descendant_in_current_stacking_context_) {
+        if (child_style.IsStacked()) {
+          has_stacked_descendant_in_current_stacking_context_ = true;
+        } else if (!child_style.IsStackingContext()) {
+          has_stacked_descendant_in_current_stacking_context_ =
+              child->has_stacked_descendant_in_current_stacking_context_;
+        }
+      }
 
       has_self_painting_layer_descendant_ =
           has_self_painting_layer_descendant_ ||
@@ -711,7 +723,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       }
     }
 
-    UpdateStackingNode(needs_stacking_node);
+    UpdateStackingNode();
 
     if (old_has_non_isolated_descendant_with_blend_mode !=
         static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
@@ -775,13 +787,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 void PaintLayer::Update3DTransformedDescendantStatus() {
   has3d_transformed_descendant_ = false;
 
-  if (!stacking_node_)
-    return;
-
   // Transformed or preserve-3d descendants can only be in the z-order lists,
   // not in the normal flow list, so we only need to check those.
-  PaintLayerStackingNodeIterator iterator(
-      *stacking_node_.get(), kPositiveZOrderChildren | kNegativeZOrderChildren);
+  PaintLayerPaintOrderIterator iterator(*this, kStackedChildren);
   while (PaintLayer* child_layer = iterator.Next()) {
     bool child_has3d = false;
     // If the child lives in a 3d hierarchy, then the layer at the root of
@@ -988,9 +996,15 @@ PaintLayer* PaintLayer::CompositingContainer() const {
     return Parent();
   if (!GetLayoutObject().StyleRef().IsStacked())
     return IsSelfPaintingLayer() ? Parent() : ContainingLayer();
-  if (PaintLayerStackingNode* ancestor_stacking_node =
-          PaintLayerStackingNode::AncestorStackingContextNode(this))
-    return ancestor_stacking_node->Layer();
+  return AncestorStackingContext();
+}
+
+PaintLayer* PaintLayer::AncestorStackingContext() const {
+  for (PaintLayer* ancestor = Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    if (ancestor->GetLayoutObject().StyleRef().IsStackingContext())
+      return ancestor;
+  }
   return nullptr;
 }
 
@@ -1313,12 +1327,16 @@ void PaintLayer::operator delete(void* ptr) {
 }
 
 void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
+#if DCHECK_IS_ON()
+  DCHECK(layer_list_mutation_allowed_);
+#endif
+
   PaintLayer* prev_sibling =
       before_child ? before_child->PreviousSibling() : LastChild();
   if (prev_sibling) {
     child->SetPreviousSibling(prev_sibling);
     prev_sibling->SetNextSibling(child);
-    DCHECK(prev_sibling != child);
+    DCHECK_NE(prev_sibling, child);
   } else {
     SetFirstChild(child);
   }
@@ -1326,7 +1344,7 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   if (before_child) {
     before_child->SetPreviousSibling(child);
     child->SetNextSibling(before_child);
-    DCHECK(before_child != child);
+    DCHECK_NE(before_child, child);
   } else {
     SetLastChild(child);
   }
@@ -1351,7 +1369,7 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
     // ancestorStackingContextNode() can be null in the case where we're
     // building up generated content layers. This is ok, since the lists will
     // start off dirty in that case anyway.
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(child);
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*child);
     MarkAncestorChainForFlagsUpdate();
   }
 
@@ -1368,7 +1386,11 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   child->SetNeedsRepaint();
 }
 
-PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
+void PaintLayer::RemoveChild(PaintLayer* old_child) {
+#if DCHECK_IS_ON()
+  DCHECK(layer_list_mutation_allowed_);
+#endif
+
   old_child->MarkCompositingContainerChainForNeedsRepaint();
 
   if (old_child->PreviousSibling())
@@ -1390,7 +1412,7 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
     // Dirty the z-order list in which we are contained.
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(old_child);
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*old_child);
     SetNeedsCompositingInputsUpdate();
   }
 
@@ -1410,8 +1432,6 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
 
   if (old_child->EnclosingPaginationLayer())
     old_child->ClearPaginationRecursive();
-
-  return old_child;
 }
 
 void PaintLayer::ClearClipRects(ClipRectsCacheSlot cache_slot) {
@@ -1425,7 +1445,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
     return;
 
   if (old_style && old_style->IsStacked()) {
-    PaintLayerStackingNode::DirtyStackingContextZOrderLists(this);
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(*this);
     MarkAncestorChainForFlagsUpdate();
   }
 
@@ -1619,10 +1639,18 @@ void PaintLayer::DidUpdateScrollsOverflow() {
   UpdateSelfPaintingLayer();
 }
 
-void PaintLayer::UpdateStackingNode(bool needs_stacking_node) {
+void PaintLayer::UpdateStackingNode() {
+#if DCHECK_IS_ON()
+  DCHECK(layer_list_mutation_allowed_);
+#endif
+
+  bool needs_stacking_node =
+      has_stacked_descendant_in_current_stacking_context_ &&
+      GetLayoutObject().StyleRef().IsStackingContext();
+
   if (needs_stacking_node != !!stacking_node_) {
     if (needs_stacking_node)
-      stacking_node_ = std::make_unique<PaintLayerStackingNode>(this);
+      stacking_node_ = std::make_unique<PaintLayerStackingNode>(*this);
     else
       stacking_node_ = nullptr;
   }
@@ -2390,7 +2418,7 @@ void PaintLayer::SetNeedsCompositingRequirementsUpdate() {
 }
 
 PaintLayer* PaintLayer::HitTestChildren(
-    ChildrenIteration childrento_visit,
+    PaintLayerIteration children_to_visit,
     PaintLayer* root_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
@@ -2402,9 +2430,6 @@ PaintLayer* PaintLayer::HitTestChildren(
   if (!HasSelfPaintingLayerDescendant())
     return nullptr;
 
-  if (!stacking_node_)
-    return nullptr;
-
   if (GetLayoutObject().PaintBlockedByDisplayLock(
           DisplayLockContext::kChildren))
     return nullptr;
@@ -2413,8 +2438,7 @@ PaintLayer* PaintLayer::HitTestChildren(
   PaintLayer* stop_layer = stop_node ? stop_node->PaintingLayer() : nullptr;
 
   PaintLayer* result_layer = nullptr;
-  PaintLayerStackingNodeReverseIterator iterator(*stacking_node_,
-                                                 childrento_visit);
+  PaintLayerPaintOrderReverseIterator iterator(*this, children_to_visit);
   while (PaintLayer* child_layer = iterator.Next()) {
     if (child_layer->IsReplacedNormalFlowStacking())
       continue;
@@ -2637,18 +2661,7 @@ void PaintLayer::ExpandRectForStackingChildren(
     const PaintLayer& composited_layer,
     PhysicalRect& result,
     PaintLayer::CalculateBoundsOptions options) const {
-  if (!StackingNode())
-    return;
-
-  DCHECK(GetLayoutObject().StyleRef().IsStackingContext() ||
-         !StackingNode()->HasPositiveZOrderList());
-
-#if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(
-      const_cast<PaintLayer*>(this)->StackingNode());
-#endif
-
-  PaintLayerStackingNodeIterator iterator(*StackingNode(), kAllChildren);
+  PaintLayerPaintOrderIterator iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = iterator.Next()) {
     // Here we exclude both directly composited layers and squashing layers
     // because those Layers don't paint into the graphics layer
@@ -2965,12 +2978,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
 
 bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect) const {
-  if (!stacking_node_)
-    return false;
-
-  PaintLayerStackingNodeReverseIterator reverse_iterator(
-      *stacking_node_,
-      kPositiveZOrderChildren | kNormalFlowChildren | kNegativeZOrderChildren);
+  PaintLayerPaintOrderReverseIterator reverse_iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = reverse_iterator.Next()) {
     // Stop at composited paint boundaries and non-self-painting layers.
     if (child_layer->IsPaintInvalidationContainer())
@@ -3191,7 +3199,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
     return;
   }
 
-  if (PaintLayerStackingNode::StyleDidChange(this, old_style))
+  if (PaintLayerStackingNode::StyleDidChange(*this, old_style))
     MarkAncestorChainForFlagsUpdate();
 
   if (RequiresScrollableArea()) {

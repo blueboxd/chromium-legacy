@@ -12,7 +12,13 @@ StatusIconLinux::StatusIconLinux() = default;
 
 StatusIconLinux::~StatusIconLinux() = default;
 
-void StatusIconLinux::RefreshPlatformContextMenu() {
+void StatusIconLinux::RefreshPlatformContextMenu() {}
+
+void StatusIconLinux::OnSetDelegate() {}
+
+void StatusIconLinux::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  OnSetDelegate();
 }
 
 }  // namespace views

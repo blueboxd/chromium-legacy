@@ -114,10 +114,14 @@ bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationScenic::GetRequiredDeviceExtensions() {
-  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-          VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
-          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-          VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME};
+  return {
+      VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME,
+      VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
+      VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+  };
 }
 
 VkFence VulkanImplementationScenic::CreateVkFenceForGpuFence(

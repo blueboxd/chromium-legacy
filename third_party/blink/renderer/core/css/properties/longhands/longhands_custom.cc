@@ -2882,6 +2882,14 @@ void InternalEffectiveZoom::ApplyValue(StyleResolverState& state,
   state.SetEffectiveZoom(StyleBuilderConverter::ConvertZoom(state, value));
 }
 
+const CSSValue* InternalEffectiveZoom::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  ValueRange value_range = kValueRangeNonNegative;
+  return css_property_parser_helpers::ConsumeNumber(range, value_range);
+}
+
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -2899,6 +2907,14 @@ const blink::Color InternalVisitedColor::ColorIncludingFallback(
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedColor();
+}
+
+const CSSValue* InternalVisitedColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(
+      range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
 }
 
 const CSSValue* GridAutoColumns::ParseSingleValue(
@@ -3342,6 +3358,14 @@ const blink::Color InternalVisitedBackgroundColor::ColorIncludingFallback(
   return color;
 }
 
+const CSSValue* InternalVisitedBackgroundColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(
+      range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
+}
+
 const blink::Color InternalVisitedBorderLeftColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
@@ -3350,12 +3374,28 @@ const blink::Color InternalVisitedBorderLeftColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedBorderLeftColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
 const blink::Color InternalVisitedBorderTopColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedBorderTopColor().Resolve(
       style.InternalVisitedColor());
+}
+
+const CSSValue* InternalVisitedBorderTopColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
 }
 
 const blink::Color InternalVisitedCaretColor::ColorIncludingFallback(
@@ -3368,12 +3408,28 @@ const blink::Color InternalVisitedCaretColor::ColorIncludingFallback(
   return result.Resolve(style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedCaretColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return To<Longhand>(GetCSSPropertyCaretColor())
+      .ParseSingleValue(range, context, local_context);
+}
+
 const blink::Color InternalVisitedBorderRightColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedBorderRightColor().Resolve(
       style.InternalVisitedColor());
+}
+
+const CSSValue* InternalVisitedBorderRightColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
 }
 
 const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
@@ -3384,12 +3440,66 @@ const blink::Color InternalVisitedBorderBottomColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedBorderBottomColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
+const CSSValue* InternalVisitedBorderInlineStartColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
+const CSSValue* InternalVisitedBorderInlineEndColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
+const CSSValue* InternalVisitedBorderBlockStartColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
+const CSSValue* InternalVisitedBorderBlockEndColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ConsumeBorderColorSide(range, context,
+                                                   local_context);
+}
+
+const CSSValue* InternalVisitedFill::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ParsePaintStroke(range, context);
+}
+
 const blink::Color InternalVisitedColumnRuleColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedColumnRuleColor().Resolve(
       style.InternalVisitedColor());
+}
+
+const CSSValue* InternalVisitedColumnRuleColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color InternalVisitedOutlineColor::ColorIncludingFallback(
@@ -3400,12 +3510,34 @@ const blink::Color InternalVisitedOutlineColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedOutlineColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return To<Longhand>(GetCSSPropertyOutlineColor())
+      .ParseSingleValue(range, context, local_context);
+}
+
+const CSSValue* InternalVisitedStroke::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_parsing_utils::ParsePaintStroke(range, context);
+}
+
 const blink::Color InternalVisitedTextDecorationColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.DecorationColorIncludingFallback(visited_link)
       .Resolve(style.InternalVisitedColor());
+}
+
+const CSSValue* InternalVisitedTextDecorationColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const blink::Color InternalVisitedTextEmphasisColor::ColorIncludingFallback(
@@ -3416,6 +3548,13 @@ const blink::Color InternalVisitedTextEmphasisColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedTextEmphasisColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
+}
+
 const blink::Color InternalVisitedTextFillColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
@@ -3424,12 +3563,26 @@ const blink::Color InternalVisitedTextFillColor::ColorIncludingFallback(
       style.InternalVisitedColor());
 }
 
+const CSSValue* InternalVisitedTextFillColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
+}
+
 const blink::Color InternalVisitedTextStrokeColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
   DCHECK(visited_link);
   return style.InternalVisitedTextStrokeColor().Resolve(
       style.InternalVisitedColor());
+}
+
+const CSSValue* InternalVisitedTextStrokeColor::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const CSSValue* Isolation::CSSValueFromComputedStyleInternal(

@@ -9,6 +9,8 @@
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -109,14 +111,30 @@ TEST_F(AudioOutputTest, Play200HzTone) {
 
   SineWaveAudioSource source(1, 200.0, stream_params_.sample_rate());
 
+  // Play for 100ms.
+  const int samples_to_play = stream_params_.sample_rate() / 10;
+
   EXPECT_TRUE(stream_->Open());
   stream_->SetVolume(1.0);
+
+  // Play the stream until position gets past |samples_to_play|.
+  base::RunLoop run_loop;
+  source.set_on_more_data_callback(
+      base::BindLambdaForTesting([&source, &run_loop, samples_to_play]() {
+        if (source.pos_samples() >= samples_to_play)
+          run_loop.Quit();
+      }));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+
   stream_->Start(&source);
-  RunMessageLoop(base::TimeDelta::FromMilliseconds(250));
+  run_loop.Run();
+
   stream_->Stop();
 
   EXPECT_FALSE(source.errors());
   EXPECT_GE(source.callbacks(), 1);
+  EXPECT_GE(source.pos_samples(), samples_to_play);
 }
 
 // Test that SetVolume() and GetVolume() work as expected.

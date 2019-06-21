@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL mouse pointerevent attributes assert_equals: movementX should be the delta between current event's and last event's screenX expected 20 but got 0
+Harness: the test ran to completion.
+

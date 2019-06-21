@@ -148,7 +148,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   void FocusChanged();
 
-  void OnNonImmersiveVSync(TimeTicks timestamp);
+  void OnNonImmersiveVSync(base::TimeTicks timestamp);
   int PendingNonImmersiveVSyncId() { return pending_non_immersive_vsync_id_; }
 
   void Trace(blink::Visitor*) override;
@@ -193,8 +193,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool FocusedOrPresenting();
 
   ScriptedAnimationController& EnsureScriptedAnimationController(Document*);
-  void ProcessScheduledAnimations(TimeTicks timestamp);
-  void ProcessScheduledWindowAnimations(TimeTicks timestamp);
+  void ProcessScheduledAnimations(base::TimeTicks timestamp);
+  void ProcessScheduledWindowAnimations(base::TimeTicks timestamp);
 
   // Request delivery of a VSync event for either magic window mode or
   // presenting mode as applicable. May be called more than once per frame, it
@@ -246,8 +246,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_non_immersive_vsync_ = false;
   int pending_non_immersive_vsync_id_ = -1;
   base::OnceClosure non_immersive_vsync_waiting_for_pose_;
-  WTF::TimeTicks non_immersive_pose_request_time_;
-  WTF::TimeTicks non_immersive_pose_received_time_;
+  base::TimeTicks non_immersive_pose_request_time_;
+  base::TimeTicks non_immersive_pose_received_time_;
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;

@@ -86,35 +86,35 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
 
     if (noscript_on_) {
       content::PreviewsState previews_state =
-          user_data->committed_previews_state();
+          user_data->CommittedPreviewsState();
       user_data->set_committed_previews_state(previews_state |=
                                               content::NOSCRIPT_ON);
     }
 
     if (resource_loading_hints_on_) {
       content::PreviewsState previews_state =
-          user_data->committed_previews_state();
+          user_data->CommittedPreviewsState();
       user_data->set_committed_previews_state(
           previews_state |= content::RESOURCE_LOADING_HINTS_ON);
     }
 
     if (lite_page_received_) {
       content::PreviewsState previews_state =
-          user_data->committed_previews_state();
+          user_data->CommittedPreviewsState();
       user_data->set_committed_previews_state(previews_state |=
                                               content::SERVER_LITE_PAGE_ON);
     }
 
     if (lite_page_redirect_received_) {
       content::PreviewsState previews_state =
-          user_data->committed_previews_state();
+          user_data->CommittedPreviewsState();
       user_data->set_committed_previews_state(previews_state |=
                                               content::LITE_PAGE_REDIRECT_ON);
     }
 
     if (is_offline_preview_) {
       content::PreviewsState previews_state =
-          user_data->committed_previews_state();
+          user_data->CommittedPreviewsState();
       user_data->set_committed_previews_state(previews_state |=
                                               content::OFFLINE_PAGE_ON);
     }

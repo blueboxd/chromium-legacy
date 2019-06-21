@@ -105,9 +105,9 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // response to a "dialogClose" message from WebUI.
   virtual void OnDialogCloseFromWebUI(const std::string& json_retval);
 
-  // A callback to notify the delegate that the contents have gone
-  // away. Only relevant if your dialog hosts code that calls
-  // windows.close() and you've allowed that.  If the output parameter
+  // A callback to notify the delegate that the contents are requesting
+  // to be closed.  This could be in response to a number of events
+  // that are handled by the WebContents.  If the output parameter
   // is set to true, then the dialog is closed.  The default is false.
   // |out_close_dialog| is never NULL.
   virtual void OnCloseContents(content::WebContents* source,

@@ -101,7 +101,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedEmail) {
 
   EXPECT_THAT(
       formatter->GetLabels(),
-      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John Kennedy"),
                                       base::ASCIIToUTF16("(617) 730-2000")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
                   ConstructLabelLine({base::ASCIIToUTF16("Paul Revere"),
@@ -141,7 +141,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedPhone) {
   EXPECT_THAT(
       formatter->GetLabels(),
       ElementsAre(
-          ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+          ConstructLabelLine({base::ASCIIToUTF16("John Kennedy"),
                               base::ASCIIToUTF16("jfk@gmail.com")}),
           ConstructLabelLine({base::ASCIIToUTF16("Jackie Kennedy"),
                               base::ASCIIToUTF16("jackie@outlook.com")}),
@@ -197,7 +197,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedEmail) {
 
   EXPECT_THAT(
       formatter->GetLabels(),
-      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("Tarsila Amaral"),
                                       base::ASCIIToUTF16("(11) 2648-0254")}),
                   ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
                                       base::ASCIIToUTF16("(21) 98765-0000")})));
@@ -226,7 +226,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {
   EXPECT_THAT(
       formatter->GetLabels(),
       ElementsAre(
-          ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
+          ConstructLabelLine({base::ASCIIToUTF16("Tarsila Amaral"),
                               base::ASCIIToUTF16("tarsila@aol.com")}),
           ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
                               base::ASCIIToUTF16("aavila@uol.com.br")})));
@@ -265,7 +265,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedPhone) {
   // Checks that the email address is excluded when the form does not contain an
   // email field.
   EXPECT_THAT(formatter->GetLabels(),
-              ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
+              ElementsAre(base::ASCIIToUTF16("John Kennedy")));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedName) {
@@ -299,7 +299,7 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedEmail) {
   // Checks that the phone number is excluded when the form does not contain a
   // phone field.
   EXPECT_THAT(formatter->GetLabels(),
-              ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
+              ElementsAre(base::ASCIIToUTF16("John Kennedy")));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForFormWithoutName) {

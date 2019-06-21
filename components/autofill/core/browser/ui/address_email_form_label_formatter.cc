@@ -47,8 +47,9 @@ base::string16 AddressEmailFormLabelFormatter::
   std::vector<base::string16> label_parts;
 
   if (focused_group != NAME && data_util::ContainsName(groups())) {
-    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
-                           &label_parts);
+    AddLabelPartIfNotEmpty(
+        GetLabelName(field_types_for_labels(), profile, app_locale()),
+        &label_parts);
   }
 
   if (focused_group != ADDRESS_HOME) {

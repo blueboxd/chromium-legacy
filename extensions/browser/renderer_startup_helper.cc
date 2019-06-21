@@ -30,7 +30,6 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/origin.h"
 
@@ -246,11 +245,6 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
       CreateCorsOriginAccessAllowList(
           extension,
           PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ExtensionsClient::Get()->AddOriginAccessPermissions(extension, true,
-                                                        &allow_list);
-  }
-
   browser_context_->SetCorsOriginAccessListForOrigin(
       extension_origin, std::move(allow_list),
       CreateCorsOriginAccessBlockList(extension), base::DoNothing::Once());

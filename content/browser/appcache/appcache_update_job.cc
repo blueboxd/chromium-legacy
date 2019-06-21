@@ -264,14 +264,14 @@ AppCacheUpdateJob::~AppCacheUpdateJob() {
 
 void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                                     const GURL& new_master_resource) {
-  DCHECK(group_->update_job() == this);
+  DCHECK_EQ(group_->update_job(), this);
   DCHECK(!group_->is_obsolete());
 
   bool is_new_pending_master_entry = false;
   if (!new_master_resource.is_empty()) {
-    DCHECK(new_master_resource == host->pending_master_entry_url());
+    DCHECK_EQ(new_master_resource, host->pending_master_entry_url());
     DCHECK(!new_master_resource.has_ref());
-    DCHECK(new_master_resource.GetOrigin() == manifest_url_.GetOrigin());
+    DCHECK_EQ(new_master_resource.GetOrigin(), manifest_url_.GetOrigin());
 
     if (base::Contains(failed_master_entries_, new_master_resource))
       return;
@@ -336,7 +336,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
   BrowserThread::PostBestEffortTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::BindOnce(&AppCacheUpdateJob::FetchManifest,
-                     weak_factory_.GetWeakPtr(), true));
+                     weak_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<AppCacheResponseWriter>
@@ -392,31 +392,34 @@ void AppCacheUpdateJob::HandleCacheFailure(
   DeleteSoon();  // To unwind the stack prior to deletion.
 }
 
-void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
+void AppCacheUpdateJob::FetchManifest() {
   DCHECK(!manifest_fetcher_);
   manifest_fetcher_ = std::make_unique<URLFetcher>(
-      manifest_url_,
-      is_first_fetch ? URLFetcher::FetchType::kManifest
-                     : URLFetcher::FetchType::kManifestRefetch,
-      this, kAppCacheFetchBufferSize);
+      manifest_url_, URLFetcher::FetchType::kManifest, this,
+      kAppCacheFetchBufferSize);
 
-  if (is_first_fetch) {
-    // Maybe load the cached headers to make a condiditional request.
-    AppCacheEntry* entry =
-        (update_type_ == UPGRADE_ATTEMPT)
-            ? group_->newest_complete_cache()->GetEntry(manifest_url_)
-            : nullptr;
-    if (entry && !doing_full_update_check_) {
-      // Asynchronously load response info for manifest from newest cache.
-      storage_->LoadResponseInfo(manifest_url_, entry->response_id(), this);
-      return;
-    }
-    manifest_fetcher_->Start();
+  // Maybe load the cached headers to make a conditional request.
+  AppCacheEntry* entry =
+      (update_type_ == UPGRADE_ATTEMPT)
+          ? group_->newest_complete_cache()->GetEntry(manifest_url_)
+          : nullptr;
+  if (entry && !doing_full_update_check_) {
+    // Asynchronously load response info for manifest from newest cache.
+    storage_->LoadResponseInfo(manifest_url_, entry->response_id(), this);
     return;
   }
+  manifest_fetcher_->Start();
+  return;
+}
 
-  DCHECK(internal_state_ == REFETCH_MANIFEST);
+void AppCacheUpdateJob::RefetchManifest() {
+  DCHECK(!manifest_fetcher_);
+  DCHECK_EQ(internal_state_, REFETCH_MANIFEST);
   DCHECK(manifest_response_info_.get());
+
+  manifest_fetcher_ = std::make_unique<URLFetcher>(
+      manifest_url_, URLFetcher::FetchType::kManifestRefetch, this,
+      kAppCacheFetchBufferSize);
   manifest_fetcher_->set_existing_response_headers(
       manifest_response_info_->headers.get());
   manifest_fetcher_->Start();
@@ -492,10 +495,10 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
 }
 
 void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
-  DCHECK(internal_state_ == FETCH_MANIFEST);
+  DCHECK_EQ(internal_state_, FETCH_MANIFEST);
 
   if (!changed) {
-    DCHECK(update_type_ == UPGRADE_ATTEMPT);
+    DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
     internal_state_ = NO_UPDATE;
 
     // Wait for pending master entries to download.
@@ -564,7 +567,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
 void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
                                                      int net_error) {
-  DCHECK(internal_state_ == DOWNLOADING);
+  DCHECK_EQ(internal_state_, DOWNLOADING);
 
   UpdateURLLoaderRequest* request = url_fetcher->request();
   const GURL& url = request->GetURL();
@@ -724,7 +727,7 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
     // In no-update case, associate host with the newest cache.
     if (!inprogress_cache_.get()) {
       // TODO(michaeln): defer until the updated cache has been stored
-      DCHECK(cache == group_->newest_complete_cache());
+      DCHECK_EQ(cache, group_->newest_complete_cache());
       for (AppCacheHost* host : hosts)
         host->AssociateCompleteCache(cache);
     }
@@ -877,7 +880,7 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
 }
 
 void AppCacheUpdateJob::StoreGroupAndCache() {
-  DCHECK(stored_state_ == UNSTORED);
+  DCHECK_EQ(stored_state_, UNSTORED);
   stored_state_ = STORING;
 
   scoped_refptr<AppCache> newest_cache;
@@ -898,7 +901,7 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                                     AppCache* newest_cache,
                                                     bool success,
                                                     bool would_exceed_quota) {
-  DCHECK(stored_state_ == STORING);
+  DCHECK_EQ(stored_state_, STORING);
   if (success) {
     stored_state_ = STORED;
     MaybeCompleteUpdate();  // will definitely complete
@@ -947,7 +950,7 @@ void AppCacheUpdateJob::NotifyAllProgress(const GURL& url) {
 }
 
 void AppCacheUpdateJob::NotifyAllFinalProgress() {
-  DCHECK(url_file_list_.size() == url_fetches_completed_);
+  DCHECK_EQ(url_file_list_.size(), url_fetches_completed_);
   NotifyAllProgress(GURL());
 }
 
@@ -1001,7 +1004,7 @@ void AppCacheUpdateJob::OnServiceReinitialized(
 }
 
 void AppCacheUpdateJob::CheckIfManifestChanged() {
-  DCHECK(update_type_ == UPGRADE_ATTEMPT);
+  DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
   AppCacheEntry* entry = nullptr;
   if (group_->newest_complete_cache())
     entry = group_->newest_complete_cache()->GetEntry(manifest_url_);
@@ -1082,7 +1085,7 @@ void AppCacheUpdateJob::AddUrlToFileList(const GURL& url, int type) {
 }
 
 void AppCacheUpdateJob::FetchUrls() {
-  DCHECK(internal_state_ == DOWNLOADING);
+  DCHECK_EQ(internal_state_, DOWNLOADING);
 
   // Fetch each URL in the list according to section 6.9.4 step 17.1-17.3.
   // Fetch up to the concurrent limit. Other fetches will be triggered as each
@@ -1113,8 +1116,8 @@ void AppCacheUpdateJob::FetchUrls() {
         AppCacheEntry* existing_entry =
             group_->newest_complete_cache()->GetEntry(url_to_fetch.url);
         DCHECK(existing_entry);
-        DCHECK(existing_entry->response_id() ==
-               url_to_fetch.existing_response_info->response_id());
+        DCHECK_EQ(existing_entry->response_id(),
+                  url_to_fetch.existing_response_info->response_id());
         fetcher->set_existing_response_headers(
             url_to_fetch.existing_response_info->http_response_info()
                 .headers.get());
@@ -1384,10 +1387,10 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       break;
     case DOWNLOADING:
       internal_state_ = REFETCH_MANIFEST;
-      FetchManifest(false);
+      RefetchManifest();
       break;
     case REFETCH_MANIFEST:
-      DCHECK(stored_state_ == STORED);
+      DCHECK_EQ(stored_state_, STORED);
       NotifyAllFinalProgress();
       group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
       if (update_type_ == CACHE_ATTEMPT)

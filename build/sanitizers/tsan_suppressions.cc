@@ -40,15 +40,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/157586
     "race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c\n"
 
-    // http://crbug.com/158718
-    "race:third_party/ffmpeg/libavcodec/pthread.c\n"
-    "race:third_party/ffmpeg/libavcodec/pthread_frame.c\n"
-    "race:third_party/ffmpeg/libavcodec/vp8.c\n"
-    "race:third_party/ffmpeg/libavutil/mem.c\n"
-    "race:*HashFrameForTesting\n"
-    "race:third_party/ffmpeg/libavcodec/h264pred.c\n"
-    "race:media::ReleaseData\n"
-
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
 
@@ -157,12 +148,8 @@ char kTSanDefaultSuppressions[] =
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 
-    // https://crbug.com/965724
-    "race:content::NetworkServiceRestartBrowserTest::MonitorRequest\n"
-
-    // https://crbug.com/965726
-    "race:content::RenderFrameHostManagerUnloadBrowserTest::"
-    "MonitorResourceRequest\n"
+    // https://crbug.com/977085
+    "race:vp3_update_thread_context\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.

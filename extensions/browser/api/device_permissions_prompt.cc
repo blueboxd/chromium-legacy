@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
@@ -214,10 +214,8 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     }
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(content::ServiceManagerConnection::GetForProcess());
-
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    service_manager::Connector* connector = content::GetSystemConnector();
+    DCHECK(connector);
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&hid_manager_));
 

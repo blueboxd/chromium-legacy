@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/common/api/usb.h"
@@ -194,10 +194,8 @@ void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
 
   // Request UsbDeviceManagerPtr from DeviceService.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&device_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
 
   SetUpDeviceManagerConnection();
 }

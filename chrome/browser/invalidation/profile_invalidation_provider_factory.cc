@@ -28,7 +28,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -55,9 +55,8 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
           ->driver(),
       profile->GetPrefs(),
-      base::BindRepeating(
-          &data_decoder::SafeJsonParser::Parse,
-          content::ServiceManagerConnection::GetForProcess()->GetConnector()),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
+                          content::GetSystemConnector()),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),

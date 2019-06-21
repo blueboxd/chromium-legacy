@@ -467,7 +467,6 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
 bool PDFiumPrint::FlattenPrintData(FPDF_DOCUMENT doc) const {
   DCHECK(doc);
 
-  ScopedSubstFont scoped_subst_font(engine_);
   int page_count = FPDF_GetPageCount(doc);
   for (int i = 0; i < page_count; ++i) {
     ScopedFPDFPage page(FPDF_LoadPage(doc, i));

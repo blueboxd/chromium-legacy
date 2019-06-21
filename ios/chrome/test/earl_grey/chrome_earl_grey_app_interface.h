@@ -37,7 +37,7 @@
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 // Selects tab with given index in current mode (incognito or main
 // (non-incognito)).
@@ -151,7 +151,7 @@
 // success, or else an NSError indicating why the operation failed.
 + (NSError*)signOutAndClearAccounts;
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID;
@@ -253,7 +253,13 @@
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
 
-#pragma mark - Check features
+#pragma mark - Accessibility Utilities (EG2)
+
+// Verifies that all interactive elements on screen (or at least one of their
+// descendants) are accessible.
++ (NSError*)verifyAccessibilityForCurrentScreen WARN_UNUSED_RESULT;
+
+#pragma mark - Check features (EG2)
 
 // Helpers for checking feature state. These can't use FeatureList directly when
 // invoked from test code, as the EG test code runs in a separate process and

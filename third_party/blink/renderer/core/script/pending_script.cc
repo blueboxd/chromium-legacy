@@ -315,6 +315,7 @@ bool PendingScript::IsControlledByScriptRunner() const {
     case ScriptSchedulingType::kParserBlocking:
     case ScriptSchedulingType::kParserBlockingInline:
     case ScriptSchedulingType::kImmediate:
+    case ScriptSchedulingType::kForceDefer:
       return false;
 
     case ScriptSchedulingType::kInOrder:

@@ -25,13 +25,24 @@ namespace {
 constexpr int kMaxFetcherRetries = 3;
 
 std::string FindTokenForAccount(
-    const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& token_id_pairs,
-    const std::string& account_id) {
-  for (auto it = token_id_pairs.cbegin(); it != token_id_pairs.cend(); ++it) {
-    if (account_id == it->gaia_id_)
-      return it->token_;
+    const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>&
+        gaia_id_token_pairs,
+    const std::string& gaia_id) {
+  for (const auto& gaia_id_token : gaia_id_token_pairs) {
+    if (gaia_id == gaia_id_token.gaia_id_)
+      return gaia_id_token.token_;
   }
   return std::string();
+}
+
+CoreAccountId FindAccountIdForGaiaId(
+    const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
+    const std::string& gaia_id) {
+  for (const auto& account : accounts) {
+    if (gaia_id == account.second)
+      return account.first;
+  }
+  return CoreAccountId();
 }
 
 }  // namespace
@@ -41,25 +52,25 @@ namespace signin {
 OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
     OAuth2TokenService* token_service,
-    const std::vector<std::string>& account_ids,
+    const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
     const std::string& external_cc_result,
     base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
       token_service_(token_service),
-      account_ids_(account_ids),
+      accounts_(accounts),
       external_cc_result_(external_cc_result),
       callback_(std::move(callback)),
       weak_ptr_factory_(this) {
   DCHECK(signin_client_);
   DCHECK(token_service_);
-  DCHECK(!account_ids_.empty());
+  DCHECK(!accounts_.empty());
   DCHECK(callback_);
 
 #ifndef NDEBUG
   // Check that there is no duplicate accounts.
-  std::set<std::string> accounts_no_duplicates(account_ids_.begin(),
-                                               account_ids_.end());
-  DCHECK_EQ(account_ids_.size(), accounts_no_duplicates.size());
+  std::set<GaiaCookieManagerService::AccountIdGaiaIdPair>
+      accounts_no_duplicates(accounts_.begin(), accounts_.end());
+  DCHECK_EQ(accounts_.size(), accounts_no_duplicates.size());
 #endif
 
   StartFetchingTokens();
@@ -69,9 +80,13 @@ OAuthMultiloginHelper::~OAuthMultiloginHelper() = default;
 
 void OAuthMultiloginHelper::StartFetchingTokens() {
   DCHECK(!token_fetcher_);
-  DCHECK(token_id_pairs_.empty());
+  DCHECK(gaia_id_token_pairs_.empty());
+  std::vector<CoreAccountId> account_ids;
+  for (const auto& account : accounts_)
+    account_ids.push_back(account.first);
+
   token_fetcher_ = std::make_unique<signin::OAuthMultiloginTokenFetcher>(
-      signin_client_, token_service_, account_ids_,
+      signin_client_, token_service_, account_ids,
       base::BindOnce(&OAuthMultiloginHelper::OnAccessTokensSuccess,
                      base::Unretained(this)),
       base::BindOnce(&OAuthMultiloginHelper::OnAccessTokensFailure,
@@ -79,10 +94,17 @@ void OAuthMultiloginHelper::StartFetchingTokens() {
 }
 
 void OAuthMultiloginHelper::OnAccessTokensSuccess(
-    const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& token_id_pairs) {
-  DCHECK(token_id_pairs_.empty());
-  token_id_pairs_ = token_id_pairs;
-  DCHECK_EQ(token_id_pairs_.size(), account_ids_.size());
+    const std::vector<OAuthMultiloginTokenFetcher::AccountIdTokenPair>&
+        account_token_pairs) {
+  DCHECK(gaia_id_token_pairs_.empty());
+  for (size_t index = 0; index < accounts_.size(); index++) {
+    // OAuthMultiloginTokenFetcher should return the tokens in the same order
+    // as the account_ids that was passed to it.
+    DCHECK_EQ(accounts_[index].first, account_token_pairs[index].account_id);
+    gaia_id_token_pairs_.emplace_back(accounts_[index].second,
+                                      account_token_pairs[index].token);
+  }
+  DCHECK_EQ(gaia_id_token_pairs_.size(), accounts_.size());
   token_fetcher_.reset();
 
   signin_client_->DelayNetworkCall(
@@ -101,35 +123,38 @@ void OAuthMultiloginHelper::OnAccessTokensFailure(
 }
 
 void OAuthMultiloginHelper::StartFetchingMultiLogin() {
-  DCHECK_EQ(token_id_pairs_.size(), account_ids_.size());
+  DCHECK_EQ(gaia_id_token_pairs_.size(), accounts_.size());
   gaia_auth_fetcher_ =
       signin_client_->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
-  gaia_auth_fetcher_->StartOAuthMultilogin(token_id_pairs_,
+  gaia_auth_fetcher_->StartOAuthMultilogin(gaia_id_token_pairs_,
                                            external_cc_result_);
 }
 
 void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
     const OAuthMultiloginResult& result) {
   if (result.status() == OAuthMultiloginResponseStatus::kOk) {
+    std::vector<std::string> account_ids;
+    for (const auto& account : accounts_)
+      account_ids.push_back(account.first.id);
     VLOG(1) << "Multilogin successful accounts="
-            << base::JoinString(account_ids_, " ");
+            << base::JoinString(account_ids, " ");
     StartSettingCookies(result);
     return;
   }
 
   // If Gaia responded with kInvalidTokens, we have to mark tokens as invalid.
   if (result.status() == OAuthMultiloginResponseStatus::kInvalidTokens) {
-    for (const std::string& failed_account_id : result.failed_accounts()) {
+    for (const std::string& failed_gaia_id : result.failed_gaia_ids()) {
       std::string failed_token =
-          FindTokenForAccount(token_id_pairs_, failed_account_id);
+          FindTokenForAccount(gaia_id_token_pairs_, failed_gaia_id);
       if (failed_token.empty()) {
         LOG(ERROR)
             << "Unexpected failed token for account not present in request: "
-            << failed_account_id;
+            << failed_gaia_id;
         continue;
       }
-      token_service_->InvalidateTokenForMultilogin(failed_account_id,
-                                                   failed_token);
+      token_service_->InvalidateTokenForMultilogin(
+          FindAccountIdForGaiaId(accounts_, failed_gaia_id), failed_token);
     }
   }
 
@@ -138,7 +163,7 @@ void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
       result.status() == OAuthMultiloginResponseStatus::kRetry;
 
   if (is_transient_error && ++fetcher_retries_ < kMaxFetcherRetries) {
-    token_id_pairs_.clear();
+    gaia_id_token_pairs_.clear();
     StartFetchingTokens();
     return;
   }

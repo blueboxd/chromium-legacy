@@ -30,8 +30,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
                      const EidArray& client_eid,
                      const EidArray& authenticator_eid,
                      const SessionPreKeyArray& session_pre_key);
+  CableDiscoveryData();
   CableDiscoveryData(const CableDiscoveryData& data);
   CableDiscoveryData& operator=(const CableDiscoveryData& other);
+  bool operator==(const CableDiscoveryData& other) const;
   ~CableDiscoveryData();
 
   uint8_t version;

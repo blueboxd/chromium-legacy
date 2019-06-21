@@ -120,12 +120,12 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -6819,10 +6819,8 @@ void SetRequireCTDelegateOnIOThread(
 void SetShouldNotRequireCTForTesting() {
   if (content::IsOutOfProcessNetworkService()) {
     network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
     network::mojom::NetworkServiceTest::ShouldRequireCT required_ct =
         network::mojom::NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE;
 
@@ -7452,10 +7450,8 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
       network_service_test->SetTransportSecurityStateSource(0);
     } else {
       RunOnIOThreadBlocking(base::BindOnce(
@@ -7475,10 +7471,8 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
       network_service_test->SetTransportSecurityStateSource(reporting_port);
     } else {
       RunOnIOThreadBlocking(base::BindOnce(

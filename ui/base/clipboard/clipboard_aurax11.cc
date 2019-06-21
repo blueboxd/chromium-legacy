@@ -182,7 +182,7 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   ::Atom LookupSelectionForClipboardType(ClipboardType type) const;
 
   // Returns the X11 type that we pass to various XSelection functions for
-  // CLIPBOARD_TYPE_COPY_PASTE.
+  // ClipboardType::kCopyPaste.
   ::Atom GetCopyPasteSelection() const;
 
   // Finds the SelectionFormatMap for the incoming selection atom.
@@ -295,7 +295,7 @@ ClipboardAuraX11::AuraX11Details::~AuraX11Details() {
 
 ::Atom ClipboardAuraX11::AuraX11Details::LookupSelectionForClipboardType(
     ClipboardType type) const {
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
+  if (type == ClipboardType::kCopyPaste)
     return GetCopyPasteSelection();
 
   return XA_PRIMARY;
@@ -327,7 +327,7 @@ void ClipboardAuraX11::AuraX11Details::InsertMapping(
 
 void ClipboardAuraX11::AuraX11Details::TakeOwnershipOfSelection(
     ClipboardType type) {
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
+  if (type == ClipboardType::kCopyPaste)
     return clipboard_owner_.TakeOwnershipOfSelection(clipboard_data_);
   else
     return primary_owner_.TakeOwnershipOfSelection(clipboard_data_);
@@ -419,7 +419,7 @@ std::vector<::Atom> ClipboardAuraX11::AuraX11Details::GetAtomsForFormat(
 }
 
 void ClipboardAuraX11::AuraX11Details::Clear(ClipboardType type) {
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
+  if (type == ClipboardType::kCopyPaste)
     clipboard_owner_.ClearSelectionOwner();
   else
     primary_owner_.ClearSelectionOwner();
@@ -528,7 +528,7 @@ void ClipboardAuraX11::OnPreShutdown() {
 
 uint64_t ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  if (type == CLIPBOARD_TYPE_COPY_PASTE)
+  if (type == ClipboardType::kCopyPaste)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
   else
     return SelectionChangeObserver::GetInstance()->primary_sequence_number();
@@ -680,7 +680,7 @@ void ClipboardAuraX11::ReadData(const ClipboardFormatType& format,
   DCHECK(CalledOnValidThread());
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      CLIPBOARD_TYPE_COPY_PASTE, aurax11_details_->GetAtomsForFormat(format)));
+      ClipboardType::kCopyPaste, aurax11_details_->GetAtomsForFormat(format)));
   if (data.IsValid())
     data.AssignTo(result);
 }
@@ -695,7 +695,7 @@ void ClipboardAuraX11::WriteObjects(ClipboardType type,
     DispatchObject(static_cast<ObjectType>(object.first), object.second);
   aurax11_details_->TakeOwnershipOfSelection(type);
 
-  if (type == CLIPBOARD_TYPE_COPY_PASTE) {
+  if (type == ClipboardType::kCopyPaste) {
     auto text_iter = objects.find(CBF_TEXT);
     if (text_iter != objects.end()) {
       aurax11_details_->CreateNewClipboardData();
@@ -705,7 +705,7 @@ void ClipboardAuraX11::WriteObjects(ClipboardType type,
         if (char_vector.size())
           WriteText(&char_vector.front(), char_vector.size());
       }
-      aurax11_details_->TakeOwnershipOfSelection(CLIPBOARD_TYPE_SELECTION);
+      aurax11_details_->TakeOwnershipOfSelection(ClipboardType::kSelection);
     }
   }
 }

@@ -13,9 +13,23 @@
 
 namespace blink {
 
+namespace {
+// This routine returns true if inline_container should replace descendant's
+// inline container.
+bool IsInlineContainerForDescendant(
+    const NGOutOfFlowPositionedDescendant& descendant,
+    const LayoutObject* inline_container) {
+  return !descendant.inline_container && inline_container &&
+         inline_container->IsLayoutInline() &&
+         inline_container->CanContainOutOfFlowPositionedElement(
+             descendant.node.Style().GetPosition());
+}
+}  // namespace
+
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     const NGPhysicalContainerFragment& child,
-    const LogicalOffset& child_offset) {
+    const LogicalOffset& child_offset,
+    const LayoutInline* inline_container) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
@@ -68,8 +82,11 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
                                                PhysicalSize(), PhysicalSize());
     }
 
-    for (const NGOutOfFlowPositionedDescendant& descendant :
+    for (NGOutOfFlowPositionedDescendant& descendant :
          out_of_flow_descendants) {
+      if (IsInlineContainerForDescendant(descendant, inline_container)) {
+        descendant.inline_container = inline_container;
+      }
       oof_positioned_candidates_.push_back(
           NGOutOfFlowPositionedCandidate(descendant, top_left_offset));
     }
@@ -238,16 +255,14 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     // the given descendant.
     const LayoutInline* inline_container =
         candidate.descendant.inline_container;
-    if (!inline_container && layout_object_ &&
-        layout_object_->IsLayoutInline() &&
-        layout_object_->CanContainOutOfFlowPositionedElement(
-            candidate.descendant.node.Style().GetPosition()))
+    if (IsInlineContainerForDescendant(candidate.descendant, layout_object_)) {
       inline_container = ToLayoutInline(layout_object_);
-
+    }
     descendant_candidates->push_back(NGOutOfFlowPositionedDescendant(
         candidate.descendant.node, builder_relative_position,
         inline_container ? ToLayoutInline(inline_container->ContinuationRoot())
                          : nullptr));
+
     LogicalOffset container_offset =
         builder_relative_position.offset.ConvertToLogical(
             GetWritingMode(), Direction(), builder_physical_size,

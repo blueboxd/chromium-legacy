@@ -640,6 +640,9 @@
       name: "ForcedColors",
     },
     {
+      name: "ForceDeferScriptIntervention",
+    },
+    {
       name: "ForceOverlayFullscreenVideo",
     },
     {
@@ -791,6 +794,10 @@
     },
     {
       name: "LangClientHintHeader",
+      status: "experimental",
+    },
+    {
+      name: "LargestContentfulPaint",
       status: "experimental",
     },
     {
@@ -1113,6 +1120,7 @@
     },
     {
       name: "PauseExecutionContextOnBackgroundFreeze",
+      status: "experimental",
     },
     {
       name: "PaymentApp",

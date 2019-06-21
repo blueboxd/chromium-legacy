@@ -36,6 +36,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     name_ = "";
     selector_ = Selector(proto.use_card().form_field_element());
   }
+  selector_.MustBeVisible();
   DCHECK(!selector_.empty());
 }
 

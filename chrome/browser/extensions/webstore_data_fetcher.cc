@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -122,8 +122,7 @@ void WebstoreDataFetcher::OnSimpleLoaderComplete(
 
   // The parser will call us back via one of the callbacks.
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      *response_body,
+      content::GetSystemConnector(), *response_body,
       base::BindOnce(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
       base::BindOnce(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
 }

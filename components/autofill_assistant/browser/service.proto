@@ -753,7 +753,13 @@ message ElementAreaProto {
     // the screen.
     optional bool full_width = 2;
   }
-  repeated Rectangle rectangles = 1;
+
+  // The rectangles that will be highlighted and touchable.
+  repeated Rectangle touchable = 1;
+
+  // The rectangles that should be neither highlighted nor touchable. Those
+  // rectangles have precedence over the |touchable| rectangles.
+  repeated Rectangle restricted = 2;
 }
 
 // Fill a form with an address if there is, otherwise fail this action.

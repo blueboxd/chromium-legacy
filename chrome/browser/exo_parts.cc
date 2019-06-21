@@ -22,7 +22,6 @@
 #include "content/public/common/drop_data.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -105,9 +104,6 @@ class ChromeFileHelper : public exo::FileHelper {
 
 // static
 std::unique_ptr<ExoParts> ExoParts::CreateIfNecessary() {
-  // For mash, exosphere will not run in the browser process.
-  if (features::IsMultiProcessMash())
-    return nullptr;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kAshEnableWaylandServer)) {
     return nullptr;
@@ -121,7 +117,6 @@ ExoParts::~ExoParts() {
 }
 
 ExoParts::ExoParts() {
-  DCHECK(!features::IsMultiProcessMash());
   std::unique_ptr<ChromeFileHelper> file_helper =
       std::make_unique<ChromeFileHelper>();
   ash::Shell::Get()->InitWaylandServer(std::move(file_helper));

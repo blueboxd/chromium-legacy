@@ -415,10 +415,6 @@ class NET_EXPORT WebSocketChannel {
   // message to the renderer. This can be false if the message is empty so far.
   bool initial_frame_forwarded_;
 
-  // For UMA. The time when OnConnectSuccess() method was called and |stream_|
-  // was set.
-  base::TimeTicks established_on_;
-
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
 

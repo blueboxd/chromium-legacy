@@ -1159,11 +1159,11 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
     return;
   }
 
-  auto data_handle = cache_entry_handler_->CreateBlobDataHandle(
+  auto blob_entry = cache_entry_handler_->CreateDiskCacheBlobEntry(
       CreateHandle(), std::move(entry));
 
   if (query_cache_context->query_types & QUERY_CACHE_ENTRIES)
-    match->entry = std::move(data_handle->entry());
+    match->entry = std::move(blob_entry->disk_cache_entry());
 
   if (query_cache_context->query_types & QUERY_CACHE_REQUESTS) {
     query_cache_context->estimated_out_bytes +=
@@ -1174,8 +1174,7 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
       return;
     }
 
-    cache_entry_handler_->PopulateRequestBody(data_handle,
-                                              match->request.get());
+    cache_entry_handler_->PopulateRequestBody(blob_entry, match->request.get());
   } else {
     match->request.reset();
   }
@@ -1188,7 +1187,7 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
           .Run(CacheStorageError::kErrorQueryTooLarge, nullptr);
       return;
     }
-    if (data_handle->entry()->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
+    if (blob_entry->disk_cache_entry()->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
       QueryCacheOpenNextEntry(std::move(query_cache_context));
       return;
     }
@@ -1201,7 +1200,7 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
       return;
     }
 
-    cache_entry_handler_->PopulateResponseBody(data_handle,
+    cache_entry_handler_->PopulateResponseBody(blob_entry,
                                                match->response.get());
   } else if (!(query_cache_context->query_types &
                QUERY_CACHE_RESPONSES_NO_BODIES)) {
@@ -2199,7 +2198,7 @@ void LegacyCacheStorageCache::SizeImpl(SizeCallback callback) {
 
 void LegacyCacheStorageCache::GetSizeThenCloseDidGetSize(SizeCallback callback,
                                                          int64_t cache_size) {
-  cache_entry_handler_->InvalidateBlobDataHandles();
+  cache_entry_handler_->InvalidateDiskCacheBlobEntrys();
   CloseImpl(base::BindOnce(std::move(callback), cache_size));
 }
 

@@ -96,10 +96,23 @@ cr.define('settings.printing', function() {
     return '';
   }
 
+  /**
+   * A function used for sorting printer names based on the current locale's
+   * collation order.
+   * @param {!CupsPrinterInfo} first
+   * @param {!CupsPrinterInfo} second
+   * @return {number} The result of the comparison.
+   */
+  function alphabeticalSort(first, second) {
+    return first.printerName.toLocaleLowerCase().localeCompare(
+        second.printerName.toLocaleLowerCase());
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
     isPPDInfoValid: isPPDInfoValid,
     getBaseName: getBaseName,
+    alphabeticalSort: alphabeticalSort,
   };
 });

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/cicerone_client.h"
@@ -137,6 +139,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
       override;
 
+  // Fake version of the method that starts ARCVM. Sets start_arc_vm_called_.
+  // |callback| is called after the method call finishes.
+  void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
+                  DBusMethodCallback<vm_tools::concierge::StartVmResponse>
+                      callback) override;
+
   // Indicates whether WaitForServiceToBeAvailable has been called.
   bool wait_for_service_to_be_available_called() const {
     return wait_for_service_to_be_available_called_;
@@ -165,6 +173,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool detach_usb_device_called() const { return detach_usb_device_called_; }
   // Indicates whether ListUsbDevices has been called
   bool list_usb_devices_called() const { return list_usb_devices_called_; }
+  // Indicates whether StartArcVm has been called
+  bool start_arc_vm_called() const { return start_arc_vm_called_; }
   // Set ContainerStartupFailedSignalConnected state
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
@@ -276,6 +286,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
   bool list_usb_devices_called_ = false;
+  bool start_arc_vm_called_ = false;
   bool is_container_startup_failed_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
 

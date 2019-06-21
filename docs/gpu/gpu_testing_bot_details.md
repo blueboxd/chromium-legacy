@@ -285,22 +285,15 @@ for the hosts.
            trybots, ANGLE trybots, etc.). For example: <br>
            `gce_trusty_pair('gpu-fyi-try-linux-intel-exp')`.
 
-    1.  Edit [vms.cfg] to add an entry for the new bot. Trybots should be added
-        to the `luci.chromium.try` pool; see the configurations of other similar
-        trybots to choose the machine type and number of bots. Waterfall bots
-        should be added to the `luci.chromium.ci` pool, in the chromium.gpu /
-        chromium.gpu.fyi block at the bottom, should use the second-smallest
-        configuration (n1-standard-2), and should have only 1 associated VM.
+    1.  Run [main.star] to regenerate `configs/chromium-swarm/bots.cfg` and
+        'configs/gce-provider/vms.cfg'. Double-check your work there.
 
-        Note that part of the difficulty here is choosing a zone. This should
-        soon no longer be necessary per
-        [crbug.com/942301](http://crbug.com/942301), but consult with the Chrome
-        Infra team to find out which of the
+        Note that previously [vms.cfg] had to be editted manually. Part of the
+        difficulty was in choosing a zone. This should soon no longer be
+        necessary per [crbug.com/942301](http://crbug.com/942301), but consult
+        with the Chrome Infra team to find out which of the
         [zones](https://cloud.google.com/compute/docs/regions-zones/) has
         available capacity.
-
-    1.  Run [main.star] to regenerate `configs/chromium-swarm/bots.cfg`.
-        Double-check your work there.
     1.  Get this reviewed and landed. This step associates the VM or pool of VMs
         with the bot's name on the waterfall.
 
@@ -624,7 +617,7 @@ reliably green before rolling out the driver update. To do this:
       # ...
     }
     ```
-    
+
     The new driver version should match the one just added for the
     experimental bot. Get this CL reviewed and landed.
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the

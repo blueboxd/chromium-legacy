@@ -13,6 +13,7 @@ import android.telephony.TelephonyManager;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
@@ -26,7 +27,7 @@ import java.util.Map;
  * This mainly a bridge to autofill_assistant::ClientAndroid.
  */
 @JNINamespace("autofill_assistant")
-class AutofillAssistantClient implements AutofillAssistantModuleEntry {
+class AutofillAssistantClient {
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
@@ -66,25 +67,18 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
         mNativeClientAndroid = nativeClientAndroid;
     }
 
-    @Override
-    public void showOnboarding(String experimentIds, Runnable onAccept) {
-        checkNativeClientIsAliveOrThrow();
-        nativeShowOnboarding(mNativeClientAndroid, experimentIds, onAccept);
-    }
-
     private void checkNativeClientIsAliveOrThrow() {
         if (mNativeClientAndroid == 0) {
             throw new IllegalStateException("Native instance is dead");
         }
     }
 
-    @Override
-    public void start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras) {
+    void start(String initialUrl, Map<String, String> parameters, String experimentIds,
+            Bundle intentExtras, @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         checkNativeClientIsAliveOrThrow();
         nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]));
+                parameters.values().toArray(new String[parameters.size()]), overlayCoordinator);
         chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
     }
 
@@ -246,10 +240,9 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
     }
 
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
-    private native void nativeShowOnboarding(
-            long nativeClientAndroid, String experimentIds, Object onAccept);
     private native void nativeStart(long nativeClientAndroid, String initialUrl,
-            String experimentIds, String[] parameterNames, String[] parameterValues);
+            String experimentIds, String[] parameterNames, String[] parameterValues,
+            @Nullable AssistantOverlayCoordinator overlayCoordinator);
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);

@@ -17,6 +17,22 @@ cr.exportPath('print_preview');
  */
 print_preview.DocumentSettings;
 
+/**
+ * @typedef {{
+ *   marginTop: number,
+ *   marginLeft: number,
+ *   marginBottom: number,
+ *   marginRight: number,
+ *   contentWidth: number,
+ *   contentHeight: number,
+ *   printableAreaX: number,
+ *   printableAreaY: number,
+ *   printableAreaWidth: number,
+ *   printableAreaHeight: number,
+ * }}
+ */
+print_preview.PageLayoutInfo;
+
 Polymer({
   is: 'print-preview-document-info',
 
@@ -122,17 +138,8 @@ Polymer({
   /**
    * Called when the page layout of the document is ready. Always occurs
    * as a result of a preview request.
-   * @param {{marginTop: number,
-   *          marginLeft: number,
-   *          marginBottom: number,
-   *          marginRight: number,
-   *          contentWidth: number,
-   *          contentHeight: number,
-   *          printableAreaX: number,
-   *          printableAreaY: number,
-   *          printableAreaWidth: number,
-   *          printableAreaHeight: number,
-   *        }} pageLayout Layout information about the document.
+   * @param {!print_preview.PageLayoutInfo} pageLayout Layout information
+   *     about the document.
    * @param {boolean} hasCustomPageSizeStyle Whether this document has a
    *     custom page size or style to use.
    * @private

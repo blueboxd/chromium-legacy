@@ -656,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        RendererDebugURL_NoLeakedThrottlePtrs) {
   // Allow crashes caused by the navigation to kChromeUICrashURL below.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes(
+      browser()->tab_strip_model()->GetActiveWebContents());
 
   // We have checks in the throttle manager that we don't improperly leak
   // activation state throttles. It would be nice to test things directly but it

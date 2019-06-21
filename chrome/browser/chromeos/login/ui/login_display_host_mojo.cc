@@ -316,19 +316,8 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   user_context.SetIsUsingPin(authenticated_by_pin);
   user_context.SetKey(
       Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. If the user's OpenNetworkConfiguration policy contains a
-  // ${PASSWORD} variable, then the user's password will be used to authenticate
-  // to the specified network.
-  //
-  // The user's password needs to be saved in memory until the policy can be
-  // examined. When the policy comes in, if it does not contain the ${PASSWORD}
-  // variable, the user's password will be discarded. If it contains the
-  // password, it will be sent to the session manager, which will then save it
-  // in a keyring so it can be retrieved for authenticating to the network.
-  //
-  // More details can be found in https://crbug.com/386606
   user_context.SetPasswordKey(Key(password));
+
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
     if (user_context.GetUserType() !=
         user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY) {

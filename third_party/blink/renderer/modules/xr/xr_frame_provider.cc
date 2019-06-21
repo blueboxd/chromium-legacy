@@ -268,7 +268,7 @@ void XRFrameProvider::OnImmersiveFrameData(
   if (!doc)
     return;
 
-  base::TimeTicks monotonic_time_now = TimeTicks() + data->time_delta;
+  base::TimeTicks monotonic_time_now = base::TimeTicks() + data->time_delta;
   double high_res_now_ms =
       doc->Loader()
           ->GetTiming()

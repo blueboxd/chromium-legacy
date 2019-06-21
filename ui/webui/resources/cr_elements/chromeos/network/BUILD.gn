@@ -65,8 +65,10 @@ if (is_chromeos) {
   js_library("cr_network_select") {
     deps = [
       ":cr_network_list_types",
+      ":cr_network_listener_behavior",
       ":cr_onc_types",
       "//ui/webui/resources/js:util",
+      "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
     externs_list = [ "$externs_path/networking_private.js" ]
   }

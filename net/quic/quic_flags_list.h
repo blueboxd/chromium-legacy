@@ -72,9 +72,6 @@ QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
 
-// Allow QUIC to accept initial packet numbers that are random, not 1.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, true)
-
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
@@ -135,10 +132,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)
 // ACK in packet conservation.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
 
-// Add 3 connection options to decrease the pacing and CWND gain in QUIC BBR
-// STARTUP.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup3, true)
-
 // When true, the LOSS connection option allows for 1/8 RTT of reording instead
 // of the current 1/8th threshold which has been found to be too large for fast
 // loss recovery.
@@ -166,13 +159,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_has_pending_crypto_data,
           true)
-
-// When true, fix initialization and updating of
-// |time_of_first_packet_sent_after_receiving_| in QuicConnection.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_fix_time_of_first_packet_sent_after_receiving,
-    true)
 
 // When the STMP connection option is sent by the client, timestamps in the QUIC
 // ACK frame are sent and processed.
@@ -235,14 +221,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 // If true, use one loss algorithm per encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, true)
 
-// If true, stop using AckBundling mode to send ACK, also deprecate ack_queued
-// from QuicConnection.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_ack_bundling_mode,
-          true)
-
-// If both this flag and gfe2_reloadable_flag_quic_deprecate_ack_bundling_mode
-// are true, QuicReceivedPacketManager decides when to send ACKs.
+// If true, QuicReceivedPacketManager decides when to send ACKs.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_rpm_decides_when_to_send_acks,
           true)
@@ -276,18 +255,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_dont_fetch_quic_private_keys_from_leto,
           false)
 
-// If true, disable lumpy pacing for low bandwidth flows.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_lumpy_pacing_at_low_bw, true)
-
-// If true, ignore TLPR for retransmission delay when sending pings from ping
-// alarm.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_sending_ping,
-          true)
-
-// If true, non-ASCII QUIC tags are printed as hex instead of integers."
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, true)
-
 // If true, terminate Google QUIC connections similary as IETF QUIC.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_terminate_gquic_connection_as_ietf,
@@ -302,34 +269,10 @@ QUIC_FLAG(bool,
 // If true, deprecate queued_control_frames_ from QuicPacketGenerator.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_queued_control_frames,
-          false)
-
-// When true, QUIC server will drop IETF QUIC Version Negotiation packets.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_server_drop_version_negotiation,
           true)
-
-// When true, version negotiation packets sent by the server will set the fixed
-// bit.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_send_version_negotiation_fixed_bit,
-          true)
-
-// When true, allow variable length QUIC connection IDs for unsupported
-// versions. This allows performing version negotiation when the client-chosen
-// server connection ID length is not 8.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_restart_flag_quic_allow_variable_length_connection_id_for_negotiation,
-    true)
 
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
-
-// If true, make QuicDispatcher no longer have an instance of QuicFramer.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_no_framer_object_in_dispatcher,
-          true)
 
 // When true, QuicFramer will not override connection IDs in headers and will
 // instead respect the source/destination direction as expected by IETF QUIC.
@@ -351,7 +294,7 @@ QUIC_FLAG(bool,
 // If true, check whether connection is connected before flush.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_check_connected_before_flush,
-          false)
+          true)
 
 // When true, QuicConnectionId will allocate long connection IDs on the heap
 // instead of inline in the object.
@@ -375,3 +318,14 @@ QUIC_FLAG(bool,
 // If true, when detecting losses, use packets_acked of corresponding packet
 // number space.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, false)
+
+// QUIC version 99 will use this stream ID for the headers stream.
+QUIC_FLAG(int64_t, FLAGS_quic_headers_stream_id_in_v99, 0)
+
+// When true, QuicDispatcher will drop packets that have an initial destination
+// connection ID that is too short, instead of responding with a Version
+// Negotiation packet to reject it.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_drop_invalid_small_initial_connection_id,
+    false)

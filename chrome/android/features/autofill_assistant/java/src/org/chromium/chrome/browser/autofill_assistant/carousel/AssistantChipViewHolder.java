@@ -85,19 +85,35 @@ public class AssistantChipViewHolder extends ViewHolder {
         }
 
         mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
-        mView.setIcon(getIconResource(chip.getIcon()), /* tintWithTextColor= */ true);
-    }
 
-    private int getIconResource(@AssistantChip.Icon int icon) {
-        switch (icon) {
+        int iconResource;
+        int iconDescriptionResource = 0;
+        switch (chip.getIcon()) {
             case AssistantChip.Icon.CLEAR:
-                return R.drawable.ic_clear_black_24dp;
+                iconResource = R.drawable.ic_clear_black_24dp;
+                iconDescriptionResource = R.string.close;
+                break;
             case AssistantChip.Icon.DONE:
-                return R.drawable.ic_done_black_24dp;
+                iconResource = R.drawable.ic_done_black_24dp;
+                iconDescriptionResource = R.string.done;
+                break;
             case AssistantChip.Icon.REFRESH:
-                return R.drawable.ic_refresh_black_24dp;
+                iconResource = R.drawable.ic_refresh_black_24dp;
+                iconDescriptionResource = R.string.menu_refresh;
+                break;
             default:
-                return ButtonView.INVALID_ICON_ID;
+                iconResource = ButtonView.INVALID_ICON_ID;
+                break;
+        }
+
+        mView.setIcon(iconResource, /* tintWithTextColor= */ true);
+
+        // We set the content description of the icon on the whole button view if there is no text.
+        // Otherwise the text description will be used by TalkBack.
+        if (iconDescriptionResource != 0 && text.isEmpty()) {
+            mView.setContentDescription(mView.getContext().getString(iconDescriptionResource));
+        } else {
+            mView.setContentDescription(null);
         }
     }
 }

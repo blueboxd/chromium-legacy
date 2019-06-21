@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -19,7 +20,8 @@ class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
 class AssistantClient : chromeos::assistant::mojom::Client,
-                        public identity::IdentityManager::Observer {
+                        public identity::IdentityManager::Observer,
+                        public session_manager::SessionManagerObserver {
  public:
   static AssistantClient* Get();
 
@@ -42,6 +44,10 @@ class AssistantClient : chromeos::assistant::mojom::Client,
   // finished before account info fetching is finished (|hosted_domain| field
   // will be empty under this case).
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+
+  // session_manager::SessionManagerObserver:
+  void OnUserProfileLoaded(const AccountId& account_id) override;
+  void OnPrimaryUserSessionStarted() override;
 
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;

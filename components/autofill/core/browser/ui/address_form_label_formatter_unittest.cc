@@ -67,7 +67,7 @@ TEST(AddressFormLabelFormatterTest,
 
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(ConstructLabelLine(
-                              {base::ASCIIToUTF16("John F Kennedy"),
+                              {base::ASCIIToUTF16("John Kennedy"),
                                base::ASCIIToUTF16("Brookline, MA 02445")}),
                           base::ASCIIToUTF16("Hyannis, MA"),
                           base::ASCIIToUTF16("Paul Revere"), base::string16()));
@@ -104,7 +104,7 @@ TEST(AddressFormLabelFormatterTest,
 
   EXPECT_THAT(
       formatter->GetLabels(),
-      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
+      ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John Kennedy"),
                                       base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
                   base::ASCIIToUTF16("Paul Revere"), base::string16()));
@@ -148,7 +148,7 @@ TEST(AddressFormLabelFormatterTest,
   EXPECT_THAT(
       formatter->GetLabels(),
       ElementsAre(ConstructLabelLine(
-          {base::ASCIIToUTF16("Tarsila do Amaral"),
+          {base::ASCIIToUTF16("Tarsila Amaral"),
            base::UTF8ToUTF16("Vila Mariana, São Paulo-SP, 04094-050")})));
 }
 
@@ -166,7 +166,7 @@ TEST(AddressFormLabelFormatterTest,
 
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(ConstructLabelLine(
-                  {base::ASCIIToUTF16("Tarsila do Amaral"),
+                  {base::ASCIIToUTF16("Tarsila Amaral"),
                    base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")})));
 }
 

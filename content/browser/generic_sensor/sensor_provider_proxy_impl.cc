@@ -13,8 +13,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -51,16 +51,15 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
   }
 
   if (!sensor_provider_) {
-    auto* connection = ServiceManagerConnection::GetForProcess();
-
-    if (!connection) {
+    auto* connector = GetSystemConnector();
+    if (!connector) {
       std::move(callback).Run(SensorCreationResult::ERROR_NOT_AVAILABLE,
                               nullptr);
       return;
     }
 
-    connection->GetConnector()->BindInterface(
-        device::mojom::kServiceName, mojo::MakeRequest(&sensor_provider_));
+    connector->BindInterface(device::mojom::kServiceName,
+                             mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(base::BindOnce(
         &SensorProviderProxyImpl::OnConnectionError, base::Unretained(this)));
   }

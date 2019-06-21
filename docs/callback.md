@@ -337,17 +337,42 @@ base::BindRepeating(&Foo, base::Passed(std::move(p))); // Ok, but subtle.
 
 ### Binding A Class Method With Weak Pointers
 
+If `MyClass` has a `base::WeakPtr<MyClass> weak_this_` member (see below)
+then a class method can be bound with:
+
 ```cpp
-base::Bind(&MyClass::Foo, GetWeakPtr());
+base::Bind(&MyClass::Foo, weak_this_);
 ```
 
 The callback will not be run if the object has already been destroyed.
-**DANGER**: weak pointers are not threadsafe, so don't use this when passing
-between threads!
 
-To make a weak pointer, you would typically create a
-`base::WeakPtrFactory<Foo>` member at the bottom (to ensure it's destroyed
-last) of class `Foo`, then call `weak_factory_.GetWeakPtr()`.
+Note that class method callbacks bound to `base::WeakPtr`s may only be
+run on the same sequence on which the object will be destroyed, since otherwise
+execution of the callback might race with the object's deletion.
+
+To use `base::WeakPtr` with `base::Bind()`, `MyClass` will typically look like:
+
+```cpp
+class MyClass {
+public:
+  MyClass() : weak_factory_(this) {
+    weak_this_ = weak_factory_.GetWeakPtr();
+  }
+private:
+  base::WeakPtr<MyClass> weak_this_;
+  // MyClass member variables go here.
+  base::WeakPtrFactory<MyClass> weak_factory_;
+};
+```
+
+`weak_factory_` is the last member variable in `MyClass` so that it is
+destroyed first. This ensures that if any class methods bound to `weak_this_`
+are `Run()` during teardown, then they will not actually be executed.
+
+If `MyClass` only ever `base::Bind()`s and executes callbacks on the same
+sequence, then it is generally safe to call `weak_factory_.GetWeakPtr()` at the
+`base::Bind()` call, rather than taking a separate `weak_this_` during
+construction.
 
 ### Binding A Class Method With Manual Lifetime Management
 

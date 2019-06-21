@@ -1462,8 +1462,8 @@ body.check-select #list-container list:focus > li[lead],
 
 @keyframes acceptsBlink {
   0% {
-    color: rgb(90, 90, 90);
     background-color: transparent;
+    color: rgb(90, 90, 90);
   }
 }
 
@@ -2147,6 +2147,19 @@ list.autocomplete-suggestions > [lead] {
 
 #conflict-confirm-dialog label {
   flex: 1 0 auto;
+}
+
+/* Feedback panels */
+
+.feedback-panels {
+  bottom: 24px;
+  position: absolute;
+  right: 24px;
+  z-index: 502; /* Above splitter, but below quickview. */
+}
+
+#completed-panel {
+  padding-bottom: 8px;
 }
 
 /* Progress center */

@@ -158,6 +158,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     private int mActualGroupCount;
     private Tab mAbsentSelectedTab;
     private boolean mShouldRecordUma = true;
+    private boolean mTabRestoreCompleted;
 
     public TabGroupModelFilter(TabModel tabModel) {
         super(tabModel);
@@ -170,6 +171,7 @@ public class TabGroupModelFilter extends TabModelFilter {
                 RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
                 Tab currentTab = TabModelUtils.getCurrentTab(getTabModel());
                 if (currentTab != null) recordSessionsCount(currentTab);
+                mTabRestoreCompleted = true;
                 removeObserver(this);
             }
         });
@@ -541,6 +543,8 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+        // Ignore didMoveTab calls in tab restoring stage.
+        if (!mTabRestoreCompleted) return;
         // Need to cache the flags before resetting the internal data map.
         boolean isMergeTabToGroup = isMergeTabToGroup(tab);
         boolean isMoveTabOutOfGroup = isMoveTabOutOfGroup(tab);

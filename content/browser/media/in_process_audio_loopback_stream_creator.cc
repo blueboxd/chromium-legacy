@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -100,9 +100,7 @@ InProcessAudioLoopbackStreamCreator::InProcessAudioLoopbackStreamCreator()
                    ? static_cast<media::UserInputMonitorBase*>(
                          BrowserMainLoop::GetInstance()->user_input_monitor())
                    : nullptr,
-               content::ServiceManagerConnection::GetForProcess()
-                   ->GetConnector()
-                   ->Clone(),
+               content::GetSystemConnector()->Clone(),
                AudioStreamBrokerFactory::CreateImpl()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

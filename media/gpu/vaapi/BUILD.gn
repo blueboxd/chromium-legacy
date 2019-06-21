@@ -83,7 +83,6 @@ source_set("vaapi") {
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
-    "//media/gpu/chromeos:common",
     "//media/parsers",
     "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
@@ -102,6 +101,7 @@ source_set("vaapi") {
     deps += [
       "//components/chromeos_camera:jpeg_encode_accelerator",
       "//components/chromeos_camera:mjpeg_decode_accelerator",
+      "//media/gpu/chromeos:common",
     ]
   }
 

@@ -6,7 +6,7 @@
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR,
+    RuntimeEnabled=WebXR,
     Constructor(DOMString type, XRReferenceSpaceEventInit eventInitDict)
 ] interface XRReferenceSpaceEvent : Event {
   [SameObject] readonly attribute XRReferenceSpace referenceSpace;

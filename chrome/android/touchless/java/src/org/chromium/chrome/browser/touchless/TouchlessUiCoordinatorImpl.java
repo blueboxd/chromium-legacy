@@ -87,7 +87,6 @@ public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserv
 
     @Override
     public KeyEvent processKeyEvent(KeyEvent event) {
-        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onKeyEvent();
         if (mModelCoordinator == null) return event;
         return mModelCoordinator.onKeyEvent(event);
     }

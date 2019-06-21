@@ -236,7 +236,7 @@ void Sensor::OnSensorReadingChanged() {
     pending_reading_notification_ = PostDelayedCancellableTask(
         *GetExecutionContext()->GetTaskRunner(TaskType::kSensor), FROM_HERE,
         std::move(sensor_reading_changed),
-        WTF::TimeDelta::FromSecondsD(waitingTime));
+        base::TimeDelta::FromSecondsD(waitingTime));
   }
 }
 

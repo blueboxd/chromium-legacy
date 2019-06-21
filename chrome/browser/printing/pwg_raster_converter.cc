@@ -20,7 +20,7 @@
 #include "components/cloud_devices/common/printer_description.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
@@ -80,10 +80,9 @@ void PwgRasterConverterHelper::Convert(
 
   callback_ = std::move(callback);
 
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(printing::mojom::kChromePrintingServiceName,
-                      &pdf_to_pwg_raster_converter_ptr_);
+  content::GetSystemConnector()->BindInterface(
+      printing::mojom::kChromePrintingServiceName,
+      &pdf_to_pwg_raster_converter_ptr_);
 
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
       base::BindOnce(&PwgRasterConverterHelper::RunCallback, this,

@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
@@ -67,6 +68,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
           size_t payload_size,
           size_t payload_interface_id_count,
           std::vector<ScopedHandle>* handles);
+
+  // Constructs a new serialized Message object from a fully populated message
+  // payload (including a well-formed message header) and an optional set of
+  // handle attachments. This Message may not be extended with additional
+  // payload or handles once constructed, but its payload remains mutable as
+  // long as the Message is not moved and neither |Reset()| nor
+  // |TakeMojoMessage()| is called.
+  Message(base::span<const uint8_t> payload, base::span<ScopedHandle> handles);
 
   // Constructs a new serialized Message object from an existing
   // ScopedMessageHandle; e.g., one read from a message pipe.

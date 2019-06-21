@@ -100,18 +100,18 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   EXPECT_TRUE(PostTask(FROM_HERE, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
-  EXPECT_TRUE(PostTask(FROM_HERE, {MayBlock()}, DoNothing()));
+  EXPECT_TRUE(PostTask(FROM_HERE, {ThreadPool(), MayBlock()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
   EXPECT_TRUE(PostTask(FROM_HERE, {ThreadPool()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
   // Task runners without extension should not be the executor's.
-  auto task_runner = CreateTaskRunner({});
+  auto task_runner = CreateTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), task_runner);
-  auto sequenced_task_runner = CreateSequencedTaskRunner({});
+  auto sequenced_task_runner = CreateSequencedTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), sequenced_task_runner);
-  auto single_thread_task_runner = CreateSingleThreadTaskRunner({});
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
   EXPECT_NE(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
   auto comsta_task_runner = CreateCOMSTATaskRunner({});

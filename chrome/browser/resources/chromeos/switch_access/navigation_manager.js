@@ -534,11 +534,12 @@ class NavigationManager {
    */
   updateFocusRings_() {
     const focusRect = this.node_.location;
+
     // If the scope element has not changed, we want to use the previously
     // calculated rect as the current scope rect.
-    let scopeRect = this.scope_ === this.focusedScope_ ?
-        this.scopeFocusRing_.rects[0] :
-        this.scope_.location;
+    let scopeRect = this.scope_.location;
+    if (this.scopeFocusRing_.rects.length && this.scope_ === this.focusedScope_)
+      scopeRect = this.scopeFocusRing_.rects[0];
     this.focusedScope_ = this.scope_;
 
     if (this.node_ === this.backButtonManager_.buttonNode()) {

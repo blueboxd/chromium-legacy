@@ -58,31 +58,15 @@ static const unsigned kLayoutUnitFractionalBits = 6;
 static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 
 const int kIntMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
-const int kIntMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
+const int kIntMinForLayoutUnit = -kIntMaxForLayoutUnit;
 
-#if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS) && \
-    defined(COMPILER_GCC) && !defined(OS_NACL) && __OPTIMIZE__
-inline int GetMaxSaturatedSetResultForTesting() {
-  // For ARM Asm version the set function maxes out to the biggest
-  // possible integer part with the fractional part zero'd out.
-  // e.g. 0x7fffffc0.
-  return std::numeric_limits<int>::max() & ~(kFixedPointDenominator - 1);
-}
-
-inline int GetMinSaturatedSetResultForTesting() {
-  return std::numeric_limits<int>::min();
-}
-#else
 ALWAYS_INLINE int GetMaxSaturatedSetResultForTesting() {
-  // For C version the set function maxes out to max int, this differs from
-  // the ARM asm version.
   return std::numeric_limits<int>::max();
 }
 
 ALWAYS_INLINE int GetMinSaturatedSetResultForTesting() {
-  return std::numeric_limits<int>::min();
+  return -GetMaxSaturatedSetResultForTesting();
 }
-#endif  // CPU(ARM) && COMPILER(GCC)
 
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
 class PLATFORM_EXPORT LayoutUnit;
@@ -102,34 +86,54 @@ class LayoutUnit {
   }
   constexpr explicit LayoutUnit(uint64_t value)
       : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
+
+  template <typename T>
+  // As long as std::numeric_limits<T>::max() <= -std::numeric_limits<T>::min(),
+  // this class will make  min and max be of equal magnitude.
+  struct SymmetricLimits {
+    static constexpr T NaN() {
+      return std::numeric_limits<T>::has_quiet_NaN
+                 ? std::numeric_limits<T>::quiet_NaN()
+                 : T();
+    }
+    static constexpr T max() { return std::numeric_limits<T>::max(); }
+    static constexpr T Overflow() { return max(); }
+    static constexpr T lowest() { return -max(); }
+    static constexpr T Underflow() { return lowest(); }
+  };
+
   constexpr explicit LayoutUnit(float value)
-      : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
+      : value_(base::saturated_cast<int, SymmetricLimits>(
+            value * kFixedPointDenominator)) {}
   constexpr explicit LayoutUnit(double value)
-      : value_(base::saturated_cast<int>(value * kFixedPointDenominator)) {}
+      : value_(base::saturated_cast<int, SymmetricLimits>(
+            value * kFixedPointDenominator)) {}
 
   static LayoutUnit FromFloatCeil(float value) {
     LayoutUnit v;
-    v.value_ = base::saturated_cast<int>(ceilf(value * kFixedPointDenominator));
+    v.value_ = base::saturated_cast<int, SymmetricLimits>(
+        ceilf(value * kFixedPointDenominator));
     return v;
   }
 
   static LayoutUnit FromFloatFloor(float value) {
     LayoutUnit v;
-    v.value_ =
-        base::saturated_cast<int>(floorf(value * kFixedPointDenominator));
+    v.value_ = base::saturated_cast<int, SymmetricLimits>(
+        floorf(value * kFixedPointDenominator));
     return v;
   }
 
   static LayoutUnit FromFloatRound(float value) {
     LayoutUnit v;
-    v.value_ =
-        base::saturated_cast<int>(roundf(value * kFixedPointDenominator));
+    v.value_ = base::saturated_cast<int, SymmetricLimits>(
+        roundf(value * kFixedPointDenominator));
     return v;
   }
 
   static LayoutUnit FromDoubleRound(double value) {
     LayoutUnit v;
-    v.value_ = base::saturated_cast<int>(round(value * kFixedPointDenominator));
+    v.value_ = base::saturated_cast<int, SymmetricLimits>(
+        round(value * kFixedPointDenominator));
     return v;
   }
 
@@ -164,7 +168,7 @@ class LayoutUnit {
   constexpr int RawValue() const { return value_; }
   inline void SetRawValue(int value) { value_ = value; }
   void SetRawValue(int64_t value) {
-    REPORT_OVERFLOW(value > std::numeric_limits<int>::min() &&
+    REPORT_OVERFLOW(value > -std::numeric_limits<int>::max() &&
                     value < std::numeric_limits<int>::max());
     value_ = static_cast<int>(value);
   }
@@ -216,7 +220,7 @@ class LayoutUnit {
 
   bool MightBeSaturated() const {
     return RawValue() == std::numeric_limits<int>::max() ||
-           RawValue() == std::numeric_limits<int>::min();
+           RawValue() == -std::numeric_limits<int>::max();
   }
 
   static float Epsilon() { return 1.0f / kFixedPointDenominator; }
@@ -235,12 +239,12 @@ class LayoutUnit {
   }
   static constexpr LayoutUnit Min() {
     LayoutUnit m;
-    m.value_ = std::numeric_limits<int>::min();
+    m.value_ = -std::numeric_limits<int>::max();
     return m;
   }
 
   // Versions of max/min that are slightly smaller/larger than max/min() to
-  // allow for roinding without overflowing.
+  // allow for rounding without overflowing.
   static const LayoutUnit NearlyMax() {
     LayoutUnit m;
     m.value_ = std::numeric_limits<int>::max() - kFixedPointDenominator / 2;
@@ -248,7 +252,7 @@ class LayoutUnit {
   }
   static const LayoutUnit NearlyMin() {
     LayoutUnit m;
-    m.value_ = std::numeric_limits<int>::min() + kFixedPointDenominator / 2;
+    m.value_ = -std::numeric_limits<int>::max() + kFixedPointDenominator / 2;
     return m;
   }
 
@@ -270,67 +274,11 @@ class LayoutUnit {
            std::numeric_limits<int>::max() / kFixedPointDenominator;
   }
 
-#if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS) && \
-    defined(COMPILER_GCC) && !defined(OS_NACL) && __OPTIMIZE__
-  // If we're building ARM 32-bit on GCC we replace the C++ versions with some
-  // native ARM assembly for speed.
-  inline void SaturatedSet(int value) {
-    // Figure out how many bits are left for storing the integer part of
-    // the fixed point number, and saturate our input to that
-    enum { Saturate = 32 - kLayoutUnitFractionalBits };
-
-    int result;
-
-    // The following ARM code will Saturate the passed value to the number of
-    // bits used for the whole part of the fixed point representation, then
-    // shift it up into place. This will result in the low
-    // <kLayoutUnitFractionalBits> bits all being 0's. When the value saturates
-    // this gives a different result to from the C++ case; in the C++ code a
-    // saturated value has all the low bits set to 1 (for a +ve number at
-    // least). This cannot be done rapidly in ARM ... we live with the
-    // difference, for the sake of speed.
-
-    asm("ssat %[output],%[saturate],%[value]\n\t"
-        "lsl  %[output],%[shift]"
-        : [output] "=r"(result)
-        : [value] "r"(value), [saturate] "n"(Saturate),
-          [shift] "n"(kLayoutUnitFractionalBits));
-
-    value_ = result;
-  }
-
-  inline void SaturatedSet(unsigned value) {
-    // Here we are being passed an unsigned value to saturate,
-    // even though the result is returned as a signed integer. The ARM
-    // instruction for unsigned saturation therefore needs to be given one
-    // less bit (i.e. the sign bit) for the saturation to work correctly; hence
-    // the '31' below.
-    enum { Saturate = 31 - kLayoutUnitFractionalBits };
-
-    // The following ARM code will Saturate the passed value to the number of
-    // bits used for the whole part of the fixed point representation, then
-    // shift it up into place. This will result in the low
-    // <kLayoutUnitFractionalBits> bits all being 0's. When the value saturates
-    // this gives a different result to from the C++ case; in the C++ code a
-    // saturated value has all the low bits set to 1. This cannot be done
-    // rapidly in ARM, so we live with the difference, for the sake of speed.
-
-    int result;
-
-    asm("usat %[output],%[saturate],%[value]\n\t"
-        "lsl  %[output],%[shift]"
-        : [output] "=r"(result)
-        : [value] "r"(value), [saturate] "n"(Saturate),
-          [shift] "n"(kLayoutUnitFractionalBits));
-
-    value_ = result;
-  }
-#else
   ALWAYS_INLINE void SaturatedSet(int value) {
     if (value > kIntMaxForLayoutUnit)
       value_ = std::numeric_limits<int>::max();
     else if (value < kIntMinForLayoutUnit)
-      value_ = std::numeric_limits<int>::min();
+      value_ = -std::numeric_limits<int>::max();
     else
       value_ = static_cast<unsigned>(value) << kLayoutUnitFractionalBits;
   }
@@ -341,7 +289,6 @@ class LayoutUnit {
     else
       value_ = value << kLayoutUnitFractionalBits;
   }
-#endif  // CPU(ARM) && COMPILER(GCC)
 
   int value_;
 };
@@ -475,7 +422,7 @@ constexpr bool operator==(const float a, const LayoutUnit& b) {
 }
 
 // For multiplication that's prone to overflow, this bounds it to
-// LayoutUnit::max() and ::min()
+// LayoutUnit::Max() and ::Min()
 inline LayoutUnit BoundedMultiply(const LayoutUnit& a, const LayoutUnit& b) {
   int64_t result = static_cast<int64_t>(a.RawValue()) *
                    static_cast<int64_t>(b.RawValue()) / kFixedPointDenominator;

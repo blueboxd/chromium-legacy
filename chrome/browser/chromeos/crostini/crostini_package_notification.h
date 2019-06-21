@@ -81,7 +81,7 @@ class CrostiniPackageNotification
 
   // The most-recent time we entered the "RUNNING" state. Used for
   // guesstimating when we'll be done.
-  base::Time running_start_time_;
+  base::TimeTicks running_start_time_;
 
   // These notifications are owned by the package service.
   CrostiniPackageService* package_service_;

@@ -221,23 +221,16 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
   std::vector<std::pair<HeapObjectHeader*, bool /* was marked */>> headers_;
 };
 
-class Object : public GarbageCollected<Object> {
+class Object : public LinkedObject {
  public:
-  Object() : next_(nullptr) {}
-  explicit Object(Object* next) : next_(next) {}
-
-  void set_next(Object* next) { next_ = next; }
+  Object() = default;
+  explicit Object(Object* next) : LinkedObject(next) {}
 
   bool IsMarked() const {
     return HeapObjectHeader::FromPayload(this)->IsMarked();
   }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
-
-  Member<Object>& next_ref() { return next_; }
-
- private:
-  Member<Object> next_;
+  void Trace(Visitor* visitor) { LinkedObject::Trace(visitor); }
 };
 
 // =============================================================================

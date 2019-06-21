@@ -26,12 +26,14 @@
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.
-constexpr TimeDelta kAdjustedTimeoutLower = TimeDelta::FromSeconds(10);
-constexpr TimeDelta kAdjustedTimeoutUpper = TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kAdjustedTimeoutLower =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kAdjustedTimeoutUpper =
+    base::TimeDelta::FromMinutes(10);
 
-WTF::TimeDelta AdjustTimeout(uint32_t timeout) {
-  WTF::TimeDelta adjusted_timeout;
-  adjusted_timeout = WTF::TimeDelta::FromMilliseconds(timeout);
+base::TimeDelta AdjustTimeout(uint32_t timeout) {
+  base::TimeDelta adjusted_timeout;
+  adjusted_timeout = base::TimeDelta::FromMilliseconds(timeout);
   return std::max(kAdjustedTimeoutLower,
                   std::min(kAdjustedTimeoutUpper, adjusted_timeout));
 }

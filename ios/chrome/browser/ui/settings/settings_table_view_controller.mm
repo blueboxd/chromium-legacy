@@ -258,10 +258,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
     identity::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
-    if (identityManager) {
-      _identityObserverBridge.reset(
-          new identity::IdentityManagerObserverBridge(identityManager, self));
-    }
+    // It is expected that |identityManager| should never be nil except in
+    // tests. In that case, the tests should be fixed.
+    DCHECK(identityManager);
+    _identityObserverBridge.reset(
+        new identity::IdentityManagerObserverBridge(identityManager, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));

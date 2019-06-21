@@ -110,9 +110,8 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
 
-  // WebContentsImpl accesses
-  // content::ServiceManagerConnection::GetForProcess(), so
-  // we must make sure it is instantiated.
+  // WebContentsImpl accesses the system Connector, so make sure the Service
+  // Manager is initialized.
   std::unique_ptr<content::TestServiceManagerContext>
       test_service_manager_context_;
 

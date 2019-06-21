@@ -43,8 +43,6 @@
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
@@ -54,6 +52,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/http/http_util.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -736,14 +735,13 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 }
 #endif  // OS_ANDROID
 
-void ChromeContentClient::OnServiceManagerConnected(
-    content::ServiceManagerConnection* connection) {
+void ChromeContentClient::BindChildProcessInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* receiving_handle) {
   static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
-
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
-                          base::Unretained(profiling_client.get())));
-  connection->AddConnectionFilter(
-      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
+  if (interface_name == heap_profiling::ProfilingClient::Name_) {
+    profiling_client->BindToInterface(
+        mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>(
+            std::move(*receiving_handle)));
+  }
 }

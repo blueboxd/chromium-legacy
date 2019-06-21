@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
@@ -26,12 +25,6 @@
 using base::FilePath;
 
 namespace storage {
-
-namespace {
-
-const static int kInvalidDiskCacheSideStreamIndex = -1;
-
-}  // namespace
 
 BlobDataBuilder::FutureData::FutureData(FutureData&&) = default;
 BlobDataBuilder::FutureData& BlobDataBuilder::FutureData::operator=(
@@ -305,12 +298,10 @@ void BlobDataBuilder::SliceBlob(const BlobEntry* source,
             source_item->file_system_context());
         break;
       }
-      case BlobDataItem::Type::kDiskCacheEntry: {
-        data_item = BlobDataItem::CreateDiskCacheEntry(
-            source_item->offset() + item_offset, read_size,
-            source_item->data_handle_, source_item->disk_cache_entry(),
-            source_item->disk_cache_stream_index(),
-            source_item->disk_cache_side_stream_index());
+      case BlobDataItem::Type::kReadableDataHandle: {
+        data_item = BlobDataItem::CreateReadableDataHandle(
+            source_item->data_handle_, source_item->offset() + item_offset,
+            read_size);
         break;
       }
     }
@@ -347,24 +338,11 @@ void BlobDataBuilder::AppendFileSystemFile(
   total_size_ += length;
 }
 
-void BlobDataBuilder::AppendDiskCacheEntry(
-    scoped_refptr<DataHandle> data_handle,
-    disk_cache::Entry* disk_cache_entry,
-    int disk_cache_stream_index) {
-  AppendDiskCacheEntryWithSideData(std::move(data_handle), disk_cache_entry,
-                                   disk_cache_stream_index,
-                                   kInvalidDiskCacheSideStreamIndex);
-}
-
-void BlobDataBuilder::AppendDiskCacheEntryWithSideData(
-    scoped_refptr<DataHandle> data_handle,
-    disk_cache::Entry* disk_cache_entry,
-    int disk_cache_stream_index,
-    int disk_cache_side_stream_index) {
-  auto item = BlobDataItem::CreateDiskCacheEntry(
-      0u, disk_cache_entry->GetDataSize(disk_cache_stream_index),
-      std::move(data_handle), disk_cache_entry, disk_cache_stream_index,
-      disk_cache_side_stream_index);
+void BlobDataBuilder::AppendReadableDataHandle(
+    scoped_refptr<DataHandle> data_handle) {
+  uint64_t length = data_handle->GetSize();
+  auto item = BlobDataItem::CreateReadableDataHandle(std::move(data_handle), 0u,
+                                                     length);
 
   total_size_ += item->length();
   auto shareable_item = base::MakeRefCounted<ShareableBlobDataItem>(

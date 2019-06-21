@@ -35,5 +35,15 @@
   });
   testRunner.log(transportError);
 
+  const u2fCableError = await dp.WebAuthn.addVirtualAuthenticator({
+    options: {
+      protocol: "u2f",
+      transport: "cable",
+      hasResidentKey: false,
+      hasUserVerification: false,
+    },
+  });
+  testRunner.log(u2fCableError);
+
   testRunner.completeTest();
 })

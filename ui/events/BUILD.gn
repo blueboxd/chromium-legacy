@@ -206,7 +206,6 @@ jumbo_component("events") {
     "keyboard_hook.h",
     "null_event_targeter.h",
     "scoped_target_handler.h",
-    "system_input_injector.h",
     "win/events_win_utils.h",
     "win/system_event_state_lookup.h",
   ]
@@ -236,7 +235,6 @@ jumbo_component("events") {
     "mac/keyboard_hook_mac.mm",
     "null_event_targeter.cc",
     "scoped_target_handler.cc",
-    "system_input_injector.cc",
     "win/events_win.cc",
     "win/events_win_utils.cc",
     "win/keyboard_hook_win_base.cc",

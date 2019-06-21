@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SMS_SMS_RECEIVER_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -34,12 +34,13 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
  private:
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
 
-  void OnGetNextMessage(ScriptPromiseResolver* resolver,
-                        mojom::blink::SmsMessagePtr sms);
+  void OnReceive(ScriptPromiseResolver* resolver,
+                 mojom::blink::SmsStatus status,
+                 const WTF::String& sms);
 
   void OnSMSReceiverConnectionError();
 
-  mojom::blink::SmsManagerPtr service_;
+  mojom::blink::SmsReceiverPtr service_;
 
   DISALLOW_COPY_AND_ASSIGN(SMSReceiver);
 };

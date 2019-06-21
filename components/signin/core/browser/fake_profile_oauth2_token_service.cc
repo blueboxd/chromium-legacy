@@ -128,7 +128,7 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
     bool scope_matches = all_scopes || it->scopes == scope;
     bool account_matches = account_id.empty() || account_id == it->account_id;
     if (account_matches && scope_matches) {
-      for (auto& diagnostic_observer : GetDiagnicsObservers()) {
+      for (auto& diagnostic_observer : GetAccessTokenDiagnosticsObservers()) {
         diagnostic_observer.OnFetchAccessTokenComplete(
             account_id, it->request->GetConsumerId(), scope, error,
             base::Time());

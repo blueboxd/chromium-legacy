@@ -96,7 +96,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [self waitForPageToFinishLoading];
 }
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 - (void)selectTabAtIndex:(NSUInteger)index {
   [ChromeEarlGreyAppInterface selectTabAtIndex:index];
@@ -357,13 +357,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
       waitForWebStateContainingLoadedImage:imageID]);
 }
 
-#pragma mark - Settings Utilities
+#pragma mark - Settings Utilities (EG2)
 
 - (void)setContentSettings:(ContentSetting)setting {
   [ChromeEarlGreyAppInterface setContentSettings:setting];
 }
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 - (void)clearSyncServerData {
   [ChromeEarlGreyAppInterface clearSyncServerData];
@@ -501,7 +501,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   EG_TEST_HELPER_ASSERT_TRUE(success, errorString);
 }
 
-#pragma mark - SignIn Utilities
+#pragma mark - SignIn Utilities (EG2)
 
 - (void)signOutAndClearAccounts {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
@@ -526,7 +526,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return result;
 }
 
-#pragma mark - Check features
+#pragma mark - Accessibility Utilities (EG2)
+
+- (void)verifyAccessibilityForCurrentScreen {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface verifyAccessibilityForCurrentScreen]);
+}
+
+#pragma mark - Check features (EG2)
 
 - (BOOL)isSlimNavigationManagerEnabled {
   return [ChromeEarlGreyAppInterface isSlimNavigationManagerEnabled];

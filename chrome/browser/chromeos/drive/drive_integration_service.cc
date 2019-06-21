@@ -62,7 +62,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -713,11 +713,8 @@ DriveIntegrationService::DriveIntegrationService(
   }
 
   device::mojom::WakeLockProviderPtr wake_lock_provider;
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
 
   scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),

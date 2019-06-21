@@ -1511,7 +1511,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
       "/prerender/prerender_page.html", FINAL_STATUS_RENDERER_CRASHED, 1);
 
   // Navigate to about:crash and then wait for the renderer to crash.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(
+      prerender->contents()->web_contents());
   ASSERT_TRUE(prerender->contents());
   ASSERT_TRUE(prerender->contents()->prerender_contents());
   prerender->contents()->prerender_contents()->GetController().

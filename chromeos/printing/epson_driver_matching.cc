@@ -34,7 +34,7 @@ bool CanUseEpsonGenericPPD(const PrinterSearchData& sd) {
                             "application/octet-stream");
 
     case PrinterSearchData::PrinterDiscoveryType::kUsb:
-      return base::Contains(sd.usb_command_set, "ESC/P-R");
+      return base::Contains(sd.printer_id.command_set(), "ESC/P-R");
 
     case PrinterSearchData::PrinterDiscoveryType::kZeroconf:
       // For printers found through mDNS/DNS-SD discovery,

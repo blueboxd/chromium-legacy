@@ -20,7 +20,7 @@
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/cpp/usb/usb_ids.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -181,10 +181,8 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
     return;
 
   // Request UsbDeviceManagerPtr from DeviceService.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&device_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
 
   SetUpDeviceManagerConnection();
 }

@@ -6,8 +6,10 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/browser/native_file_system/mock_native_file_system_permission_grant.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/test_file_system_context.h"
@@ -16,8 +18,24 @@
 
 namespace content {
 
+using base::test::RunOnceCallback;
 using blink::mojom::PermissionStatus;
 using storage::FileSystemURL;
+
+class TestNativeFileSystemHandle : public NativeFileSystemHandleBase {
+ public:
+  TestNativeFileSystemHandle(NativeFileSystemManagerImpl* manager,
+                             const BindingContext& context,
+                             const storage::FileSystemURL& url,
+                             const SharedHandleState& handle_state)
+      : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
+
+ private:
+  base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+  base::WeakPtrFactory<TestNativeFileSystemHandle> weak_factory_{this};
+};
 
 class NativeFileSystemHandleBaseTest : public testing::Test {
  public:
@@ -37,7 +55,8 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
     chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
-        file_system_context_, chrome_blob_context_);
+        file_system_context_, chrome_blob_context_,
+        /*permission_context=*/nullptr);
   }
 
  protected:
@@ -49,74 +68,136 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<ChromeBlobStorageContext> chrome_blob_context_;
+
+  scoped_refptr<MockNativeFileSystemPermissionGrant> read_grant_ =
+      base::MakeRefCounted<
+          testing::StrictMock<MockNativeFileSystemPermissionGrant>>();
+  scoped_refptr<MockNativeFileSystemPermissionGrant> write_grant_ =
+      base::MakeRefCounted<
+          testing::StrictMock<MockNativeFileSystemPermissionGrant>>();
+
   scoped_refptr<NativeFileSystemManagerImpl> manager_;
+
+  NativeFileSystemManagerImpl::SharedHandleState handle_state_ = {read_grant_,
+                                                                  write_grant_,
+                                                                  {}};
 };
 
-TEST_F(NativeFileSystemHandleBaseTest, InitialPermissionStatus_TestURL) {
+TEST_F(NativeFileSystemHandleBaseTest, GetReadPermissionStatus) {
   auto url =
       FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
-                                   base::FilePath::FromUTF8Unsafe("test"));
-  NativeFileSystemHandleBase handle(manager_.get(),
+                                   base::FilePath::FromUTF8Unsafe("/test"));
+  TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
                                         kTestOrigin, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
-                                    url,
-                                    storage::IsolatedContext::ScopedFSHandle());
+                                    url, handle_state_);
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::ASK));
+  EXPECT_EQ(PermissionStatus::ASK, handle.GetReadPermissionStatus());
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::GRANTED));
   EXPECT_EQ(PermissionStatus::GRANTED, handle.GetReadPermissionStatus());
-  EXPECT_EQ(PermissionStatus::GRANTED, handle.GetWritePermissionStatus());
 }
 
-TEST_F(NativeFileSystemHandleBaseTest, InitialPermissionStatus_SandboxedURL) {
-  auto url = FileSystemURL::CreateForTest(
-      kTestOrigin, storage::kFileSystemTypeTemporary,
-      base::FilePath::FromUTF8Unsafe("test"));
-
-  NativeFileSystemHandleBase handle(manager_.get(),
+TEST_F(NativeFileSystemHandleBaseTest,
+       GetWritePermissionStatus_ReadStatusNotGranted) {
+  auto url =
+      FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
+                                   base::FilePath::FromUTF8Unsafe("/test"));
+  TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
                                         kTestOrigin, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
-                                    url,
-                                    storage::IsolatedContext::ScopedFSHandle());
-  EXPECT_EQ(PermissionStatus::GRANTED, handle.GetReadPermissionStatus());
-  EXPECT_EQ(PermissionStatus::GRANTED, handle.GetWritePermissionStatus());
+                                    url, handle_state_);
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::ASK));
+  EXPECT_EQ(PermissionStatus::ASK, handle.GetWritePermissionStatus());
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::DENIED));
+  EXPECT_EQ(PermissionStatus::DENIED, handle.GetWritePermissionStatus());
 }
 
-TEST_F(NativeFileSystemHandleBaseTest, InitialPermissionStatus_NativeFSURL) {
-  auto url = FileSystemURL::CreateForTest(
-      kTestOrigin, storage::kFileSystemTypeNativeLocal,
-      base::FilePath::FromUTF8Unsafe("test"));
-
-  NativeFileSystemHandleBase handle(manager_.get(),
+TEST_F(NativeFileSystemHandleBaseTest,
+       GetWritePermissionStatus_ReadStatusGranted) {
+  auto url =
+      FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
+                                   base::FilePath::FromUTF8Unsafe("/test"));
+  TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
                                         kTestOrigin, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
-                                    url,
-                                    storage::IsolatedContext::ScopedFSHandle());
-  EXPECT_EQ(PermissionStatus::GRANTED, handle.GetReadPermissionStatus());
+                                    url, handle_state_);
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::GRANTED));
+  EXPECT_CALL(*write_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::ASK));
   EXPECT_EQ(PermissionStatus::ASK, handle.GetWritePermissionStatus());
 }
 
-TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_NativeFSURL) {
-  auto url = FileSystemURL::CreateForTest(
-      kTestOrigin, storage::kFileSystemTypeNativeLocal,
-      base::FilePath::FromUTF8Unsafe("test"));
-
-  NativeFileSystemHandleBase handle(manager_.get(),
+TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_AlreadyGranted) {
+  auto url =
+      FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
+                                   base::FilePath::FromUTF8Unsafe("/test"));
+  TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
                                         kTestOrigin, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
-                                    url,
-                                    storage::IsolatedContext::ScopedFSHandle());
+                                    url, handle_state_);
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::GRANTED));
+  EXPECT_CALL(*write_grant_, GetStatus())
+      .WillOnce(testing::Return(PermissionStatus::GRANTED));
 
   base::RunLoop loop;
   handle.DoRequestPermission(
       /*writable=*/true,
       base::BindLambdaForTesting([&](PermissionStatus result) {
-        EXPECT_EQ(PermissionStatus::DENIED, result);
+        EXPECT_EQ(PermissionStatus::GRANTED, result);
         loop.Quit();
       }));
   loop.Run();
-  EXPECT_EQ(PermissionStatus::DENIED, handle.GetWritePermissionStatus());
+}
+
+TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
+  const int kProcessId = 1;
+  const int kFrameId = 2;
+
+  auto url =
+      FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
+                                   base::FilePath::FromUTF8Unsafe("/test"));
+  TestNativeFileSystemHandle handle(manager_.get(),
+                                    NativeFileSystemManagerImpl::BindingContext(
+                                        kTestOrigin, kProcessId, kFrameId),
+                                    url, handle_state_);
+
+  EXPECT_CALL(*read_grant_, GetStatus())
+      .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(*write_grant_, GetStatus())
+        .WillOnce(testing::Return(PermissionStatus::ASK));
+    EXPECT_CALL(*write_grant_,
+                RequestPermission_(kProcessId, kFrameId, testing::_))
+        .WillOnce(RunOnceCallback<2>());
+    EXPECT_CALL(*write_grant_, GetStatus())
+        .WillOnce(testing::Return(PermissionStatus::GRANTED));
+  }
+
+  base::RunLoop loop;
+  handle.DoRequestPermission(
+      /*writable=*/true,
+      base::BindLambdaForTesting([&](PermissionStatus result) {
+        EXPECT_EQ(PermissionStatus::GRANTED, result);
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 }  // namespace content

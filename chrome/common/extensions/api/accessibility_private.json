@@ -39,6 +39,12 @@
         "description": "Accessibility gestures fired by the touch exploration controller."
       },
       {
+        "id": "SwitchAccessCommand",
+        "type": "string",
+        "enum": [ "select", "next", "previous" ],
+        "description": "Commands that can be triggered by switch activation."
+      },
+      {
         "id": "SyntheticKeyboardEventType",
         "type": "string",
         "description": "The event to send",
@@ -404,6 +410,18 @@
         "type": "function",
         "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": [],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "onSwitchAccessCommand",
+        "type": "function",
+        "description": "Called when Chrome OS has received a key event corresponding to a Switch Access command.",
+        "parameters": [
+          {
+            "name": "command",
+            "$ref": "SwitchAccessCommand"
+          }
+        ],
         "platforms": ["chromeos"]
       },
       {

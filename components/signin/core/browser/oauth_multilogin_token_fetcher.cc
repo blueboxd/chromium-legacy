@@ -28,7 +28,7 @@ namespace signin {
 OAuthMultiloginTokenFetcher::OAuthMultiloginTokenFetcher(
     SigninClient* signin_client,
     OAuth2TokenService* token_service,
-    const std::vector<std::string>& account_ids,
+    const std::vector<CoreAccountId>& account_ids,
     SuccessCallback success_callback,
     FailureCallback failure_callback)
     : OAuth2TokenService::Consumer("oauth_multilogin_token_fetcher"),
@@ -46,19 +46,19 @@ OAuthMultiloginTokenFetcher::OAuthMultiloginTokenFetcher(
 
 #ifndef NDEBUG
   // Check that there is no duplicate accounts.
-  std::set<std::string> accounts_no_duplicates(account_ids_.begin(),
-                                               account_ids_.end());
+  std::set<CoreAccountId> accounts_no_duplicates(account_ids_.begin(),
+                                                 account_ids_.end());
   DCHECK_EQ(account_ids_.size(), accounts_no_duplicates.size());
 #endif
 
-  for (const std::string& account_id : account_ids_)
+  for (const CoreAccountId& account_id : account_ids_)
     StartFetchingToken(account_id);
 }
 
 OAuthMultiloginTokenFetcher::~OAuthMultiloginTokenFetcher() = default;
 
 void OAuthMultiloginTokenFetcher::StartFetchingToken(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(!account_id.empty());
   token_requests_.push_back(
       token_service_->StartRequestForMultilogin(account_id, this));
@@ -67,7 +67,7 @@ void OAuthMultiloginTokenFetcher::StartFetchingToken(
 void OAuthMultiloginTokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  std::string account_id = request->GetAccountId();
+  CoreAccountId account_id = request->GetAccountId();
   DCHECK(account_ids_.cend() !=
          std::find(account_ids_.cbegin(), account_ids_.cend(), account_id));
 
@@ -82,16 +82,14 @@ void OAuthMultiloginTokenFetcher::OnGetTokenSuccess(
   DCHECK(inserted.second);  // If this fires, we have a duplicate account.
 
   if (access_tokens_.size() == account_ids_.size()) {
-    std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> token_id_pairs;
+    std::vector<AccountIdTokenPair> account_token_pairs;
     for (const auto& id : account_ids_) {
       const auto& it = access_tokens_.find(id);
       DCHECK(!it->second.empty());
-      // TODO(https://crbug.com/956503): Don't assume that the account ID is the
-      // Gaia ID.
-      token_id_pairs.emplace_back(id, it->second);
+      account_token_pairs.emplace_back(id, it->second);
     }
     RecordGetAccessTokenFinished(GoogleServiceAuthError::AuthErrorNone());
-    std::move(success_callback_).Run(token_id_pairs);
+    std::move(success_callback_).Run(account_token_pairs);
     // Do not add anything below this line, as this may be deleted.
   }
 }
@@ -99,7 +97,7 @@ void OAuthMultiloginTokenFetcher::OnGetTokenSuccess(
 void OAuthMultiloginTokenFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  std::string account_id = request->GetAccountId();
+  CoreAccountId account_id = request->GetAccountId();
   VLOG(1) << "Failed to retrieve accesstoken account=" << account_id
           << " error=" << error.ToString();
   if (error.IsTransientError() &&

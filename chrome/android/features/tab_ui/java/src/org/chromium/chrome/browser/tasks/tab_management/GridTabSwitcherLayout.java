@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -137,15 +138,15 @@ public class GridTabSwitcherLayout
     }
 
     @Override
+    public void doneHiding() {
+        super.doneHiding();
+        RecordUserAction.record("MobileExitStackView");
+    }
+
+    @Override
     public boolean onBackPressed() {
         if (mTabModelSelector.getCurrentModel().getCount() == 0) return false;
-
-        if (mGridController.overviewVisible()) {
-            mGridController.hideOverview(true);
-            return true;
-        }
-
-        return false;
+        return mGridController.onBackPressed();
     }
 
     @Override

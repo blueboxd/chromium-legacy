@@ -9,12 +9,6 @@
 
 using content::RenderThread;
 
-SpellingEngine* CreateNativeSpellingEngine(
-    service_manager::LocalInterfaceProvider* embedder_provider) {
-  DCHECK(embedder_provider);
-  return new PlatformSpellingEngine(embedder_provider);
-}
-
 PlatformSpellingEngine::PlatformSpellingEngine(
     service_manager::LocalInterfaceProvider* embedder_provider)
     : embedder_provider_(embedder_provider) {}
@@ -31,7 +25,6 @@ PlatformSpellingEngine::GetOrBindSpellCheckHost() {
 }
 
 void PlatformSpellingEngine::Init(base::File bdict_file) {
-  DCHECK(!bdict_file.IsValid());
 }
 
 bool PlatformSpellingEngine::InitializeIfNeeded() {

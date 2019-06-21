@@ -135,19 +135,27 @@ void GestureTapOnView(const views::View* view,
 void DragItemToPoint(OverviewItem* item,
                      const gfx::Point& screen_location,
                      ui::test::EventGenerator* event_generator,
+                     bool by_touch_gestures = false,
                      bool drop = true) {
   DCHECK(item);
 
   const gfx::Point item_center =
       gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
-  event_generator->MoveMouseTo(item_center);
-  event_generator->PressLeftButton();
-  // Move the mouse by an enough amount in X to engage in the normal drag mode
-  // rather than the drag to close mode.
-  event_generator->MoveMouseBy(50, 0);
-  event_generator->MoveMouseTo(screen_location);
-  if (drop)
-    event_generator->ReleaseLeftButton();
+  event_generator->set_current_screen_location(item_center);
+  if (by_touch_gestures) {
+    event_generator->PressTouch();
+    // Move the touch by an enough amount in X to engage in the normal drag mode
+    // rather than the drag to close mode.
+    event_generator->MoveTouchBy(50, 0);
+    event_generator->MoveTouch(screen_location);
+    if (drop)
+      event_generator->ReleaseTouch();
+  } else {
+    event_generator->PressLeftButton();
+    event_generator->MoveMouseTo(screen_location);
+    if (drop)
+      event_generator->ReleaseLeftButton();
+  }
 }
 
 BackdropController* GetDeskBackdropController(const Desk* desk,
@@ -207,7 +215,8 @@ class TestDeskObserver : public Desk::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestDeskObserver);
 };
 
-class DesksTest : public AshTestBase {
+class DesksTest : public AshTestBase,
+                  public ::testing::WithParamInterface<bool> {
  public:
   DesksTest() = default;
   ~DesksTest() override = default;
@@ -964,7 +973,7 @@ TEST_F(DesksTest, MinimizedWindow) {
   EXPECT_NE(win0.get(), wm::GetActiveWindow());
 }
 
-TEST_F(DesksTest, DragWindowToDesk) {
+TEST_P(DesksTest, DragWindowToDesk) {
   auto* controller = DesksController::Get();
   controller->NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
@@ -1004,7 +1013,8 @@ TEST_F(DesksTest, DragWindowToDesk) {
   // should be returned back to its original target bounds.
   DragItemToPoint(overview_item,
                   desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator());
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(1u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
@@ -1016,7 +1026,8 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator());
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_grid->empty());
   EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
@@ -1029,7 +1040,7 @@ TEST_F(DesksTest, DragWindowToDesk) {
   EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
 }
 
-TEST_F(DesksTest, DragMinimizedWindowToDesk) {
+TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   auto* controller = DesksController::Get();
   controller->NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
@@ -1063,7 +1074,8 @@ TEST_F(DesksTest, DragMinimizedWindowToDesk) {
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator());
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_grid->empty());
   EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
@@ -1080,7 +1092,7 @@ TEST_F(DesksTest, DragMinimizedWindowToDesk) {
   EXPECT_EQ(1.f, window->layer()->GetTargetOpacity());
 }
 
-TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
+TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   auto* controller = DesksController::Get();
   controller->NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
@@ -1110,7 +1122,8 @@ TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   DragItemToPoint(
       overview_item,
       desks_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
-      GetEventGenerator());
+      GetEventGenerator(),
+      /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(1u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
@@ -1120,7 +1133,8 @@ TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   // nothing should happen.
   DragItemToPoint(overview_item,
                   window->GetRootWindow()->GetBoundsInScreen().bottom_right(),
-                  GetEventGenerator());
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(1u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
@@ -1467,7 +1481,9 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator(), /*drop=*/false);
+                  GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/false);
   // Validate that before dropping, the SplitView indicators and the drop target
   // widget are created.
   EXPECT_TRUE(overview_grid->drop_target_widget());
@@ -1604,6 +1620,9 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
 // TODO(afakhry): Add more tests:
 // - Always on top windows are not tracked by any desk.
 // - Reusing containers when desks are removed and created.
+
+// Instantiate the parametrized tests.
+INSTANTIATE_TEST_SUITE_P(, DesksTest, ::testing::Bool());
 
 }  // namespace
 

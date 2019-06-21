@@ -103,6 +103,11 @@ const char kInfobarPasswordUpdateBadgeTappedHistogram[] =
   }
 }
 
+- (void)recordBannerOnScreenDuration:(double)duration {
+  base::TimeDelta timeDelta = base::TimeDelta::FromSecondsD(duration);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Mobile.Messages.Banner.OnScreenTime", timeDelta);
+}
+
 - (void)recordModalEvent:(MobileMessagesModalEvent)event {
   switch (self.infobarType) {
     case InfobarType::kInfobarTypeConfirm:

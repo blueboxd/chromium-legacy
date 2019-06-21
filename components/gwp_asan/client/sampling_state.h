@@ -11,7 +11,8 @@
 #include "base/rand_util.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define USE_PTHREAD_TLS
 #include <pthread.h>
 #endif
 
@@ -37,7 +38,7 @@ class SamplingState {
     DCHECK_GT(sampling_frequency, 0U);
     sampling_frequency_ = sampling_frequency;
 
-#if defined(OS_MACOSX)
+#if defined(USE_PTHREAD_TLS)
     pthread_key_create(&tls_key_, nullptr);
 #endif
   }
@@ -71,15 +72,15 @@ class SamplingState {
     return next_sample;
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(USE_PTHREAD_TLS)
   ALWAYS_INLINE size_t GetCounter() { return tls_counter_; }
   ALWAYS_INLINE void SetCounter(size_t value) { tls_counter_ = value; }
 
   static thread_local size_t tls_counter_;
 #else
-  // On macOS, the first use of a thread_local variable on a new thread will
-  // cause a malloc(), causing infinite recursion. Instead, use pthread TLS to
-  // store the counter.
+  // On macOS and Android (before Q), the first use of a thread_local variable
+  // on a new thread will cause an allocation, leading to infinite recursion.
+  // Instead, use pthread TLS to store the counter.
   //
   // TODO: This is not necessary for PartitionAlloc and likely slower, refactor
   // SamplingState to be able to use pthread TLS for malloc() and thread_local
@@ -102,7 +103,7 @@ class SamplingState {
   size_t increment_ = 0;
 };
 
-#if !defined(OS_MACOSX)
+#if !defined(USE_PTHREAD_TLS)
 template <ParentAllocator PA>
 thread_local size_t SamplingState<PA>::tls_counter_ = 0;
 #endif

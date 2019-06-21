@@ -36,10 +36,10 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
-#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void RequestTextCheck(const base::string16& text,

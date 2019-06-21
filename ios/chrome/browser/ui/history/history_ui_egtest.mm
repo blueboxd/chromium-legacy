@@ -27,7 +27,6 @@
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -409,7 +408,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 - (void)testAccessibilityOnHistory {
   [self loadTestURLs];
   [self openHistoryPanel];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   // Close history.
     id<GREYMatcher> exitMatcher =
         grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);

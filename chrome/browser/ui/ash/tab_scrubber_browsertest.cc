@@ -26,7 +26,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 
@@ -287,8 +286,7 @@ class TabScrubberTest : public InProcessBrowserTest,
       Browser* browser) {
     aura::Window* window = browser->window()->GetNativeWindow();
     aura::Window* root = window->GetRootWindow();
-    return std::make_unique<ui::test::EventGenerator>(
-        features::IsUsingWindowService() ? nullptr : root, window);
+    return std::make_unique<ui::test::EventGenerator>(root, window);
   }
 
 

@@ -125,7 +125,12 @@ Polymer({
         'languages.forcedSpellCheckLanguages.*)',
     'updateSpellcheckEnabled_(prefs.browser.enable_spellchecking.*)',
   ],
+  // </if>
 
+  /** @private {boolean} */
+  isChangeInProgress_: false,
+
+  // <if expr="not is_macosx">
   /**
    * Checks if there are any errors downloading the spell check dictionary. This
    * is used for showing/hiding error messages, spell check toggle and retry.
@@ -331,6 +336,20 @@ Polymer({
         this.languageHelper.requiresRestart();
   },
 
+  /** @private */
+  onCloseMenu_() {
+    if (!this.isChangeInProgress_) {
+      return;
+    }
+    Polymer.dom.flush();
+    this.isChangeInProgress_ = false;
+    const restartButton = this.$$('#restartButton');
+    if (!restartButton) {
+      return;
+    }
+    cr.ui.focusWithoutInk(restartButton);
+  },
+
   /**
    * @param {!LanguageState} languageState
    * @param {string} prospectiveUILanguage The chosen UI language.
@@ -378,9 +397,9 @@ Polymer({
     // We don't support unchecking this checkbox. TODO(michaelpg): Ask for a
     // simpler widget.
     assert(e.target.checked);
+    this.isChangeInProgress_ = true;
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
-
     this.closeMenuSoon_();
   },
   // </if>

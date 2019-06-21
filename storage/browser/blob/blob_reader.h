@@ -82,10 +82,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   Status CalculateSize(net::CompletionOnceCallback done);
 
   // Returns true when the blob has side data. CalculateSize must be called
-  // beforehand. Currently side data is supported only for single DiskCache
-  // entry blob. So it returns false when the blob has more than single data
-  // item. This side data is used to pass the V8 code cache which is stored
-  // as a side stream in the CacheStorage to the renderer. (crbug.com/581613)
+  // beforehand. Currently side data is supported only for single readable
+  // DataHandle entry blob. So it returns false when the blob has more than
+  // single data item. This side data is used to pass the V8 code cache which is
+  // stored as a side stream in the CacheStorage to the renderer.
+  // (crbug.com/581613)
   bool has_side_data() const;
 
   // Reads the side data of the blob. CalculateSize must be called beforehand.
@@ -94,7 +95,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   //   Status::NET_ERROR and the net error code is set.
   // * If this function returns Status::IO_PENDING, the done callback will be
   //   called with Status::DONE or Status::NET_ERROR.
-  // Currently side data is supported only for single DiskCache entry blob.
+  // Currently side data is supported only for single readable DataHandle entry
+  // blob.
   Status ReadSideData(StatusCallback done);
 
   // Returns the side data which has been already read with ReadSideData().
@@ -199,12 +201,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   BlobReader::Status ReadFileItem(FileStreamReader* reader, int bytes_to_read);
   void DidReadFile(int result);
   void DeleteCurrentFileReader();
-  Status ReadDiskCacheEntryItem(const BlobDataItem& item, int bytes_to_read);
-  void DidReadDiskCacheEntry(int result);
+  Status ReadReadableDataHandle(const BlobDataItem& item, int bytes_to_read);
+  void DidReadReadableDataHandle(int result);
   void DidReadItem(int result);
-  void DidReadDiskCacheEntrySideData(StatusCallback done,
-                                     int expected_size,
-                                     int result);
+  void DidReadSideData(StatusCallback done, int expected_size, int result);
   int ComputeBytesToRead() const;
   int BytesReadCompleted();
 
@@ -218,6 +218,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobReader {
   std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const BlobDataItem& item,
       uint64_t additional_offset);
+
+  void RecordBytesReadFromDataHandle(int item_index, int result);
 
   std::unique_ptr<BlobDataHandle> blob_handle_;
   std::unique_ptr<BlobDataSnapshot> blob_data_;

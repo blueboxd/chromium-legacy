@@ -29,12 +29,6 @@
       #clearBrowsingDataDialog {
         --border-top-color: var(--paper-grey-300);
         --cr-dialog-top-container-min-height: 42px;
-        --cr-dialog-title: {
-          padding-bottom: 8px;
-        };
-        --cr-dialog-body-container: {
-          height: var(--body-container-height);
-        };
         --cr-dialog-body-border-top: 1px solid var(--border-top-color);
       }
 
@@ -46,6 +40,14 @@
 
       #clearBrowsingDataDialog:not(.fully-rendered) {
         visibility: hidden;
+      }
+
+      #clearBrowsingDataDialog [slot=title] {
+        padding-bottom: 8px;
+      }
+
+      #clearBrowsingDataDialog::part(body-container) {
+        height: var(--body-container-height);
       }
 
       #clearBrowsingDataDialog [slot=body] {

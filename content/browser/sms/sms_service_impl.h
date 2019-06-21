@@ -11,12 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/browser/sms/sms_manager_impl.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/sms_service.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 
 namespace url {
 class Origin;
@@ -32,8 +31,8 @@ class CONTENT_EXPORT SmsServiceImpl : public content::SmsService {
   SmsServiceImpl();
   ~SmsServiceImpl() override;
 
-  // content::SmsService
-  void Bind(blink::mojom::SmsManagerRequest, const url::Origin&) override;
+  // content::SmsService:
+  void Bind(blink::mojom::SmsReceiverRequest, const url::Origin&) override;
 
   // Testing helpers.
   void SetSmsProviderForTest(std::unique_ptr<SmsProvider>);
@@ -42,7 +41,7 @@ class CONTENT_EXPORT SmsServiceImpl : public content::SmsService {
   std::unique_ptr<SmsProvider> sms_provider_;
 
   // Registered clients.
-  mojo::StrongBindingSet<blink::mojom::SmsManager> bindings_;
+  mojo::StrongBindingSet<blink::mojom::SmsReceiver> bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SmsServiceImpl);

@@ -7,7 +7,12 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/simple_factory_key.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/profiles/profile_key_android.h"
+#endif  // OS_ANDROID
 
 class PrefService;
 
@@ -26,11 +31,19 @@ class ProfileKey : public SimpleFactoryKey {
 
   static ProfileKey* FromSimpleFactoryKey(SimpleFactoryKey* key);
 
+#if defined(OS_ANDROID)
+  ProfileKeyAndroid* GetProfileKeyAndroid();
+#endif  // OS_ANDROID
+
  private:
   PrefService* prefs_;
 
   // Points to the original (non off-the-record) ProfileKey.
   ProfileKey* original_key_ = nullptr;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<ProfileKeyAndroid> profile_key_android_;
+#endif  // OS_ANDROID
 
   DISALLOW_COPY_AND_ASSIGN(ProfileKey);
 };

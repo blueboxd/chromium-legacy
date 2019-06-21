@@ -188,7 +188,7 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
 
 void PreviewsUITabHelper::ReloadWithoutPreviews() {
   DCHECK(previews_user_data_);
-  ReloadWithoutPreviews(previews_user_data_->committed_previews_type());
+  ReloadWithoutPreviews(previews_user_data_->CommittedPreviewsType());
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews(
@@ -345,7 +345,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
 
   if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
     DCHECK_EQ(previews::PreviewsType::OFFLINE,
-              previews_user_data_->committed_previews_type());
+              previews_user_data_->CommittedPreviewsType());
     UMA_HISTOGRAM_BOOLEAN("Previews.Offline.CommittedErrorPage",
                           navigation_handle->IsErrorPage());
     if (navigation_handle->IsErrorPage()) {
@@ -388,11 +388,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Check for committed main frame preview.
-  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType() &&
-      previews_user_data_->coin_flip_holdback_result() !=
-          previews::CoinFlipHoldbackResult::kHoldback) {
+  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
-        previews_user_data_->committed_previews_type();
+        previews_user_data_->CommittedPreviewsType();
     if (main_frame_preview != previews::PreviewsType::NONE) {
       if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
         const net::HttpResponseHeaders* headers =

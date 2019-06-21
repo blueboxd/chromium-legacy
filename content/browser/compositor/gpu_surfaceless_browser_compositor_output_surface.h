@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_GPU_SURFACELESS_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_COMPOSITOR_GPU_SURFACELESS_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -59,6 +61,9 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   unsigned gpu_fence_id_;
 
   std::unique_ptr<viz::BufferQueue> buffer_queue_;
+  unsigned current_texture_;
+  uint32_t fbo_;
+
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   gpu::SurfaceHandle surface_handle_;
 };

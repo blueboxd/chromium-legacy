@@ -174,6 +174,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
         count_(params.nodes.size()),
         native_view_(params.view),
         source_(params.source),
+        start_point_(params.start_point),
         do_drag_callback_(std::move(do_drag_callback)),
         observer_(this),
         weak_factory_(this) {
@@ -229,7 +230,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
                                   BookmarkDragImageSource::kDragImageOffsetY));
 
     std::move(do_drag_callback_)
-        .Run(drag_data_, native_view_, source_, operation_);
+        .Run(drag_data_, native_view_, source_, start_point_, operation_);
 
     delete this;
   }
@@ -260,6 +261,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   int count_;
   gfx::NativeView native_view_;
   ui::DragDropTypes::DragEventSource source_;
+  const gfx::Point start_point_;
   int operation_;
 
   DoBookmarkDragCallback do_drag_callback_;
@@ -277,13 +279,17 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
 void DoDragImpl(const ui::OSExchangeData& drag_data,
                 gfx::NativeView native_view,
                 ui::DragDropTypes::DragEventSource source,
+                gfx::Point point,
                 int operation) {
   // Allow nested run loop so we get DnD events as we drag this around.
   base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
-  DCHECK(widget);
-  widget->RunShellDrag(nullptr, drag_data, gfx::Point(), operation, source);
+  if (widget) {
+    widget->RunShellDrag(nullptr, drag_data, gfx::Point(), operation, source);
+  } else {
+    views::RunShellDrag(native_view, drag_data, point, operation, source);
+  }
 }
 
 void DragBookmarksImpl(Profile* profile,

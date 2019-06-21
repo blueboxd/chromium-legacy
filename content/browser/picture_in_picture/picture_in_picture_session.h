@@ -68,9 +68,9 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // session. It relies on the WebContents associated with the |service_|.
   WebContentsImpl* GetWebContentsImpl();
 
-  // Returns the PictureInPictureWindowControllerImpl associated with the
-  // WebContents. Can be null.
-  PictureInPictureWindowControllerImpl* GetController();
+  // Returns the Picture-in-Picture window controller associated with the
+  // session.
+  PictureInPictureWindowControllerImpl& GetController();
 
   // Owns |this|.
   PictureInPictureServiceImpl* service_;

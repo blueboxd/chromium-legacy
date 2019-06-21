@@ -3382,6 +3382,7 @@ Unknown properties are collapsed to zero. -->
   <int value="17" label="Get scripts failed"/>
   <int value="18" label="Get scripts unparsable"/>
   <int value="19" label="No initial scripts"/>
+  <int value="20" label="Installing the feature module failed"/>
 </enum>
 
 <enum name="AutofillAssistantOnBoarding">
@@ -6241,6 +6242,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Present"/>
 </enum>
 
+<enum name="BooleanProcessReuseDisallowed">
+  <int value="0" label="Process reuse allowed"/>
+  <int value="1" label="Process reuse disallowed"/>
+</enum>
+
 <enum name="BooleanProfileSignedIn">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
@@ -6344,6 +6350,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanSelected">
   <int value="0" label="Not selected"/>
   <int value="1" label="Selected"/>
+</enum>
+
+<enum name="BooleanSensitive">
+  <int value="0" label="Not Sensitive"/>
+  <int value="1" label="Sensitive"/>
 </enum>
 
 <enum name="BooleanSent">
@@ -8978,6 +8989,11 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Try to override the status when its valus is error."/>
 </enum>
 
+<enum name="ConcerningHeaderPresent">
+  <int value="0" label="Header not present"/>
+  <int value="1" label="Header present"/>
+</enum>
+
 <enum name="ConfigParsingEvent">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="FAILURE"/>
@@ -11072,6 +11088,14 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Blocked"/>
   <int value="2" label="PlayedWithGesture"/>
   <int value="3" label="UserPaused"/>
+</enum>
+
+<enum name="CrossOriginProtectionDecision">
+  <int value="0" label="kAllow"/>
+  <int value="1" label="kBlock"/>
+  <int value="2" label="kNeedToSniffMore"/>
+  <int value="3" label="kAllowedAfterSniffing"/>
+  <int value="4" label="kBlockedAfterSniffing"/>
 </enum>
 
 <enum name="CrossProcessTimeDelta">
@@ -18334,6 +18358,7 @@ Called by update_net_error_codes.py.-->
   <int value="436" label="MIME_HANDLER_PRIVATE_SAVE"/>
   <int value="437" label="RUNTIME_ON_CONNECT_NATIVE"/>
   <int value="438" label="ACTION_ON_CLICKED"/>
+  <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -23677,6 +23702,9 @@ Called by update_net_error_codes.py.-->
   <int value="2924" label="V8CallSiteAPIGetFunctionSloppyCall"/>
   <int value="2925" label="V8CallSiteAPIGetThisSloppyCall"/>
   <int value="2926" label="BuiltInModuleToast"/>
+  <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
+  <int value="2928" label="PageLifecycleTransitionsOptIn"/>
+  <int value="2929" label="PageLifecycleTransitionsOptOut"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -23688,6 +23716,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Origins"/>
   <int value="6" label="KeywordsOnly"/>
   <int value="7" label="Mixed"/>
+  &gt;&gt;&gt;&gt;&gt;&gt;&gt; 9f172e486e8ccfee1dc0a15b090845abc21e8c26
 </enum>
 
 <enum name="FeaturePolicyFeature">
@@ -27820,6 +27849,11 @@ Called by update_net_error_codes.py.-->
   <int value="67" label="User Disabled WIN10_RS5"/>
   <int value="68" label="Fallback to Software WIN10_RS5"/>
   <int value="69" label="Status Unknown WIN10_RS5"/>
+  <int value="70" label="Enabled WIN10_19H1"/>
+  <int value="71" label="Blacklisted WIN10_19H1"/>
+  <int value="72" label="User Disabled WIN10_19H1"/>
+  <int value="73" label="Fallback to Software WIN10_19H1"/>
+  <int value="74" label="Status Unknown WIN10_19H1"/>
 </enum>
 
 <enum name="GPUBlacklistTestResultPerEntry">
@@ -33308,6 +33342,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
+  <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
@@ -33912,7 +33947,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
-  <int value="-1303995589" label="shelf-new-ui"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
@@ -34383,6 +34417,7 @@ from previous Chrome versions.
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>
+  <int value="-623364791" label="ClickToCallReceiver:disabled"/>
   <int value="-622685174" label="enable-pdf-material-ui"/>
   <int value="-621382525" label="VizDisplayCompositor:enabled"/>
   <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
@@ -34617,6 +34652,7 @@ from previous Chrome versions.
       label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-271790049" label="ArcUsbHost:enabled"/>
+  <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
@@ -35158,6 +35194,7 @@ from previous Chrome versions.
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
+  <int value="575829120" label="shelf-hotseat"/>
   <int value="576701073" label="WebPaymentsJustInTimePaymentApp:disabled"/>
   <int value="576878329" label="enable-background-blur"/>
   <int value="581118445" label="enable-eol-notification"/>
@@ -35234,6 +35271,7 @@ from previous Chrome versions.
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
+  <int value="677866592" label="ClickToCallUI:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
@@ -41811,6 +41849,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="802.11i/RSN"/>
   <int value="5" label="802.1x"/>
   <int value="6" label="PSK"/>
+</enum>
+
+<enum name="NetworkServiceConcerningRequestHeaders">
+  <int value="0" label="kConnection"/>
+  <int value="1" label="kCookie"/>
+  <int value="2" label="kCookie2"/>
+  <int value="3" label="kContentTransferEncoding"/>
+  <int value="4" label="kDate"/>
+  <int value="5" label="kExpect"/>
+  <int value="6" label="kKeepAlive"/>
+  <int value="7" label="kReferer"/>
+  <int value="8" label="kTe"/>
+  <int value="9" label="kTransferEncoding"/>
+  <int value="10" label="kVia"/>
 </enum>
 
 <enum name="NetworkServiceError">
@@ -50252,11 +50304,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="SVG"/>
   <int value="7" label="XSL"/>
   <int value="8" label="Link prefetch"/>
-  <int value="9" label="Link subresource"/>
-  <int value="10" label="Text track"/>
-  <int value="11" label="ImportResource"/>
-  <int value="12" label="Media"/>
+  <int value="9" label="Text track"/>
+  <int value="10" label="ImportResource"/>
+  <int value="11" label="Audio"/>
+  <int value="12" label="Video"/>
   <int value="13" label="Manifest"/>
+  <int value="14" label="Mock"/>
 </enum>
 
 <enum name="RestoredCachedStyleSheet">
@@ -50484,6 +50537,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SafeBrowsingWebSocketResult">
+  <obsolete>
+    Removed in June 2019.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="SAFE"/>
   <int value="2" label="BLOCKED"/>
@@ -51346,6 +51402,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="InOrder"/>
   <int value="5" label="Async"/>
   <int value="6" label="Immediate"/>
+  <int value="7" label="ForceDefer"/>
 </enum>
 
 <enum name="ScrollAnchorRestorationStatus">
@@ -57423,6 +57480,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UncacheableReason">
+  <obsolete>
+    Deprecated 06/2019 in issue 975278.
+  </obsolete>
   <int value="0" label="kNoData"/>
   <int value="1" label="kPre11PartialResponse"/>
   <int value="2" label="kNoStrongValidatorOnPartialResponse"/>
@@ -60445,11 +60505,17 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebSocketNewPerMessageDeflateContextTakeoverMode">
+  <obsolete>
+    Removed in July 2019.
+  </obsolete>
   <int value="0" label="Do not take over"/>
   <int value="1" label="Take over"/>
 </enum>
 
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode">
+  <obsolete>
+    Deprecated 2014-06.
+  </obsolete>
   <int value="0" label="Do not take over"/>
   <int value="1" label="Take over"/>
 </enum>
@@ -60837,6 +60903,11 @@ Full version information for the fingerprint enum values:
   <int value="1" label="onReceivedClientCertRequest"/>
   <int value="2" label="onReceivedHttpAuthRequest"/>
   <int value="3" label="onDownloadStart"/>
+  <int value="4" label="onPageStarted"/>
+  <int value="5" label="onPageFinished"/>
+  <int value="6" label="onLoadResource"/>
+  <int value="7" label="onPageCommitVisible"/>
+  <int value="8" label="shouldOverrideUrlLoading"/>
 </enum>
 
 <enum name="WebViewClientErrorCode">
@@ -61501,6 +61572,7 @@ Full version information for the fingerprint enum values:
   <int value="11" label="Windows 10 RS3"/>
   <int value="12" label="Windows 10 RS4"/>
   <int value="13" label="Windows 10 RS5"/>
+  <int value="14" label="Windows 10 19H1"/>
 </enum>
 
 <enum name="WindowType">

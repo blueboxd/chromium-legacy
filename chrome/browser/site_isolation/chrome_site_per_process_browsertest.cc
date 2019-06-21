@@ -927,7 +927,7 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
   void RequestDictionary() override {}
   void NotifyChecked(const base::string16& word, bool misspelled) override {}
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

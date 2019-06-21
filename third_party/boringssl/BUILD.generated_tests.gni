@@ -162,6 +162,7 @@ crypto_test_data = [
   "src/third_party/wycheproof_testvectors/ecdsa_secp521r1_sha512_test.txt",
   "src/third_party/wycheproof_testvectors/eddsa_test.txt",
   "src/third_party/wycheproof_testvectors/kw_test.txt",
+  "src/third_party/wycheproof_testvectors/kwp_test.txt",
   "src/third_party/wycheproof_testvectors/rsa_pss_2048_sha1_mgf1_20_test.txt",
   "src/third_party/wycheproof_testvectors/rsa_pss_2048_sha256_mgf1_0_test.txt",
   "src/third_party/wycheproof_testvectors/rsa_pss_2048_sha256_mgf1_32_test.txt",

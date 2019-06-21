@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package ukm;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 15
+// Next tag: 16
 message Source {
   // The URL scheme, such as HTTP, HTTPS, CHROME_EXTENSION, etc.
   enum UrlScheme {
@@ -66,6 +66,10 @@ message Source {
   // scope, in the order that the URLs were encountered. Data may include full
   // or partial redirect chains for main frame navigations.
   repeated UrlInfo urls = 8;
+
+  // Data about the URL of the Document, copied from the Source message whose
+  // id matched the navigation source id of the DocumentCreated event.
+  repeated UrlInfo resolved_urls = 15;
 
   // Whether this source is for a same document navigation. Examples of same
   // document navigations are fragment navigations, pushState/replaceState,

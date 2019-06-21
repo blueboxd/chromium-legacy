@@ -25,8 +25,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
@@ -123,9 +123,9 @@ void OnNetworkServiceCrash() {
 network::mojom::NetworkService* GetNetworkService() {
   service_manager::Connector* connector = nullptr;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      ServiceManagerConnection::GetForProcess() &&  // null in unit tests.
+      GetSystemConnector() &&  // null in unit tests.
       !g_force_create_network_service_directly) {
-    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector = GetSystemConnector();
   }
   return GetNetworkServiceFromConnector(connector);
 }

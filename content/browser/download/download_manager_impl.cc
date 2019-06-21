@@ -67,6 +67,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
@@ -681,9 +682,7 @@ net::URLRequestContextGetter* DownloadManagerImpl::GetURLRequestContextGetter(
 
 service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (auto* connection = ServiceManagerConnection::GetForProcess())
-    return connection->GetConnector();
-  return nullptr;
+  return GetSystemConnector();
 }
 
 void DownloadManagerImpl::StartDownload(

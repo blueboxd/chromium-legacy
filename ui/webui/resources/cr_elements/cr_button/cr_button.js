@@ -34,6 +34,7 @@ Polymer({
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
     pointerdown: 'onPointerDown_',
+    tap: 'onTap_',
   },
 
   /** @override */
@@ -109,4 +110,13 @@ Polymer({
   onPointerDown_: function() {
     this.ensureRipple();
   },
+
+  /**
+   * Need to handle tap events to enable tap events for where they are still
+   * used with |button.addEventListener('tap', handler)|.
+   * TODO(crbug.com/812035): Remove function and listener after Chrome OS no
+   *     longer uses tap event at least with addEventListener().
+   * @private
+   */
+  onTap_: function() {}
 });

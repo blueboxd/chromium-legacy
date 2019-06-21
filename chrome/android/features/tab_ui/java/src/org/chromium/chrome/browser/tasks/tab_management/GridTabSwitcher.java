@@ -20,7 +20,13 @@ public interface GridTabSwitcher {
     /**
      * Interface to control the GridTabSwitcher.
      */
-    interface GridController extends OverviewModeController {}
+    interface GridController extends OverviewModeController {
+        /**
+         * Called by the GridTabSwitcherLayout when the system back button is pressed.
+         * @return Whether or not the GridTabSwitcher consumed the event.
+         */
+        boolean onBackPressed();
+    }
 
     /**
      * An observer that is notified when the GridTabSwitcher view state changes.

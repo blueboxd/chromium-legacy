@@ -28,12 +28,32 @@ NotificationScheduleServiceImpl::GetBackgroundTaskSchedulerHandler() {
   return this;
 }
 
+UserActionHandler* NotificationScheduleServiceImpl::GetUserActionHandler() {
+  return this;
+}
+
 void NotificationScheduleServiceImpl::OnStartTask() {
   scheduler_->OnStartTask();
 }
 
 void NotificationScheduleServiceImpl::OnStopTask() {
   scheduler_->OnStopTask();
+}
+
+void NotificationScheduleServiceImpl::OnClick(
+    const std::string& notification_id) {
+  scheduler_->OnClick(notification_id);
+}
+
+void NotificationScheduleServiceImpl::OnActionClick(
+    const std::string& notification_id,
+    ActionButtonType button_type) {
+  scheduler_->OnActionClick(notification_id, button_type);
+}
+
+void NotificationScheduleServiceImpl::OnDismiss(
+    const std::string& notification_id) {
+  scheduler_->OnDismiss(notification_id);
 }
 
 }  // namespace notifications

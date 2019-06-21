@@ -138,10 +138,10 @@ public class CompositorViewHolder extends FrameLayout
     private ContentCaptureConsumer mContentCaptureConsumer;
 
     /**
-     * Last MOVE MotionEvent dispatched to this object for a currently active gesture. If there is
-     * no active gesture, this is null.
+     * Last MotionEvent dispatched to this object for a currently active gesture. If there is no
+     * active gesture, this is null.
      */
-    private @Nullable MotionEvent mLastMoveEvent;
+    private @Nullable MotionEvent mLastActiveTouchEvent;
 
     /**
      * This view is created on demand to display debugging information.
@@ -261,12 +261,13 @@ public class CompositorViewHolder extends FrameLayout
                     public void onLayoutChange(View v, int left, int top, int right, int bottom,
                             int oldLeft, int oldTop, int oldRight, int oldBottom) {
                         v.removeOnLayoutChangeListener(this);
-                        if (mLastMoveEvent == null) return;
-                        MotionEvent downEvent = MotionEvent.obtain(mLastMoveEvent);
-                        downEvent.setAction(MotionEvent.ACTION_DOWN);
-                        CompositorViewHolder.this.dispatchTouchEvent(downEvent);
-                        for (int i = 1; i < mLastMoveEvent.getPointerCount(); i++) {
-                            MotionEvent pointerDownEvent = MotionEvent.obtain(mLastMoveEvent);
+                        if (mLastActiveTouchEvent == null) return;
+                        MotionEvent touchEvent = MotionEvent.obtain(mLastActiveTouchEvent);
+                        touchEvent.setAction(MotionEvent.ACTION_DOWN);
+                        CompositorViewHolder.this.dispatchTouchEvent(touchEvent);
+                        for (int i = 1; i < mLastActiveTouchEvent.getPointerCount(); i++) {
+                            MotionEvent pointerDownEvent =
+                                    MotionEvent.obtain(mLastActiveTouchEvent);
                             pointerDownEvent.setAction(MotionEvent.ACTION_POINTER_DOWN
                                     | (i << MotionEvent.ACTION_POINTER_INDEX_SHIFT));
                             CompositorViewHolder.this.dispatchTouchEvent(pointerDownEvent);
@@ -597,17 +598,20 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
-        updateLastMoveEvent(e);
+        updateLastActiveTouchEvent(e);
         return super.dispatchTouchEvent(e);
     }
 
-    private void updateLastMoveEvent(MotionEvent e) {
-        if (e.getActionMasked() == MotionEvent.ACTION_MOVE) {
-            mLastMoveEvent = e;
+    private void updateLastActiveTouchEvent(MotionEvent e) {
+        if (e.getActionMasked() == MotionEvent.ACTION_MOVE
+                || e.getActionMasked() == MotionEvent.ACTION_DOWN
+                || e.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN
+                || e.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
+            mLastActiveTouchEvent = e;
         }
         if (e.getActionMasked() == MotionEvent.ACTION_CANCEL
                 || e.getActionMasked() == MotionEvent.ACTION_UP) {
-            mLastMoveEvent = null;
+            mLastActiveTouchEvent = null;
         }
     }
 

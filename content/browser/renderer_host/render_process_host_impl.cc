@@ -74,7 +74,8 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
-#include "content/browser/background_sync/background_sync_service_impl.h"
+#include "content/browser/background_sync/one_shot_background_sync_service_impl.h"
+#include "content/browser/background_sync/periodic_background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
@@ -161,6 +162,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/webrtc_log.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
@@ -720,9 +722,7 @@ template <typename Interface>
 void ForwardRequest(const char* service_name,
                     mojo::InterfaceRequest<Interface> request) {
   // TODO(beng): This should really be using the per-profile connector.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_name, std::move(request));
+  GetSystemConnector()->BindInterface(service_name, std::move(request));
 }
 
 class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
@@ -865,6 +865,26 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       else
         background_processes->insert(host);
     }
+  }
+
+  // Check whether |host| is associated with at least one URL for which
+  // SiteInstance does not assign site URLs.  This is used to disqualify |host|
+  // from being reused if it has pending navigations to such URLs.
+  bool ContainsNonReusableSiteForHost(RenderProcessHost* host) {
+    for (auto iter : map_) {
+      // If SiteInstance doesn't assign a site URL for the current entry, check
+      // whether |host| is on the list of processes the entry is associated
+      // with.
+      //
+      // TODO(alexmos): ShouldAssignSiteForURL() expects a full URL, whereas we
+      // only have a site URL here.  For now, this mismatch is ok since
+      // ShouldAssignSiteForURL() only cares about schemes in practice, but
+      // this should be cleaned up.
+      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first) &&
+          base::Contains(iter.second, host->GetID()))
+        return true;
+    }
+    return false;
   }
 
  private:
@@ -1749,15 +1769,17 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
     // Note that some embedders (e.g. Android WebView) may not initialize a
     // Connector per BrowserContext. In those cases we fall back to the
     // browser-wide Connector.
-    if (!ServiceManagerConnection::GetForProcess()) {
-      // Additionally, some test code may not initialize the process-wide
-      // ServiceManagerConnection prior to this point. This class of test code
-      // doesn't care about render processes, so we can initialize a dummy
-      // connection.
+    connector = GetSystemConnector();
+    if (!connector && !ServiceManagerConnection::GetForProcess()) {
+      // Additionally, some test code may not initialize the system Connector.
+      // We initialize one that the ChildConnection below can use.
+      // TODO(crbug.com/904240): Figure out why some unit tests fail when this
+      // doesn't create a full ServiceManagerConnection.
+      service_manager::mojom::ServicePtr unused_service;
       ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
-          mojo::MakeRequest(&test_service_), io_task_runner));
+          mojo::MakeRequest(&unused_service), io_task_runner));
+      connector = ServiceManagerConnection::GetForProcess()->GetConnector();
     }
-    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
   }
 
   // Establish a ServiceManager connection for the new render service instance.
@@ -2012,7 +2034,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateService,
+          &BackgroundSyncContextImpl::CreateOneShotSyncService,
+          base::Unretained(
+              storage_partition_impl_->GetBackgroundSyncContext())));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(
@@ -2985,6 +3013,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
     switches::kLitePagesServerSubresourceHost,
+    switches::kLogBestEffortTasks,
     switches::kLogFile,
     switches::kLoggingLevel,
     switches::kMaxActiveWebGLContexts,
@@ -3103,20 +3132,12 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
   }
 #elif !defined(OS_CHROMEOS)
-#if !BUILDFLAG(ENABLE_MUS)
   // If gpu compositing is not being used, tell the renderer at startup. This
   // is inherently racey, as it may change while the renderer is being launched,
   // but the renderer will hear about the correct state eventually. This
   // optimizes the common case to avoid wasted work.
-  // Note: There is no ImageTransportFactory with Mus, but there is also no
-  // software compositing on platforms where Mus is used, e.g. ChromeOS, so
-  // no need to check this state and forward it.
   if (ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled())
     renderer_cmd->AppendSwitch(switches::kDisableGpuCompositing);
-#else   // BUILDFLAG(ENABLE_MUS)
-// TODO(tonikitoo): Check if renderer should use software compositing
-// through some mechanism that isn't ImageTransportFactory with mus.
-#endif  // !BUILDFLAG(ENABLE_MUS)
 #endif  // defined(OS_ANDROID)
 
   // Add kWaitForDebugger to let renderer process wait for a debugger.
@@ -3699,7 +3720,30 @@ bool RenderProcessHostImpl::IsSuitableHost(
     }
   }
 
-  return GetContentClient()->browser()->IsSuitableHost(host, site_url);
+  if (!GetContentClient()->browser()->IsSuitableHost(host, site_url))
+    return false;
+
+  // Check whether this process has a pending navigation to a URL for
+  // which SiteInstance does not assign site URLs.  If this is the case, it is
+  // not safe to reuse this process for a navigation which itself assigns site
+  // URLs, since in that case the latter navigation could lock this process
+  // before the commit for the siteless URL arrives, resulting in a renderer
+  // kill. See https://crbug.com/970046.
+  if (SiteInstanceImpl::ShouldAssignSiteForURL(site_url)) {
+    SiteProcessCountTracker* pending_tracker =
+        static_cast<SiteProcessCountTracker*>(
+            browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
+    bool has_disqualifying_pending_navigation =
+        pending_tracker &&
+        pending_tracker->ContainsNonReusableSiteForHost(host);
+    UMA_HISTOGRAM_BOOLEAN(
+        "SiteIsolation.PendingSitelessNavigationDisallowsProcessReuse",
+        has_disqualifying_pending_navigation);
+    if (has_disqualifying_pending_navigation)
+      return false;
+  }
+
+  return true;
 }
 
 // static

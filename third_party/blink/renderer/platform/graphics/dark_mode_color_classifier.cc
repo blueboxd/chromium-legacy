@@ -7,6 +7,20 @@
 namespace blink {
 namespace {
 
+// Determine perceived brightness of a color.
+//
+// Based on this algorithm suggested by the W3:
+// https://www.w3.org/TR/AERT/#color-contrast
+//
+// We don't use HSL or HSV here because perceived brightness is a function of
+// hue as well as lightness/value.
+int CalculateColorBrightness(const Color& color) {
+  int weighted_red = color.Red() * 299;
+  int weighted_green = color.Green() * 587;
+  int weighted_blue = color.Blue() * 114;
+  return (weighted_red + weighted_green + weighted_blue) / 1000;
+}
+
 class SimpleColorClassifier : public DarkModeColorClassifier {
  public:
   static std::unique_ptr<SimpleColorClassifier> NeverInvert() {
@@ -29,12 +43,18 @@ class SimpleColorClassifier : public DarkModeColorClassifier {
 
 class InvertLowBrightnessColorsClassifier : public DarkModeColorClassifier {
  public:
-  bool ShouldInvertColor(const Color& color) override {
-    if (color == Color::kWhite) {
-      return false;
-    }
-    return true;
+  InvertLowBrightnessColorsClassifier(int brightness_threshold)
+      : brightness_threshold_(brightness_threshold) {
+    DCHECK_GT(brightness_threshold_, 0);
+    DCHECK_LT(brightness_threshold_, 256);
   }
+
+  bool ShouldInvertColor(const Color& color) override {
+    return CalculateColorBrightness(color) < brightness_threshold_;
+  }
+
+ private:
+  int brightness_threshold_;
 };
 
 }  // namespace
@@ -63,13 +83,18 @@ bool IsLight(const Color& color) {
 std::unique_ptr<DarkModeColorClassifier>
 DarkModeColorClassifier::MakeTextColorClassifier(
     const DarkModeSettings& settings) {
-  if (settings.text_policy == DarkModeTextPolicy::kInvertAll)
-    return SimpleColorClassifier::AlwaysInvert();
+  DCHECK_LE(settings.text_brightness_threshold, 256);
+  DCHECK_GE(settings.text_brightness_threshold, 0);
 
-  // Throw an error in debug mode if new values are added to the enum without
-  // updating this method.
-  DCHECK_EQ(settings.text_policy, DarkModeTextPolicy::kInvertDarkOnly);
-  return std::make_unique<InvertLowBrightnessColorsClassifier>();
+  // The value should be between 0 and 256, but check for values outside that
+  // range here to preserve correct behavior in non-debug builds.
+  if (settings.text_brightness_threshold >= 256)
+    return SimpleColorClassifier::AlwaysInvert();
+  if (settings.text_brightness_threshold <= 0)
+    return SimpleColorClassifier::NeverInvert();
+
+  return std::make_unique<InvertLowBrightnessColorsClassifier>(
+      settings.text_brightness_threshold);
 }
 
 DarkModeColorClassifier::~DarkModeColorClassifier() {}

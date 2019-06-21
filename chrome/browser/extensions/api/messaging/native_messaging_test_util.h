@@ -29,6 +29,8 @@ class ScopedTestNativeMessagingHost {
  public:
   static const char kHostName[];
   static const char kBinaryMissingHostName[];
+  static const char kSupportsNativeInitiatedConnectionsHostName[];
+
   static const char kExtensionId[];
 
   ScopedTestNativeMessagingHost();

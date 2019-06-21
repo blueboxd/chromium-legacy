@@ -10,6 +10,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/native_library.h"
+#include "base/strings/string_piece_forward.h"
+#include "base/values.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
@@ -247,6 +249,117 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
   HttpAuth::DelegationType delegation_type_ = HttpAuth::DelegationType::kNone;
 };
 
+// Diagnostics
+
+// GetGssStatusCodeValue constructs a base::Value containing a status code and a
+// message.
+//
+//     {
+//       "status" : <status value as a number>,
+//       "message": [
+//          <list of strings explaining what that number means>
+//       ]
+//     }
+//
+// Messages are looked up via gss_display_status() exposed by |gssapi_lib|. The
+// type of status code should be indicated by setting |status_code_type| to
+// either |GSS_C_MECH_CODE| or |GSS_C_GSS_CODE|.
+//
+// Mechanism specific codes aren't unique, so the mechanism needs to be
+// identified to look up messages if |status_code_type| is |GSS_C_MECH_CODE|.
+// Since no mechanism OIDs are passed in, mechanism specific status codes will
+// likely not have messages.
+NET_EXPORT_PRIVATE base::Value GetGssStatusCodeValue(
+    GSSAPILibrary* gssapi_lib,
+    OM_uint32 status,
+    OM_uint32 status_code_type);
+
+// Given major and minor GSSAPI status codes, returns a base::Value
+// encapsulating the codes as well as their meanings as expanded via
+// gss_display_status().
+//
+// The base::Value has the following structure:
+//   {
+//     "function": <name of GSSAPI function that returned the error>
+//     "major_status": {
+//       "status" : <status value as a number>,
+//       "message": [
+//          <list of strings hopefully explaining what that number means>
+//       ]
+//     },
+//     "minor_status": {
+//       "status" : <status value as a number>,
+//       "message": [
+//          <list of strings hopefully explaining what that number means>
+//       ]
+//     }
+//   }
+//
+// Passing nullptr to |gssapi_lib| will skip the message lookups. Thus the
+// returned value will be missing the "message" fields. The same is true if the
+// message lookup failed for some reason, or if the lookups succeeded but
+// yielded an empty message.
+NET_EXPORT_PRIVATE base::Value GetGssStatusValue(GSSAPILibrary* gssapi_lib,
+                                                 base::StringPiece method,
+                                                 OM_uint32 major_status,
+                                                 OM_uint32 minor_status);
+
+// OidToValue returns a base::Value representing an OID. The structure of the
+// value is:
+//   {
+//     "oid":    <symbolic name of OID if it is known>
+//     "length": <length in bytes of serialized OID>,
+//     "bytes":  <hexdump of up to 1024 bytes of serialized OID>
+//   }
+NET_EXPORT_PRIVATE base::Value OidToValue(const gss_OID oid);
+
+// GetDisplayNameValue returns a base::Value representing a gss_name_t. It
+// invokes |gss_display_name()| via |gssapi_lib| to determine the display name
+// associated with |gss_name|.
+//
+// The structure of the returned value is:
+//   {
+//     "gss_name": <display name as returned by gss_display_name()>,
+//     "type": <OID indicating type. See OidToValue() for structure of this
+//              field>
+//   }
+//
+// If the lookup failed, then the structure is:
+//   {
+//     "error": <error. See GetGssStatusValue() for structure.>
+//   }
+//
+// Note that |gss_name_t| is platform dependent. If |gss_display_name| fails,
+// there's no good value to display in its stead.
+NET_EXPORT_PRIVATE base::Value GetDisplayNameValue(GSSAPILibrary* gssapi_lib,
+                                                   const gss_name_t gss_name);
+
+// GetContextStateAsValue returns a base::Value that describes the state of a
+// GSSAPI context. The structure of the value is:
+//
+//   {
+//     "source": {
+//       "name": <GSSAPI principal name of source (e.g. the user)>,
+//       "type": <OID of name type>
+//     },
+//     "target": {
+//       "name": <GSSAPI principal name of target (e.g. the server)>,
+//       "type": <OID of name type>
+//     },
+//     "lifetime": <Lifetime of the negotiated context in seconds.>,
+//     "mechanism": <OID of negotiated mechanism>,
+//     "flags": <Context flags. See documentation for gss_inquire_context for
+//               flag values>
+//     "open": <True if the context has finished the handshake>
+//   }
+//
+// If the inquiry fails, the following is returned:
+//   {
+//     "error": <error. See GetGssStatusValue() for structure.>
+//   }
+NET_EXPORT_PRIVATE base::Value GetContextStateAsValue(
+    GSSAPILibrary* gssapi_lib,
+    const gss_ctx_id_t context_handle);
 }  // namespace net
 
 #endif  // NET_HTTP_HTTP_AUTH_GSSAPI_POSIX_H_

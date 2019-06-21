@@ -10,6 +10,8 @@
 Polymer({
   is: 'cr-network-select',
 
+  behaviors: [CrNetworkListenerBehavior],
+
   properties: {
     /**
      * Show all buttons in list items.
@@ -65,54 +67,32 @@ Polymer({
     cellularDeviceState_: Object,
   },
 
-  /**
-   * Returns network list object for testing.
-   */
-  getNetworkListForTest: function() {
-    return this.$.networkList.$$('#networkList');
-  },
-
   /** @type {!CrOnc.NetworkStateProperties|undefined} */
   defaultNetworkState_: undefined,
 
-  focus: function() {
-    this.$.networkList.focus();
-  },
-
-  /**
-   * Listener function for chrome.networkingPrivate.onNetworkListChanged event.
-   * @type {function(!Array<string>)}
-   * @private
-   */
-  networkListChangedListener_: function() {},
-
-  /**
-   * Listener function for chrome.networkingPrivate.onDeviceStateListChanged
-   * event.
-   * @type {function(!Array<string>)}
-   * @private
-   */
-  deviceStateListChangedListener_: function() {},
 
   /** @private {number|null} */
   scanIntervalId_: null,
 
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  networkConfigProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
+  },
+
   /** @override */
   attached: function() {
-    this.networkListChangedListener_ = this.refreshNetworks.bind(this);
-    chrome.networkingPrivate.onNetworkListChanged.addListener(
-        this.networkListChangedListener_);
-
-    this.deviceStateListChangedListener_ = this.refreshNetworks.bind(this);
-    chrome.networkingPrivate.onDeviceStateListChanged.addListener(
-        this.deviceStateListChangedListener_);
-
     this.refreshNetworks();
 
-    /** @const */ const INTERVAL_MS = 10 * 1000;
-    chrome.networkingPrivate.requestNetworkScan();
+    const INTERVAL_MS = 10 * 1000;
+    const kAll = chromeos.networkConfig.mojom.NetworkType.kAll;
+    this.networkConfigProxy_.requestNetworkScan(kAll);
     this.scanIntervalId_ = window.setInterval(function() {
-      chrome.networkingPrivate.requestNetworkScan();
+      this.networkConfigProxy_.requestNetworkScan(kAll);
     }.bind(this), INTERVAL_MS);
   },
 
@@ -121,10 +101,27 @@ Polymer({
     if (this.scanIntervalId_ !== null) {
       window.clearInterval(this.scanIntervalId_);
     }
-    chrome.networkingPrivate.onNetworkListChanged.removeListener(
-        this.networkListChangedListener_);
-    chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
-        this.deviceStateListChangedListener_);
+  },
+
+  /**
+   * Returns network list object for testing.
+   */
+  getNetworkListForTest: function() {
+    return this.$.networkList.$$('#networkList');
+  },
+
+  focus: function() {
+    this.$.networkList.focus();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.refreshNetworks();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    this.refreshNetworks();
   },
 
   /**

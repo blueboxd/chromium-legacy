@@ -20,6 +20,7 @@ extern const char kEnableFeatures[];
 extern const char kEnableLowEndDeviceMode[];
 extern const char kForceFieldTrials[];
 extern const char kFullMemoryCrashReport[];
+extern const char kLogBestEffortTasks[];
 extern const char kNoErrorDialogs[];
 extern const char kProfilingAtStart[];
 extern const char kProfilingFile[];

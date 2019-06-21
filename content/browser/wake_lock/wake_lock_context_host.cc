@@ -6,7 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -33,11 +33,9 @@ WakeLockContextHost::WakeLockContextHost(WebContents* web_contents)
   g_id_to_context_host.Get()[id_] = this;
 
   // Connect to a WakeLockContext, associating it with |id_| (note that in some
-  // testing contexts, the service manager connection isn't initialized).
-  if (ServiceManagerConnection::GetForProcess()) {
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
-    DCHECK(connector);
+  // testing environments, the system Connector isn't initialized.
+  service_manager::Connector* connector = GetSystemConnector();
+  if (connector) {
     device::mojom::WakeLockProviderPtr wake_lock_provider;
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&wake_lock_provider));

@@ -184,9 +184,6 @@ class DataReductionProxyService
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestLoFiSessionStateHistograms);
-
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
 

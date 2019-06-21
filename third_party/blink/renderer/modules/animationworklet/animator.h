@@ -31,7 +31,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
            v8::Local<v8::Value> instance,
            const String& name,
            WorkletAnimationOptions options,
-           const std::vector<base::Optional<TimeDelta>>& local_times,
+           const std::vector<base::Optional<base::TimeDelta>>& local_times,
            const Vector<Timing>& timings);
   ~Animator();
   void Trace(blink::Visitor*);
@@ -44,7 +44,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
                double current_time,
                AnimationWorkletDispatcherOutput::AnimationState* output);
   v8::Local<v8::Value> State(v8::Isolate*, ExceptionState&);
-  std::vector<base::Optional<TimeDelta>> GetLocalTimes() const;
+  std::vector<base::Optional<base::TimeDelta>> GetLocalTimes() const;
   Vector<Timing> GetTimings() const;
   bool IsStateful() const;
 

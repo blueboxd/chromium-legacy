@@ -67,6 +67,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // SendTabToSelfModel overrides.
   std::vector<std::string> GetAllGuids() const override;

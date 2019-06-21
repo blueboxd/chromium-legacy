@@ -30,7 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -793,9 +793,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
   };
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &cros_display_config);
   ash::mojom::CrosDisplayConfigControllerAsyncWaiter waiter_for(
       cros_display_config.get());
   std::vector<ash::mojom::DisplayUnitInfoPtr> info_list;

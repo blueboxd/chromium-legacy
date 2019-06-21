@@ -12,7 +12,7 @@
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "media/base/media_content_type.h"
@@ -96,10 +96,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
     // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_ptr_));
+    GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
+                                        mojo::MakeRequest(&audio_focus_ptr_));
   }
 
   void TearDown() override {

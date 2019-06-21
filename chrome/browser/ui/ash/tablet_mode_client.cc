@@ -41,7 +41,7 @@ TabletModeClient::~TabletModeClient() {
 
 void TabletModeClient::Init() {
   ash::TabletMode::Get()->SetTabletModeToggleObserver(this);
-  OnTabletModeToggled(ash::TabletMode::Get()->IsEnabled());
+  OnTabletModeToggled(ash::TabletMode::Get()->InTabletMode());
 }
 
 // static

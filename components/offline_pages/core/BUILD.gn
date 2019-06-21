@@ -58,6 +58,7 @@ static_library("core") {
     "offline_event_logger.h",
     "offline_page_archiver.cc",
     "offline_page_archiver.h",
+    "offline_page_client_policy.cc",
     "offline_page_client_policy.h",
     "offline_page_item.cc",
     "offline_page_item.h",

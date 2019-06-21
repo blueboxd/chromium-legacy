@@ -9,8 +9,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_PAINT_TIMING_DETECTOR_H_
 
+#include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -22,7 +24,6 @@ class LocalFrameView;
 class PropertyTreeState;
 class TracedValue;
 class Image;
-class ImageResourceContent;
 
 // TODO(crbug/960502): we should limit the access of these properties.
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
@@ -227,6 +228,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
+  friend class LargestContentfulPaintCalculatorTest;
+
   ImageRecord* FindLargestPaintCandidate() const;
 
   void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);

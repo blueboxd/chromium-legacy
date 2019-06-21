@@ -52,6 +52,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -551,16 +552,9 @@ MediaStreamManager::MediaStreamManager(
 #endif
 
     if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
-      auto* service_manager_connection =
-          content::ServiceManagerConnection::GetForProcess();
       video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
           std::make_unique<ServiceVideoCaptureProvider>(
-              // There are test cases (e.g.
-              // AudioOutputAuthorizationHandlerTest.DoNothing), where no
-              // service_manager_connection is available.
-              service_manager_connection
-                  ? service_manager_connection->GetConnector()
-                  : nullptr,
+              GetSystemConnector(),
               base::BindRepeating(&SendVideoCaptureLogMessage)),
           InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
               std::move(device_task_runner),
@@ -580,9 +574,9 @@ MediaStreamManager::MediaStreamManager(
   InitializeMaybeAsync(std::move(video_capture_provider));
 
   // May be null in tests.
-  if (ServiceManagerConnection::GetForProcess()) {
-    audio_service_listener_ = std::make_unique<AudioServiceListener>(
-        ServiceManagerConnection::GetForProcess()->GetConnector()->Clone());
+  if (GetSystemConnector()) {
+    audio_service_listener_ =
+        std::make_unique<AudioServiceListener>(GetSystemConnector()->Clone());
   }
 
   base::PowerMonitor::AddObserver(this);

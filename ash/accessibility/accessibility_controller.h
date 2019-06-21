@@ -199,6 +199,7 @@ class ASH_EXPORT AccessibilityController
 
   // Test helpers:
   void FlushMojoForTest();
+  SwitchAccessEventHandler* GetSwitchAccessEventHandlerForTest();
 
  private:
   // TabletModeObserver:
@@ -227,6 +228,7 @@ class ASH_EXPORT AccessibilityController
   void UpdateSelectToSpeakFromPref();
   void UpdateStickyKeysFromPref();
   void UpdateSwitchAccessFromPref();
+  void UpdateSwitchAccessKeyCodesFromPref(mojom::SwitchAccessCommand command);
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 

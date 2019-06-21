@@ -318,6 +318,12 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   if (!context_)
     return nullptr;
 
+  // Since the |context_| is created, free the transparent image,
+  // |transparent_image_| created for this canvas if it exists.
+  if (transparent_image_.get()) {
+    transparent_image_.reset();
+  }
+
   context_creation_was_blocked_ = false;
 
   probe::DidCreateCanvasContext(&GetDocument());
@@ -1252,7 +1258,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   }
 
   if (!context_) {
-    scoped_refptr<Image> result = CreateTransparentImage(Size());
+    scoped_refptr<Image> result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
@@ -1261,7 +1267,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     *status = kNormalSourceImageStatus;
     scoped_refptr<Image> result = context_->GetImage(hint);
     if (!result)
-      result = CreateTransparentImage(Size());
+      result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
     return result;
   }
@@ -1277,7 +1283,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     if (ResourceProvider())
       image = ResourceProvider()->Snapshot();
     else
-      image = CreateTransparentImage(Size());
+      image = GetTransparentImage();
   } else {
     if (canvas_heuristic_parameters::kDisableAccelerationToAvoidReadbacks &&
         !RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled() &&
@@ -1288,7 +1294,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     }
     image = RenderingContext()->GetImage(hint);
     if (!image)
-      image = CreateTransparentImage(Size());
+      image = GetTransparentImage();
   }
 
   if (image)
@@ -1552,6 +1558,12 @@ bool HTMLCanvasElement::HasImageBitmapContext() const {
     return false;
   CanvasRenderingContext::ContextType type = context_->GetContextType();
   return (type == CanvasRenderingContext::kContextImageBitmap);
+}
+
+scoped_refptr<Image> HTMLCanvasElement::GetTransparentImage() {
+  if (!transparent_image_ || transparent_image_.get()->Size() != Size())
+    transparent_image_ = CreateTransparentImage(Size());
+  return transparent_image_;
 }
 
 cc::Layer* HTMLCanvasElement::ContentsCcLayer() const {

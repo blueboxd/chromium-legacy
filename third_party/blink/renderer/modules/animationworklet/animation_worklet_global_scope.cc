@@ -71,7 +71,7 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    const std::vector<base::Optional<TimeDelta>>& local_times,
+    const std::vector<base::Optional<base::TimeDelta>>& local_times,
     const WTF::Vector<Timing>& timings) {
   DCHECK(!animators_.at(animation_id));
   Animator* animator =
@@ -113,7 +113,7 @@ void AnimationWorkletGlobalScope::UpdateAnimatorsList(
                                       ->data;
     DCHECK_GE(timings.size(), 1u);
 
-    std::vector<base::Optional<TimeDelta>> local_times(
+    std::vector<base::Optional<base::TimeDelta>> local_times(
         static_cast<int>(timings.size()), base::nullopt);
 
     CreateAnimatorFor(id, name, options, nullptr /* serialized_state */,
@@ -243,7 +243,7 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
     const String& name,
     WorkletAnimationOptions options,
     scoped_refptr<SerializedScriptValue> serialized_state,
-    const std::vector<base::Optional<TimeDelta>>& local_times,
+    const std::vector<base::Optional<base::TimeDelta>>& local_times,
     const WTF::Vector<Timing>& timings) {
   DCHECK(IsContextThread());
   AnimatorDefinition* definition = animator_definitions_.at(name);

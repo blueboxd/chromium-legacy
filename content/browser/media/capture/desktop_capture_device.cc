@@ -30,8 +30,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/capture_resolution_chooser.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -77,11 +77,8 @@ bool IsFrameUnpackedOrInverted(webrtc::DesktopFrame* frame) {
 std::unique_ptr<service_manager::Connector> GetServiceConnector() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-
-  DCHECK(connector);
-  return connector->Clone();
+  DCHECK(GetSystemConnector());
+  return GetSystemConnector()->Clone();
 }
 
 int GetMaximumCpuConsumptionPercentage() {

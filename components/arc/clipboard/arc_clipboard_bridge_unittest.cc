@@ -84,7 +84,7 @@ class ArcClipboardBridgeTest : public testing::Test {
 
 TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
   {
-    ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
     writer.WriteText(base::UTF8ToUTF16(kSampleText));
   }
 
@@ -100,7 +100,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
 
 TEST_F(ArcClipboardBridgeTest, GetClipContent_Html) {
   {
-    ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
     writer.WriteHTML(base::UTF8ToUTF16(kSampleHtml), std::string());
   }
 
@@ -121,13 +121,13 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
 
   std::vector<base::string16> mime_types;
   bool contains_files;
-  GetClipboard()->ReadAvailableTypes(ui::CLIPBOARD_TYPE_COPY_PASTE, &mime_types,
+  GetClipboard()->ReadAvailableTypes(ui::ClipboardType::kCopyPaste, &mime_types,
                                      &contains_files);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
 
   base::string16 result;
-  GetClipboard()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+  GetClipboard()->ReadText(ui::ClipboardType::kCopyPaste, &result);
   EXPECT_EQ(kSampleText, base::UTF16ToUTF8(result));
 }
 
@@ -138,7 +138,7 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
 
   std::vector<base::string16> mime_types;
   bool contains_files;
-  GetClipboard()->ReadAvailableTypes(ui::CLIPBOARD_TYPE_COPY_PASTE, &mime_types,
+  GetClipboard()->ReadAvailableTypes(ui::ClipboardType::kCopyPaste, &mime_types,
                                      &contains_files);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
@@ -146,7 +146,7 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
   base::string16 markup16;
   std::string url;
   uint32_t fragment_start, fragment_end;
-  GetClipboard()->ReadHTML(ui::CLIPBOARD_TYPE_COPY_PASTE, &markup16, &url,
+  GetClipboard()->ReadHTML(ui::ClipboardType::kCopyPaste, &markup16, &url,
                            &fragment_start, &fragment_end);
   base::string16 result =
       markup16.substr(fragment_start, fragment_end - fragment_start);

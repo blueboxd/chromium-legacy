@@ -11,7 +11,7 @@
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace media_router {
@@ -21,11 +21,8 @@ cast_channel::CastMessageHandler* GetCastMessageHandler() {
   static cast_channel::CastMessageHandler* instance =
       new cast_channel::CastMessageHandler(
           cast_channel::CastSocketService::GetInstance(),
-          content::ServiceManagerConnection::GetForProcess()
-              ->GetConnector()
-              ->Clone(),
-          kDataDecoderServiceBatchId, GetUserAgent(),
-          version_info::GetVersionNumber(),
+          content::GetSystemConnector()->Clone(), kDataDecoderServiceBatchId,
+          GetUserAgent(), version_info::GetVersionNumber(),
           g_browser_process->GetApplicationLocale());
   return instance;
 }

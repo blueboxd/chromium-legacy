@@ -167,6 +167,8 @@ component("gpu") {
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
       "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_texture_selector.cc",
+      "windows/d3d11_texture_selector.h",
       "windows/d3d11_texture_wrapper.cc",
       "windows/d3d11_texture_wrapper.h",
       "windows/d3d11_video_context_wrapper.cc",
@@ -571,6 +573,7 @@ source_set("unit_tests") {
       "windows/d3d11_cdm_proxy_unittest.cc",
       "windows/d3d11_copying_texture_wrapper_unittest.cc",
       "windows/d3d11_decryptor_unittest.cc",
+      "windows/d3d11_texture_selector_unittest.cc",
       "windows/d3d11_video_decoder_unittest.cc",
       "windows/d3d11_video_processor_proxy_unittest.cc",
     ]

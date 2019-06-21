@@ -106,20 +106,6 @@ ShelfController::ShelfController()
       message_center_observer_(this) {
   ShelfModel::SetInstance(&model_);
 
-  // Set the delegate and title string for the back button.
-  model_.SetShelfItemDelegate(ShelfID(kBackButtonId), nullptr);
-  DCHECK_EQ(0, model_.ItemIndexByID(ShelfID(kBackButtonId)));
-  ShelfItem back_item = model_.items()[0];
-  back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
-  model_.Set(0, back_item);
-
-  // Set the title string for the home button.
-  DCHECK_EQ(1, model_.ItemIndexByID(ShelfID(kAppListId)));
-  ShelfItem launcher_item = model_.items()[1];
-  launcher_item.title =
-      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
-  model_.Set(1, launcher_item);
-
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);

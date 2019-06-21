@@ -4,4 +4,6 @@ include_rules = [
   "+device/fido/fido_transport_protocol.h",
   # For VirtualFidoDevice::RegistrationData used in protocol/webauthn_handler.cc.
   "+device/fido/virtual_fido_device.h",
+  # For VirtualU2fDevice::IsTransportSupported used in protocol/webauthn_handler.cc.
+  "+device/fido/virtual_u2f_device.h",
 ]

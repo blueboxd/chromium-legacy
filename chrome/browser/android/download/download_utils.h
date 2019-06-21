@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_
 
-#include "base/files/file_path.h"
+#include <string>
 
-namespace content {
-class BrowserContext;
-}
+#include "base/files/file_path.h"
 
 namespace download {
 class DownloadItem;
@@ -17,6 +15,7 @@ class DownloadItem;
 
 class DownloadOfflineContentProvider;
 class GURL;
+class ProfileKey;
 
 // Native side of DownloadUtils.java.
 class DownloadUtils {
@@ -28,7 +27,7 @@ class DownloadUtils {
                                           const GURL& url,
                                           const std::string& file_name);
   static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
-      content::BrowserContext* browser_context);
+      ProfileKey* profile_key);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_

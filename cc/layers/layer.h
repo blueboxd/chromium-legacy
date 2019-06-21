@@ -216,6 +216,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return inputs_.masks_to_bounds; }
 
+  // Set or get the clip rect for this layer. |clip_rect| is relative to |this|
+  // layer. If you are trying to clip the subtree to the bounds of this layer,
+  // SetMasksToBounds() would be a better alternative.
+  void SetClipRect(const gfx::Rect& clip_rect);
+  const gfx::Rect& clip_rect() const { return inputs_.clip_rect; }
+
   // Set or get a layer that is not an ancestor of this layer, but which should
   // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
   // The parent layer does *not* retain ownership of a reference on this layer.
@@ -251,6 +257,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.
+  // If the layer has a clip of its own, the rounded corner will be applied
+  // along the layer's clip rect corners.
   void SetRoundedCorner(const gfx::RoundedCornersF& corner_radii);
   const gfx::RoundedCornersF& corner_radii() const {
     return inputs_.corner_radii;
@@ -609,6 +617,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   bool has_transform_node() { return has_transform_node_; }
 
+  // This value indicates whether a clip node was created for |this| layer.
+  void SetHasClipNode(bool val) { has_clip_node_ = val; }
+
   // Sets that the content shown in this layer may be a video. This may be used
   // by the system compositor to distinguish between animations updating the
   // screen and video, which the user would be watching. This allows
@@ -932,6 +943,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     gfx::Size bounds;
     bool masks_to_bounds;
+    gfx::Rect clip_rect;
 
     scoped_refptr<PictureLayer> mask_layer;
 
@@ -1064,6 +1076,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool may_contain_video_ : 1;
   bool needs_show_scrollbars_ : 1;
   bool has_transform_node_ : 1;
+  bool has_clip_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;

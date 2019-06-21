@@ -54,18 +54,18 @@ class AssistantHeaderViewBinder
 
     @Override
     public void bind(AssistantHeaderModel model, ViewHolder view, PropertyKey propertyKey) {
-        if (AssistantHeaderModel.VISIBLE == propertyKey) {
-            view.mHeader.setVisibility(
-                    model.get(AssistantHeaderModel.VISIBLE) ? View.VISIBLE : View.GONE);
-            setProgressBarVisibility(view, model);
-        } else if (AssistantHeaderModel.STATUS_MESSAGE == propertyKey) {
+        if (AssistantHeaderModel.STATUS_MESSAGE == propertyKey) {
             String message = model.get(AssistantHeaderModel.STATUS_MESSAGE);
             view.mStatusMessage.setText(message);
             view.mStatusMessage.announceForAccessibility(message);
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey) {
-            setProgressBarVisibility(view, model);
+            if (model.get(AssistantHeaderModel.PROGRESS_VISIBLE)) {
+                view.mProgressBar.show();
+            } else {
+                view.mProgressBar.hide();
+            }
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
@@ -116,15 +116,6 @@ class AssistantHeaderViewBinder
 
         // Bind the chip to the view.
         view.mChip.bind(chip);
-    }
-
-    private void setProgressBarVisibility(ViewHolder view, AssistantHeaderModel model) {
-        if (model.get(AssistantHeaderModel.VISIBLE)
-                && model.get(AssistantHeaderModel.PROGRESS_VISIBLE)) {
-            view.mProgressBar.show();
-        } else {
-            view.mProgressBar.hide();
-        }
     }
 
     private void setProfileMenuListener(ViewHolder view, @Nullable Runnable feedbackCallback) {

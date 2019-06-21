@@ -38,6 +38,7 @@ namespace {{namespace}} {
   (property.is_property and 'kProperty' or ''),
   (property.inherited and 'kInherited' or ''),
   (property.visited and 'kVisited' or ''),
+  (property.is_internal and 'kInternal' or ''),
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}
@@ -60,6 +61,9 @@ class {{class_name}} final : public {{property.superclass}} {
   {% endif %}
   {% if property.visited_property %}
   const CSSProperty* GetVisitedProperty() const override;
+  {% endif %}
+  {% if property.unvisited_property %}
+  const CSSProperty* GetUnvisitedProperty() const override;
   {% endif %}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;

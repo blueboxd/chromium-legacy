@@ -226,5 +226,34 @@ TEST(CubicBezierTest, GetPoints) {
   EXPECT_NEAR(-1.6, cubic_oor.GetY2(), epsilon);
 }
 
+void validateSolver(const CubicBezier& cubic_bezier) {
+  const double epsilon = 1e-7;
+  const double precision = 1e-5;
+  for (double t = 0; t <= 1; t += 0.05) {
+    double x = cubic_bezier.SampleCurveX(t);
+    double root = cubic_bezier.SolveCurveX(x, epsilon);
+    EXPECT_NEAR(t, root, precision);
+  }
+}
+
+TEST(CubicBezierTest, CommonEasingFunctions) {
+  validateSolver(CubicBezier(0.25, 0.1, 0.25, 1));  // ease
+  validateSolver(CubicBezier(0.42, 0, 1, 1));       // ease-in
+  validateSolver(CubicBezier(0, 0, 0.58, 1));       // ease-out
+  validateSolver(CubicBezier(0.42, 0, 0.58, 1));    // ease-in-out
+}
+
+TEST(CubicBezierTest, LinearEquivalentBeziers) {
+  validateSolver(CubicBezier(0.0, 0.0, 0.0, 0.0));
+  validateSolver(CubicBezier(1.0, 1.0, 1.0, 1.0));
+}
+
+TEST(CubicBezierTest, ControlPointsOutsideUnitSquare) {
+  validateSolver(CubicBezier(0.3, 1.5, 0.8, 1.5));
+  validateSolver(CubicBezier(0.4, -0.8, 0.7, 1.7));
+  validateSolver(CubicBezier(0.7, -2.0, 1.0, -1.5));
+  validateSolver(CubicBezier(0, 4, 1, -3));
+}
+
 }  // namespace
 }  // namespace gfx

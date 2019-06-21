@@ -5716,7 +5716,8 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
       (Parent() && IsWritingModeRoot()) ||
       (IsOutOfFlowPositioned() &&
        StyleRef().GetPosition() == EPosition::kFixed) ||
-      ShouldApplySizeContainment() || DisplayLockInducesSizeContainment())
+      ShouldApplySizeContainment() || DisplayLockInducesSizeContainment() ||
+      IsFrameSet())
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();

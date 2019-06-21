@@ -2593,18 +2593,18 @@ BrowserTestClipboardScope::~BrowserTestClipboardScope() {
 }
 
 void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteRTF(rtf);
 }
 
 void BrowserTestClipboardScope::SetText(const std::string& text) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
 void BrowserTestClipboardScope::GetText(std::string* result) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, result);
+      ui::ClipboardType::kCopyPaste, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl
@@ -2765,7 +2765,7 @@ bool TestNavigationManager::WaitForDesiredState() {
   // Wait for the desired state if needed.
   if (current_state_ < desired_state_) {
     DCHECK(!quit_closure_);
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(message_loop_type_);
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
@@ -2795,6 +2795,10 @@ bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   if (current_state_ != NavigationState::INITIAL)
     return false;
   return true;
+}
+
+void TestNavigationManager::AllowNestableTasks() {
+  message_loop_type_ = base::RunLoop::Type::kNestableTasksAllowed;
 }
 
 NavigationHandleCommitObserver::NavigationHandleCommitObserver(

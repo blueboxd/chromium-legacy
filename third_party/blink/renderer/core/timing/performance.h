@@ -60,6 +60,7 @@ namespace blink {
 
 class PerformanceMarkOptions;
 class ExceptionState;
+class LargestContentfulPaint;
 class LayoutShift;
 class MemoryInfo;
 class PerformanceElementTiming;
@@ -188,6 +189,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
   void AddLayoutJankBuffer(LayoutShift&);
+
+  void AddLargestContentfulPaint(LargestContentfulPaint*);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
@@ -355,6 +358,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
   PerformanceEntryVector layout_jank_buffer_;
+  PerformanceEntryVector largest_contentful_paint_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;

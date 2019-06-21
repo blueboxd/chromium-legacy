@@ -34,7 +34,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
@@ -562,7 +561,7 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
 
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
   command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
 
   // Test command is disabled for an empty clipboard.
@@ -619,7 +618,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();
@@ -655,7 +654,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;
 
   clipboard->Clear(clipboard_type);
   ui::TextEditCommand clipboard_command = GetParam();
@@ -698,13 +697,6 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   const GURL kFullUrl = GURL("https://www.example.com/");
 
   void SetUp() override {
-#if defined(OS_CHROMEOS)
-    // This is necessary in Mash because the touch handles which get created
-    // during GestureTaps require a MusClient.
-    if (features::IsUsingWindowService())
-      set_native_widget_type(NativeWidgetType::kDesktop);
-#endif
-
     OmniboxViewViewsTest::SetUp();
 
     // Advance 5 seconds from epoch so the time is not considered null.

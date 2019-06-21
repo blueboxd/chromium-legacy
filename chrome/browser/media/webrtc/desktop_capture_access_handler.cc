@@ -180,15 +180,6 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   blink::mojom::MediaStreamRequestResult result =
       blink::mojom::MediaStreamRequestResult::INVALID_STATE;
 
-#if defined(OS_CHROMEOS)
-  if (features::IsMultiProcessMash()) {
-    // TODO(crbug.com/806366): Screen capture support for mash.
-    NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
-    screen_capture_enabled = false;
-    result = blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
-  }
-#endif  // defined(OS_CHROMEOS)
-
   // Approve request only when the following conditions are met:
   //  1. Screen capturing is enabled via command line switch or white-listed for
   //     the given origin.

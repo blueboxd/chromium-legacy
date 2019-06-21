@@ -2242,12 +2242,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   CheckResponseData(&trans, "TCP succeeds");
 
-  // Fire the retransmission alarm, from this point, connection will idle
-  // timeout after 4 seconds.
-  if (!GetQuicReloadableFlag(
-          quic_fix_time_of_first_packet_sent_after_receiving)) {
-    quic_task_runner_->RunNextTask();
-  }
   // Fast forward to idle timeout the original connection. A new connection will
   // be kicked off on the alternate network.
   quic_task_runner_->FastForwardBy(quic::QuicTime::Delta::FromSeconds(4));
@@ -2362,12 +2356,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   CheckResponseData(&trans, "TCP succeeds");
 
-  // Fire the retransmission alarm, after which connection will idle
-  // timeout after 4 seconds.
-  if (!GetQuicReloadableFlag(
-          quic_fix_time_of_first_packet_sent_after_receiving)) {
-    quic_task_runner_->RunNextTask();
-  }
   // Fast forward to idle timeout the original connection. A new connection will
   // be kicked off on the alternate network.
   quic_task_runner_->FastForwardBy(quic::QuicTime::Delta::FromSeconds(4));
@@ -2490,10 +2478,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 
   // Pump the message loop to get the request started.
   base::RunLoop().RunUntilIdle();
-  if (!GetQuicReloadableFlag(
-          quic_fix_time_of_first_packet_sent_after_receiving)) {
-    quic_task_runner_->RunNextTask();
-  }
 
   // Fast forward to idle timeout the original connection. A new connection will
   // be kicked off on the alternate network.
@@ -3243,21 +3227,11 @@ TEST_P(QuicNetworkTransactionTest,
   quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeHeadersDataPacket(
                                       11, false, false, settings_data));
 
-  if (GetQuicReloadableFlag(
-          quic_fix_time_of_first_packet_sent_after_receiving)) {
     quic_data.AddWrite(
         SYNCHRONOUS,
         client_maker_.MakeAckAndConnectionClosePacket(
             12, false, quic::QuicTime::Delta::FromMilliseconds(4000), 1, 1, 1,
             quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-
-  } else {
-    quic_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeAckAndConnectionClosePacket(
-            12, false, quic::QuicTime::Delta::FromMilliseconds(4200), 1, 1, 1,
-            quic::QUIC_NETWORK_IDLE_TIMEOUT, "No recent network activity."));
-  }
 
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);
   quic_data.AddRead(ASYNC, OK);

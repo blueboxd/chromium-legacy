@@ -226,7 +226,7 @@ void AvailableOfflineContentProvider::List(ListCallback callback) {
     return;
   }
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
+      OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
   aggregator->GetAllItems(
       base::BindOnce(&AvailableOfflineContentProvider::ListFinalize,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -239,7 +239,7 @@ void AvailableOfflineContentProvider::LaunchItem(
     const std::string& item_id,
     const std::string& name_space) {
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
+      OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
   aggregator->OpenItem(
       offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION,
       offline_items_collection::ContentId(name_space, item_id));

@@ -17,6 +17,7 @@ class ProtoDatabaseProvider;
 
 namespace notifications {
 
+class DisplayAgent;
 class NotificationBackgroundTaskScheduler;
 class NotificationSchedulerClientRegistrar;
 
@@ -27,6 +28,7 @@ KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
+    std::unique_ptr<DisplayAgent> display_agent,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir);
 

@@ -618,13 +618,12 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   constexpr char kAcceptedContextHistogram[] =
       "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
   base::HistogramTester histograms;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
+  MockAutofillClient autofill_client;
   auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<MockAutofillClient>();
   auto manager =
       std::make_unique<password_manager::PasswordManager>(client.get());
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  InitializePasswordAutofillManager(client.get(), &autofill_client);
 
   ON_CALL(*(client->mock_driver()), GetPasswordManager())
       .WillByDefault(testing::Return(manager.get()));
@@ -638,7 +637,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   password_autofill_manager_->OnAddPasswordFillData(data);
 
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::ElementsAreArray(
                             GetSuggestionList({test_username_}))),
@@ -662,7 +661,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
         *client,
         NavigateToManagePasswordsPage(
             password_manager::ManagePasswordsReferrer::kPasswordDropdown));
-    EXPECT_CALL(*autofill_client, HideAutofillPopup());
+    EXPECT_CALL(autofill_client, HideAutofillPopup());
     password_autofill_manager_->DidAcceptSuggestion(
         base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
     // Expect a sample in both the shown and accepted histogram.
@@ -678,15 +677,15 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
     // Trigger UKM reporting, which happens at destruction time.
     ukm::SourceId expected_source_id = client->GetUkmSourceId();
     manager.reset();
-    autofill_client.reset();
     client.reset();
 
     const auto& entries =
-        test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+        autofill_client.GetTestUkmRecorder()->GetEntriesByName(
+            UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* entry : entries) {
       EXPECT_EQ(expected_source_id, entry->source_id);
-      test_ukm_recorder.ExpectEntryMetric(
+      ukm::TestUkmRecorder::ExpectEntryMetric(
           entry, UkmEntry::kPageLevelUserActionName,
           static_cast<int64_t>(
               password_manager::PasswordManagerMetricsRecorder::

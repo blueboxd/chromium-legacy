@@ -19,7 +19,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -27,26 +26,12 @@ namespace ash {
 namespace {
 
 // Returns the window's shelf item type property value.
-// MultiProcessMash also experimentally returns TYPE_DIALOG for some windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (features::IsMultiProcessMash() &&
-      window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
-      window->type() == aura::client::WINDOW_TYPE_NORMAL) {
-    return TYPE_DIALOG;
-  }
   return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
 }
 
 // Returns the window's shelf id property value.
-// MultiProcessMash also experimentally sets and returns default ids values.
 ShelfID GetShelfID(aura::Window* window) {
-  if (features::IsMultiProcessMash() && !window->GetProperty(kShelfIDKey)) {
-    static int id = 0;
-    const ash::ShelfID shelf_id(ShelfWindowWatcher::kDefaultShelfIdPrefix +
-                                std::to_string(id++));
-    window->SetProperty(kShelfIDKey, shelf_id.Serialize());
-    return shelf_id;
-  }
   return ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
 }
 
@@ -116,20 +101,6 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  // ShelfIDs should rarely change beyond replacing Mash temporary defaults.
-  // Support ShelfID changes by removing the item; it will be re-added below.
-  if (features::IsMultiProcessMash() && key == kShelfIDKey &&
-      window_watcher_->user_windows_with_items_.count(window) > 0) {
-    ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
-    ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
-    if (old_id != new_id && !old_id.IsNull() && !new_id.IsNull() &&
-        window_watcher_->model_->ItemIndexByID(old_id) >= 0) {
-      window_watcher_->user_windows_with_items_.erase(window);
-      const int index = window_watcher_->model_->ItemIndexByID(old_id);
-      window_watcher_->model_->RemoveItemAt(index);
-    }
-  }
-
   if (key == kShelfIDKey && window == wm::GetActiveWindow()) {
     window_watcher_->model_->SetActiveShelfID(
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
@@ -237,7 +208,7 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(aura::Window* window) {
 
   // Update an existing ShelfWindowWatcher item when a window property changes.
   int index = model_->ItemIndexByID(GetShelfID(window));
-  if (index > 0 && user_windows_with_items_.count(window) > 0) {
+  if (index >= 0 && user_windows_with_items_.count(window) > 0) {
     ShelfItem item = model_->items()[index];
     UpdateShelfItemForWindow(&item, window);
     model_->Set(index, item);

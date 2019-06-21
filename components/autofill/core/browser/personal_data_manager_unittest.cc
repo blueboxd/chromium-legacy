@@ -2901,13 +2901,13 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
       ElementsAre(
           AllOf(testing::Field(&Suggestion::label,
                                ConstructMobileLabelLine(
-                                   {base::ASCIIToUTF16("Hoa Pham"),
+                                   {base::ASCIIToUTF16("Hoa"),
                                     base::ASCIIToUTF16("401 Merrimack St"),
                                     base::ASCIIToUTF16("(978) 674-4120")})),
                 testing::Field(&Suggestion::icon, "")),
           AllOf(testing::Field(&Suggestion::label,
                                ConstructMobileLabelLine(
-                                   {base::UTF8ToUTF16("María Lòpez"),
+                                   {base::UTF8ToUTF16("María"),
                                     base::ASCIIToUTF16("11 Elkins St"),
                                     base::ASCIIToUTF16("(617) 268-6862")})),
                 testing::Field(&Suggestion::icon, ""))));

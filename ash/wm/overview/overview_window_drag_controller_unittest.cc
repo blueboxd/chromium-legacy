@@ -25,12 +25,18 @@ namespace {
 void StartDraggingItemBy(OverviewItem* item,
                          int x,
                          int y,
+                         bool by_touch_gestures,
                          ui::test::EventGenerator* event_generator) {
   const gfx::Point item_center =
       gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
-  event_generator->MoveMouseTo(item_center);
-  event_generator->PressLeftButton();
-  event_generator->MoveMouseBy(x, y);
+  event_generator->set_current_screen_location(item_center);
+  if (by_touch_gestures) {
+    event_generator->PressTouch();
+    event_generator->MoveTouchBy(x, y);
+  } else {
+    event_generator->PressLeftButton();
+    event_generator->MoveMouseBy(x, y);
+  }
 }
 
 // Waits for a window to be destroyed.
@@ -107,7 +113,8 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
   auto* event_generator = GetEventGenerator();
   // Drag the item by an enough amount in X that would normally trigger the
   // normal drag mode.
-  StartDraggingItemBy(overview_item, 50, 0, event_generator);
+  StartDraggingItemBy(overview_item, 50, 0, /*by_touch_gestures=*/true,
+                      event_generator);
   OverviewWindowDragController* drag_controller =
       overview_session->window_drag_controller();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kUndefined,
@@ -115,7 +122,7 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
 
   // Drop the window, and expect that overview mode exits and the window is
   // activated.
-  event_generator->ReleaseLeftButton();
+  event_generator->ReleaseTouch();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
 }
@@ -135,7 +142,8 @@ TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
   auto* event_generator = GetEventGenerator();
   // Dragging with a bigger Y-component than X should trigger the drag-to-close
   // mode.
-  StartDraggingItemBy(overview_item, 30, 50, event_generator);
+  StartDraggingItemBy(overview_item, 30, 50, /*by_touch_gestures=*/true,
+                      event_generator);
   OverviewWindowDragController* drag_controller =
       overview_session->window_drag_controller();
   EXPECT_EQ(OverviewWindowDragController::DragBehavior::kDragToClose,
@@ -147,12 +155,47 @@ TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
   // release() the window as it will be closed and destroyed when we drop it.
   aura::Window* window_ptr = window.release();
   WindowCloseWaiter waiter{window_ptr};
-  event_generator->ReleaseLeftButton();
+  event_generator->ReleaseTouch();
   waiter.Wait();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(base::Contains(
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks),
       window_ptr));
+}
+
+using OverviewWindowDragControllerTest = AshTestBase;
+
+TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Enter tablet mode and enter overview mode.
+  // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet mode.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
+  auto* event_generator = GetEventGenerator();
+
+  // Drag with mouse by a bigger Y-component than X, which would normally
+  // trigger the drag-to-close mode, but won't since this mode only work with
+  // touch gestures.
+  StartDraggingItemBy(overview_item, 30, 200, /*by_touch_gestures=*/false,
+                      event_generator);
+  OverviewWindowDragController* drag_controller =
+      overview_session->window_drag_controller();
+  EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
+            drag_controller->current_drag_behavior());
+  event_generator->ReleaseLeftButton();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
 }
 
 }  // namespace ash

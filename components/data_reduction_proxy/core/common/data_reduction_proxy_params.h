@@ -48,15 +48,6 @@ bool IsIncludedInHoldbackFieldTrial();
 // not included in a group.
 std::string HoldbackFieldTrialGroup();
 
-// Returns the name of the Lo-Fi field trial.
-// TODO(ryansturm): crbug.com/759052 Cleanup once fully cutover to new blacklist
-const char* GetLoFiFieldTrialName();
-
-// Returns the name of the Lo-Fi field trial that configures LoFi flags when it
-// is force enabled through flags.
-// TODO(ryansturm): crbug.com/759052 Cleanup once fully cutover to new blacklist
-const char* GetLoFiFlagFieldTrialName();
-
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();

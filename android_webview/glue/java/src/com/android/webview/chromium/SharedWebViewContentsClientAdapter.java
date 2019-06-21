@@ -14,6 +14,7 @@ import android.webkit.WebViewClient;
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwHistogramRecorder;
 import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
@@ -102,6 +103,11 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
                 result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
             }
             if (TRACE) Log.i(TAG, "shouldOverrideUrlLoading result=" + result);
+
+            // Record UMA for shouldOverrideUrlLoading.
+            AwHistogramRecorder.recordCallbackInvocation(
+                    AwHistogramRecorder.WebViewCallbackType.SHOULD_OVERRIDE_URL_LOADING);
+
             return result;
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.shouldOverrideUrlLoading");
@@ -121,6 +127,11 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 ApiHelperForM.onPageCommitVisible(mWebViewClient, mWebView, url);
             }
+
+            // Record UMA for onPageCommitVisible.
+            AwHistogramRecorder.recordCallbackInvocation(
+                    AwHistogramRecorder.WebViewCallbackType.ON_PAGE_COMMIT_VISIBLE);
+
             // Otherwise, the API does not exist, so do nothing.
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onPageCommitVisible");

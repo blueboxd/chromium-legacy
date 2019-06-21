@@ -85,7 +85,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void PushPropertiesTo(LayerImpl* layer_impl) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override;
 
   void DidBecomeActive() override;
   size_t did_become_active_call_count() {

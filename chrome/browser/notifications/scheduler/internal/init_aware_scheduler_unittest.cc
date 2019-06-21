@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/scheduler/internal/init_aware_scheduler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/test/scoped_task_environment.h"
@@ -28,6 +29,9 @@ class MockNotificationScheduler : public NotificationScheduler {
   MOCK_METHOD1(Schedule, void(std::unique_ptr<NotificationParams>));
   MOCK_METHOD0(OnStartTask, void());
   MOCK_METHOD0(OnStopTask, void());
+  MOCK_METHOD1(OnClick, void(const std::string&));
+  MOCK_METHOD2(OnActionClick, void(const std::string&, ActionButtonType));
+  MOCK_METHOD1(OnDismiss, void(const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNotificationScheduler);
@@ -54,6 +58,7 @@ class InitAwareNotificationSchedulerTest : public testing::Test {
   NotificationScheduler* init_aware_scheduler() {
     return init_aware_scheduler_.get();
   }
+
   MockNotificationScheduler* scheduler_impl() { return scheduler_impl_; }
 
  private:

@@ -111,7 +111,7 @@ bool VibrationController::Vibrate(const VibrationPattern& pattern) {
   // it also starts the timer. This is not a problem as calling |startOneShot|
   // repeatedly will just update the time at which to run |doVibrate|, it will
   // not be called more than once.
-  timer_do_vibrate_.StartOneShot(TimeDelta(), FROM_HERE);
+  timer_do_vibrate_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
   return true;
 }
@@ -152,7 +152,7 @@ void VibrationController::DidVibrate() {
     pattern_.EraseAt(0);
   }
 
-  timer_do_vibrate_.StartOneShot(TimeDelta::FromMilliseconds(interval),
+  timer_do_vibrate_.StartOneShot(base::TimeDelta::FromMilliseconds(interval),
                                  FROM_HERE);
 }
 
@@ -175,7 +175,7 @@ void VibrationController::DidCancel() {
   // A new vibration pattern may have been set while the mojo call for
   // |cancel| was in flight, so kick the timer to let |doVibrate| process the
   // pattern.
-  timer_do_vibrate_.StartOneShot(TimeDelta(), FROM_HERE);
+  timer_do_vibrate_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void VibrationController::ContextDestroyed(ExecutionContext*) {

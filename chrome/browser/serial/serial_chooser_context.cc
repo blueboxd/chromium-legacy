@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -188,9 +188,8 @@ void SerialChooserContext::EnsurePortManagerConnection() {
     return;
 
   device::mojom::SerialPortManagerPtr manager;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName, mojo::MakeRequest(&manager));
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               mojo::MakeRequest(&manager));
   SetUpPortManagerConnection(std::move(manager));
 }
 

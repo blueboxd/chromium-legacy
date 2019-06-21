@@ -25,7 +25,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/common/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -83,8 +83,8 @@ void LoadIcon1(apps::mojom::IconCompression icon_compression,
 
     case apps::mojom::IconCompression::kUncompressed:
       data_decoder::DecodeImage(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT, false,
+          content::GetSystemConnector(), icon_png_data,
+          data_decoder::mojom::ImageCodec::DEFAULT, false,
           data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
           base::BindOnce(&LoadIcon2, std::move(callback)));
       break;
@@ -161,15 +161,25 @@ ArcApps* ArcApps::Get(Profile* profile) {
   return ArcAppsFactory::GetForProfile(profile);
 }
 
-ArcApps::ArcApps(Profile* profile)
+// static
+ArcApps* ArcApps::CreateForTesting(Profile* profile,
+                                   apps::AppServiceProxy* proxy) {
+  return new ArcApps(profile, proxy);
+}
+
+ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
+
+ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     : binding_(this), profile_(profile), prefs_(nullptr) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
   }
 
-  apps::mojom::AppServicePtr& app_service =
-      apps::AppServiceProxyFactory::GetForProfile(profile)->AppService();
+  if (!proxy) {
+    proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+  }
+  apps::mojom::AppServicePtr& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
     return;
   }

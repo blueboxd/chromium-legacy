@@ -734,7 +734,7 @@ bool Label::PasteSelectionClipboard() {
 void Label::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!obscured()) {
-    ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_SELECTION)
+    ui::ScopedClipboardWriter(ui::ClipboardType::kSelection)
         .WriteText(GetSelectedText());
   }
 #endif
@@ -959,7 +959,7 @@ base::string16 Label::GetSelectedText() const {
 void Label::CopyToClipboard() {
   if (!HasSelection() || obscured())
     return;
-  ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)
+  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
       .WriteText(GetSelectedText());
 }
 

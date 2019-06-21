@@ -64,9 +64,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -341,8 +341,7 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
        base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
                   this),
        src_dir, src_relative_paths, dest_file))
-      ->Start(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      ->Start(content::GetSystemConnector());
   return RespondLater();
 }
 

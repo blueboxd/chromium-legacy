@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
+#include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
+
 namespace notifications {
 
 class NotificationSchedulerContext;
@@ -18,7 +20,8 @@ struct NotificationParams;
 // Provides notification scheduling and throttling functionalities. This class
 // glues all the subsystems together for notification scheduling system.
 class NotificationScheduler
-    : public NotificationBackgroundTaskScheduler::Handler {
+    : public NotificationBackgroundTaskScheduler::Handler,
+      public UserActionHandler {
  public:
   using InitCallback = base::OnceCallback<void(bool)>;
   static std::unique_ptr<NotificationScheduler> Create(

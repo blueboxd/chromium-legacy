@@ -195,6 +195,18 @@ Polymer({
   },
 
   /**
+   * Handler for addCupsPrinter success.
+   * @param {!PrinterSetupResult} result
+   * @private
+   * */
+  onPrinterAdded_: function(result) {
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: result, printerName: this.newPrinter.printerName});
+    this.$$('add-printer-dialog').close();
+  },
+
+  /**
    * Handler for getPrinterInfo success.
    * @param {!PrinterMakeModel} info
    * @private
@@ -218,11 +230,12 @@ Polymer({
 
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
-    this.$$('add-printer-dialog').close();
     if (this.newPrinter.printerPpdReferenceResolved) {
-      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-          this.newPrinter);
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .addCupsPrinter(this.newPrinter)
+          .then(this.onPrinterAdded_.bind(this));
     } else {
+      this.$$('add-printer-dialog').close();
       this.fire('open-manufacturer-model-dialog');
     }
   },
@@ -344,6 +357,18 @@ Polymer({
   },
 
   /**
+   * Handler for addCupsPrinter success.
+   * @param {!PrinterSetupResult} result
+   * @private
+   * */
+  onPrinterAdded_: function(result) {
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: result, printerName: this.activePrinter.printerName});
+    this.close();
+  },
+
+  /**
    * If the printer is a nearby printer, return make + model with the subtext.
    * Otherwise, return printer name.
    * @return {string} The additional information subtext of the manufacturer and
@@ -454,9 +479,10 @@ Polymer({
   },
 
   /** @private */
-  switchToConfiguringDialog_: function() {
-    this.close();
-    this.fire('open-configuring-printer-dialog');
+  addPrinter_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .addCupsPrinter(this.activePrinter)
+        .then(this.onPrinterAdded_.bind(this));
   },
 
   /**
@@ -551,10 +577,10 @@ Polymer({
   /** @override */
   ready: function() {
     this.addWebUIListener(
-        'on-add-or-edit-cups-printer', this.onAddPrinter_.bind(this));
-    this.addWebUIListener(
         'on-manually-add-discovered-printer',
         this.onManuallyAddDiscoveredPrinter_.bind(this));
+    this.addWebUIListener(
+        'on-add-or-edit-cups-printer', this.onAddPrinter_.bind(this));
   },
 
   /** Opens the Add printer discovery dialog. */
@@ -588,12 +614,6 @@ Polymer({
   },
 
   /** @private */
-  addPrinter_: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-        this.newPrinter);
-  },
-
-  /** @private */
   switchToManufacturerDialog_: function() {
     this.$$('add-printer-configuring-dialog').close();
     this.openManufacturerModelDialog_();
@@ -609,10 +629,6 @@ Polymer({
           loadTimeData.getString('addPrintersNearbyTitle');
       settings.CupsPrintersBrowserProxyImpl.getInstance().addDiscoveredPrinter(
           this.newPrinter.printerId);
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
-      this.configuringDialogTitle =
-          loadTimeData.getString('manufacturerAndModelDialogTitle');
-      this.addPrinter_();
     } else {
       assertNotReached('Opening configuring dialog from invalid place');
     }

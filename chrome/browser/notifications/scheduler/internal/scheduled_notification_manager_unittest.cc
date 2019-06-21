@@ -24,10 +24,6 @@ namespace {
 const char kGuid[] = "test_guid_1234";
 const char kTitle[] = "test_title";
 
-NotificationEntry CreateNotificationEntry() {
-  return NotificationEntry(SchedulerClientType::kUnknown, base::GenerateGUID());
-}
-
 NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
   return NotificationEntry(type, base::GenerateGUID());
 }
@@ -71,7 +67,10 @@ class ScheduledNotificationManagerTest : public testing::Test {
     delegate_ = std::make_unique<MockDelegate>();
     auto store = std::make_unique<MockNotificationStore>();
     store_ = store.get();
-    manager_ = ScheduledNotificationManager::Create(std::move(store));
+    manager_ = ScheduledNotificationManager::Create(
+        std::move(store),
+        {SchedulerClientType::kTest1, SchedulerClientType::kTest2,
+         SchedulerClientType::kTest3});
   }
 
  protected:
@@ -83,8 +82,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
   void InitWithData(std::vector<NotificationEntry> data) {
     Entries entries;
     for (auto it = data.begin(); it != data.end(); ++it) {
-      auto entry_ptr = std::make_unique<NotificationEntry>(
-          SchedulerClientType::kUnknown, it->guid);
+      auto entry_ptr = std::make_unique<NotificationEntry>(it->type, it->guid);
       *(entry_ptr.get()) = *it;
       entries.emplace_back(std::move(entry_ptr));
     }
@@ -110,6 +108,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MockDelegate> delegate_;
   MockNotificationStore* store_;
+  std::vector<SchedulerClientType> clients_;
   std::unique_ptr<ScheduledNotificationManager> manager_;
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerTest);
 };
@@ -141,7 +140,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   ScheduleParams schedule_params;
   schedule_params.priority = ScheduleParams::Priority::kHigh;
   auto params = std::make_unique<NotificationParams>(
-      SchedulerClientType::kUnknown, notification_data, schedule_params);
+      SchedulerClientType::kTest1, notification_data, schedule_params);
   std::string guid = params->guid;
   EXPECT_FALSE(guid.empty());
 
@@ -166,7 +165,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
 TEST_F(ScheduledNotificationManagerTest, ScheduleNotificationEmptyGuid) {
   InitWithData(std::vector<NotificationEntry>());
   auto params = std::make_unique<NotificationParams>(
-      SchedulerClientType::kUnknown, NotificationData(), ScheduleParams());
+      SchedulerClientType::kTest1, NotificationData(), ScheduleParams());
 
   // Verify call contract.
   EXPECT_CALL(*store(), Add(_, _, _));
@@ -188,7 +187,7 @@ MATCHER_P(NotificationEntryIs, expected, "") {
 
 // Test to display a notification.
 TEST_F(ScheduledNotificationManagerTest, DisplayNotification) {
-  auto entry = CreateNotificationEntry();
+  auto entry = CreateNotificationEntry(SchedulerClientType::kTest1);
   entry.guid = kGuid;
   InitWithData(std::vector<NotificationEntry>({entry}));
 
@@ -208,11 +207,11 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotification) {
 TEST_F(ScheduledNotificationManagerTest, GetAllNotifications) {
   // Ordering: entry1.create_time < entry0.create_time < entry2.create_time.
   auto now = base::Time::Now();
-  auto entry0 = CreateNotificationEntry();
+  auto entry0 = CreateNotificationEntry(SchedulerClientType::kTest1);
   entry0.create_time = now;
-  auto entry1 = CreateNotificationEntry();
+  auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest1);
   entry1.create_time = now - base::TimeDelta::FromMinutes(1);
-  auto entry2 = CreateNotificationEntry();
+  auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest1);
   entry2.create_time = now + base::TimeDelta::FromMinutes(1);
 
   InitWithData(std::vector<NotificationEntry>({entry0, entry1, entry2}));
@@ -229,6 +228,22 @@ TEST_F(ScheduledNotificationManagerTest, GetAllNotifications) {
   EXPECT_EQ(output2->create_time, entry2.create_time);
 }
 
+// Verifies GetNotifications() can return the correct values.
+TEST_F(ScheduledNotificationManagerTest, GetNotifications) {
+  auto entry = CreateNotificationEntry(SchedulerClientType::kTest1);
+  InitWithData(std::vector<NotificationEntry>({entry}));
+  std::vector<const NotificationEntry*> entries;
+  manager()->GetNotifications(SchedulerClientType::kTest2, &entries);
+  EXPECT_TRUE(entries.empty());
+
+  manager()->GetNotifications(SchedulerClientType::kTest1, &entries);
+  EXPECT_EQ(entries.size(), 1u);
+  EXPECT_EQ(*entries.back(), entry);
+
+  manager()->GetNotifications(SchedulerClientType::kTest2, &entries);
+  EXPECT_TRUE(entries.empty());
+}
+
 // Verify DeleteNotifications API, all notifications with given
 // SchedulerClientType should be deleted.
 TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
@@ -239,7 +254,6 @@ TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
   auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest2);
   auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest2);
   auto entry3 = CreateNotificationEntry(SchedulerClientType::kTest3);
-
   InitWithData(
       std::vector<NotificationEntry>({entry0, entry1, entry2, entry3}));
   ScheduledNotificationManager::Notifications notifications;

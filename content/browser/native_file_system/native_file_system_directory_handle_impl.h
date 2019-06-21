@@ -25,11 +25,10 @@ class NativeFileSystemDirectoryHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemDirectoryHandle {
  public:
-  NativeFileSystemDirectoryHandleImpl(
-      NativeFileSystemManagerImpl* manager,
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system);
+  NativeFileSystemDirectoryHandleImpl(NativeFileSystemManagerImpl* manager,
+                                      const BindingContext& context,
+                                      const storage::FileSystemURL& url,
+                                      const SharedHandleState& handle_state);
   ~NativeFileSystemDirectoryHandleImpl() override;
 
   // blink::mojom::NativeFileSystemDirectoryHandle:
@@ -85,6 +84,8 @@ class NativeFileSystemDirectoryHandleImpl
       const std::string& name,
       const storage::FileSystemURL& url,
       bool is_directory);
+
+  base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 
   base::WeakPtrFactory<NativeFileSystemDirectoryHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryHandleImpl);

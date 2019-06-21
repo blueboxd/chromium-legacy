@@ -27,7 +27,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_prefs.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -186,9 +186,7 @@ ChromeUpdateClientConfig::GetUnzipperFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!unzip_factory_) {
     unzip_factory_ = base::MakeRefCounted<update_client::UnzipChromiumFactory>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+        content::GetSystemConnector()->Clone());
   }
   return unzip_factory_;
 }
@@ -198,9 +196,7 @@ ChromeUpdateClientConfig::GetPatcherFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!patch_factory_) {
     patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+        content::GetSystemConnector()->Clone());
   }
   return patch_factory_;
 }

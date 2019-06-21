@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/isolated_gamepad_data_fetcher.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -98,9 +98,7 @@ void IsolatedVRDeviceProvider::OnDevicesEnumerated() {
 }
 
 void IsolatedVRDeviceProvider::SetupDeviceProvider() {
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(
+  content::GetSystemConnector()->BindInterface(
       device::mojom::kVrIsolatedServiceName,
       mojo::MakeRequest(&device_provider_));
 

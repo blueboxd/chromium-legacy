@@ -10,6 +10,8 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "display_agent.cc",
+    "display_agent.h",
     "notification_background_task_scheduler.h",
     "notification_data.cc",
     "notification_data.h",

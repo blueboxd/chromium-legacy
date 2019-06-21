@@ -21,7 +21,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/rect.h"
@@ -35,7 +34,6 @@ const int kShadowElevationVirtualKeyboard = 2;
 
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
     : browser_context_(context) {
-  DCHECK(!::features::IsUsingWindowService());
 }
 
 ChromeKeyboardUI::~ChromeKeyboardUI() {

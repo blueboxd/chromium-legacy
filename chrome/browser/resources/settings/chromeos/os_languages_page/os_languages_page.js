@@ -85,6 +85,9 @@ Polymer({
     },
   },
 
+  /** @private {boolean} */
+  isChangeInProgress_: false,
+
   /**
    * Stamps and opens the Add Languages dialog, registering a listener to
    * disable the dialog's dom-if again on close.
@@ -239,6 +242,20 @@ Polymer({
         this.languageHelper.requiresRestart();
   },
 
+  /** @private */
+  onCloseMenu_() {
+    if (!this.isChangeInProgress_) {
+      return;
+    }
+    Polymer.dom.flush();
+    this.isChangeInProgress_ = false;
+    const restartButton = this.$$('#restartButton');
+    if (!restartButton) {
+      return;
+    }
+    cr.ui.focusWithoutInk(restartButton);
+  },
+
   /**
    * @param {!LanguageState} languageState
    * @param {string} prospectiveUILanguage The chosen UI language.
@@ -286,9 +303,9 @@ Polymer({
     // We don't support unchecking this checkbox. TODO(michaelpg): Ask for a
     // simpler widget.
     assert(e.target.checked);
+    this.isChangeInProgress_ = true;
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
-
     this.closeMenuSoon_();
   },
 

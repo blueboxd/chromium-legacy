@@ -4,12 +4,19 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface InfobarBannerTransitionDriver ()
+// Object that handles the animation and interactivity for the Banner
+// presentation.
+@property(nonatomic, weak) InfobarBannerAnimator* bannerAnimator;
+@end
 
 @implementation InfobarBannerTransitionDriver
 
@@ -35,14 +42,30 @@
                              sourceController:(UIViewController*)source {
   InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
   animator.presenting = YES;
-  return animator;
+  self.bannerAnimator = animator;
+  return self.bannerAnimator;
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)
     animationControllerForDismissedController:(UIViewController*)dismissed {
   InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
   animator.presenting = NO;
-  return animator;
+  self.bannerAnimator = animator;
+  return self.bannerAnimator;
+}
+
+- (id<UIViewControllerInteractiveTransitioning>)
+    interactionControllerForPresentation:
+        (id<UIViewControllerAnimatedTransitioning>)animator {
+  DCHECK_EQ(self.bannerAnimator, animator);
+  return self.bannerAnimator;
+}
+
+- (id<UIViewControllerInteractiveTransitioning>)
+    interactionControllerForDismissal:
+        (id<UIViewControllerAnimatedTransitioning>)animator {
+  DCHECK_EQ(self.bannerAnimator, animator);
+  return self.bannerAnimator;
 }
 
 @end

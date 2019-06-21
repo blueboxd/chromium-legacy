@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -995,6 +996,16 @@ const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
 };
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabVariation[] = {
+    {"tab_grid_layout_android_new_tab", "NewTabVariation"}};
+
+const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
+    {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
+     base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
+};
+#endif  // OS_ANDROID
+
 const FeatureEntry::FeatureParam kVizHitTestDrawQuadEnabled[] = {
     {"provider", "draw_quad"}};
 
@@ -1414,12 +1425,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-dense-clamshell", flag_descriptions::kShelfDenseClamshellName,
      flag_descriptions::kShelfDenseClamshellDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfDenseClamshell)},
+    {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
+     flag_descriptions::kShelfHotseatDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kShelfHotseat)},
     {"shelf-hover-previews", flag_descriptions::kShelfHoverPreviewsName,
      flag_descriptions::kShelfHoverPreviewsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
-    {"shelf-new-ui", flag_descriptions::kShelfNewUiName,
-     flag_descriptions::kShelfNewUiDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfNewUi)},
     {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
      flag_descriptions::kShelfScrollableDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
@@ -2966,7 +2977,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
      flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid,
+                                    kTabGridLayoutAndroidVariations,
+                                    "TabGridLayoutAndroid")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -3407,6 +3420,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
+     flag_descriptions::kClickToCallReceiverDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kClickToCallReceiver)},
+
+    {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
+     flag_descriptions::kClickToCallUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kClickToCallUI)},
 
     {"enable-filesystem-in-incognito",
      flag_descriptions::kEnableFilesystemInIncognitoName,

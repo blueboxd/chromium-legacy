@@ -14,13 +14,10 @@ import java.util.Map;
  */
 interface AutofillAssistantModuleEntry {
     /**
-     * Show the onboarding screen and run {@code onAccept} if user agreed to proceed.
+     * Launches Autofill Assistant on the current web contents, expecting autostart. If {@code
+     * skipOnboarding} is false, the onboarding will first be shown and the Autofill Assistant will
+     * start only if the user accepts to proceed.
      */
-    void showOnboarding(String experimentIds, Runnable onAccept);
-
-    /**
-     * Launches Autofill Assistant on the current web contents, expecting autostart.
-     */
-    void start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras);
+    void start(boolean skipOnboarding, String initialUrl, Map<String, String> parameters,
+            String experimentIds, Bundle intentExtras);
 }

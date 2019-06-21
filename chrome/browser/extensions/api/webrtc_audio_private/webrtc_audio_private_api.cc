@@ -19,8 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
@@ -135,10 +135,8 @@ std::string WebrtcAudioPrivateFunction::device_id_salt() const {
 media::AudioSystem* WebrtcAudioPrivateFunction::GetAudioSystem() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!audio_system_) {
-    audio_system_ = audio::CreateAudioSystem(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+    audio_system_ =
+        audio::CreateAudioSystem(content::GetSystemConnector()->Clone());
   }
   return audio_system_.get();
 }

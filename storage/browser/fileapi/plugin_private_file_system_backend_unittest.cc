@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
@@ -69,7 +69,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
   const base::FilePath& base_path() const { return backend()->base_path(); }
 
   base::ScopedTempDir data_dir_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<FileSystemContext> context_;
 };
 

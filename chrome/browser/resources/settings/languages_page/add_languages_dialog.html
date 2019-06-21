@@ -35,10 +35,8 @@
         padding-inline-start: 20px;
       }
 
-      cr-checkbox {
-        --cr-checkbox-label-container: {
-          white-space: nowrap;
-        };
+      cr-checkbox::part(label-container) {
+        white-space: nowrap;
       }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">

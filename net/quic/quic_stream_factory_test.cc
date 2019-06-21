@@ -1859,7 +1859,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
       SYNCHRONOUS, ConstructClientRstPacket(2, quic::QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
-                           3, true, quic::QUIC_INTERNAL_ERROR, "net error"));
+                           3, true, quic::QUIC_PEER_GOING_AWAY, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
@@ -1886,7 +1886,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
 
   // Close the session and verify that stream saw the error.
   factory_->CloseAllSessions(ERR_INTERNET_DISCONNECTED,
-                             quic::QUIC_INTERNAL_ERROR);
+                             quic::QUIC_PEER_GOING_AWAY);
   EXPECT_EQ(ERR_INTERNET_DISCONNECTED,
             stream->ReadResponseHeaders(callback_.callback()));
 
@@ -4038,12 +4038,6 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
       ASYNC, ConstructOkResponsePacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false,
                  true));  // keep sending version.
-  if (!GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    // Packet 2 is considered as out of order packet and an ACK will be sent
-    // immediately.
-    quic_data1.AddWrite(SYNCHRONOUS, client_maker_.MakeAckPacket(
-                                         packet_number++, 2, 2, 2, 1, true));
-  }
   quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 

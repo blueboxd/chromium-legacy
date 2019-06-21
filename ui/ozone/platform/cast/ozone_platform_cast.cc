@@ -19,7 +19,6 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
@@ -27,6 +26,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 using chromecast::CastEglPlatform;

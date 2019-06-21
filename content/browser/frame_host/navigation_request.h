@@ -708,6 +708,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // |handle_state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
 
+  // Whether the navigation was sent to be committed in a renderer by the
+  // RenderFrameHost. This can either be for the commit of a successful
+  // navigation or an error page.
+  bool IsWaitingToCommit();
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.

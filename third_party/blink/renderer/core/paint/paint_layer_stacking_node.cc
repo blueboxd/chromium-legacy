@@ -59,101 +59,66 @@ namespace blink {
 // FIXME: This should not require PaintLayer. There is currently a cycle where
 // in order to determine if we isStacked() we have to ask the paint
 // layer about some of its state.
-PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
-    : layer_(layer)
-#if DCHECK_IS_ON()
-      ,
-      layer_list_mutation_allowed_(true)
-#endif
-{
-  // Non-stacking contexts should have empty z-order lists. As this is already
-  // the case, there is no need to dirty / recompute these lists.
-  z_order_lists_dirty_ =
-      layer->GetLayoutObject().StyleRef().IsStackingContext();
+PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer& layer)
+    : layer_(layer), z_order_lists_dirty_(true) {
+  DCHECK(layer.GetLayoutObject().StyleRef().IsStackingContext());
 }
 
 PaintLayerStackingNode::~PaintLayerStackingNode() {
 #if DCHECK_IS_ON()
-  if (!Layer()->GetLayoutObject().DocumentBeingDestroyed())
+  if (!layer_.GetLayoutObject().DocumentBeingDestroyed())
     UpdateStackingParentForZOrderLists(nullptr);
 #endif
 }
 
-PaintLayerStackingNode::PaintLayers* PaintLayerStackingNode::PosZOrderList()
-    const {
-  DCHECK(!z_order_lists_dirty_);
-  DCHECK(Layer()->GetLayoutObject().StyleRef().IsStackingContext() ||
-         !pos_z_order_list_);
-  return pos_z_order_list_.get();
-}
-
-PaintLayerStackingNode::PaintLayers* PaintLayerStackingNode::NegZOrderList()
-    const {
-  DCHECK(!z_order_lists_dirty_);
-  DCHECK(Layer()->GetLayoutObject().StyleRef().IsStackingContext() ||
-         !neg_z_order_list_);
-  return neg_z_order_list_.get();
-}
-
-bool PaintLayerStackingNode::IsDirtyStackingContext() const {
-  return z_order_lists_dirty_ &&
-         Layer()->GetLayoutObject().StyleRef().IsStackingContext();
-}
-
 PaintLayerCompositor* PaintLayerStackingNode::Compositor() const {
-  DCHECK(Layer()->GetLayoutObject().View());
-  if (!Layer()->GetLayoutObject().View())
+  DCHECK(layer_.GetLayoutObject().View());
+  if (!layer_.GetLayoutObject().View())
     return nullptr;
-  return Layer()->GetLayoutObject().View()->Compositor();
+  return layer_.GetLayoutObject().View()->Compositor();
 }
 
 void PaintLayerStackingNode::DirtyZOrderLists() {
 #if DCHECK_IS_ON()
-  DCHECK(layer_list_mutation_allowed_);
-#endif
-  DCHECK(Layer()->GetLayoutObject().StyleRef().IsStackingContext());
-
-#if DCHECK_IS_ON()
+  DCHECK(layer_.LayerListMutationAllowed());
   UpdateStackingParentForZOrderLists(nullptr);
 #endif
 
-  if (pos_z_order_list_)
-    pos_z_order_list_->clear();
-  if (neg_z_order_list_)
-    neg_z_order_list_->clear();
+  pos_z_order_list_.clear();
+  neg_z_order_list_.clear();
   z_order_lists_dirty_ = true;
 
-  if (!Layer()->GetLayoutObject().DocumentBeingDestroyed() && Compositor())
+  if (!layer_.GetLayoutObject().DocumentBeingDestroyed() && Compositor())
     Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
 }
 
 void PaintLayerStackingNode::DirtyStackingContextZOrderLists(
-    PaintLayer* layer) {
-  if (PaintLayerStackingNode* stacking_node =
-          AncestorStackingContextNode(layer)) {
-    // This invalidation code intentionally refers to stale state.
-    DisableCompositingQueryAsserts disabler;
+    PaintLayer& layer) {
+  auto* stacking_context = layer.AncestorStackingContext();
+  if (!stacking_context)
+    return;
 
-    // Changes of stacking may result in graphics layers changing size
-    // due to new contents painting into them.
-    PaintLayer* ancestor_layer = stacking_node->Layer();
-    if (auto* mapping = ancestor_layer->GetCompositedLayerMapping()) {
-      mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
-    }
+  // This invalidation code intentionally refers to stale state.
+  DisableCompositingQueryAsserts disabler;
 
-    stacking_node->DirtyZOrderLists();
-  }
+  // Changes of stacking may result in graphics layers changing size
+  // due to new contents painting into them.
+  if (auto* mapping = stacking_context->GetCompositedLayerMapping())
+    mapping->SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateSubtree);
+
+  if (stacking_context->StackingNode())
+    stacking_context->StackingNode()->DirtyZOrderLists();
 }
 
 void PaintLayerStackingNode::RebuildZOrderLists() {
 #if DCHECK_IS_ON()
-  DCHECK(layer_list_mutation_allowed_);
+  DCHECK(layer_.LayerListMutationAllowed());
 #endif
-  DCHECK(IsDirtyStackingContext());
+  DCHECK(z_order_lists_dirty_);
 
-  for (PaintLayer* child = Layer()->FirstChild(); child;
+  for (PaintLayer* child = layer_.FirstChild(); child;
        child = child->NextSibling())
-    CollectLayers(child, pos_z_order_list_, neg_z_order_list_);
+    CollectLayers(*child);
 
   auto CompareZIndex = [](PaintLayer* first, PaintLayer* second) {
     return first->GetLayoutObject().StyleRef().ZIndex() <
@@ -161,20 +126,17 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
   };
 
   // Sort the two lists.
-  if (pos_z_order_list_)
-    std::stable_sort(pos_z_order_list_->begin(), pos_z_order_list_->end(),
-                     CompareZIndex);
-
-  if (neg_z_order_list_)
-    std::stable_sort(neg_z_order_list_->begin(), neg_z_order_list_->end(),
-                     CompareZIndex);
+  std::stable_sort(pos_z_order_list_.begin(), pos_z_order_list_.end(),
+                   CompareZIndex);
+  std::stable_sort(neg_z_order_list_.begin(), neg_z_order_list_.end(),
+                   CompareZIndex);
 
   // Append layers for top layer elements after normal layer collection, to
   // ensure they are on top regardless of z-indexes.  The layoutObjects of top
   // layer elements are children of the view, sorted in top layer stacking
   // order.
-  if (Layer()->IsRootLayer()) {
-    LayoutBlockFlow* root_block = Layer()->GetLayoutObject().View();
+  if (layer_.IsRootLayer()) {
+    LayoutBlockFlow* root_block = layer_.GetLayoutObject().View();
     // If the viewport is paginated, everything (including "top-layer" elements)
     // gets redirected to the flow thread. So that's where we have to look, in
     // that case.
@@ -187,15 +149,9 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
           (child->GetNode() && child->GetNode()->IsElementNode())
               ? ToElement(child->GetNode())
               : nullptr;
-      if (child_element && child_element->IsInTopLayer()) {
-        PaintLayer* layer = ToLayoutBoxModelObject(child)->Layer();
-        if (layer->StackingNode()) {
-          // Create the buffer if it doesn't exist yet.
-          if (!pos_z_order_list_) {
-            pos_z_order_list_ = std::make_unique<PaintLayers>();
-          }
-          pos_z_order_list_->push_back(layer);
-        }
+      if (child_element && child_element->IsInTopLayer() &&
+          child->StyleRef().IsStacked()) {
+        pos_z_order_list_.push_back(ToLayoutBoxModelObject(child)->Layer());
       }
     }
   }
@@ -207,48 +163,37 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
   z_order_lists_dirty_ = false;
 }
 
-void PaintLayerStackingNode::CollectLayers(
-    PaintLayer* paint_layer,
-    std::unique_ptr<PaintLayers>& pos_buffer,
-    std::unique_ptr<PaintLayers>& neg_buffer) {
-  if (paint_layer->IsInTopLayer())
+void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer) {
+  if (paint_layer.IsInTopLayer())
     return;
 
-  const ComputedStyle& style = paint_layer->GetLayoutObject().StyleRef();
+  const ComputedStyle& style = paint_layer.GetLayoutObject().StyleRef();
 
   if (style.IsStacked()) {
-    std::unique_ptr<PaintLayers>& buffer =
-        (style.ZIndex() >= 0) ? pos_buffer : neg_buffer;
-    if (!buffer)
-      buffer = std::make_unique<PaintLayers>();
-    buffer->push_back(paint_layer);
+    auto& list = style.ZIndex() >= 0 ? pos_z_order_list_ : neg_z_order_list_;
+    list.push_back(&paint_layer);
   }
 
-  if (!style.IsStackingContext()) {
-    for (PaintLayer* child = paint_layer->FirstChild(); child;
-         child = child->NextSibling()) {
-      CollectLayers(child, pos_buffer, neg_buffer);
-    }
-  }
+  if (style.IsStackingContext())
+    return;
+
+  for (PaintLayer* child = paint_layer.FirstChild(); child;
+       child = child->NextSibling())
+    CollectLayers(*child);
 }
 
 #if DCHECK_IS_ON()
 void PaintLayerStackingNode::UpdateStackingParentForZOrderLists(
     PaintLayerStackingNode* stacking_parent) {
-  if (pos_z_order_list_) {
-    for (wtf_size_t i = 0; i < pos_z_order_list_->size(); ++i)
-      pos_z_order_list_->at(i)->SetStackingParent(stacking_parent);
-  }
-
-  if (neg_z_order_list_) {
-    for (wtf_size_t i = 0; i < neg_z_order_list_->size(); ++i)
-      neg_z_order_list_->at(i)->SetStackingParent(stacking_parent);
-  }
+  for (auto* layer : pos_z_order_list_)
+    layer->SetStackingParent(stacking_parent);
+  for (auto* layer : neg_z_order_list_)
+    layer->SetStackingParent(stacking_parent);
 }
 
 #endif
 
-bool PaintLayerStackingNode::StyleDidChange(PaintLayer* paint_layer,
+bool PaintLayerStackingNode::StyleDidChange(PaintLayer& paint_layer,
                                             const ComputedStyle* old_style) {
   bool was_stacking_context = false;
   bool was_stacked = false;
@@ -259,7 +204,7 @@ bool PaintLayerStackingNode::StyleDidChange(PaintLayer* paint_layer,
     was_stacked = old_style->IsStacked();
   }
 
-  const ComputedStyle& new_style = paint_layer->GetLayoutObject().StyleRef();
+  const ComputedStyle& new_style = paint_layer.GetLayoutObject().StyleRef();
 
   bool should_be_stacking_context = new_style.IsStackingContext();
   bool should_be_stacked = new_style.IsStacked();
@@ -268,58 +213,25 @@ bool PaintLayerStackingNode::StyleDidChange(PaintLayer* paint_layer,
     return false;
 
   // Need to force requirements update, due to change of stacking order.
-  paint_layer->SetNeedsCompositingRequirementsUpdate();
+  paint_layer.SetNeedsCompositingRequirementsUpdate();
   DirtyStackingContextZOrderLists(paint_layer);
 
-  if (paint_layer->StackingNode()) {
-    if (should_be_stacking_context)
-      paint_layer->StackingNode()->DirtyZOrderLists();
-    else
-      paint_layer->StackingNode()->ClearZOrderLists();
-  }
+  if (paint_layer.StackingNode())
+    paint_layer.StackingNode()->DirtyZOrderLists();
 
   if (was_stacked != should_be_stacked) {
-    if (!paint_layer->GetLayoutObject().DocumentBeingDestroyed() &&
-        !paint_layer->IsRootLayer() && paint_layer->Compositor()) {
-      paint_layer->Compositor()->SetNeedsCompositingUpdate(
+    if (!paint_layer.GetLayoutObject().DocumentBeingDestroyed() &&
+        !paint_layer.IsRootLayer() && paint_layer.Compositor()) {
+      paint_layer.Compositor()->SetNeedsCompositingUpdate(
           kCompositingUpdateRebuildTree);
     }
   }
   return true;
 }
 
-PaintLayerStackingNode* PaintLayerStackingNode::AncestorStackingContextNode(
-    const PaintLayer* layer) {
-  for (PaintLayer* ancestor = layer->Parent(); ancestor;
-       ancestor = ancestor->Parent()) {
-    if (ancestor->GetLayoutObject().StyleRef().IsStackingContext())
-      return ancestor->StackingNode();
-  }
-  return nullptr;
-}
-
-void PaintLayerStackingNode::ClearZOrderLists() {
-  DCHECK(!Layer()->GetLayoutObject().StyleRef().IsStackingContext());
-
-#if DCHECK_IS_ON()
-  UpdateStackingParentForZOrderLists(nullptr);
-#endif
-
-  pos_z_order_list_.reset();
-  neg_z_order_list_.reset();
-}
-
 void PaintLayerStackingNode::UpdateZOrderLists() {
-  if (!z_order_lists_dirty_)
-    return;
-
-  if (!Layer()->GetLayoutObject().StyleRef().IsStackingContext()) {
-    ClearZOrderLists();
-    z_order_lists_dirty_ = false;
-    return;
-  }
-
-  RebuildZOrderLists();
+  if (z_order_lists_dirty_)
+    RebuildZOrderLists();
 }
 
 }  // namespace blink

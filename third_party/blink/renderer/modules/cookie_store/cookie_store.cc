@@ -78,9 +78,9 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     return base::nullopt;
   }
 
-  WTF::Time expires = options->hasExpires()
-                          ? WTF::Time::FromJavaTime(options->expires())
-                          : WTF::Time();
+  base::Time expires = options->hasExpires()
+                           ? base::Time::FromJavaTime(options->expires())
+                           : base::Time();
 
   String cookie_url_host = cookie_url.Host();
   String domain;
@@ -127,8 +127,8 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
   }
 
   return WebCanonicalCookie::Create(
-      name, value, domain, options->path(), WTF::Time() /*creation*/, expires,
-      WTF::Time() /*last_access*/, secure, false /*http_only*/, same_site,
+      name, value, domain, options->path(), base::Time() /*creation*/, expires,
+      base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
       WebCanonicalCookie::kDefaultPriority);
 }
 

@@ -15,8 +15,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/cdm_proxy.mojom.h"
 #include "media/mojo/interfaces/constants.mojom.h"
@@ -297,9 +297,8 @@ void MediaInterfaceProxy::ConnectToMediaService() {
   media::mojom::MediaServicePtr media_service;
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(media::mojom::kMediaServiceName, &media_service);
+  GetSystemConnector()->BindInterface(media::mojom::kMediaServiceName,
+                                      &media_service);
 
   media_service->CreateInterfaceFactory(
       MakeRequest(&interface_factory_ptr_),
@@ -361,13 +360,11 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   DCHECK(!cdm_factory_map_.count(cdm_guid));
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-
   media::mojom::CdmServicePtr cdm_service;
-  connector->BindInterface(service_manager::ServiceFilter::ByNameWithId(
-                               media::mojom::kCdmServiceName, cdm_guid),
-                           &cdm_service);
+  GetSystemConnector()->BindInterface(
+      service_manager::ServiceFilter::ByNameWithId(
+          media::mojom::kCdmServiceName, cdm_guid),
+      &cdm_service);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().

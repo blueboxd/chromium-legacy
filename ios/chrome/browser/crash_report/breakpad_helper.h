@@ -103,6 +103,21 @@ void SetIncognitoTabCount(int tabCount);
 // state is in progress, otherwise remove the key.
 void SetDestroyingAndRebuildingIncognitoBrowserState(bool in_progress);
 
+// Sets a key indicating the view controller that was being presented, iff the
+// view controller's view was already in the view hierarchy before the BVC
+// attempted to present it. |active_view_controller| is the view controller
+// being presented by BVC. |presenting_view_controller| is
+// |active_view_controller|'s presenting view controller.
+// |parent_view_controller| is |active_view_controller|'s parent view
+// controller.
+void SetBVCPresentingActiveViewController(NSString* active_view_controller,
+                                          NSString* presenting_view_controller,
+                                          NSString* parent_view_controller);
+
+// Removes the key indicating that the BVC is presenting an active view
+// controller.
+void RemoveBVCPresentingActiveViewController();
+
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each
 // stream in the media (once or twice for audio, two or three times for video).

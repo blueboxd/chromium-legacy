@@ -35,7 +35,7 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   ~StatusIconLinuxDbus() override;
 
   // StatusIcon:
-  void SetImage(const gfx::ImageSkia& image) override;
+  void SetIcon(const gfx::ImageSkia& image) override;
   void SetToolTip(const base::string16& tool_tip) override;
   void UpdatePlatformContextMenu(ui::MenuModel* model) override;
   void RefreshPlatformContextMenu() override;

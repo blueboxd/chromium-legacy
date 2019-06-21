@@ -15,6 +15,7 @@ class Document;
 class CSSStyleSheet;
 class CSSVariableData;
 class CSSValue;
+class CSSProperty;
 
 namespace css_test_helpers {
 
@@ -50,6 +51,9 @@ void RegisterProperty(Document& document,
 
 scoped_refptr<CSSVariableData> CreateVariableData(String);
 const CSSValue* CreateCustomIdent(AtomicString);
+const CSSValue* ParseLonghand(Document& document,
+                              const CSSProperty&,
+                              const String& value);
 
 }  // namespace css_test_helpers
 }  // namespace blink

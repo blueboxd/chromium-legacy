@@ -51,6 +51,7 @@ class HeapCollector : public MetricCollector, public BrowserListObserver {
 
  protected:
   // MetricCollector:
+  base::WeakPtr<MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 
@@ -91,6 +92,8 @@ class HeapCollector : public MetricCollector, public BrowserListObserver {
 
   // The collector state.
   bool is_enabled_;
+
+  base::WeakPtrFactory<HeapCollector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HeapCollector);
 };

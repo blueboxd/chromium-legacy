@@ -28,7 +28,7 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
@@ -111,10 +111,8 @@ void BindRendererFacingCrosImageCapture(
   auto proxy_request = mojo::MakeRequest(&proxy_ptr);
 
   // Bind proxy request to video_capture service.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(video_capture::mojom::kServiceName,
-                      std::move(proxy_request));
+  content::GetSystemConnector()->BindInterface(
+      video_capture::mojom::kServiceName, std::move(proxy_request));
 
   auto security_origin = source->GetLastCommittedOrigin();
   auto media_device_id_salt =

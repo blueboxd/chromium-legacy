@@ -76,7 +76,7 @@ void NotificationImageLoader::Start(ExecutionContext* context,
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *context, this, resource_loader_options);
   threadable_loader_->SetTimeout(
-      TimeDelta::FromMilliseconds(kImageFetchTimeoutInMs));
+      base::TimeDelta::FromMilliseconds(kImageFetchTimeoutInMs));
   threadable_loader_->Start(resource_request);
 }
 
@@ -183,7 +183,7 @@ SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image) {
     double scale =
         std::min(static_cast<double>(max_width_px) / image.width(),
                  static_cast<double>(max_height_px) / image.height());
-    TimeTicks start_time = CurrentTimeTicks();
+    base::TimeTicks start_time = CurrentTimeTicks();
     // TODO(peter): Try using RESIZE_BETTER for large images.
     SkBitmap scaled_image = skia::ImageOperations::Resize(
         image, skia::ImageOperations::RESIZE_BEST,

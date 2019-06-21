@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "components/signin/core/browser/oauth_multilogin_helper.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -39,11 +38,9 @@ class SimpleURLLoader;
 
 namespace signin {
 
+class OAuthMultiloginHelper;
 class UbertokenFetcherImpl;
 enum class SetAccountsInCookieResult;
-
-// The maximum number of retries for a fetcher used in this class.
-constexpr int kMaxFetcherRetries = 8;
 
 struct MultiloginParameters {
   MultiloginParameters(gaia::MultiloginMode mode,

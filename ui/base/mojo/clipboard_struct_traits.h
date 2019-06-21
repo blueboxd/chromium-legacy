@@ -14,11 +14,11 @@ template <>
 struct EnumTraits<ui::mojom::ClipboardType, ui::ClipboardType> {
   static ui::mojom::ClipboardType ToMojom(ui::ClipboardType type) {
     switch (type) {
-      case ui::CLIPBOARD_TYPE_COPY_PASTE:
+      case ui::ClipboardType::kCopyPaste:
         return ui::mojom::ClipboardType::COPY_PASTE;
-      case ui::CLIPBOARD_TYPE_SELECTION:
+      case ui::ClipboardType::kSelection:
         return ui::mojom::ClipboardType::SELECTION;
-      case ui::CLIPBOARD_TYPE_DRAG:
+      case ui::ClipboardType::kDrag:
         return ui::mojom::ClipboardType::DRAG;
     }
   }
@@ -26,13 +26,13 @@ struct EnumTraits<ui::mojom::ClipboardType, ui::ClipboardType> {
   static bool FromMojom(ui::mojom::ClipboardType type, ui::ClipboardType* out) {
     switch (type) {
       case ui::mojom::ClipboardType::COPY_PASTE:
-        *out = ui::CLIPBOARD_TYPE_COPY_PASTE;
+        *out = ui::ClipboardType::kCopyPaste;
         return true;
       case ui::mojom::ClipboardType::SELECTION:
-        *out = ui::CLIPBOARD_TYPE_SELECTION;
+        *out = ui::ClipboardType::kSelection;
         return true;
       case ui::mojom::ClipboardType::DRAG:
-        *out = ui::CLIPBOARD_TYPE_DRAG;
+        *out = ui::ClipboardType::kDrag;
         return true;
     }
     NOTREACHED();

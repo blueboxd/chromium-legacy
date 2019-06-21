@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
@@ -438,6 +439,16 @@ void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
     NotifyObserversOfEntry(*entry);
   if (ShouldBufferEntries())
     AddLayoutJankBuffer(*entry);
+}
+
+void WindowPerformance::OnLargestContentfulPaintUpdated(
+    base::TimeTicks paint_time,
+    uint64_t paint_size) {
+  auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
+      MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size);
+  if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
+    NotifyObserversOfEntry(*entry);
+  AddLargestContentfulPaint(entry);
 }
 
 }  // namespace blink

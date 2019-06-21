@@ -145,7 +145,8 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         first_params_.channels(), first_params_.sample_rate() *
                                       kMediaStreamAudioTrackBufferDurationMs /
                                       base::Time::kMillisecondsPerSecond));
-    first_source_.OnMoreData(base::TimeDelta(), TimeTicks::Now(), 0, bus.get());
+    first_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                             bus.get());
 
     // Save the samples that we read into the first_source_cache_.
     std::unique_ptr<media::AudioBus> cache_bus(
@@ -165,7 +166,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         second_params_.channels(), second_params_.sample_rate() *
                                        kMediaStreamAudioTrackBufferDurationMs /
                                        base::Time::kMillisecondsPerSecond));
-    second_source_.OnMoreData(base::TimeDelta(), TimeTicks::Now(), 0,
+    second_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
                               bus.get());
     return bus;
   }
@@ -173,11 +174,11 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
   MOCK_METHOD3(DoOnEncodedAudio,
                void(const media::AudioParameters& params,
                     std::string encoded_data,
-                    TimeTicks timestamp));
+                    base::TimeTicks timestamp));
 
   void OnEncodedAudio(const media::AudioParameters& params,
                       std::unique_ptr<std::string> encoded_data,
-                      TimeTicks timestamp) {
+                      base::TimeTicks timestamp) {
     EXPECT_TRUE(!encoded_data->empty());
 
     if (codec_ == AudioTrackRecorder::CodecId::OPUS) {
@@ -263,9 +264,12 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   // TODO(ajose): consider adding WillOnce(SaveArg...) and inspecting, as done
   // in VTR unittests. http://crbug.com/548856
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _)).Times(1);
-  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
@@ -273,14 +277,19 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
       .WillOnce(RunClosure3(
           WTF::BindRepeating(&AudioTrackRecorderTest::ResetDecoder,
                              WTF::Unretained(this), second_params_)));
-  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   // If the amount of samples/10ms buffer is not an integer (e.g. 22050Hz) we
   // need an extra OnData() to account for the round-off error.
-  if (GetParam().sample_rate % 100)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  if (GetParam().sample_rate % 100) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   // Give ATR new audio parameters.
   audio_track_recorder_->OnSetFormat(second_params_);
@@ -289,9 +298,12 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
       .WillOnce(RunClosure3(std::move(quit_closure)));
-  audio_track_recorder_->OnData(*GetSecondSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetSecondSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetSecondSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetSecondSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   run_loop.Run();
   testing::Mock::VerifyAndClearExpectations(this);
@@ -311,9 +323,12 @@ TEST_P(AudioTrackRecorderTest, OnDataPcm) {
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .WillOnce(RunClosure3(std::move(quit_closure)));
 
-  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   run_loop.Run();
   testing::Mock::VerifyAndClearExpectations(this);
@@ -332,20 +347,28 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
 
   audio_track_recorder_->Pause();
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _)).Times(0);
-  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   audio_track_recorder_->Resume();
   EXPECT_CALL(*this, DoOnEncodedAudio(_, _, _))
       .Times(1)
       .WillOnce(RunClosure3(std::move(quit_closure)));
-  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
-  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                base::TimeTicks::Now());
+  for (int i = 0; i < kRatioInputToOutputFrames - 1; ++i) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
-  if (GetParam().sample_rate % 100)
-    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(), TimeTicks::Now());
+  if (GetParam().sample_rate % 100) {
+    audio_track_recorder_->OnData(*GetFirstSourceAudioBus(),
+                                  base::TimeTicks::Now());
+  }
 
   run_loop.Run();
   testing::Mock::VerifyAndClearExpectations(this);

@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -95,11 +95,7 @@ void ImageHelper::Job::Start() {
 }
 
 void ImageHelper::Job::SetupConnector() {
-  service_manager::mojom::ConnectorRequest connector_request;
-  connector_ = service_manager::Connector::Create(&connector_request);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
+  connector_ = content::GetSystemConnector()->Clone();
 }
 
 void ImageHelper::Job::DecodeImageBytes(

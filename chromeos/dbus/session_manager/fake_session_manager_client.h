@@ -246,6 +246,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return user_sessions_;
   }
 
+  const std::string& login_password() const { return login_password_; }
+
  private:
   // Called in response to writing owner key file specified in new device
   // policy - used for in-memory fake only.
@@ -293,6 +295,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   base::TimeTicks arc_start_time_;
 
   bool container_running_ = false;
+
+  std::string login_password_;
 
   // Contains last request passed to StartArcMiniContainer
   login_manager::StartArcMiniContainerRequest

@@ -117,6 +117,11 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [self updateAllButtonsVisibility];
 }
 
+- (void)didMoveToParentViewController:(UIViewController*)parent {
+  [super didMoveToParentViewController:parent];
+  [self updateAllButtonsVisibility];
+}
+
 #pragma mark - Public
 
 - (ToolbarToolsMenuButton*)toolsMenuButton {

@@ -164,18 +164,18 @@ void BlinkInitializer::RegisterInterfaces(
     return;
 
 #if defined(OS_ANDROID)
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
-      main_thread->GetTaskRunner());
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &OomInterventionImpl::Create)),
+                        main_thread->GetTaskRunner());
 
-  registry.AddInterface(ConvertToBaseCallback(CrossThreadBind(
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
                             &CrashMemoryMetricsReporterImpl::Bind)),
                         main_thread->GetTaskRunner());
 #endif
 
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Create)),
-      main_thread->GetTaskRunner());
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &BlinkLeakDetector::Create)),
+                        main_thread->GetTaskRunner());
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {

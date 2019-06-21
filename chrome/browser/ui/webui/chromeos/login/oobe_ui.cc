@@ -89,6 +89,7 @@
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -481,6 +482,14 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
       multidevice_setup::mojom::kServiceName, std::move(request));
 }
 
+void OobeUI::BindCrosNetworkConfig(
+    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
+  content::BrowserContext::GetConnectorFor(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindInterface(chromeos::network_config::mojom::kServiceName,
+                      std::move(request));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   display_type_ = GetDisplayType(url);
@@ -522,6 +531,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
                                            base::Unretained(this)));
   AddHandlerToRegistry(base::BindRepeating(
       &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindCrosNetworkConfig,
+                                           base::Unretained(this)));
 }
 
 OobeUI::~OobeUI() {

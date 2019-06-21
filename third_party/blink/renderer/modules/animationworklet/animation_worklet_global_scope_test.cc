@@ -320,7 +320,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     EXPECT_EQ(output->animations.size(), 1ul);
     EXPECT_EQ(output->animations[0].local_times[0],
-              WTF::TimeDelta::FromMillisecondsD(123));
+              base::TimeDelta::FromMillisecondsD(123));
 
     waitable_event->Signal();
   }

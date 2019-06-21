@@ -184,6 +184,11 @@ class CONTENT_EXPORT WebContentsAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& overscroll_refresh_handler);
 
+  void SetSpatialNavigationDisabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      bool disabled);
+
   // Relay the access from Java layer to RWHV::CopyFromSurface() through JNI.
   void WriteContentBitmapToDisk(
       JNIEnv* env,

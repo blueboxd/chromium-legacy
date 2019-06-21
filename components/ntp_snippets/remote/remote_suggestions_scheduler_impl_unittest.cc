@@ -30,7 +30,6 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -177,11 +176,11 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
         default_variation_params_{{"scheduler_trigger_types",
                                    "persistent_scheduler_wake_up,ntp_opened,"
                                    "browser_foregrounded,browser_cold_start"}},
-        params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
-                        default_variation_params_,
-                        {kArticleSuggestionsFeature.name}),
         user_classifier_(/*pref_service=*/nullptr,
                          base::DefaultClock::GetInstance()) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        ntp_snippets::kArticleSuggestionsFeature, default_variation_params_);
+
     RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
@@ -212,10 +211,9 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
     std::map<std::string, std::string> params = default_variation_params_;
     params[param_name] = param_value;
 
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        ntp_snippets::kArticleSuggestionsFeature.name, params,
-        {ntp_snippets::kArticleSuggestionsFeature.name});
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        ntp_snippets::kArticleSuggestionsFeature, params);
   }
 
   bool IsEulaNotifierAvailable() {
@@ -240,7 +238,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
 
  protected:
   std::map<std::string, std::string> default_variation_params_;
-  variations::testing::VariationParamsManager params_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   void ActivateProviderAndEula() {
     SetEulaAcceptedPref();

@@ -465,14 +465,14 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
       vm_name, container_name);
 }
 
-base::string16 GetTimeRemainingMessage(base::Time start, int percent) {
+base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   // Only estimate once we've spent at least 3 seconds OR gotten 10% of the way
   // through.
   constexpr base::TimeDelta kMinTimeForEstimate =
       base::TimeDelta::FromSeconds(3);
   constexpr base::TimeDelta kTimeDeltaZero = base::TimeDelta::FromSeconds(0);
   constexpr int kMinPercentForEstimate = 10;
-  base::TimeDelta elapsed = base::Time::Now() - start;
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start;
   if ((elapsed >= kMinTimeForEstimate && percent > 0) ||
       (percent >= kMinPercentForEstimate && elapsed > kTimeDeltaZero)) {
     base::TimeDelta total_time_expected = (elapsed * 100) / percent;

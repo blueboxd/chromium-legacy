@@ -308,7 +308,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbars) {
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
-  EXPECT_EQ(FloatRoundedRect(10, 10, 93, 93),
+  EXPECT_EQ(FloatClipRect(FloatRect(10, 10, 93, 93)),
             overflow_clip->ClipRectExcludingOverlayScrollbars());
 }
 
@@ -336,7 +336,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
-  EXPECT_EQ(FloatRoundedRect(10, 10, 94, 93),
+  EXPECT_EQ(FloatClipRect(FloatRect(10, 10, 94, 93)),
             overflow_clip->ClipRectExcludingOverlayScrollbars());
 }
 

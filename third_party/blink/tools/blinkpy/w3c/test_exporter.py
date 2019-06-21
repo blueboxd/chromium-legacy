@@ -337,7 +337,7 @@ class TestExporter(object):
             _log.debug('END_OF_PATCH_EXCERPT')
             return
 
-        self.local_wpt.create_branch_with_patch(pr_branch_name, message, patch, author, force_push=updating)
+        self.local_wpt.create_branch_with_patch(pr_branch_name, message, patch, author, force_push=True)
 
         if updating:
             self.wpt_github.update_pr(pr_number, subject, pr_description)

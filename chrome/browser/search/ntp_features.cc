@@ -43,6 +43,11 @@ const base::Feature kFakeboxSearchIconColorOnNtp{
 const base::Feature kFakeboxShortHintTextOnNtp{
     "FakeboxShortHintTextOnNtp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, include a pre-populated Google search shortcut on the NTP during
+// first run.
+const base::Feature kFirstRunDefaultSearchShortcut{
+    "FirstRunDefaultSearchShortcut", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the NTP fakebox will be changed to the Google search style. Also
 // implicitly enabled by |kFakeboxSearchIconOnNtp|,
 // |kFakeboxSearchIconColorOnNtp|, and |kUseAlternateFakeboxRectOnNtp|.

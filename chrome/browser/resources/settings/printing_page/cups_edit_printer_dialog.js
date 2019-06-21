@@ -155,17 +155,30 @@ Polymer({
     this.$$('add-printer-dialog').close();
   },
 
+  /**
+   * @param {!PrinterSetupResult} result
+   * @private
+   */
+  onPrinterEdited_: function(result) {
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: result, printerName: this.activePrinter.printerName});
+    this.$$('add-printer-dialog').close();
+  },
+
   /** @private */
   onSaveTap_: function() {
     this.updateActivePrinter_();
     if (this.needsReconfigured_) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
-          .reconfigureCupsPrinter(this.activePrinter);
+          .reconfigureCupsPrinter(this.activePrinter)
+          .then(this.onPrinterEdited_.bind(this));
     } else {
-      settings.CupsPrintersBrowserProxyImpl.getInstance().updateCupsPrinter(
-          this.activePrinter.printerId, this.activePrinter.printerName);
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .updateCupsPrinter(
+              this.activePrinter.printerId, this.activePrinter.printerName)
+          .then(this.onPrinterEdited_.bind(this));
     }
-    this.$$('add-printer-dialog').close();
   },
 
   /**

@@ -2,7 +2,7 @@
 <!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<org.chromium.chrome.browser.autofill_assistant.SizeListenableLinearLayout
+<LinearLayout
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/autofill_assistant"
@@ -62,4 +62,4 @@
             android:clipChildren="false"
             android:clipToPadding="false" />
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
-</org.chromium.chrome.browser.autofill_assistant.SizeListenableLinearLayout>
+</LinearLayout>

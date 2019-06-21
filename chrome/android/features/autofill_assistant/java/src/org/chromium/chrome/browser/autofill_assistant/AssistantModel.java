@@ -25,7 +25,7 @@ class AssistantModel extends PropertyModel {
             new WritableBooleanPropertyKey();
     static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
-    private final AssistantOverlayModel mOverlayModel = new AssistantOverlayModel();
+    private final AssistantOverlayModel mOverlayModel;
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
     private final AssistantDetailsModel mDetailsModel = new AssistantDetailsModel();
     private final AssistantInfoBoxModel mInfoBoxModel = new AssistantInfoBoxModel();
@@ -36,7 +36,12 @@ class AssistantModel extends PropertyModel {
     private final AssistantCarouselModel mActionsModel = new AssistantCarouselModel();
 
     AssistantModel() {
+        this(new AssistantOverlayModel());
+    }
+
+    AssistantModel(AssistantOverlayModel overlayModel) {
         super(ALLOW_SOFT_KEYBOARD, VISIBLE, ALLOW_TALKBACK_ON_WEBSITE);
+        mOverlayModel = overlayModel;
     }
 
     @CalledByNative

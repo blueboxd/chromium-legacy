@@ -51,8 +51,8 @@ namespace {
 // Threshold for rejecting stored non-immersive poses as being too old.
 // If it's exceeded, defer non-immersive rAF callback execution until
 // a fresh pose is received.
-constexpr WTF::TimeDelta kNonImmersivePoseAgeThreshold =
-    WTF::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kNonImmersivePoseAgeThreshold =
+    base::TimeDelta::FromMilliseconds(250);
 
 device::mojom::blink::XRFrameDataPtr CreateIdentityFrameData() {
   auto data = device::mojom::blink::XRFrameData::New();
@@ -80,17 +80,17 @@ class VRDisplayFrameRequestCallback
   void Invoke(double high_res_time_ms) override {
     if (Id() != vr_display_->PendingNonImmersiveVSyncId())
       return;
-    TimeTicks monotonic_time;
+    base::TimeTicks monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
       monotonic_time = WTF::CurrentTimeTicks();
     } else {
       // Convert document-zero time back to monotonic time.
-      TimeTicks reference_monotonic_time = vr_display_->GetDocument()
-                                               ->Loader()
-                                               ->GetTiming()
-                                               .ReferenceMonotonicTime();
+      base::TimeTicks reference_monotonic_time = vr_display_->GetDocument()
+                                                     ->Loader()
+                                                     ->GetTiming()
+                                                     .ReferenceMonotonicTime();
       monotonic_time = reference_monotonic_time +
-                       TimeDelta::FromMillisecondsD(high_res_time_ms);
+                       base::TimeDelta::FromMillisecondsD(high_res_time_ms);
     }
     vr_display_->OnNonImmersiveVSync(monotonic_time);
   }
@@ -718,7 +718,7 @@ void VRDisplay::BeginPresent() {
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (doc && !pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
-    TimeTicks timestamp = WTF::CurrentTimeTicks();
+    base::TimeTicks timestamp = WTF::CurrentTimeTicks();
     doc->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
@@ -987,7 +987,7 @@ void VRDisplay::OnDeactivate(
       event_type_names::kVrdisplaydeactivate, this, reason));
 }
 
-void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {
+void VRDisplay::ProcessScheduledWindowAnimations(base::TimeTicks timestamp) {
   TRACE_EVENT1("gpu", "VRDisplay::window.rAF", "frame", vr_frame_id_);
   auto* doc = navigator_vr_->GetDocument();
   if (!doc)
@@ -1016,7 +1016,7 @@ void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {
   }
 }
 
-void VRDisplay::ProcessScheduledAnimations(TimeTicks timestamp) {
+void VRDisplay::ProcessScheduledAnimations(base::TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   // Check if we still have a valid context, the animation controller
   // or document may have disappeared since we scheduled this.
@@ -1126,19 +1126,20 @@ void VRDisplay::OnPresentingVSync(
   // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
   // related then tasks should not be throttled or frozen in background tabs.
   doc->GetTaskRunner(blink::TaskType::kInternalMedia)
-      ->PostTask(FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                                      WrapWeakPersistent(this),
-                                      TimeTicks() + frame_data->time_delta));
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                           WrapWeakPersistent(this),
+                           base::TimeTicks() + frame_data->time_delta));
 }
 
-void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {
+void VRDisplay::OnNonImmersiveVSync(base::TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   pending_non_immersive_vsync_ = false;
   pending_non_immersive_vsync_id_ = -1;
   if (is_presenting_)
     return;
   vr_frame_id_ = -1;
-  WTF::TimeDelta pose_age =
+  base::TimeDelta pose_age =
       WTF::CurrentTimeTicks() - non_immersive_pose_received_time_;
   if (pose_age >= kNonImmersivePoseAgeThreshold &&
       non_immersive_pose_request_time_ > non_immersive_pose_received_time_) {

@@ -579,10 +579,11 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   std::string error_path;
   const Schema json_string_schema =
       IsListSchema() ? schema_.GetItems() : schema_;
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
-  bool validated = json_string_schema.Validate(*parsed_value, SCHEMA_STRICT,
-                                               &error_path, &schema_error);
+  // Even though we are validating this schema here, we don't actually change
+  // the policy if it fails to validate. This validation is just so we can show
+  // the user errors.
+  bool validated = json_string_schema.Validate(
+      *parsed_value, SCHEMA_ALLOW_UNKNOWN, &error_path, &schema_error);
   if (errors && !schema_error.empty())
     errors->AddError(policy_name_, ErrorPath(index, error_path), schema_error);
   if (!validated)

@@ -153,6 +153,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<device::mojom::UsbDeviceFilterPtr>
       guest_os_classes_without_notif_;
   device::mojom::UsbDeviceFilterPtr adb_device_filter_;
+  device::mojom::UsbDeviceFilterPtr fastboot_device_filter_;
 
   // A mapping from GUID -> UsbDeviceInfo for each attached USB device
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> available_device_info_;

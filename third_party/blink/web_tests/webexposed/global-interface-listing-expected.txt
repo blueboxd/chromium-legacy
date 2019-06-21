@@ -4390,6 +4390,11 @@ interface KeyframeEffect : AnimationEffect
     method setKeyframes
     setter composite
     setter target
+interface LargestContentfulPaint : PerformanceEntry
+    attribute @@toStringTag
+    getter size
+    method constructor
+    method toJSON
 interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
     getter value
@@ -8310,7 +8315,6 @@ interface WebGL2ComputeRenderingContext
     attribute ELEMENT_ARRAY_BUFFER
     attribute ELEMENT_ARRAY_BUFFER_BINDING
     attribute EQUAL
-    attribute FALSE
     attribute FASTEST
     attribute FLOAT
     attribute FLOAT_32_UNSIGNED_INT_24_8_REV
@@ -8741,7 +8745,6 @@ interface WebGL2ComputeRenderingContext
     attribute TRIANGLES
     attribute TRIANGLE_FAN
     attribute TRIANGLE_STRIP
-    attribute TRUE
     attribute TYPE
     attribute UNIFORM
     attribute UNIFORM_ARRAY_STRIDE

@@ -172,10 +172,6 @@
 #include "components/rlz/rlz_tracker.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
-#endif
-
 namespace chromeos {
 
 namespace {
@@ -1114,17 +1110,33 @@ void UserSessionManager::StartCrosSession() {
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
-void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
-  if (send_password) {
-    if (user_context_.GetPasswordKey()->GetSecret().size() > 0) {
-      SessionManagerClient::Get()->SaveLoginPassword(
-          user_context_.GetPasswordKey()->GetSecret());
+void UserSessionManager::VoteForSavingLoginPassword(
+    PasswordConsumingService service,
+    bool save_password) {
+  DCHECK_LT(service, PasswordConsumingService::kCount);
+
+  // Prevent this code from being called twice from two services or else the
+  // second service would trigger the warning below (since the password has been
+  // cleared).
+  if (save_password && !password_was_saved_) {
+    password_was_saved_ = true;
+    const std::string& password = user_context_.GetPasswordKey()->GetSecret();
+    if (!password.empty()) {
+      VLOG(1) << "Saving login password for service "
+              << static_cast<size_t>(service);
+      SessionManagerClient::Get()->SaveLoginPassword(password);
     } else {
       LOG(WARNING) << "Not saving password because password is empty.";
     }
   }
 
-  user_context_.GetMutablePasswordKey()->ClearSecret();
+  // If we've already sent the password or if all services voted 'no', forget
+  // the password again, it's not needed anymore.
+  password_service_voted_.set(static_cast<size_t>(service), true);
+  if (save_password || password_service_voted_.all()) {
+    VLOG(1) << "Clearing login password";
+    user_context_.GetMutablePasswordKey()->ClearSecret();
+  }
 }
 
 void UserSessionManager::InitDemoSessionIfNeeded(base::OnceClosure callback) {
@@ -1538,9 +1550,12 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
 
-  // Initialize various services only for primary user.
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
+  session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+      user->GetAccountId());
+
+  // Initialize various services only for primary user.
   if (user_manager->GetPrimaryUser() == user) {
     InitRlz(profile);
     InitializeCerts(profile);
@@ -1696,14 +1711,6 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   ProfileHelper::Get()->ProfileStartup(profile);
 
   if (start_session_type_ == PRIMARY_USER_SESSION) {
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-    // Initialize Assistant early to be used in post login Oobe steps.
-    // Note: AssistantClient::MaybeInit is also called in
-    // SessionControllerClient::OnSessionStateChanged, which happends after the
-    // post login Oobe steps. Therefore Assistant is initialized here.
-    if (chromeos::switches::IsAssistantEnabled())
-      AssistantClient::Get()->MaybeInit(profile);
-#endif
     UserFlow* user_flow = ChromeUserManager::Get()->GetCurrentUserFlow();
     WizardController* oobe_controller = WizardController::default_controller();
     base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();

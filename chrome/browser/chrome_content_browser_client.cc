@@ -5465,8 +5465,8 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   if (previews_triggering_logic_already_ran) {
     // Copy the server state that was used before the redirect for the initial
     // URL.
-    previews_state |= (previews_data->allowed_previews_state() &
-                       server_previews_enabled_state);
+    previews_state |=
+        (previews_data->AllowedPreviewsState() & server_previews_enabled_state);
   } else {
     if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
             previews_data, current_navigation_url, is_reload,
@@ -5654,7 +5654,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
            ? previews::PreviewsEligibilityReason::CACHE_CONTROL_NO_TRANSFORM
            : previews::PreviewsEligibilityReason::COMMITTED),
       navigation_handle->GetURL(), base::Time::Now(),
-      previews_user_data->committed_previews_type(), std::move(passed_reasons),
+      previews_user_data->CommittedPreviewsType(), std::move(passed_reasons),
       previews_user_data);
 
   return committed_state;

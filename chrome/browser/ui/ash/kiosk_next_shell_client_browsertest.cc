@@ -77,26 +77,6 @@ class KioskNextShellClientTest : public OobeBaseTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, PRE_KioskNextShellLaunch) {
-  LoginAndEnableKioskNextShellPref();
-}
-
-// Checks that the Kiosk Next Home window is launched on sign-in when the
-// feature is enabled and its pref allows it.
-IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, KioskNextShellLaunch) {
-  // Enable all component extensions.
-  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-
-  Login("username");
-
-  // Wait for the app to launch.
-  apps::AppWindowWaiter waiter(
-      extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
-          user_manager::UserManager::Get()->GetActiveUser())),
-      extension_misc::kKioskNextHomeAppId);
-  EXPECT_TRUE(waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
-}
-
 IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, PRE_BrowserNotLaunched) {
   LoginAndEnableKioskNextShellPref();
 }
@@ -134,30 +114,13 @@ IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest,
   EXPECT_FALSE(waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
 }
 
-// Variant of KioskNextShellClientTest that disables Mash in order to test the
-// Ash container of the Chrome app window.
-// TODO(crbug.com/945704): Once we can identify the app window's container with
-// SingleProcessMash enabled, remove this test class and add the container check
-// to the KioskNextShellLaunch test.
-class KioskNextShellClientMashDisabledTest : public KioskNextShellClientTest {
- public:
-  KioskNextShellClientMashDisabledTest() : KioskNextShellClientTest() {
-    feature_list_.InitAndDisableFeature(features::kSingleProcessMash);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(KioskNextShellClientMashDisabledTest,
-                       PRE_KioskNextShellLaunch) {
+IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, PRE_KioskNextShellLaunch) {
   LoginAndEnableKioskNextShellPref();
 }
 
 // Checks that the Kiosk Next Home window is launched on sign-in when the
 // feature is enabled and its pref allows it.
-IN_PROC_BROWSER_TEST_F(KioskNextShellClientMashDisabledTest,
-                       KioskNextShellLaunch) {
+IN_PROC_BROWSER_TEST_F(KioskNextShellClientTest, KioskNextShellLaunch) {
   // Enable all component extensions.
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 

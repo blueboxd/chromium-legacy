@@ -67,6 +67,7 @@ IdentityManager::IdentityManager(
   primary_account_manager_->SetObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
+  token_service_->AddAccessTokenDiagnosticsObserver(this);
 
   // IdentityManager owns the ATS and GCMS instances and will outlive them, so
   // base::Unretained is safe.
@@ -100,6 +101,7 @@ IdentityManager::~IdentityManager() {
   primary_account_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
+  token_service_->RemoveAccessTokenDiagnosticsObserver(this);
 }
 
 void IdentityManager::AddObserver(Observer* observer) {

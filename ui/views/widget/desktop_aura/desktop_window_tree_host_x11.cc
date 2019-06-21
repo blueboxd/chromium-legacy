@@ -48,6 +48,7 @@
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1497,9 +1498,13 @@ void DesktopWindowTreeHostX11::InitX11Window(
   Visual* visual = CopyFromParent;
   int depth = CopyFromParent;
   Colormap colormap = CopyFromParent;
-  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-      enable_transparent_visuals, &visual, &depth, &colormap,
-      &use_argb_visual_);
+  ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
+  if (!visual_id_ ||
+      !visual_manager->GetVisualInfo(visual_id_, &visual, &depth, &colormap,
+                                     &use_argb_visual_)) {
+    visual_manager->ChooseVisualForWindow(enable_transparent_visuals, &visual,
+                                          &depth, &colormap, &use_argb_visual_);
+  }
 
   if (colormap != CopyFromParent) {
     attribute_mask |= CWColormap;
@@ -1691,7 +1696,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // Disable compositing on tooltips as a workaround for
   // https://crbug.com/442111.
   CreateCompositor(viz::FrameSinkId(),
-                   params.type == Widget::InitParams::TYPE_TOOLTIP);
+                   params.force_software_compositing ||
+                       params.type == Widget::InitParams::TYPE_TOOLTIP);
 
   if (ui::IsSyncExtensionAvailable()) {
     compositor_observer_ = std::make_unique<SwapWithNewSizeObserverHelper>(
@@ -2108,6 +2114,23 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
                "event->type", event->type);
 
   UpdateWMUserTime(event);
+
+  // We can lose track of the window's position when the window is reparented.
+  // When the parent window is moved, we won't get an event, so the window's
+  // position relative to the root window will get out-of-sync.  We can re-sync
+  // when getting pointer events (EnterNotify, LeaveNotify, ButtonPress,
+  // ButtonRelease, MotionNotify) which include the pointer location both
+  // relative to this window and relative to the root window, so we can
+  // calculate this window's position from that information.
+  gfx::Point window_point = ui::EventLocationFromXEvent(*xev);
+  gfx::Point root_point = ui::EventSystemLocationFromXEvent(*xev);
+  if (!window_point.IsOrigin() && !root_point.IsOrigin()) {
+    gfx::Point window_origin = gfx::Point() + (root_point - window_point);
+    if (bounds_in_pixels_.origin() != window_origin) {
+      bounds_in_pixels_.set_origin(window_origin);
+      OnHostMovedInPixels(window_origin);
+    }
+  }
 
   // May want to factor CheckXEventForConsistency(xev); into a common location
   // since it is called here.
@@ -2547,6 +2570,11 @@ DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
   if (views::LinuxUI::instance())
     return views::LinuxUI::instance()->GetKeyboardLayoutMap();
   return {};
+}
+
+void DesktopWindowTreeHostX11::SetVisualId(VisualID visual_id) {
+  DCHECK_EQ(xwindow_, 0UL);
+  visual_id_ = visual_id;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

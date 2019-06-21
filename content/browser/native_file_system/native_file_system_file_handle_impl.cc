@@ -30,11 +30,8 @@ NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
     const storage::FileSystemURL& url,
-    storage::IsolatedContext::ScopedFSHandle file_system)
-    : NativeFileSystemHandleBase(manager,
-                                 context,
-                                 url,
-                                 std::move(file_system)) {}
+    const SharedHandleState& handle_state)
+    : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
 
 NativeFileSystemFileHandleImpl::~NativeFileSystemFileHandleImpl() = default;
 
@@ -261,6 +258,11 @@ void NativeFileSystemFileHandleImpl::TruncateImpl(uint64_t length,
             std::move(callback).Run(NativeFileSystemError::New(result));
           },
           std::move(callback)));
+}
+
+base::WeakPtr<NativeFileSystemHandleBase>
+NativeFileSystemFileHandleImpl::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace content

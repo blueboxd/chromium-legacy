@@ -16,7 +16,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/usb/usb_host_ui_delegate.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -212,10 +212,8 @@ void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
 
 void ArcUsbHostBridge::OnConnectionReady() {
   // Request UsbDeviceManagerPtr from DeviceService.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&usb_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_));
   usb_manager_.set_connection_error_handler(
       base::BindOnce(&ArcUsbHostBridge::Disconnect, base::Unretained(this)));
 

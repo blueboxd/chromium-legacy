@@ -342,15 +342,47 @@ OM_uint32 MockGSSAPILibrary::display_status(
       const gss_OID mech_type,
       OM_uint32* message_context,
       gss_buffer_t status_string) {
-  if (minor_status)
-    *minor_status = 0;
-  std::string msg = base::StringPrintf("Value: %u, Type %u",
-                                       status_value,
-                                       status_type);
-  if (message_context)
-    *message_context = 0;
+  OM_uint32 rv = GSS_S_COMPLETE;
+  *minor_status = 0;
+  std::string msg;
+  switch (static_cast<DisplayStatusSpecials>(status_value)) {
+    case DisplayStatusSpecials::MultiLine:
+      msg = base::StringPrintf("Line %u for status %u", ++*message_context,
+                               status_value);
+      if (*message_context >= 5u)
+        *message_context = 0u;
+      break;
+
+    case DisplayStatusSpecials::InfiniteLines:
+      msg = base::StringPrintf("Line %u for status %u", ++*message_context,
+                               status_value);
+      break;
+
+    case DisplayStatusSpecials::Fail:
+      rv = GSS_S_BAD_MECH;
+      msg = "You should not see this";
+      EXPECT_EQ(*message_context, 0u);
+      break;
+
+    case DisplayStatusSpecials::EmptyMessage:
+      EXPECT_EQ(*message_context, 0u);
+      break;
+
+    case DisplayStatusSpecials::UninitalizedBuffer:
+      EXPECT_EQ(*message_context, 0u);
+      return GSS_S_COMPLETE;
+
+    case DisplayStatusSpecials::InvalidUtf8:
+      msg = "\xff\xff\xff";
+      EXPECT_EQ(*message_context, 0u);
+      break;
+
+    default:
+      msg = base::StringPrintf("Value: %u, Type %u", status_value, status_type);
+      EXPECT_EQ(*message_context, 0u);
+  }
   BufferFromString(msg, status_string);
-  return GSS_S_COMPLETE;
+  return rv;
 }
 
 OM_uint32 MockGSSAPILibrary::init_sec_context(

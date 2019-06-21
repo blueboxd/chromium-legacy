@@ -15,6 +15,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "chromeos/dbus/wilco_dtc_supportd_client.h"
@@ -203,13 +205,18 @@ TestingWilcoDtcSupportdBridgeWrapper::TestingWilcoDtcSupportdBridgeWrapper(
     std::unique_ptr<WilcoDtcSupportdBridge>* bridge)
     : mojo_wilco_dtc_supportd_service_binding_(
           mojo_wilco_dtc_supportd_service) {
+  auto profile_manager = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
+  CHECK(profile_manager->SetUp());
   *bridge = std::make_unique<WilcoDtcSupportdBridge>(
       std::make_unique<TestingWilcoDtcSupportdBridgeWrapperDelegate>(
           std::make_unique<TestingMojoWilcoDtcSupportdServiceFactory>(
               base::BindRepeating(
                   &TestingWilcoDtcSupportdBridgeWrapper::HandleMojoGetService,
                   base::Unretained(this)))),
-      url_loader_factory);
+      url_loader_factory,
+      std::make_unique<WilcoDtcSupportdNotificationController>(
+          profile_manager->profile_manager()));
 }
 
 }  // namespace chromeos

@@ -47,7 +47,7 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
     : profile_(profile),
       provider_namespace_(provider_namespace),
       offline_content_aggregator_(
-          OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
+          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
   DCHECK(!provider_namespace_.empty());

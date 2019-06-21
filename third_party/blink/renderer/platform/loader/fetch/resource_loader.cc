@@ -116,10 +116,22 @@ void LogMixedAutoupgradeMetrics(blink::MixedContentAutoupgradeStatus status,
                                 ukm::UkmRecorder* recorder,
                                 Resource* resource) {
   UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Status", status);
-  if (status == MixedContentAutoupgradeStatus::kFailed) {
-    UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.ResourceRequest.Failure.IsAd",
-                          resource->GetResourceRequest().IsAdResource());
-  }
+  switch (status) {
+    case MixedContentAutoupgradeStatus::kStarted:
+      UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Start.Type",
+                                resource->GetType());
+      break;
+    case MixedContentAutoupgradeStatus::kFailed:
+      UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.ResourceRequest.Failure.Type",
+                                resource->GetType());
+      UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.ResourceRequest.Failure.IsAd",
+                            resource->GetResourceRequest().IsAdResource());
+      break;
+    case MixedContentAutoupgradeStatus::kResponseReceived:
+      UMA_HISTOGRAM_ENUMERATION(
+          "MixedAutoupgrade.ResourceRequest.Response.Type",
+          resource->GetType());
+  };
   ukm::builders::MixedContentAutoupgrade_ResourceRequest builder(source_id);
   builder.SetStatus(static_cast<int64_t>(status));
   if (response_or_error_code.has_value()) {

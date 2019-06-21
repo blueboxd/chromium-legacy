@@ -15,7 +15,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -60,9 +60,8 @@ Profile* GetProfileForPrimaryUser() {
 // Connects to the VpnList mojo interface in ash.
 ash::mojom::VpnListPtr ConnectToVpnList() {
   ash::mojom::VpnListPtr vpn_list;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &vpn_list);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &vpn_list);
   return vpn_list;
 }
 

@@ -76,8 +76,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
   // call, which is not safe before the profile initialization is finalized.
   // Thus, listen for PROFILE_ADDED notification, on which |cert_importer_|
   // creation should start.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_ADDED,
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
 
   // Make sure that the |NetworkCertLoader| which makes certificates available
@@ -110,13 +109,13 @@ void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
 
   // Call on UserSessionManager to send the user's password to session manager
   // if the password substitution variable exists in the ONC.
-  bool send_password =
+  bool save_password =
       chromeos::onc::HasUserPasswordSubsitutionVariable(network_configs_onc);
-  chromeos::UserSessionManager::GetInstance()->OnUserNetworkPolicyParsed(
-      send_password);
+  chromeos::UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
+      chromeos::UserSessionManager::PasswordConsumingService::kNetwork,
+      save_password);
 
-  network_config_handler_->SetPolicy(onc_source_,
-                                     user_->username_hash(),
+  network_config_handler_->SetPolicy(onc_source_, user_->username_hash(),
                                      *network_configs_onc,
                                      *global_network_config);
 }

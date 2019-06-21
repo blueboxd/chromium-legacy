@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -238,7 +237,7 @@ id<GREYMatcher> NavigationBarEditButton() {
   autofill::AutofillProfile profile = [self addAutofillProfile];
   [self openEditProfile:kProfileLabel];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -255,7 +254,7 @@ id<GREYMatcher> NavigationBarEditButton() {
   // Switch on edit mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]

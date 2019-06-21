@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
@@ -130,18 +131,24 @@ void SpellCheckProvider::RequestTextChecking(
   last_identifier_ = text_check_completions_.Add(std::move(completion));
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Text check (unified request for grammar and spell check) is only
-  // available for browser process, so we ask the system spellchecker
-  // over mojo or return an empty result if the checker is not available.
-  GetSpellCheckHost().RequestTextCheck(
-      text, routing_id(),
-      base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
-                     weak_factory_.GetWeakPtr(), last_identifier_, text));
-#else
-  GetSpellCheckHost().CallSpellingService(
-      text, base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
-                           weak_factory_.GetWeakPtr(), last_identifier_, text));
-#endif  // !USE_BROWSER_SPELLCHECKER
+  if (spellcheck::UseBrowserSpellChecker()) {
+    // Text check (unified request for grammar and spell check) is only
+    // available for browser process, so we ask the system spellchecker
+    // over mojo or return an empty result if the checker is not available.
+    GetSpellCheckHost().RequestTextCheck(
+        text, routing_id(),
+        base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
+                       weak_factory_.GetWeakPtr(), last_identifier_, text));
+  }
+#endif
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+  if (!spellcheck::UseBrowserSpellChecker()) {
+    GetSpellCheckHost().CallSpellingService(
+        text,
+        base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
+                       weak_factory_.GetWeakPtr(), last_identifier_, text));
+  }
+#endif
 }
 
 void SpellCheckProvider::FocusedElementChanged(
@@ -200,7 +207,7 @@ void SpellCheckProvider::RequestCheckingOfText(
                           base::saturated_cast<int>(text.length()));
 }
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     const base::string16& line,

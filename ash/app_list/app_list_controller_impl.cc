@@ -608,14 +608,12 @@ void AppListControllerImpl::OnTabletModeStarted() {
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
-  base::Optional<app_list::AppListPresenterImpl::ScopedDismissAnimationDisabler>
-      dismiss_animation_disabler;
   aura::Window* window = presenter_.GetWindow();
-  if (window && RootWindowController::ForWindow(window)
+  base::AutoReset<bool> auto_reset(
+      &should_dismiss_immediately_,
+      window && RootWindowController::ForWindow(window)
                     ->GetShelfLayoutManager()
-                    ->HasVisibleWindow()) {
-    dismiss_animation_disabler.emplace(presenter());
-  }
+                    ->HasVisibleWindow());
   presenter_.OnTabletModeChanged(false);
 
   // Dismiss the app list if the tablet mode ends.
@@ -726,15 +724,12 @@ void AppListControllerImpl::OnUiVisibilityChanged(
               ->ClearSearchAndDeactivateSearchBox();
         }
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
-        base::Optional<
-            app_list::AppListPresenterImpl::ScopedDismissAnimationDisabler>
-            dismiss_animation_disabler;
         // Similarly, when taking a screenshot by Assistant in clamshell mode,
         // we do not want to dismiss launcher with animation. Otherwise the
         // screenshot may have tansient state during the animation.
-        if (exit_point == AssistantExitPoint::kScreenshot)
-          dismiss_animation_disabler.emplace(presenter());
-
+        base::AutoReset<bool> auto_reset(
+            &should_dismiss_immediately_,
+            exit_point == AssistantExitPoint::kScreenshot);
         DismissAppList();
       }
 
@@ -1069,6 +1064,14 @@ void AppListControllerImpl::GetContextMenuModel(
     client_->GetContextMenuModel(profile_id_, id, std::move(callback));
 }
 
+ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(
+    ash::AppListViewState target_state) {
+  // |presenter_| observes the close animation only.
+  if (target_state == ash::AppListViewState::kClosed)
+    return &presenter_;
+  return nullptr;
+}
+
 void AppListControllerImpl::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
@@ -1121,6 +1124,19 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   return home_screen_controller &&
          home_screen_controller->home_launcher_gesture_handler()->mode() !=
              HomeLauncherGestureHandler::Mode::kSlideUpToShow;
+}
+
+bool AppListControllerImpl::ShouldDismissImmediately() {
+  if (should_dismiss_immediately_)
+    return true;
+
+  DCHECK(Shell::HasInstance());
+  const int ideal_shelf_y =
+      Shelf::ForWindow(presenter_.GetView()->GetWidget()->GetNativeView())
+          ->GetIdealBounds()
+          .y();
+  const int current_y = presenter_.GetView()->GetBoundsInScreen().y();
+  return current_y > ideal_shelf_y;
 }
 
 void AppListControllerImpl::GetNavigableContentsFactory(

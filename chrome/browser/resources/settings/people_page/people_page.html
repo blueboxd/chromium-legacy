@@ -332,26 +332,26 @@
       </template>
 
 <if expr="chromeos">
-      <template is="dom-if" if="[[!pageVisibility.people.lockScreen]]"
-          route-path="/lockScreen">
-        <settings-subpage
-            page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
-            associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-          <settings-lock-screen
-              prefs="{{prefs}}" auth-token="{{authToken_}}">
-          </settings-lock-screen>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" if="[[fingerprintUnlockEnabled_
-          && !pageVisibility.people.lockScreen]]">
-        <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
-          <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
-            <settings-fingerprint-list auth-token="[[authToken_]]">
-            </settings-fingerprint-list>
+      <template is="dom-if" if="[[pageVisibility.people.lockScreen]]">
+        <template is="dom-if" route-path="/lockScreen">
+          <settings-subpage
+              page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
+              associated-control="[[$$('#lock-screen-subpage-trigger')]]">
+            <settings-lock-screen
+                prefs="{{prefs}}" auth-token="{{authToken_}}">
+            </settings-lock-screen>
           </settings-subpage>
         </template>
+        <template is="dom-if" if="[[fingerprintUnlockEnabled_]]">
+          <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
+            <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
+              <settings-fingerprint-list auth-token="[[authToken_]]">
+              </settings-fingerprint-list>
+            </settings-subpage>
+          </template>
+        </template>
       </template>
-      <template is="dom-if" if="[!pageVisibility.people.manageUsers]]">
+      <template is="dom-if" if="[[pageVisibility.people.manageUsers]]">
         <template is="dom-if" route-path="/accounts">
           <settings-subpage
               associated-control=

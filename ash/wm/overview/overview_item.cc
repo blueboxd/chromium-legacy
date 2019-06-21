@@ -703,7 +703,10 @@ void OverviewItem::OnDragAnimationCompleted() {
 }
 
 void OverviewItem::UpdatePhantomsForDragging(
-    const gfx::PointF& location_in_screen) {
+    const gfx::PointF& location_in_screen,
+    bool allow_original_window_opacity_change) {
+  DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
+
   aura::Window* window = transform_window_.IsMinimized()
                              ? item_widget_->GetNativeWindow()
                              : GetWindow();
@@ -714,8 +717,10 @@ void OverviewItem::UpdatePhantomsForDragging(
   }
 
   const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-  window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-      root_window_, window, location));
+  if (allow_original_window_opacity_change) {
+    window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
+        root_window_, window, location));
+  }
   phantoms_for_dragging_->Update(location);
 }
 
@@ -837,7 +842,8 @@ OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen) {
+void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
+                                    bool from_touch_gesture) {
   // We allow switching finger while dragging, but do not allow dragging two or
   // more items.
   if (overview_session_->window_drag_controller() &&
@@ -846,7 +852,8 @@ void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen) {
   }
 
   StartDrag();
-  overview_session_->InitiateDrag(this, location_in_screen);
+  overview_session_->InitiateDrag(this, location_in_screen,
+                                  /*allow_drag_to_close=*/from_touch_gesture);
 }
 
 void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {

@@ -328,6 +328,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns the enabled state of lazyloading of images.
   LazyLoadImageSetting GetLazyLoadImageSetting() const;
 
+  // Returns true if parser-blocking script should be force-deferred to execute
+  // after parsing completes for this frame.
+  bool ShouldForceDeferScript() const;
+
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();
 

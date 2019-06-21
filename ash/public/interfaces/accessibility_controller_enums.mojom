@@ -78,6 +78,17 @@ enum SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
+enum SwitchAccessCommand {
+  // Do not perform a command.
+  kNone,
+  // Command to select the focused element.
+  kSelect,
+  // Command to move focus to the next element.
+  kNext,
+  // Command to move focus to the previous element.
+  kPrevious,
+};
+
 // The type of mouse event the Automatic Clicks feature should perform when
 // dwelling. These values are written to prefs and correspond to
 // AutoclickActionType in enums.xml, so should not be changed. New values

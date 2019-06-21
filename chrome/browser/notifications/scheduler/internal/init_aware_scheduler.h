@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_INIT_AWARE_SCHEDULER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -13,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
 
@@ -34,9 +36,20 @@ class InitAwareNotificationScheduler : public NotificationScheduler {
       std::unique_ptr<NotificationParams> notification_params) override;
   void OnStartTask() override;
   void OnStopTask() override;
+  void OnClick(const std::string& notification_id) override;
+  void OnActionClick(const std::string& notification_id,
+                     ActionButtonType button_type) override;
+  void OnDismiss(const std::string& notification_id) override;
 
   // Called after initialization is done.
   void OnInitialized(InitCallback init_callback, bool success);
+
+  // Whether initialization is successfully finished.
+  bool IsReady() const;
+
+  // Caches the closure if the initialization is not finished, or drops the
+  // closure if initialization failed.
+  void MaybeCacheClosure(base::OnceClosure closure);
 
   // Whether the initialization is successful. No value if initialization is not
   // finished.

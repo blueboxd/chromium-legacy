@@ -67,7 +67,7 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -1320,8 +1320,7 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
 
 AutotestPrivateSetAssistantEnabledFunction::
     AutotestPrivateSetAssistantEnabledFunction() {
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  assistant_state_.Init(connection->GetConnector());
+  assistant_state_.Init(content::GetSystemConnector());
   assistant_state_.AddObserver(this);
 }
 
@@ -1576,7 +1575,7 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   ash::TabletMode::Get()->SetEnabledForTest(params->enabled);
   return RespondNow(OneArgument(
-      std::make_unique<base::Value>(ash::TabletMode::Get()->IsEnabled())));
+      std::make_unique<base::Value>(ash::TabletMode::Get()->InTabletMode())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

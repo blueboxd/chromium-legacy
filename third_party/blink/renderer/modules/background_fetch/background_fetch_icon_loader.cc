@@ -104,7 +104,7 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
       *execution_context, this, resource_loader_options);
   threadable_loader_->SetTimeout(
-      TimeDelta::FromMilliseconds(kIconFetchTimeoutInMs));
+      base::TimeDelta::FromMilliseconds(kIconFetchTimeoutInMs));
   threadable_loader_->Start(resource_request);
 }
 

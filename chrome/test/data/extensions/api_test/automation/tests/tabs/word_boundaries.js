@@ -8,8 +8,8 @@ var allTests = [
         { attributes: { name: 'Example text for testing purposes' } });
     var expectedWordStarts = [0, 8, 13, 17, 25];
     var expectedWordEnds = [7, 12, 16, 24, 33];
-    var wordStarts = node.wordStartOffsets();
-    var wordEnds = node.wordEndOffsets();
+    var wordStarts = node.nonInlineTextWordStarts;
+    var wordEnds = node.nonInlineTextWordEnds;
     assertEq(expectedWordStarts.length, wordStarts.length);
     assertEq(expectedWordEnds.length, wordEnds.length);
     assertEq(wordStarts.length, wordEnds.length);

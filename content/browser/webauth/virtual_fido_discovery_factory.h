@@ -38,7 +38,8 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   ~VirtualFidoDiscoveryFactory() override;
 
   // Create an authenticator that will generate virtual devices for the given
-  // parameters.
+  // parameters. Returns nullptr if an error occurs when trying to create the
+  // authenticator.
   VirtualAuthenticator* CreateAuthenticator(
       device::ProtocolVersion protocol,
       device::FidoTransportProtocol transport,

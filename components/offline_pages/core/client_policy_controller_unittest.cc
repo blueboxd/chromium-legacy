@@ -19,7 +19,7 @@ namespace {
 const char kUndefinedNamespace[] = "undefined";
 
 bool isTemporary(const OfflinePageClientPolicy& policy) {
-  return policy.lifetime_policy.lifetime_type == LifetimeType::TEMPORARY;
+  return policy.lifetime_type == LifetimeType::TEMPORARY;
 }
 }  // namespace
 

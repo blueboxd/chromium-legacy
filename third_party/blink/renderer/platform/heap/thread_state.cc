@@ -802,6 +802,9 @@ void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
     Heap().Compaction()->FilterNonLiveSlots();
   }
 
+  // Last point where all mark bits are present.
+  VerifyMarking(marking_type);
+
   EagerSweep();
 
   {
@@ -1614,7 +1617,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
       deadline);
 }
 
-bool ThreadState::ShouldVerifyMarking() const {
+bool ThreadState::VerifyMarkingEnabled() const {
   bool should_verify_marking =
       RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled();
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
@@ -1641,9 +1644,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   const size_t marked_bytes = current_gc_data_.visitor->marked_bytes();
   current_gc_data_.visitor.reset();
 
-  if (ShouldVerifyMarking())
-    VerifyMarking(marking_type);
-
   Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
 
   WTF::Partitions::ReportMemoryUsageHistogram();
@@ -1661,12 +1661,10 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 }
 
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
-  // Marking for snapshot does not clear unreachable weak fields prohibiting
-  // verification of markbits as we leave behind non-marked non-cleared weak
-  // fields.
-  if (marking_type == BlinkGC::kTakeSnapshot)
-    return;
-  Heap().VerifyMarking();
+  DCHECK_NE(BlinkGC::kTakeSnapshot, marking_type);
+
+  if (VerifyMarkingEnabled())
+    Heap().VerifyMarking();
 }
 
 void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {

@@ -841,17 +841,9 @@ GpuDataManagerImplPrivate::Are3DAPIsBlockedAtTime(const GURL& url,
     }
 
     if (num_resets_within_timeframe >= kNumResetsWithinDuration) {
-      UMA_HISTOGRAM_ENUMERATION("GPU.BlockStatusForClient3DAPIs",
-                                BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
-                                BLOCK_STATUS_MAX);
-
       return DomainBlockStatus::kAllDomainsBlocked;
     }
   }
-
-  UMA_HISTOGRAM_ENUMERATION("GPU.BlockStatusForClient3DAPIs",
-                            BLOCK_STATUS_NOT_BLOCKED,
-                            BLOCK_STATUS_MAX);
 
   return DomainBlockStatus::kNotBlocked;
 }

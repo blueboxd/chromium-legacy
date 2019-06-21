@@ -168,6 +168,12 @@
       <message name="IDS_AUTOFILL_ASSISTANT_SEND_FEEDBACK" desc="Option shown in the menu when clicking the Autofill Assistant profile icon. Clicking this option will open a feedback sharing dialog.">
         Send feedback
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INCREASE_VALUE" desc="Text announced when the '+' button of a counter is highlighted by TalkBack.">
+        Increase value
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_DECREASE_VALUE" desc="Text announced when the '-' button of a counter is highlighted by TalkBack.">
+        Decrease value
+      </message>
     </messages>
   </release>
 </grit>

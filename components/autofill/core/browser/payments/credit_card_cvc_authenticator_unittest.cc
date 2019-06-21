@@ -55,8 +55,6 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"

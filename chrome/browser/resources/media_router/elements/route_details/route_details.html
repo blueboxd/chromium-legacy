@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="../route_controls/route_controls.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
@@ -17,17 +17,15 @@
           route="[[route]]"></route-controls>
     </template>
     <div id="route-action-buttons" class="layout">
-      <paper-button flat class="route-button button"
-          id="start-casting-to-route-button"
-          hidden$="[[computeCastButtonHidden_(route, changeRouteSourceAvailable_)]]"
-          on-tap="startCastingToRoute_">
+      <cr-button class="route-button button" id="start-casting-to-route-button"
+          hidden$="[[computeCastButtonHidden_(route,
+              changeRouteSourceAvailable_)]]" on-click="startCastingToRoute_">
         <span>[[i18n('startCastingButtonText')]]</span>
-      </paper-button>
-      <paper-button flat class="route-button button"
-          id="close-route-button"
-          on-tap="closeRoute_">
+      </cr-button>
+      <cr-button class="route-button button" id="close-route-button"
+          on-click="closeRoute_">
         <span>[[i18n('stopCastingButtonText')]]</span>
-      </paper-button>
+      </cr-button>
     <div>
   </template>
 <script src="route_details.js"></script>

@@ -53,6 +53,7 @@ struct CookieParams;
 // ./README.md for detailed documentation.
 class IdentityManager : public PrimaryAccountManager::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
+                        public AccessTokenDiagnosticsObserver,
                         public OAuth2TokenServiceObserver {
  public:
   class Observer {
@@ -596,7 +597,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
       const GoogleServiceAuthError& error);
   void OnGaiaCookieDeletedByUserAction();
 
-  // OAuth2TokenService::DiagnosticsObserver:
+  // AccessTokenDiagnosticsObserver
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const ScopeSet& scopes) override;
@@ -607,6 +608,7 @@ class IdentityManager : public PrimaryAccountManager::Observer,
                                   base::Time expiration_time) override;
   void OnAccessTokenRemoved(const CoreAccountId& account_id,
                             const ScopeSet& scopes) override;
+  // OAuth2TokenService::DiagnosticsObserver:
   void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
                                          bool is_refresh_token_valid,
                                          const std::string& source) override;

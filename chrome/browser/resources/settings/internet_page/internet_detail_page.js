@@ -277,11 +277,16 @@ Polymer({
 
   /**
    * CrosNetworkConfigObserver impl
-   * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
-   *     networks
+   * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
-    if (networks.find(network => network.guid == this.guid)) {
+    if (!this.guid || !this.networkProperties_) {
+      return;
+    }
+    // If the network was or is active, request an update.
+    if (this.networkProperties_.ConnectionState !=
+            CrOnc.ConnectionState.NOT_CONNECTED ||
+        networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
     }
   },

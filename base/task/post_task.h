@@ -34,12 +34,12 @@ namespace base {
 // To post a high priority one-off task to respond to a user interaction:
 //     PostTask(
 //         FROM_HERE,
-//         {TaskPriority::USER_BLOCKING},
+//         {ThreadPool(), TaskPriority::USER_BLOCKING},
 //         BindOnce(...));
 //
 // To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
-//         CreateSequencedTaskRunner(TaskTraits());
+//         CreateSequencedTaskRunner({ThreadPool()});
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
@@ -108,7 +108,7 @@ template <template <typename> class CallbackType,
 bool PostTaskAndReplyWithResult(const Location& from_here,
                                 CallbackType<TaskReturnType()> task,
                                 CallbackType<void(ReplyArgType)> reply) {
-  return PostTaskAndReplyWithResult(from_here, TaskTraits(), std::move(task),
+  return PostTaskAndReplyWithResult(from_here, {ThreadPool()}, std::move(task),
                                     std::move(reply));
 }
 

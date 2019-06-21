@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/profiles/profile_key_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "jni/Profile_jni.h"
 
@@ -92,6 +93,15 @@ jboolean ProfileAndroid::HasOffTheRecordProfile(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return profile_->HasOffTheRecordProfile();
+}
+
+base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetProfileKey(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  ProfileKeyAndroid* profile_key =
+      profile_->GetProfileKey()->GetProfileKeyAndroid();
+  DCHECK(profile_key);
+  return profile_key->GetJavaObject();
 }
 
 jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env,

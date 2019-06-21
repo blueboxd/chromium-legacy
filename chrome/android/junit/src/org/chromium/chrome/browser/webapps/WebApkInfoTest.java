@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.util.HashMap;
@@ -84,11 +85,20 @@ public class WebApkInfoTest {
             return mIdValueMap.get(id);
         }
 
+        @Override
+        public int getColor(int id, Resources.Theme theme) {
+            return Integer.parseInt(getString(id));
+        }
+
         public void addStringForTesting(
                 String name, String defType, String defPackage, int identifier, String value) {
             String key = getKey(name, defType, defPackage);
             mStringIdMap.put(key, identifier);
             mIdValueMap.put(identifier, value);
+        }
+
+        public void addColorForTesting(String name, String defPackage, int identifier, int value) {
+            addStringForTesting(name, "color", defPackage, identifier, Integer.toString(value));
         }
 
         private String getKey(String name, String defType, String defPackage) {
@@ -462,5 +472,58 @@ public class WebApkInfoTest {
 
         Assert.assertNotNull(info.shareTarget());
         Assert.assertEquals("", info.shareTarget().getAction());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#backgroundColorFallbackToDefault()} uses
+     * {@link SplashLayout#getDefaultBackgroundColor()} as the default background color if there is
+     * no default background color in the WebAPK's resources.
+     */
+    @Test
+    public void testBackgroundColorFallbackToDefaultNoCustomDefault() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        bundle.putString(WebApkMetaDataKeys.BACKGROUND_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING + "L");
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(SplashLayout.getDefaultBackgroundColor(RuntimeEnvironment.application),
+                info.backgroundColorFallbackToDefault());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#backgroundColorFallbackToDefault()} uses the default
+     * background color from the WebAPK's resources if present.
+     */
+    @Test
+    public void testBackgroundColorFallbackToDefaultWebApkHasCustomDefault() {
+        final int defaultBackgroundColorResourceId = 1;
+        final int defaultBackgroundColorInWebApk = 42;
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        bundle.putString(WebApkMetaDataKeys.BACKGROUND_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING + "L");
+        bundle.putInt(
+                WebApkMetaDataKeys.DEFAULT_BACKGROUND_COLOR_ID, defaultBackgroundColorResourceId);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
+
+        FakeResources res = new FakeResources();
+        res.addColorForTesting("mockResource", WEBAPK_PACKAGE_NAME,
+                defaultBackgroundColorResourceId, defaultBackgroundColorInWebApk);
+        WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+
+        WebApkInfo info = WebApkInfo.create(intent);
+        Assert.assertEquals(
+                defaultBackgroundColorInWebApk, info.backgroundColorFallbackToDefault());
     }
 }

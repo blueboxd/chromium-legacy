@@ -67,31 +67,6 @@ class LocalIoBufferWithOffset : public net::WrappedIOBuffer {
 
 }  // namespace
 
-// static
-void CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread(
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool needed_sniffing,
-    MimeType canonical_mime_type,
-    ResourceType resource_type,
-    int http_response_code,
-    int64_t content_length) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  WebContents* web_contents = std::move(web_contents_getter).Run();
-  if (!web_contents)
-    return;
-
-  ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                ->GetUkmSourceIdForLastCommittedSource();
-  ukm::builders::SiteIsolation_XSD_Browser_Blocked(source_id)
-      .SetCanonicalMimeType(static_cast<int64_t>(canonical_mime_type))
-      .SetContentLengthWasZero(content_length == 0)
-      .SetContentResourceType(static_cast<int>(resource_type))
-      .SetHttpResponseCode(http_response_code)
-      .SetNeededSniffing(needed_sniffing)
-      .Record(ukm::UkmRecorder::Get());
-}
-
 void CrossSiteDocumentResourceHandler::LogBlockedResponse(
     ResourceRequestInfoImpl* resource_request_info,
     int http_response_code) {
@@ -137,19 +112,6 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
     UMA_HISTOGRAM_ENUMERATION(
         "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type);
   }
-
-  // The last committed URL is only available on the UI thread - we need to hop
-  // onto the UI thread to log an UKM event.  Note that this is racey - by the
-  // time the posted task runs, the WebContents could have been closed and/or
-  // navigated to another URL.  This is understood and acceptable - this should
-  // be rare enough to not matter for the collected UKM data.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &CrossSiteDocumentResourceHandler::LogBlockedResponseOnUIThread,
-          resource_request_info->GetWebContentsGetterForRequest(),
-          analyzer_->needs_sniffing(), analyzer_->canonical_mime_type(),
-          resource_type, http_response_code, analyzer_->content_length()));
 }
 
 // ResourceController that runs a closure on Resume(), and forwards failures

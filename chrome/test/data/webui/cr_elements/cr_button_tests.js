@@ -77,4 +77,10 @@ suite('cr-button', function() {
     assertFalse(button.hasAttribute('hidden'));
     assertNotEquals('none', getComputedStyle(button).display);
   });
+
+  test('tap event is emitted on click', async () => {
+    const wait = test_util.eventToPromise('tap', button);
+    button.click();
+    await wait;
+  });
 });

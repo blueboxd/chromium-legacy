@@ -42,6 +42,7 @@ class ToolbarIconContainerView : public views::View,
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  gfx::Insets GetInsets() const override;
 
   void UpdateHighlight(bool highlighted);
 

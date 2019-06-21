@@ -56,7 +56,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
@@ -143,11 +143,8 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
       input_method_manager_(input_method_manager),
       user_(NULL),
       user_is_primary_(false) {
-  // |manager_connection| or |connector| may be null in tests.
-  content::ServiceManagerConnection* manager_connection =
-      content::ServiceManagerConnection::GetForProcess();
-  service_manager::Connector* connector =
-      manager_connection ? manager_connection->GetConnector() : nullptr;
+  // |connector| may be null in tests.
+  service_manager::Connector* connector = content::GetSystemConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);

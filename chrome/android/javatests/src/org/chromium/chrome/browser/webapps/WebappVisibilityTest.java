@@ -134,7 +134,7 @@ public class WebappVisibilityTest {
                         false /* isIconAdaptive */, false /* forceNavigation */)
                 : WebApkInfo.create(
                         "", "", webappStartUrlOrScopeUrl, null, null, null, null, null, displayMode,
-                        0, 0, 0, 0, "", 0, null, "", WebApkInfo.WebApkDistributor.BROWSER, null,
+                        0, 0, 0, 0, 0, "", 0, null, "", WebApkInfo.WebApkDistributor.BROWSER, null,
                         null, null /*shareTargetActivityName*/, false /* forceNavigation */,
                         false /* isSplashProvidedByWebApk */, null /* shareData */
 

@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -181,9 +181,8 @@ void HidChooserContext::EnsureHidManagerConnection() {
     return;
 
   device::mojom::HidManagerPtr manager;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName, mojo::MakeRequest(&manager));
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               mojo::MakeRequest(&manager));
   SetUpHidManagerConnection(std::move(manager));
 }
 

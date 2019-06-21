@@ -65,12 +65,12 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -343,8 +343,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI}),
-      GetMediaTaskRunner(),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
   return std::make_unique<media::CastAudioManager>(
@@ -354,8 +353,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::UI}),
-      GetMediaTaskRunner(),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif  // defined(USE_ALSA)
 }

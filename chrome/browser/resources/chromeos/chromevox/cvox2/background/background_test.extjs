@@ -250,24 +250,44 @@ TEST_F('ChromeVoxBackgroundTest', 'CaretNavigation', function() {
 });
 
 /** Tests that individual buttons are stops for move-by-word functionality. */
-TEST_F('ChromeVoxBackgroundTest', 'CaretNavigationTreatsButtonAsWord', function() {
+TEST_F('ChromeVoxBackgroundTest', 'CaretNavigationMoveThroughButtonByWord', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.buttonDoc, function() {
     mockFeedback.expectSpeech('start');
-    mockFeedback.call(doCmd('nextWord'))
+    mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('hello button one', 'Button');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('start');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('hello');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('button');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('one');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('cats');
     mockFeedback.call(doCmd('nextWord'))
-        .expectSpeech('hello button two', 'Button');
+        .expectSpeech('hello');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('button');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('two');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('end');
     mockFeedback.call(doCmd('previousWord'))
-        .expectSpeech('hello button two', 'Button');
+        .expectSpeech('two');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('button');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('hello');
     mockFeedback.call(doCmd('previousWord'))
         .expectSpeech('cats');
     mockFeedback.call(doCmd('previousWord'))
-        .expectSpeech('hello button one', 'Button');
+        .expectSpeech('one');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('button');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('hello');
     mockFeedback.replay();
   });
 });

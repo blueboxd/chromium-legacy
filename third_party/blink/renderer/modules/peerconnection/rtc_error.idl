@@ -23,6 +23,7 @@ enum RTCErrorDetailType {
 
 // https://w3c.github.io/webrtc-pc/#dfn-rtcerror
 [
+    Exposed=Window,
     Constructor(RTCErrorInit init, optional DOMString message = "")
 ] interface RTCError : DOMException {
     readonly attribute RTCErrorDetailType errorDetail;

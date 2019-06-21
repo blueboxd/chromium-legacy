@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
@@ -7,7 +8,6 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="os_languages.html">
 <link rel="import" href="../../settings_shared_css.html">
 
@@ -35,10 +35,8 @@
         padding-inline-start: 20px;
       }
 
-      cr-checkbox {
-        --cr-checkbox-label-container: {
-          white-space: nowrap;
-        };
+      cr-checkbox::part(label-container) {
+        white-space: nowrap;
       }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
@@ -62,13 +60,13 @@
         </iron-list>
       </div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCancelButtonTap_">
+        <cr-button class="cancel-button" on-click="onCancelButtonTap_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onActionButtonTap_"
+        </cr-button>
+        <cr-button class="action-button" on-click="onActionButtonTap_"
             disabled="[[disableActionButton_]]">
           $i18n{add}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

@@ -97,6 +97,20 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
 
   void SetAccountId(const AccountId& account_id);
   void SetKey(const Key& key);
+  // Saves the user's plaintext password for possible authentication by system
+  // services:
+  // - To networks. If the user's OpenNetworkConfiguration policy contains a
+  //   ${PASSWORD} variable, then the user's password will be used to
+  //   authenticate to the specified network.
+  // - To Kerberos. If the user's KerberosAccounts policy contains a ${PASSWORD}
+  //   variable, then the user's password will be used to authenticate to the
+  //   specified Kerberos account.
+  // The user's password needs to be saved in memory until the policies can be
+  // examined. When policies come in and none of them contain the ${PASSWORD}
+  // variable, the user's password will be discarded. If at least one contains
+  // the password, it will be sent to the session manager, which will then save
+  // it in a keyring so it can be retrieved by the corresponding services.
+  // More details can be found in https://crbug.com/386606.
   void SetPasswordKey(const Key& key);
   void SetAuthCode(const std::string& auth_code);
   void SetRefreshToken(const std::string& refresh_token);

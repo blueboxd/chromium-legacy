@@ -2198,6 +2198,7 @@ def _CheckSpamLogging(input_api, output_api):
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^base[\\/]logging\.h$",
                  r"^base[\\/]logging\.cc$",
+                 r"^base[\\/]task[\\/]thread_pool[\\/]task_tracker\.cc$",
                  r"^chrome[\\/]app[\\/]chrome_main_delegate\.cc$",
                  r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
                  r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
@@ -3334,6 +3335,7 @@ def _CheckNoDeprecatedCss(input_api, output_api):
 _DEPRECATED_JS = [
   ( "__lookupGetter__", "Object.getOwnPropertyDescriptor" ),
   ( "__defineGetter__", "Object.defineProperty" ),
+  ( "__lookupSetter__", "Object.getOwnPropertyDescriptor" ),
   ( "__defineSetter__", "Object.defineProperty" ),
 ]
 

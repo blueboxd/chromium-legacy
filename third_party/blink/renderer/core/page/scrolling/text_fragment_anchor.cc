@@ -133,6 +133,9 @@ void TextFragmentAnchor::DidScroll(ScrollType type) {
 void TextFragmentAnchor::PerformPreRafActions() {}
 
 void TextFragmentAnchor::DidCompleteLoad() {
+  if (search_finished_)
+    return;
+
   // If there is a pending layout we'll finish the search from Invoke.
   if (!frame_->View()->NeedsLayout()) {
     metrics_->ReportMetrics();

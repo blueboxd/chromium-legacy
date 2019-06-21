@@ -92,6 +92,7 @@ class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
   void OnFileSelectorEvent(mojom::FileSelectorEventPtr event,
                            OnFileSelectorEventCallback callback) override;
   void GetFileSelectorElements(
+      mojom::GetFileSelectorElementsRequestPtr request,
       GetFileSelectorElementsCallback callback) override;
 
  private:

@@ -26,6 +26,7 @@ enum class AppListViewState;
 
 namespace ui {
 class GestureEvent;
+class ImplicitAnimationObserver;
 class SimpleMenuModel;
 }  // namespace ui
 
@@ -123,6 +124,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
 
+  // Returns an animation observer if the |target_state| is interesting to the
+  // delegate.
+  virtual ui::ImplicitAnimationObserver* GetAnimationObserver(
+      ash::AppListViewState target_state) = 0;
+
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                         ui::MenuSourceType source_type) = 0;
@@ -140,6 +146,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Checks if we are allowed to process events on the app list main view and
   // its descendants.
   virtual bool CanProcessEventsOnApplistViews() = 0;
+
+  // Returns whether the AppListView should dismiss immediately.
+  virtual bool ShouldDismissImmediately() = 0;
 
   // Acquires a factory interface from the client which can be used to acquire
   // initialize new NavigableContents objects for embedding web contents into

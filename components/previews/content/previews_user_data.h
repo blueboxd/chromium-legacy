@@ -116,13 +116,17 @@ class PreviewsUserData {
   }
 
   // Whether there is a committed previews type.
-  bool HasCommittedPreviewsType() const {
-    return committed_previews_type_ != previews::PreviewsType::NONE;
-  }
-  // The committed previews type, if any. Otherwise PreviewsType::NONE.
-  previews::PreviewsType committed_previews_type() const {
-    return committed_previews_type_;
-  }
+  bool HasCommittedPreviewsType() const;
+
+  // The committed previews type, if any. Otherwise, PreviewsType::NONE. This
+  // should be used for metrics only since it does not respect the coin flip
+  // holdback.
+  previews::PreviewsType PreHoldbackCommittedPreviewsType() const;
+
+  // The committed previews type, if any. Otherwise, PreviewsType::NONE. Returns
+  // NONE if the coin flip holdback is kHoldback.
+  previews::PreviewsType CommittedPreviewsType() const;
+
   // Sets the committed previews type. Should only be called once.
   void SetCommittedPreviewsType(previews::PreviewsType previews_type);
   // Sets the committed previews type for testing. Can be called multiple times.
@@ -135,22 +139,29 @@ class PreviewsUserData {
   }
 
   // The PreviewsState that was allowed for the navigation. This should be used
-  // for metrics only.
-  content::PreviewsState allowed_previews_state() const {
-    return allowed_previews_state_;
-  }
+  // for metrics only since it does not respect the coin flip holdback.
+  content::PreviewsState PreHoldbackAllowedPreviewsState() const;
+
+  // The PreviewsState that was allowed for the navigation. Returns PREVIEWS_OFF
+  // if the coin flip holdback is kHoldback.
+  content::PreviewsState AllowedPreviewsState() const;
+
   void set_allowed_previews_state(
       content::PreviewsState allowed_previews_state) {
-    allowed_previews_state_ = allowed_previews_state;
+    allowed_previews_state_without_holdback_ = allowed_previews_state;
   }
 
-  // The PreviewsState that was committed for the navigation.
-  content::PreviewsState committed_previews_state() const {
-    return committed_previews_state_;
-  }
+  // The PreviewsState that was committed for the navigation. This should be
+  // used for metrics only since it does not respect the coin flip holdback.
+  content::PreviewsState PreHoldbackCommittedPreviewsState() const;
+
+  // The PreviewsState that was committed for the navigation. Returns
+  // PREVIEWS_OFF if the coin flip holdback is kHoldback.
+  content::PreviewsState CommittedPreviewsState() const;
+
   void set_committed_previews_state(
       content::PreviewsState committed_previews_state) {
-    committed_previews_state_ = committed_previews_state;
+    committed_previews_state_without_holdback_ = committed_previews_state;
   }
 
   // The result of a coin flip (if present) for this page load.
@@ -208,15 +219,20 @@ class PreviewsUserData {
   // blacklist.
   bool black_listed_for_lite_page_ = false;
 
-  // The committed previews type, if any.
-  previews::PreviewsType committed_previews_type_ = PreviewsType::NONE;
+  // The committed previews type, if any. Is not influenced by the coin flip
+  // holdback.
+  previews::PreviewsType committed_previews_type_without_holdback_ =
+      PreviewsType::NONE;
 
-  // The PreviewsState that was allowed for the navigation.
-  content::PreviewsState allowed_previews_state_ =
+  // The PreviewsState that was allowed for the navigation. Is not influenced by
+  // the coin flip holdback.
+  content::PreviewsState allowed_previews_state_without_holdback_ =
       content::PREVIEWS_UNSPECIFIED;
 
-  // The PreviewsState that was committed for the navigation.
-  content::PreviewsState committed_previews_state_ = content::PREVIEWS_OFF;
+  // The PreviewsState that was committed for the navigation. Is not influenced
+  // by the coin flip holdback.
+  content::PreviewsState committed_previews_state_without_holdback_ =
+      content::PREVIEWS_OFF;
 
   // The state of a random coin flip holdback, if any.
   CoinFlipHoldbackResult coin_flip_holdback_result_ =

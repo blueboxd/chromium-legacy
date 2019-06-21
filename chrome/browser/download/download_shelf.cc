@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/download_shelf.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -93,7 +95,7 @@ void GetDownload(Profile* profile,
     std::move(callback).Run(std::move(model));
   } else {
     offline_items_collection::OfflineContentAggregator* aggregator =
-        OfflineContentAggregatorFactory::GetForBrowserContext(profile);
+        OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
     if (!aggregator)
       return;
 
@@ -102,7 +104,7 @@ void GetDownload(Profile* profile,
   }
 }
 
-} // namespace
+}  // namespace
 
 DownloadShelf::DownloadShelf()
     : should_show_on_unhide_(false),

@@ -20,6 +20,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -104,6 +105,10 @@ class GridTabSwitcherMediator
      */
     private boolean mShouldIgnoreNextSelect;
 
+    private int mModelIndexWhenShown;
+    private int mTabIdwhenShown;
+    private int mIndexInNewModelWhenSwitched;
+
     /**
      * Interface to delegate resetting the tab grid.
      */
@@ -144,6 +149,7 @@ class GridTabSwitcherMediator
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mShouldIgnoreNextSelect = true;
+                mIndexInNewModelWhenSwitched = newModel.index();
 
                 TabList currentTabModelFilter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
@@ -171,6 +177,10 @@ class GridTabSwitcherMediator
                     if (modelFilter instanceof TabGroupModelFilter) {
                         ((TabGroupModelFilter) modelFilter).recordSessionsCount(tab);
                     }
+
+                    // Use TabSelectionType.From_USER to filter the new tab creation case.
+                    if (type == TabSelectionType.FROM_USER) recordUserSwitchedTab(tab, lastId);
+
                     hideOverview(
                             !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
                 }
@@ -248,6 +258,53 @@ class GridTabSwitcherMediator
         mCompositorViewHolder.setContentOverlayVisibility(isVisible, true);
     }
 
+    /**
+     * Record tab switch related metric for GTS.
+     * @param tab The new selected tab.
+     * @param lastId The id of the previous selected tab, and that tab is still a valid tab
+     *               in TabModel.
+     */
+    private void recordUserSwitchedTab(Tab tab, int lastId) {
+        Tab fromTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), lastId);
+        assert fromTab != null;
+
+        if (mModelIndexWhenShown == mTabModelSelector.getCurrentModelIndex()) {
+            if (tab.getId() == mTabIdwhenShown) {
+                RecordUserAction.record("MobileTabReturnedToCurrentTab");
+                RecordHistogram.recordSparseHistogram(
+                        "Tabs.TabOffsetOfSwitch." + GridTabSwitcherCoordinator.COMPONENT_NAME, 0);
+            } else {
+                int fromIndex = mTabModelSelector.getTabModelFilterProvider()
+                                        .getCurrentTabModelFilter()
+                                        .indexOf(fromTab);
+                int toIndex = mTabModelSelector.getTabModelFilterProvider()
+                                      .getCurrentTabModelFilter()
+                                      .indexOf(tab);
+
+                if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
+                    RecordUserAction.record(
+                            "MobileTabSwitched." + GridTabSwitcherCoordinator.COMPONENT_NAME);
+                    RecordHistogram.recordSparseHistogram(
+                            "Tabs.TabOffsetOfSwitch." + GridTabSwitcherCoordinator.COMPONENT_NAME,
+                            fromIndex - toIndex);
+                }
+            }
+        } else {
+            int newSelectedTabIndex =
+                    TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tab.getId());
+            if (newSelectedTabIndex == mIndexInNewModelWhenSwitched) {
+                // TabModelImpl logs this action only when a different index is set within a
+                // TabModelImpl. If we switch between normal tab model and incognito tab model and
+                // leave the index the same (i.e. after switched tab model and select the
+                // highlighted tab), TabModelImpl doesn't catch this case. Therefore, we record it
+                // here.
+                RecordUserAction.record("MobileTabSwitched");
+            }
+            RecordUserAction.record(
+                    "MobileTabSwitched." + GridTabSwitcherCoordinator.COMPONENT_NAME);
+        }
+    }
+
     @Override
     public boolean overviewVisible() {
         return mContainerViewModel.get(IS_VISIBLE);
@@ -294,6 +351,8 @@ class GridTabSwitcherMediator
                 ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
+        mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
+        mTabIdwhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
@@ -325,6 +384,16 @@ class GridTabSwitcherMediator
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedHiding();
         }
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (!mContainerViewModel.get(IS_VISIBLE)) return false;
+
+        recordUserSwitchedTab(
+                mTabModelSelector.getCurrentTab(), mTabModelSelector.getCurrentTabId());
+        hideOverview(!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+        return true;
     }
 
     /**

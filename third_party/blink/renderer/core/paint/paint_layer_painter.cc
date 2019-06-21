@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -550,7 +551,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
             paint_layer_,
             DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
       }
-      if (PaintChildren(kNormalFlowChildren | kPositiveZOrderChildren, context,
+      if (PaintChildren(kNormalFlowAndPositiveZOrderChildren, context,
                         painting_info, paint_flags) == kMayBeClippedByCullRect)
         result = kMayBeClippedByCullRect;
     }
@@ -669,30 +670,21 @@ static void ForAllFragments(GraphicsContext& context,
 }
 
 PaintResult PaintLayerPainter::PaintChildren(
-    unsigned children_to_visit,
+    PaintLayerIteration children_to_visit,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
   PaintResult result = kFullyPainted;
   if (!paint_layer_.HasSelfPaintingLayerDescendant())
     return result;
-  if (!paint_layer_.StackingNode())
-    return result;
+
   if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
           DisplayLockContext::kChildren)) {
     return result;
   }
 
-#if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(paint_layer_.StackingNode());
-#endif
-
-  PaintLayerStackingNodeIterator iterator(*paint_layer_.StackingNode(),
-                                          children_to_visit);
-  PaintLayer* child = iterator.Next();
-  if (!child)
-    return result;
-  for (; child; child = iterator.Next()) {
+  PaintLayerPaintOrderIterator iterator(paint_layer_, children_to_visit);
+  while (PaintLayer* child = iterator.Next()) {
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
     // CompositedLayerMapping::DoPaintTask().

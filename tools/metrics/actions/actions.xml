@@ -1197,6 +1197,26 @@ should be able to be added at any place in this file.
   <description>A user has used autoclick to perform an action.</description>
 </action>
 
+<action name="Accessibility.Autoclick.ChangeScrollPoint">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has changed the position at which a scroll will occur by performing a
+    dwell at the new scroll point.
+  </description>
+</action>
+
+<action name="Accessibility.Autoclick.ScrollMenu.CloseButton">
+  <owner>katie@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    A user has closed the autoclick Scroll menu using the close button within
+    the menu bubble.
+  </description>
+</action>
+
 <action name="Accessibility.Autoclick.TrayMenu.Open">
   <obsolete>
     Removed 3/2019. The autoclick menu is always onscreen when autoclick is
@@ -4645,8 +4665,13 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CreateHostedApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 06/2019 (replaced by InstallWebAppFromMenu and
+    CreateShortcut).
+  </obsolete>
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>The sum of CreateShortcut and InstallWebAppFromMenu</description>
 </action>
 
 <action name="CreateLink">
@@ -4660,9 +4685,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="CreateShortcut">
-  <obsolete>Deprecated as of 04/2017 (replaced by CreateHostedApp).</obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>
+    Shortcut app creation triggered via &quot;Menu &gt; More Tools &gt; Create
+    Shortcut...&quot;
+  </description>
 </action>
 
 <action name="CredentialManager_AccountChooser_Accepted">
@@ -7711,6 +7739,14 @@ should be able to be added at any place in this file.
 <action name="InstallSite">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="InstallWebAppFromMenu">
+  <owner>alancutter@chromium.org</owner>
+  <owner>raymes@chromium.org</owner>
+  <description>
+    PWA install triggered via &quot;Menu &gt; Install App name...&quot;
+  </description>
 </action>
 
 <action name="InstantExtended.MostVisitedClicked">
@@ -11525,6 +11561,16 @@ should be able to be added at any place in this file.
   <owner>eugenebut@chromium.org</owner>
   <description>
     User attempted to retry downloading a file after the download failed.
+  </description>
+</action>
+
+<action name="MobileExitStackView">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User exited the Android tab switcher due to one of the listed actions,
+    opened a new normal/incognito tab, selected an existed tab, or pressed
+    system back button.
   </description>
 </action>
 
@@ -22234,9 +22280,13 @@ should be able to be added at any place in this file.
 
 <action-suffix separator="." ordering="suffix">
   <suffix name="DoubleClick" label="Double click action."/>
-  <suffix name="DragAndDrop" label="DragAndDrop action."/>
+  <suffix name="DragAndDrop" label="Click and drag action."/>
   <suffix name="LeftClick" label="Left click action."/>
   <suffix name="RightClick" label="Right click action."/>
+  <suffix name="ScrollDown" label="Scroll down action."/>
+  <suffix name="ScrollLeft" label="Scroll left action."/>
+  <suffix name="ScrollRight" label="Scroll right action."/>
+  <suffix name="ScrollUp" label="Scroll up action."/>
   <affected-action name="Accessibility.Autoclick"/>
 </action-suffix>
 

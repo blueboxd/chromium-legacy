@@ -21,6 +21,7 @@ extern const base::Feature kRemoveNtpFakebox;
 extern const base::Feature kFakeboxSearchIconOnNtp;
 extern const base::Feature kFakeboxSearchIconColorOnNtp;
 extern const base::Feature kFakeboxShortHintTextOnNtp;
+extern const base::Feature kFirstRunDefaultSearchShortcut;
 extern const base::Feature kUseAlternateFakeboxOnNtp;
 extern const base::Feature kUseAlternateFakeboxRectOnNtp;
 extern const base::Feature kHideShortcutsOnNtp;

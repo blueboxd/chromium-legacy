@@ -1716,12 +1716,10 @@ void QuotaManager::GetQuotaSettings(QuotaSettingsCallback callback) {
           base::BindOnce(&DidGetSettingsThreadAdapter,
                          base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
                          base::BindOnce(&QuotaManager::DidGetSettings,
-                                        weak_factory_.GetWeakPtr(),
-                                        base::TimeTicks::Now()))));
+                                        weak_factory_.GetWeakPtr()))));
 }
 
-void QuotaManager::DidGetSettings(base::TimeTicks start_ticks,
-                                  base::Optional<QuotaSettings> settings) {
+void QuotaManager::DidGetSettings(base::Optional<QuotaSettings> settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!settings) {
     settings = settings_;
@@ -1730,8 +1728,6 @@ void QuotaManager::DidGetSettings(base::TimeTicks start_ticks,
   SetQuotaSettings(*settings);
   settings_callbacks_.Run(*settings);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalTemporaryPoolSize", settings->pool_size);
-  UMA_HISTOGRAM_LONG_TIMES("Quota.TimeToGetSettings",
-                           base::TimeTicks::Now() - start_ticks);
   LOG_IF(WARNING, settings->pool_size == 0)
       << "No storage quota provided in QuotaSettings.";
 }

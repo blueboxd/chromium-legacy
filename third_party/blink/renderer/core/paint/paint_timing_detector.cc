@@ -13,8 +13,10 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
@@ -175,6 +177,24 @@ bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {
           image_paint_timing_detector_->IsRecording());
 }
 
+LargestContentfulPaintCalculator*
+PaintTimingDetector::GetLargestContentfulPaintCalculator() {
+  if (!RuntimeEnabledFeatures::LargestContentfulPaintEnabled())
+    return nullptr;
+
+  if (largest_contentful_paint_calculator_)
+    return largest_contentful_paint_calculator_;
+
+  auto* dom_window = frame_view_->GetFrame().DomWindow();
+  if (!dom_window)
+    return nullptr;
+
+  largest_contentful_paint_calculator_ =
+      MakeGarbageCollected<LargestContentfulPaintCalculator>(
+          DOMWindowPerformance::performance(*dom_window));
+  return largest_contentful_paint_calculator_;
+}
+
 bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
     base::TimeTicks image_paint_time,
     uint64_t image_paint_size) {
@@ -282,6 +302,7 @@ void PaintTimingDetector::Trace(Visitor* visitor) {
   visitor->Trace(text_paint_timing_detector_);
   visitor->Trace(image_paint_timing_detector_);
   visitor->Trace(frame_view_);
+  visitor->Trace(largest_contentful_paint_calculator_);
 }
 
 }  // namespace blink

@@ -37,9 +37,8 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -1059,12 +1058,9 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(PaintLayer* layer) {
   DCHECK(!embedded_document || !layer->FirstChild());
 
   if (!embedded_document) {
-    if (PaintLayerStackingNode* node = layer->StackingNode()) {
-      PaintLayerStackingNodeIterator iterator(*node, kAllChildren);
-      while (PaintLayer* child_layer = iterator.Next()) {
-        VisitPaintLayer(child_layer);
-      }
-    }
+    PaintLayerPaintOrderIterator iterator(*layer, kAllChildren);
+    while (PaintLayer* child_layer = iterator.Next())
+      VisitPaintLayer(child_layer);
   }
 }
 

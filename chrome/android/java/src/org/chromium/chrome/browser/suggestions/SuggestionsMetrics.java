@@ -135,16 +135,6 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * Measures the amount of time it takes for date formatting in order to track StrictMode
-     * violations.
-     * See https://crbug.com/639877
-     * @param duration Duration of date formatting.
-     */
-    static void recordDateFormattingDuration(long duration) {
-        RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime", duration);
-    }
-
-    /**
      * One-shot reporter that records the first time the user scrolls a {@link RecyclerView}. If it
      * should be reused, call {@link #reset()} to rearm it.
      */

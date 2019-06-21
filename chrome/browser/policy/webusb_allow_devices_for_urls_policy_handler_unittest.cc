@@ -146,6 +146,24 @@ constexpr char kInvalidPolicyUnknownProperty[] = R"(
         ]
       }
     ])";
+// Same as |kInvalidPolicyUnknownProperty| without the unknown property
+// "serialNumber". This serves as expected pref value of applying the policy
+// with |kInvalidPolicyUnknownProperty|.
+constexpr char kInvalidPolicyUnknownPropertyAfterCleanup[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
 // A device containing a |product_id| must also have a |vendor_id|.
 constexpr char kInvalidPolicyProductIdWithoutVendorId[] = R"(
     [
@@ -336,12 +354,11 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
       base::JSONReader::ReadDeprecated(kInvalidPolicyUnknownProperty), nullptr);
 
   ASSERT_TRUE(errors.empty());
-  EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
+  EXPECT_TRUE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
-      "Schema validation error at \"items[0].devices.items[0]\": Unknown "
-      "property: serialNumber");
+      "Schema validation error at \"(ROOT)\": Unknown property: serialNumber");
   EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
 }
 
@@ -627,8 +644,13 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
       base::JSONReader::ReadDeprecated(kInvalidPolicyUnknownProperty), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
-  EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
-  EXPECT_FALSE(pref_value);
+  EXPECT_TRUE(store_->GetValue(pref_name_, &pref_value));
+  EXPECT_TRUE(pref_value);
+
+  base::Optional<base::Value> expected_pref_value =
+      base::JSONReader::Read(kInvalidPolicyUnknownPropertyAfterCleanup);
+  ASSERT_TRUE(expected_pref_value);
+  EXPECT_EQ(*expected_pref_value, *pref_value);
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,

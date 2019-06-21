@@ -124,7 +124,7 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/input/fling_scheduler_mac.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -3000,15 +3000,11 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
     device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-    // In some testing contexts, the service manager connection isn't
-    // initialized.
-    if (ServiceManagerConnection::GetForProcess()) {
-      service_manager::Connector* connector =
-          ServiceManagerConnection::GetForProcess()->GetConnector();
-      DCHECK(connector);
+    // In some testing contexts, the system Connector isn't3 initialized.
+    if (GetSystemConnector()) {
       device::mojom::WakeLockProviderPtr wake_lock_provider;
-      connector->BindInterface(device::mojom::kServiceName,
-                               mojo::MakeRequest(&wake_lock_provider));
+      GetSystemConnector()->BindInterface(
+          device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "GetSnapshot",

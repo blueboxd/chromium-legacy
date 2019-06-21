@@ -181,6 +181,17 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       loading_state_ = kLoading;
       load_event_fired_ = false;
     }
+  } else if (method == "Page.frameStoppedLoading") {
+    // Sometimes Page.frameStoppedLoading fires without
+    // an associated Page.loadEventFired. If this happens
+    // for the top frame, assume loading has finished.
+    std::string frame_id;
+    if (!params.GetString("frameId", &frame_id))
+      return Status(kUnknownError, "missing or invalid 'frameId'");
+    if (frame_id == top_frame_id_) {
+      loading_state_ = kNotLoading;
+      load_event_fired_ = true;
+    }
   } else if (method == "Inspector.targetCrashed") {
     loading_state_ = kNotLoading;
   }

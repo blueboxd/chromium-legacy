@@ -280,27 +280,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TableHeaderSeparator:
       return GetBorderColor("GtkTreeView#treeview.view GtkButton#button");
 
-    // Results Table
-    case ui::NativeTheme::kColorId_ResultsTableNormalBackground:
-      return SkColorFromColorId(
-          ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-    case ui::NativeTheme::kColorId_ResultsTableHoveredBackground:
-      return color_utils::AlphaBlend(
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused),
-          0.5f);
-    case ui::NativeTheme::kColorId_ResultsTableNormalText:
-      return SkColorFromColorId(
-          ui::NativeTheme::kColorId_TextfieldDefaultColor);
-    case ui::NativeTheme::kColorId_ResultsTableDimmedText:
-      return color_utils::AlphaBlend(
-          SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor),
-          SkColorFromColorId(
-              ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-          0.5f);
-
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
     case ui::NativeTheme::kColorId_ThrobberSpinningColor:

@@ -264,10 +264,6 @@ NavigationHandleImpl::GetAuthChallengeInfo() {
   return navigation_request_->auth_challenge_info();
 }
 
-bool NavigationHandleImpl::IsWaitingToCommit() {
-  return state() == NavigationRequest::READY_TO_COMMIT;
-}
-
 bool NavigationHandleImpl::HasCommitted() {
   return state() == NavigationRequest::DID_COMMIT ||
          state() == NavigationRequest::DID_COMMIT_ERROR_PAGE;

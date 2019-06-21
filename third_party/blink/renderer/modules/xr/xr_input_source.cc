@@ -38,7 +38,7 @@ std::unique_ptr<TransformationMatrix> TryGetTransformationMatrix(
 XRInputSource::InternalState::InternalState(
     uint32_t source_id,
     device::mojom::XRTargetRayMode target_ray_mode,
-    TimeTicks base_timestamp)
+    base::TimeTicks base_timestamp)
     : source_id(source_id),
       target_ray_mode(target_ray_mode),
       base_timestamp(base_timestamp) {}
@@ -187,7 +187,7 @@ void XRInputSource::UpdateGamepad(
       // TODO(https://crbug.com/955104): Is the Gamepad object creation time the
       // correct time floor?
       gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, state_.base_timestamp,
-                                               TimeTicks::Now());
+                                               base::TimeTicks::Now());
     }
 
     gamepad_->UpdateFromDeviceState(*gamepad);

@@ -86,8 +86,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return *this;
   }
 
-  NGContainerFragmentBuilder& AddChild(const NGPhysicalContainerFragment&,
-                                       const LogicalOffset&);
+  NGContainerFragmentBuilder& AddChild(
+      const NGPhysicalContainerFragment&,
+      const LogicalOffset&,
+      const LayoutInline* inline_container = nullptr);
 
   NGContainerFragmentBuilder& AddChild(
       scoped_refptr<const NGPhysicalTextFragment> child,

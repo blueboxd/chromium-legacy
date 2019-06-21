@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -19,6 +20,8 @@ import org.chromium.components.module_installer.ModuleInstaller;
  * AutofillAssistantModuleEntry.
  */
 public class AutofillAssistantModuleEntryProvider {
+    private static final String TAG = "AutofillAssistant";
+
     /**
      * Returns AutofillAssistantModuleEntry by using it as argument to the
      * passed in callback, or null if DFM loading fails.
@@ -50,16 +53,26 @@ public class AutofillAssistantModuleEntryProvider {
      * </ul>
      */
     public static void maybeInstallDeferred() {
-        if (!BundleUtils.isBundle()) return;
-        if (AutofillAssistantModule.isInstalled()) return;
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) return;
-        if (!SysUtils.isHighEndDiskDevice()) return;
+        boolean isNotBundle = !BundleUtils.isBundle();
+        boolean isInstalled = AutofillAssistantModule.isInstalled();
+        boolean isVersionBeforeLollipop =
+                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP;
+        boolean isNotHighEndDiskDevice = !SysUtils.isHighEndDiskDevice();
+        if (isNotBundle || isInstalled || isVersionBeforeLollipop || isNotHighEndDiskDevice) {
+            Log.v(TAG,
+                    "Deferred install not triggered: not_bundle=" + isNotBundle
+                            + ", already_installed=" + isInstalled
+                            + ", before_lollipop=" + isVersionBeforeLollipop
+                            + ", not_high_end_device=" + isNotHighEndDiskDevice);
+            return;
+        }
+        Log.v(TAG, "Deferred install triggered.");
         AutofillAssistantModule.installDeferred();
     }
 
     private static AutofillAssistantModuleEntry createEntry(Tab tab) {
         AutofillAssistantModuleEntryFactory factory = AutofillAssistantModule.getImpl();
-        return factory.createEntry(tab.getWebContents());
+        return factory.createEntry(tab.getActivity(), tab.getWebContents());
     }
 
     private static void loadDynamicModuleWithUi(

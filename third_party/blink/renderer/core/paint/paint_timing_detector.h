@@ -16,6 +16,7 @@ namespace blink {
 class Image;
 class ImagePaintTimingDetector;
 class ImageResourceContent;
+class LargestContentfulPaintCalculator;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeState;
@@ -70,6 +71,9 @@ class CORE_EXPORT PaintTimingDetector
   ImagePaintTimingDetector* GetImagePaintTimingDetector() const {
     return image_paint_timing_detector_;
   }
+
+  LargestContentfulPaintCalculator* GetLargestContentfulPaintCalculator();
+
   base::TimeTicks LargestImagePaint() const {
     return largest_image_paint_time_;
   }
@@ -88,6 +92,8 @@ class CORE_EXPORT PaintTimingDetector
   // This member lives until the end of the paint phase after the largest
   // image paint is found.
   Member<ImagePaintTimingDetector> image_paint_timing_detector_;
+
+  Member<LargestContentfulPaintCalculator> largest_contentful_paint_calculator_;
 
   // Largest image information.
   base::TimeTicks largest_image_paint_time_;

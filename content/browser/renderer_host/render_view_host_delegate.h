@@ -184,6 +184,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Whether the WebContents as a persistent video.
   virtual bool HasPersistentVideo() const;
 
+  // Whether spatial navigation is permitted.
+  virtual bool IsSpatialNavigationDisabled() const;
+
   // Returns the RenderFrameHost for a pending or speculative main frame
   // navigation for the page.  Returns nullptr if there is no such navigation.
   virtual RenderFrameHost* GetPendingMainFrame();

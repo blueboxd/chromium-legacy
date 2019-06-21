@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
@@ -103,9 +103,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
  private:
   void SetUpOnMainThread() override {
-    connector_ = content::ServiceManagerConnection::GetForProcess()
-                     ->GetConnector()
-                     ->Clone();
+    connector_ = content::GetSystemConnector()->Clone();
   }
 
   void StartWriteTest() {

@@ -14,8 +14,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-#error !BUILDFLAG(USE_BROWSER_SPELLCHECKER) is required for these tests.
+#if !BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+#error BUILDFLAG(USE_RENDERER_SPELLCHECKER) is required for these tests.
 #endif
 
 class TestSpellCheckHostChromeImpl {

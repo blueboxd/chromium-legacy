@@ -40,7 +40,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/strings/string_util.h"
@@ -476,7 +475,7 @@ std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
   RewriteUrlForNavigation(url, browser_context, &url_to_load, &virtual_url,
                           &reverse_on_redirect);
 
-  NavigationEntryImpl* entry = new NavigationEntryImpl(
+  auto entry = std::make_unique<NavigationEntryImpl>(
       nullptr,  // The site instance for tabs is sent on navigation
                 // (WebContents::GetSiteInstance).
       url_to_load, referrer, base::string16(), transition,
@@ -485,7 +484,7 @@ std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
   entry->set_user_typed_url(virtual_url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
   entry->set_extra_headers(extra_headers);
-  return base::WrapUnique(entry);
+  return entry;
 }
 
 // static
@@ -1425,7 +1424,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
   // For non-in-page commits with no matching pending entry, create a new entry.
   if (!new_entry) {
-    new_entry = base::WrapUnique(new NavigationEntryImpl);
+    new_entry = std::make_unique<NavigationEntryImpl>();
 
     // Find out whether the new entry needs to update its virtual URL on URL
     // change and set up the entry accordingly. This is needed to correctly

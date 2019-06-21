@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1341,6 +1342,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
+  base::UserActionTester user_action_tester;
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
@@ -1373,9 +1375,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   EXPECT_EQ(extensions::GetLaunchContainer(
                 extensions::ExtensionPrefs::Get(browser()->profile()), app),
             extensions::LAUNCH_CONTAINER_WINDOW);
+
+  EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
+  EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
+  base::UserActionTester user_action_tester;
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
@@ -1392,6 +1398,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
   EXPECT_EQ(extensions::GetLaunchContainer(
                 extensions::ExtensionPrefs::Get(browser()->profile()), app),
             extensions::LAUNCH_CONTAINER_TAB);
+
+  EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount("CreateShortcut"));
 }
 
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
@@ -1682,7 +1691,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CopyURL) {
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 result;
-  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &result);
   EXPECT_EQ(result, base::UTF8ToUTF16(kExampleURL));
 }
 

@@ -1745,19 +1745,19 @@ TEST_F(PromiseTest, ThreadPoolThenChain) {
 
   RunLoop run_loop;
   p.promise()
-      .ThenOn({TaskPriority::USER_BLOCKING}, FROM_HERE,
+      .ThenOn({ThreadPool(), TaskPriority::USER_BLOCKING}, FROM_HERE,
               BindLambdaForTesting([&](std::vector<size_t> result) {
                 EXPECT_FALSE(main_sequence->RunsTasksInCurrentSequence());
                 result.push_back(1);
                 return result;
               }))
-      .ThenOn({TaskPriority::USER_BLOCKING}, FROM_HERE,
+      .ThenOn({ThreadPool(), TaskPriority::USER_BLOCKING}, FROM_HERE,
               BindLambdaForTesting([&](std::vector<size_t> result) {
                 EXPECT_FALSE(main_sequence->RunsTasksInCurrentSequence());
                 result.push_back(2);
                 return result;
               }))
-      .ThenOn({TaskPriority::USER_BLOCKING}, FROM_HERE,
+      .ThenOn({ThreadPool(), TaskPriority::USER_BLOCKING}, FROM_HERE,
               BindLambdaForTesting([&](std::vector<size_t> result) {
                 EXPECT_FALSE(main_sequence->RunsTasksInCurrentSequence());
                 result.push_back(3);

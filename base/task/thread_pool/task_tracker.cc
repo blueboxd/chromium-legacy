@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/json/json_writer.h"
@@ -129,13 +131,21 @@ HistogramBase* GetHistogramForTaskTraits(
 // Returns shutdown behavior based on |traits|; returns SKIP_ON_SHUTDOWN if
 // shutdown behavior is BLOCK_SHUTDOWN and |is_delayed|, because delayed tasks
 // are not allowed to block shutdown.
-TaskShutdownBehavior GetEffectiveShutdownBehavior(const TaskTraits& traits,
-                                                  bool is_delayed) {
-  const TaskShutdownBehavior shutdown_behavior = traits.shutdown_behavior();
+TaskShutdownBehavior GetEffectiveShutdownBehavior(
+    TaskShutdownBehavior shutdown_behavior,
+    bool is_delayed) {
   if (shutdown_behavior == TaskShutdownBehavior::BLOCK_SHUTDOWN && is_delayed) {
     return TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
   }
   return shutdown_behavior;
+}
+
+bool HasLogBestEffortTasksSwitch() {
+  // The CommandLine might not be initialized if ThreadPool is initialized in a
+  // dynamic library which doesn't have access to argc/argv.
+  return CommandLine::InitializedForCurrentProcess() &&
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kLogBestEffortTasks);
 }
 
 }  // namespace
@@ -232,7 +242,8 @@ class TaskTracker::State {
 
 // TODO(jessemckenna): Write a helper function to avoid code duplication below.
 TaskTracker::TaskTracker(StringPiece histogram_label)
-    : state_(new State),
+    : has_log_best_effort_tasks_switch_(HasLogBestEffortTasksSwitch()),
+      state_(new State),
       can_run_policy_(CanRunPolicy::kAll),
       flush_cv_(flush_lock_.CreateConditionVariable()),
       shutdown_lock_(&flush_lock_),
@@ -408,6 +419,14 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
+void TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+  if (has_log_best_effort_tasks_switch_ &&
+      priority == TaskPriority::BEST_EFFORT) {
+    // A TaskPriority::BEST_EFFORT task is being posted.
+    LOG(INFO) << task.posted_from.ToString();
+  }
+}
+
 RegisteredTaskSource TaskTracker::WillQueueTaskSource(
     scoped_refptr<TaskSource> task_source) {
   DCHECK(task_source);
@@ -440,7 +459,7 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
 
   // Run the next task in |task_source|.
   Optional<Task> task;
-  TaskTraits traits;
+  TaskTraits traits{ThreadPool()};
   {
     TaskSource::Transaction task_source_transaction(
         task_source->BeginTransaction());
@@ -505,11 +524,11 @@ void TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
     bool may_block,
     TimeTicks posted_time,
     int num_tasks_run_when_posted) const {
-  TaskTraits task_traits;
+  TaskTraits task_traits{ThreadPool()};
   if (may_block)
-    task_traits = TaskTraits(task_priority, MayBlock());
+    task_traits = TaskTraits(ThreadPool(), task_priority, MayBlock());
   else
-    task_traits = TaskTraits(task_priority);
+    task_traits = TaskTraits(ThreadPool(), task_priority);
   RecordLatencyHistogram(LatencyHistogramType::HEARTBEAT_LATENCY, task_traits,
                          posted_time);
   GetHistogramForTaskTraits(task_traits,

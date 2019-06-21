@@ -6,9 +6,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -219,9 +219,7 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     NavigateToURL(shell(),
                   GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile)));
 
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    ASSERT_TRUE(connection);
-    auto* connector = connection->GetConnector();
+    auto* connector = GetSystemConnector();
     ASSERT_TRUE(connector);
     connector_ = connector->Clone();
   }

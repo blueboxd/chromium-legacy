@@ -321,13 +321,6 @@ void WebSocketChannel::SendAddChannelRequest(
 void WebSocketChannel::SetState(State new_state) {
   DCHECK_NE(state_, new_state);
 
-  if (new_state == CONNECTED)
-    established_on_ = base::TimeTicks::Now();
-  if (state_ == CONNECTED && !established_on_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Net.WebSocket.Duration", base::TimeTicks::Now() - established_on_);
-  }
-
   state_ = new_state;
 }
 

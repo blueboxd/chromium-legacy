@@ -46,6 +46,28 @@ using SyncAndNotificationPermissions =
 
 namespace content {
 
+// TODO(crbug.com/932591): Use blink::mojom::BackgroundSyncError
+// directly and eliminate these checks.
+#define COMPILE_ASSERT_MATCHING_ENUM(mojo_name, manager_name) \
+  static_assert(static_cast<int>(blink::mojo_name) ==         \
+                    static_cast<int>(content::manager_name),  \
+                "mojo and manager enums must match")
+
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NONE,
+                             BACKGROUND_SYNC_STATUS_OK);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::STORAGE,
+                             BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NOT_FOUND,
+                             BACKGROUND_SYNC_STATUS_NOT_FOUND);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NO_SERVICE_WORKER,
+                             BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NOT_ALLOWED,
+                             BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::PERMISSION_DENIED,
+                             BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::MAX,
+                             BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
+
 namespace {
 
 // The only allowed value of min_interval for one shot Background Sync

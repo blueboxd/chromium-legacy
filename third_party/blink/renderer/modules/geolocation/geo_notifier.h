@@ -64,7 +64,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
     void Trace(blink::Visitor*);
 
     // TimerBase-compatible API
-    void StartOneShot(TimeDelta interval, const base::Location& caller);
+    void StartOneShot(base::TimeDelta interval, const base::Location& caller);
     void Stop();
     bool IsActive() const { return timer_.IsActive(); }
 

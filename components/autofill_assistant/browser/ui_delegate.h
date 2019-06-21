@@ -113,6 +113,7 @@ class UiDelegate {
   //
   // Note that the vector is not cleared before rectangles are added.
   virtual void GetTouchableArea(std::vector<RectF>* rectangles) const = 0;
+  virtual void GetRestrictedArea(std::vector<RectF>* rectangles) const = 0;
 
   // Returns the current size of the visual viewport. May be empty if unknown.
   //

@@ -42,8 +42,9 @@ base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
 
   if (focused_group != NAME && !non_street_address_is_focused &&
       data_util::ContainsName(groups())) {
-    AddLabelPartIfNotEmpty(GetLabelFullName(profile, app_locale()),
-                           &label_parts);
+    AddLabelPartIfNotEmpty(
+        GetLabelName(field_types_for_labels(), profile, app_locale()),
+        &label_parts);
   }
 
   if (!street_address_is_focused) {

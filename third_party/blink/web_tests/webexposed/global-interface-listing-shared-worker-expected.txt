@@ -1413,7 +1413,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute ELEMENT_ARRAY_BUFFER
 [Worker]     attribute ELEMENT_ARRAY_BUFFER_BINDING
 [Worker]     attribute EQUAL
-[Worker]     attribute FALSE
 [Worker]     attribute FASTEST
 [Worker]     attribute FLOAT
 [Worker]     attribute FLOAT_32_UNSIGNED_INT_24_8_REV
@@ -1844,7 +1843,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute TRIANGLES
 [Worker]     attribute TRIANGLE_FAN
 [Worker]     attribute TRIANGLE_STRIP
-[Worker]     attribute TRUE
 [Worker]     attribute TYPE
 [Worker]     attribute UNIFORM
 [Worker]     attribute UNIFORM_ARRAY_STRIDE

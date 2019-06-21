@@ -10,9 +10,9 @@
 #include "cc/base/math_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -502,9 +502,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    ASSERT_TRUE(connection);
-    auto* connector = connection->GetConnector();
+    auto* connector = GetSystemConnector();
     ASSERT_TRUE(connector);
     // We need to clone it so that we can use the clone on a different thread.
     connector_ = connector->Clone();

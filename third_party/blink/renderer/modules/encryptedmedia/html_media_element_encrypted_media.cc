@@ -152,7 +152,7 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* script_state,
   DVLOG(EME_LOG_LEVEL) << __func__;
 
   // 5. Run the following steps in parallel.
-  timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 SetMediaKeysHandler::~SetMediaKeysHandler() = default;

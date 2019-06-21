@@ -25,7 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
@@ -528,14 +527,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 #define MAYBE_AccessKeys AccessKeys
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
-  // TODO(crbug.com/916379): this test fails in mash because of differences in
-  // timing. In particular, in classic mode an accelerator that moves focus is
-  // processed *after* text is inserted, where as now the accelerator runs
-  // first, resulting in text going to the wrong place. The right fix likely
-  // entails updating the test for mash.
-  if (features::IsSingleProcessMash())
-    return;
-
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {

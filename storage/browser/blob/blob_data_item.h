@@ -15,11 +15,8 @@
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/io_buffer.h"
 #include "url/gurl.h"
-
-namespace disk_cache {
-class Entry;
-}
 
 namespace storage {
 class BlobDataBuilder;
@@ -39,7 +36,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     kBytesDescription,
     kFile,
     kFileFilesystem,
-    kDiskCacheEntry
+    kReadableDataHandle,
   };
 
   // The DataHandle class is used to persist resources that are needed for
@@ -47,10 +44,48 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
   // pending. If all blobs with this item are deleted or the item is swapped for
   // a different backend version (mem-to-disk or the reverse), then the item
   // will be destructed after all pending reads are complete.
+  //
+  // A DataHandle can also be "readable" if it overrides the size and reading
+  // virtual methods.  If the DataHandle provides this kind of encapsulated
+  // implementation then it can be added to the item using the
+  // AppendReadableDataHandle() method.
   class COMPONENT_EXPORT(STORAGE_BROWSER) DataHandle
       : public base::RefCounted<DataHandle> {
    public:
-    virtual bool IsValid();
+    // Must return the main blob data size.  Returns 0 by default.
+    virtual uint64_t GetSize() const;
+
+    // Reads the given data range into the given buffer.  If the read is
+    // completed synchronously then the number of bytes read should be returned
+    // directly.  If the read must be performed asynchronously then this
+    // method must return net::ERR_IO_PENDING and invoke the callback with the
+    // result at a later time.  The default implementation returns
+    // net::ERR_FILE_NOT_FOUND.
+    virtual int Read(scoped_refptr<net::IOBuffer> dst_buffer,
+                     uint64_t src_offset,
+                     int bytes_to_read,
+                     base::OnceCallback<void(int)> callback);
+
+    // Must return the side data size.  If there is no side data, then 0 should
+    // be returned.  Returns 0 by default.
+    virtual uint64_t GetSideDataSize() const;
+
+    // Reads the entire side data into the given buffer.  The buffer must be
+    // large enough to contain the entire side data.  If the read is completed
+    // synchronously then the number of bytes read should be returned directly.
+    // If the read must be performed asynchronously then this method must
+    // return net::ERR_IO_PENDING and invoke the callback with the result at a
+    // later time.  The default implementation returns net::ERR_FILE_NOT_FOUND.
+    virtual int ReadSideData(scoped_refptr<net::IOBuffer> dst_buffer,
+                             base::OnceCallback<void(int)> callback);
+
+    // Print a description of the readable DataHandle for debugging.
+    virtual void PrintTo(::std::ostream* os) const;
+
+    // Return the histogram label to use when calling RecordBytesRead().  If
+    // nullptr is returned then nothing will be recorded.  Returns nullptr by
+    // default.
+    virtual const char* BytesReadHistogramLabel() const;
 
    protected:
     virtual ~DataHandle();
@@ -77,13 +112,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
       uint64_t length,
       base::Time expected_modification_time,
       scoped_refptr<FileSystemContext> file_system_context);
-  static scoped_refptr<BlobDataItem> CreateDiskCacheEntry(
-      uint64_t offset,
-      uint64_t length,
+  static scoped_refptr<BlobDataItem> CreateReadableDataHandle(
       scoped_refptr<DataHandle> data_handle,
-      disk_cache::Entry* entry,
-      int disk_cache_stream_index,
-      int disk_cache_side_stream_index);
+      uint64_t offset,
+      uint64_t length);
 
   Type type() const { return type_; }
   uint64_t offset() const { return offset_; }
@@ -115,27 +147,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     return expected_modification_time_;
   }
 
-  // This can return null if the underlying disk cache entry was invalidated
-  // (because the user cleared site data), so users should make sure to always
-  // check for that.
-  disk_cache::Entry* disk_cache_entry() const {
-    DCHECK_EQ(type_, Type::kDiskCacheEntry);
-    DCHECK(data_handle_);
-    return data_handle_->IsValid() ? disk_cache_entry_ : nullptr;
-  }
-
-  int disk_cache_stream_index() const {
-    DCHECK_EQ(type_, Type::kDiskCacheEntry);
-    return disk_cache_stream_index_;
-  }
-
-  int disk_cache_side_stream_index() const {
-    DCHECK_EQ(type_, Type::kDiskCacheEntry);
-    return disk_cache_side_stream_index_;
-  }
-
   DataHandle* data_handle() const {
-    DCHECK(type_ == Type::kFile || type_ == Type::kDiskCacheEntry)
+    DCHECK(type_ == Type::kFile || type_ == Type::kReadableDataHandle)
         << static_cast<int>(type_);
     return data_handle_.get();
   }
@@ -186,16 +199,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
       expected_modification_time_;  // For Type::kFile and kFileFilesystem.
 
   scoped_refptr<DataHandle>
-      data_handle_;  // For Type::kFile and kDiskCacheEntry.
-
-  // This naked pointer is safe because the scope is protected by the DataHandle
-  // instance for disk cache entries during the lifetime of this BlobDataItem.
-  // Only valid if the DataHandle's IsValid method returns true.
-  // TODO(mek): Make this part of the DataHandle and abstract away cache
-  // specific logic to be part of an API exposed by DataHandle.
-  disk_cache::Entry* disk_cache_entry_;  // For Type::kDiskCacheEntry.
-  int disk_cache_stream_index_;          // For Type::kDiskCacheEntry.
-  int disk_cache_side_stream_index_;     // For Type::kDiskCacheEntry.
+      data_handle_;  // For Type::kFile and kReadableDataHandle.
 
   scoped_refptr<FileSystemContext>
       file_system_context_;  // For Type::kFileFilesystem.

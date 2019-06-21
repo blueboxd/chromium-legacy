@@ -772,8 +772,6 @@ jumbo_split_static_library("browser") {
     "metrics/incognito_observer.h",
     "metrics/jumplist_metrics_win.cc",
     "metrics/jumplist_metrics_win.h",
-    "metrics/live_tab_count_metrics.cc",
-    "metrics/live_tab_count_metrics.h",
     "metrics/metrics_memory_details.cc",
     "metrics/metrics_memory_details.h",
     "metrics/metrics_reporting_state.cc",
@@ -794,6 +792,8 @@ jumbo_split_static_library("browser") {
     "metrics/sampling_metrics_provider.h",
     "metrics/subprocess_metrics_provider.cc",
     "metrics/subprocess_metrics_provider.h",
+    "metrics/tab_count_metrics.cc",
+    "metrics/tab_count_metrics.h",
     "metrics/tab_footprint_aggregator.cc",
     "metrics/tab_footprint_aggregator.h",
     "metrics/testing/metrics_reporting_pref_helper.cc",
@@ -1494,6 +1494,8 @@ jumbo_split_static_library("browser") {
     "sessions/tab_restore_service_factory.h",
     "sharing/ack_message_handler.cc",
     "sharing/ack_message_handler.h",
+    "sharing/click_to_call/feature.cc",
+    "sharing/click_to_call/feature.h",
     "sharing/features.cc",
     "sharing/features.h",
     "sharing/sharing_device_info.cc",
@@ -1927,7 +1929,6 @@ jumbo_split_static_library("browser") {
     "//components/language/core/common",
     "//components/leveldb_proto",
     "//components/leveldb_proto/content:factory",
-    "//components/live_tab_count_metrics",
     "//components/metrics:call_stack_profile_collector",
     "//components/metrics:component_metrics",
     "//components/metrics:gpu",
@@ -2003,6 +2004,7 @@ jumbo_split_static_library("browser") {
     "//components/sync_bookmarks",
     "//components/sync_preferences",
     "//components/sync_sessions",
+    "//components/tab_count_metrics",
     "//components/tracing:startup_tracing",
     "//components/translate/content/browser",
     "//components/translate/core/browser",
@@ -2697,6 +2699,8 @@ jumbo_split_static_library("browser") {
       "notifications/notification_platform_bridge_android.h",
       "notifications/notification_trigger_scheduler_android.cc",
       "notifications/notification_trigger_scheduler_android.h",
+      "notifications/scheduler/display_agent_android.cc",
+      "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
       "page_load_metrics/observers/android_page_load_metrics_observer.cc",
@@ -2748,6 +2752,8 @@ jumbo_split_static_library("browser") {
       "previews/android/previews_android_bridge.h",
       "profiles/profile_android.cc",
       "profiles/profile_android.h",
+      "profiles/profile_key_android.cc",
+      "profiles/profile_key_android.h",
       "search/contextual_search_policy_handler_android.cc",
       "search/contextual_search_policy_handler_android.h",
       "search_engines/template_url_service_factory_android.cc",
@@ -4817,7 +4823,6 @@ jumbo_split_static_library("browser") {
     sources += [
       "spellchecker/spell_check_host_chrome_impl.cc",
       "spellchecker/spell_check_host_chrome_impl.h",
-      "spellchecker/spell_check_host_chrome_impl_mac.cc",
       "spellchecker/spellcheck_custom_dictionary.cc",
       "spellchecker/spellcheck_custom_dictionary.h",
       "spellchecker/spellcheck_factory.cc",
@@ -4831,6 +4836,13 @@ jumbo_split_static_library("browser") {
       "spellchecker/spellcheck_service.cc",
       "spellchecker/spellcheck_service.h",
     ]
+
+    if (use_browser_spellchecker) {
+      sources += [
+        "spellchecker/spelling_request.cc",
+        "spellchecker/spelling_request.h",
+      ]
+    }
 
     if (has_spellcheck_panel) {
       sources += [

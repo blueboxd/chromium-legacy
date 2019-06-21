@@ -1629,7 +1629,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Checks the Linux selection clipboard by polling.
   void CheckSelectionClipboard(const std::string& expected) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    CheckClipboard(ui::CLIPBOARD_TYPE_SELECTION, expected);
+    CheckClipboard(ui::ClipboardType::kSelection, expected);
 #endif
   }
 
@@ -1639,7 +1639,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
     GetWebContentsForInputRouting()->Copy();
-    CheckClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE, expected);
+    CheckClipboard(ui::ClipboardType::kCopyPaste, expected);
   }
 
   content::WebContents* GetWebContentsForInputRouting() {

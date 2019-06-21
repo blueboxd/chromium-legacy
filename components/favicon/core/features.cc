@@ -12,5 +12,8 @@ const base::Feature kAllowPropagationOfFaviconCacheHits{
     "kAllowPropagationOfFaviconCacheHits", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHistoryFaviconsGoogleServerQuery{
     "EnableHistoryFaviconsGoogleServerQuery", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNotifySessionsOfMostRecentIconUrlChange{
+    "NotifySessionsOfMostRecentIconUrlChange",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace favicon

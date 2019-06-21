@@ -43,40 +43,42 @@ std::unique_ptr<PutContext> CacheEntryHandlerImpl::CreatePutContext(
 }
 
 void CacheEntryHandlerImpl::PopulateBody(
-    scoped_refptr<BlobDataHandle> data_handle,
+    scoped_refptr<DiskCacheBlobEntry> blob_entry,
     const blink::mojom::SerializedBlobPtr& blob,
     CacheStorageCache::EntryIndex index) {
-  disk_cache::Entry* entry = data_handle->entry().get();
+  disk_cache::Entry* entry = blob_entry->disk_cache_entry().get();
   DCHECK(entry);
 
   blob->size = entry->GetDataSize(index);
   blob->uuid = base::GenerateGUID();
 
   auto blob_data = std::make_unique<storage::BlobDataBuilder>(blob->uuid);
-  blob_data->AppendDiskCacheEntry(std::move(data_handle), entry, index);
+  auto handle = MakeDataHandle(std::move(blob_entry), index);
+  blob_data->AppendReadableDataHandle(std::move(handle));
 
   auto blob_handle = blob_context_->AddFinishedBlob(std::move(blob_data));
   storage::BlobImpl::Create(std::move(blob_handle), MakeRequest(&blob->blob));
 }
 
 void CacheEntryHandlerImpl::PopulateResponseBody(
-    scoped_refptr<BlobDataHandle> data_handle,
+    scoped_refptr<DiskCacheBlobEntry> blob_entry,
     blink::mojom::FetchAPIResponse* response) {
   response->blob = blink::mojom::SerializedBlob::New();
-  PopulateBody(std::move(data_handle), response->blob,
+  PopulateBody(std::move(blob_entry), response->blob,
                CacheStorageCache::INDEX_RESPONSE_BODY);
 }
 
 void CacheEntryHandlerImpl::PopulateRequestBody(
-    scoped_refptr<BlobDataHandle> data_handle,
+    scoped_refptr<DiskCacheBlobEntry> blob_entry,
     blink::mojom::FetchAPIRequest* request) {
-  if (!data_handle->entry() ||
-      !data_handle->entry()->GetDataSize(CacheStorageCache::INDEX_SIDE_DATA)) {
+  if (!blob_entry->disk_cache_entry() ||
+      !blob_entry->disk_cache_entry()->GetDataSize(
+          CacheStorageCache::INDEX_SIDE_DATA)) {
     return;
   }
 
   request->blob = blink::mojom::SerializedBlob::New();
-  PopulateBody(std::move(data_handle), request->blob,
+  PopulateBody(std::move(blob_entry), request->blob,
                CacheStorageCache::INDEX_SIDE_DATA);
 }
 

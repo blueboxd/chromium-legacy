@@ -15,11 +15,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -126,10 +126,8 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     }
 
     network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
     // TODO(crbug.com/901026): Make sure the network process is started to avoid
     // a deadlock on Android.
     network_service_test.FlushForTesting();

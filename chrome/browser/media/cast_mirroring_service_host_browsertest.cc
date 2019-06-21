@@ -6,7 +6,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,7 +26,6 @@
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/ui_base_features.h"
 
 using testing::_;
 using testing::InvokeWithoutArgs;
@@ -206,9 +204,6 @@ class CastMirroringServiceHostBrowserTest
 
   // InProcessBrowserTest override.
   void SetUp() override {
-#if defined(OS_CHROMEOS)
-    scoped_feature_list_.InitWithFeatures({}, {features::kMash});
-#endif
     InProcessBrowserTest::SetUp();
   }
 
@@ -232,10 +227,6 @@ class CastMirroringServiceHostBrowserTest
     EXPECT_TRUE(data_pipe);
     OnAudioStreamCreated();
   }
-
-#if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList scoped_feature_list_;
-#endif
 
   mojo::Binding<mojom::SessionObserver> observer_binding_;
   mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;

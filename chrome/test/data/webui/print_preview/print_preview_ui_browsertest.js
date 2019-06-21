@@ -478,6 +478,13 @@ TEST_F(
           preview_generation_test.TestNames.ChangeMarginsByPagesPerSheet);
     });
 
+TEST_F(
+    'PrintPreviewPreviewGenerationTest', 'ZeroDefaultMarginsClearsHeaderFooter',
+    function() {
+      this.runMochaTest(preview_generation_test.TestNames
+                            .ZeroDefaultMarginsClearsHeaderFooter);
+    });
+
 GEN('#if !defined(OS_CHROMEOS)');
 // eslint-disable-next-line no-var
 var PrintPreviewLinkContainerTest = class extends PrintPreviewTest {

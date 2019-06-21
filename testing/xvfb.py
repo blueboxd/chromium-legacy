@@ -21,32 +21,24 @@ class _XvfbProcessError(Exception):
   pass
 
 
-def _kill(proc, send_signal):
-  """Kills |proc| and ignores exceptions thrown for non-existent processes."""
-  try:
-    os.kill(proc.pid, send_signal)
-  except OSError:
-    pass
-
-
-def kill(proc, timeout_in_seconds=10):
+def kill(proc, name, timeout_in_seconds=10):
   """Tries to kill |proc| gracefully with a timeout for each signal."""
-  if not proc or not proc.pid:
+  if not proc:
     return
 
-  _kill(proc, signal.SIGTERM)
+  proc.terminate()
   thread = threading.Thread(target=proc.wait)
   thread.start()
 
   thread.join(timeout_in_seconds)
   if thread.is_alive():
-    print >> sys.stderr, '%s running after SIGTERM, trying SIGKILL.' % proc.name
-    _kill(proc, signal.SIGKILL)
+    print >> sys.stderr, '%s running after SIGTERM, trying SIGKILL.' % name
+    proc.kill()
 
   thread.join(timeout_in_seconds)
   if thread.is_alive():
     print >> sys.stderr, \
-      '%s running after SIGTERM and SIGKILL; good luck!' % proc.name
+      '%s running after SIGTERM and SIGKILL; good luck!' % name
 
 
 # TODO(crbug.com/949194): Encourage setting flags to False.
@@ -159,10 +151,10 @@ def run_executable(
       print >> sys.stderr, 'Xvfb fail: %s' % str(e)
       return 1
     finally:
-      kill(openbox_proc)
-      kill(xcompmgr_proc)
-      kill(weston_proc)
-      kill(xvfb_proc)
+      kill(openbox_proc, 'openbox')
+      kill(xcompmgr_proc, 'xcompmgr')
+      kill(weston_proc, 'weston')
+      kill(xvfb_proc, 'Xvfb')
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
 

@@ -39,6 +39,11 @@ class ASH_EXPORT ShellTestApi {
   ShellTestApi();
   ~ShellTestApi();
 
+  // TabletModeController usually takes a screenshot before animating from
+  // clamshell to tablet mode for performance reasons. This is an async
+  // operation that we want to disable for most tests.
+  static void SetTabletControllerUseScreenshotForTest(bool use_screenshot);
+
   MessageCenterController* message_center_controller();
   SystemGestureEventFilter* system_gesture_event_filter();
   WorkspaceController* workspace_controller();

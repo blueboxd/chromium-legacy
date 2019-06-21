@@ -105,9 +105,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .ExposeCapability("gpu",
                           service_manager::Manifest::InterfaceList<
                               metrics::mojom::CallStackProfileCollector>())
-        .ExposeCapability("profiling_client",
-                          service_manager::Manifest::InterfaceList<
-                              heap_profiling::mojom::ProfilingClient>())
         .ExposeCapability("renderer",
                           service_manager::Manifest::InterfaceList<
                               chrome::mojom::AvailableOfflineContentProvider,
@@ -128,7 +125,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         // Only used in the classic Ash case
         .RequireCapability("chrome", "input_device_controller")
         .RequireCapability("chrome_printing", "converter")
-        .RequireCapability("content_system", "profiling_client")
         .RequireCapability("cups_ipp_parser", "ipp_parser")
         .RequireCapability("device", "device:fingerprint")
         .RequireCapability("device", "device:geolocation_config")

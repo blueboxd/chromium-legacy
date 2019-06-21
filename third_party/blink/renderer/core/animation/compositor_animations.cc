@@ -253,7 +253,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           }
           break;
         case CSSPropertyID::kFilter:
-        case CSSPropertyID::kBackdropFilter:
           if (keyframe->GetCompositorKeyframeValue() &&
               ToCompositorKeyframeFilterOperations(
                   keyframe->GetCompositorKeyframeValue())
@@ -261,6 +260,10 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                   .HasFilterThatMovesPixels()) {
             reasons |= kFilterRelatedPropertyMayMovePixels;
           }
+          break;
+        case CSSPropertyID::kBackdropFilter:
+          // Backdrop-filter pixel moving filters do not change the layer bounds
+          // like regular filters do, so they can still be composited.
           break;
         case CSSPropertyID::kVariable:
           // Custom properties are supported only in the case of

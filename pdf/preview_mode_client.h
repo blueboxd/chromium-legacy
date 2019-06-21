@@ -63,7 +63,6 @@ class PreviewModeClient : public PDFEngine::Client {
       const PDFEngine::DocumentFeatures& document_features,
       uint32_t file_size) override;
   void DocumentLoadFailed() override;
-  void FontSubstituted() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
   void FormTextFieldFocusChange(bool in_focus) override;

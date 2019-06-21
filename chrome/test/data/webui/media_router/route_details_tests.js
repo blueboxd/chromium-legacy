@@ -174,10 +174,10 @@ cr.define('route_details', function() {
       test('initial text setting', function() {
         // <paper-button> text is styled as upper case.
         checkSpanText(
-            loadTimeData.getString('stopCastingButtonText').toUpperCase(),
+            loadTimeData.getString('stopCastingButtonText'),
             'close-route-button');
         checkSpanText(
-            loadTimeData.getString('startCastingButtonText').toUpperCase(),
+            loadTimeData.getString('startCastingButtonText'),
             'start-casting-to-route-button');
         checkElementText('', 'route-description');
       });

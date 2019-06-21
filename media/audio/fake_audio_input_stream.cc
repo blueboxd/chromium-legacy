@@ -3,19 +3,15 @@
 // found in the LICENSE file.
 
 #include "media/audio/fake_audio_input_stream.h"
-#include <memory>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/simple_sources.h"
@@ -38,7 +34,7 @@ FakeAudioInputStream::FakeAudioInputStream(AudioManagerBase* manager,
                                            const AudioParameters& params)
     : audio_manager_(manager),
       callback_(NULL),
-      capture_thread_("FakeAudioInput"),
+      fake_audio_worker_(manager->GetWorkerTaskRunner(), params),
       params_(params),
       audio_bus_(AudioBus::Create(params)) {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
@@ -55,39 +51,16 @@ bool FakeAudioInputStream::Open() {
   return true;
 }
 
-void FakeAudioInputStream::Start(AudioInputCallback* callback) {
+void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-  DCHECK(callback);
-  DCHECK(!callback_);
-  DCHECK(!fake_audio_worker_);
-
   callback_ = callback;
-
-  base::Thread::Options options;
-  options.priority = base::ThreadPriority::REALTIME_AUDIO;
-  CHECK(capture_thread_.StartWithOptions(options));
-
-  fake_audio_worker_ =
-      std::make_unique<FakeAudioWorker>(capture_thread_.task_runner(), params_);
-
-  fake_audio_worker_->Start(base::BindRepeating(
+  fake_audio_worker_.Start(base::BindRepeating(
       &FakeAudioInputStream::ReadAudioFromSource, base::Unretained(this)));
 }
 
 void FakeAudioInputStream::Stop() {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
-  // Start was never called
-  if (!callback_) {
-    return;
-  }
-
-  DCHECK(capture_thread_.IsRunning());
-  DCHECK(fake_audio_worker_);
-
-  fake_audio_worker_->Stop();
-  fake_audio_worker_.reset();
-  capture_thread_.Stop();
-
+  fake_audio_worker_.Stop();
   callback_ = NULL;
 }
 
@@ -131,7 +104,7 @@ void FakeAudioInputStream::SetOutputDeviceForAec(
 
 void FakeAudioInputStream::ReadAudioFromSource(base::TimeTicks ideal_time,
                                                base::TimeTicks now) {
-  DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
   DCHECK(callback_);
 
   if (!audio_source_)
@@ -154,7 +127,7 @@ void FakeAudioInputStream::ReadAudioFromSource(base::TimeTicks ideal_time,
 
 using AudioSourceCallback = AudioOutputStream::AudioSourceCallback;
 std::unique_ptr<AudioSourceCallback> FakeAudioInputStream::ChooseSource() {
-  DCHECK(capture_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFileForFakeAudioCapture)) {

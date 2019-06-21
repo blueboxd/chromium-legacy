@@ -31,19 +31,6 @@ namespace media {
 
 namespace {
 
-#define INRANGE(_profile, codecname) \
-  (_profile >= codecname##PROFILE_MIN && _profile <= codecname##PROFILE_MAX)
-
-bool IsVP9(const VideoDecoderConfig& config) {
-  return INRANGE(config.profile(), VP9);
-}
-
-bool IsH264(const VideoDecoderConfig& config) {
-  return INRANGE(config.profile(), H264);
-}
-
-#undef INRANGE
-
 // Holder class, so that we don't keep creating CommandBufferHelpers every time
 // somebody calls a callback.  We can't actually create it until we're on the
 // right thread.
@@ -78,79 +65,6 @@ scoped_refptr<CommandBufferHelper> CreateCommandBufferHelper(
 }
 
 }  // namespace
-
-D3D11_VIDEO_DECODER_DESC TextureSelector::DecoderDescriptor(gfx::Size size) {
-  D3D11_VIDEO_DECODER_DESC desc = {};
-  desc.Guid = decoder_guid;
-  desc.SampleWidth = size.width();
-  desc.SampleHeight = size.height();
-  desc.OutputFormat = dxgi_format;
-  return desc;
-}
-
-D3D11_TEXTURE2D_DESC TextureSelector::TextureDescriptor(gfx::Size size) {
-  D3D11_TEXTURE2D_DESC texture_desc = {};
-  texture_desc.Width = size.width();
-  texture_desc.Height = size.height();
-  texture_desc.MipLevels = 1;
-  texture_desc.ArraySize = TextureSelector::BUFFER_COUNT;
-  texture_desc.Format = dxgi_format;
-  texture_desc.SampleDesc.Count = 1;
-  texture_desc.Usage = D3D11_USAGE_DEFAULT;
-  texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
-
-  // Decode swap chains do not support shared resources.
-  // TODO(sunnyps): Find a workaround for when the decoder moves to its own
-  // thread and D3D device.  See https://crbug.com/911847
-  texture_desc.MiscFlags =
-      supports_swap_chain_ ? 0 : D3D11_RESOURCE_MISC_SHARED;
-
-  if (is_encrypted_)
-    texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_HW_PROTECTED;
-
-  return texture_desc;
-}
-
-bool TextureSelector::SupportsDevice(ComD3D11VideoDevice video_device) {
-  for (UINT i = video_device->GetVideoDecoderProfileCount(); i--;) {
-    GUID profile = {};
-    if (SUCCEEDED(video_device->GetVideoDecoderProfile(i, &profile))) {
-      if (profile == decoder_guid)
-        return true;
-    }
-  }
-  return false;
-}
-
-// static
-std::unique_ptr<TextureSelector> TextureSelector::Create(
-    const VideoDecoderConfig& config) {
-  if (config.profile() == VP9PROFILE_PROFILE2) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_YUV420P10, DXGI_FORMAT_P010,
-        D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2, config.is_encrypted(),
-        false);
-  }
-
-  bool supports_nv12_decode_swap_chain = base::FeatureList::IsEnabled(
-      features::kDirectCompositionUseNV12DecodeSwapChain);
-
-  if (config.profile() == VP9PROFILE_PROFILE0) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0, config.is_encrypted(),
-        supports_nv12_decode_swap_chain);
-  }
-
-  if (IsH264(config)) {
-    return std::make_unique<TextureSelector>(
-        PIXEL_FORMAT_NV12, DXGI_FORMAT_NV12,
-        D3D11_DECODER_PROFILE_H264_VLD_NOFGT, config.is_encrypted(),
-        supports_nv12_decode_swap_chain);
-  }
-
-  return nullptr;
-}
 
 std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -239,7 +153,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
   if (!SUCCEEDED(hr))
     return hr;
 
-  if (IsVP9(config)) {
+  if (config.codec() == kCodecVP9) {
     accelerated_video_decoder_ = std::make_unique<VP9Decoder>(
         std::make_unique<D3D11VP9Accelerator>(
             this, media_log_.get(), proxy_context, video_decoder, video_device_,
@@ -248,7 +162,7 @@ HRESULT D3D11VideoDecoder::InitializeAcceleratedDecoder(
     return hr;
   }
 
-  if (IsH264(config)) {
+  if (config.codec() == kCodecH264) {
     accelerated_video_decoder_ = std::make_unique<H264Decoder>(
         std::make_unique<D3D11H264Accelerator>(
             this, media_log_.get(), proxy_context, video_decoder, video_device_,
@@ -352,10 +266,9 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   if (multi_threaded)
     multi_threaded->SetMultithreadProtected(TRUE);
 
-  D3D11_VIDEO_DECODER_DESC desc =
-      texture_selector_->DecoderDescriptor(config.coded_size());
   UINT config_count = 0;
-  hr = video_device_->GetVideoDecoderConfigCount(&desc, &config_count);
+  hr = video_device_->GetVideoDecoderConfigCount(
+      texture_selector_->DecoderDescriptor(), &config_count);
   if (FAILED(hr) || config_count == 0) {
     NotifyError("Failed to get video decoder config count");
     return;
@@ -363,8 +276,10 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   D3D11_VIDEO_DECODER_CONFIG dec_config = {};
   bool found = false;
+
   for (UINT i = 0; i < config_count; i++) {
-    hr = video_device_->GetVideoDecoderConfig(&desc, i, &dec_config);
+    hr = video_device_->GetVideoDecoderConfig(
+        texture_selector_->DecoderDescriptor(), i, &dec_config);
     if (FAILED(hr)) {
       NotifyError("Failed to get decoder config");
       return;
@@ -376,13 +291,13 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       continue;
     }
 
-    if (IsVP9(config) && dec_config.ConfigBitstreamRaw == 1) {
+    if (config.codec() == kCodecVP9 && dec_config.ConfigBitstreamRaw == 1) {
       // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
       found = true;
       break;
     }
 
-    if (IsH264(config) && dec_config.ConfigBitstreamRaw == 2) {
+    if (config.codec() == kCodecH264 && dec_config.ConfigBitstreamRaw == 2) {
       // ConfigBitstreamRaw == 2 means the decoder uses DXVA_Slice_H264_Short.
       found = true;
       break;
@@ -393,9 +308,9 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  ComD3D11VideoDecoder video_decoder;
-  hr = video_device_->CreateVideoDecoder(
-      &desc, &dec_config, video_decoder.ReleaseAndGetAddressOf());
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
+  hr = video_device_->CreateVideoDecoder(texture_selector_->DecoderDescriptor(),
+                                         &dec_config, &video_decoder);
   if (!video_decoder.Get()) {
     NotifyError("Failed to create a video decoder");
     return;
@@ -651,13 +566,10 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   DCHECK(texture_selector_);
   gfx::Size size = accelerated_video_decoder_->GetPicSize();
 
-  D3D11_TEXTURE2D_DESC texture_desc =
-      texture_selector_->TextureDescriptor(size);
-
-  ComD3D11Texture2D out_texture;
-  HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
-                                        out_texture.ReleaseAndGetAddressOf());
-  if (!SUCCEEDED(hr)) {
+  // Create an input texture array.
+  ComD3D11Texture2D in_texture =
+      texture_selector_->CreateOutputTexture(device_, size);
+  if (!in_texture) {
     NotifyError("Failed to create a Texture2D for PictureBuffers");
     return;
   }
@@ -667,14 +579,16 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     DCHECK(!buffer->in_picture_use());
   picture_buffers_.clear();
 
-  // Create each picture buffer.
+  // Create each picture buffer.1
   const int textures_per_picture = 2;  // From the VDA
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
-    auto processor = std::make_unique<DefaultTexture2DWrapper>(out_texture);
+    auto tex_wrapper = texture_selector_->CreateTextureWrapper(
+        device_, video_device_, device_context_, in_texture, size);
+
     picture_buffers_.push_back(new D3D11PictureBuffer(
-        GL_TEXTURE_EXTERNAL_OES, std::move(processor), size, i));
+        GL_TEXTURE_EXTERNAL_OES, std::move(tex_wrapper), size, i));
     if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
-                                   texture_selector_->decoder_guid,
+                                   texture_selector_->DecoderGuid(),
                                    textures_per_picture, media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
@@ -720,7 +634,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   }
 
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->pixel_format, mailbox_holders,
+      texture_selector_->PixelFormat(), mailbox_holders,
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 

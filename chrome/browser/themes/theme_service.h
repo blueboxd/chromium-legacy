@@ -7,9 +7,7 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -25,6 +23,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/theme_provider.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
 class BrowserThemePack;

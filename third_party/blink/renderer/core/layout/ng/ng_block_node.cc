@@ -949,6 +949,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
   DCHECK(!box_->IsLayoutBlock() ||
          To<LayoutBlock>(box_)->CreatesNewFormattingContext());
 
+  // We cannot enter legacy layout for something fragmentable if we're inside an
+  // NG block fragmentation context. LayoutNG and legacy block fragmentation
+  // cannot cooperate within the same fragmentation context.
+  DCHECK(!constraint_space.HasBlockFragmentation() ||
+         box_->GetPaginationBreakability() == LayoutBox::kForbidBreaks);
+
   scoped_refptr<const NGLayoutResult> layout_result =
       box_->GetCachedLayoutResult();
 

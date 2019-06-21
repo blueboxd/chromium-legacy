@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
@@ -56,14 +57,17 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
     blob_context_ = chrome_blob_context_->context();
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
-        file_system_context_, chrome_blob_context_);
+        file_system_context_, chrome_blob_context_,
+        /*permission_context=*/nullptr);
 
     handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(
             test_url_.origin(), /*process_id=*/1,
             /*frame_id=*/MSG_ROUTING_NONE),
-        test_url_, storage::IsolatedContext::ScopedFSHandle());
+        test_url_,
+        NativeFileSystemManagerImpl::SharedHandleState(
+            permission_grant_, permission_grant_, /*file_system=*/{}));
   }
 
   blink::mojom::BlobPtr CreateBlob(const std::string& contents) {
@@ -192,6 +196,9 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
 
   FileSystemURL test_url_;
 
+  scoped_refptr<FixedNativeFileSystemPermissionGrant> permission_grant_ =
+      base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+          FixedNativeFileSystemPermissionGrant::PermissionStatus::GRANTED);
   std::unique_ptr<NativeFileSystemFileHandleImpl> handle_;
 };
 

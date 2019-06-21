@@ -28,7 +28,7 @@ ClipboardHostImpl::ClipboardHostImpl(blink::mojom::ClipboardHostRequest request)
     : binding_(this, std::move(request)),
       clipboard_(ui::Clipboard::GetForCurrentThread()),
       clipboard_writer_(
-          new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE)) {}
+          new ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)) {}
 
 void ClipboardHostImpl::Create(blink::mojom::ClipboardHostRequest request) {
   // Clipboard implementations do interesting things, like run nested message
@@ -173,7 +173,7 @@ void ClipboardHostImpl::WriteImage(const SkBitmap& bitmap) {
 
 void ClipboardHostImpl::CommitWrite() {
   clipboard_writer_.reset(
-      new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE));
+      new ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste));
 }
 
 }  // namespace content

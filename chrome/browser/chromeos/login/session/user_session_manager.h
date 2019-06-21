@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 
+#include <bitset>
 #include <map>
 #include <memory>
 #include <set>
@@ -139,6 +140,17 @@ class UserSessionManager
     // The elapsed time since the device went through the OOBE.  This can
     // be a very long time.
     base::TimeDelta time_since_oobe_completion;
+  };
+
+  // To keep track of which systems need the login password to be stored in the
+  // kernel keyring.
+  enum class PasswordConsumingService {
+    // Shill needs the login password if ${PASSWORD} is specified somewhere in
+    // the OpenNetworkConfiguration policy.
+    kNetwork = 0,
+
+    // Should be last. All enum values must be consecutive starting from 0.
+    kCount = 1,
   };
 
   // Returns UserSessionManager instance.
@@ -307,11 +319,20 @@ class UserSessionManager
                           CommandLineSwitchesType switches_type,
                           const std::vector<std::string>& switches);
 
-  // Called when the user network policy has been parsed. If |send_password| is
-  // true, the user's password will be sent over dbus to the session manager to
-  // save in a keyring. Before the function exits, it will clear the user
-  // password from the UserContext regardless of the value of |send_password|.
-  void OnUserNetworkPolicyParsed(bool send_password);
+  // Notify whether |service| wants session manager to save the user's login
+  // password. If |save_password| is true, the login password is sent over D-Bus
+  // to the session manager to save in a keyring. Once this method has been
+  // called from all services defined in |PasswordConsumingService|, or if
+  // |save_password| is true, the method clears the user password from the
+  // UserContext before exiting.
+  // Should be called for each |service| in |PasswordConsumingService| as soon
+  // as the service knows whether it needs the login password. Must be called
+  // before user_context_.ClearSecrets() (see .cc), where Chrome 'forgets' the
+  // password.
+  void VoteForSavingLoginPassword(PasswordConsumingService service,
+                                  bool save_password);
+
+  UserContext* mutable_user_context_for_testing() { return &user_context_; }
 
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
@@ -576,10 +597,17 @@ class UserSessionManager
   std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>
       eol_notification_handler_;
 
-  // Maps command-line switch types to the currently set command-line switches
-  // for that type. Note: This is not per Profile/AccountId, because session
-  // manager currently doesn't support setting command-line switches per
-  // AccountId.
+  // Keeps track of which password-requiring-service has already told us whether
+  // they need the login password or not.
+  std::bitset<static_cast<size_t>(PasswordConsumingService::kCount)>
+      password_service_voted_;
+  // Whether the login password was saved in the kernel keyring.
+  bool password_was_saved_ = false;
+
+  // Maps command-line switch types to the currently set command-line
+  // switches for that type. Note: This is not per Profile/AccountId,
+  // because session manager currently doesn't support setting command-line
+  // switches per AccountId.
   base::flat_map<CommandLineSwitchesType, std::vector<std::string>>
       command_line_switches_;
 

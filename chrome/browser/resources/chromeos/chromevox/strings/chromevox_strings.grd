@@ -3659,7 +3659,7 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
         Rich Text Attributes
       </message>
       <message desc="The text label for ChromeVox automatic rich text indication checkbox." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_CHECKBOX_LABEL">
-        Customize rich text indication
+        Announce rich text attributes
       </message>
       <message desc="Labels the misspell list box." name="IDS_CHROMEVOX_OPTIONS_MISSPELL_DESCRIPTION">
         Indicate misspell:

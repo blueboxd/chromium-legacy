@@ -23,10 +23,6 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
-namespace disk_cache {
-class Entry;
-}
-
 namespace storage {
 class BlobSliceTest;
 class BlobStorageContext;
@@ -145,15 +141,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
       const base::Time& expected_modification_time,
       scoped_refptr<FileSystemContext> file_system_context);
 
-  void AppendDiskCacheEntry(scoped_refptr<DataHandle> data_handle,
-                            disk_cache::Entry* disk_cache_entry,
-                            int disk_cache_stream_index);
-
-  // The content of the side data is accessible with BlobReader::ReadSideData().
-  void AppendDiskCacheEntryWithSideData(scoped_refptr<DataHandle> data_handle,
-                                        disk_cache::Entry* disk_cache_entry,
-                                        int disk_cache_stream_index,
-                                        int disk_cache_side_stream_index);
+  void AppendReadableDataHandle(scoped_refptr<DataHandle> data_handle);
 
   void set_content_type(const std::string& content_type) {
     content_type_ = content_type;

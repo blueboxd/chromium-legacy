@@ -196,7 +196,10 @@ public class TouchlessDialogPresenter extends Presenter {
                 model.set(DialogListItemProperties.CLICK_LISTENER, listener);
                 view.setOnClickListener(listener);
             } else {
-                view.setOnClickListener(model.get(DialogListItemProperties.CLICK_LISTENER));
+                ClickThrottlingListener listener = (ClickThrottlingListener) model.get(
+                        DialogListItemProperties.CLICK_LISTENER);
+                listener.resetWasClicked();
+                view.setOnClickListener(listener);
             }
         } else if (DialogListItemProperties.MULTI_CLICKABLE == propertyKey) {
             View.OnClickListener listener = model.get(DialogListItemProperties.CLICK_LISTENER);
@@ -223,6 +226,10 @@ public class TouchlessDialogPresenter extends Presenter {
 
         private void setIsMultiClickable(boolean isMultiClickable) {
             mIsMultiClickable = isMultiClickable;
+        }
+
+        private void resetWasClicked() {
+            mWasClicked = false;
         }
 
         @Override

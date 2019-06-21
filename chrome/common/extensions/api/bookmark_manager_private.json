@@ -123,6 +123,18 @@
             "name": "isFromTouch",
             "type": "boolean",
             "description": "True if the drag was initiated from touch."
+          },
+          {
+            "name": "x",
+            "type": "integer",
+            "minimum": 0,
+            "description": "The clientX of the dragStart event"
+          },
+          {
+            "name": "y",
+            "type": "integer",
+            "minimum": 0,
+            "description": "The clientY of the dragStart event"
           }
         ]
       },

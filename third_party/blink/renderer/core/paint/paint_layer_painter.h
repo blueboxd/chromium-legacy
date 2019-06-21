@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
 #include "third_party/blink/renderer/core/paint/paint_result.h"
@@ -17,7 +18,6 @@ class CullRect;
 class ClipRect;
 class ComputedStyle;
 class DisplayItemClient;
-class PaintLayer;
 class GraphicsContext;
 struct PhysicalOffset;
 
@@ -60,7 +60,7 @@ class CORE_EXPORT PaintLayerPainter {
  private:
   friend class PaintLayerPainterTest;
 
-  PaintResult PaintChildren(unsigned children_to_visit,
+  PaintResult PaintChildren(PaintLayerIteration children_to_visit,
                             GraphicsContext&,
                             const PaintLayerPaintingInfo&,
                             PaintLayerFlags);

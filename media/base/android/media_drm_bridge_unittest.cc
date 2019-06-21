@@ -174,7 +174,7 @@ TEST_F(MediaDrmBridgeTest, CreateWithSecurityLevel_Widevine) {
   CreateWithoutSessionSupport(kWidevineKeySystem, kTestOrigin, kL1);
 }
 
-TEST_F(MediaDrmBridgeTest, Provision_Widevine) {
+TEST_F(MediaDrmBridgeTest, DISABLED_Provision_Widevine) {
   // Only test this if Widevine is supported. Otherwise
   // CreateWithoutSessionSupport() will return null and it can't be tested.
   if (!MediaDrmBridge::IsKeySystemSupported(kWidevineKeySystem)) {

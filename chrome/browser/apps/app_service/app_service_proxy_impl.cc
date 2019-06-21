@@ -74,17 +74,29 @@ AppServiceProxyImpl* AppServiceProxyImpl::GetImplForTesting(Profile* profile) {
       AppServiceProxyFactory::GetForProfile(profile));
 }
 
+// static
+AppServiceProxyImpl* AppServiceProxyImpl::CreateForTesting(
+    Profile* profile,
+    service_manager::Connector* connector) {
+  return new AppServiceProxyImpl(profile, connector);
+}
+
 AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile)
+    : AppServiceProxyImpl(profile, nullptr) {}
+
+AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile,
+                                         service_manager::Connector* connector)
     : inner_icon_loader_(this),
       outer_icon_loader_(&inner_icon_loader_,
                          apps::IconCache::GarbageCollectionPolicy::kEager) {
   if (!profile) {
     return;
   }
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(profile);
   if (!connector) {
-    return;
+    connector = content::BrowserContext::GetConnectorFor(profile);
+    if (!connector) {
+      return;
+    }
   }
   connector->BindInterface(apps::mojom::kServiceName,
                            mojo::MakeRequest(&app_service_));

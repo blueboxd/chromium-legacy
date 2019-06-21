@@ -5,8 +5,9 @@
 #include "cc/test/fake_compositor_frame_reporting_controller.h"
 
 namespace cc {
-FakeCompositorFrameReportingController::FakeCompositorFrameReportingController()
-    : CompositorFrameReportingController() {}
+FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
+    bool is_single_threaded)
+    : CompositorFrameReportingController(is_single_threaded) {}
 
 void FakeCompositorFrameReportingController::WillBeginMainFrame() {
   if (!reporters_[PipelineStage::kBeginImplFrame])

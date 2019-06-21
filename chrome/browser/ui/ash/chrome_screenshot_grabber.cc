@@ -45,7 +45,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -80,7 +80,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data,
   std::string encoded;
   base::Base64Encode(png_data->data(), &encoded);
   {
-    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
 
     // Send both HTML and and Image formats to clipboard. HTML format is needed
     // by ARC, while Image is needed by Hangout.
@@ -97,17 +97,10 @@ void DecodeFileAndCopyToClipboard(
     scoped_refptr<base::RefCountedString> png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  service_manager::mojom::ConnectorRequest connector_request;
-  std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&connector_request);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
-
   // Decode the image in sandboxed process because |png_data| comes from
   // external storage.
   data_decoder::DecodeImage(
-      connector.get(),
+      content::GetSystemConnector(),
       std::vector<uint8_t>(png_data->data().begin(), png_data->data().end()),
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
@@ -623,17 +616,10 @@ void ChromeScreenshotGrabber::DecodeScreenshotFileForPreview(
     return;
   }
 
-  service_manager::mojom::ConnectorRequest connector_request;
-  std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&connector_request);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
-
   // Decode the image in sandboxed process becuase decode image_data comes from
   // external storage.
   data_decoder::DecodeImage(
-      connector.get(),
+      content::GetSystemConnector(),
       std::vector<uint8_t>(image_data.begin(), image_data.end()),
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),

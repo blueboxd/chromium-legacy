@@ -1,7 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <dom-module id="issue-banner">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="issue_banner.css">
@@ -15,15 +15,15 @@
         <div id="title" aria-live="polite" tabindex="0">[[issue.title]]</div>
       </div>
       <div id="buttons">
-        <paper-button flat id="opt-button" class="button"
-            on-tap="onClickOptAction_"
+        <cr-button flat id="opt-button" class="button"
+            on-click="onClickOptAction_"
             hidden$="[[computeOptionalActionHidden_(issue)]]">
           <span>[[secondaryActionButtonText_]]</span>
-        </paper-button>
-        <paper-button flat id="default-button"
-            class="button action" on-tap="onClickDefaultAction_">
+        </cr-button>
+        <cr-button flat id="default-button"
+            class="button action" on-click="onClickDefaultAction_">
           <span>[[defaultActionButtonText_]]</span>
-        </paper-button>
+        </cr-button>
       </div>
     </div>
   </template>

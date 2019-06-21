@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "chromeos/printing/usb_printer_id.h"
 
 namespace network {
 namespace mojom {
@@ -58,9 +59,9 @@ struct CHROMEOS_EXPORT PrinterSearchData {
   // Set of MIME types supported by this printer.
   std::vector<std::string> supported_document_formats;
 
-  // Stripped from IEEE1284 signaling method(from the device ID key 'CMD').
-  // Details a set of languages this printer understands.
-  std::vector<std::string> usb_command_set;
+  // Representation of IEEE1284 standard printing device ID.
+  // Contains a set of languages this printer understands.
+  UsbPrinterId printer_id;
 };
 
 // PpdProvider is responsible for mapping printer descriptions to

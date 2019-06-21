@@ -67,6 +67,11 @@ const CSSProperty* {{class_name}}::GetVisitedProperty() const {
   return &Get{{property.visited_property.property_id}}();
 }
   {% endif %}
+  {% if property.unvisited_property %}
+const CSSProperty* {{class_name}}::GetUnvisitedProperty() const {
+  return &Get{{property.unvisited_property.property_id}}();
+}
+  {% endif %}
 
   {% if property.direction_aware_options %}
     {% set options = property.direction_aware_options %}

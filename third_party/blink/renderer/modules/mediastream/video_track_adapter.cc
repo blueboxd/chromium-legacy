@@ -517,9 +517,10 @@ void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
       CrossThreadBindOnce(
           &VideoTrackAdapter::AddTrackOnIO, WTF::CrossThreadUnretained(this),
           WTF::CrossThreadUnretained(track),
-          WTF::Passed(CrossThreadBind(std::move(frame_callback))),
-          WTF::Passed(CrossThreadBind(std::move(settings_callback))),
-          WTF::Passed(CrossThreadBind(std::move(format_callback))), settings));
+          WTF::Passed(CrossThreadBindRepeating(std::move(frame_callback))),
+          WTF::Passed(CrossThreadBindRepeating(std::move(settings_callback))),
+          WTF::Passed(CrossThreadBindRepeating(std::move(format_callback))),
+          settings));
 }
 
 void VideoTrackAdapter::AddTrackOnIO(
@@ -579,7 +580,8 @@ void VideoTrackAdapter::StartFrameMonitoring(
       *io_task_runner_, FROM_HERE,
       CrossThreadBindOnce(
           &VideoTrackAdapter::StartFrameMonitoringOnIO, WrapRefCounted(this),
-          WTF::Passed(CrossThreadBind(std::move(bound_on_muted_callback))),
+          WTF::Passed(
+              CrossThreadBindRepeating(std::move(bound_on_muted_callback))),
           source_frame_rate));
 }
 

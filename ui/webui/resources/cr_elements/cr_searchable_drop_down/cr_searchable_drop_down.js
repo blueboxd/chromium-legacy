@@ -20,6 +20,11 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    readonly: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
     /**
      * Whether space should be left below the text field to display an error
      * message. Must be true for |errorMessage| to be displayed.
@@ -102,7 +107,9 @@ Polymer({
 
   /** @private */
   onClick_: function() {
-    this.$$('iron-dropdown').open();
+    if (!this.readonly) {
+      this.$$('iron-dropdown').open();
+    }
   },
 
   /** @private */

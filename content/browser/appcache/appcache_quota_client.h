@@ -66,7 +66,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
                         GetOriginsCallback callback);
   void ProcessPendingRequests();
   void DeletePendingRequests();
-  const AppCacheStorage::UsageMap* GetUsageMap();
+  const std::map<url::Origin, int64_t>& GetUsageMap() const;
   net::CancelableCompletionRepeatingCallback* GetServiceDeleteCallback();
 
   // For use by appcache internals during initialization and shutdown.

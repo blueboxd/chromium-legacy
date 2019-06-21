@@ -121,7 +121,8 @@ unsigned WebGLRenderingContextBase::max_active_webgl_contexts_on_worker_ = 0;
 
 namespace {
 
-constexpr TimeDelta kDurationBetweenRestoreAttempts = TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDurationBetweenRestoreAttempts =
+    base::TimeDelta::FromSeconds(1);
 const int kMaxGLErrorsAllowedToConsole = 256;
 
 Mutex& WebGLContextLimitMutex() {
@@ -1550,7 +1551,7 @@ void WebGLRenderingContextBase::SetIsHidden(bool hidden) {
   if (!hidden && isContextLost() && restore_allowed_ &&
       auto_recovery_method_ == kAuto) {
     DCHECK(!restore_timer_.IsActive());
-    restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 
@@ -6627,7 +6628,7 @@ void WebGLRenderingContextBase::LoseContextImpl(
 
   // Always defer the dispatch of the context lost event, to implement
   // the spec behavior of queueing a task.
-  dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void WebGLRenderingContextBase::HoldReferenceToDrawingBuffer(DrawingBuffer*) {
@@ -6649,7 +6650,7 @@ void WebGLRenderingContextBase::ForceRestoreContext() {
   }
 
   if (!restore_timer_.IsActive())
-    restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 uint32_t WebGLRenderingContextBase::NumberOfContextLosses() const {
@@ -7821,7 +7822,7 @@ void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
   restore_allowed_ = event->defaultPrevented();
   if (restore_allowed_ && !is_hidden_) {
     if (auto_recovery_method_ == kAuto)
-      restore_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+      restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 

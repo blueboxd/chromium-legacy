@@ -204,6 +204,8 @@ void CastMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
   if (collect_final_metrics_cb_)
     collect_final_metrics_cb_.Run(done_callback);
+  else
+    done_callback.Run();
 }
 
 void CastMetricsServiceClient::SetCallbacks(
@@ -328,6 +330,8 @@ void CastMetricsServiceClient::Finalize() {
 void CastMetricsServiceClient::ProcessExternalEvents(const base::Closure& cb) {
   if (external_events_cb_)
     external_events_cb_.Run(cb);
+  else
+    cb.Run();
 }
 
 }  // namespace metrics

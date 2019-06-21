@@ -1941,6 +1941,8 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
 
   std::string last_message() { return last_message_; }
 
+  WebContents* last_popup() { return popup_.get(); }
+
   // WebContentsDelegate
 
   JavaScriptDialogManager* GetJavaScriptDialogManager(
@@ -2630,6 +2632,38 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   test_delegate.WillWaitForNewContents();
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+}
+
+// Tests that if a popup is opened, all WebContentses down the opener chain are
+// kicked out of fullscreen.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       PopupsOfPopupsFromJavaScriptEndFullscreen) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Make a popup.
+  std::string popup_script = "window.open('', '', 'width=200,height=100')";
+  test_delegate.WillWaitForNewContents();
+  EXPECT_TRUE(content::ExecuteScript(wc, popup_script));
+  test_delegate.Wait();
+  WebContentsImpl* popup =
+      static_cast<WebContentsImpl*>(test_delegate.last_popup());
+
+  // Put the original page into fullscreen.
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+
+  // Have the popup open a popup.
+  TestWCDelegateForDialogsAndFullscreen popup_test_delegate(popup);
+  popup_test_delegate.WillWaitForNewContents();
+  EXPECT_TRUE(content::ExecuteScript(popup, popup_script));
+  popup_test_delegate.Wait();
+
+  // Ensure the original page, being in the opener chain, loses fullscreen.
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 }
 

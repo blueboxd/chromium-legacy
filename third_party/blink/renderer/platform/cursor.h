@@ -44,7 +44,7 @@ class PLATFORM_EXPORT Cursor {
  public:
   Cursor()
       // This is an invalid Cursor and should never actually get used.
-      : type_(static_cast<ui::CursorType>(-1)) {}
+      : type_(ui::CursorType::kNull) {}
 
   Cursor(Image*, bool hot_spot_specified, const IntPoint& hot_spot);
 

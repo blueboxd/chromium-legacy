@@ -36,16 +36,15 @@
         display: block;
       }
 
-      cr-radio-button {
-        --cr-radio-button-slot: {
-          display: flex;
-          line-height: 154%;  /* Apply 20px line-height to paper radio button
-                                 text to match rest of settings line-heights. */
-          width: 100%;
-        };
+      #pinPasswordDiv {
+        display: flex;
       }
 
-      #pinPasswordDiv,
+      #pinPasswordLabel {
+        flex: 1;
+      }
+
+      #pinPasswordLabel,
       #pinPasswordSecondaryActionDiv {
         margin: auto;
       }
@@ -92,23 +91,25 @@
                 </div>
               </cr-radio-button>
               <cr-radio-button name="pin+password" class="list-item">
-                <div id="pinPasswordDiv" class="start">
-                  $i18n{lockScreenPinOrPassword}
-                </div>
-                <template is="dom-if"
-                    if="[[showConfigurePinButton_(selectedUnlockType)]]">
-                  <div class="separator"></div>
-                  <div id="pinPasswordSecondaryActionDiv"
-                      class="secondary-action">
-                    <!-- Use stop-keyboard-event-propagation to prevent
-                         triggering this when focused after closing the
-                         dialog. -->
-                    <cr-button id="setupPinButton" on-click="onConfigurePin_"
-                        stop-keyboard-event-propagation>
-                      [[getSetupPinText_(hasPin)]]
-                    </cr-button>
+                <div id="pinPasswordDiv">
+                  <div id="pinPasswordLabel">
+                    $i18n{lockScreenPinOrPassword}
                   </div>
-                </template>
+                  <template is="dom-if"
+                      if="[[showConfigurePinButton_(selectedUnlockType)]]">
+                    <div class="separator"></div>
+                    <div id="pinPasswordSecondaryActionDiv"
+                        class="secondary-action">
+                      <!-- Use stop-keyboard-event-propagation to prevent
+                           triggering this when focused after closing the
+                           dialog. -->
+                      <cr-button id="setupPinButton" on-click="onConfigurePin_"
+                          stop-keyboard-event-propagation>
+                        [[getSetupPinText_(hasPin)]]
+                      </cr-button>
+                    </div>
+                  </template>
+                </div>
               </cr-radio-button>
             </cr-radio-group>
           </div>

@@ -59,6 +59,7 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/site_isolation_android.content_browsertests.filter",
     "//testing/buildbot/filters/skia_renderer.content_browsertests.filter",
     "//testing/buildbot/filters/vulkan.content_browsertests.filter",
+    "//testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter",
   ]
 }
 

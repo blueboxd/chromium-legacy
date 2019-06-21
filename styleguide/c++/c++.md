@@ -18,11 +18,13 @@ request review for a change to this file. If there's no consensus,
 
 Blink code in `third_party/WebKit` uses [Blink style](blink-c++.md).
 
-## C++11 features
+## Modern C++ features
 
-Google style has adopted most C++11 features, but Chromium has a more
-restricted set. The status of C++11 features in Chromium is tracked in the
-separate [C++11 use in Chromium](https://chromium-cpp.appspot.com/) page.
+Some features of C++ remain forbidden, even as Chromium adopts newer versions
+of the C++ language and standard library. These should be similar to those
+allowed in Google style, but may occasionally differ. The status of modern C++
+features in Chromium is tracked in the separate
+[C++ use in Chromium](https://chromium-cpp.appspot.com/) page.
 
 ## Naming
 

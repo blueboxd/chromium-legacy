@@ -12,19 +12,22 @@
 
 namespace WTF {
 
-// CrossThreadBind() is Bind() for cross-thread task posting.
-// CrossThreadBind() applies CrossThreadCopier to the arguments.
-// Analogously, CrossThreadBindOnce is BindOnce for cross-thread
-// task posting. It also applies CrossThreadCopier to the arguments.
+// CrossThreadBindOnce is Bind() for cross-thread task posting.
+// Analogously, CrossThreadBindRepeating() is a repeating version
+// of CrossThreadBindOnce().
+// Both apply CrossThreadCopier to the arguments.
+//
+// TODO(crbug.com/963574): Deprecate CrossThreadBindRepeating().
 //
 // Example:
 //     void Func1(int, const String&);
-//     f = CrossThreadBind(&Func1, 42, str);
-// Func1(42, str2) will be called when |f()| is executed,
+//     f = CrossThreadBindOnce(&Func1, 42, str);
+// Func1(42, str2) will be called when |std::move(f).Run()| is executed,
 // where |str2| is a deep copy of |str| (created by str.IsolatedCopy()).
 //
-// CrossThreadBind(str) is similar to Bind(str.IsolatedCopy()), but the latter
-// is NOT thread-safe due to temporary objects (https://crbug.com/390851).
+// CrossThreadBindOnce(str) is similar to
+// Bind(str.IsolatedCopy()), but the latter is NOT thread-safe due to
+// temporary objects (https://crbug.com/390851).
 //
 // Don't (if you pass the task across threads):
 //     Bind(&Func1, 42, str);
@@ -32,7 +35,7 @@ namespace WTF {
 
 template <typename FunctionType, typename... Ps>
 CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
-CrossThreadBind(FunctionType&& function, Ps&&... parameters) {
+CrossThreadBindRepeating(FunctionType&& function, Ps&&... parameters) {
   static_assert(
       internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
                                           std::decay_t<Ps>...>::ok,
@@ -58,7 +61,7 @@ CrossThreadBindOnce(FunctionType&& function, Ps&&... parameters) {
 
 }  // namespace WTF
 
-using WTF::CrossThreadBind;
 using WTF::CrossThreadBindOnce;
+using WTF::CrossThreadBindRepeating;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CROSS_THREAD_FUNCTIONAL_H_

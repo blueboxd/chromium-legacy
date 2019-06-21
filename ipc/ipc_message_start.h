@@ -33,7 +33,6 @@ enum IPCMessageStart {
   PrintMsgStart,
   ExtensionMsgStart,
   TextInputClientMsgStart,
-  JavaBridgeMsgStart,
   BlinkTestMsgStart,
   AccessibilityMsgStart,
   PrerenderMsgStart,

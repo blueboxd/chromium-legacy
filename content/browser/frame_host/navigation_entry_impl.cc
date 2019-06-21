@@ -174,10 +174,9 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
   // Clone this TreeNode, possibly replacing its FrameNavigationEntry.
   bool is_target_frame =
       target_frame_tree_node && MatchesFrame(target_frame_tree_node);
-  std::unique_ptr<NavigationEntryImpl::TreeNode> copy(
-      new NavigationEntryImpl::TreeNode(
-          parent_node,
-          is_target_frame ? frame_navigation_entry : frame_entry->Clone()));
+  auto copy = std::make_unique<NavigationEntryImpl::TreeNode>(
+      parent_node,
+      is_target_frame ? frame_navigation_entry : frame_entry->Clone());
 
   // Recursively clone the children if needed.
   if (!is_target_frame || clone_children_of_target) {
@@ -224,7 +223,7 @@ NavigationEntryImpl::TreeNode::CloneAndReplace(
 }
 
 std::unique_ptr<NavigationEntry> NavigationEntry::Create() {
-  return base::WrapUnique(new NavigationEntryImpl());
+  return std::make_unique<NavigationEntryImpl>();
 }
 
 NavigationEntryImpl* NavigationEntryImpl::FromNavigationEntry(
@@ -259,21 +258,22 @@ NavigationEntryImpl::NavigationEntryImpl(
     ui::PageTransition transition_type,
     bool is_renderer_initiated,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-    : frame_tree_(new TreeNode(nullptr,
-                               base::MakeRefCounted<FrameNavigationEntry>(
-                                   "",
-                                   -1,
-                                   -1,
-                                   std::move(instance),
-                                   nullptr,
-                                   url,
-                                   nullptr /* origin */,
-                                   referrer,
-                                   std::vector<GURL>(),
-                                   PageState(),
-                                   "GET",
-                                   -1,
-                                   std::move(blob_url_loader_factory)))),
+    : frame_tree_(
+          std::make_unique<TreeNode>(nullptr,
+                                     base::MakeRefCounted<FrameNavigationEntry>(
+                                         "",
+                                         -1,
+                                         -1,
+                                         std::move(instance),
+                                         nullptr,
+                                         url,
+                                         nullptr /* origin */,
+                                         referrer,
+                                         std::vector<GURL>(),
+                                         PageState(),
+                                         "GET",
+                                         -1,
+                                         std::move(blob_url_loader_factory)))),
       unique_id_(CreateUniqueEntryID()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
@@ -614,8 +614,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
     bool clone_children_of_target,
     FrameTreeNode* target_frame_tree_node,
     FrameTreeNode* root_frame_tree_node) const {
-  std::unique_ptr<NavigationEntryImpl> copy =
-      base::WrapUnique(new NavigationEntryImpl());
+  auto copy = std::make_unique<NavigationEntryImpl>();
 
   // TODO(creis): Only share the same FrameNavigationEntries if cloning within
   // the same tab.

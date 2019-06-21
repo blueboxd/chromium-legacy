@@ -109,7 +109,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
-          WTF::Passed(CrossThreadBind(on_encoded_video_callback_)),
+          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
           video_params, std::move(data), nullptr, capture_timestamp,
           is_key_frame));
 }

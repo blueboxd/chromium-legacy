@@ -26,7 +26,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "content/public/test/test_utils.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -289,10 +288,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
   gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();
 #if defined(USE_AURA)
   event_window = event_window->GetRootWindow();
-#endif
-#if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService())
-    event_window = nullptr;
 #endif
   ui::test::EventGenerator generator(event_window);
 

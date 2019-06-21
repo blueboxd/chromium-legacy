@@ -10,7 +10,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -91,10 +91,8 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     geolocation_overrider_ =
         std::make_unique<device::ScopedGeolocationOverrider>(kMockLatitude,
                                                              kMockLongitude);
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(device::mojom::kServiceName,
-                             mojo::MakeRequest(&context_ptr_));
+    GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                        mojo::MakeRequest(&context_ptr_));
   }
 
   void TearDown() override {

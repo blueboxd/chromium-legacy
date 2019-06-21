@@ -20,7 +20,7 @@
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
@@ -269,8 +269,7 @@ void SearchSuggestLoaderImpl::LoadDone(
   }
 
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      response,
+      content::GetSystemConnector(), response,
       base::BindOnce(&SearchSuggestLoaderImpl::JsonParsed,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&SearchSuggestLoaderImpl::JsonParseFailed,

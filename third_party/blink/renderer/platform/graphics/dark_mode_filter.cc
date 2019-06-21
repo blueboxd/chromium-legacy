@@ -31,7 +31,7 @@ void VerifySettingsAreUnchanged(const DarkModeSettings& a,
     return;
 
   DCHECK_EQ(a.image_policy, b.image_policy);
-  DCHECK_EQ(a.text_policy, b.text_policy);
+  DCHECK_EQ(a.text_brightness_threshold, b.text_brightness_threshold);
   DCHECK_EQ(a.grayscale, b.grayscale);
   DCHECK(AreFloatsEqual(a.contrast, b.contrast));
   DCHECK(AreFloatsEqual(a.image_grayscale_percent, b.image_grayscale_percent));

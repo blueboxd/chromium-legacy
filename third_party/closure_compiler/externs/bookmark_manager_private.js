@@ -74,8 +74,10 @@ chrome.bookmarkManagerPrivate.sortChildren = function(parentId) {};
  * @param {!Array<string>} idList An array of string-valued ids.
  * @param {number} dragNodeIndex The index of the dragged node in |idList|
  * @param {boolean} isFromTouch True if the drag was initiated from touch.
+ * @param {number} offsetX The offset X of the event
+ * @param {number} offsetY The offset Y of the event
  */
-chrome.bookmarkManagerPrivate.startDrag = function(idList, dragNodeIndex, isFromTouch) {};
+chrome.bookmarkManagerPrivate.startDrag = function(idList, dragNodeIndex, isFromTouch, offsetX, offsetY) {};
 
 /**
  * Performs the drop action of the drag and drop session.

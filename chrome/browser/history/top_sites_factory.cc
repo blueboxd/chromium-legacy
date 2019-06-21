@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -29,7 +30,6 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/ntp_tiles/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -74,18 +74,21 @@ const RawPrepopulatedPage kRawPrepopulatedPages[] = {
 #endif
 
 void InitializePrepopulatedPageList(
-    PrefService* prefs,
+    Profile* profile,
     history::PrepopulatedPageList* prepopulated_pages) {
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
-  bool hide_web_store_icon = prefs->GetBoolean(prefs::kHideWebStoreIcon);
+  bool hide_web_store_icon =
+      profile->GetPrefs()->GetBoolean(prefs::kHideWebStoreIcon);
   prepopulated_pages->reserve(base::size(kRawPrepopulatedPages));
   for (size_t i = 0; i < base::size(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;
     if (page.url_id == IDS_NTP_DEFAULT_SEARCH_URL &&
-        !base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut)) {
+        !(profile->IsNewProfile() &&
+          base::FeatureList::IsEnabled(
+              features::kFirstRunDefaultSearchShortcut))) {
       continue;
     }
 
@@ -144,8 +147,8 @@ TopSitesFactory::~TopSitesFactory() {
 scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   history::PrepopulatedPageList prepopulated_pages;
-  InitializePrepopulatedPageList(
-      Profile::FromBrowserContext(context)->GetPrefs(), &prepopulated_pages);
+  InitializePrepopulatedPageList(Profile::FromBrowserContext(context),
+                                 &prepopulated_pages);
   return BuildTopSites(context, prepopulated_pages);
 }
 

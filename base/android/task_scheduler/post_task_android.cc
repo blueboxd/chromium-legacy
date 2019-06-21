@@ -70,14 +70,13 @@ void JNI_PostTask_PostDelayedTask(
     jlong delay) {
   // This could be run on any java thread, so we can't cache |env| in the
   // BindOnce because JNIEnv is thread specific.
-  PostDelayedTaskWithTraits(
-      FROM_HERE,
-      PostTaskAndroid::CreateTaskTraits(env, priority_set_explicitly, priority,
-                                        may_block, use_thread_pool,
-                                        extension_id, extension_data),
-      BindOnce(&PostTaskAndroid::RunJavaTask,
-               base::android::ScopedJavaGlobalRef<jobject>(task)),
-      TimeDelta::FromMilliseconds(delay));
+  PostDelayedTask(FROM_HERE,
+                  PostTaskAndroid::CreateTaskTraits(
+                      env, priority_set_explicitly, priority, may_block,
+                      use_thread_pool, extension_id, extension_data),
+                  BindOnce(&PostTaskAndroid::RunJavaTask,
+                           base::android::ScopedJavaGlobalRef<jobject>(task)),
+                  TimeDelta::FromMilliseconds(delay));
 }
 
 // static

@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/screen_info.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this), run_loop.QuitWhenIdleClosure()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
 
   // Wait for the callback to be called.
   run_loop.Run();

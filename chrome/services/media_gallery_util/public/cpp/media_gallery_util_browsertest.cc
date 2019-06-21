@@ -9,7 +9,7 @@
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/media_buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,11 +52,9 @@ class TestMediaParserProvider : public MediaParserProvider {
 // Tests that the MediaParserProvider class used by the client library classes
 // does initialize the CPU info correctly.
 IN_PROC_BROWSER_TEST_F(MediaGalleryUtilBrowserTest, TestThirdPartyCpuInfo) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   TestMediaParserProvider media_parser_provider;
   chrome::mojom::MediaParser* media_parser =
-      media_parser_provider.GetMediaParser(connector);
+      media_parser_provider.GetMediaParser(content::GetSystemConnector());
 
   base::RunLoop run_loop;
   media_parser->GetCpuInfo(base::BindOnce(

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
@@ -118,16 +119,19 @@ void ImagePaintTimingDetector::UpdateCandidate() {
                                    : base::TimeTicks();
   const uint64_t size =
       largest_image_record ? largest_image_record->first_size : 0;
-  bool changed =
-      frame_view_->GetPaintTimingDetector().NotifyIfChangedLargestImagePaint(
-          time, size);
+  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
+  bool changed = detector.NotifyIfChangedLargestImagePaint(time, size);
   if (!changed)
     return;
   if (largest_image_record && !largest_image_record->paint_time.is_null()) {
+    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
+      lcp_calculator->OnLargestImageUpdated(largest_image_record);
     // If an image has paint time, it must have been loaded.
     DCHECK(largest_image_record->loaded);
     ReportCandidateToTrace(*largest_image_record);
   } else {
+    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
+      lcp_calculator->OnLargestImageUpdated(nullptr);
     ReportNoCandidateToTrace();
   }
 }

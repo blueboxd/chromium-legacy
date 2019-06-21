@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/trace_event_analyzer.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -497,7 +497,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   std::vector<InputHandlerProxy::EventDisposition> event_disposition_recorder_;
   std::vector<ui::LatencyInfo> latency_info_recorder_;
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
 };
 

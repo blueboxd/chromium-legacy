@@ -444,15 +444,6 @@
       },
     },
   },
-  'marlin': {
-    # Pixel XL
-    'swarming': {
-      'dimensions': {
-        'device_type': 'marlin',
-        'os': 'Android',
-      },
-    },
-  },
   'marshmallow': {
     'swarming': {
       'dimensions': {

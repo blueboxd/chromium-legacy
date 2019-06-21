@@ -34,12 +34,10 @@
 }
 
 cr-checkbox {
-  --cr-checkbox-label-container: {
-    padding-inline-start: 12px;
-  };
   align-self: start; /* Prevent label from spanning the whole width. */
   margin-top: 28px; /* 40 to label base line => 40 - 16/2 - 13/3 = 28 */
   padding-inline-start: 8px;
+  --cr-checkbox-label-padding-start: 12px;
 }
 
 #syncConsentOverviewDialog [slot='bottom-buttons'] {

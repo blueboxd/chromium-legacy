@@ -14,6 +14,7 @@
 namespace notifications {
 
 class BackgroundTaskCoordinator;
+class DisplayAgent;
 class DisplayDecider;
 class IconStore;
 class ImpressionHistoryTracker;
@@ -32,6 +33,7 @@ class NotificationSchedulerContext {
       std::unique_ptr<IconStore> icon_store,
       std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
       std::unique_ptr<ScheduledNotificationManager> notification_manager,
+      std::unique_ptr<DisplayAgent> display_agent,
       std::unique_ptr<DisplayDecider> display_decider,
       std::unique_ptr<SchedulerConfig> config);
   ~NotificationSchedulerContext();
@@ -54,6 +56,8 @@ class NotificationSchedulerContext {
     return notification_manager_.get();
   }
 
+  DisplayAgent* display_agent() { return display_agent_.get(); }
+
   DisplayDecider* display_decider() { return display_decider_.get(); }
 
   const SchedulerConfig* config() const { return config_.get(); }
@@ -70,6 +74,9 @@ class NotificationSchedulerContext {
 
   // Stores all scheduled notifications.
   std::unique_ptr<ScheduledNotificationManager> notification_manager_;
+
+  // Default display flow to show the notification.
+  std::unique_ptr<DisplayAgent> display_agent_;
 
   // Helper class to decide which notification should be displayed to the user.
   std::unique_ptr<DisplayDecider> display_decider_;

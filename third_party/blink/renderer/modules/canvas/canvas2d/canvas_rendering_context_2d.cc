@@ -76,8 +76,8 @@
 
 namespace blink {
 
-static const TimeDelta kTryRestoreContextInterval =
-    TimeDelta::FromMilliseconds(500);
+static const base::TimeDelta kTryRestoreContextInterval =
+    base::TimeDelta::FromMilliseconds(500);
 static const unsigned kMaxTryRestoreContextAttempts = 4;
 
 static bool ContextLostRestoredEventsEnabled() {
@@ -199,7 +199,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
-  dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void CanvasRenderingContext2D::DidSetSurfaceSize() {
@@ -211,7 +211,7 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 
   if (CanCreateCanvas2dResourceProvider()) {
     if (ContextLostRestoredEventsEnabled()) {
-      dispatch_context_restored_event_timer_.StartOneShot(TimeDelta(),
+      dispatch_context_restored_event_timer_.StartOneShot(base::TimeDelta(),
                                                           FROM_HERE);
     } else {
       // legacy synchronous context restoration.

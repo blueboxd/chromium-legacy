@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
-#include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/overlay_info.h"
@@ -31,6 +30,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_video_utils.h"
 #include "third_party/webrtc/api/video/video_frame.h"
 #include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -274,7 +274,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
 
   if (ShouldReinitializeForSettingHDRColorSpace(input_image)) {
     config_.set_color_space_info(
-        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
+        blink::WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
     if (!ReinitializeSync(config_))
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     if (input_image._frameType != webrtc::VideoFrameType::kVideoFrameKey)
@@ -459,7 +459,7 @@ bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
   if (config_.profile() == media::VP9PROFILE_PROFILE2 &&
       input_image.ColorSpace()) {
     const media::VideoColorSpace& new_color_space =
-        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace());
+        blink::WebRtcToMediaVideoColorSpace(*input_image.ColorSpace());
     if (!config_.color_space_info().IsSpecified() ||
         new_color_space != config_.color_space_info()) {
       return true;

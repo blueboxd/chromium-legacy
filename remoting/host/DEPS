@@ -37,4 +37,7 @@ specific_include_rules = {
   ".*unittest\.cc": [
     "+mojo/core/test",
   ],
+  ".*chromeos\.cc": [
+    "+ui/ozone/public",
+  ],
 }

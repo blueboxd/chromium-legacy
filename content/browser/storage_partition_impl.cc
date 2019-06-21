@@ -813,7 +813,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->native_file_system_manager_ =
       base::MakeRefCounted<NativeFileSystemManagerImpl>(
-          partition->filesystem_context_, blob_context);
+          partition->filesystem_context_, blob_context,
+          context->GetNativeFileSystemPermissionContext());
 
   GeneratedCodeCacheSettings settings =
       GetContentClient()->browser()->GetGeneratedCodeCacheSettings(context);

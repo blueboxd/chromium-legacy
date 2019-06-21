@@ -4,6 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
@@ -38,6 +40,15 @@ class UseCounterHelperTest : public testing::Test {
  public:
   UseCounterHelperTest() : dummy_(std::make_unique<DummyPageHolder>()) {
     Page::InsertOrdinaryPageForTesting(&dummy_->GetPage());
+  }
+
+  int ToSampleId(CSSPropertyID property) const {
+    return UseCounterHelper::MapCSSPropertyIdToCSSSampleIdForHistogram(
+        property);
+  }
+
+  bool IsInternal(CSSPropertyID property) const {
+    return CSSProperty::Get(property).IsInternal();
   }
 
  protected:
@@ -432,6 +443,37 @@ TEST_F(UseCounterHelperTest, CSSSelectorHostContextInSnapshotProfile) {
   Element* span = shadow_root.QuerySelector(":host-context(#parent) span");
   EXPECT_TRUE(span);
   EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, UniqueCSSSampleIds) {
+  HashSet<int> ids;
+
+  for (CSSPropertyID property : CSSPropertyIDList()) {
+    if (IsInternal(property))
+      continue;
+    EXPECT_FALSE(ids.Contains(ToSampleId(property)));
+    ids.insert(ToSampleId(property));
+  }
+
+  for (CSSPropertyID property : kCSSPropertyAliasList) {
+    EXPECT_FALSE(ids.Contains(ToSampleId(property)));
+    ids.insert(ToSampleId(property));
+  }
+}
+
+TEST_F(UseCounterHelperTest, MaximumCSSSampleId) {
+  int max_sample_id = 0;
+
+  for (CSSPropertyID property : CSSPropertyIDList()) {
+    if (IsInternal(property))
+      continue;
+    max_sample_id = std::max(max_sample_id, ToSampleId(property));
+  }
+
+  for (CSSPropertyID property : kCSSPropertyAliasList)
+    max_sample_id = std::max(max_sample_id, ToSampleId(property));
+
+  EXPECT_EQ(mojom::blink::kMaximumCSSSampleId, max_sample_id);
 }
 
 }  // namespace blink

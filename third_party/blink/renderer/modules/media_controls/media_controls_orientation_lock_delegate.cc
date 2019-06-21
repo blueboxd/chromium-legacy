@@ -92,7 +92,7 @@ class DummyScreenOrientationCallback : public WebLockOrientationCallback {
 
 }  // anonymous namespace
 
-constexpr TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
+constexpr base::TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)

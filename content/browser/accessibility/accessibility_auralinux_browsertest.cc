@@ -772,6 +772,64 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(list_item_1);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextSelectionChangedDuplicateSignals) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+      <div>
+        Sufficiently long div content
+      </div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* div = atk_object_ref_accessible_child(document, 0);
+  EXPECT_NE(div, nullptr);
+
+  int selection_changed_signals = 0;
+  g_signal_connect(div, "text-selection-changed",
+                   G_CALLBACK(+[](AtkText*, int* count) { *count += 1; }),
+                   &selection_changed_signals);
+
+  int caret_moved_signals = 0;
+  g_signal_connect(div, "text-caret-moved",
+                   G_CALLBACK(+[](AtkText*, gint, int* count) { *count += 1; }),
+                   &caret_moved_signals);
+
+  auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  atk_text_set_caret_offset(ATK_TEXT(div), 0);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 0);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_selection(ATK_TEXT(div), 0, 0, 3);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 1);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_caret_offset(ATK_TEXT(div), 3);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 1);
+  ASSERT_EQ(caret_moved_signals, 0);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_caret_offset(ATK_TEXT(div), 2);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 0);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  g_object_unref(div);
+}
+
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
     MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {

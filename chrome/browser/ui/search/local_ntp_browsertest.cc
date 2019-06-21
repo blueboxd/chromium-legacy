@@ -106,6 +106,7 @@ class LocalNTPTest : public InProcessBrowserTest {
       : LocalNTPTest(
             /*enabled_features=*/{},
             /*disabled_features=*/{features::kRemoveNtpFakebox,
+                                   features::kFirstRunDefaultSearchShortcut,
                                    ntp_tiles::kDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
@@ -119,11 +120,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
     instant_service->UpdateMostVisitedInfo();
-    const int numDefaultMVItems =
-        kDefaultMostVisitedItemCount +
-        (base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut) ? 1
-                                                                         : 0);
-    mv_observer.WaitForMostVisitedItems(numDefaultMVItems);
+    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
   }
 
  private:
@@ -989,7 +986,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
 class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({}, {ntp_tiles::kDefaultSearchShortcut}) {}
+      : LocalNTPTest({},
+                     {features::kFirstRunDefaultSearchShortcut,
+                      ntp_tiles::kDefaultSearchShortcut}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
@@ -1004,14 +1003,22 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-class LocalNTPSearchShortcutTest : public LocalNTPTest {
+class LocalNTPNonFRESearchShortcutTest : public LocalNTPTest {
  public:
-  LocalNTPSearchShortcutTest()
+  LocalNTPNonFRESearchShortcutTest()
       : LocalNTPTest({ntp_tiles::kDefaultSearchShortcut}, {}) {}
+
+  void SetUpOnMainThread() override {
+    // Make sure TopSites are available before running the tests.
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+    TestInstantServiceObserver mv_observer(instant_service);
+    instant_service->UpdateMostVisitedInfo();
+    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+  }
 };
 
-IN_PROC_BROWSER_TEST_F(LocalNTPSearchShortcutTest, SearchShortcutShown) {
+IN_PROC_BROWSER_TEST_F(LocalNTPNonFRESearchShortcutTest, SearchShortcutAdded) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -1020,6 +1027,106 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchShortcutTest, SearchShortcutShown) {
   content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
 
   EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
+}
+
+#if defined(GOOGLE_CHROME_BUILD)
+class LocalNTPFRESearchShortcutTest : public LocalNTPTest {
+ public:
+  LocalNTPFRESearchShortcutTest()
+      : LocalNTPTest({features::kFirstRunDefaultSearchShortcut}, {}) {}
+
+  void SetUpOnMainThread() override {
+    // Make sure TopSites are available before running the tests.
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+    TestInstantServiceObserver mv_observer(instant_service);
+    instant_service->UpdateMostVisitedInfo();
+    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPFRESearchShortcutTest, SearchShortcutShown) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+
+  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
+}
+
+class LocalNTPExistingProfileSearchShortcutTest : public LocalNTPTest {
+ public:
+  LocalNTPExistingProfileSearchShortcutTest() : LocalNTPTest({}, {}) {}
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
+                       SearchShortcutAdded) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
+
+  // Navigate to a non-NTP URL, which should update most visited tiles.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Enable the feature to insert the search shortcut for existing profiles.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kDefaultSearchShortcut);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut));
+
+  // Two new tiles (the non-NTP URL and the search shortcut) should be added.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 2);
+
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  iframe = GetIframe(active_tab, kMostVisitedIframe);
+  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
+                       FRESearchShortcutNotAddedForExistingUsers) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
+
+  // Navigate to a non-NTP URL, which should update most visited tiles.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Enable the feature to insert the search shortcut for new users.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kFirstRunDefaultSearchShortcut);
+  ASSERT_TRUE(
+      base::FeatureList::IsEnabled(features::kFirstRunDefaultSearchShortcut));
+
+  // One new tiles (the non-NTP URL) should be added.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  iframe = GetIframe(active_tab, kMostVisitedIframe);
+  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
 }
 #endif
 

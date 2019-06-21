@@ -93,4 +93,14 @@ Polymer({
           searchTerm.toLowerCase());
     };
   },
+
+  /**
+   * @param {!CupsPrinterInfo} first
+   * @param {!CupsPrinterInfo} second
+   * @return {number} The result of the comparison.
+   * @private
+   */
+  sort_: function(first, second) {
+    return settings.printing.alphabeticalSort(first, second);
+  },
 });

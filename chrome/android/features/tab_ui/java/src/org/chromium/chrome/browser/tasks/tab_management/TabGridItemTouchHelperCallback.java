@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * A {@link ItemTouchHelper.SimpleCallback} implementation to host the logic for swipe and drag
  * related actions in grid related layouts.
- * TODO(yuezhanggg): Get rid of using notifyDataSetChanged in adapter.
  */
 public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
 
@@ -143,18 +142,22 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             }
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
-                mRecyclerView.getAdapter().notifyDataSetChanged();
+                mRecyclerView.removeViewAt(mSelectedTabIndex);
                 RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
             }
-            if (mHoveredTabIndex == TabModel.INVALID_TAB_INDEX) {
-                mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
+            mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
+            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
+                mModel.updateHoveredTabForMergeToGroup(mSelectedTabIndex > mHoveredTabIndex
+                                ? mHoveredTabIndex
+                                : mHoveredTabIndex - 1,
+                        false);
             }
             if (mUnGroupTabIndex != TabModel.INVALID_TAB_INDEX) {
                 TabGroupModelFilter filter =
                         (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
                 filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
-                mRecyclerView.getAdapter().notifyDataSetChanged();
+                mRecyclerView.removeViewAt(mUnGroupTabIndex);
                 RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
@@ -214,7 +217,6 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     }
 
     private void onTabMergeToGroup(int selectedCardIndex, int hoveredCardIndex) {
-        mModel.updateHoveredTabForMergeToGroup(hoveredCardIndex, false);
         TabGroupModelFilter filter =
                 (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                         .getCurrentTabModelFilter();

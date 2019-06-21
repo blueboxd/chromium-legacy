@@ -12,7 +12,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -88,9 +88,8 @@ void ArcMediaSessionBridge::SetupAudioFocus() {
   }
 
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(media_session::mojom::kServiceName, &audio_focus_ptr);
+  content::GetSystemConnector()->BindInterface(
+      media_session::mojom::kServiceName, &audio_focus_ptr);
 
   audio_focus_ptr->SetSourceName(kAudioFocusSourceName);
 

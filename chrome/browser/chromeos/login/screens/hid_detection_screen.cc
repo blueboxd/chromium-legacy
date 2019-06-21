@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -485,9 +485,8 @@ void HIDDetectionScreen::TryInitiateBTDevicesUpdate() {
 
 void HIDDetectionScreen::ConnectToInputDeviceManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  service_manager::Connector* connector = content::GetSystemConnector();
+  DCHECK(connector);
   connector->BindInterface(device::mojom::kServiceName,
                            mojo::MakeRequest(&input_device_manager_));
 }

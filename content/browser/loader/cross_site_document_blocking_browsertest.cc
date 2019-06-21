@@ -643,7 +643,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   EXPECT_EQ("", interceptor.response_body());
 }
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AllowCorsFetches) {
   embedded_test_server()->StartAcceptingConnections();
   GURL foo_url("http://foo.com/cross_site_document_blocking/request.html");
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
@@ -670,6 +670,48 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockFetches) {
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
                       ResourceType::kXhr);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
+                       AllowSameOriginFetchFromLoadDataWithBaseUrl) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and GuestView cases [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
+  // Navigate via LoadDataWithBaseURL.
+  const GURL base_url("http://foo.com");
+  const std::string data = "<html><body>foo</body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+  TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+  shell()->LoadDataWithBaseURL(base_url /* history_url */, data, base_url);
+  nav_observer.Wait();
+
+  // Fetch a same-origin resource.
+  GURL resource_url("http://foo.com/site_isolation/nosniff.html");
+  EXPECT_EQ(url::Origin::Create(resource_url),
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+  FetchHistogramsFromChildProcesses();
+  base::HistogramTester histograms;
+  std::string fetch_result =
+      EvalJs(shell(), JsReplace("fetch($1).then(response => response.text())",
+                                resource_url))
+          .ExtractString();
+  fetch_result = TrimWhitespaceASCII(fetch_result, base::TRIM_ALL).as_string();
+
+  // Verify that the response was not blocked.
+  EXPECT_EQ("runMe({ \"name\" : \"chromium\" });", fetch_result);
+  InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "nosniff.html",
+                    ResourceType::kXhr);
 }
 
 // Regression test for https://crbug.com/958421.

@@ -32,7 +32,6 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -116,8 +115,7 @@ void ChromeKeyboardControllerClient::Shutdown() {
   if (session_manager::SessionManager::Get())
     session_manager::SessionManager::Get()->RemoveObserver(this);
   pref_change_registrar_.RemoveAll();
-  if (!::features::IsUsingWindowService() &&
-      keyboard::KeyboardController::HasInstance()) {
+  if (keyboard::KeyboardController::HasInstance()) {
     // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
     // accesses this class, so make sure that the UI has been destroyed.
     keyboard::KeyboardController::Get()->Shutdown();
@@ -246,11 +244,6 @@ GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {
 }
 
 aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
-  if (::features::IsUsingWindowService()) {
-    content::WebContents* contents =
-        keyboard_contents_ ? keyboard_contents_->web_contents() : nullptr;
-    return contents ? contents->GetNativeView() : nullptr;
-  }
   return keyboard::KeyboardController::Get()->GetKeyboardWindow();
 }
 

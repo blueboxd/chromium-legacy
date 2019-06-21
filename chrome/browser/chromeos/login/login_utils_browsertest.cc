@@ -34,7 +34,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "base/task/post_task.h"
@@ -82,24 +81,6 @@ class LoginUtilsTest : public OobeBaseTest {
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
-
-// Exercises login, like the desktopui_MashLogin Chrome OS autotest.
-// Test is flaky, see https://crbug.com/957584.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_MashLogin DISABLED_MashLogin
-#else
-#define MAYBE_MashLogin MashLogin
-#endif
-IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MAYBE_MashLogin) {
-  // Test is relevant for both SingleProcessMash and MultiProcessMash, but
-  // not classic ash.
-  if (!features::IsUsingWindowService())
-    return;
-
-  WaitForSigninScreen();
-  Login("username");
-  // Login did not time out and did not crash.
-}
 
 #if BUILDFLAG(ENABLE_RLZ)
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {

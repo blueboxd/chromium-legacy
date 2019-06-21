@@ -6,6 +6,7 @@
 #define COMPONENTS_SESSION_MANAGER_CORE_SESSION_MANAGER_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "components/session_manager/session_manager_types.h"
 
 namespace session_manager {
@@ -13,18 +14,16 @@ namespace session_manager {
 // An observer interface for SessionManager.
 // TODO(xiyuan): Use this to replace UserManager::UserSessionStateObserver,
 //     http://crbug.com/657149.
-class SessionManagerObserver {
+class SessionManagerObserver : public base::CheckedObserver {
  public:
-  SessionManagerObserver() = default;
-
   // Invoked when session state is changed.
-  virtual void OnSessionStateChanged() = 0;
+  virtual void OnSessionStateChanged() {}
 
- protected:
-  virtual ~SessionManagerObserver() = default;
+  // Invoked when a user profile is loaded.
+  virtual void OnUserProfileLoaded(const AccountId& account_id) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SessionManagerObserver);
+  // Invoked when the primary user session is started.
+  virtual void OnPrimaryUserSessionStarted() {}
 };
 
 }  // namespace session_manager

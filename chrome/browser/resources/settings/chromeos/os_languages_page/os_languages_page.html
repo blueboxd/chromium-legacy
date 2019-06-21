@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
@@ -139,7 +140,7 @@
         display: none;
       }
 
-      .restart-button {
+      #restartButton {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
     </style>
@@ -176,10 +177,11 @@
                   </div>
                 </div>
                 <template is="dom-if" if="[[isRestartRequired_(
-                        item.language.code, languages.prospectiveUILanguage)]]">
-                  <paper-button class="restart-button" on-click="onRestartTap_">
+                    item.language.code, languages.prospectiveUILanguage)]]"
+                    restamp>
+                  <cr-button id="restartButton" on-click="onRestartTap_">
                     $i18n{restart}
-                  </paper-button>
+                  </cr-button>
                 </template>
                 <cr-icon-button class="icon-more-vert"
                     title="$i18n{moreActions}" id="more-[[item.language.code]]"
@@ -239,8 +241,7 @@
         </iron-collapse>
         <cr-lazy-render id="menu">
           <template>
-            <cr-action-menu
-                class="complex">
+            <cr-action-menu class="complex" on-close="onCloseMenu_">
               <cr-checkbox id="uiLanguageItem"
                   class="dropdown-item"
                   checked="[[isProspectiveUILanguage_(

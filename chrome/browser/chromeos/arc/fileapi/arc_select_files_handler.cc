@@ -186,7 +186,7 @@ void ArcSelectFilesHandler::SelectFiles(
       request->action_type == mojom::SelectFilesActionType::GET_CONTENT;
 
   dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
-                             show_android_picker_apps);
+                             request->task_id, show_android_picker_apps);
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
@@ -275,6 +275,7 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
 }
 
 void ArcSelectFilesHandler::GetFileSelectorElements(
+    mojom::GetFileSelectorElementsRequestPtr request,
     mojom::FileSystemHost::GetFileSelectorElementsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -304,6 +305,7 @@ void SelectFileDialogHolder::SelectFile(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
+    int task_id,
     bool show_android_picker_apps) {
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,

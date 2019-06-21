@@ -22,7 +22,7 @@ namespace {
 const size_t kPageSize = 4096;
 }  // namespace
 
-TEST(NativeLibraryPrefetcherTest, DISABLED_TestPercentageOfResidentCode) {
+TEST(NativeLibraryPrefetcherTest, TestPercentageOfResidentCode) {
   size_t length = 4 * kPageSize;
   auto shared_region = base::WritableSharedMemoryRegion::Create(length);
   ASSERT_TRUE(shared_region.IsValid());

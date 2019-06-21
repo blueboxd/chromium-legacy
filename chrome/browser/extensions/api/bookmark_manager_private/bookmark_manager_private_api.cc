@@ -36,6 +36,7 @@
 #include "components/undo/bookmark_undo_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -411,12 +412,9 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
     source = ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
 
   chrome::DragBookmarks(GetProfile(),
-                        {
-                            std::move(nodes), params->drag_node_index,
-                            platform_util::GetViewForWindow(
-                                web_contents->GetTopLevelNativeWindow()),
-                            source,
-                        });
+                        {std::move(nodes), params->drag_node_index,
+                         web_contents->GetContentNativeView(), source,
+                         gfx::Point(params->x, params->y)});
 
   return true;
 }

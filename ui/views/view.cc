@@ -655,10 +655,12 @@ void View::Layout() {
   // Make sure to propagate the Layout() call to any children that haven't
   // received it yet through the layout manager and need to be laid out. This
   // is needed for the case when the child requires a layout but its bounds
-  // weren't changed by the layout manager.
+  // weren't changed by the layout manager. If there is no layout manager, we
+  // just propagate the Layout() call down the hierarchy, so whoever receives
+  // the call can take appropriate action.
   internal::ScopedChildrenLock lock(this);
   for (auto* child : children_) {
-    if (child->needs_layout_) {
+    if (child->needs_layout_ || !layout_manager_) {
       TRACE_EVENT1("views", "View::Layout", "class", child->GetClassName());
       child->needs_layout_ = false;
       child->Layout();

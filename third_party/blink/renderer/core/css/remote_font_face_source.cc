@@ -359,13 +359,6 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
     DCHECK_NE(load_start_time_, 0);
     int duration = static_cast<int>(CurrentTimeMS() - load_start_time_);
     RecordLoadTimeHistogram(font, duration);
-
-    enum { kCorsFail, kCorsSuccess, kCorsEnumMax };
-    int cors_value =
-        font->GetResponse().IsCorsSameOrigin() ? kCorsSuccess : kCorsFail;
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
-                                    ("WebFont.CORSSuccess", kCorsEnumMax));
-    cors_histogram.Count(cors_value);
   }
 }
 

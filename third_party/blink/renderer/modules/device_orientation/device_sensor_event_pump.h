@@ -19,7 +19,7 @@ class MODULES_EXPORT DeviceSensorEventPump : public GarbageCollectedMixin {
   // Default rate for firing events.
   static constexpr int kDefaultPumpFrequencyHz = 60;
   static constexpr int kDefaultPumpDelayMicroseconds =
-      WTF::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
+      base::Time::kMicrosecondsPerSecond / kDefaultPumpFrequencyHz;
 
   // The pump is a tri-state automaton with allowed transitions as follows:
   // STOPPED -> PENDING_START

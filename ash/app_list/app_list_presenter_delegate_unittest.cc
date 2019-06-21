@@ -339,7 +339,9 @@ TEST_F(PopulatedAppListTest, MouseDragAppsGridViewHandledByAppList) {
   event_generator->MoveMouseTo(drag_start_point);
   event_generator->DragMouseTo(target_point);
   event_generator->ReleaseLeftButton();
-  EXPECT_EQ(AppListViewState::kClosed, app_list_view_->app_list_state());
+
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
 }
 
 // Verifies that the upward mouse drag on AppsGridView's first page should

@@ -206,17 +206,6 @@ const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontListForRow(
   return smaller_font_list_;
 }
 
-ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
-    size_t index) const {
-  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
-  switch (suggestions[index].frontend_id) {
-    case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-      return ui::NativeTheme::kColorId_ResultsTableDimmedText;
-    default:
-      return ui::NativeTheme::kColorId_ResultsTableNormalText;
-  }
-}
-
 gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   if (!suggestions[index].custom_icon.IsEmpty())
@@ -331,7 +320,7 @@ void AutofillPopupLayoutModel::SetUpForTesting(
   view_common_ = std::move(view_common);
 }
 
-const gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {
+gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {
   return gfx::ToEnclosingRect(delegate_->element_bounds());
 }
 

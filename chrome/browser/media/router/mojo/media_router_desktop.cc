@@ -20,7 +20,7 @@
 #include "chrome/common/media_router/media_source.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #if defined(OS_WIN)
@@ -31,11 +31,12 @@ namespace media_router {
 
 namespace {
 
-// Returns the Connector object for the current process. It is the caller's
-// responsibility to clone the returned object to be used in another thread.
+// Returns the system Connector object for the browser process. It is the
+// caller's responsibility to clone the returned object to be used in another
+// thread.
 service_manager::Connector* GetConnector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  return content::GetSystemConnector();
 }
 
 }  // namespace

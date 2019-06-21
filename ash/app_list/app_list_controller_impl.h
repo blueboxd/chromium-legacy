@@ -183,12 +183,15 @@ class ASH_EXPORT AppListControllerImpl
                     AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
+  ui::ImplicitAnimationObserver* GetAnimationObserver(
+      ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool KeyboardTraversalEngaged() override;
   bool CanProcessEventsOnApplistViews() override;
+  bool ShouldDismissImmediately() override;
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
@@ -366,6 +369,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // True if Shutdown() has been called.
   bool is_shutdown_ = false;
+
+  // Whether to immediately dismiss the AppListView.
+  bool should_dismiss_immediately_ = false;
 
   // Used in mojo callings to specify the profile whose app list data is
   // read/written by Ash side through IPC. Notice that in multi-profile mode,

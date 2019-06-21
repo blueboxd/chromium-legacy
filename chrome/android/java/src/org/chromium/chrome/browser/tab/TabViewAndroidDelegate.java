@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.os.Bundle;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
@@ -54,5 +56,10 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
             return activity.getInsetObserverView().getSystemWindowInsetsBottom();
         }
         return 0;
+    }
+
+    @Override
+    public void performPrivateImeCommand(String action, Bundle data) {
+        AppHooks.get().performPrivateImeCommand(mTab.getWebContents(), action, data);
     }
 }

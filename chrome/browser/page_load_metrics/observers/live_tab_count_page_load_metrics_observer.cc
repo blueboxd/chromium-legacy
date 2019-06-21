@@ -8,22 +8,23 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/metrics/live_tab_count_metrics.h"
+#include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "components/live_tab_count_metrics/live_tab_count_metrics.h"
+#include "components/tab_count_metrics/tab_count_metrics.h"
 
 #define LIVE_TAB_COUNT_PAGE_LOAD_HISTOGRAM(prefix, tab_count_bucket, sample, \
                                            histogram_min, histogram_max,     \
                                            histogram_buckets)                \
   STATIC_HISTOGRAM_POINTER_GROUP(                                            \
-      live_tab_count_metrics::HistogramName(histogram_prefix,                \
-                                            tab_count_bucket),               \
+      tab_count_metrics::HistogramName(                                      \
+          histogram_prefix, /* live_tabs_only = */ true, tab_count_bucket),  \
       static_cast<int>(bucket),                                              \
-      static_cast<int>(live_tab_count_metrics::kNumLiveTabCountBuckets),     \
+      static_cast<int>(tab_count_metrics::kNumTabCountBuckets),              \
       AddTimeMillisecondsGranularity(sample),                                \
       base::Histogram::FactoryTimeGet(                                       \
-          live_tab_count_metrics::HistogramName(prefix, tab_count_bucket),   \
+          tab_count_metrics::HistogramName(                                  \
+              prefix, /* live_tabs_only = */ true, tab_count_bucket),        \
           histogram_min, histogram_max, histogram_buckets,                   \
           base::HistogramBase::kUmaTargetedHistogramFlag))
 
@@ -63,7 +64,7 @@ void LiveTabCountPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstContentfulPaintSuffix));
     const size_t bucket =
-        live_tab_count_metrics::BucketForLiveTabCount(GetLiveTabCount());
+        tab_count_metrics::BucketForTabCount(GetLiveTabCount());
     LIVE_TAB_COUNT_PAINT_PAGE_LOAD_HISTOGRAM(
         histogram_prefix, bucket,
         timing.paint_timing->first_contentful_paint.value());
@@ -80,7 +81,7 @@ void LiveTabCountPageLoadMetricsObserver::
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstMeaningfulPaintSuffix));
     const size_t bucket =
-        live_tab_count_metrics::BucketForLiveTabCount(GetLiveTabCount());
+        tab_count_metrics::BucketForTabCount(GetLiveTabCount());
     LIVE_TAB_COUNT_PAINT_PAGE_LOAD_HISTOGRAM(
         histogram_prefix, bucket,
         timing.paint_timing->first_meaningful_paint.value());
@@ -96,7 +97,7 @@ void LiveTabCountPageLoadMetricsObserver::OnFirstInputInPage(
         std::string(internal::kHistogramPrefixLiveTabCount)
             .append(internal::kHistogramFirstInputDelaySuffix));
     const size_t bucket =
-        live_tab_count_metrics::BucketForLiveTabCount(GetLiveTabCount());
+        tab_count_metrics::BucketForTabCount(GetLiveTabCount());
     LIVE_TAB_COUNT_INPUT_PAGE_LOAD_HISTOGRAM(
         histogram_prefix, bucket,
         timing.interactive_timing->first_input_delay.value());
@@ -104,5 +105,5 @@ void LiveTabCountPageLoadMetricsObserver::OnFirstInputInPage(
 }
 
 size_t LiveTabCountPageLoadMetricsObserver::GetLiveTabCount() const {
-  return live_tab_count_metrics::LiveTabCount();
+  return tab_count_metrics::LiveTabCount();
 }

@@ -85,7 +85,6 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   int timeout_id_;
   int nesting_level_;
   Member<ScheduledAction> action_;
-  scoped_refptr<UserGestureToken> user_gesture_token_;
 };
 
 }  // namespace blink

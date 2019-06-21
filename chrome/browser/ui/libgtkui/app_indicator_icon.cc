@@ -162,7 +162,7 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
 
   EnsureLibAppIndicatorLoaded();
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
-  SetImage(image);
+  SetIcon(image);
 }
 AppIndicatorIcon::~AppIndicatorIcon() {
   if (icon_) {
@@ -180,7 +180,7 @@ bool AppIndicatorIcon::CouldOpen() {
   return g_opened;
 }
 
-void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
+void AppIndicatorIcon::SetIcon(const gfx::ImageSkia& image) {
   if (!g_opened)
     return;
 

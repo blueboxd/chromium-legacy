@@ -80,9 +80,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -416,12 +416,9 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
 #endif
 
   ModuleDatabase::GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InitializeModuleDatabase,
-                     content::ServiceManagerConnection::GetForProcess()
-                         ->GetConnector()
-                         ->Clone(),
-                     third_party_blocking_policy_enabled));
+      FROM_HERE, base::BindOnce(&InitializeModuleDatabase,
+                                content::GetSystemConnector()->Clone(),
+                                third_party_blocking_policy_enabled));
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
 }

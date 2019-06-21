@@ -110,7 +110,7 @@ void ClipboardExtensionHelper::OnImageDecodeFailure() {
 
 void ClipboardExtensionHelper::OnImageDecoded(const SkBitmap& bitmap) {
   {
-    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
     // Write the decoded image data to clipboard.
     if (!bitmap.empty() && !bitmap.isNull())
       scw.WriteImage(bitmap);

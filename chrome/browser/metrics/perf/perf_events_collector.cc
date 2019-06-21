@@ -424,6 +424,10 @@ void PerfCollector::ParseOutputProtoIfValid(
   DCHECK(posted);
 }
 
+base::WeakPtr<MetricCollector> PerfCollector::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 bool PerfCollector::ShouldCollect() const {
   // Only allow one active collection.
   if (perf_output_call_) {

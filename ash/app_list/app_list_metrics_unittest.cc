@@ -36,6 +36,8 @@ namespace ash {
 
 namespace {
 
+constexpr int kBrowserAppIndexOnShelf = 0;
+
 // A test shelf item delegate that simulates an activated window when a shelf
 // item is selected.
 class TestShelfItemDelegate : public ShelfItemDelegate {
@@ -105,8 +107,9 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
         GetPrimaryShelf()->GetShelfViewForTesting());
     ShelfView* shelf_view = shelf_test_api.shelf_view();
     const views::ViewModel* view_model = shelf_view->view_model_for_test();
-    gfx::Point center =
-        view_model->view_at(2)->GetBoundsInScreen().CenterPoint();
+    gfx::Point center = view_model->view_at(kBrowserAppIndexOnShelf)
+                            ->GetBoundsInScreen()
+                            .CenterPoint();
 
     // Click on the shelf item.
     ui::test::EventGenerator* generator = GetEventGenerator();

@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/oauth_multilogin_helper.h"
 #include "components/signin/core/browser/set_accounts_in_cookie_result.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
@@ -60,6 +61,9 @@ MultiloginParameters& MultiloginParameters::operator=(
 }  // namespace signin
 
 namespace {
+
+// The maximum number of retries for a fetcher used in this class.
+constexpr int kMaxFetcherRetries = 8;
 
 // In case of an error while fetching using the GaiaAuthFetcher or
 // SimpleURLLoader, retry with exponential backoff. Try up to 7 times within 15
@@ -797,8 +801,7 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
   const std::string account_id = requests_.front().GetAccountID();
   VLOG(1) << "Failed MergeSession"
           << " account=" << account_id << " error=" << error.ToString();
-  if (++fetcher_retries_ < signin::kMaxFetcherRetries &&
-      error.IsTransientError()) {
+  if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
     UMA_HISTOGRAM_ENUMERATION("OAuth2Login.MergeSessionRetry", error.state(),
                               GoogleServiceAuthError::NUM_STATES);
@@ -866,8 +869,7 @@ void GaiaCookieManagerService::OnListAccountsFailure(
          GaiaCookieRequestType::LIST_ACCOUNTS);
   RecordListAccountsRetryResult(error, fetcher_retries_);
 
-  if (++fetcher_retries_ < signin::kMaxFetcherRetries &&
-      error.IsTransientError()) {
+  if (++fetcher_retries_ < kMaxFetcherRetries && error.IsTransientError()) {
     fetcher_backoff_.InformOfRequest(false);
     UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsRetry", error.state(),
                               GoogleServiceAuthError::NUM_STATES);
@@ -906,7 +908,7 @@ void GaiaCookieManagerService::OnLogOutFailure(
   VLOG(1) << "GaiaCookieManagerService::OnLogOutFailure";
   RecordLogoutRequestState(LogoutRequestState::kFailed);
 
-  if (++fetcher_retries_ < signin::kMaxFetcherRetries) {
+  if (++fetcher_retries_ < kMaxFetcherRetries) {
     fetcher_backoff_.InformOfRequest(false);
     fetcher_timer_.Start(
         FROM_HERE, fetcher_backoff_.GetTimeUntilRelease(),
@@ -991,13 +993,8 @@ void GaiaCookieManagerService::StartSetAccounts() {
     return;
   }
 
-  // TODO(triploblastic): remove this block in the second part of the fix.
-  std::vector<std::string> account_ids;
-  for (const auto& id : requests_.front().accounts())
-    account_ids.push_back(id.first.id);
-
   oauth_multilogin_helper_ = std::make_unique<signin::OAuthMultiloginHelper>(
-      signin_client_, token_service_, account_ids,
+      signin_client_, token_service_, requests_.front().accounts(),
       external_cc_result_fetcher_.GetExternalCcResult(),
       base::BindOnce(&GaiaCookieManagerService::OnSetAccountsFinished,
                      weak_ptr_factory_.GetWeakPtr()));

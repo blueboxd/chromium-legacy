@@ -8,6 +8,7 @@
     "element",
     "event",
     "firstInput",
+    "largestContentfulPaint",
     "layoutShift",
     "longtask",
     "mark",

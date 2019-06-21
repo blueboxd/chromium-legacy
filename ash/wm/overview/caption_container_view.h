@@ -44,7 +44,8 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   class EventDelegate {
    public:
     // TODO(sammiequon): Maybe consolidate into just mouse and gesture events.
-    virtual void HandlePressEvent(const gfx::PointF& location_in_screen) = 0;
+    virtual void HandlePressEvent(const gfx::PointF& location_in_screen,
+                                  bool from_touch_gesture) = 0;
     virtual void HandleDragEvent(const gfx::PointF& location_in_screen) = 0;
     virtual void HandleReleaseEvent(const gfx::PointF& location_in_screen) = 0;
     virtual void HandleFlingStartEvent(const gfx::PointF& location_in_screen,

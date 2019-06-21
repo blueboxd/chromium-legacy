@@ -128,11 +128,6 @@ base::string16 GetLabelName(const std::vector<ServerFieldType>& types,
                             const AutofillProfile& profile,
                             const std::string& app_locale);
 
-// Returns the full name associated with |profile|, if any; otherwise, returns
-// an empty string.
-base::string16 GetLabelFullName(const AutofillProfile& profile,
-                                const std::string& app_locale);
-
 // Returns the first name associated with |profile|, if any; otherwise, returns
 // an empty string.
 base::string16 GetLabelFirstName(const AutofillProfile& profile,

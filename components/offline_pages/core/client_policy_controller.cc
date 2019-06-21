@@ -8,102 +8,96 @@
 
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/offline_page_feature.h"
 
 namespace offline_pages {
-namespace {
 
-// Generates a client policy from the input values.
-const OfflinePageClientPolicy MakePolicy(const std::string& name_space,
-                                         LifetimeType lifetime_type,
-                                         const base::TimeDelta& expire_period,
-                                         size_t page_limit,
-                                         size_t pages_allowed_per_url) {
-  return OfflinePageClientPolicyBuilder(name_space, lifetime_type, page_limit,
-                                        pages_allowed_per_url)
-      .SetExpirePeriod(expire_period)
-      .Build();
+OfflinePageClientPolicy* ClientPolicyController::AddTemporaryPolicy(
+    const std::string& name_space,
+    const base::TimeDelta& expiration_period) {
+  auto iter_and_was_inserted_pair = policies_.emplace(
+      name_space, OfflinePageClientPolicy(name_space, LifetimeType::TEMPORARY));
+  DCHECK(iter_and_was_inserted_pair.second) << "Policy was not inserted";
+  OfflinePageClientPolicy& policy = (*iter_and_was_inserted_pair.first).second;
+  policy.expiration_period = expiration_period;
+  return &policy;
 }
 
-}  // namespace
+OfflinePageClientPolicy* ClientPolicyController::AddPersistentPolicy(
+    const std::string& name_space) {
+  auto iter_and_was_inserted_pair = policies_.emplace(
+      name_space,
+      OfflinePageClientPolicy(name_space, LifetimeType::PERSISTENT));
+  DCHECK(iter_and_was_inserted_pair.second) << "Policy was not inserted";
+  OfflinePageClientPolicy& policy = (*iter_and_was_inserted_pair.first).second;
+  return &policy;
+}
 
 ClientPolicyController::ClientPolicyController() {
-  // Manually defining client policies for bookmark and last_n.
-  policies_.emplace(
-      kBookmarkNamespace,
-      MakePolicy(kBookmarkNamespace, LifetimeType::TEMPORARY,
-                 base::TimeDelta::FromDays(7), kUnlimitedPages, 1));
-  policies_.emplace(
-      kLastNNamespace,
-      OfflinePageClientPolicyBuilder(kLastNNamespace, LifetimeType::TEMPORARY,
-                                     kUnlimitedPages, kUnlimitedPages)
-          .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetIsRestrictedToTabFromClientId(true)
-          .Build());
-  policies_.emplace(
-      kAsyncNamespace,
-      OfflinePageClientPolicyBuilder(kAsyncNamespace, LifetimeType::PERSISTENT,
-                                     kUnlimitedPages, kUnlimitedPages)
-          .SetIsSupportedByDownload(true)
-          .Build());
-  policies_.emplace(
-      kCCTNamespace,
-      OfflinePageClientPolicyBuilder(kCCTNamespace, LifetimeType::TEMPORARY,
-                                     kUnlimitedPages, 1)
-          .SetExpirePeriod(base::TimeDelta::FromDays(2))
-          .SetRequiresSpecificUserSettings(true)
-          .Build());
-  policies_.emplace(kDownloadNamespace,
-                    OfflinePageClientPolicyBuilder(
-                        kDownloadNamespace, LifetimeType::PERSISTENT,
-                        kUnlimitedPages, kUnlimitedPages)
-                        .SetIsSupportedByDownload(true)
-                        .Build());
-  policies_.emplace(kNTPSuggestionsNamespace,
-                    OfflinePageClientPolicyBuilder(
-                        kNTPSuggestionsNamespace, LifetimeType::PERSISTENT,
-                        kUnlimitedPages, kUnlimitedPages)
-                        .SetIsSupportedByDownload(true)
-                        .Build());
-  policies_.emplace(
-      kSuggestedArticlesNamespace,
-      OfflinePageClientPolicyBuilder(kSuggestedArticlesNamespace,
-                                     LifetimeType::TEMPORARY, kUnlimitedPages,
-                                     kUnlimitedPages)
-          .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetIsSupportedByDownload(IsPrefetchingOfflinePagesEnabled())
-          .SetIsSuggested(true)
-          .Build());
-  policies_.emplace(kBrowserActionsNamespace,
-                    OfflinePageClientPolicyBuilder(
-                        kBrowserActionsNamespace, LifetimeType::PERSISTENT,
-                        kUnlimitedPages, kUnlimitedPages)
-                        .SetIsSupportedByDownload(true)
-                        .SetAllowConversionToBackgroundFileDownload(true)
-                        .Build());
-  policies_.emplace(kLivePageSharingNamespace,
-                    OfflinePageClientPolicyBuilder(kLivePageSharingNamespace,
-                                                   LifetimeType::TEMPORARY,
-                                                   kUnlimitedPages, 1)
-                        .SetExpirePeriod(base::TimeDelta::FromHours(1))
-                        .SetIsRestrictedToTabFromClientId(true)
-                        .Build());
-  policies_.emplace(
-      kAutoAsyncNamespace,
-      OfflinePageClientPolicyBuilder(
-          kAutoAsyncNamespace, LifetimeType::TEMPORARY, kUnlimitedPages, 1)
-          .SetExpirePeriod(base::TimeDelta::FromDays(30))
-          .SetDeferBackgroundFetchWhilePageIsActive(true)
-          .Build());
+  {
+    OfflinePageClientPolicy* policy =
+        AddTemporaryPolicy(kBookmarkNamespace, base::TimeDelta::FromDays(7));
+    policy->pages_allowed_per_url = 1;
+  }
+  {
+    OfflinePageClientPolicy* policy =
+        AddTemporaryPolicy(kLastNNamespace, base::TimeDelta::FromDays(30));
+    policy->is_restricted_to_tab_from_client_id = true;
+  }
+  {
+    OfflinePageClientPolicy* policy = AddPersistentPolicy(kAsyncNamespace);
+    policy->is_supported_by_download = true;
+  }
+  {
+    OfflinePageClientPolicy* policy =
+        AddTemporaryPolicy(kCCTNamespace, base::TimeDelta::FromDays(2));
+    policy->pages_allowed_per_url = 1;
+    policy->requires_specific_user_settings = true;
+  }
+  {
+    OfflinePageClientPolicy* policy = AddPersistentPolicy(kDownloadNamespace);
+    policy->is_supported_by_download = true;
+  }
+  {
+    OfflinePageClientPolicy* policy =
+        AddPersistentPolicy(kNTPSuggestionsNamespace);
+    policy->is_supported_by_download = true;
+  }
+  {
+    OfflinePageClientPolicy* policy = AddTemporaryPolicy(
+        kSuggestedArticlesNamespace, base::TimeDelta::FromDays(30));
+    policy->is_supported_by_download = 1;
+    policy->is_suggested = true;
+  }
+  {
+    OfflinePageClientPolicy* policy =
+        AddPersistentPolicy(kBrowserActionsNamespace);
+    policy->is_supported_by_download = true;
+    policy->allows_conversion_to_background_file_download = true;
+  }
+  {
+    OfflinePageClientPolicy* policy = AddTemporaryPolicy(
+        kLivePageSharingNamespace, base::TimeDelta::FromHours(1));
+    policy->pages_allowed_per_url = 1;
+    policy->is_restricted_to_tab_from_client_id = true;
+  }
+  {
+    OfflinePageClientPolicy* policy =
+        AddTemporaryPolicy(kAutoAsyncNamespace, base::TimeDelta::FromDays(30));
+    policy->pages_allowed_per_url = 1;
+    policy->defer_background_fetch_while_page_is_active = true;
+  }
 
   // Fallback policy.
-  policies_.emplace(kDefaultNamespace,
-                    MakePolicy(kDefaultNamespace, LifetimeType::TEMPORARY,
-                               base::TimeDelta::FromDays(1), 10, 1));
+  {
+    OfflinePageClientPolicy* policy =
+        AddTemporaryPolicy(kDefaultNamespace, base::TimeDelta::FromDays(1));
+    policy->page_limit = 10;
+    policy->pages_allowed_per_url = 1;
+  }
 
   for (const auto& policy_item : policies_) {
     const std::string& name = policy_item.first;
-    switch (policy_item.second.lifetime_policy.lifetime_type) {
+    switch (policy_item.second.lifetime_type) {
       case LifetimeType::TEMPORARY:
         temporary_namespaces_.push_back(name);
         break;
@@ -134,8 +128,7 @@ std::vector<std::string> ClientPolicyController::GetAllNamespaces() const {
 }
 
 bool ClientPolicyController::IsTemporary(const std::string& name_space) const {
-  return GetPolicy(name_space).lifetime_policy.lifetime_type ==
-         LifetimeType::TEMPORARY;
+  return GetPolicy(name_space).lifetime_type == LifetimeType::TEMPORARY;
 }
 
 const std::vector<std::string>& ClientPolicyController::GetTemporaryNamespaces()
@@ -145,12 +138,11 @@ const std::vector<std::string>& ClientPolicyController::GetTemporaryNamespaces()
 
 bool ClientPolicyController::IsSupportedByDownload(
     const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_supported_by_download;
+  return GetPolicy(name_space).is_supported_by_download;
 }
 
 bool ClientPolicyController::IsPersistent(const std::string& name_space) const {
-  return GetPolicy(name_space).lifetime_policy.lifetime_type ==
-         LifetimeType::PERSISTENT;
+  return GetPolicy(name_space).lifetime_type == LifetimeType::PERSISTENT;
 }
 
 const std::vector<std::string>&
@@ -160,23 +152,21 @@ ClientPolicyController::GetPersistentNamespaces() const {
 
 bool ClientPolicyController::IsRestrictedToTabFromClientId(
     const std::string& name_space) const {
-  return GetPolicy(name_space)
-      .feature_policy.is_restricted_to_tab_from_client_id;
+  return GetPolicy(name_space).is_restricted_to_tab_from_client_id;
 }
 
 bool ClientPolicyController::RequiresSpecificUserSettings(
     const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.requires_specific_user_settings;
+  return GetPolicy(name_space).requires_specific_user_settings;
 }
 
 bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
-  return GetPolicy(name_space).feature_policy.is_suggested;
+  return GetPolicy(name_space).is_suggested;
 }
 
 bool ClientPolicyController::AllowsConversionToBackgroundFileDownload(
     const std::string& name_space) const {
-  return GetPolicy(name_space)
-      .feature_policy.allows_conversion_to_background_file_download;
+  return GetPolicy(name_space).allows_conversion_to_background_file_download;
 }
 
 }  // namespace offline_pages

@@ -721,6 +721,14 @@ AutomationNodeImpl.prototype = {
     return GetTableCellRowIndex(this.treeID, this.id);
   },
 
+  get nonInlineTextWordStarts() {
+    return GetWordStartOffsets(this.treeID, this.id);
+  },
+
+  get nonInlineTextWordEnds() {
+    return GetWordEndOffsets(this.treeID, this.id);
+  },
+
   doDefault: function() {
     this.performAction_('doDefault');
   },
@@ -870,14 +878,6 @@ AutomationNodeImpl.prototype = {
     var impl = privates(AutomationRootNodeImpl.get(info.treeId)).impl;
     if (impl)
       return impl.get(info.nodeId);
-  },
-
-  wordStartOffsets: function() {
-    return GetWordStartOffsets(this.treeID, this.id);
-  },
-
-  wordEndOffsets: function() {
-    return GetWordEndOffsets(this.treeID, this.id);
   },
 
   addEventListener: function(eventType, callback, capture) {
@@ -1701,8 +1701,6 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'toString',
     'boundsForRange',
     'languageAnnotationForStringAttribute',
-    'wordStartOffsets',
-    'wordEndOffsets',
   ],
   readonly: $Array.concat(
       publicAttributes,
@@ -1739,6 +1737,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'tableCellRowHeaders',
         'tableCellColumnIndex',
         'tableCellRowIndex',
+        'nonInlineTextWordStarts',
+        'nonInlineTextWordEnds',
       ]),
 });
 

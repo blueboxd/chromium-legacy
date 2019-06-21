@@ -245,21 +245,6 @@ static void JNI_UmaSessionStats_RegisterSyntheticFieldTrial(
   UmaSessionStats::RegisterSyntheticFieldTrial(trial_name, group_name);
 }
 
-static void JNI_UmaSessionStats_RecordMultiWindowSession(
-    JNIEnv*,
-    jint area_percent,
-    jint instance_count) {
-  UMA_HISTOGRAM_PERCENTAGE("MobileStartup.MobileMultiWindowSession",
-                           area_percent);
-  // Make sure the bucket count is the same as the range.  This currently
-  // expects no more than 10 simultaneous multi window instances.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("MobileStartup.MobileMultiWindowInstances",
-                              instance_count,
-                              1 /* min */,
-                              10 /* max */,
-                              10 /* bucket count */);
-}
-
 static void JNI_UmaSessionStats_RecordTabCountPerLoad(
     JNIEnv*,
     jint num_tabs) {

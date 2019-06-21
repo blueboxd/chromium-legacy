@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/atomicops.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -46,7 +47,7 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
 //   ThreadHeapStatsCollector stats_collector;
 //   stats_collector.NotifyMarkingStarted(<BlinkGC::GCReason>);
 //   // Use tracer.
-//   stats_collector.NotifySweepingFinished();
+//   stats_collector.NotifySweepingCompleted();
 //   // Previous event is available using stats_collector.previous().
 class PLATFORM_EXPORT ThreadHeapStatsCollector {
   USING_FAST_MALLOC(ThreadHeapStatsCollector);
@@ -77,8 +78,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kVisitPersistentRoots,
     kVisitPersistents,
     kVisitStackRoots,
-    kLastScopeId = kVisitStackRoots,
+    kNumScopeIds,
   };
+
+  enum ConcurrentId { kConcurrentSweep, kNumConcurrentScopeIds };
 
   static const char* ToString(Id id) {
     switch (id) {
@@ -128,30 +131,48 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
         return "BlinkGC.VisitPersistents";
       case Id::kVisitStackRoots:
         return "BlinkGC.VisitStackRoots";
+      default:
+        NOTREACHED();
     }
+    return nullptr;
   }
 
-  static constexpr int kNumScopeIds = kLastScopeId + 1;
+  static const char* ToString(ConcurrentId id) {
+    switch (id) {
+      case kConcurrentSweep:
+        return "BlinkGC.ConcurrentSweep";
+      default:
+        NOTREACHED();
+    }
+    return nullptr;
+  }
 
   enum TraceCategory { kEnabled, kDisabled, kDevTools };
+  enum ScopeContext { kMutatorThread, kConcurrentThread };
 
   // Trace a particular scope. Will emit a trace event and record the time in
   // the corresponding ThreadHeapStatsCollector.
-  template <TraceCategory trace_category = kDisabled>
+  template <TraceCategory trace_category = kDisabled,
+            ScopeContext scope_category = kMutatorThread>
   class PLATFORM_EXPORT InternalScope {
     DISALLOW_NEW();
     DISALLOW_COPY_AND_ASSIGN(InternalScope);
 
+    using IdType =
+        std::conditional_t<scope_category == kMutatorThread, Id, ConcurrentId>;
+
    public:
     template <typename... Args>
-    inline InternalScope(ThreadHeapStatsCollector* tracer, Id id, Args... args)
+    inline InternalScope(ThreadHeapStatsCollector* tracer,
+                         IdType id,
+                         Args... args)
         : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()), id_(id) {
       StartTrace(id, args...);
     }
 
     inline ~InternalScope() {
       StopTrace(id_);
-      tracer_->IncreaseScopeTime(id_, WTF::CurrentTimeTicks() - start_time_);
+      IncreaseScopeTime(id_);
     }
 
    private:
@@ -166,17 +187,17 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
       }
     }
 
-    void StartTrace(Id id) {
+    void StartTrace(IdType id) {
       TRACE_EVENT_BEGIN0(TraceCategory(), ToString(id));
     }
 
     template <typename Value1>
-    void StartTrace(Id id, const char* k1, Value1 v1) {
+    void StartTrace(IdType id, const char* k1, Value1 v1) {
       TRACE_EVENT_BEGIN1(TraceCategory(), ToString(id), k1, v1);
     }
 
     template <typename Value1, typename Value2>
-    void StartTrace(Id id,
+    void StartTrace(IdType id,
                     const char* k1,
                     Value1 v1,
                     const char* k2,
@@ -184,15 +205,28 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
       TRACE_EVENT_BEGIN2(TraceCategory(), ToString(id), k1, v1, k2, v2);
     }
 
-    void StopTrace(Id id) { TRACE_EVENT_END0(TraceCategory(), ToString(id)); }
+    void StopTrace(IdType id) {
+      TRACE_EVENT_END0(TraceCategory(), ToString(id));
+    }
+
+    void IncreaseScopeTime(Id) {
+      tracer_->IncreaseScopeTime(id_, WTF::CurrentTimeTicks() - start_time_);
+    }
+
+    void IncreaseScopeTime(ConcurrentId) {
+      tracer_->IncreaseConcurrentScopeTime(
+          id_, WTF::CurrentTimeTicks() - start_time_);
+    }
 
     ThreadHeapStatsCollector* const tracer_;
     const base::TimeTicks start_time_;
-    const Id id_;
+    const IdType id_;
   };
 
   using Scope = InternalScope<kDisabled>;
   using EnabledScope = InternalScope<kEnabled>;
+  using ConcurrentScope = InternalScope<kDisabled, kConcurrentThread>;
+  using EnabledConcurrentScope = InternalScope<kEnabled, kConcurrentThread>;
   using DevToolsScope = InternalScope<kDevTools>;
 
   class PLATFORM_EXPORT BlinkGCInV8Scope {
@@ -222,13 +256,15 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     double marking_time_in_ms() const;
     double marking_time_in_bytes_per_second() const;
     base::TimeDelta sweeping_time() const;
+    base::TimeDelta concurrent_sweeping_time() const;
 
     // Marked bytes collected during sweeping.
     size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
     base::TimeDelta scope_data[kNumScopeIds];
-    BlinkGC::GCReason reason;
+    base::subtle::Atomic32 concurrent_scope_data[kNumConcurrentScopeIds]{0};
+    BlinkGC::GCReason reason = static_cast<BlinkGC::GCReason>(0);
     size_t object_size_in_bytes_before_sweeping = 0;
     size_t allocated_space_in_bytes_before_sweeping = 0;
     size_t partition_alloc_bytes_before_sweeping = 0;
@@ -251,6 +287,15 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   void IncreaseScopeTime(Id id, base::TimeDelta time) {
     DCHECK(is_started_);
     current_.scope_data[id] += time;
+  }
+
+  void IncreaseConcurrentScopeTime(ConcurrentId id, TimeDelta time) {
+    using Atomic32 = base::subtle::Atomic32;
+    DCHECK(is_started_);
+    const int64_t ms = time.InMicroseconds();
+    DCHECK(ms <= std::numeric_limits<Atomic32>::max());
+    base::subtle::NoBarrier_AtomicIncrement(&current_.concurrent_scope_data[id],
+                                            static_cast<Atomic32>(ms));
   }
 
   void UpdateReason(BlinkGC::GCReason);

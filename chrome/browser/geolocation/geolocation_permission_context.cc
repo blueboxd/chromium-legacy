@@ -10,8 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/origin.h"
@@ -87,11 +87,8 @@ GeolocationPermissionContext::GetGeolocationControl() {
     return geolocation_control_.get();
 
   auto request = mojo::MakeRequest(&geolocation_control_);
-  if (!content::ServiceManagerConnection::GetForProcess())
-    return geolocation_control_.get();
-
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, std::move(request));
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (connector)
+    connector->BindInterface(device::mojom::kServiceName, std::move(request));
   return geolocation_control_.get();
 }

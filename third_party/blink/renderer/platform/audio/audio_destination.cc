@@ -110,13 +110,11 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     scale_factor =
         context_sample_rate.value() / web_audio_device_->SampleRate();
 
-    resampler_.reset(
-        new MediaMultiChannelResampler(
-            number_of_output_channels,
-            scale_factor,
-            audio_utilities::kRenderQuantumFrames,
-            CrossThreadBind(&AudioDestination::ProvideResamplerInput,
-                            CrossThreadUnretained(this))));
+    resampler_.reset(new MediaMultiChannelResampler(
+        number_of_output_channels, scale_factor,
+        audio_utilities::kRenderQuantumFrames,
+        CrossThreadBindRepeating(&AudioDestination::ProvideResamplerInput,
+                                 CrossThreadUnretained(this))));
     resampler_bus_ =
         media::AudioBus::CreateWrapper(render_bus_->NumberOfChannels());
     for (unsigned int i = 0; i < render_bus_->NumberOfChannels(); ++i) {

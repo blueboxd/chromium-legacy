@@ -1,6 +1,7 @@
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "content/browser/tracing/tracing_controller_impl.h"
 
 #include <memory>
@@ -29,10 +30,10 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/service_manager_connection.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
@@ -228,8 +229,8 @@ void TracingControllerImpl::AddAgents() {
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {
   if (!coordinator_) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &coordinator_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &coordinator_);
     coordinator_.set_connection_error_handler(base::BindOnce(
         [](TracingControllerImpl* controller) {
           controller->coordinator_.reset();

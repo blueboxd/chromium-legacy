@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
@@ -60,33 +61,51 @@ struct PutContext {
 
 class CONTENT_EXPORT CacheStorageCacheEntryHandler {
  public:
-  // This class ensures that the cache and the entry have a lifetime as long as
-  // the blob that is created to contain them.
-  class BlobDataHandle : public storage::BlobDataBuilder::DataHandle {
+  // The |DiskCacheBlobEntry| is a ref-counted object containing both
+  // a disk_cache Entry and a Handle to the cache in which it lives.  This
+  // blob entry can then be used to create a specialized
+  // |BlobDataItem::DataHandle| by calling CacheStorageCacheEntryHandle's
+  // MakeDataHandle().  This ensure both the cache and the disk_cache entry live
+  // as long as the blob.
+  // TODO(crbug/960012): Support |DiskCacheBlobEntry| on a separate sequence
+  // from the |BlobDataItem::DataHandle|.
+  class DiskCacheBlobEntry : public base::RefCounted<DiskCacheBlobEntry> {
    public:
-    BlobDataHandle(base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler,
-                   CacheStorageCacheHandle cache_handle,
-                   disk_cache::ScopedEntryPtr entry);
+    // Use |CacheStorageCacheEntryHandler::CreateDiskCacheBlobEntry|.
+    DiskCacheBlobEntry(
+        util::PassKey<CacheStorageCacheEntryHandler> key,
+        base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler,
+        CacheStorageCacheHandle cache_handle,
+        disk_cache::ScopedEntryPtr disk_cache_entry);
 
-    bool IsValid() override;
+    int Read(scoped_refptr<net::IOBuffer> dst_buffer,
+             int disk_cache_index,
+             uint64_t offset,
+             int bytes_to_read,
+             base::OnceCallback<void(int)> callback);
+
+    int GetSize(int disk_cache_index) const;
+
+    void PrintTo(::std::ostream* os) const;
 
     void Invalidate();
 
-    disk_cache::ScopedEntryPtr& entry() { return entry_; }
+    disk_cache::ScopedEntryPtr& disk_cache_entry() { return disk_cache_entry_; }
 
    private:
-    ~BlobDataHandle() override;
+    friend class base::RefCounted<DiskCacheBlobEntry>;
+    ~DiskCacheBlobEntry();
 
     base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler_;
     base::Optional<CacheStorageCacheHandle> cache_handle_;
-    disk_cache::ScopedEntryPtr entry_;
+    disk_cache::ScopedEntryPtr disk_cache_entry_;
 
-    DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
+    DISALLOW_COPY_AND_ASSIGN(DiskCacheBlobEntry);
   };
 
-  scoped_refptr<BlobDataHandle> CreateBlobDataHandle(
+  scoped_refptr<DiskCacheBlobEntry> CreateDiskCacheBlobEntry(
       CacheStorageCacheHandle cache_handle,
-      disk_cache::ScopedEntryPtr entry);
+      disk_cache::ScopedEntryPtr disk_cache_entry);
 
   virtual ~CacheStorageCacheEntryHandler();
 
@@ -95,21 +114,35 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
       blink::mojom::FetchAPIResponsePtr response,
       int64_t trace_id) = 0;
   virtual void PopulateResponseBody(
-      scoped_refptr<BlobDataHandle> data_handle,
+      scoped_refptr<DiskCacheBlobEntry> blob_entry,
       blink::mojom::FetchAPIResponse* response) = 0;
-  virtual void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,
+  virtual void PopulateRequestBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                                    blink::mojom::FetchAPIRequest* request) = 0;
 
   static std::unique_ptr<CacheStorageCacheEntryHandler> CreateCacheEntryHandler(
       CacheStorageOwner owner,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  void InvalidateBlobDataHandles();
-  void EraseBlobDataHandle(BlobDataHandle* handle);
+  void InvalidateDiskCacheBlobEntrys();
+  void EraseDiskCacheBlobEntry(DiskCacheBlobEntry* blob_entry);
 
  protected:
   CacheStorageCacheEntryHandler(
       base::WeakPtr<storage::BlobStorageContext> blob_context);
+
+  // Create a |BlobDataItem::DataHandle| for a |DiskCacheBlobEntry|
+  // where the data is stored in the given disk_cache index.
+  static scoped_refptr<storage::BlobDataItem::DataHandle> MakeDataHandle(
+      scoped_refptr<DiskCacheBlobEntry> blob_entry,
+      int disk_cache_index);
+
+  // Create a |BlobDataItem::DataHandle| for a |DiskCacheBlobEntry|
+  // where the main data and side data are stored in the given disk_cache
+  // indices.
+  static scoped_refptr<storage::BlobDataItem::DataHandle>
+  MakeDataHandleWithSideData(scoped_refptr<DiskCacheBlobEntry> blob_entry,
+                             int disk_cache_index,
+                             int side_data_disk_cache_index);
 
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
@@ -117,10 +150,10 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
   // destruction.
   virtual base::WeakPtr<CacheStorageCacheEntryHandler> GetWeakPtr() = 0;
 
-  // We keep track of the BlobDataHandle instances to allow us to invalidate
+  // We keep track of the DiskCacheBlobEntry instances to allow us to invalidate
   // them if the cache has to be deleted while there are still references to
   // data in it.
-  std::set<BlobDataHandle*> blob_data_handles_;
+  std::set<DiskCacheBlobEntry*> blob_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageCacheEntryHandler);
 };

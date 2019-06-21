@@ -262,6 +262,18 @@ const char kCaptionSettingsName[] = "Caption Settings";
 const char kCaptionSettingsDescription[] =
     "Enable the ability to customize captions.";
 
+const char kClickToCallReceiverName[] =
+    "Enable receiver device to handle click to call feature";
+const char kClickToCallReceiverDescription[] =
+    "Enables receiver device to handle click to call feature by showing a "
+    "notification to call the phone number clicked on the desktop.";
+
+const char kClickToCallUIName[] =
+    "Enable click to call feature signals to be handled on desktop";
+const char kClickToCallUIDescription[] =
+    "Enables click to call feature signals to be handled on desktop by showing "
+    "a list of user's available devices with telephony functionality.";
+
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
@@ -1661,16 +1673,17 @@ const char kShelfDenseClamshellName[] =
 const char kShelfDenseClamshellDescription[] =
     "Reduces the size of the shelf and its apps when in laptop mode.";
 
+const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
+const char kShelfHotseatDescription[] =
+    "Shows a modular design for the shelf where the apps are shown separately "
+    "in a 'hotseat' interface when in tablet mode, and where various pieces "
+    "are separate and behave independently.";
+
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
 const char kShelfHoverPreviewsDescription[] =
     "Shows previews of the open windows for a given running app when hovering "
     "over the shelf.";
-
-const char kShelfNewUiName[] = "Enable a new modular design for the shelf.";
-const char kShelfNewUiDescription[] =
-    "Shows a new modular design for the shelf where the various pieces are "
-    "separate and behave independently, especially in tablet mode.";
 
 const char kShelfScrollableName[] =
     "Enable a scrollable list of apps on the shelf";

@@ -16,7 +16,6 @@ class WebContents;
 }
 
 namespace gfx {
-class Image;
 class ImageSkia;
 }
 
@@ -53,9 +52,6 @@ void ShareToSingleTarget(content::WebContents* tab,
 
 // Gets the icon for send tab to self menu item.
 gfx::ImageSkia* GetImageSkia();
-
-// Gets the image for send tab to self notification.
-const gfx::Image GetImageForNotification();
 
 // Records whether the user click to send a tab or link when send tab to self
 // entry point is shown.

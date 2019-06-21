@@ -12,7 +12,7 @@
 namespace headless {
 
 HeadlessClipboard::HeadlessClipboard()
-    : default_store_type_(ui::CLIPBOARD_TYPE_COPY_PASTE) {}
+    : default_store_type_(ui::ClipboardType::kCopyPaste) {}
 
 HeadlessClipboard::~HeadlessClipboard() = default;
 
@@ -123,7 +123,7 @@ void HeadlessClipboard::WriteObjects(ui::ClipboardType type,
   default_store_type_ = type;
   for (const auto& kv : objects)
     DispatchObject(static_cast<ObjectType>(kv.first), kv.second);
-  default_store_type_ = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  default_store_type_ = ui::ClipboardType::kCopyPaste;
 }
 
 void HeadlessClipboard::WriteText(const char* text_data, size_t text_len) {
@@ -131,8 +131,8 @@ void HeadlessClipboard::WriteText(const char* text_data, size_t text_len) {
   GetDefaultStore().data[ui::ClipboardFormatType::GetPlainTextType()] = text;
   // Create a dummy entry.
   GetDefaultStore().data[ui::ClipboardFormatType::GetPlainTextType()];
-  if (IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
-    GetStore(ui::CLIPBOARD_TYPE_SELECTION)
+  if (IsSupportedClipboardType(ui::ClipboardType::kSelection)) {
+    GetStore(ui::ClipboardType::kSelection)
         .data[ui::ClipboardFormatType::GetPlainTextType()] = text;
   }
 }

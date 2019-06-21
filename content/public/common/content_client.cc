@@ -129,7 +129,8 @@ media::MediaDrmBridgeClient* ContentClient::GetMediaDrmBridgeClient() {
 }
 #endif  // OS_ANDROID
 
-void ContentClient::OnServiceManagerConnected(
-    ServiceManagerConnection* connection) {}
+void ContentClient::BindChildProcessInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* receiving_handle) {}
 
 }  // namespace content

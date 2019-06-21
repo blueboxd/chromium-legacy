@@ -20,7 +20,6 @@ class ChromeTypographyProvider : public views::TypographyProvider {
                    int context,
                    int style) const override;
   int GetLineHeight(int context, int style) const override;
-  int GetExpectedTextWidth(int context, int style, int length) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeTypographyProvider);

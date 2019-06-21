@@ -824,19 +824,15 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  // Out-of-process ash uses the IME mojo service. In-process ash uses a single
-  // input method shared between ash and browser code.
-  if (!::features::IsMultiProcessMash()) {
-    DCHECK(!host->has_input_method());
-    if (!input_method_) {  // Singleton input method instance for Ash.
-      input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
-      // Makes sure the input method is focused by default when created, because
-      // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when
-      // the active window changed.
-      input_method_->OnFocus();
-    }
-    host->SetSharedInputMethod(input_method_.get());
+  DCHECK(!host->has_input_method());
+  if (!input_method_) {  // Singleton input method instance for Ash.
+    input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
+    // Makes sure the input method is focused by default when created, because
+    // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when
+    // the active window changed.
+    input_method_->OnFocus();
   }
+  host->SetSharedInputMethod(input_method_.get());
 
   host->window()->SetName(base::StringPrintf(
       "%sRootWindow-%d", params_with_bounds.offscreen ? "Offscreen" : "",

@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "net/http/http_util.h"
 #include "services/network/cross_origin_read_blocking.h"
+#include "services/network/public/cpp/resource_response_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -293,6 +295,123 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
     EXPECT_EQ(expected, actual)
         << "when testing with the following input: " << input;
   }
+}
+
+network::ResourceResponseInfo CreateResponse(std::string raw_headers) {
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(
+          net::HttpUtil::AssembleRawHeaders(raw_headers));
+  network::ResourceResponseInfo response = {};
+  response.headers = headers;
+  return response;
+}
+
+TEST(CrossOriginReadBlockingTest, SeemsSensitiveFromCORSHeuristic) {
+  // Response with no CORS header.
+  network::ResourceResponseInfo no_cors_response =
+      CreateResponse("HTTP/1.1 200 OK");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCORSHeuristic(no_cors_response));
+
+  // Response with CORS value = "*", so not sensitive.
+  network::ResourceResponseInfo cors_any_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Access-Control-Allow-Origin: *");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCORSHeuristic(cors_any_response));
+
+  // Response with CORS value = "null", so not sensitive.
+  network::ResourceResponseInfo cors_null_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Access-Control-Allow-Origin: null");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCORSHeuristic(cors_null_response));
+
+  // Response with CORS header restricting access to a particular origin.
+  network::ResourceResponseInfo cors_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Access-Control-Allow-Origin: http://www.a.com/");
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
+                  SeemsSensitiveFromCORSHeuristic(cors_response));
+}
+
+TEST(CrossOriginReadBlockingTest, SeemsSensitiveFromCacheHeuristic) {
+  // Response with no cache-control or vary header.
+  network::ResourceResponseInfo no_cache_response =
+      CreateResponse("HTTP/1.1 200 OK");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCacheHeuristic(no_cache_response));
+
+  // Response with cache-control but no vary header.
+  network::ResourceResponseInfo cache_only_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control: private");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCacheHeuristic(cache_only_response));
+
+  // Response with vary: origin but no cache-control header.
+  network::ResourceResponseInfo vary_only_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: origin");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCacheHeuristic(vary_only_response));
+
+  // Response with vary: user-agent and cache-control: no-cache (should still
+  // not seem sensitive).
+  network::ResourceResponseInfo wrong_values_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: user-agent\n"
+      "Cache-Control: no-cache");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCacheHeuristic(wrong_values_response));
+
+  // Response with vary: origin and cache-control: private.
+  network::ResourceResponseInfo vary_and_cache_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: origin\n"
+      "Cache-Control: private");
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
+                  SeemsSensitiveFromCacheHeuristic(vary_and_cache_response));
+
+  // Response with vary: origin, user-agent and cache-control: private, no-store
+  // (we should still find the relevant values).
+  network::ResourceResponseInfo extra_values_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: origin, user-agent\n"
+      "Cache-Control: no-cache, private");
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
+                  SeemsSensitiveFromCacheHeuristic(extra_values_response));
+}
+
+TEST(CrossOriginReadBlockingTest, SeemsSensitiveWithBothHeuristics) {
+  // Response with CORS heuristic should not appear sensitive to cache
+  // heuristic.
+  network::ResourceResponseInfo cors_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Access-Control-Allow-Origin: http://www.a.com/");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCacheHeuristic(cors_response));
+
+  // Response with cache heuristic should not appear sensitive to CORS
+  // heuristic.
+  network::ResourceResponseInfo cache_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: origin\n"
+      "Cache-Control: private");
+  EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
+                   SeemsSensitiveFromCORSHeuristic(cache_response));
+
+  // Response with both cache and CORS heuristic signals (e.g. vary: origin +
+  // cache-control: private as well as the access-control-allow-origin header).
+  network::ResourceResponseInfo both_response = CreateResponse(
+      "HTTP/1.1 200 OK\n"
+      "Vary: origin\n"
+      "Cache-Control: private\n"
+      "Access-Control-Allow-Origin: http://www.a.com/");
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
+                  SeemsSensitiveFromCORSHeuristic(both_response));
+  EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
+                  SeemsSensitiveFromCacheHeuristic(both_response));
 }
 
 }  // namespace network

@@ -16,6 +16,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/version.h"
+#include "printing/backend/cups_jobs.h"
 
 namespace {
 

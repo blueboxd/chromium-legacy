@@ -69,7 +69,7 @@ void DeviceSensorEventPump::DidStartIfPossible() {
   DCHECK(!timer_.IsActive());
 
   timer_.StartRepeating(
-      WTF::TimeDelta::FromMicroseconds(kDefaultPumpDelayMicroseconds),
+      base::TimeDelta::FromMicroseconds(kDefaultPumpDelayMicroseconds),
       FROM_HERE);
   state_ = PumpState::RUNNING;
 }

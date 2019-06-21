@@ -345,6 +345,27 @@ class ConciergeClientImpl : public ConciergeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
+                  DBusMethodCallback<vm_tools::concierge::StartVmResponse>
+                      callback) override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kStartArcVmMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode StartArcVmRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::StartVmResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     concierge_proxy_ = bus->GetObjectProxy(

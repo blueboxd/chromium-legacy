@@ -26,5 +26,6 @@ message NotificationData {
   optional string icon_uuid = 4;
 
   // URL of the web site responsible for showing the notification.
+  // TODO(xingliu): Replace this with custom client data.
   optional string url = 5;
 }

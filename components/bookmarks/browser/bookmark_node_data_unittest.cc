@@ -289,7 +289,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardURL) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
@@ -319,7 +319,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardMultipleURLs) {
   combined_text = base::UTF8ToUTF16(url.spec()) + new_line
     + base::UTF8ToUTF16(url2.spec());
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
@@ -335,7 +335,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardEmptyFolder) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -354,7 +354,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -382,7 +382,7 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderAndURL) {
   base::string16 folder_title = ASCIIToUTF16("g1");
   combined_text = base::ASCIIToUTF16(url.spec()) + new_line + folder_title;
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardType::kCopyPaste, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 

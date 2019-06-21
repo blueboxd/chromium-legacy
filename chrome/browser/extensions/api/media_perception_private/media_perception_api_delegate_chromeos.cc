@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -73,11 +73,7 @@ void MediaPerceptionAPIDelegateChromeOS::
         video_capture::mojom::DeviceFactoryProviderPtr* provider) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // In unit test environments, there may not be any connector.
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (!connection)
-    return;
-  service_manager::Connector* connector = connection->GetConnector();
+  service_manager::Connector* connector = content::GetSystemConnector();
   if (!connector)
     return;
   connector->BindInterface(video_capture::mojom::kServiceName, provider);

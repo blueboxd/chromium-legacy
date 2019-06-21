@@ -54,7 +54,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/scoped_observer.h"

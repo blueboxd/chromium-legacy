@@ -396,7 +396,8 @@ void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
 void LinkHighlightImpl::UpdateGeometry() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
-  if (!node_ || !node_->GetLayoutObject()) {
+  if (!node_ || !node_->GetLayoutObject() ||
+      node_->GetLayoutObject()->GetFrameView()->ShouldThrottleRendering()) {
     ClearGraphicsLayerLinkHighlightPointer();
     ReleaseResources();
     return;
@@ -453,7 +454,8 @@ const EffectPaintPropertyNode& LinkHighlightImpl::Effect() const {
 
 void LinkHighlightImpl::Paint(GraphicsContext& context) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (!node_ || !node_->GetLayoutObject()) {
+  if (!node_ || !node_->GetLayoutObject() ||
+      node_->GetLayoutObject()->GetFrameView()->ShouldThrottleRendering()) {
     ReleaseResources();
     return;
   }

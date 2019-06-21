@@ -61,6 +61,13 @@ chrome.accessibilityPrivate.Gesture = {
   TAP4: 'tap4',
 };
 
+/** @enum {string} */
+chrome.accessibilityPrivate.SwitchAccessCommand = {
+  SELECT: 'select',
+  NEXT: 'next',
+  PREVIOUS: 'previous'
+}
+
 /**
  * @enum {string}
  */
@@ -294,6 +301,13 @@ chrome.accessibilityPrivate.onTwoFingerTouchStop;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
+
+/**
+ * Called when Chrome OS captures a key event that corresponds to a Switch
+ * Access command.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onSwitchAccessCommand;
 
 /**
  * Called when an internal component within accessibility wants to force speech

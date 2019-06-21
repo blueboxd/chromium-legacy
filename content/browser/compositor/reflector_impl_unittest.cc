@@ -64,12 +64,38 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
+std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
   return std::make_unique<viz::OverlayCandidateValidatorOzone>(
       std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
+}
+#endif  // defined(USE_OZONE)
+
+class TestOverlayProcessor : public viz::OverlayProcessor {
+ public:
+  explicit TestOverlayProcessor(const viz::ContextProvider* context_provider)
+      : OverlayProcessor(context_provider) {
+#if defined(USE_OZONE)
+    auto validator = CreateTestValidatorOzone();
+    overlay_validator_ = validator.get();
+    SetOverlayCandidateValidator(std::move(validator));
+#endif  // defined(USE_OZONE)
+  }
+
+  viz::OverlayCandidateValidator* get_overlay_validator() const {
+    return overlay_validator_;
+  }
+
+ private:
+  viz::OverlayCandidateValidator* overlay_validator_;
+};
+
+std::unique_ptr<TestOverlayProcessor> CreateTestOverlayProcessor(
+    const viz::ContextProvider* context_provider) {
+#if defined(USE_OZONE)
+  return std::make_unique<TestOverlayProcessor>(context_provider);
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)
@@ -146,12 +172,8 @@ class ReflectorImplTest : public testing::Test {
     context_provider->BindToCurrentThread();
     output_surface_ =
         std::make_unique<TestOutputSurface>(std::move(context_provider));
-    overlay_processor_ = std::make_unique<viz::OverlayProcessor>(
-        output_surface_->context_provider());
-    auto overlay_validator = CreateTestValidatorOzone();
-    overlay_validator_ = overlay_validator.get();
-    overlay_processor_->SetOverlayCandidateValidator(
-        std::move(overlay_validator));
+    overlay_processor_ =
+        CreateTestOverlayProcessor(output_surface_->context_provider());
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
@@ -190,7 +212,8 @@ class ReflectorImplTest : public testing::Test {
   void ProcessForOverlays(viz::OverlayCandidateList* surfaces) {
     overlay_processor_->SetSoftwareMirrorMode(
         output_surface_->IsSoftwareMirrorMode());
-    overlay_validator_->CheckOverlaySupport(surfaces);
+    DCHECK(overlay_processor_->get_overlay_validator());
+    overlay_processor_->get_overlay_validator()->CheckOverlaySupport(surfaces);
   }
 #endif  // defined(USE_OZONE)
 
@@ -205,8 +228,7 @@ class ReflectorImplTest : public testing::Test {
   std::unique_ptr<ui::Layer> mirroring_layer_;
   std::unique_ptr<ReflectorImpl> reflector_;
   std::unique_ptr<TestOutputSurface> output_surface_;
-  std::unique_ptr<viz::OverlayProcessor> overlay_processor_;
-  viz::OverlayCandidateValidator* overlay_validator_;
+  std::unique_ptr<TestOverlayProcessor> overlay_processor_;
 };
 
 namespace {

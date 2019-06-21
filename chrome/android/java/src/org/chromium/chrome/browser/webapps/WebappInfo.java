@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 /**
  * Stores info about a web app.
@@ -71,6 +72,7 @@ public class WebappInfo {
     private int mSource;
     private long mThemeColor;
     private long mBackgroundColor;
+    private int mDefaultBackgroundColor;
     private boolean mIsIconGenerated;
     private boolean mIsIconAdaptive;
     private boolean mForceNavigation;
@@ -201,15 +203,17 @@ public class WebappInfo {
             return null;
         }
 
+        int defaultBackgroundColor =
+                SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
         return new WebappInfo(id, url, scope, icon, name, shortName, displayMode, orientation,
-                source, themeColor, backgroundColor, isIconGenerated, isIconAdaptive,
-                forceNavigation);
+                source, themeColor, backgroundColor, defaultBackgroundColor, isIconGenerated,
+                isIconAdaptive, forceNavigation);
     }
 
     protected WebappInfo(String id, String url, String scope, Icon icon, String name,
             String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, boolean isIconGenerated, boolean isIconAdaptive,
-            boolean forceNavigation) {
+            long themeColor, long backgroundColor, int defaultBackgroundColor,
+            boolean isIconGenerated, boolean isIconAdaptive, boolean forceNavigation) {
         Uri uri = Uri.parse(url);
         if (TextUtils.isEmpty(scope)) {
             scope = ShortcutHelper.getScopeFromUrl(url);
@@ -227,6 +231,7 @@ public class WebappInfo {
         mSource = source;
         mThemeColor = themeColor;
         mBackgroundColor = backgroundColor;
+        mDefaultBackgroundColor = defaultBackgroundColor;
         mIsIconGenerated = isIconGenerated;
         mIsIconAdaptive = isIconAdaptive;
         mForceNavigation = forceNavigation;
@@ -327,10 +332,10 @@ public class WebappInfo {
 
     /**
      * Returns the background color specified by {@link #backgroundColor()} if
-     * the value is valid. Returns the specified fallback color otherwise.
+     * the value is valid. Returns the webapp's default background color otherwise.
      */
-    public int backgroundColor(int fallback) {
-        return hasValidBackgroundColor() ? (int) mBackgroundColor : fallback;
+    public int backgroundColorFallbackToDefault() {
+        return hasValidBackgroundColor() ? (int) mBackgroundColor : mDefaultBackgroundColor;
     }
 
     // This is needed for clients that want to send the icon through an intent.

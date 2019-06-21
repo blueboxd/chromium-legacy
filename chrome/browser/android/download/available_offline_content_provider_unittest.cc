@@ -5,6 +5,7 @@
 #include "chrome/browser/android/download/available_offline_content_provider.h"
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -128,7 +129,7 @@ class AvailableOfflineContentTest : public testing::Test {
   void SetUp() override {
     scoped_feature_list_->InitAndEnableFeature(features::kNewNetErrorPageUI);
     aggregator_ =
-        OfflineContentAggregatorFactory::GetForBrowserContext(nullptr);
+        OfflineContentAggregatorFactory::GetForKey(profile_.GetProfileKey());
     aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
     content_provider_.SetVisuals({});
   }

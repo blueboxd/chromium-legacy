@@ -108,6 +108,28 @@ struct FetchAPIRequestHeaders {
   map<string, string> headers;
 };
 
+// Struct representing a Body for a Request:
+// https://fetch.spec.whatwg.org/#body
+// This has the same members definition with network.mojom.URLRequestBody, which
+// aims to pass around body for network.mojom.URLRequest. Both of them are
+// typemapped to scoped_refptr<network::ResourceRequestBody> for the default
+// variant, the only difference is for the Blink variant that
+// network.mojom.URLRequestBody still is typemapped to
+// scoped_refptr<network::ResourceRequestBody> but this is typemapped to
+// scoped_refptr<blink::EncodedFormData>.
+struct FetchAPIRequestBody {
+  // Store upload bodies
+  array<network.mojom.DataElement> elements;
+
+  // Identifies a particular upload instance, which is used by the cache to
+  // formulate a cache key.
+  uint64 identifier;
+
+  // Indicates whether the post data contains sensitive information like
+  // passwords.
+  bool contains_sensitive_info;
+};
+
 // Struct representing a Request:
 // https://fetch.spec.whatwg.org/#request-class
 // Compared to network.mojom.URLRequest which is kind of internal data in the
@@ -133,7 +155,7 @@ struct FetchAPIRequest {
   // service workers.
   // TODO(crbug.com/911930): Remove |blob| and use |body| instead everywhere.
   SerializedBlob? blob;
-  network.mojom.URLRequestBody? body;
+  FetchAPIRequestBody? body;
 
   Referrer? referrer;
   network.mojom.CredentialsMode credentials_mode =

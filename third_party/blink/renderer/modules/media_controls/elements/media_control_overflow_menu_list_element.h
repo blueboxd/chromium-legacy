@@ -46,7 +46,7 @@ class MediaControlOverflowMenuListElement final
 
   TaskHandle current_task_handle_;
 
-  base::Optional<WTF::TimeTicks> time_shown_;
+  base::Optional<base::TimeTicks> time_shown_;
   const base::TickClock* clock_;
 };
 

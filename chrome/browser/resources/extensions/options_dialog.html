@@ -52,11 +52,12 @@
       cr-dialog {
         --cr-dialog-body-border-bottom: none;
         --cr-dialog-body-border-top: none;
-        --cr-dialog-body-container: {
-          height: 100%;
-          min-height: initial;
-        }
         --scroll-border: none;
+      }
+
+      cr-dialog::part(body-container) {
+        height: 100%;
+        min-height: initial;
       }
     </style>
 

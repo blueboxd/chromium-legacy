@@ -39,10 +39,11 @@ class SyncManager final : public ScriptWrappable {
   enum { kUnregisteredSyncID = -1 };
 
  private:
-  // Returns an initialized BackgroundSyncServicePtr. A connection with the
-  // the browser's BackgroundSyncService is created the first time this method
-  // is called.
-  const mojom::blink::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
+  // Returns an initialized OneShotBackgroundSyncServicePtr. A connection with
+  // the browser's OneShotBackgroundSyncService is created the first time this
+  // method is called.
+  const mojom::blink::OneShotBackgroundSyncServicePtr&
+  GetBackgroundSyncServicePtr();
 
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver*,
@@ -55,7 +56,7 @@ class SyncManager final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojom::blink::BackgroundSyncServicePtr background_sync_service_;
+  mojom::blink::OneShotBackgroundSyncServicePtr background_sync_service_;
 };
 
 }  // namespace blink

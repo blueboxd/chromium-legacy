@@ -73,7 +73,6 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int index) override;
-  ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
   void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;

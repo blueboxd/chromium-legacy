@@ -139,7 +139,7 @@ const struct TestHistoryEntry {
 
 // Stores the given text to clipboard.
 void SetClipboardText(const base::string16& text) {
-  ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
   writer.WriteText(text);
 }
 

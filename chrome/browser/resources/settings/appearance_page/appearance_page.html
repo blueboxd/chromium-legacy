@@ -23,11 +23,10 @@
     <style include="settings-shared md-select iron-flex">
       /* Lines up with cr-input. */
       #custom-input {
-        --cr-radio-button-disc: {
-          /* (cr-input line-height + cr-input top/bottom padding) / 2 -
-             cr-radio disc-wrapper height / 2 */
-          margin-top: calc((1.54em + 12px) / 2 - 8px);
-        }
+        /* (cr-input line-height + cr-input top/bottom padding) / 2 -
+           cr-radio disc-wrapper height / 2 */
+        --cr-radio-button-disc-margin-block-start: calc(
+            (1.54em + 12px) / 2 - 8px);
         align-items: start;
       }
 

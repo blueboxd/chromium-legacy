@@ -211,6 +211,12 @@ class ProgressCenterPanel {
         HTMLDivElement);
 
     /**
+     * Reference to the feedback panel host.
+     * TODO(crbug.com/947388) Add closure annotation here.
+     */
+    this.feedbackHost_ = document.querySelector('#progress-panel');
+
+    /**
      * Close view that is a summarized progress item.
      * @type {ProgressCenterItemElement}
      * @private
@@ -312,6 +318,8 @@ class ProgressCenterPanel {
   /**
    * Updates an item to the progress center panel.
    * @param {!ProgressCenterItem} item Item including new contents.
+   * @suppress {checkTypes}
+   * TODO(crbug.com/947388) Remove the suppress, and fix closure compile.
    */
   updateItem(item) {
     const targetGroup = this.getGroupForItem_(item);
@@ -321,30 +329,51 @@ class ProgressCenterPanel {
 
     // Update an open view item.
     const newItem = targetGroup.getItem(item.id);
-    let itemElement = this.getItemElement_(item.id);
-    if (newItem) {
-      if (!itemElement) {
-        itemElement =
-            new ProgressCenterItemElement(this.element_.ownerDocument);
-        // Find quiet node and insert the item before the quiet node.
-        this.openView_.insertBefore(
-            itemElement, this.openView_.querySelector('.quiet'));
+    if (util.isFeedbackPanelEnabled()) {
+      let panelItem = this.feedbackHost_.findPanelItemById(item.id);
+      if (newItem) {
+        if (!panelItem) {
+          panelItem = this.feedbackHost_.addPanelItem(item.id);
+          panelItem.panelType = panelItem.panelTypeProgress;
+          panelItem.setAttribute('primary-text', item.message);
+        }
+        panelItem.progress = item.progressRateInPercent;
+        // Remove the feedback panel when complete, and create
+        // an activity complete panel.
+        if (item.state == 'completed') {
+          this.feedbackHost_.removePanelItem(panelItem);
+        }
+      } else if (panelItem) {
+        this.feedbackHost_.removePanelItem(panelItem);
       }
-      itemElement.update(newItem, targetGroup.isAnimated(item.id));
     } else {
-      if (itemElement) {
-        itemElement.parentNode.removeChild(itemElement);
+      let itemElement = this.getItemElement_(item.id);
+      if (newItem) {
+        if (!itemElement) {
+          itemElement =
+              new ProgressCenterItemElement(this.element_.ownerDocument);
+          // Find quiet node and insert the item before the quiet node.
+          this.openView_.insertBefore(
+              itemElement, this.openView_.querySelector('.quiet'));
+        }
+        itemElement.update(newItem, targetGroup.isAnimated(item.id));
+      } else {
+        if (itemElement) {
+          itemElement.parentNode.removeChild(itemElement);
+        }
       }
-    }
 
-    // Update the close view.
-    this.updateCloseView_();
+      // Update the close view.
+      this.updateCloseView_();
+    }
   }
 
   /**
    * Handles the item animation end.
    * @param {Event} event Item animation end event.
    * @private
+   * @suppress {checkTypes}
+   * TODO(crbug.com/947388) Remove the suppress, and fix closure compile.
    */
   onItemAnimationEnd_(event) {
     const targetGroup = event.target.classList.contains('quiet') ?
@@ -355,10 +384,17 @@ class ProgressCenterPanel {
     } else {
       const itemId = event.target.getAttribute('data-progress-id');
       targetGroup.completeItemAnimation(itemId);
-      const newItem = targetGroup.getItem(itemId);
-      const itemElement = this.getItemElement_(itemId);
-      if (!newItem && itemElement) {
-        itemElement.parentNode.removeChild(itemElement);
+      if (util.isFeedbackPanelEnabled()) {
+        const panelItem = this.feedbackHost_.findPanelItemById(itemId);
+        if (panelItem) {
+          this.feedbackHost_.removePanelItem(panelItem);
+        }
+      } else {
+        const newItem = targetGroup.getItem(itemId);
+        const itemElement = this.getItemElement_(itemId);
+        if (!newItem && itemElement) {
+          itemElement.parentNode.removeChild(itemElement);
+        }
       }
     }
     this.updateCloseView_();

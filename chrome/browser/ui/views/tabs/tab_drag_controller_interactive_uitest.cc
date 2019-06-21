@@ -83,7 +83,6 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -116,18 +115,8 @@ class TabDragControllerInteractiveUITestUserData
 };
 
 #if defined(OS_CHROMEOS)
-// Returns the window which stores window properties for this test. In mash, the
-// properties are stored in the root window of the browser window.
-aura::Window* GetWindowForProperties(aura::Window* window) {
-  if (features::IsUsingWindowService())
-    return window->GetRootWindow();
-  return window;
-}
-
 aura::Window* GetWindowForTabStrip(TabStrip* tab_strip) {
-  return tab_strip
-             ? GetWindowForProperties(tab_strip->GetWidget()->GetNativeWindow())
-             : nullptr;
+  return tab_strip ? tab_strip->GetWidget()->GetNativeWindow() : nullptr;
 }
 #endif
 
@@ -281,11 +270,8 @@ int GetDetachY(TabStrip* tab_strip) {
 
 bool GetIsDragged(Browser* browser) {
 #if defined(OS_CHROMEOS)
-  if (!features::IsUsingWindowService()) {
-    return ash::wm::GetWindowState(browser->window()->GetNativeWindow())
-        ->is_dragged();
-  }
-  // TODO(mukai): support for Mash.
+  return ash::wm::GetWindowState(browser->window()->GetNativeWindow())
+      ->is_dragged();
 #endif
   return false;
 }
@@ -607,12 +593,6 @@ class DetachToBrowserTabDragControllerTest
 
 // Creates a browser with two tabs, drags the second to the first.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
-  // TODO(sky): this won't work with touch as it requires a long press.
-  if (input_source() == INPUT_SOURCE_TOUCH) {
-    VLOG(1) << "Test is DISABLED for touch input.";
-    return;
-  }
-
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -632,6 +612,25 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   // The tab strip should no longer have capture because the drag was ended and
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
+}
+
+// Drags a tab within the window (without dragging the whole window) then
+// pressing a key ends the drag.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       KeyPressShouldEndDragTest) {
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  EXPECT_EQ("1 0", IDString(browser()->tab_strip_model()));
+  EXPECT_FALSE(TabDragController::IsActive());
+  EXPECT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
 }
 
 #if defined(USE_AURA)
@@ -817,14 +816,10 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 bool IsWindowPositionManaged(aura::Window* window) {
-  return test::GetWindowForProperties(window)->GetProperty(
-      ash::kWindowPositionManagedTypeKey);
+  return window->GetProperty(ash::kWindowPositionManagedTypeKey);
 }
 bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
-  if (!features::IsUsingWindowService())
-    return ash::wm::GetWindowState(window)->bounds_changed_by_user();
-  // TODO(mukai): support Mash.
-  return false;
+  return ash::wm::GetWindowState(window)->bounds_changed_by_user();
 }
 #else
 bool IsWindowPositionManaged(gfx::NativeWindow window) {
@@ -1994,8 +1989,8 @@ void DoNotAttachToOtherWindowTestStep2(
   EXPECT_EQ(3u, test->browser_list->size());
   // Get this new created window and set it to non-attachable.
   Browser* new_browser = test->browser_list->get(2);
-  test::GetWindowForProperties(new_browser->window()->GetNativeWindow())
-      ->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
+  new_browser->window()->GetNativeWindow()->SetProperty(
+      ash::kCanAttachToAnotherWindowKey, false);
 
   // Now drag to target_tab_strip.
   ASSERT_TRUE(

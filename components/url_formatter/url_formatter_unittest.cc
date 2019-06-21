@@ -1033,6 +1033,17 @@ const IDNTestCase kIdnCases[] = {
 
     // oĸ.com: Not a top domain, should be blocked because of Kra.
     {"xn--o-tka.com", L"o\x0138.com", false},
+
+    // U+4E00 and U+3127 should be blocked when next to non-CJK.
+    {"xn--ipaddress-w75n.com", L"ip一address.com", false},
+    {"xn--ipaddress-wx5h.com", L"ipㄧaddress.com", false},
+    // These are allowed because 一 is not immediately next to non-CJK.
+    {"xn--gamer-fg1hz05u.com", L"一生gamer.com", true},
+    {"xn--gamer-kg1hy05u.com", L"gamer生一.com", true},
+    {"xn--4gqz91g.com", L"一猫.com", true},
+    {"xn--4fkv10r.com", L"ㄧ猫.com", true},
+    // U+4E00 with another ideograph.
+    {"xn--4gqc.com", L"一丁.com", true},
 };
 
 struct AdjustOffsetCase {

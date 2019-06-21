@@ -239,18 +239,18 @@ ClipboardWin::~ClipboardWin() {
 void ClipboardWin::OnPreShutdown() {}
 
 uint64_t ClipboardWin::GetSequenceNumber(ClipboardType type) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   return ::GetClipboardSequenceNumber();
 }
 
 bool ClipboardWin::IsFormatAvailable(const ClipboardFormatType& format,
                                      ClipboardType type) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   return ::IsClipboardFormatAvailable(format.ToFormatEtc().cfFormat) != FALSE;
 }
 
 void ClipboardWin::Clear(ClipboardType type) {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;
@@ -295,7 +295,7 @@ void ClipboardWin::ReadAvailableTypes(ClipboardType type,
 }
 
 void ClipboardWin::ReadText(ClipboardType type, base::string16* result) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   if (!result) {
     NOTREACHED();
     return;
@@ -320,7 +320,7 @@ void ClipboardWin::ReadText(ClipboardType type, base::string16* result) const {
 
 void ClipboardWin::ReadAsciiText(ClipboardType type,
                                  std::string* result) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   if (!result) {
     NOTREACHED();
     return;
@@ -348,7 +348,7 @@ void ClipboardWin::ReadHTML(ClipboardType type,
                             std::string* src_url,
                             uint32_t* fragment_start,
                             uint32_t* fragment_end) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   markup->clear();
   // TODO(dcheng): Remove these checks, I don't think they should be optional.
@@ -401,14 +401,14 @@ void ClipboardWin::ReadHTML(ClipboardType type,
 }
 
 void ClipboardWin::ReadRTF(ClipboardType type, std::string* result) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   ReadData(ClipboardFormatType::GetRtfType(), result);
   TrimAfterNull(result);
 }
 
 SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;
@@ -495,7 +495,7 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
 void ClipboardWin::ReadCustomData(ClipboardType clipboard_type,
                                   const base::string16& type,
                                   base::string16* result) const {
-  DCHECK_EQ(clipboard_type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(clipboard_type, ClipboardType::kCopyPaste);
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;
@@ -557,7 +557,7 @@ void ClipboardWin::ReadData(const ClipboardFormatType& format,
 }
 
 void ClipboardWin::WriteObjects(ClipboardType type, const ObjectMap& objects) {
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))

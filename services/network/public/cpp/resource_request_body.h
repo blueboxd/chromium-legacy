@@ -19,6 +19,12 @@
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
 
+namespace blink {
+namespace mojom {
+class FetchAPIRequestBodyDataView;
+}  // namespace mojom
+}  // namespace blink
+
 namespace network {
 
 // ResourceRequestBody represents body (i.e. upload data) of a HTTP request.
@@ -98,6 +104,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
 
  private:
   friend class base::RefCountedThreadSafe<ResourceRequestBody>;
+  friend struct mojo::StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
+                                   scoped_refptr<network::ResourceRequestBody>>;
   friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
                                    scoped_refptr<network::ResourceRequestBody>>;
   ~ResourceRequestBody();

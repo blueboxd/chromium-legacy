@@ -15,7 +15,7 @@ namespace ui {
 
 ClipboardHost::ClipboardHost()
     : clipboard_(Clipboard::GetForCurrentThread()),
-      clipboard_writer_(new ScopedClipboardWriter(CLIPBOARD_TYPE_COPY_PASTE)) {}
+      clipboard_writer_(new ScopedClipboardWriter(ClipboardType::kCopyPaste)) {}
 
 ClipboardHost::~ClipboardHost() {
   clipboard_writer_->Reset();

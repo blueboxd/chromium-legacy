@@ -22,11 +22,6 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
                             service_manager::Manifest::InterfaceList<
                                 safe_browsing::mojom::SafeBrowsing,
                                 spellcheck::mojom::SpellCheckHost>())
-          .ExposeCapability("profiling_client",
-                            service_manager::Manifest::InterfaceList<
-                                heap_profiling::mojom::ProfilingClient>())
-          .RequireCapability(content::mojom::kSystemServiceName,
-                             "profiling_client")
           .RequireCapability("heap_profiling", "profiling")
           .RequireCapability("heap_profiling", "heap_profiler")
           .ExposeInterfaceFilterCapability_Deprecated(

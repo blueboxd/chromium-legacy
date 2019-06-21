@@ -11,11 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
@@ -178,12 +178,22 @@ void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
     return;
   }
 
-  // TODO(lfg): Investigate which other restrictions we might need when
-  // navigating portals. See http://crbug.com/964395.
+  GURL out_validated_url = url;
+  owner_render_frame_host_->GetSiteInstance()->GetProcess()->FilterURL(
+      false, &out_validated_url);
 
-  NavigationController::LoadURLParams load_url_params(url);
-  load_url_params.referrer = mojo::ConvertTo<Referrer>(referrer);
-  portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
+  FrameTreeNode* portal_root = portal_contents_impl_->GetFrameTree()->root();
+  RenderFrameHostImpl* portal_frame = portal_root->current_frame_host();
+
+  // TODO(lfg): Figure out download policies for portals.
+  // https://github.com/WICG/portals/issues/150
+  NavigationDownloadPolicy download_policy;
+
+  portal_root->navigator()->NavigateFromFrameProxy(
+      portal_frame, url, owner_render_frame_host_->GetLastCommittedOrigin(),
+      owner_render_frame_host_->GetSiteInstance(),
+      mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK, false,
+      download_policy, "GET", nullptr, "", nullptr, false);
 }
 
 void Portal::Activate(blink::TransferableMessage data,

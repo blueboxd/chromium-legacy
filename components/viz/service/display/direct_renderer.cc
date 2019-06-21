@@ -109,19 +109,17 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider),
-      overlay_processor_(std::make_unique<OverlayProcessor>(
-          output_surface->context_provider())) {}
+      resource_provider_(resource_provider) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
-  // Create overlay validator and set it. This would initialize the strategies
-  // on the validator as well.
+  // Create overlay validator based on the platform and set it on the newly
+  // created processor. This would initialize the strategies on the validator as
+  // well.
   gpu::SurfaceHandle surface_handle = output_surface_->GetSurfaceHandle();
-  overlay_processor_->SetOverlayCandidateValidator(
-      OverlayCandidateValidator::Create(
-          surface_handle, output_surface_->context_provider(), *settings_));
+  overlay_processor_ = OverlayProcessor::CreateOverlayProcessor(
+      output_surface_->context_provider(), surface_handle, *settings_);
 
   auto* context_provider = output_surface_->context_provider();
 

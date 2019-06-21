@@ -198,7 +198,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // Ensure tests have a wallpaper as placeholder.
   shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
 
-  TabletModeController::SetForceNoScreenshotForTest();
+  TabletModeController::SetUseScreenshotForTest(false);
 }
 
 void AshTestHelper::TearDown() {

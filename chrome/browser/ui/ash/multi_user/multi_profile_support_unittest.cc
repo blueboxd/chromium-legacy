@@ -63,7 +63,6 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -1443,12 +1442,7 @@ TEST_F(MultiProfileSupportTest, TeleportedWindowAvatarProperty) {
 
   SwitchActiveUser(user1);
 
-  // This ternary doesn't make a lot of sense because the windows in this
-  // AshTest aren't created via the window service, but it's necessary to mirror
-  // the code in MultiProfileSupport, where the content window's
-  // root window is the Ash host window.
-  aura::Window* property_window =
-      features::IsUsingWindowService() ? window(0)->GetRootWindow() : window(0);
+  aura::Window* property_window = window(0);
 
   // Window #0 has no kAvatarIconKey property before teleporting.
   EXPECT_FALSE(property_window->GetProperty(aura::client::kAvatarIconKey));

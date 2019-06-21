@@ -90,6 +90,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
@@ -278,6 +279,10 @@ void InProcessBrowserTest::SetUp() {
   // access to all files here since browser_tests and interactive_ui_tests
   // rely on the ability to open any files via file: scheme.
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
+
+  // Using a screenshot for clamshell to tablet mode transitions makes the flow
+  // async which we want to disable for most tests.
+  ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
 #endif  // defined(OS_CHROMEOS)
 
   // Use hardcoded quota settings to have a consistent testing environment.

@@ -2100,6 +2100,9 @@
   {
     'name': 'chromium.gpu',
     'forbid_script_tests': True,
+    'mixins': [
+      'swarming_containment_auto',
+    ],
     'machines': {
       'Android Release (Nexus 5X)': {
         'browser_config': 'android-chromium',
@@ -2231,6 +2234,9 @@
   {
     'name': 'chromium.gpu.fyi',
     'forbid_script_tests': True,
+    'mixins': [
+      'swarming_containment_auto',
+    ],
     'machines': {
       # BEGIN Fake builder used as mirror targets for ANGLE's GPU tryservers
       'ANGLE GPU Linux Release (Intel HD 630)': {
@@ -2328,19 +2334,6 @@
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
-      'Android FYI 32 Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-        },
-      },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -2348,18 +2341,6 @@
           'gpu_pool',
           'pie',
           'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
-        },
-      },
-      'Android FYI 32 dEQP Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
@@ -2378,19 +2359,6 @@
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
-      'Android FYI 64 Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-        },
-      },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
         'os_type': 'android',
         'skip_merge_script': True,
@@ -2398,18 +2366,6 @@
           'gpu_pool',
           'pie',
           'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
-        },
-      },
-      'Android FYI 64 dEQP Vk Release (Pixel XL)': {
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'gpu_pool',
-          'marlin',
-          'pie',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
@@ -2455,7 +2411,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_nexus5x_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
@@ -2517,6 +2473,19 @@
           # We currently only want to run the WebGL 2.0 conformance tests on
           # this until additional Pixel 2 capacity is added.
           'gpu_telemetry_tests': 'gpu_fyi_android_webgl2_and_gold_telemetry_tests',
+        },
+      },
+      'Android FYI SkiaRenderer Vulkan (Pixel 2)': {
+        'os_type': 'android',
+        'browser_config': 'android-chromium',
+        'skip_merge_script': True,
+        'mixins': [
+          'gpu_pool',
+          'pie',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_skia_renderer_vulkan_gtests',
         },
       },
       'Android FYI dEQP Release (Nexus 5X)': {
@@ -3400,15 +3369,6 @@
       'Linux Tests (dbg)(1)': {
         'mixins': [
           # TODO(tikuta): investigate browser_tests failure on xenial crbug.com/954450 .
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
-        },
-      },
-      'Linux Tests (dbg)(1)(32)': {
-        'mixins': [
           'linux-trusty',
         ],
         'test_suites': {

@@ -5,6 +5,8 @@
 #include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_string.h"
@@ -367,11 +369,10 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile) {
-  content::BrowserContext* browser_context =
-      ProfileAndroid::FromProfileAndroid(j_profile);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
 
   OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+      OfflinePageModelFactory::GetForBrowserContext(profile);
   DCHECK(offline_page_model);
 
   DownloadUIAdapter* adapter =
@@ -379,10 +380,10 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
 
   if (!adapter) {
     RequestCoordinator* request_coordinator =
-        RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+        RequestCoordinatorFactory::GetForBrowserContext(profile);
     DCHECK(request_coordinator);
     offline_items_collection::OfflineContentAggregator* aggregator =
-        OfflineContentAggregatorFactory::GetForBrowserContext(browser_context);
+        OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
     DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,

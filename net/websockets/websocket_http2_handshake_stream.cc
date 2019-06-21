@@ -246,9 +246,6 @@ std::unique_ptr<WebSocketStream> WebSocketHttp2HandshakeStream::Upgrade() {
   if (!extension_params_->deflate_enabled)
     return basic_stream;
 
-  RecordDeflateMode(
-      extension_params_->deflate_parameters.client_context_take_over_mode());
-
   return std::make_unique<WebSocketDeflateStream>(
       std::move(basic_stream), extension_params_->deflate_parameters,
       std::make_unique<WebSocketDeflatePredictorImpl>());

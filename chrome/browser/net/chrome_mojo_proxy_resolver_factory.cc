@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
@@ -40,7 +40,7 @@ void ChromeMojoProxyResolverFactory::CreateResolver(
   // create a ProxyResolverFactory and then destroy the factory, to avoid
   // keeping the service alive after all resolvers have been destroyed.
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory;
-  content::ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+  content::GetSystemConnector()->Connect(
       proxy_resolver::mojom::kProxyResolverServiceName,
       resolver_factory.BindNewPipeAndPassReceiver());
   resolver_factory->CreateResolver(pac_script, std::move(receiver),

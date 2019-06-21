@@ -704,7 +704,13 @@ class ThreadedInputConnection extends BaseInputConnection implements ChromiumBas
     @Override
     public boolean performPrivateCommand(String action, Bundle data) {
         if (DEBUG_LOGS) Log.i(TAG, "performPrivateCommand [%s]", action);
-        return false;
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                mImeAdapter.performPrivateCommand(action, data);
+            }
+        });
+        return true;
     }
 
     /**

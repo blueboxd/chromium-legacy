@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
 #include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -69,7 +70,6 @@ class CanvasRenderingContextFactory;
 class GraphicsContext;
 class HitTestCanvasResult;
 class HTMLCanvasElement;
-class Image;
 class ImageBitmapOptions;
 class IntSize;
 
@@ -354,6 +354,9 @@ class CORE_EXPORT HTMLCanvasElement final
   // ImageBitmapRenderingContextBase.
   bool HasImageBitmapContext() const;
 
+  // Returns the transparent image resource for this canvas.
+  scoped_refptr<Image> GetTransparentImage();
+
   CanvasRenderingContext* GetCanvasRenderingContextInternal(
       const String&,
       const CanvasContextCreationAttributesCore&);
@@ -404,6 +407,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   mutable bool gpu_readback_invoked_in_current_frame_;
   int gpu_readback_successive_frames_;
+  scoped_refptr<Image> transparent_image_ = nullptr;
 };
 
 }  // namespace blink

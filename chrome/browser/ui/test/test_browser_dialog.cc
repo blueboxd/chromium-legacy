@@ -14,7 +14,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"  // mash-ok
-#include "ui/base/ui_base_features.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -146,15 +145,8 @@ std::string TestBrowserDialog::GetNonDialogName() {
 void TestBrowserDialog::UpdateWidgets() {
   widgets_.clear();
 #if defined(OS_CHROMEOS)
-  // Under mash, GetAllWidgets() uses MusClient to get the list of root windows.
-  // Otherwise, GetAllWidgets() relies on AuraTestHelper to get the root window,
-  // but that is not available in browser_tests, so use ash::Shell directly.
-  if (features::IsUsingWindowService()) {
-    widgets_ = views::test::WidgetTest::GetAllWidgets();
-  } else {
-    for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
-      views::Widget::GetAllChildWidgets(root_window, &widgets_);
-  }
+  for (aura::Window* root_window : ash::Shell::GetAllRootWindows())
+    views::Widget::GetAllChildWidgets(root_window, &widgets_);
 #elif defined(TOOLKIT_VIEWS)
   widgets_ = views::test::WidgetTest::GetAllWidgets();
 #else

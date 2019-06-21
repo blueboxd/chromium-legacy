@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -107,9 +107,8 @@ void BindDeviceServiceOnUIThread(
     device::mojom::UsbDeviceManagerRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Bind to the DeviceService for USB device manager.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName, std::move(request));
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               std::move(request));
 }
 
 }  // namespace

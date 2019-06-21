@@ -129,15 +129,16 @@ const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
 
 // The delay between two taps to be recognized as a double tap gesture.
-constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
+constexpr base::TimeDelta kDoubleTapDelay =
+    base::TimeDelta::FromMilliseconds(300);
 
 // The time user have to hover on mute button to show volume slider.
 // If this value is changed, you need to change the corresponding value in
 // media_controls_impl_test.cc
-constexpr WTF::TimeDelta kTimeToShowVolumeSlider =
-    TimeDelta::FromMilliseconds(200);
-constexpr WTF::TimeDelta kTimeToShowVolumeSliderTest =
-    TimeDelta::FromMilliseconds(0);
+constexpr base::TimeDelta kTimeToShowVolumeSlider =
+    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kTimeToShowVolumeSliderTest =
+    base::TimeDelta::FromMilliseconds(0);
 
 // The number of seconds to jump when double tapping.
 constexpr int kNumberOfSecondsToJump = 10;
@@ -185,10 +186,11 @@ bool PreferHiddenVolumeControls(const Document& document) {
 
 // If you change this value, then also update the corresponding value in
 // web_tests/media/media-controls.js.
-constexpr TimeDelta kModernTimeWithoutMouseMovementBeforeHidingMediaControls =
-    TimeDelta::FromSecondsD(2.5);
+constexpr base::TimeDelta
+    kModernTimeWithoutMouseMovementBeforeHidingMediaControls =
+        base::TimeDelta::FromSecondsD(2.5);
 
-TimeDelta GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
+base::TimeDelta GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
   return kModernTimeWithoutMouseMovementBeforeHidingMediaControls;
 }
 
@@ -1921,7 +1923,7 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
     // the element sizes can update from the CSS class change before we start
     // calculating.
     UpdateSizingCSSClass();
-    element_size_changed_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    element_size_changed_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }
 

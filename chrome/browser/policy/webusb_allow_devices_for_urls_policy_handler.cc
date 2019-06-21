@@ -69,9 +69,10 @@ WebUsbAllowDevicesForUrlsPolicyHandler::WebUsbAllowDevicesForUrlsPolicyHandler(
     const char* policy_name,
     const char* pref_path,
     const Schema& chrome_schema)
-    : SchemaValidatingPolicyHandler(policy_name,
-                                    chrome_schema.GetKnownProperty(policy_name),
-                                    SchemaOnErrorStrategy::SCHEMA_STRICT),
+    : SchemaValidatingPolicyHandler(
+          policy_name,
+          chrome_schema.GetKnownProperty(policy_name),
+          SchemaOnErrorStrategy::SCHEMA_ALLOW_UNKNOWN),
       pref_path_(pref_path) {}
 
 WebUsbAllowDevicesForUrlsPolicyHandler::

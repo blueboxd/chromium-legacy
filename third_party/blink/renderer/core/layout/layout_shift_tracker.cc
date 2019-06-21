@@ -254,8 +254,6 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
   // Intersect with the portion of the local root that overlaps the main frame.
   frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
   IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
-
-  // TODO(crbug.com/939050): This does not update on window resize.
   IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
 
   // TODO(crbug.com/940711): This comparison ignores page scale and CSS

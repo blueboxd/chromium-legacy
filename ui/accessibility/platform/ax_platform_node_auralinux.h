@@ -8,6 +8,7 @@
 #include <atk/atk.h>
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -229,6 +230,11 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Whether or not this node (if it is a frame or a window) was
   // minimized the last time it's visibility changed.
   bool was_minimized_ = false;
+
+  // The previously observed text selection for this node. We store
+  // this in order to avoid sending duplicate text-selection-changed
+  // and text-caret-moved events.
+  std::pair<int, int> text_selection_ = std::make_pair(-1, -1);
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };

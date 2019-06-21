@@ -39,22 +39,21 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
     const OfflinePageClientPolicy& policy =
         policy_controller.GetPolicy(client_id.name_space);
     if (criteria.exclude_tab_bound_pages &&
-        policy.feature_policy.is_restricted_to_tab_from_client_id) {
+        policy.is_restricted_to_tab_from_client_id) {
       return false;
     }
     if (criteria.pages_for_tab_id &&
-        policy.feature_policy.is_restricted_to_tab_from_client_id) {
+        policy.is_restricted_to_tab_from_client_id) {
       std::string tab_id_str =
           base::NumberToString(criteria.pages_for_tab_id.value());
       if (client_id.id != tab_id_str)
         return false;
     }
-    if (criteria.supported_by_downloads &&
-        !policy.feature_policy.is_supported_by_download) {
+    if (criteria.supported_by_downloads && !policy.is_supported_by_download) {
       return false;
     }
-    if (criteria.lifetime_type && criteria.lifetime_type.value() !=
-                                      policy.lifetime_policy.lifetime_type) {
+    if (criteria.lifetime_type &&
+        criteria.lifetime_type.value() != policy.lifetime_type) {
       return false;
     }
   }
@@ -109,9 +108,9 @@ std::vector<std::string> PotentiallyMatchingNamespaces(
           !policy_controller.IsSupportedByDownload(name_space)) {
         continue;
       }
-      if (criteria.lifetime_type && criteria.lifetime_type.value() !=
-                                        policy_controller.GetPolicy(name_space)
-                                            .lifetime_policy.lifetime_type) {
+      if (criteria.lifetime_type &&
+          criteria.lifetime_type.value() !=
+              policy_controller.GetPolicy(name_space).lifetime_type) {
         continue;
       }
       matching_namespaces.push_back(name_space);

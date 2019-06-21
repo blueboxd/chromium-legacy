@@ -48,7 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -275,11 +275,9 @@ void SyncEngine::Initialize() {
           identity_manager_, url_loader_factory_, drive_task_runner_.get());
 
   device::mojom::WakeLockProviderPtr wake_lock_provider(nullptr);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  DCHECK(content::GetSystemConnector());
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
 
   std::unique_ptr<drive::DriveUploaderInterface> drive_uploader(
       new drive::DriveUploader(drive_service.get(), drive_task_runner_.get(),

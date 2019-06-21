@@ -22,7 +22,7 @@
 #include "chrome/services/media_gallery_util/public/cpp/safe_audio_video_checker.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/mime_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -95,17 +95,13 @@ SupportedAudioVideoChecker::SupportedAudioVideoChecker(
 void SupportedAudioVideoChecker::RetrieveConnectorOnUIThread(
     base::WeakPtr<SupportedAudioVideoChecker> this_ptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<service_manager::Connector> connector =
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone();
   // We need a fresh connector so that we can use it on the IO thread. It has
   // to be retrieved from the UI thread. We must use static method and pass a
   // WeakPtr around as WeakPtrs are not thread-safe.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SupportedAudioVideoChecker::OnConnectorRetrieved,
-                     this_ptr, std::move(connector)));
+                     this_ptr, content::GetSystemConnector()->Clone()));
 }
 
 // static

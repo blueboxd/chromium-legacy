@@ -62,7 +62,8 @@ class ASH_EXPORT OverviewWindowDragController {
   };
 
   OverviewWindowDragController(OverviewSession* overview_session,
-                               OverviewItem* item);
+                               OverviewItem* item,
+                               bool allow_drag_to_close);
   ~OverviewWindowDragController();
 
   void InitiateDrag(const gfx::PointF& location_in_screen);
@@ -86,14 +87,16 @@ class ASH_EXPORT OverviewWindowDragController {
   DragBehavior current_drag_behavior() { return current_drag_behavior_; }
 
  private:
+  void StartDragToCloseMode();
+
   // Methods to continue and complete the drag when the drag mode is
   // kDragToClose.
-  gfx::RectF ContinueDragToClose(const gfx::PointF& location_in_screen);
+  void ContinueDragToClose(const gfx::PointF& location_in_screen);
   DragResult CompleteDragToClose(const gfx::PointF& location_in_screen);
 
   // Methods to continue and complete the drag when the drag mode is
   // kNormalDrag.
-  gfx::RectF ContinueNormalDrag(const gfx::PointF& location_in_screen);
+  void ContinueNormalDrag(const gfx::PointF& location_in_screen);
   DragResult CompleteNormalDrag(const gfx::PointF& location_in_screen);
 
   // Updates visuals for the user while dragging items around.
@@ -138,6 +141,12 @@ class ASH_EXPORT OverviewWindowDragController {
   // dragging it. The item is restored to this size once it no longer intersects
   // with the DesksBarView.
   gfx::SizeF original_scaled_size_;
+
+  const size_t display_count_;
+
+  // True if the drag-to-close mode is allowed (generally when the item is
+  // dragged by touch gestures).
+  const bool should_allow_drag_to_close_;
 
   // True if SplitView is enabled.
   const bool should_allow_split_view_;

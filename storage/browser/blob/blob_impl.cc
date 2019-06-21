@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "net/base/io_buffer.h"
-#include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -124,25 +123,22 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
         }
 
         auto snapshot = handle.CreateSnapshot();
-        // Currently side data is supported only for single DiskCache entry
-        // blob.
+        // Currently side data is supported only for blobs with a single entry.
         const auto& items = snapshot->items();
-        if (items.size() != 1 ||
-            items[0]->type() != BlobDataItem::Type::kDiskCacheEntry) {
+        if (items.size() != 1) {
           std::move(callback).Run(base::nullopt);
           return;
         }
 
         const auto& item = items[0];
-        disk_cache::Entry* entry = item->disk_cache_entry();
-        if (!entry) {
+        if (item->type() != BlobDataItem::Type::kReadableDataHandle) {
           std::move(callback).Run(base::nullopt);
           return;
         }
-        int32_t body_size =
-            entry->GetDataSize(item->disk_cache_side_stream_index());
+
+        int32_t body_size = item->data_handle()->GetSideDataSize();
         if (body_size == 0) {
-          std::move(callback).Run(std::vector<uint8_t>());
+          std::move(callback).Run(base::nullopt);
           return;
         }
         auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(body_size);
@@ -161,9 +157,10 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
             },
             io_buffer, std::move(callback)));
 
-        // TODO(crbug.com/867848): Plumb BigBuffer into disk_cache::ReadData().
-        int rv = entry->ReadData(item->disk_cache_side_stream_index(), 0,
-                                 io_buffer.get(), body_size, io_callback);
+        // TODO(crbug.com/867848): Plumb BigBuffer into
+        // BlobDataItem::DataHandle::ReadSideData().
+        int rv = item->data_handle()->ReadSideData(std::move(io_buffer),
+                                                   io_callback);
         if (rv != net::ERR_IO_PENDING)
           io_callback.Run(rv);
       },

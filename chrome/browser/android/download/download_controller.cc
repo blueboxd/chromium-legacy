@@ -21,12 +21,14 @@
 #include "chrome/browser/android/download/dangerous_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/chromium_strings.h"
@@ -387,8 +389,12 @@ void DownloadController::OnDownloadStarted(
   if (download::AutoResumptionHandler::Get())
     download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
 
-  DownloadUtils::GetDownloadOfflineContentProvider(
-      content::DownloadItemUtils::GetBrowserContext(download_item))
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_item));
+  ProfileKey* profile_key =
+      profile ? profile->GetProfileKey() : ::android::GetMainProfileKey();
+
+  DownloadUtils::GetDownloadOfflineContentProvider(profile_key)
       ->OnDownloadStarted(download_item);
 
   OnDownloadUpdated(download_item);

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace printing {
@@ -77,13 +77,8 @@ void PdfNupConverterClient::RemovePdfNupConverterRequest(int cookie) {
 
 mojom::PdfNupConverterPtr
 PdfNupConverterClient::CreatePdfNupConverterRequest() {
-  if (!connector_) {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindConnectorRequest(std::move(connector_request));
-  }
+  if (!connector_)
+    connector_ = content::GetSystemConnector()->Clone();
   mojom::PdfNupConverterPtr pdf_nup_converter;
   connector_->BindInterface(printing::mojom::kChromePrintingServiceName,
                             &pdf_nup_converter);

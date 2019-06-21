@@ -224,10 +224,13 @@ class DeviceTarget(target.Target):
         bootserver_path,
         '-1',
         '--fvm',
-        EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                 'fvm.sparse.blk')),
+        EnsurePathExists(
+            boot_data.GetTargetFile('storage-sparse.blk',
+                                    self._GetTargetSdkArch(),
+                                    boot_data.TARGET_TYPE_GENERIC)),
         EnsurePathExists(boot_data.GetBootImage(self._output_dir,
-                                                self._GetTargetSdkArch()))]
+                                                self._GetTargetSdkArch(),
+                                                boot_data.TARGET_TYPE_GENERIC))]
 
     if self._node_name:
       bootserver_command += ['-n', self._node_name]

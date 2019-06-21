@@ -136,7 +136,7 @@ void MetricCollector::SuspendDone(base::TimeDelta sleep_duration) {
       RandomTimeDelta(resume_params.max_collection_delay);
   timer_.Start(FROM_HERE, collection_delay,
                base::BindOnce(&MetricCollector::CollectPerfDataAfterResume,
-                              AsWeakPtr(), sleep_duration, collection_delay));
+                              GetWeakPtr(), sleep_duration, collection_delay));
 }
 
 void MetricCollector::CollectPerfDataAfterResume(
@@ -182,7 +182,7 @@ void MetricCollector::OnSessionRestoreDone(int num_tabs_restored) {
   timer_.Start(
       FROM_HERE, collection_delay,
       base::BindOnce(&MetricCollector::CollectPerfDataAfterSessionRestore,
-                     AsWeakPtr(), collection_delay, num_tabs_restored));
+                     GetWeakPtr(), collection_delay, num_tabs_restored));
 }
 
 void MetricCollector::CollectPerfDataAfterSessionRestore(
@@ -222,8 +222,9 @@ void MetricCollector::ScheduleIntervalCollection() {
   if (scheduled_time < now)
     scheduled_time = now;
 
-  timer_.Start(FROM_HERE, scheduled_time - now, this,
-               &MetricCollector::DoPeriodicCollection);
+  timer_.Start(
+      FROM_HERE, scheduled_time - now,
+      base::BindOnce(&MetricCollector::DoPeriodicCollection, GetWeakPtr()));
 
   // Update the profiling interval tracker to the start of the next interval.
   next_profiling_interval_start_ = interval_end;

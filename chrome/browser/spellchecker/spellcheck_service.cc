@@ -30,6 +30,7 @@
 #include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -60,12 +61,11 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Ensure that the renderer always knows the platform spellchecking language.
-  // This language is used for initialization of the text iterator. If the
-  // iterator is not initialized, then the context menu does not show spellcheck
-  // suggestions.
-  //
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // Ensure that the renderer always knows the platform spellchecking
+  // language. This language is used for initialization of the text iterator.
+  // If the iterator is not initialized, then the context menu does not show
+  // spellcheck suggestions.
   // No migration is necessary, because the spellcheck language preference is
   // not user visible or modifiable in Chrome on Mac.
   dictionaries_pref.SetValue(std::vector<std::string>(
@@ -87,7 +87,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 
   single_dictionary_pref.SetValue("");
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
 
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,

@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/layout/fill_layout.h"
@@ -37,9 +36,6 @@ class HostWidget : public views::WidgetDelegateView {
 
  private:
   HostWidget(gfx::NativeWindow native_window) {
-    // Note this does not work under multi process mash.
-    DCHECK(!features::IsMultiProcessMash());
-
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
     auto* widget = new views::Widget;

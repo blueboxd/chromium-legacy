@@ -26,9 +26,6 @@
 
       cr-input {
         --cr-input-background-color: white;
-        --cr-input-row-container: {
-          height: 100%;
-        }
         --cr-input-container: {
           border-radius: 0;
           height: 100%;
@@ -49,6 +46,10 @@
         display: block;
         vertical-align: middle;
         width: 160px;  /* Special width for search input. */
+      }
+
+      cr-input::part(row-container) {
+        height: 100%;
       }
 
       @media (prefers-color-scheme: dark) {

@@ -15,15 +15,8 @@ _NEGATIVE_FILTER = [
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
-    'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
     'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2835
-    'CookieImplementationTest.deleteAllCookies',
-    'CookieImplementationTest.canHandleHttpOnlyCookie',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
     'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
@@ -39,6 +32,9 @@ _NEGATIVE_FILTER = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
     'CombinedInputActionsTest.testChordControlCutAndPaste',
+
+    #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2971
+    'ChromeDevToolsProfilerTest.sampleProfileEvents',
 ]
 
 _READY_TO_RUN_FILTER = [
@@ -93,7 +89,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'PerformanceLogTypeTest.pageLoadShouldProducePerformanceLogEntries',
     'ProxySettingTest.*',
     'CorrectEventFiringTest.testSendingKeysToAnotherElementShouldCauseTheBlurEventToFireInNonTopmostWindow',
-    'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
     'ReferrerTest.crossDomainHistoryNavigationWhenProxyInterceptsHostRequests',
     'ReferrerTest.crossDomainHistoryNavigationWithAProxiedHost',
 

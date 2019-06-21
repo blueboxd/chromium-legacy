@@ -170,7 +170,7 @@ if (!is_android && !is_mac) {
           "$root_out_dir/locales/en-US.pak",
           "$root_out_dir/locales/fr.pak",
         ]
-        if (enable_hidpi || enable_mus) {
+        if (enable_hidpi) {
           data += [ "$root_out_dir/chrome_200_percent.pak" ]
         }
       }
@@ -371,20 +371,6 @@ if (!is_android && !is_mac) {
     if (!is_win && use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
-    }
-  }
-
-  # TODO(jonross): remove this once telemetry can differentiate between linux
-  # and linux chromiumos.
-  if (enable_mus) {
-    chrome_binary("chrome_test") {
-      # Note that the output name needs to end with "chrome", because that's
-      # what telemetry test-runner expects.
-      output_name = "test_chrome"
-      sources = []
-      if (!is_win && use_aura) {
-        sources += [ "app/chrome_exe_main_aura.cc" ]
-      }
     }
   }
 }  # !is_android && !is_mac
@@ -1189,11 +1175,18 @@ if (is_win) {
     }
   }
 
-  group("keystone_registration_framework") {
-    if (is_chrome_branded && enable_keystone_registration_framework) {
-      deps = [
-        "//third_party/googlemac/Releases/Keystone:keystone_registration",
+  if (is_chrome_branded && enable_keystone_registration_framework) {
+    bundle_data("keystone_registration_framework") {
+      sources = [
+        "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework",
       ]
+
+      outputs = [
+        "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
+      ]
+    }
+  } else {
+    group("keystone_registration_framework") {
     }
   }
 

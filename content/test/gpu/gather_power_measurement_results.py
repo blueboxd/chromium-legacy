@@ -85,8 +85,7 @@ def GetJsonForLatestNBuilds(bot, build_count):
   builds_json = GetBuildData('SearchBuilds', request)
   builds = builds_json['builds']
   if len(builds) != build_count:
-    raise ValueError('Asked %d builds, got %d builds' % (
-        len(builds, build_count)))
+    logging.warn('Asked %d builds, got %d builds', build_count, len(builds))
   return builds
 
 
@@ -266,9 +265,13 @@ def main():
     builds = []
     for build_id in range(last_build, first_build - 1, -1):
       logging.debug('Pull data for build %d' % build_id)
-      build_json = GetJsonForBuildSteps(options.bot, build_id)
-      build_json['number'] = build_id
-      builds.append(build_json)
+      try:
+        build_json = GetJsonForBuildSteps(options.bot, build_id)
+        build_json['number'] = build_id
+        builds.append(build_json)
+      except urllib2.HTTPError:
+        logging.warn('HTTPError raised, failed to load data from build %d',
+                     build_id)
 
   logging.debug('Start processing stdout data')
   results = { 'builds': [] }

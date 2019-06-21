@@ -28,6 +28,9 @@ class PanelItem extends HTMLElement {
 
     /** @private {number} */
     this.panelType_ = this.panelTypeDefault;
+
+    /** @public {?DisplayPanel} */
+    this.parent = null;
   }
 
   /**
@@ -91,24 +94,28 @@ class PanelItem extends HTMLElement {
 
     // Setup the panel configuration for the panel type.
     // TOOD(crbug.com/947388) Simplify this switch breaking out common cases.
+    /** @type {?Element} */
+    let primaryButton = null;
+    /** @type {?Element} */
+    let secondaryButton = null;
     switch (type) {
       case this.panelTypeProgress:
         this.setAttribute('indicator', 'progress');
-        let primaryButton = document.createElement('xf-button');
+        primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
-        primaryButton.setAttribute('category', 'pause');
+        primaryButton.dataset.category = 'pause';
         buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
 
-        let secondaryButton = document.createElement('xf-button');
+        secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
-        secondaryButton.setAttribute('category', 'cancel');
+        secondaryButton.dataset.category = 'cancel';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeSummary:
         this.setAttribute('indicator', 'largeprogress');
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
-        primaryButton.setAttribute('category', 'expand');
+        primaryButton.dataset.category = 'expand';
         buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
       case this.panelTypeDone:
@@ -116,12 +123,12 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'success');
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
-        primaryButton.setAttribute('category', 'dismiss');
+        primaryButton.dataset.category = 'dismiss';
         buttonSpacer.insertAdjacentElement('beforebegin', primaryButton);
 
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
-        secondaryButton.setAttribute('category', 'undo');
+        secondaryButton.dataset.category = 'undo';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeError:
@@ -129,7 +136,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'failure');
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
-        secondaryButton.setAttribute('category', 'retry');
+        secondaryButton.dataset.category = 'retry';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeInfo:
@@ -163,9 +170,9 @@ class PanelItem extends HTMLElement {
    * @private
    */
   attributeChangedCallback(name, oldValue, newValue) {
-    /** @type {HTMLElement} */
+    /** @type {Element} */
     let indicator = null;
-    /** @type {HTMLSpanElement} */
+    /** @type {Element} */
     let textNode;
     if (oldValue === newValue) {
       return;
@@ -174,7 +181,7 @@ class PanelItem extends HTMLElement {
     switch (name) {
       case 'count':
         if (this.indicator_) {
-          this.indicator_.setAttribute('label', newValue);
+          this.indicator_.setAttribute('label', newValue || '');
         }
         break;
       case 'indicator':

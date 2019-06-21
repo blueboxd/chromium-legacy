@@ -52,8 +52,8 @@ constexpr int kMaxBestEffortTasks = 2;
 
 // Indicates whether BEST_EFFORT tasks are disabled by a command line switch.
 bool HasDisableBestEffortTasksSwitch() {
-  // The CommandLine might not be initialized if TaskScheduler is initialized
-  // in a dynamic library which doesn't have access to argc/argv.
+  // The CommandLine might not be initialized if ThreadPool is initialized in a
+  // dynamic library which doesn't have access to argc/argv.
   return CommandLine::InitializedForCurrentProcess() &&
          CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableBestEffortTasks);
@@ -332,6 +332,7 @@ bool ThreadPoolImpl::PostTaskWithSequenceNow(Task task,
     if (!task_source)
       return false;
   }
+  task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
   transaction.PushTask(std::move(task));
   if (task_source) {
     const TaskTraits traits = transaction.traits();

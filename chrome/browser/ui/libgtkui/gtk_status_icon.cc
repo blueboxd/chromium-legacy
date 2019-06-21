@@ -42,7 +42,7 @@ GtkStatusIcon::~GtkStatusIcon() {
   g_object_unref(gtk_status_icon_);
 }
 
-void GtkStatusIcon::SetImage(const gfx::ImageSkia& image) {
+void GtkStatusIcon::SetIcon(const gfx::ImageSkia& image) {
   GdkPixbuf* pixbuf = GdkPixbufFromSkBitmap(*image.bitmap());
   gtk_status_icon_set_from_pixbuf(gtk_status_icon_, pixbuf);
   g_object_unref(pixbuf);

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
@@ -95,6 +97,19 @@ NotificationDatabaseData CreateDatabaseData(
   return database_data;
 }
 
+int CountVisibleNotifications(
+    const std::vector<NotificationDatabaseData>& data) {
+  if (!base::FeatureList::IsEnabled(features::kNotificationTriggers))
+    return data.size();
+
+  return std::count_if(
+      data.begin(), data.end(),
+      [](const NotificationDatabaseData& notification) {
+        return notification.has_triggered ||
+               !notification.notification_data.show_trigger_timestamp;
+      });
+}
+
 }  // namespace
 
 PushMessagingNotificationManager::PushMessagingNotificationManager(
@@ -140,7 +155,10 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // user-visible action done in response to a push message - but make sure that
   // sending two messages in rapid succession which show then hide a
   // notification doesn't count.
-  int notification_count = success ? data.size() : 0;
+  // TODO(knollr): Scheduling a notification should count as a user-visible
+  // action, if it is not immediately cancelled or the |origin| schedules too
+  // many notifications too far in the future.
+  int notification_count = success ? CountVisibleNotifications(data) : 0;
   bool notification_shown = notification_count > 0;
   bool notification_needed = true;
 

@@ -116,12 +116,6 @@ bool AutofillKeyboardAccessoryAdapter::RemoveSuggestion(int index) {
   return true;
 }
 
-ui::NativeTheme::ColorId
-AutofillKeyboardAccessoryAdapter::GetBackgroundColorIDForRow(int index) const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
-  return controller_->GetBackgroundColorIDForRow(OffsetIndexFor(index));
-}
-
 void AutofillKeyboardAccessoryAdapter::SetSelectedLine(
     base::Optional<int> selected_line) {
   if (!controller_)

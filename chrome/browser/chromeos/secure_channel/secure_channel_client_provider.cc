@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 namespace chromeos {
 
@@ -23,14 +23,9 @@ SecureChannelClientProvider* SecureChannelClientProvider::GetInstance() {
 
 SecureChannelClient* SecureChannelClientProvider::GetClient() {
   if (!secure_channel_client_) {
-    // ServiceManagerConnection::GetForProcess() returns null in tests.
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()
-            ? content::ServiceManagerConnection::GetForProcess()->GetConnector()
-            : nullptr;
-
     secure_channel_client_ =
-        SecureChannelClientImpl::Factory::Get()->BuildInstance(connector);
+        SecureChannelClientImpl::Factory::Get()->BuildInstance(
+            content::GetSystemConnector());
   }
 
   return secure_channel_client_.get();

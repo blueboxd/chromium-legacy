@@ -72,22 +72,23 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   if (!previews_user_data)
     return STOP_OBSERVING;
 
-  committed_preview_ = previews_user_data->committed_previews_type();
+  committed_preview_ = previews_user_data->PreHoldbackCommittedPreviewsType();
 
   // Only check for preview types that are decided before commit in the
   // |allowed_previews_state|.
-  previews_likely_ = HasEnabledPreviews(
-      previews_user_data->allowed_previews_state() & kPreCommitPreviews);
+  previews_likely_ =
+      HasEnabledPreviews(previews_user_data->PreHoldbackAllowedPreviewsState() &
+                         kPreCommitPreviews);
 
   // Check all preview types in the |committed_previews_state|. In practice
   // though, this will only set |previews_likely_| if it wasn't before for an
   // Optimization Hints preview.
-  previews_likely_ |=
-      HasEnabledPreviews(previews_user_data->committed_previews_state());
+  previews_likely_ |= HasEnabledPreviews(
+      previews_user_data->PreHoldbackCommittedPreviewsState());
 
   coin_flip_result_ = previews_user_data->coin_flip_holdback_result();
   content::PreviewsState previews_state =
-      previews_user_data->committed_previews_state();
+      previews_user_data->PreHoldbackCommittedPreviewsState();
 
   DCHECK(coin_flip_result_ == CoinFlipHoldbackResult::kNotSet ||
          previews_likely_);

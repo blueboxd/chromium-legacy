@@ -13,7 +13,7 @@
 #include "chrome/common/cast_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -109,11 +109,8 @@ class RtcpClient : public media::cast::RtcpObserver {
 void CastBindConnectorRequest(
     service_manager::mojom::ConnectorRequest connector_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
+  content::GetSystemConnector()->BindConnectorRequest(
+      std::move(connector_request));
 }
 
 }  // namespace
@@ -403,8 +400,6 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
     return wake_lock_.get();
 
   device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
 
   service_manager::mojom::ConnectorRequest connector_request;
   auto connector = service_manager::Connector::Create(&connector_request);

@@ -41,7 +41,7 @@ class PasswordRecoveryManager {
   // Calculates the full url of various escrow service requests based on
   // the registry setting for the escrow server url.
   GURL GetEscrowServiceGenerateKeyPairUrl();
-  GURL GetEscrowServiceGetPrivateKeyUrl();
+  GURL GetEscrowServiceGetPrivateKeyUrl(const std::string& resource_id);
 
  protected:
   // Returns the storage used for the instance pointer.

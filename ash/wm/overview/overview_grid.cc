@@ -1338,13 +1338,14 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
   return effective_bounds;
 }
 
-bool OverviewGrid::UpdateDesksBarDragDetails(
-    const gfx::Point& screen_location) {
+bool OverviewGrid::UpdateDesksBarDragDetails(const gfx::Point& screen_location,
+                                             bool for_drop) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   const bool dragged_item_over_bar =
       desks_widget_->GetWindowBoundsInScreen().Contains(screen_location);
-  desks_bar_view_->SetDragDetails(screen_location, dragged_item_over_bar);
+  desks_bar_view_->SetDragDetails(screen_location,
+                                  !for_drop && dragged_item_over_bar);
   return dragged_item_over_bar;
 }
 
@@ -1354,14 +1355,11 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   // End the drag for the DesksBarView.
-  desks_bar_view_->SetDragDetails(screen_location,
-                                  /*dragged_item_over_bar=*/false);
-
-  if (!desks_widget_->GetWindowBoundsInScreen().Contains(screen_location))
+  if (!UpdateDesksBarDragDetails(screen_location, /*for_drop=*/true))
     return false;
 
   auto* desks_controller = DesksController::Get();
-  for (const auto& mini_view : desks_bar_view_->mini_views()) {
+  for (auto& mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
 
@@ -1369,9 +1367,6 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
     Desk* const target_desk = mini_view->desk();
     if (target_desk == desks_controller->active_desk())
       return false;
-
-    // TODO(afakhry): Discuss whether we should restore a minimized window when
-    // dragged and dropped in a different desk.
 
     desks_controller->MoveWindowFromActiveDeskTo(dragged_window, target_desk);
     // Restore the dragged item window, so that its transform is reset to

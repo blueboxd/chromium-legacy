@@ -780,6 +780,13 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         return true;
     }
 
+    /**
+     * @see InputConnection#performPrivateCommand(java.lang.String, android.os.Bundle)
+     */
+    public void performPrivateCommand(String action, Bundle data) {
+        mViewDelegate.performPrivateImeCommand(action, data);
+    }
+
     @Override
     public void advanceFocusInForm(int focusType) {
         if (mNativeImeAdapterAndroid == 0) return;

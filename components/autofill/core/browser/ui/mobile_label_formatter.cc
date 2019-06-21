@@ -140,9 +140,18 @@ base::string16 MobileLabelFormatter::GetLabelForShowAllVariant(
 
   // TODO(crbug.com/961819): Maybe put name after address for some app locales.
   if (could_show_name_) {
-    AddLabelPartIfNotEmpty(
-        GetLabelName(field_types_for_labels(), profile, app_locale()),
-        &label_parts);
+    // Due to mobile platforms' space constraints, only the first name is shown
+    // if the form contains a first name field or a full name field.
+    std::any_of(field_types_for_labels().begin(),
+                field_types_for_labels().end(),
+                [](ServerFieldType type) {
+                  return type == NAME_FIRST || type == NAME_FULL;
+                })
+        ? AddLabelPartIfNotEmpty(GetLabelFirstName(profile, app_locale()),
+                                 &label_parts)
+        : AddLabelPartIfNotEmpty(
+              GetLabelName(field_types_for_labels(), profile, app_locale()),
+              &label_parts);
   }
 
   if (could_show_street_address_) {

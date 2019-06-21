@@ -39,14 +39,14 @@ OAuthMultiloginResult::OAuthMultiloginResult(
     const OAuthMultiloginResult& other) {
   status_ = other.status();
   cookies_ = other.cookies();
-  failed_accounts_ = other.failed_accounts();
+  failed_gaia_ids_ = other.failed_gaia_ids();
 }
 
 OAuthMultiloginResult& OAuthMultiloginResult::operator=(
     const OAuthMultiloginResult& other) {
   status_ = other.status();
   cookies_ = other.cookies();
-  failed_accounts_ = other.failed_accounts();
+  failed_gaia_ids_ = other.failed_gaia_ids();
   return *this;
 }
 
@@ -74,9 +74,9 @@ void OAuthMultiloginResult::TryParseFailedAccountsFromValue(
     const std::string* gaia_id = account.FindStringKey("obfuscated_id");
     const std::string* status = account.FindStringKey("status");
     if (status && gaia_id && *status != "OK")
-      failed_accounts_.push_back(*gaia_id);
+      failed_gaia_ids_.push_back(*gaia_id);
   }
-  if (failed_accounts_.empty())
+  if (failed_gaia_ids_.empty())
     status_ = OAuthMultiloginResponseStatus::kUnknownStatus;
 }
 
@@ -97,6 +97,7 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(base::Value* json_value) {
     base::Optional<bool> is_http_only = cookie.FindBoolKey("isHttpOnly");
     const std::string* priority = cookie.FindStringKey("priority");
     base::Optional<double> expiration_delta = cookie.FindDoubleKey("maxAge");
+    const std::string* same_site = cookie.FindStringKey("sameSite");
 
     base::TimeDelta before_expiration =
         base::TimeDelta::FromSecondsD(expiration_delta.value_or(0.0));
@@ -113,7 +114,8 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(base::Value* json_value) {
         path ? *path : "", /*creation=*/base::Time::Now(),
         base::Time::Now() + before_expiration,
         /*last_access=*/base::Time::Now(), is_secure.value_or(true),
-        is_http_only.value_or(true), net::CookieSameSite::NO_RESTRICTION,
+        is_http_only.value_or(true),
+        net::StringToCookieSameSite(same_site ? *same_site : ""),
         net::StringToCookiePriority(priority ? *priority : "medium"));
     if (new_cookie.IsCanonical()) {
       cookies_.push_back(std::move(new_cookie));

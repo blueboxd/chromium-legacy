@@ -139,10 +139,10 @@
 
           <template is="dom-if"
               if="[[shouldShowReauthenticationButton_(item)]]">
-            <paper-button title="[[getAccountManagerSignedOutTitle_(item)]]"
+            <cr-button title="[[getAccountManagerSignedOutTitle_(item)]]"
                 class="reauth-button" on-click="onReauthenticationTap_">
               [[getAccountManagerSignedOutLabel_(item.unmigrated)]]
-            </paper-button>
+            </cr-button>
           </template>
 
           <!-- If this is the Device Account, display the management status -->

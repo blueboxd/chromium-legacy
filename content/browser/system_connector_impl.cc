@@ -41,8 +41,10 @@ void BindReceiverOnMainThread(
 
 service_manager::Connector* GetSystemConnector() {
   auto& storage = GetConnectorStorage();
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
+  if (!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     return storage.GetValuePointer();
+  }
 
   if (!storage) {
     mojo::PendingRemote<service_manager::mojom::Connector> remote;
@@ -57,6 +59,10 @@ service_manager::Connector* GetSystemConnector() {
 }
 
 void SetSystemConnector(std::unique_ptr<service_manager::Connector> connector) {
+  if (!connector) {
+    GetConnectorStorage().reset();
+    return;
+  }
   mojo::PendingRemote<service_manager::mojom::Connector> remote;
   connector->BindConnectorRequest(remote.InitWithNewPipeAndPassReceiver());
   GetConnectorStorage().emplace(std::move(remote));

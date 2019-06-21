@@ -43,6 +43,7 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
   IPEndPoint GetResponseRemoteEndpoint() const override;
   void Start() override;
   void Kill() override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
 
  private:
   class AuthData;

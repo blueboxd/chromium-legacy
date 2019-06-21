@@ -23,6 +23,8 @@ class SwitchAccessEventHandlerDelegate
  private:
   // ash::mojom::SwitchAccessEventHandlerDelegate:
   void DispatchKeyEvent(std::unique_ptr<ui::Event> event) override;
+  void SendSwitchAccessCommand(
+      ash::mojom::SwitchAccessCommand command) override;
 
   mojo::Binding<ash::mojom::SwitchAccessEventHandlerDelegate> binding_;
 

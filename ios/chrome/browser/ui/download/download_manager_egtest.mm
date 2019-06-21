@@ -9,7 +9,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -213,7 +212,7 @@ bool WaitForDownloadButton() {
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       assertWithMatcher:grey_notNil()];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests accessibility on Download Manager UI when download is complete.
@@ -228,7 +227,7 @@ bool WaitForDownloadButton() {
 
   GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 @end

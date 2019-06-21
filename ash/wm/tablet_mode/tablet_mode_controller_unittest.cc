@@ -153,10 +153,6 @@ class TabletModeControllerTest : public AshTestBase {
 
   bool AreEventsBlocked() const { return test_api_->AreEventsBlocked(); }
 
-  TabletModeController::UiMode forced_ui_mode() const {
-    return test_api_->force_ui_mode();
-  }
-
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
   void SuspendImminent() { test_api_->SuspendImminent(); }
@@ -1053,7 +1049,6 @@ class TabletModeControllerForceTabletModeTest
 // mode to off will not turn off tablet mode. The internal keyboard and trackpad
 // should still work as it makes testing easier.
 TEST_F(TabletModeControllerForceTabletModeTest, ForceTabletModeTest) {
-  EXPECT_EQ(TabletModeController::UiMode::kTabletMode, forced_ui_mode());
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -1116,7 +1111,6 @@ class TabletModeControllerForceClamshellModeTest
 // mode is on initially, and cannot be changed by lid angle or manually entering
 // tablet mode.
 TEST_F(TabletModeControllerForceClamshellModeTest, ForceClamshellModeTest) {
-  EXPECT_EQ(TabletModeController::UiMode::kClamshell, forced_ui_mode());
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 

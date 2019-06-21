@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <unordered_set>
 
 #include "base/bind.h"
 #include "base/guid.h"
@@ -27,8 +28,13 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
  public:
   using Store = std::unique_ptr<CollectionStore<NotificationEntry>>;
 
-  ScheduledNotificationManagerImpl(Store store)
-      : store_(std::move(store)), delegate_(nullptr), weak_ptr_factory_(this) {}
+  ScheduledNotificationManagerImpl(
+      Store store,
+      const std::vector<SchedulerClientType>& clients)
+      : store_(std::move(store)),
+        clients_(clients.begin(), clients.end()),
+        delegate_(nullptr),
+        weak_ptr_factory_(this) {}
 
  private:
   void Init(Delegate* delegate, InitCallback callback) override {
@@ -45,7 +51,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     DCHECK(notification_params);
     std::string guid = notification_params->guid;
     DCHECK(!guid.empty());
-    if (notifications_.find(guid) != notifications_.end()) {
+    auto type = notification_params->type;
+
+    if (!clients_.count(type) ||
+        (notifications_.count(type) && notifications_[type].count(guid))) {
       // TODO(xingliu): Report duplicate guid failure.
       return;
     }
@@ -56,7 +65,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
         std::move(notification_params->notification_data);
     entry->schedule_params = std::move(notification_params->schedule_params);
     auto* entry_ptr = entry.get();
-    notifications_.emplace(guid, std::move(entry));
+    notifications_[type][guid] = std::move(entry);
     store_->Add(
         guid, *entry_ptr,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationAdded,
@@ -64,28 +73,37 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   }
 
   void DisplayNotification(const std::string& guid) override {
-    auto it = notifications_.find(guid);
-    if (it == notifications_.end())
+    std::unique_ptr<NotificationEntry> entry;
+    for (auto it = notifications_.begin(); it != notifications_.end(); it++) {
+      if (it->second.count(guid))
+        entry = std::move(it->second[guid]);
+    }
+    // TODO(hesen): Inform delegate failure of finding the data.
+    if (!entry)
       return;
 
-    // Move the entry to delegate, and delete it from the storage.
-    auto notification_entry = std::move(it->second);
-    notifications_.erase(guid);
+    notifications_[entry->type].erase(entry->guid);
+    if (notifications_[entry->type].empty())
+      notifications_.erase(entry->type);
+
     store_->Delete(
         guid,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));
+
     if (delegate_)
-      delegate_->DisplayNotification(std::move(notification_entry));
+      delegate_->DisplayNotification(std::move(entry));
   }
 
-  void GetAllNotifications(Notifications* notifications) override {
+  void GetAllNotifications(Notifications* notifications) const override {
     DCHECK(notifications);
     notifications->clear();
-    for (const auto& pair : notifications_) {
-      const auto& notif = pair.second;
-      DCHECK(notif);
-      (*notifications)[notif->type].emplace_back(notif.get());
+
+    for (auto it = notifications_.begin(); it != notifications_.end(); it++) {
+      auto type = it->first;
+      for (const auto& pair : it->second) {
+        (*notifications)[type].emplace_back(pair.second.get());
+      }
     }
 
     // Sort by creation time for each notification type.
@@ -94,18 +112,43 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     }
   }
 
+  void GetNotifications(
+      SchedulerClientType type,
+      std::vector<const NotificationEntry*>* notifications) const override {
+    DCHECK(notifications);
+    notifications->clear();
+    const auto it = notifications_.find(type);
+    if (it == notifications_.end())
+      return;
+    for (const auto& pair : it->second)
+      notifications->emplace_back(pair.second.get());
+  }
+
   void DeleteNotifications(SchedulerClientType type) override {
-    auto it = notifications_.begin();
-    while (it != notifications_.end()) {
+    if (!notifications_.count(type))
+      return;
+    auto it = notifications_[type].begin();
+    while (it != notifications_[type].end()) {
       const auto& entry = *it->second;
       ++it;
-      if (entry.type == type) {
-        store_->Delete(
-            entry.guid,
-            base::BindOnce(
-                &ScheduledNotificationManagerImpl::OnNotificationDeleted,
-                weak_ptr_factory_.GetWeakPtr()));
-        notifications_.erase(entry.guid);
+      store_->Delete(
+          entry.guid,
+          base::BindOnce(
+              &ScheduledNotificationManagerImpl::OnNotificationDeleted,
+              weak_ptr_factory_.GetWeakPtr()));
+    }
+    notifications_.erase(type);
+  }
+
+  // Sync with registered clients. Delete entrties in |notifications_| if
+  // their clients are deprecated.
+  void SyncRegisteredClients() {
+    auto it = notifications_.begin();
+    while (it != notifications_.end()) {
+      auto type = it->first;
+      it++;
+      if (!clients_.count(type)) {
+        DeleteNotifications(type);
       }
     }
   }
@@ -120,9 +163,11 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     for (auto it = entries.begin(); it != entries.end(); ++it) {
       std::string guid = (*it)->guid;
-      notifications_.emplace(guid, std::move(*it));
+      auto type = (*it)->type;
+      if (clients_.count(type))
+        notifications_[type].emplace(guid, std::move(*it));
     }
-
+    SyncRegisteredClients();
     std::move(callback).Run(true);
   }
 
@@ -131,20 +176,24 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   void OnNotificationDeleted(bool success) { NOTIMPLEMENTED(); }
 
   Store store_;
+  const std::unordered_set<SchedulerClientType> clients_;
   Delegate* delegate_;
-  std::map<std::string, std::unique_ptr<NotificationEntry>> notifications_;
+  std::map<SchedulerClientType,
+           std::map<std::string, std::unique_ptr<NotificationEntry>>>
+      notifications_;
 
   base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
 };
-
 }  // namespace
 
 // static
 std::unique_ptr<ScheduledNotificationManager>
 ScheduledNotificationManager::Create(
-    std::unique_ptr<CollectionStore<NotificationEntry>> store) {
-  return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store));
+    std::unique_ptr<CollectionStore<NotificationEntry>> store,
+    const std::vector<SchedulerClientType>& clients) {
+  return std::make_unique<ScheduledNotificationManagerImpl>(std::move(store),
+                                                            clients);
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;

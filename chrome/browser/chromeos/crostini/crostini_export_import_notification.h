@@ -62,7 +62,7 @@ class CrostiniExportImportNotification
   base::FilePath path_;
   Status status_ = Status::RUNNING;
   // Time when the operation started.  Used for estimating time remaining.
-  base::Time started_ = base::Time::Now();
+  base::TimeTicks started_ = base::TimeTicks::Now();
   base::string16 title_running_;
   base::string16 title_done_;
   base::string16 message_done_;

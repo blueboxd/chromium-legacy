@@ -88,6 +88,9 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void AddLayoutJankFraction(double jank_fraction);
 
+  void OnLargestContentfulPaintUpdated(base::TimeTicks text_paint_time,
+                                       uint64_t text_paint_size);
+
   void Trace(blink::Visitor*) override;
 
  private:

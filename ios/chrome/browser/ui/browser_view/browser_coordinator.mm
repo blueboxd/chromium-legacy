@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
@@ -66,6 +67,9 @@
 // The coordinator managing the container view controller.
 @property(nonatomic, strong)
     BrowserContainerCoordinator* browserContainerCoordinator;
+
+// Mediator between OpenIn TabHelper and OpenIn UI.
+@property(nonatomic, strong) OpenInMediator* openInMediator;
 
 // =================================================
 // Child Coordinators, listed in alphabetical order.
@@ -180,6 +184,8 @@
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.passKitCoordinator stop];
+
+  [self.openInMediator disableAll];
 
   [self.printController dismissAnimated:YES];
 
@@ -463,6 +469,9 @@
 
 // Installs delegates for each WebState in WebStateList.
 - (void)installDelegatesForAllWebStates {
+  self.openInMediator =
+      [[OpenInMediator alloc] initWithWebStateList:self.tabModel.webStateList];
+
   for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
     web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
     [self installDelegatesForWebState:webState];

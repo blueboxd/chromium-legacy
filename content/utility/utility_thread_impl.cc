@@ -143,8 +143,6 @@ void UtilityThreadImpl::Init() {
   service_factory_.reset(new UtilityServiceFactory);
 
   if (connection) {
-    GetContentClient()->OnServiceManagerConnected(connection);
-
     // NOTE: You must register any ConnectionFilter instances on |connection|
     // *before* this call to |Start()|, otherwise incoming interface requests
     // may race with the registration.

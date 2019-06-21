@@ -20,6 +20,7 @@
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
@@ -81,7 +82,7 @@ constexpr int kAppInfoDialogWidth = 512;
 constexpr int kAppInfoDialogHeight = 384;
 
 // The animation duration for app list movement.
-constexpr float kAppListAnimationDurationTestMs = 0;
+constexpr float kAppListAnimationDurationImmediateMs = 0;
 constexpr float kAppListAnimationDurationMs = 200;
 constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
@@ -684,9 +685,7 @@ void AppListView::SetDragAndDropHostOfCurrentAppList(
 
 void AppListView::Dismiss() {
   CloseKeyboardIfVisible();
-  SetState(ash::AppListViewState::kClosed);
   delegate_->DismissAppList();
-  GetWidget()->Deactivate();
 }
 
 void AppListView::CloseOpenedPage() {
@@ -1500,21 +1499,30 @@ void AppListView::SetState(ash::AppListViewState new_state) {
 }
 
 void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
-  // The close animation is started by the delegate.
-  if (target_state == ash::AppListViewState::kClosed)
-    return;
-
   int animation_duration = kAppListAnimationDurationMs;
-  if (ShortAnimationsForTesting()) {
-    animation_duration = kAppListAnimationDurationTestMs;
+  if (ShortAnimationsForTesting() || is_side_shelf_ ||
+      (target_state == ash::AppListViewState::kClosed &&
+       delegate_->ShouldDismissImmediately())) {
+    animation_duration = kAppListAnimationDurationImmediateMs;
   } else if (is_fullscreen() ||
              target_state == ash::AppListViewState::kFullscreenAllApps ||
              target_state == ash::AppListViewState::kFullscreenSearch) {
+    // Animate over more time to or from a fullscreen state, to maintain a
+    // similar speed.
     animation_duration = kAppListAnimationDurationFromFullscreenMs;
   }
-
-  if (GetWidget()->GetNativeView()->bounds().y() ==
-      GetDisplayNearestView().work_area().bottom()) {
+  if (target_state == ash::AppListViewState::kClosed) {
+    // If animating from PEEKING, animate the opacity twice as fast so the
+    // SearchBoxView does not flash behind the shelf.
+    int child_animation_duration = animation_duration;
+    if (app_list_state_ == ash::AppListViewState::kPeeking ||
+        app_list_state_ == ash::AppListViewState::kClosed) {
+      child_animation_duration /= 2;
+    }
+    app_list_main_view_->contents_view()->FadeOutOnClose(
+        base::TimeDelta::FromMilliseconds(child_animation_duration));
+  } else if (GetWidget()->GetNativeView()->bounds().y() ==
+             GetDisplayNearestView().work_area().bottom()) {
     // If the animation start position is the bottom of the screen, activate the
     // fade in animation. This prevents the search box from flashing at the
     // bottom of the screen as it goes behind the shelf.
@@ -1523,14 +1531,11 @@ void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
   }
 
   ApplyBoundsAnimation(target_state,
-                       base::TimeDelta::FromMilliseconds(animation_duration),
-                       nullptr);
+                       base::TimeDelta::FromMilliseconds(animation_duration));
 }
 
-void AppListView::ApplyBoundsAnimation(
-    ash::AppListViewState target_state,
-    base::TimeDelta duration_ms,
-    ui::ImplicitAnimationObserver* observer) {
+void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
+                                       base::TimeDelta duration_ms) {
   base::AutoReset<bool> auto_reset(
       &update_childview_each_frame_,
       ShouldUpdateChildViewsDuringAnimation(target_state));
@@ -1538,11 +1543,14 @@ void AppListView::ApplyBoundsAnimation(
   // Reset animation metrics reporter when animation is started.
   ResetTransitionMetricsReporter();
 
+  ui::ImplicitAnimationObserver* animation_observer =
+      delegate_->GetAnimationObserver(target_state);
+
   if (is_side_shelf_) {
     // There is no animation in side shelf.
     OnBoundsAnimationCompleted();
-    if (observer)
-      observer->OnImplicitAnimationsCompleted();
+    if (animation_observer)
+      animation_observer->OnImplicitAnimationsCompleted();
     return;
   }
 
@@ -1591,10 +1599,10 @@ void AppListView::ApplyBoundsAnimation(
                            bounds_animation_observer_.get());
   bounds_animation_observer_->set_target_state(target_state);
   animation.AddObserver(bounds_animation_observer_.get());
-  if (observer) {
+  if (animation_observer) {
     // The presenter supplies an animation observer on closing.
     DCHECK_EQ(ash::AppListViewState::kClosed, target_state);
-    animation.AddObserver(observer);
+    animation.AddObserver(animation_observer);
   }
 
   if (update_childview_each_frame_) {
@@ -1603,22 +1611,6 @@ void AppListView::ApplyBoundsAnimation(
   } else {
     layer->SetTransform(gfx::Transform());
   }
-}
-
-void AppListView::StartCloseAnimation(base::TimeDelta animation_duration,
-                                      ui::ImplicitAnimationObserver* observer) {
-  ApplyBoundsAnimation(ash::AppListViewState::kClosed, animation_duration,
-                       observer);
-
-  // If animating from PEEKING, animate the opacity twice as fast so the
-  // SearchBoxView does not flash behind the shelf.
-  if (app_list_state_ == ash::AppListViewState::kPeeking ||
-      app_list_state_ == ash::AppListViewState::kClosed) {
-    animation_duration /= 2;
-  }
-
-  SetState(ash::AppListViewState::kClosed);
-  app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
 void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,

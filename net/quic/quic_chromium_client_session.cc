@@ -395,13 +395,12 @@ void QuicChromiumClientSession::Handle::ResetPromised(
 }
 
 std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher>
-QuicChromiumClientSession::Handle::CreatePacketBundler(
-    quic::QuicConnection::AckBundling bundling_mode) {
+QuicChromiumClientSession::Handle::CreatePacketBundler() {
   if (!session_)
     return nullptr;
 
   return std::make_unique<quic::QuicConnection::ScopedPacketFlusher>(
-      session_->connection(), bundling_mode);
+      session_->connection());
 }
 
 bool QuicChromiumClientSession::Handle::SharesSameSession(
@@ -855,7 +854,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
     // destroyed.
-    connection()->CloseConnection(quic::QUIC_INTERNAL_ERROR,
+    connection()->CloseConnection(quic::QUIC_PEER_GOING_AWAY,
                                   "session torn down",
                                   quic::ConnectionCloseBehavior::SILENT_CLOSE);
   }

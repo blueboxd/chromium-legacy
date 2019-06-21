@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -102,16 +103,20 @@ void TextPaintTimingDetector::UpdateCandidate() {
       largest_text_record ? largest_text_record->paint_time : base::TimeTicks();
   const uint64_t size =
       largest_text_record ? largest_text_record->first_size : 0;
-  bool changed =
-      frame_view_->GetPaintTimingDetector().NotifyIfChangedLargestTextPaint(
-          time, size);
+  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
+  bool changed = detector.NotifyIfChangedLargestTextPaint(time, size);
   if (!changed)
     return;
 
-  if (largest_text_record && !largest_text_record->paint_time.is_null())
+  if (largest_text_record && !largest_text_record->paint_time.is_null()) {
+    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
+      lcp_calculator->OnLargestTextUpdated(largest_text_record);
     ReportCandidateToTrace(*largest_text_record);
-  else
+  } else {
+    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
+      lcp_calculator->OnLargestTextUpdated(nullptr);
     ReportNoCandidateToTrace();
+  }
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {

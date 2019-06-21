@@ -173,9 +173,9 @@
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -288,9 +288,7 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    // In Mash, power policy is sent to powerd by ash.
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Initialize(PowerManagerClient::Get());
+    PowerPolicyController::Initialize(PowerManagerClient::Get());
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
                                 ? nullptr
@@ -406,8 +404,7 @@ class DBusServices {
     drive_file_stream_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Shutdown();
+    PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
   }
 
@@ -628,7 +625,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   system_token_certdb_initializer_->Initialize();
 
   CrasAudioHandler::Initialize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content::GetSystemConnector(),
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
@@ -744,22 +741,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
-  audio::SoundsManager::Create(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+  audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
 
   // |arc_service_launcher_| must be initialized before NoteTakingHelper.
   NoteTakingHelper::Initialize();
 
   AccessibilityManager::Initialize();
 
-  if (!::features::IsMultiProcessMash()) {
-    // Initialize magnification manager before ash tray is created. And this
-    // must be placed after UserManager::SessionStarted();
-    // TODO(crbug.com/821551): Mash support.
-    MagnificationManager::Initialize();
-  }
+  // Initialize magnification manager before ash tray is created. And this
+  // must be placed after UserManager::SessionStarted();
+  MagnificationManager::Initialize();
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -1049,7 +1040,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -1122,8 +1113,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (LoginScreenExtensionUiHandler::Get(false /*can_create*/))
     LoginScreenExtensionUiHandler::Shutdown();
 
-  if (!::features::IsMultiProcessMash())
-    MagnificationManager::Shutdown();
+  MagnificationManager::Shutdown();
 
   audio::SoundsManager::Shutdown();
 
@@ -1189,9 +1179,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  // TODO(crbug.com/594887): Mash support.
-  if (!::features::IsMultiProcessMash())
-    AccessibilityManager::Shutdown();
+  AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
 

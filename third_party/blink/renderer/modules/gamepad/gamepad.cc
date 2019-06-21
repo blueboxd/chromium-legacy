@@ -35,8 +35,8 @@ namespace blink {
 
 Gamepad::Gamepad(Client* client,
                  unsigned index,
-                 TimeTicks time_origin,
-                 TimeTicks time_floor)
+                 base::TimeTicks time_origin,
+                 base::TimeTicks time_floor)
     : client_(client),
       index_(index),
       timestamp_(0.0),
@@ -189,8 +189,9 @@ void Gamepad::SetHand(const device::GamepadHand& hand) {
 // Convert the raw timestamp from the device to a relative one and apply the
 // floor.
 void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
-  TimeTicks last_updated =
-      TimeTicks() + TimeDelta::FromMicroseconds(device_gamepad.timestamp);
+  base::TimeTicks last_updated =
+      base::TimeTicks() +
+      base::TimeDelta::FromMicroseconds(device_gamepad.timestamp);
   if (last_updated < time_floor_)
     last_updated = time_floor_;
 
@@ -198,7 +199,7 @@ void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
       time_origin_, last_updated, false);
 
   if (device_gamepad.is_xr) {
-    TimeTicks now = TimeTicks::Now();
+    base::TimeTicks now = base::TimeTicks::Now();
     TRACE_COUNTER1("input", "XR gamepad pose age (ms)",
                    (now - last_updated).InMilliseconds());
   }

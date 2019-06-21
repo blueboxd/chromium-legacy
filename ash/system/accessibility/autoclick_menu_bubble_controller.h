@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 #define ASH_SYSTEM_ACCESSIBILITY_AUTOCLICK_MENU_BUBBLE_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -15,8 +16,9 @@ namespace ash {
 class AutoclickScrollBubbleController;
 
 // Manages the bubble which contains an AutoclickMenuView.
-class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
-                                      public LocaleChangeObserver {
+class ASH_EXPORT AutoclickMenuBubbleController
+    : public TrayBubbleView::Delegate,
+      public LocaleChangeObserver {
  public:
   AutoclickMenuBubbleController();
   ~AutoclickMenuBubbleController() override;
@@ -26,6 +28,9 @@ class AutoclickMenuBubbleController : public TrayBubbleView::Delegate,
 
   // Sets the menu's position on the screen.
   void SetPosition(mojom::AutoclickMenuPosition position);
+
+  // Set the scroll menu's position on the screen.
+  void SetScrollPoint(gfx::Point scroll_location_in_dips);
 
   void ShowBubble(mojom::AutoclickEventType event_type,
                   mojom::AutoclickMenuPosition position);

@@ -37,7 +37,7 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -77,10 +77,7 @@ class ScreenLockerUnitTest : public testing::Test {
     observer_ = std::make_unique<audio::TestObserver>((base::DoNothing()));
     audio::AudioStreamHandler::SetObserverForTesting(observer_.get());
 
-    audio::SoundsManager::Create(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+    audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
     input_method::InputMethodManager::Initialize(
         // Owned by InputMethodManager
         new input_method::MockInputMethodManagerImpl());

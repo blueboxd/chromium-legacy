@@ -80,6 +80,7 @@ class AutocompleteMediator
     }
 
     private static final String TAG = "cr_Autocomplete";
+    private static final int SUGGESTION_NOT_FOUND = -1;
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
@@ -532,8 +533,14 @@ class AutocompleteMediator
             };
             return;
         }
-        SuggestionViewInfo info = mCurrentModels.get(position);
-        info.processor.recordSuggestionUsed(info.suggestion, info.model);
+
+        // Note: this call is typically scheduled for execution, rather than invoked directly.
+        // In some situations this means the content of mCurrentModels may change meanwhile.
+        int verifiedIndex = findSuggestionInModel(suggestion, position);
+        if (verifiedIndex != SUGGESTION_NOT_FOUND) {
+            SuggestionViewInfo info = mCurrentModels.get(verifiedIndex);
+            info.processor.recordSuggestionUsed(info.suggestion, info.model);
+        }
 
         loadUrlFromOmniboxMatch(position, suggestion, mLastActionUpTimestamp, true);
         mDelegate.hideKeyboard();
@@ -650,7 +657,6 @@ class AutocompleteMediator
      * @param skipCheck Whether to skip an out of bounds check.
      * @return The url to navigate to.
      */
-    @SuppressWarnings("ReferenceEquality")
     private String updateSuggestionUrlIfNeeded(
             OmniboxSuggestion suggestion, int selectedIndex, boolean skipCheck) {
         // Only called once we have suggestions, and don't have a listener though which we can
@@ -660,25 +666,13 @@ class AutocompleteMediator
 
         if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST) return suggestion.getUrl();
 
-        int verifiedIndex = -1;
+        int verifiedIndex = SUGGESTION_NOT_FOUND;
         if (!skipCheck) {
-            if (getSuggestionCount() > selectedIndex
-                    && getSuggestionAt(selectedIndex) == suggestion) {
-                verifiedIndex = selectedIndex;
-            } else {
-                // Underlying omnibox results may have changed since the selection was made,
-                // find the suggestion item, if possible.
-                for (int i = 0; i < getSuggestionCount(); i++) {
-                    if (suggestion.equals(getSuggestionAt(i))) {
-                        verifiedIndex = i;
-                        break;
-                    }
-                }
-            }
+            verifiedIndex = findSuggestionInModel(suggestion, selectedIndex);
         }
 
         // If we do not have the suggestion as part of our results, skip the URL update.
-        if (verifiedIndex == -1) return suggestion.getUrl();
+        if (verifiedIndex == SUGGESTION_NOT_FOUND) return suggestion.getUrl();
 
         // TODO(mariakhomenko): Ideally we want to update match destination URL with new aqs
         // for query in the omnibox and voice suggestions, but it's currently difficult to do.
@@ -689,6 +683,34 @@ class AutocompleteMediator
                 verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);
 
         return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
+    }
+
+    /**
+     * Check if the supplied suggestion is still in the current model and return its index.
+     *
+     * This call should be used to confirm that model has not been changed ahead of an event being
+     * called by all the methods that are dispatched rather than called directly.
+     *
+     * @param suggestion Suggestion to look for.
+     * @param index Last known position of the suggestion.
+     * @return Current index of the supplied suggestion, or SUGGESTION_NOT_FOUND if it is no longer
+     *         part of the model.
+     */
+    @SuppressWarnings("ReferenceEquality")
+    private int findSuggestionInModel(OmniboxSuggestion suggestion, int position) {
+        if (getSuggestionCount() > position && getSuggestionAt(position) == suggestion) {
+            return position;
+        }
+
+        // Underlying omnibox results may have changed since the selection was made,
+        // find the suggestion item, if possible.
+        for (int index = 0; index < getSuggestionCount(); index++) {
+            if (suggestion.equals(getSuggestionAt(index))) {
+                return index;
+            }
+        }
+
+        return SUGGESTION_NOT_FOUND;
     }
 
     /**

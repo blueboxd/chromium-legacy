@@ -55,6 +55,10 @@ public class Profile {
         return nativeHasOffTheRecordProfile(mNativeProfileAndroid);
     }
 
+    public ProfileKey getProfileKey() {
+        return (ProfileKey) nativeGetProfileKey(mNativeProfileAndroid);
+    }
+
     public boolean isOffTheRecord() {
         return mIsOffTheRecord;
     }
@@ -108,4 +112,5 @@ public class Profile {
     private native boolean nativeIsOffTheRecord(long nativeProfileAndroid);
     private native boolean nativeIsChild(long nativeProfileAndroid);
     private native void nativeWipe(long nativeProfileAndroid);
+    private native Object nativeGetProfileKey(long nativeProfileAndroid);
 }

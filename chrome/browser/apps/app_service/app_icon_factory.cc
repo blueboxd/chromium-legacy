@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -166,7 +166,7 @@ void RunCallbackWithCompressedDataToUncompressWithFallback(
     return;
   }
   data_decoder::DecodeImage(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(), data,
+      content::GetSystemConnector(), data,
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
       base::BindOnce(&RunCallbackWithUncompressedSkBitmap, size_hint_in_dip,

@@ -243,6 +243,35 @@ Message::Message(uint32_t name,
   serialized_ = true;
 }
 
+Message::Message(base::span<const uint8_t> payload,
+                 base::span<ScopedHandle> handles) {
+  MojoResult rv = mojo::CreateMessage(&handle_);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+  DCHECK(handle_.is_valid());
+
+  void* buffer;
+  uint32_t buffer_size;
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(payload.size()));
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(handles.size()));
+  MojoAppendMessageDataOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_APPEND_MESSAGE_DATA_FLAG_COMMIT_SIZE;
+  rv = MojoAppendMessageData(
+      handle_->value(), static_cast<uint32_t>(payload.size()),
+      reinterpret_cast<MojoHandle*>(handles.data()),
+      static_cast<uint32_t>(handles.size()), &options, &buffer, &buffer_size);
+  DCHECK_EQ(MOJO_RESULT_OK, rv);
+  // Handle ownership has been taken by MojoAppendMessageData.
+  for (auto& handle : handles)
+    ignore_result(handle.release());
+
+  payload_buffer_ = internal::Buffer(buffer, payload.size(), payload.size());
+  std::copy(payload.begin(), payload.end(),
+            static_cast<uint8_t*>(payload_buffer_.data()));
+  transferable_ = true;
+  serialized_ = true;
+}
+
 // static
 Message Message::CreateFromMessageHandle(ScopedMessageHandle* message_handle) {
   DCHECK(message_handle);

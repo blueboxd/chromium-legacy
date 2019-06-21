@@ -351,7 +351,7 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
           blink::Platform::Current()->GetBrowserServiceName(), &clipboard_);
     }
     base::string16 text;
-    clipboard_->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
+    clipboard_->ReadText(ui::ClipboardType::kCopyPaste, &text);
 
     instance_->ReplaceSelection(base::UTF16ToUTF8(text));
     return true;

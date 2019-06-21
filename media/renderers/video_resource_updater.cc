@@ -539,20 +539,11 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                       coded_size.height());
       gfx::Size uv_tex_size(u_width, u_height);
 
+      DCHECK_EQ(frame_resources_.size(),
+                VideoFrame::NumPlanes(frame->format()));
       if (frame->HasTextures()) {
-        if (frame->format() == PIXEL_FORMAT_NV12) {
-          DCHECK_EQ(2u, frame_resources_.size());
-        } else {
-          DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
-          DCHECK_EQ(3u,
-                    frame_resources_.size());  // Alpha is not supported yet.
-        }
-      } else {
-        DCHECK_GE(frame_resources_.size(), 3u);
-        DCHECK(frame_resources_.size() <= 3 ||
-               ya_tex_size == VideoFrame::PlaneSize(frame->format(),
-                                                    VideoFrame::kAPlane,
-                                                    coded_size));
+        DCHECK(frame->format() == PIXEL_FORMAT_NV12 ||
+               frame->format() == PIXEL_FORMAT_I420);
       }
 
       // Compute the UV sub-sampling factor based on the ratio between

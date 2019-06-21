@@ -339,6 +339,18 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   if (style.HasTextCombine() && !style.IsHorizontalWritingMode())
     return true;
 
+  if (style.InsideNGFragmentationContext()) {
+    // If we're inside an NG block fragmentation context, all fragmentable boxes
+    // must be laid out by NG natively. We only allow legacy layout objects if
+    // they are monolithic (e.g. replaced content, inline-table, and so
+    // on). Inline display types end up on a line, and are therefore monolithic,
+    // so we can allow those.
+    if (!style.IsDisplayInlineType()) {
+      if (style.IsDisplayTableType() || style.IsDisplayFlexibleOrGridBox())
+        return true;
+    }
+  }
+
   return false;
 }
 
@@ -3733,6 +3745,15 @@ void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
     // forced legacy layout in the ancestry, e.g. if this element no longer
     // establishes a new formatting context.
     ForceLegacyLayoutInFormattingContext(new_style);
+
+    // If we're inside an NG fragmentation context, we also need the entire
+    // fragmentation context to fall back to legacy layout. Note that once this
+    // has happened, the fragmentation context will be locked to legacy layout,
+    // even if all the reasons for requiring it in the first place disappear
+    // (e.g. if the only reason was a table, and that table is removed, we'll
+    // still be using legacy layout).
+    if (new_style.InsideNGFragmentationContext())
+      ForceLegacyLayoutInFragmentationContext(new_style);
   } else if (old_force) {
     // TODO(mstensho): If we have ancestors that got legacy layout just because
     // of this child, we should clean it up, and switch the subtree back to NG,
@@ -3758,6 +3779,38 @@ void Element::ForceLegacyLayoutInFormattingContext(
     ancestor->SetShouldForceLegacyLayoutForChild(true);
     ancestor->SetNeedsReattachLayoutTree();
   }
+}
+
+void Element::ForceLegacyLayoutInFragmentationContext(
+    const ComputedStyle& new_style) {
+  // This element cannot be laid out natively by LayoutNG. We now need to switch
+  // all enclosing block fragmentation contexts over to using legacy
+  // layout. Find the element that establishes the fragmentation context, and
+  // switch it over to legacy layout. Note that we walk the parent chain here,
+  // and not the containing block chain. This means that we may get false
+  // positives; e.g. if there's an absolutely positioned table, whose containing
+  // block of the table is on the outside of the fragmentation context, we're
+  // still going to fall back to legacy.
+  Element* parent;
+  for (Element* walker = this; walker; walker = parent) {
+    parent = ToElementOrNull(LayoutTreeBuilderTraversal::Parent(*walker));
+    if (!walker->GetComputedStyle()->SpecifiesColumns())
+      continue;
+
+    // Found an element that establishes a fragmentation context. Force it to do
+    // legacy layout. Keep looking for outer fragmentation contexts, since we
+    // need to force them over to legacy as well.
+    walker->SetShouldForceLegacyLayoutForChild(true);
+    walker->SetNeedsReattachLayoutTree();
+    if (parent && !parent->GetComputedStyle()->InsideNGFragmentationContext())
+      return;
+  }
+  DCHECK(GetDocument().Printing());
+  // Force legacy layout on the entire document, since we're printing, and
+  // there's some fragmentable box that needs legacy layout inside somewhere.
+  Element* root = GetDocument().documentElement();
+  root->SetShouldForceLegacyLayoutForChild(true);
+  root->SetNeedsReattachLayoutTree();
 }
 
 bool Element::IsFocusedElementInDocument() const {

@@ -154,6 +154,19 @@ void CorsURLLoader::FollowRedirect(
     return;
   }
 
+  // Does not allow modifying headers that are stored in |cors_exempt_headers|.
+  for (const auto& header : modified_headers.GetHeaderVector()) {
+    if (request_.cors_exempt_headers.HasHeader(header.key)) {
+      LOG(WARNING) << "A client is trying to modify header value for '"
+                   << header.key << "', but it is not permitted.";
+      HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+      return;
+    }
+  }
+
+  LogConcerningRequestHeaders(modified_headers,
+                              true /* added_during_redirect */);
+
   for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
     request_.cors_exempt_headers.RemoveHeader(name);

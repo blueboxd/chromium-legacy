@@ -2074,6 +2074,8 @@ source_set("chromeos") {
     "wilco_dtc_supportd/wilco_dtc_supportd_manager.h",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging.h",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.cc",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h",
 
@@ -2525,6 +2527,7 @@ source_set("unit_tests") {
     "login/screens/network_screen_unittest.cc",
     "login/screens/recommend_apps/recommend_apps_fetcher_impl_unittest.cc",
     "login/screens/update_screen_unittest.cc",
+    "login/session/user_session_manager_test.cc",
     "login/signin_partition_manager_unittest.cc",
     "login/supervised/supervised_user_authentication_unittest.cc",
     "login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate_unittest.cc",
@@ -2688,6 +2691,7 @@ source_set("unit_tests") {
     "wilco_dtc_supportd/wilco_dtc_supportd_bridge_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_manager_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_messaging_unittest.cc",
+    "wilco_dtc_supportd/wilco_dtc_supportd_notification_controller_unittest.cc",
     "wilco_dtc_supportd/wilco_dtc_supportd_web_request_service_unittest.cc",
 
     # TODO(zturner): Enable this on Windows. See

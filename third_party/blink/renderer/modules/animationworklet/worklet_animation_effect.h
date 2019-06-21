@@ -17,7 +17,7 @@ class MODULES_EXPORT WorkletAnimationEffect : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  WorkletAnimationEffect(base::Optional<TimeDelta> local_time,
+  WorkletAnimationEffect(base::Optional<base::TimeDelta> local_time,
                          const Timing& timing);
 
   // This function is named getTiming() as opposed to getEffectTiming() because
@@ -29,10 +29,10 @@ class MODULES_EXPORT WorkletAnimationEffect : public ScriptWrappable {
 
   void setLocalTime(double time_ms, bool is_null);
   double localTime(bool& is_null) const;
-  base::Optional<WTF::TimeDelta> local_time() const;
+  base::Optional<base::TimeDelta> local_time() const;
 
  private:
-  base::Optional<WTF::TimeDelta> local_time_;
+  base::Optional<base::TimeDelta> local_time_;
   // We chose to not call this variable "timing_" to avoid confusion with the
   // above function call getTiming() which returns a pointer to an EffectTiming
   // object, as is defined in worklet_animation_effect.idl.

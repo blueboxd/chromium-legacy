@@ -277,9 +277,8 @@ NSString* const kActivityServicesSnackbarCategory =
     active_time = l10n_util::GetNSString(
         IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_TODAY);
   } else if (days == 1) {
-    active_time = l10n_util::GetNSStringF(
-        IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAY,
-        base::NumberToString16(days));
+    active_time = l10n_util::GetNSString(
+        IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAY);
   } else {
     active_time = l10n_util::GetNSStringF(
         IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ITEM_SUBTITLE_DAYS,

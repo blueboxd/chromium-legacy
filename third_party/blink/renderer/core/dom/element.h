@@ -1170,6 +1170,12 @@ class CORE_EXPORT Element : public ContainerNode {
   // within a formatting context.
   void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
+  // If this element requires legacy layout, and we're inside a fragmentation
+  // context, we need to force legacy layout for the entire fragmentation
+  // context. LayoutNG block fragmentation and legacy block fragmentation cannot
+  // cooperate within a fragmentation context.
+  void ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+
   Member<ElementData> element_data_;
 };
 

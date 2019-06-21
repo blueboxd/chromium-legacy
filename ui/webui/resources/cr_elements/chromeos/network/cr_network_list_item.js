@@ -43,7 +43,11 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /** Expose the itemName so it can be used as a label for a11y.  */
+    /**
+     * Expose the itemName so it can be used as a label for a11y.  It will be
+     * added as an attribute on this top-level cr-network-list-item, and can
+     * be used by any sub-element which applies it.
+     */
     ariaLabel: {
       type: String,
       notify: true,

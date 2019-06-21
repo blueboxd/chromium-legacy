@@ -9,12 +9,10 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/win/win_util.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
@@ -28,13 +26,6 @@ namespace {
 base::Feature kWinOOPSelectFileDialog{"WinOOPSelectFileDialog",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace
-
-std::unique_ptr<service_manager::Connector> GetConnectorOnUIThread() {
-  return content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->Clone();
-}
-// static
 
 // Helper class to execute a select file operation on a utility process. It
 // hides the complexity of managing the lifetime of the connection to the
@@ -63,18 +54,6 @@ class UtilWinHelper {
       const base::string16& default_extension,
       HWND owner,
       ui::OnSelectFileExecutedCallback on_select_file_executed_callback);
-
-  // Invoked back on the sequence this instance was created on when the
-  // connector is received from the UI thread.
-  void OnConnectorReceived(
-      ui::SelectFileDialog::Type type,
-      const base::string16& title,
-      const base::FilePath& default_path,
-      const std::vector<ui::FileFilterSpec>& filter,
-      int file_type_index,
-      const base::string16& default_extension,
-      HWND owner,
-      std::unique_ptr<service_manager::Connector> connector);
 
   // Connection error handler for the interface pipe.
   void OnConnectionError();
@@ -123,25 +102,8 @@ UtilWinHelper::UtilWinHelper(
     ui::OnSelectFileExecutedCallback on_select_file_executed_callback)
     : on_select_file_executed_callback_(
           std::move(on_select_file_executed_callback)) {
-  // A valid connector is required to create the interface pointer.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&GetConnectorOnUIThread),
-      base::BindOnce(&UtilWinHelper::OnConnectorReceived,
-                     base::Unretained(this), type, title, default_path, filter,
-                     file_type_index, default_extension, owner));
-}
-
-void UtilWinHelper::OnConnectorReceived(
-    ui::SelectFileDialog::Type type,
-    const base::string16& title,
-    const base::FilePath& default_path,
-    const std::vector<ui::FileFilterSpec>& filter,
-    int file_type_index,
-    const base::string16& default_extension,
-    HWND owner,
-    std::unique_ptr<service_manager::Connector> connector) {
-  connector->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
+  content::GetSystemConnector()->BindInterface(
+      chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
 
   // |util_win_ptr_| owns the callbacks and is guaranteed to be destroyed before
   // |this|, therefore making base::Unretained() safe to use.

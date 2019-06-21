@@ -14,6 +14,7 @@
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gl/gl_enums.h"
 
 namespace viz {
 
@@ -22,7 +23,9 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferFormat buffer_format)
-    : GLOutputSurface(context_provider, surface_handle) {
+    : GLOutputSurface(context_provider, surface_handle),
+      current_texture_(0u),
+      fbo_(0u) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
@@ -37,14 +40,39 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   buffer_queue_ = std::make_unique<BufferQueue>(
       context_provider->ContextGL(), buffer_format, gpu_memory_buffer_manager,
       surface_handle, context_provider->ContextCapabilities());
-  buffer_queue_->Initialize();
+  context_provider_->ContextGL()->GenFramebuffers(1, &fbo_);
 }
 
-GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() = default;
+GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
+  DCHECK_NE(0u, fbo_);
+  context_provider_->ContextGL()->DeleteFramebuffers(1, &fbo_);
+}
 
 void GLOutputSurfaceBufferQueue::BindFramebuffer() {
+  auto* gl = context_provider_->ContextGL();
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   DCHECK(buffer_queue_);
-  buffer_queue_->BindFramebuffer();
+  unsigned stencil;
+  current_texture_ = buffer_queue_->GetCurrentBuffer(&stencil);
+  if (!current_texture_)
+    return;
+  // TODO(andrescj): if the texture hasn't changed since the last call to
+  // BindFrameBuffer(), we may be able to avoid mutating the FBO which may lead
+  // to performance improvements.
+  gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           buffer_queue_->texture_target(), current_texture_,
+                           0);
+
+#if DCHECK_IS_ON() && defined(OS_CHROMEOS)
+  const GLenum result = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (result != GL_FRAMEBUFFER_COMPLETE)
+    DLOG(ERROR) << " Incomplete fb: " << gl::GLEnums::GetStringError(result);
+#endif
+
+  if (stencil) {
+    gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, stencil);
+  }
 }
 
 // We call this on every frame that a value changes, but changing the size once
@@ -61,7 +89,15 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   reshape_size_ = size;
   GLOutputSurface::Reshape(size, device_scale_factor, color_space, has_alpha,
                            use_stencil);
-  buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
+  if (buffer_queue_->Reshape(size, device_scale_factor, color_space,
+                             use_stencil)) {
+    auto* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             buffer_queue_->texture_target(), 0, 0);
+    gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, 0);
+  }
 }
 
 void GLOutputSurfaceBufferQueue::SetDrawRectangle(const gfx::Rect& damage) {
@@ -93,7 +129,8 @@ bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
 }
 
 unsigned GLOutputSurfaceBufferQueue::GetOverlayTextureId() const {
-  return buffer_queue_->GetCurrentTextureId();
+  DCHECK(current_texture_);
+  return current_texture_;
 }
 
 gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
@@ -107,7 +144,9 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
   if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    buffer_queue_->RecreateBuffers();
+    unsigned current_surface_texture = buffer_queue_->RecreateBuffers();
+    if (current_surface_texture)
+      BindFramebuffer();
     force_swap = true;
   }
 

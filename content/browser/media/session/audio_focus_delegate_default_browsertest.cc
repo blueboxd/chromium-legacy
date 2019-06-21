@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
@@ -36,10 +36,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_ptr_));
+    GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
+                                        mojo::MakeRequest(&audio_focus_ptr_));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -45,6 +45,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @override */
   addCupsPrinter(newPrinter) {
     this.methodCalled('addCupsPrinter', newPrinter);
+    return Promise.resolve(PrinterSetupResult.SUCCESS);
   }
 
   /** @override */
@@ -97,6 +98,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @override */
   updateCupsPrinter(printerId, printerName) {
     this.methodCalled('updateCupsPrinter', [printerId, printerName]);
+    return Promise.resolve(PrinterSetupResult.EDIT_SUCCESS);
   }
 
   /** @override */
@@ -108,6 +110,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @override */
   reconfigureCupsPrinter(printer) {
     this.methodCalled('reconfigureCupsPrinter', printer);
+    return Promise.resolve(PrinterSetupResult.EDIT_SUCCESS);
   }
 
   /** @override */

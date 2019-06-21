@@ -9,13 +9,13 @@ class DisplayPanel extends HTMLElement {
   constructor() {
     DisplayPanel.createElement_.call(super());
 
-    /** @private {!HTMLElement} */
+    /** @private {?Element} */
     this.summary_ = this.shadowRoot.querySelector('#summary');
 
-    /** @private {!HTMLElement} */
+    /** @private {?Element} */
     this.separator_ = this.shadowRoot.querySelector('#separator');
 
-    /** @private {!HTMLElement} */
+    /** @private {?Element} */
     this.panels_ = this.shadowRoot.querySelector('#panels');
 
     /**
@@ -54,6 +54,7 @@ class DisplayPanel extends HTMLElement {
   /**
    * Get the custom element template string.
    * @private
+   * @return {string}
    */
   static html_() {
     return `<style>
@@ -109,7 +110,7 @@ class DisplayPanel extends HTMLElement {
 
   /**
    * Update the summary panel item progress indicator.
-   * @private
+   * @public
    */
   updateProgress() {
     let total = 0;
@@ -131,7 +132,7 @@ class DisplayPanel extends HTMLElement {
 
   /**
    * Update the summary panel.
-   * @private
+   * @public
    */
   updateSummaryPanel() {
     let summaryHost = this.shadowRoot.querySelector('#summary');
@@ -208,7 +209,7 @@ class DisplayPanel extends HTMLElement {
 
   /**
    * Find a panel with given 'id'.
-   * @private
+   * @public
    */
   findPanelItemById(id) {
     const panel = this.shadowRoot.querySelector('xf-panel-item[id=' + id + ']');

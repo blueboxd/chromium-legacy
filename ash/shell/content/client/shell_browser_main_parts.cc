@@ -30,8 +30,8 @@
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -84,15 +84,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   chromeos::PowerPolicyController::Initialize(
       chromeos::PowerManagerClient::Get());
 
-  service_manager::Connector* const connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-
   ui::MaterialDesignController::Initialize();
   ash::ShellInitParams init_params;
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  init_params.connector = connector;
+  init_params.connector = content::GetSystemConnector();
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
   ash::Shell::CreateInstance(std::move(init_params));
 

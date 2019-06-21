@@ -14,6 +14,7 @@
 namespace chromeos {
 
 class Printer;
+class UsbPrinterId;
 
 base::string16 GetManufacturerName(
     const device::mojom::UsbDeviceInfo& device_info);
@@ -32,6 +33,12 @@ bool UsbDeviceIsPrinter(const device::mojom::UsbDeviceInfo& device_info);
 // Returns nullptr and logs an error on failure.
 std::unique_ptr<Printer> UsbDeviceToPrinter(
     const device::mojom::UsbDeviceInfo& device_info);
+
+// Expects |device_ptr| to be linked to a Printer-class USB Device. Queries the
+// printer for its IEEE 1284 Standard Device ID.
+using GetDeviceIdCallback = base::OnceCallback<void(UsbPrinterId)>;
+void GetDeviceId(device::mojom::UsbDevicePtr device_ptr,
+                 GetDeviceIdCallback cb);
 
 }  // namespace chromeos
 

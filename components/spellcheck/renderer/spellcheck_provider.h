@@ -98,7 +98,7 @@ class SpellCheckProvider
       const blink::WebString& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,
                                 const base::string16& text,
                                 bool success,

@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -18,7 +19,6 @@
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -70,17 +70,16 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
 class JsonRequestTest : public testing::Test {
  public:
   JsonRequestTest()
-      : params_manager_(
-            ntp_snippets::kArticleSuggestionsFeature.name,
-            {{"send_top_languages", "true"}, {"send_user_class", "true"}},
-            {ntp_snippets::kArticleSuggestionsFeature.name}),
-        pref_service_(std::make_unique<TestingPrefServiceSimple>()),
+      : pref_service_(std::make_unique<TestingPrefServiceSimple>()),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
         mock_runner_handle_(
             std::make_unique<base::ThreadTaskRunnerHandle>(mock_task_runner_)),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kArticleSuggestionsFeature,
+        {{"send_top_languages", "true"}, {"send_user_class", "true"}});
     language::UrlLanguageHistogram::RegisterProfilePrefs(
         pref_service_->registry());
   }
@@ -107,7 +106,7 @@ class JsonRequestTest : public testing::Test {
   }
 
  private:
-  variations::testing::VariationParamsManager params_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<base::ThreadTaskRunnerHandle> mock_runner_handle_;

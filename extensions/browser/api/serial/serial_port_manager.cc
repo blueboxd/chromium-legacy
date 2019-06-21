@@ -11,7 +11,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -176,11 +176,9 @@ void SerialPortManager::EnsureConnection() {
     return;
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&port_manager_));
+  DCHECK(content::GetSystemConnector());
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&port_manager_));
   port_manager_.set_connection_error_handler(
       base::BindOnce(&SerialPortManager::OnPortManagerConnectionError,
                      weak_factory_.GetWeakPtr()));

@@ -9,7 +9,6 @@ assert(use_aura)
 
 component("presenter") {
   sources = [
-    "app_list_presenter_delegate.cc",
     "app_list_presenter_delegate.h",
     "app_list_presenter_export.h",
     "app_list_presenter_impl.cc",

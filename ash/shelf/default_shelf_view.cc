@@ -27,11 +27,6 @@ namespace ash {
 
 namespace {
 
-// Indices of the start-aligned system buttons (the "back" button in tablet
-// mode, and the "app list" button).
-constexpr int kBackButtonIndex = 0;
-constexpr int kAppListButtonIndex = 1;
-
 // White with ~20% opacity.
 constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 
@@ -199,18 +194,14 @@ void DefaultShelfView::CalculateIdealBounds() {
     }
   }
 
-  // We've already processed the back and home buttons.
-  for (int i = kAppListButtonIndex + 1; i < view_model()->view_size(); ++i) {
+  for (int i = 0; i < view_model()->view_size(); ++i) {
     if (is_overflow_mode() && i < first_visible_index()) {
       view_model()->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
       continue;
     }
 
     view_model()->set_ideal_bounds(
-        i,
-        gfx::Rect(
-            x, y, shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfButtonSize),
-            shelf()->PrimaryAxisValue(kShelfButtonSize, kShelfButtonSize)));
+        i, gfx::Rect(x, y, kShelfButtonSize, kShelfButtonSize));
 
     x = shelf()->PrimaryAxisValue(x + kShelfButtonSize + button_spacing, x);
     y = shelf()->PrimaryAxisValue(y, y + kShelfButtonSize + button_spacing);
@@ -237,12 +228,9 @@ void DefaultShelfView::CalculateIdealBounds() {
     UpdateAllButtonsVisibilityInOverflowMode();
     return;
   }
-  // In the main shelf, the first visible index is either the back button (in
-  // tablet mode) or the launcher button (otherwise).
-  if (!is_overflow_mode()) {
-    set_first_visible_index(IsTabletModeEnabled() ? kBackButtonIndex
-                                                  : kAppListButtonIndex);
-  }
+  // In the main shelf, the first visible index is either the first app, or -1
+  // if there are no apps.
+  set_first_visible_index(view_model()->view_size() == 0 ? -1 : 0);
 
   for (int i = 0; i < view_model()->view_size(); ++i) {
     // To receive drag event continuously from |drag_view_| during the dragging
@@ -251,13 +239,9 @@ void DefaultShelfView::CalculateIdealBounds() {
     // FinalizeRipOffDrag().
     if (dragged_off_shelf() && view_model()->view_at(i) == drag_view())
       continue;
-    // If the virtual keyboard is visible, only the back button and the app
-    // list button are shown.
-    const bool is_visible_item = !virtual_keyboard_visible ||
-                                 i == kBackButtonIndex ||
-                                 i == kAppListButtonIndex;
+    // If the virtual keyboard is visible, do not show any apps.
     view_model()->view_at(i)->SetVisible(i <= last_visible_index() &&
-                                         is_visible_item);
+                                         !virtual_keyboard_visible);
   }
 
   overflow_button()->SetVisible(app_centering_strategy.overflow);
@@ -346,8 +330,7 @@ DefaultShelfView::CalculateAppCenteringStrategy() {
   int available_space_for_screen_centering =
       screen_size - 2 * (status_widget_size + kAppIconGroupMargin);
 
-  // Views at index 0 and 1 are the back button and app list button.
-  if (GetSizeOfAppIcons(view_model()->view_size() - 2, false) <
+  if (GetSizeOfAppIcons(view_model()->view_size(), false) <
       available_space_for_screen_centering) {
     // Everything fits in the center of the screen.
     set_last_visible_index(view_model()->view_size() - 1);
@@ -356,11 +339,11 @@ DefaultShelfView::CalculateAppCenteringStrategy() {
   }
 
   const int available_size_for_app_icons = GetAvailableSpaceForAppIcons();
-  set_last_visible_index(1);
+  set_last_visible_index(-1);
   // We know that replacing the last app that fits with the overflow button
   // will not change the outcome, so we ignore that case for now.
   while (last_visible_index() < view_model()->view_size() - 1) {
-    if (GetSizeOfAppIcons(last_visible_index(), false) <=
+    if (GetSizeOfAppIcons(last_visible_index() + 2, false) <=
         available_size_for_app_icons) {
       set_last_visible_index(last_visible_index() + 1);
     } else {

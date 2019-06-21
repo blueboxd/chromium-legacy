@@ -199,17 +199,6 @@ bool EmitsAtkTextEvents(AtkObject* atk_object) {
   return false;
 }
 
-AtkObject* FindFirstAncestorThatEmitsAtkTextEvents(AtkObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  if (EmitsAtkTextEvents(atk_object))
-    return atk_object;
-
-  return FindFirstAncestorThatEmitsAtkTextEvents(
-      atk_object_get_parent(atk_object));
-}
-
 bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
   AtkObject* current_frame = FindAtkObjectParentFrame(atk_object);
   while (current_frame) {
@@ -340,6 +329,10 @@ AtkObject* GetActiveDescendantOfCurrentFocused() {
     return descendant->GetNativeViewAccessible();
 
   return nullptr;
+}
+bool SelectionOffsetsIndicateSelection(const std::pair<int, int>& offsets) {
+  return offsets.first >= 0 && offsets.second >= 0 &&
+         offsets.first != offsets.second;
 }
 
 namespace atk_component {
@@ -3016,16 +3009,34 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 }
 
 void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
-  AtkObject* object = FindFirstAncestorThatEmitsAtkTextEvents(atk_object_);
-  if (!object)
+  DCHECK(atk_object_);
+  if (!EmitsAtkTextEvents(atk_object_)) {
+    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+      parent->OnTextSelectionChanged();
     return;
-
-  DCHECK(ATK_IS_TEXT(object));
-  if (HasCaret()) {
-    g_signal_emit_by_name(object, "text-caret-moved",
-                          atk_text_get_caret_offset(ATK_TEXT(object)));
   }
-  g_signal_emit_by_name(object, "text-selection-changed");
+
+  DCHECK(ATK_IS_TEXT(atk_object_));
+
+  std::pair<int, int> new_selection;
+  GetSelectionOffsets(&new_selection.first, &new_selection.second);
+  std::pair<int, int> old_selection = text_selection_;
+  text_selection_ = new_selection;
+
+  // ATK does not consider a collapsed selection a selection, so
+  // when the collapsed selection changes (caret movement), we should
+  // avoid sending text-selection-changed events.
+  bool has_selection = SelectionOffsetsIndicateSelection(new_selection);
+  bool had_selection = SelectionOffsetsIndicateSelection(old_selection);
+  if (has_selection != had_selection ||
+      (has_selection && new_selection != old_selection)) {
+    g_signal_emit_by_name(atk_object_, "text-selection-changed");
+  }
+
+  if (HasCaret() && new_selection.second != old_selection.second) {
+    g_signal_emit_by_name(atk_object_, "text-caret-moved",
+                          UTF16ToUnicodeOffsetInText(new_selection.second));
+  }
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
@@ -3636,10 +3647,9 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  return selection_start >= 0 && selection_end >= 0 &&
-         selection_start != selection_end;
+  std::pair<int, int> selection;
+  GetSelectionOffsets(&selection.first, &selection.second);
+  return SelectionOffsetsIndicateSelection(selection);
 }
 
 void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,

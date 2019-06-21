@@ -221,6 +221,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     return false;
   }
 
+  LogConcerningRequestHeaders(request.headers,
+                              false /* added_during_redirect */);
+
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".
   return true;

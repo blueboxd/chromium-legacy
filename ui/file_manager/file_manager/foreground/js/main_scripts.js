@@ -181,6 +181,11 @@
 // <include src="main_window_component.js">
 // <include src="../../../base/js/filtered_volume_manager.js">
 // <include src="webui_command_extender.js">
+// <include src="../elements/xf_activity_complete.js">
+// <include src="../elements/xf_button.js">
+// <include src="../elements/xf_circular_progress.js">
+// <include src="../elements/xf_display_panel.js">
+// <include src="../elements/xf_panel_item.js">
 
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.

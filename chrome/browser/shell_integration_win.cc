@@ -54,7 +54,6 @@
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace shell_integration {
@@ -471,9 +470,7 @@ class IsPinnedToTaskbarHelper {
   void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
 
   chrome::mojom::UtilWinPtr util_win_ptr_;
-  // The connector used to retrieve the Patch service. We can't simply use
-  // content::ServiceManagerConnection::GetForProcess()->GetConnector() as this
-  // is called on a background thread.
+  // The connector used to retrieve the Patch service.
   std::unique_ptr<service_manager::Connector> connector_;
 
   ErrorCallback error_callback_;

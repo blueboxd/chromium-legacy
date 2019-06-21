@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,7 +39,7 @@ import java.util.Set;
 @JNINamespace("autofill_assistant")
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
-class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
+class AutofillAssistantUiController {
     private static Set<ChromeActivity> sActiveChromeActivities;
     private long mNativeUiController;
 
@@ -81,8 +82,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private static AutofillAssistantUiController create(
-            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
+    private static AutofillAssistantUiController create(ChromeActivity activity,
+            boolean allowTabSwitching, long nativeUiController,
+            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         assert activity != null;
         assert activity.getBottomSheetController() != null;
 
@@ -92,14 +94,15 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         sActiveChromeActivities.add(activity);
 
         return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
-                allowTabSwitching, nativeUiController);
+                allowTabSwitching, nativeUiController, overlayCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
-            boolean allowTabSwitching, long nativeUiController) {
+            boolean allowTabSwitching, long nativeUiController,
+            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, this, controller);
+        mCoordinator = new AssistantCoordinator(activity, controller, overlayCoordinator);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -150,14 +153,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                 };
     }
 
-    // Java => native methods.
-
-    /** Shut down the Autofill Assistant immediately, without showing a message. */
-    @Override
-    public void stop(@DropOutReason int reason) {
-        safeNativeStop(reason);
-    }
-
     // Native => Java methods.
 
     // TODO(crbug.com/806868): Some of these functions still have a little bit of logic (e.g. make
@@ -193,11 +188,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mActivity instanceof CustomTabActivity) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, mActivity::finish);
         }
-    }
-
-    @CalledByNative
-    private void onShowOnboarding(String experimentIds, Runnable onAccept) {
-        mCoordinator.showOnboarding(experimentIds, onAccept);
     }
 
     @CalledByNative

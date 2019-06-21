@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -59,7 +60,6 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/variations/variations_params_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -506,34 +506,26 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   }
 
   void SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(bool value) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        kArticleSuggestionsFeature.name,
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kArticleSuggestionsFeature,
         {{"order_new_remote_categories_based_on_articles_category",
-          value ? "true" : "false"}},
-        {kArticleSuggestionsFeature.name});
+          value ? "true" : "false"}});
   }
 
   void EnableKeepingPrefetchedContentSuggestions(
       int max_additional_prefetched_suggestions,
       const base::TimeDelta& max_age_for_additional_prefetched_suggestion) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        kKeepPrefetchedContentSuggestions.name,
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kKeepPrefetchedContentSuggestions,
         {
             {"max_additional_prefetched_suggestions",
              base::NumberToString(max_additional_prefetched_suggestions)},
             {"max_age_for_additional_prefetched_suggestion_minutes",
              base::NumberToString(
                  max_age_for_additional_prefetched_suggestion.InMinutes())},
-        },
-        {kKeepPrefetchedContentSuggestions.name});
+        });
   }
 
   void SetTriggeringNotificationsAndSubscriptionParams(
@@ -541,12 +533,9 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       bool pushed_notifications_enabled,
       bool subscribe_signed_in,
       bool subscribe_signed_out) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        /*trial_name=*/kNotificationsFeature.name,
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kNotificationsFeature,
         {
             {"enable_fetched_suggestions_notifications",
              BoolToString(fetched_notifications_enabled)},
@@ -556,33 +545,24 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
              BoolToString(subscribe_signed_in)},
             {"enable_signed_out_users_subscription_for_pushed_suggestions",
              BoolToString(subscribe_signed_out)},
-        },
-        {kNotificationsFeature.name});
+        });
   }
 
   void SetFetchedNotificationsParams(bool enable, bool force) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        /*trial_name=*/kNotificationsFeature.name,
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kNotificationsFeature,
         {
             {"enable_fetched_suggestions_notifications", BoolToString(enable)},
             {"force_fetched_suggestions_notifications", BoolToString(force)},
-        },
-        {kNotificationsFeature.name});
+        });
   }
 
   void SetFetchMoreSuggestionsCount(int count) {
-    // VariationParamsManager supports only one
-    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
-    // previous settings first to make this explicit.
-    params_manager_.ClearAllVariationParams();
-    params_manager_.SetVariationParamsWithFeatureAssociations(
-        /*trial_name=*/kArticleSuggestionsFeature.name,
-        {{"fetch_more_suggestions_count", base::NumberToString(count)}},
-        {kArticleSuggestionsFeature.name});
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kArticleSuggestionsFeature,
+        {{"fetch_more_suggestions_count", base::NumberToString(count)}});
   }
 
   void FastForwardBy(const base::TimeDelta& delta) {
@@ -604,7 +584,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
  private:
   std::unique_ptr<RemoteSuggestionsProviderImpl> provider_;
 
-  variations::testing::VariationParamsManager params_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   test::RemoteSuggestionsTestUtils utils_;
   std::unique_ptr<CategoryRanker> category_ranker_;
   UserClassifier user_classifier_;

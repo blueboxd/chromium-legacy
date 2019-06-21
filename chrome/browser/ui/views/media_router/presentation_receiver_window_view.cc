@@ -48,7 +48,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/native_widget_types.h"
 #endif
 
@@ -63,8 +62,6 @@ class FullscreenWindowObserver : public aura::WindowObserver {
   FullscreenWindowObserver(aura::Window* observed_window,
                            base::RepeatingClosure on_fullscreen_change)
       : on_fullscreen_change_(on_fullscreen_change) {
-    if (features::IsUsingWindowService())
-      observed_window = observed_window->GetRootWindow();
     observed_window_.Add(observed_window);
   }
 

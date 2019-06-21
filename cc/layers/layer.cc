@@ -23,6 +23,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -100,6 +101,7 @@ Layer::Layer()
       may_contain_video_(false),
       needs_show_scrollbars_(false),
       has_transform_node_(false),
+      has_clip_node_(false),
       subtree_has_copy_request_(false),
       safe_opaque_background_color_(0),
       compositing_reasons_(0),
@@ -532,6 +534,30 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
   SetNeedsCommit();
   SetPropertyTreesNeedRebuild();
   SetSubtreePropertyChanged();
+}
+
+void Layer::SetClipRect(const gfx::Rect& clip_rect) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.clip_rect == clip_rect)
+    return;
+  inputs_.clip_rect = clip_rect;
+
+  // If the clip bounds have been cleared, the property trees needs a rebuild.
+  const bool force_rebuild = clip_rect.IsEmpty() || !has_clip_node_;
+
+  SetSubtreePropertyChanged();
+  if (clip_tree_index() != ClipTree::kInvalidNodeId && !force_rebuild) {
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
+    if (ClipNode* node = property_trees->clip_tree.Node(clip_tree_index())) {
+      node->clip = gfx::RectF(
+          gfx::PointF(clip_rect.origin()) + offset_to_transform_parent(),
+          gfx::SizeF(clip_rect.size()));
+      property_trees->clip_tree.set_needs_update(true);
+    }
+  } else {
+    SetPropertyTreesNeedRebuild();
+  }
+  SetNeedsCommit();
 }
 
 void Layer::SetMaskLayer(PictureLayer* mask_layer) {

@@ -135,6 +135,123 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   return ax_tree_dump;
 }
 
+base::Optional<base::FilePath>
+DumpAccessibilityTestBase::GetExpectationFilePath(
+    const base::FilePath& test_file_path) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath expected_file_path;
+
+  // Try to get version specific expected file.
+  base::FilePath::StringType expected_file_suffix =
+      formatter_->GetVersionSpecificExpectedFileSuffix();
+  if (expected_file_suffix != FILE_PATH_LITERAL("")) {
+    expected_file_path = base::FilePath(
+        test_file_path.RemoveExtension().value() + expected_file_suffix);
+    if (base::PathExists(expected_file_path))
+      return expected_file_path;
+  }
+
+  // If a version specific file does not exist, get the generic one.
+  expected_file_suffix = formatter_->GetExpectedFileSuffix();
+  expected_file_path = base::FilePath(test_file_path.RemoveExtension().value() +
+                                      expected_file_suffix);
+  if (base::PathExists(expected_file_path))
+    return expected_file_path;
+
+  // If no expected file could be found, display error.
+  LOG(INFO) << "File not found: " << expected_file_path.LossyDisplayName();
+  LOG(INFO) << "To run this test, create "
+            << expected_file_path.LossyDisplayName()
+            << " (it can be empty) and then run this test "
+            << "with the switch: --"
+            << switches::kGenerateAccessibilityTestExpectations;
+  return base::nullopt;
+}
+
+base::Optional<std::vector<std::string>>
+DumpAccessibilityTestBase::LoadExpectationFile(
+    const base::FilePath& expected_file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  std::string expected_contents_raw;
+  base::ReadFileToString(expected_file, &expected_contents_raw);
+
+  // Tolerate Windows-style line endings (\r\n) in the expected file:
+  // normalize by deleting all \r from the file (if any) to leave only \n.
+  std::string expected_contents;
+  base::RemoveChars(expected_contents_raw, "\r", &expected_contents);
+
+  if (!expected_contents.compare(0, strlen(kMarkSkipFile), kMarkSkipFile)) {
+    return base::nullopt;
+  }
+
+  std::vector<std::string> expected_lines =
+      base::SplitString(expected_contents, "\n", base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+
+  // Marking the end of the file with a line of text ensures that
+  // file length differences are found.
+  expected_lines.push_back(kMarkEndOfFile);
+
+  return expected_lines;
+}
+
+bool DumpAccessibilityTestBase::ValidateAgainstExpectation(
+    const base::FilePath& test_file_path,
+    const base::FilePath& expected_file,
+    const std::vector<std::string>& actual_lines,
+    const std::vector<std::string>& expected_lines) {
+  // Output the test path to help anyone who encounters a failure and needs
+  // to know where to look.
+  LOG(INFO) << "Testing: "
+            << test_file_path.NormalizePathSeparatorsTo('/').LossyDisplayName();
+  LOG(INFO) << "Expected output: "
+            << expected_file.NormalizePathSeparatorsTo('/').LossyDisplayName();
+
+  // Perform a diff (or write the initial baseline).
+  std::vector<int> diff_lines = DiffLines(expected_lines, actual_lines);
+  bool is_different = diff_lines.size() > 0;
+  if (is_different) {
+    std::string diff;
+
+    // Mark the expected lines which did not match actual output with a *.
+    diff += "* Line Expected\n";
+    diff += "- ---- --------\n";
+    for (int line = 0, diff_index = 0;
+         line < static_cast<int>(expected_lines.size()); ++line) {
+      bool is_diff = false;
+      if (diff_index < static_cast<int>(diff_lines.size()) &&
+          diff_lines[diff_index] == line) {
+        is_diff = true;
+        ++diff_index;
+      }
+      diff += base::StringPrintf("%1s %4d %s\n", is_diff ? kSignalDiff : "",
+                                 line + 1, expected_lines[line].c_str());
+    }
+    diff += "\nActual\n";
+    diff += "------\n";
+    diff += base::JoinString(actual_lines, "\n");
+    diff += "\n";
+    diff += kMarkEndOfFile;
+    LOG(ERROR) << "Diff:\n" << diff;
+  } else {
+    LOG(INFO) << "Test output matches expectations.";
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGenerateAccessibilityTestExpectations)) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string actual_contents_for_output =
+        base::JoinString(actual_lines, "\n") + "\n";
+    CHECK(base::WriteFile(expected_file, actual_contents_for_output.c_str(),
+                          actual_contents_for_output.size()) ==
+          static_cast<int>(actual_contents_for_output.size()));
+    LOG(INFO) << "Wrote expectations to: " << expected_file.LossyDisplayName();
+  }
+
+  return !is_different;
+}
+
 std::vector<int> DumpAccessibilityTestBase::DiffLines(
     const std::vector<std::string>& expected_lines,
     const std::vector<std::string>& actual_lines) {
@@ -249,61 +366,38 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  bool path_exists = false;
-  std::string html_contents;
-  base::FilePath expected_file;
-  std::string expected_contents_raw;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    base::ReadFileToString(file_path, &html_contents);
-
-    // Try to get version specific expected file.
-    base::FilePath::StringType expected_file_suffix =
-        formatter_->GetVersionSpecificExpectedFileSuffix();
-    if (expected_file_suffix != FILE_PATH_LITERAL("")) {
-      expected_file = base::FilePath(file_path.RemoveExtension().value() +
-                                     expected_file_suffix);
-      path_exists = base::PathExists(expected_file);
-    }
-
-    // If a version specific file does not exist, get the generic one.
-    if (!path_exists) {
-      expected_file_suffix = formatter_->GetExpectedFileSuffix();
-      expected_file = base::FilePath(file_path.RemoveExtension().value() +
-                                     expected_file_suffix);
-      path_exists = base::PathExists(expected_file);
-    }
-
-    // If no expected file could be found, display error.
-    if (!path_exists) {
-      LOG(INFO) << "File not found: " << expected_file.LossyDisplayName();
-      LOG(INFO)
-          << "No expectation file present, ignoring test on this platform."
-          << " To run this test anyway, create "
-          << expected_file.LossyDisplayName()
-          << " (it can be empty) and then run content_browsertests "
-          << "with the switch: --"
-          << switches::kGenerateAccessibilityTestExpectations;
-      return;
-    }
-    base::ReadFileToString(expected_file, &expected_contents_raw);
+  // Exit without running the test if we can't find an expectation file.
+  // This is used to skip certain tests on certain platforms.
+  // We have to check for this in advance in order to avoid waiting on a
+  // WAIT-FOR directive in the source file that's looking for something not
+  // supported on the current platform.
+  base::Optional<base::FilePath> expected_file =
+      GetExpectationFilePath(file_path);
+  if (!expected_file) {
+    LOG(INFO) << "No expectation file present, ignoring test on this "
+                 "platform.";
+    return;
   }
 
-  // Output the test path to help anyone who encounters a failure and needs
-  // to know where to look.
-  LOG(INFO) << "Testing: "
-            << file_path.NormalizePathSeparatorsTo('/').LossyDisplayName();
-  LOG(INFO) << "Expected output: "
-            << expected_file.NormalizePathSeparatorsTo('/').LossyDisplayName();
-
-  // Tolerate Windows-style line endings (\r\n) in the expected file:
-  // normalize by deleting all \r from the file (if any) to leave only \n.
-  std::string expected_contents;
-  base::RemoveChars(expected_contents_raw, "\r", &expected_contents);
-
-  if (!expected_contents.compare(0, strlen(kMarkSkipFile), kMarkSkipFile)) {
+  base::Optional<std::vector<std::string>> expected_lines =
+      LoadExpectationFile(*expected_file);
+  if (!expected_lines) {
     LOG(INFO) << "Skipping this test on this platform.";
     return;
+  }
+
+  std::string html_contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // Exit without running the test if the source file is missing, since that
+    // was the behavior prior to http://crrev.com/c/1661175.
+    // It would be preferable if we were to fail the test instead.
+    // http://crbug.com/975830
+    if (!base::ReadFileToString(file_path, &html_contents)) {
+      LOG(INFO) << "File not found: " << file_path.LossyDisplayName();
+      LOG(INFO) << "Skipping test.";
+      return;
+    }
   }
 
   // Parse filters and other directives in the test file.
@@ -426,57 +520,13 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Call the subclass to dump the output.
   std::vector<std::string> actual_lines = Dump(run_until);
-  std::string actual_contents_for_output =
-      base::JoinString(actual_lines, "\n") + "\n";
 
-  // Perform a diff (or write the initial baseline).
-  std::vector<std::string> expected_lines =
-      base::SplitString(expected_contents, "\n", base::KEEP_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-  // Marking the end of the file with a line of text ensures that
-  // file length differences are found.
-  expected_lines.push_back(kMarkEndOfFile);
-  actual_lines.push_back(kMarkEndOfFile);
-  std::string actual_contents = base::JoinString(actual_lines, "\n");
-
-  std::vector<int> diff_lines = DiffLines(expected_lines, actual_lines);
-  bool is_different = diff_lines.size() > 0;
-  EXPECT_FALSE(is_different);
-  if (is_different) {
+  // Validate against the expectation file.
+  bool matches_expectation = ValidateAgainstExpectation(
+      file_path, *expected_file, actual_lines, *expected_lines);
+  EXPECT_TRUE(matches_expectation);
+  if (!matches_expectation)
     OnDiffFailed();
-
-    std::string diff;
-
-    // Mark the expected lines which did not match actual output with a *.
-    diff += "* Line Expected\n";
-    diff += "- ---- --------\n";
-    for (int line = 0, diff_index = 0;
-         line < static_cast<int>(expected_lines.size()); ++line) {
-      bool is_diff = false;
-      if (diff_index < static_cast<int>(diff_lines.size()) &&
-          diff_lines[diff_index] == line) {
-        is_diff = true;
-        ++diff_index;
-      }
-      diff += base::StringPrintf("%1s %4d %s\n", is_diff ? kSignalDiff : "",
-                                 line + 1, expected_lines[line].c_str());
-    }
-    diff += "\nActual\n";
-    diff += "------\n";
-    diff += actual_contents;
-    LOG(ERROR) << "Diff:\n" << diff;
-  } else {
-    LOG(INFO) << "Test output matches expectations.";
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGenerateAccessibilityTestExpectations)) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    CHECK(base::WriteFile(expected_file, actual_contents_for_output.c_str(),
-                          actual_contents_for_output.size()) ==
-          static_cast<int>(actual_contents_for_output.size()));
-    LOG(INFO) << "Wrote expectations to: " << expected_file.LossyDisplayName();
-  }
 }
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNode(

@@ -96,13 +96,13 @@ scoped_refptr<Sequence> CreateSequenceWithTask(
 scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     TaskSourceExecutionMode execution_mode,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate,
-    const TaskTraits& traits = TaskTraits());
+    const TaskTraits& traits = {ThreadPool()});
 
-scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
+scoped_refptr<TaskRunner> CreateTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 
-scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate);
 

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/renderer/modules/modules.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 blink_modules_sources("media_capabilities") {
   sources = [
@@ -12,5 +14,11 @@ blink_modules_sources("media_capabilities") {
     "navigator_media_capabilities.h",
     "worker_navigator_media_capabilities.cc",
     "worker_navigator_media_capabilities.h",
+  ]
+}
+
+fuzzable_proto_library("fuzzer_media_configuration_proto") {
+  sources = [
+    "fuzzer_media_configuration.proto",
   ]
 }

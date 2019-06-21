@@ -178,10 +178,9 @@ Polymer({
   getDeviceStateProperties_: function() {
     this.networkConfigProxy_.getDeviceStateList().then(response => {
       const devices = response.result;
+      const kCellular = chromeos.networkConfig.mojom.NetworkType.kCellular;
       this.deviceStateProperties_ =
-          devices.find(
-              device => device.type == OncMojo.NetworkType.kCellular) ||
-          null;
+          devices.find(device => device.type == kCellular) || null;
       if (!this.deviceStateProperties_) {
         return;
       }
@@ -522,28 +521,28 @@ Polymer({
     if (this.error_ == ErrorType.NONE) {
       return '';
     }
-    // TODO(stevenjb): Translate
-    let msg;
+    const retriesLeft = (this.simUnlockSent_ && this.deviceStateProperties_ &&
+                         this.deviceStateProperties_.simLockStatus) ?
+        this.deviceStateProperties_.simLockStatus.retriesLeft :
+        0;
+
     if (this.error_ == ErrorType.INCORRECT_PIN) {
-      msg = 'Incorrect PIN.';
-    } else if (this.error_ == ErrorType.INCORRECT_PUK) {
-      msg = 'Incorrect PUK.';
-    } else if (this.error_ == ErrorType.MISMATCHED_PIN) {
-      msg = 'PIN values do not match.';
-    } else if (this.error_ == ErrorType.INVALID_PIN) {
-      msg = 'Invalid PIN.';
-    } else if (this.error_ == ErrorType.INVALID_PUK) {
-      msg = 'Invalid PUK.';
-    } else {
-      return 'UNKNOWN ERROR';
+      return this.i18n('networkSimErrorIncorrectPin', retriesLeft);
     }
-    const retriesLeft = this.simUnlockSent_ && this.deviceStateProperties_ &&
-        this.deviceStateProperties_.simLockStatus &&
-        this.deviceStateProperties_.simLockStatus.retriesLeft;
-    if (retriesLeft) {
-      msg += ' Retries left: ' + retriesLeft.toString();
+    if (this.error_ == ErrorType.INCORRECT_PUK) {
+      return this.i18n('networkSimErrorIncorrectPuk', retriesLeft);
     }
-    return msg;
+    if (this.error_ == ErrorType.MISMATCHED_PIN) {
+      return this.i18n('networkSimErrorPinMismatch');
+    }
+    if (this.error_ == ErrorType.INVALID_PIN) {
+      return this.i18n('networkSimErrorInvalidPin', retriesLeft);
+    }
+    if (this.error_ == ErrorType.INVALID_PUK) {
+      return this.i18n('networkSimErrorInvalidPuk', retriesLeft);
+    }
+    assertNotReached();
+    return '';
   },
 
   /**

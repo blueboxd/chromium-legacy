@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -1518,6 +1519,24 @@ TEST_F(NGInlineNodeTest, InsertedWBRWithLineBreakInRelayout) {
 
   // The '\n' should be collapsed by the inserted <wbr>
   EXPECT_EQ(String(u"foo\u200Bbar"), GetText());
+}
+
+TEST_F(NGInlineNodeTest, CollapsibleSpaceFollowingBRWithNoWrapStyle) {
+  SetupHtml("t", "<div id=t><span style=white-space:pre><br></span> </div>");
+  EXPECT_EQ("\n", GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("\n", GetText());
+}
+
+TEST_F(NGInlineNodeTest, CollapsibleSpaceFollowingNewlineWithPreStyle) {
+  SetupHtml("t", "<div id=t><span style=white-space:pre>\n</span> </div>");
+  EXPECT_EQ("\n", GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("", GetText());
 }
 
 #if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH

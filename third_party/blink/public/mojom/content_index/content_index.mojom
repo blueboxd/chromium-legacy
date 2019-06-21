@@ -1,0 +1,50 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "skia/public/interfaces/bitmap.mojom";
+import "url/mojom/url.mojom";
+
+// As per https://github.com/rknoll/content-index.
+
+enum ContentIndexError {
+  NONE,
+  SERVICE_WORKER_UNAVAILABLE,
+  STORAGE_ERROR,
+};
+
+enum ContentCategory {
+  // "homepage"
+  HOME_PAGE = 1,
+
+  // "article"
+  ARTICLE,
+
+  // "video"
+  VIDEO,
+
+  // "audio"
+  AUDIO,
+};
+
+struct ContentDescription {
+  string id;
+  string title;
+  string description;
+  ContentCategory category;
+  url.mojom.Url icon_url;
+  url.mojom.Url launch_url;
+};
+
+interface ContentIndexService {
+  Add(int64 service_worker_registration_id,
+      ContentDescription description,
+      skia.mojom.Bitmap icon)
+      => (ContentIndexError error);
+  Delete(int64 service_worker_registration_id, string id)
+      => (ContentIndexError error);
+  GetDescriptions(int64 service_worker_registration_id)
+      => (ContentIndexError error, array<ContentDescription> descriptions);
+};

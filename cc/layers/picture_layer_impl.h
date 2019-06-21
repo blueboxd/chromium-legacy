@@ -15,6 +15,7 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/tile_size_calculator.h"
 #include "cc/paint/image_id.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
@@ -60,7 +61,7 @@ class CC_EXPORT PictureLayerImpl
 
   // PictureLayerTilingClient overrides.
   std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) override;
-  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  gfx::Size CalculateTileSize(const gfx::Size& content_bounds) override;
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override;
@@ -74,6 +75,11 @@ class CC_EXPORT PictureLayerImpl
   void set_gpu_raster_max_texture_size(gfx::Size gpu_raster_max_texture_size) {
     gpu_raster_max_texture_size_ = gpu_raster_max_texture_size;
   }
+
+  gfx::Size gpu_raster_max_texture_size() {
+    return gpu_raster_max_texture_size_;
+  }
+
   using PaintWorkletRecordMap =
       base::flat_map<scoped_refptr<PaintWorkletInput>, sk_sp<PaintRecord>>;
   void UpdateRasterSource(
@@ -137,6 +143,8 @@ class CC_EXPORT PictureLayerImpl
   const PaintWorkletRecordMap& GetPaintWorkletRecordMapForTesting() const {
     return paint_worklet_records_;
   }
+
+  gfx::Size content_bounds() { return content_bounds_; }
 
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,
@@ -231,6 +239,9 @@ class CC_EXPORT PictureLayerImpl
   // asynchronously on a worklet thread, triggered from
   // |LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation|.
   PaintWorkletRecordMap paint_worklet_records_;
+
+  gfx::Size content_bounds_;
+  TileSizeCalculator tile_size_calculator_;
 };
 
 }  // namespace cc

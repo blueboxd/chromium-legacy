@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "printing/backend/cups_jobs.h"
+#include "printing/printer_query_result_chromeos.h"
 
 namespace chromeos {
 

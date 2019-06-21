@@ -15,7 +15,7 @@ void FakeTabletModeController::SetTabletModeToggleObserver(
   observer_ = observer;
 }
 
-bool FakeTabletModeController::IsEnabled() const {
+bool FakeTabletModeController::InTabletMode() const {
   return enabled_;
 }
 

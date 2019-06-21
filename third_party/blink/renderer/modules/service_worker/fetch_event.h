@@ -78,7 +78,7 @@ class MODULES_EXPORT FetchEvent final
   void OnNavigationPreloadError(ScriptState*,
                                 std::unique_ptr<WebServiceWorkerError>);
   void OnNavigationPreloadComplete(WorkerGlobalScope*,
-                                   TimeTicks completion_time,
+                                   base::TimeTicks completion_time,
                                    int64_t encoded_data_length,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length);

@@ -11,7 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/display/manager/display_configurator.h"
+#include "ui/display/manager/content_protection_manager.h"
+#include "ui/display/types/display_constants.h"
 
 namespace display {
 
@@ -19,16 +20,17 @@ class DisplayLayoutManager;
 class NativeDisplayDelegate;
 
 class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
-    : public DisplayConfigurator::ContentProtectionTask {
+    : public ContentProtectionManager::Task {
  public:
   using ResponseCallback = base::OnceCallback<void(Status)>;
 
   // The task disables protection on displays omitted from |requests|. Note that
   // pending tasks are killed on display reconfiguration.
-  ApplyContentProtectionTask(DisplayLayoutManager* layout_manager,
-                             NativeDisplayDelegate* native_display_delegate,
-                             DisplayConfigurator::ContentProtections requests,
-                             ResponseCallback callback);
+  ApplyContentProtectionTask(
+      DisplayLayoutManager* layout_manager,
+      NativeDisplayDelegate* native_display_delegate,
+      ContentProtectionManager::ContentProtections requests,
+      ResponseCallback callback);
   ~ApplyContentProtectionTask() override;
 
   void Run() override;
@@ -42,7 +44,7 @@ class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
   DisplayLayoutManager* const layout_manager_;            // Not owned.
   NativeDisplayDelegate* const native_display_delegate_;  // Not owned.
 
-  const DisplayConfigurator::ContentProtections requests_;
+  const ContentProtectionManager::ContentProtections requests_;
   ResponseCallback callback_;
 
   std::vector<std::pair<DisplaySnapshot*, HDCPState>> hdcp_requests_;

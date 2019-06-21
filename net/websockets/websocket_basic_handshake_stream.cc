@@ -406,15 +406,12 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
           state_.read_buf(), sub_protocol_, extensions_);
   DCHECK(extension_params_.get());
   if (extension_params_->deflate_enabled) {
-    RecordDeflateMode(
-        extension_params_->deflate_parameters.client_context_take_over_mode());
-
     return std::make_unique<WebSocketDeflateStream>(
         std::move(basic_stream), extension_params_->deflate_parameters,
         std::make_unique<WebSocketDeflatePredictorImpl>());
-  } else {
-    return basic_stream;
   }
+
+  return basic_stream;
 }
 
 base::WeakPtr<WebSocketHandshakeStreamBase>

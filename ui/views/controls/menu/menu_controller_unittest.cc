@@ -1898,14 +1898,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
 }
 
 // Tests that menus without parent widgets do not crash in MenuPreTargetHandler.
-// This is generally true, except on Chrome OS running with the window service.
-// In that case, a DCHECK fires to ensure menus can consume parents' key events.
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
-#if defined(OS_CHROMEOS)
-  if (::features::IsUsingWindowService())
-    return;
-#endif  // OS_CHROMEOS
-
   ExitMenuRun();
   MenuController* controller = menu_controller();
   controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),

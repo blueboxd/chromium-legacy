@@ -7,6 +7,6 @@
   <style name="SplashTheme" parent="@android:style/Theme.Holo">
     <item name="android:windowActionBar">false</item>
     <item name="android:windowNoTitle">true</item>
-    <item name="android:windowBackground">@color/background_color</item>
+    <item name="android:windowBackground">@color/background_color_non_empty</item>
   </style>
 </resources>

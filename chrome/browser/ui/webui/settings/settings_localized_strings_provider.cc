@@ -2862,6 +2862,17 @@ void AddSystemStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
+  html_source->AddString(
+      "proxySettingsExtensionLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_EXTENSION_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+  html_source->AddString(
+      "proxySettingsPolicyLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_POLICY_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+
   // TODO(dbeam): we should probably rename anything involving "localized
   // strings" to "load time data" as all primitive types are used now.
   SystemHandler::AddLoadTimeData(html_source);

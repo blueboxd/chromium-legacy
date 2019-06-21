@@ -45,7 +45,7 @@ const char kIdTokenEmptyServices[] =
 }  // namespace
 
 class AccessTokenFetcherTest : public testing::Test,
-                               public OAuth2TokenService::DiagnosticsObserver {
+                               public AccessTokenDiagnosticsObserver {
  public:
   using TestTokenCallback =
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
@@ -61,11 +61,11 @@ class AccessTokenFetcherTest : public testing::Test,
     account_tracker_ = std::make_unique<AccountTrackerService>();
     account_tracker_->Initialize(&pref_service_, base::FilePath());
 
-    token_service_.AddDiagnosticsObserver(this);
+    token_service_.AddAccessTokenDiagnosticsObserver(this);
   }
 
   ~AccessTokenFetcherTest() override {
-    token_service_.RemoveDiagnosticsObserver(this);
+    token_service_.RemoveAccessTokenDiagnosticsObserver(this);
   }
 
   std::string AddAccount(const std::string& gaia_id, const std::string& email) {
@@ -107,7 +107,7 @@ class AccessTokenFetcherTest : public testing::Test,
   AccessTokenInfo access_token_info() { return access_token_info_; }
 
  private:
-  // OAuth2TokenService::DiagnosticsObserver:
+  // OAuth2AccessTokenManagerDiagnosticsObserver:
   void OnAccessTokenRequested(
       const CoreAccountId& account_id,
       const std::string& consumer_id,

@@ -69,7 +69,7 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
   const std::vector<WTF::String> subresource_patterns_to_block_;
 
   // True if resource blocking hints should apply to resource of a given type.
-  bool block_resource_type_[static_cast<int>(ResourceType::kLast) + 1] = {
+  bool block_resource_type_[static_cast<int>(ResourceType::kMaxValue) + 1] = {
       false};
 
   // |subresource_patterns_to_block_usage_| records whether the pattern located

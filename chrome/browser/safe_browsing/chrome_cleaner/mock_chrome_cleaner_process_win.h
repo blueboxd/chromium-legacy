@@ -157,8 +157,8 @@ class MockChromeCleanerProcess {
         ChromePromptActions::PromptAcceptance::UNSPECIFIED;
   };
 
-  MockChromeCleanerProcess() = default;
-  ~MockChromeCleanerProcess() = default;
+  MockChromeCleanerProcess();
+  ~MockChromeCleanerProcess();
 
   bool InitWithCommandLine(const base::CommandLine& command_line);
 
@@ -172,10 +172,9 @@ class MockChromeCleanerProcess {
 
  private:
   Options options_;
-  std::string chrome_mojo_pipe_token_;
-  // The PromptAcceptance received in PromptUserCallback().
-  ChromePromptActions::PromptAcceptance received_prompt_acceptance_ =
-      ChromePromptActions::PromptAcceptance::UNSPECIFIED;
+
+  // Saved copy of command line for IPC setup.
+  std::unique_ptr<base::CommandLine> command_line_;
 };
 
 // Making test parameter types printable.

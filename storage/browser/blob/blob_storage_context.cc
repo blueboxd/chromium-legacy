@@ -533,7 +533,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
         }
         case BlobDataItem::Type::kBytesDescription:
         case BlobDataItem::Type::kFileFilesystem:
-        case BlobDataItem::Type::kDiskCacheEntry:
+        case BlobDataItem::Type::kReadableDataHandle:
           NOTREACHED();
           break;
       }

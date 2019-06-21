@@ -160,6 +160,11 @@ void HTMLParserScriptRunner::Detach() {
     parser_blocking_script_->Dispose();
   parser_blocking_script_ = nullptr;
 
+  while (!force_deferred_scripts_.IsEmpty()) {
+    PendingScript* pending_script = force_deferred_scripts_.TakeFirst();
+    pending_script->Dispose();
+  }
+
   while (!scripts_to_execute_after_parsing_.IsEmpty()) {
     PendingScript* pending_script =
         scripts_to_execute_after_parsing_.TakeFirst();
@@ -419,38 +424,61 @@ void HTMLParserScriptRunner::ExecuteScriptsWaitingForResources() {
   ExecuteParsingBlockingScripts();
 }
 
+PendingScript* HTMLParserScriptRunner::TryTakeReadyScriptWaitingForParsing(
+    HeapDeque<Member<PendingScript>>* waiting_scripts) {
+  DCHECK(!waiting_scripts->IsEmpty());
+
+  // <spec step="3.1">Spin the event loop until the first script in the list
+  // of scripts that will execute when the document has finished parsing has
+  // its "ready to be parser-executed" flag set and the parser's Document has
+  // no style sheet that is blocking scripts.</spec>
+  //
+  // TODO(hiroshige): Add check for style sheet blocking defer scripts
+  // https://github.com/whatwg/html/issues/3890
+  if (!waiting_scripts->front()->IsReady()) {
+    waiting_scripts->front()->WatchForLoad(this);
+    TraceParserBlockingScript(waiting_scripts->front().Get(),
+                              !document_->IsScriptExecutionReady());
+    waiting_scripts->front()->MarkParserBlockingLoadStartTime();
+    return nullptr;
+  }
+  return waiting_scripts->TakeFirst();
+}
+
 // <specdef href="https://html.spec.whatwg.org/C/#stop-parsing">
 //
 // <spec step="3">If the list of scripts that will execute when the document has
 // finished parsing is not empty, run these substeps:</spec>
+//
+// This will also run any forced deferred scripts before running any developer
+// deferred scripts.
 bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
   TRACE_EVENT0("blink",
                "HTMLParserScriptRunner::executeScriptsWaitingForParsing");
 
-  while (!scripts_to_execute_after_parsing_.IsEmpty()) {
+  while (!force_deferred_scripts_.IsEmpty() ||
+         !scripts_to_execute_after_parsing_.IsEmpty()) {
     DCHECK(!IsExecutingScript());
     DCHECK(!HasParserBlockingScript());
-    DCHECK(scripts_to_execute_after_parsing_.front()->IsExternalOrModule());
-
-    // <spec step="3.1">Spin the event loop until the first script in the list
-    // of scripts that will execute when the document has finished parsing has
-    // its "ready to be parser-executed" flag set and the parser's Document has
-    // no style sheet that is blocking scripts.</spec>
-    //
-    // TODO(hiroshige): Is the latter part checked anywhere?
-    if (!scripts_to_execute_after_parsing_.front()->IsReady()) {
-      scripts_to_execute_after_parsing_.front()->WatchForLoad(this);
-      TraceParserBlockingScript(scripts_to_execute_after_parsing_.front().Get(),
-                                !document_->IsScriptExecutionReady());
-      scripts_to_execute_after_parsing_.front()
-          ->MarkParserBlockingLoadStartTime();
-      return false;
-    }
+    DCHECK(scripts_to_execute_after_parsing_.IsEmpty() ||
+           scripts_to_execute_after_parsing_.front()->IsExternalOrModule());
 
     // <spec step="3.3">Remove the first script element from the list of scripts
     // that will execute when the document has finished parsing (i.e. shift out
     // the first entry in the list).</spec>
-    PendingScript* first = scripts_to_execute_after_parsing_.TakeFirst();
+    PendingScript* first = nullptr;
+
+    // First execute the scripts that were forced-deferred. If no such scripts
+    // are present, then try executing scripts that were deferred by the web
+    // developer.
+    if (!force_deferred_scripts_.IsEmpty()) {
+      first = TryTakeReadyScriptWaitingForParsing(&force_deferred_scripts_);
+    } else {
+      first = TryTakeReadyScriptWaitingForParsing(
+          &scripts_to_execute_after_parsing_);
+    }
+    if (!first)
+      return false;
 
     // <spec step="3.2">Execute the first script in the list of scripts that
     // will execute when the document has finished parsing.</spec>
@@ -501,6 +529,7 @@ void HTMLParserScriptRunner::RequestDeferredScript(
     pending_script->StartStreamingIfPossible();
   }
 
+  DCHECK(!script_loader->IsForceDeferred());
   DCHECK(pending_script->IsExternalOrModule());
 
   // <spec href="https://html.spec.whatwg.org/C/#prepare-a-script"
@@ -508,6 +537,25 @@ void HTMLParserScriptRunner::RequestDeferredScript(
   // execute when the document has finished parsing associated with the Document
   // of the parser that created the element. ...</spec>
   scripts_to_execute_after_parsing_.push_back(pending_script);
+}
+
+void HTMLParserScriptRunner::RequestForceDeferredScript(
+    ScriptLoader* script_loader) {
+  PendingScript* pending_script =
+      script_loader->TakePendingScript(ScriptSchedulingType::kForceDefer);
+  if (!pending_script)
+    return;
+
+  if (!pending_script->IsReady()) {
+    pending_script->StartStreamingIfPossible();
+  }
+
+  DCHECK(script_loader->IsForceDeferred());
+
+  // Add the element to the end of the list of forced deferred scripts that will
+  // execute when the document has finished parsing associated with the Document
+  // of the parser that created the element.
+  force_deferred_scripts_.push_back(pending_script);
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
@@ -551,7 +599,11 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
       return;
 
     if (script_loader->WillExecuteWhenDocumentFinishedParsing()) {
+      // Developer deferred.
       RequestDeferredScript(script_loader);
+    } else if (script_loader->IsForceDeferred()) {
+      // Force defer this otherwise parser-blocking script.
+      RequestForceDeferredScript(script_loader);
     } else if (script_loader->ReadyToBeParserExecuted()) {
       // <spec label="prepare-a-script" step="26.E">... it's an HTML parser
       // whose script nesting level is not greater than one, ...</spec>
@@ -600,6 +652,7 @@ void HTMLParserScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(host_);
   visitor->Trace(parser_blocking_script_);
+  visitor->Trace(force_deferred_scripts_);
   visitor->Trace(scripts_to_execute_after_parsing_);
   PendingScriptClient::Trace(visitor);
 }

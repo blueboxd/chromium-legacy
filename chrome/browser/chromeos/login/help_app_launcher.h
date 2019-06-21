@@ -37,6 +37,9 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_DEVICE_ATTRIBUTES = 6218780,
     // Shown as "Learn more" for TPM firmware udpate option in reset screen.
     HELP_TPM_FIRMWARE_UPDATE = 7507584,
+    // Shown as "Learn more" for Wilco notifications.
+    // TODO(crbug.com/976788): Set the right topic for each notification.
+    HELP_WILCO = 0,
   };
 
   // The dialog is shown as a child of |parent_window|. If |parent_window| is

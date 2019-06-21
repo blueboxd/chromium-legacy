@@ -20,7 +20,7 @@ class FakeTabletModeController : public ash::TabletMode {
   // ash::mojom::TabletModeController:
   void SetTabletModeToggleObserver(
       ash::TabletModeToggleObserver* observer) override;
-  bool IsEnabled() const override;
+  bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
  private:

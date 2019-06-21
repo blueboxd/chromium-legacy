@@ -37,6 +37,9 @@ Polymer({
 
     /** @private */
     isFolder_: Boolean,
+
+    /** @private */
+    lastTouchPoints_: Number,
   },
 
   hostAttributes: {
@@ -55,6 +58,7 @@ Polymer({
     'auxclick': 'onMiddleClick_',
     'mousedown': 'cancelMiddleMouseBehavior_',
     'mouseup': 'cancelMiddleMouseBehavior_',
+    'touchstart': 'onTouchStart_',
   },
 
   /** @override */
@@ -82,6 +86,14 @@ Polymer({
   onContextMenu_: function(e) {
     e.preventDefault();
     e.stopPropagation();
+
+    // Prevent context menu from appearing after a drag, but allow opening the
+    // context menu through 2 taps
+    if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents &&
+        this.lastTouchPoints_ !== 2) {
+      return;
+    }
+
     this.focus();
     if (!this.isSelectedItem_) {
       this.selectThisItem_();
@@ -207,6 +219,14 @@ Polymer({
     if (commandManager.canExecute(command, itemSet)) {
       commandManager.handle(command, itemSet);
     }
+  },
+
+  /**
+   * @param {TouchEvent} e
+   * @private
+   */
+  onTouchStart_: function(e) {
+    this.lastTouchPoints_ = e.touches.length;
   },
 
   /**

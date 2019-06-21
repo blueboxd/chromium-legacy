@@ -28,8 +28,8 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_switches.h"
@@ -608,8 +608,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // TODO(isherman): The delay below is currently needed to avoid (flakily)
   // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
   // tests. Figure out why there is a dependency and fix the tests.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  service_manager::Connector* connector = content::GetSystemConnector();
 
   auto background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(background_task_traits);

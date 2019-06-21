@@ -21,7 +21,7 @@
 #include "components/update_client/component_patcher_operation.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -96,9 +96,7 @@ class PatchTest : public InProcessBrowserTest {
     done_called_ = false;
 
     std::unique_ptr<service_manager::Connector> connector =
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone();
+        content::GetSystemConnector()->Clone();
     base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
         ->PostTask(
             FROM_HERE,

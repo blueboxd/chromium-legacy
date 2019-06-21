@@ -61,6 +61,8 @@ class TestDelegate : public mojom::SwitchAccessEventHandlerDelegate {
     key_events_.push_back(std::make_unique<ui::KeyEvent>(event->AsKeyEvent()));
   }
 
+  void SendSwitchAccessCommand(mojom::SwitchAccessCommand command) override {}
+
   mojo::Binding<mojom::SwitchAccessEventHandlerDelegate> binding_;
   std::vector<std::unique_ptr<ui::KeyEvent>> key_events_;
 
@@ -104,6 +106,22 @@ class SwitchAccessEventHandlerTest : public AshTestBase {
   TestDelegate* GetDelegate() {
     controller_->FlushMojoForTest();
     return delegate_.get();
+  }
+
+  const std::set<int> GetKeyCodesToCapture() {
+    SwitchAccessEventHandler* handler =
+        controller_->GetSwitchAccessEventHandlerForTest();
+    if (handler)
+      return handler->key_codes_to_capture_for_test();
+    return std::set<int>();
+  }
+
+  const std::map<int, mojom::SwitchAccessCommand> GetCommandForKeyCodeMap() {
+    SwitchAccessEventHandler* handler =
+        controller_->GetSwitchAccessEventHandlerForTest();
+    if (handler)
+      return handler->command_for_key_code_map_for_test();
+    return std::map<int, mojom::SwitchAccessCommand>();
   }
 
  protected:
@@ -241,6 +259,92 @@ TEST_F(SwitchAccessEventHandlerTest, ForwardKeyEvents) {
 
   // Release the "T" key.
   generator_->ReleaseKey(ui::VKEY_T, ui::EF_NONE);
+}
+
+TEST_F(SwitchAccessEventHandlerTest, SetKeyCodesForCommand) {
+  SwitchAccessEventHandler* handler =
+      controller_->GetSwitchAccessEventHandlerForTest();
+  EXPECT_NE(nullptr, handler);
+
+  // Both the key codes to capture and the command map should be empty.
+  EXPECT_EQ(0ul /* unsigned long */, GetKeyCodesToCapture().size());
+  EXPECT_EQ(0ul /* unsigned long */, GetCommandForKeyCodeMap().size());
+
+  // Set key codes for Select command.
+  std::set<int> new_key_codes;
+  new_key_codes.insert(48 /* '0' */);
+  new_key_codes.insert(83 /* 's' */);
+  handler->SetKeyCodesForCommand(new_key_codes,
+                                 mojom::SwitchAccessCommand::kSelect);
+
+  // Check that values are added to both data structures.
+  std::set<int> kc_to_capture = GetKeyCodesToCapture();
+  EXPECT_EQ(2ul /* unsigned long */, kc_to_capture.size());
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(48));
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(83));
+
+  std::map<int, mojom::SwitchAccessCommand> command_map =
+      GetCommandForKeyCodeMap();
+  EXPECT_EQ(2ul /* unsigned long */, command_map.size());
+  EXPECT_EQ(mojom::SwitchAccessCommand::kSelect, command_map.at(48));
+  EXPECT_EQ(mojom::SwitchAccessCommand::kSelect, command_map.at(83));
+
+  // Set key codes for the Next command.
+  new_key_codes.clear();
+  new_key_codes.insert(49 /* '1' */);
+  new_key_codes.insert(78 /* 'n' */);
+  handler->SetKeyCodesForCommand(new_key_codes,
+                                 mojom::SwitchAccessCommand::kNext);
+
+  // Check that the new values are added and old values are not changed.
+  kc_to_capture = GetKeyCodesToCapture();
+  EXPECT_EQ(4ul /* unsigned long */, kc_to_capture.size());
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(49));
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(78));
+
+  command_map = GetCommandForKeyCodeMap();
+  EXPECT_EQ(4ul /* unsigned long */, command_map.size());
+  EXPECT_EQ(mojom::SwitchAccessCommand::kNext, command_map.at(49));
+  EXPECT_EQ(mojom::SwitchAccessCommand::kNext, command_map.at(78));
+
+  // Set key codes for the Previous command. Re-use a key code from above.
+  new_key_codes.clear();
+  new_key_codes.insert(49 /* '1' */);
+  new_key_codes.insert(80 /* 'p' */);
+  handler->SetKeyCodesForCommand(new_key_codes,
+                                 mojom::SwitchAccessCommand::kPrevious);
+
+  // Check that '1' has been remapped to Previous.
+  kc_to_capture = GetKeyCodesToCapture();
+  EXPECT_EQ(5ul /* unsigned long */, kc_to_capture.size());
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(49));
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(80));
+
+  command_map = GetCommandForKeyCodeMap();
+  EXPECT_EQ(5ul /* unsigned long */, command_map.size());
+  EXPECT_EQ(mojom::SwitchAccessCommand::kPrevious, command_map.at(49));
+  EXPECT_EQ(mojom::SwitchAccessCommand::kPrevious, command_map.at(80));
+  EXPECT_EQ(mojom::SwitchAccessCommand::kNext, command_map.at(78));
+
+  // Set a new key code for the Select command.
+  new_key_codes.clear();
+  new_key_codes.insert(51 /* '3' */);
+  new_key_codes.insert(83 /* 's' */);
+  handler->SetKeyCodesForCommand(new_key_codes,
+                                 mojom::SwitchAccessCommand::kSelect);
+
+  // Check that the previously set values for Select have been cleared.
+  kc_to_capture = GetKeyCodesToCapture();
+  EXPECT_EQ(5ul /* unsigned long */, kc_to_capture.size());
+  EXPECT_EQ(0ul /* unsigned long */, kc_to_capture.count(48));
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(51));
+  EXPECT_EQ(1ul /* unsigned long */, kc_to_capture.count(83));
+
+  command_map = GetCommandForKeyCodeMap();
+  EXPECT_EQ(5ul /* unsigned long */, command_map.size());
+  EXPECT_EQ(mojom::SwitchAccessCommand::kSelect, command_map.at(51));
+  EXPECT_EQ(mojom::SwitchAccessCommand::kSelect, command_map.at(83));
+  EXPECT_EQ(command_map.end(), command_map.find(48));
 }
 
 }  // namespace

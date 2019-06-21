@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.support.annotation.NonNull;
+
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.module_installer.ModuleInterface;
 import org.chromium.content_public.browser.WebContents;
 
@@ -15,5 +18,6 @@ import org.chromium.content_public.browser.WebContents;
         impl = "org.chromium.chrome.browser.autofill_assistant."
                 + "AutofillAssistantModuleEntryFactoryImpl")
 interface AutofillAssistantModuleEntryFactory {
-    AutofillAssistantModuleEntry createEntry(WebContents webContents);
+    AutofillAssistantModuleEntry createEntry(
+            @NonNull ChromeActivity activity, @NonNull WebContents webContents);
 }

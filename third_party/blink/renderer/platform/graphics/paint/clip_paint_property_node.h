@@ -34,18 +34,16 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   struct State {
     scoped_refptr<const TransformPaintPropertyNode> local_transform_space;
     FloatRoundedRect clip_rect;
-    base::Optional<FloatRoundedRect> clip_rect_excluding_overlay_scrollbars;
+    base::Optional<FloatClipRect> clip_rect_excluding_overlay_scrollbars;
     scoped_refptr<const RefCountedPath> clip_path;
-    CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 
     PaintPropertyChangeType ComputeChange(const State& other) const {
       if (local_transform_space != other.local_transform_space ||
           clip_rect != other.clip_rect || clip_path != other.clip_path) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      if (direct_compositing_reasons != other.direct_compositing_reasons ||
-          clip_rect_excluding_overlay_scrollbars !=
-              other.clip_rect_excluding_overlay_scrollbars) {
+      if (clip_rect_excluding_overlay_scrollbars !=
+          other.clip_rect_excluding_overlay_scrollbars) {
         return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
       }
       return PaintPropertyChangeType::kUnchanged;
@@ -112,17 +110,13 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     return *Unalias().state_.local_transform_space;
   }
   const FloatRoundedRect& ClipRect() const { return state_.clip_rect; }
-  const FloatRoundedRect& ClipRectExcludingOverlayScrollbars() const {
+  const FloatClipRect ClipRectExcludingOverlayScrollbars() const {
     return state_.clip_rect_excluding_overlay_scrollbars
                ? *state_.clip_rect_excluding_overlay_scrollbars
-               : state_.clip_rect;
+               : FloatClipRect(state_.clip_rect);
   }
 
   const RefCountedPath* ClipPath() const { return state_.clip_path.get(); }
-
-  bool HasDirectCompositingReasons() const {
-    return state_.direct_compositing_reasons != CompositingReason::kNone;
-  }
 
   std::unique_ptr<JSONObject> ToJSON() const;
 

@@ -58,7 +58,7 @@ void MockMediaStreamVideoSource::RequestRefreshFrame() {
     // TODO(crbug.com/964947): Remove the rebind of |frame_callback_|.
     PostCrossThreadTask(
         *io_task_runner(), FROM_HERE,
-        CrossThreadBind(frame_callback_, frame, base::TimeTicks()));
+        CrossThreadBindRepeating(frame_callback_, frame, base::TimeTicks()));
   }
 }
 
@@ -100,7 +100,8 @@ void MockMediaStreamVideoSource::DeliverVideoFrame(
   // TODO(crbug.com/964947): Remove the rebind of |frame_callback_|.
   PostCrossThreadTask(
       *io_task_runner(), FROM_HERE,
-      CrossThreadBind(frame_callback_, std::move(frame), base::TimeTicks()));
+      CrossThreadBindRepeating(frame_callback_, std::move(frame),
+                               base::TimeTicks()));
 }
 
 void MockMediaStreamVideoSource::StopSourceForRestartImpl() {

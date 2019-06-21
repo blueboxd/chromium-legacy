@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
@@ -153,7 +152,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       was_candidate_window_open_(false),
       window_shell_id_(window_shell_id) {
   SetCanActivate(false);
-  DCHECK(parent || features::IsUsingWindowService());
+  DCHECK(parent);
   set_parent_window(parent);
   set_margins(gfx::Insets());
 

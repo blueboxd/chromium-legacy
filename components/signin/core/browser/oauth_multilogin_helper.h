@@ -13,6 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/oauth_multilogin_token_fetcher.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -24,7 +27,6 @@ class SigninClient;
 
 namespace signin {
 
-class OAuthMultiloginTokenFetcher;
 enum class SetAccountsInCookieResult;
 
 // This is a helper class that drives the OAuth multilogin process.
@@ -38,7 +40,8 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   OAuthMultiloginHelper(
       SigninClient* signin_client,
       OAuth2TokenService* token_service,
-      const std::vector<std::string>& account_ids,
+      const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>&
+          accounts,
       const std::string& external_cc_result,
       base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback);
 
@@ -50,8 +53,8 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
 
   // Callbacks for OAuthMultiloginTokenFetcher.
   void OnAccessTokensSuccess(
-      const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>&
-          token_id_pairs);
+      const std::vector<OAuthMultiloginTokenFetcher::AccountIdTokenPair>&
+          account_token_pairs);
   void OnAccessTokensFailure(const GoogleServiceAuthError& error);
 
   // Actual call to the multilogin endpoint.
@@ -74,11 +77,11 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   int fetcher_retries_ = 0;
 
   // Account ids to set in the cookie.
-  const std::vector<std::string> account_ids_;
+  const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair> accounts_;
   // See GaiaCookieManagerService::ExternalCcResultFetcher for details.
   const std::string external_cc_result_;
   // Access tokens, in the same order as the account ids.
-  std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> token_id_pairs_;
+  std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> gaia_id_token_pairs_;
 
   base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;

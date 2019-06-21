@@ -28,7 +28,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -72,8 +71,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
                        NavigationBlockedInLockedFullscreen) {
   // Set locked fullscreen state.
   aura::Window* window = browser()->window()->GetNativeWindow();
-  if (features::IsUsingWindowService())
-    window = window->GetRootWindow();
   window->SetProperty(ash::kWindowPinTypeKey,
                       ash::WindowPinType::kTrustedPinned);
 

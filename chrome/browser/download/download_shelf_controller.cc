@@ -4,11 +4,14 @@
 
 #include "chrome/browser/download/download_shelf_controller.h"
 
+#include <utility>
+
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
 #include "chrome/browser/download/offline_item_model_manager_factory.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -19,7 +22,8 @@ using offline_items_collection::OfflineContentAggregator;
 
 DownloadShelfController::DownloadShelfController(Profile* profile)
     : profile_(profile) {
-  aggregator_ = OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
+  aggregator_ =
+      OfflineContentAggregatorFactory::GetForKey(profile_->GetProfileKey());
   aggregator_->AddObserver(this);
 }
 

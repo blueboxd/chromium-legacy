@@ -167,6 +167,12 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCaptionSettingsName[];
 extern const char kCaptionSettingsDescription[];
 
+extern const char kClickToCallReceiverName[];
+extern const char kClickToCallReceiverDescription[];
+
+extern const char kClickToCallUIName[];
+extern const char kClickToCallUIDescription[];
+
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
@@ -983,11 +989,11 @@ extern const char kSharingDeviceRegistrationDescription[];
 extern const char kShelfDenseClamshellName[];
 extern const char kShelfDenseClamshellDescription[];
 
+extern const char kShelfHotseatName[];
+extern const char kShelfHotseatDescription[];
+
 extern const char kShelfHoverPreviewsName[];
 extern const char kShelfHoverPreviewsDescription[];
-
-extern const char kShelfNewUiName[];
-extern const char kShelfNewUiDescription[];
 
 extern const char kShelfScrollableName[];
 extern const char kShelfScrollableDescription[];

@@ -47,7 +47,6 @@
 #include "ui/base/ime/chromeos/ime_keyboard_impl.h"
 #include "ui/base/ime/chromeos/input_method_delegate.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/input_method_menu_item.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
@@ -1372,9 +1371,6 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
 
 ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
-  // TODO(stevenjb/shuchen): Fix this for Mash. https://crbug.com/756059
-  if (features::IsMultiProcessMash())
-    return nullptr;
   // Callers expect a nullptr when the keyboard is disabled. See
   // https://crbug.com/850020.
   if (!keyboard::KeyboardController::HasInstance() ||

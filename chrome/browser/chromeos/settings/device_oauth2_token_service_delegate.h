@@ -124,7 +124,9 @@ class DeviceOAuth2TokenServiceDelegate
 
   void RequestValidation();
 
-  void SetValidationStatusDelegate(ValidationStatusDelegate* delegate);
+  void InitializeWithValidationStatusDelegate(
+      ValidationStatusDelegate* delegate);
+  void ClearValidationStatusDelegate();
 
   void ReportServiceError(GoogleServiceAuthError::State error);
 

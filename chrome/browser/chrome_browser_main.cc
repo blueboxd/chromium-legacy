@@ -169,13 +169,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/profiling.h"
-#include "content/public/common/service_manager_connection.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/localized_strings.h"
@@ -1558,9 +1558,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       language::GetOverrideLanguageModel() ==
           language::OverrideLanguageModel::GEO) {
     language::GeoLanguageProvider::GetInstance()->StartUp(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone(),
+        content::GetSystemConnector()->Clone(),
         browser_process_->local_state());
   }
 

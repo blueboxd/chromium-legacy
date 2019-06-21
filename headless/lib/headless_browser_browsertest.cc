@@ -265,8 +265,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
   ASSERT_TRUE(clipboard);
   base::string16 paste_text = base::ASCIIToUTF16("Clippy!");
   for (ui::ClipboardType type :
-       {ui::CLIPBOARD_TYPE_COPY_PASTE, ui::CLIPBOARD_TYPE_SELECTION,
-        ui::CLIPBOARD_TYPE_DRAG}) {
+       {ui::ClipboardType::kCopyPaste, ui::ClipboardType::kSelection,
+        ui::ClipboardType::kDrag}) {
     if (!ui::Clipboard::IsSupportedClipboardType(type))
       continue;
     {

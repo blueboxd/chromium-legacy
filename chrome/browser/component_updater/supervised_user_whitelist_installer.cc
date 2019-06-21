@@ -44,7 +44,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 namespace component_updater {
@@ -180,8 +180,7 @@ void CheckForSanitizedWhitelistOnTaskRunner(
   }
 
   data_decoder::JsonSanitizer::Sanitize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      unsafe_json,
+      content::GetSystemConnector(), unsafe_json,
       base::BindOnce(&OnWhitelistSanitizationResult, crx_id, task_runner,
                      callback),
       base::BindOnce(&OnWhitelistSanitizationError, whitelist_path));

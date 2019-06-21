@@ -206,8 +206,8 @@ public class PortalsTest {
     @MediumTest
     @Feature({"Portals"})
     public void testTouchTransfer() throws Exception {
-        mActivityTestRule.startMainActivityWithURL(
-                mTestServer.getURL("/chrome/test/data/android/portals/touch-transfer.html"));
+        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
+                "/chrome/test/data/android/portals/touch-transfer.html?event=overscroll"));
 
         ChromeActivity activity = mActivityTestRule.getActivity();
         Tab tab = activity.getActivityTab();
@@ -234,6 +234,45 @@ public class PortalsTest {
 
         // Continue and finish drag.
         TouchCommon.dragTo(activity, dragStartX, dragEndX, dragPauseY, dragEndY, 100, downTime);
+        TouchCommon.dragEnd(activity, dragEndX, dragEndY, downTime);
+
+        WebContents contents = mActivityTestRule.getWebContents();
+        Assert.assertTrue(Coordinates.createFor(contents).getScrollYPixInt() > 0);
+    }
+
+    /**
+     * Tests that touch is transferred after triggering portal activation on touchstart.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testTouchTransferAfterTouchStartActivate() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
+                "/chrome/test/data/android/portals/touch-transfer.html?event=touchstart"));
+
+        ChromeActivity activity = mActivityTestRule.getActivity();
+        Tab tab = activity.getActivityTab();
+        View contentView = tab.getContentView();
+        LayoutAfterTabContentsSwappedObserver layoutObserver =
+                new LayoutAfterTabContentsSwappedObserver(tab);
+        CallbackHelper layoutWaiter = layoutObserver.getCallbackHelper();
+        int currLayoutCount = layoutWaiter.getCallCount();
+
+        int dragStartX = 30;
+        int dragStartY = contentView.getHeight() / 2;
+        int dragEndX = dragStartX;
+        int dragEndY = 30;
+        long downTime = System.currentTimeMillis();
+
+        // Initial touch to trigger activation.
+        TouchCommon.dragStart(activity, dragStartX, dragStartY, downTime);
+
+        // Wait for the first layout after tab contents are swapped. This is needed as touch events
+        // sent before the first layout are dropped.
+        layoutWaiter.waitForCallback(currLayoutCount, 1);
+
+        // Continue and finish drag.
+        TouchCommon.dragTo(activity, dragStartX, dragEndX, dragStartY, dragEndY, 100, downTime);
         TouchCommon.dragEnd(activity, dragEndX, dragEndY, downTime);
 
         WebContents contents = mActivityTestRule.getWebContents();

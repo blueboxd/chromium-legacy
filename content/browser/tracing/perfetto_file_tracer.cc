@@ -14,7 +14,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
@@ -86,8 +86,8 @@ PerfettoFileTracer::PerfettoFileTracer()
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       background_drainer_(background_task_runner_) {
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      tracing::mojom::kServiceName, &consumer_host_);
+  GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                      &consumer_host_);
 
   const auto& chrome_config =
       tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();

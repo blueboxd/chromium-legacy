@@ -23,7 +23,6 @@
 #include "content/public/common/web_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -82,9 +81,6 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, NonModalTest) {
   dialog->ShowSystemDialog();
   EXPECT_FALSE(ash::ShellTestApi().IsSystemModalWindowOpen());
   aura::Window* window_to_test = dialog->dialog_window();
-  // In Mash, the AlwaysOnTop property will be set on the parent.
-  if (::features::IsUsingWindowService())
-    window_to_test = window_to_test->parent();
   EXPECT_TRUE(window_to_test->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 

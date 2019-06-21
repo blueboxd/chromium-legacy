@@ -156,7 +156,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
       is_valid, update_refresh_token_source_);
 
   std::string source_string = SourceToString(update_refresh_token_source_);
-  for (auto& diagnostic_observer : GetDiagnicsObservers()) {
+  for (auto& diagnostic_observer : GetDiagnosticsObservers()) {
     diagnostic_observer.OnRefreshTokenAvailableFromSource(account_id, is_valid,
                                                           source_string);
   }
@@ -175,7 +175,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   signin_metrics::RecordRefreshTokenRevokedFromSource(
       update_refresh_token_source_);
   std::string source_string = SourceToString(update_refresh_token_source_);
-  for (auto& diagnostic_observer : GetDiagnicsObservers()) {
+  for (auto& diagnostic_observer : GetDiagnosticsObservers()) {
     diagnostic_observer.OnRefreshTokenRevokedFromSource(account_id,
                                                         source_string);
   }

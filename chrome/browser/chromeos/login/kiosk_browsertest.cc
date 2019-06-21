@@ -75,8 +75,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -2421,10 +2421,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
     }
 
     auto handler = std::make_unique<audio::AudioStreamHandler>(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone(),
-        iter->second);
+        content::GetSystemConnector()->Clone(), iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;

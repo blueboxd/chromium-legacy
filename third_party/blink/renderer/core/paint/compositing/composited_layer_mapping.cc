@@ -65,9 +65,9 @@
 #include "third_party/blink/renderer/core/paint/frame_paint_timing.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -402,8 +402,7 @@ void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
   bool isolate = owning_layer_.ShouldIsolateCompositedDescendants();
 
   // non stacking context layers should never isolate
-  DCHECK((owning_layer_.StackingNode() &&
-          owning_layer_.GetLayoutObject().StyleRef().IsStackingContext()) ||
+  DCHECK(owning_layer_.GetLayoutObject().StyleRef().IsStackingContext() ||
          !isolate);
 
   graphics_layer_->SetIsRootForIsolatedGroup(isolate);
@@ -2774,16 +2773,8 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
   if (!parent->HasVisibleDescendant())
     return false;
 
-  if (!parent->StackingNode())
-    return false;
-
-#if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(parent->StackingNode());
-#endif
-
-  PaintLayerStackingNodeIterator normal_flow_iterator(*parent->StackingNode(),
-                                                      kAllChildren);
-  while (PaintLayer* child_layer = normal_flow_iterator.Next()) {
+  PaintLayerPaintOrderIterator iterator(*parent, kAllChildren);
+  while (PaintLayer* child_layer = iterator.Next()) {
     if (child_layer->HasCompositedLayerMapping())
       continue;
     if (child_layer->HasVisibleContent() ||

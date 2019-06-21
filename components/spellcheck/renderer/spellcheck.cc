@@ -215,8 +215,10 @@ void SpellCheck::Initialize(
 
   custom_dictionary_.Init(
       std::set<std::string>(custom_words.begin(), custom_words.end()));
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  PostDelayedSpellCheckTask(pending_request_param_.release());
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+  if (!spellcheck::UseBrowserSpellChecker()) {
+    PostDelayedSpellCheckTask(pending_request_param_.release());
+  }
 #endif
 
   spellcheck_enabled_ = enable;
@@ -344,48 +346,48 @@ bool SpellCheck::SpellCheckWord(
 bool SpellCheck::SpellCheckParagraph(
     const base::string16& text,
     WebVector<WebTextCheckingResult>* results) {
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Mac and Android have their own spell checkers,so this method won't be used
-  DCHECK(results);
-  std::vector<WebTextCheckingResult> textcheck_results;
-  size_t length = text.length();
-  size_t position_in_text = 0;
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+  if (!spellcheck::UseBrowserSpellChecker()) {
+    DCHECK(results);
+    std::vector<WebTextCheckingResult> textcheck_results;
+    size_t length = text.length();
+    size_t position_in_text = 0;
 
-  // Spellcheck::SpellCheckWord() automatically breaks text into words and
-  // checks the spellings of the extracted words. This function sets the
-  // position and length of the first misspelled word and returns false when
-  // the text includes misspelled words. Therefore, we just repeat calling the
-  // function until it returns true to check the whole text.
-  size_t misspelling_start = 0;
-  size_t misspelling_length = 0;
-  while (position_in_text <= length) {
-    if (SpellCheckWord(text.c_str(), position_in_text, length, kNoTag,
-                       &misspelling_start, &misspelling_length, nullptr)) {
-      results->Assign(textcheck_results);
-      return true;
-    }
+    // Spellcheck::SpellCheckWord() automatically breaks text into words and
+    // checks the spellings of the extracted words. This function sets the
+    // position and length of the first misspelled word and returns false when
+    // the text includes misspelled words. Therefore, we just repeat calling the
+    // function until it returns true to check the whole text.
+    size_t misspelling_start = 0;
+    size_t misspelling_length = 0;
+    while (position_in_text <= length) {
+      if (SpellCheckWord(text.c_str(), position_in_text, length, kNoTag,
+                         &misspelling_start, &misspelling_length, nullptr)) {
+        results->Assign(textcheck_results);
+        return true;
+      }
 
-    if (!custom_dictionary_.SpellCheckWord(
-            text, misspelling_start, misspelling_length)) {
-      textcheck_results.push_back(
-          WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling,
-                                base::checked_cast<int>(misspelling_start),
-                                base::checked_cast<int>(misspelling_length)));
+      if (!custom_dictionary_.SpellCheckWord(text, misspelling_start,
+                                             misspelling_length)) {
+        textcheck_results.push_back(
+            WebTextCheckingResult(blink::kWebTextDecorationTypeSpelling,
+                                  base::checked_cast<int>(misspelling_start),
+                                  base::checked_cast<int>(misspelling_length)));
+      }
+      position_in_text = misspelling_start + misspelling_length;
     }
-    position_in_text = misspelling_start + misspelling_length;
+    results->Assign(textcheck_results);
+    return false;
   }
-  results->Assign(textcheck_results);
-  return false;
-#else
-  // This function is only invoked for spell checker functionality that runs
-  // on the render thread. OSX and Android builds don't have that.
+#endif
+
+  // This function is only invoked if renderer(hunspell) spellchecker is used.
+  DCHECK(spellcheck::UseBrowserSpellChecker());
   NOTREACHED();
   return true;
-#endif
 }
 
-// OSX and Android use their own spell checkers
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheck::RequestTextChecking(
     const base::string16& text,
     std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
@@ -414,8 +416,7 @@ bool SpellCheck::InitializeIfNeeded() {
   return initialize_if_needed;
 }
 
-// OSX and Android don't have |pending_request_param_|
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
   if (!request)
     return;
@@ -426,8 +427,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 }
 #endif
 
-// Mac and Android use their platform engines instead.
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 

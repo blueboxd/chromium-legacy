@@ -431,7 +431,9 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
   for (const auto* current_clip = &guest.Clip().Unalias();
        current_clip != &home_clip;
        current_clip = SafeUnalias(current_clip->Parent())) {
-    if (!current_clip || current_clip->HasDirectCompositingReasons())
+    // If we had direct compositing reasons on a clip node, we would want to
+    // return false here.
+    if (!current_clip)
       return false;
     if (!IsNonCompositingAncestorOf(
             home.Transform().Unalias(),

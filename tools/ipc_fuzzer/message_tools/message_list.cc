@@ -64,7 +64,6 @@ static bool check_msgtable() {
 
 
 #if !defined(OS_ANDROID)
-  exemptions.push_back(JavaBridgeMsgStart);
   exemptions.push_back(MediaPlayerMsgStart);
   exemptions.push_back(EncryptedMediaMsgStart);
   exemptions.push_back(GinJavaBridgeMsgStart);

@@ -110,7 +110,7 @@ include_rules = [
   "+third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h",
   "+third_party/blink/public/platform/modules/notifications/web_notification_constants.h",
   "+third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h",
-  "+third_party/blink/public/platform/modules/sms/sms_manager.mojom.h",
+  "+third_party/blink/public/platform/modules/sms/sms_receiver.mojom.h",
   "+third_party/blink/public/public_buildflags.h",
   "+third_party/blink/public/web/web_ax_enums.h",
   "+third_party/blink/public/web/web_console_message.h",

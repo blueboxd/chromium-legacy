@@ -96,11 +96,11 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     device::mojom::XRHandedness handedness = device::mojom::XRHandedness::NONE;
     device::mojom::XRTargetRayMode target_ray_mode;
     bool emulated_position = false;
-    TimeTicks base_timestamp;
+    base::TimeTicks base_timestamp;
 
     InternalState(uint32_t source_id,
                   device::mojom::XRTargetRayMode,
-                  TimeTicks base_timestamp);
+                  base::TimeTicks base_timestamp);
     InternalState(const InternalState& other);
     ~InternalState();
   };

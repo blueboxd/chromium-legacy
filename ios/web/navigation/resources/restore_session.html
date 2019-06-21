@@ -120,15 +120,10 @@
     }
 
     /**
-     * Sends error message to native controller.
+     * print error and show blank page.
      */
     function handleError(message) {
       console.log("Error: " + message);
-      if (__gCrWeb.message) {
-        __gCrWeb.message.invokeOnHost(
-          {"command": "restoresession.error", "message": message});
-        __gCrWeb.message.invokeQueues();
-      }
       window.location.replace("about:blank");
     }
   </script>

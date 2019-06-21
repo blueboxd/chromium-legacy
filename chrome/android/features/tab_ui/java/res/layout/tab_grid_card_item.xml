@@ -13,6 +13,7 @@
         android:layout_margin="3dp"
         android:visibility="visible"/>
     <RelativeLayout
+        android:id="@+id/content_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"

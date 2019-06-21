@@ -297,11 +297,13 @@ class CreditCardSaveManagerTest : public testing::Test {
   }
 
   void ExpectUniqueFillableFormParsedUkm() {
-    auto entries = test_ukm_recorder_.GetEntriesByName(
+    ukm::TestUkmRecorder* test_ukm_recorder =
+        autofill_client_.GetTestUkmRecorder();
+    auto entries = test_ukm_recorder->GetEntriesByName(
         UkmDeveloperEngagementType::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder_.ExpectEntryMetric(
+      test_ukm_recorder->ExpectEntryMetric(
           entry, UkmDeveloperEngagementType::kDeveloperEngagementName,
           1 << AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS);
     }
@@ -345,17 +347,18 @@ class CreditCardSaveManagerTest : public testing::Test {
                     const char* entry_name,
                     int expected_metric_value,
                     size_t expected_num_matching_entries) {
-    auto entries = test_ukm_recorder_.GetEntriesByName(entry_name);
+    ukm::TestUkmRecorder* test_ukm_recorder =
+        autofill_client_.GetTestUkmRecorder();
+    auto entries = test_ukm_recorder->GetEntriesByName(entry_name);
     EXPECT_EQ(expected_num_matching_entries, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder_.ExpectEntryMetric(entry, metric_name,
+      test_ukm_recorder->ExpectEntryMetric(entry, metric_name,
                                            expected_metric_value);
     }
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;

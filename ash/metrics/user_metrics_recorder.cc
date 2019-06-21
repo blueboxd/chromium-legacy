@@ -164,8 +164,7 @@ void RecordShelfItemCounts() {
   for (const ShelfItem& item : ShelfModel::Get()->items()) {
     if (item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT)
       ++pinned_item_count;
-    else if (item.type != TYPE_APP_LIST_DEPRECATED &&
-             item.type != TYPE_BACK_BUTTON_DEPRECATED)
+    else
       ++unpinned_item_count;
   }
 

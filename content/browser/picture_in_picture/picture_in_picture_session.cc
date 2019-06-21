@@ -28,11 +28,7 @@ PictureInPictureSession::PictureInPictureSession(
   binding_.set_connection_error_handler(base::BindOnce(
       &PictureInPictureSession::OnConnectionError, base::Unretained(this)));
 
-  // TODO(mlamouri): figure out why this can be null and have the method return
-  // a const ref.
-  auto* controller = GetController();
-  if (controller)
-    controller->SetActiveSession(this);
+  GetController().SetActiveSession(this);
 
   // TODO(beccahughes): Pass PictureInPictureResult::kNotSupported back to
   // Blink.
@@ -40,11 +36,9 @@ PictureInPictureSession::PictureInPictureSession(
                                                             natural_size);
   DCHECK_EQ(PictureInPictureResult::kSuccess, result);
 
-  if (controller) {
-    controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
-    controller->SetAlwaysHideMuteButton(show_mute_button);
-    *window_size = controller->GetSize();
-  }
+  GetController().SetAlwaysHidePlayPauseButton(show_play_pause_button);
+  GetController().SetAlwaysHideMuteButton(show_mute_button);
+  *window_size = GetController().GetSize();
 }
 
 PictureInPictureSession::~PictureInPictureSession() {
@@ -63,14 +57,10 @@ void PictureInPictureSession::Update(
     bool show_mute_button) {
   player_id_ = MediaPlayerId(service_->render_frame_host_, player_id);
 
-  // The PictureInPictureWindowController instance may not have been created by
-  // the embedder.
-  if (auto* pip_controller = GetController()) {
-    pip_controller->EmbedSurface(surface_id.value(), natural_size);
-    pip_controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
-    pip_controller->SetAlwaysHideMuteButton(show_mute_button);
-    pip_controller->SetActiveSession(this);
-  }
+  GetController().EmbedSurface(surface_id.value(), natural_size);
+  GetController().SetAlwaysHidePlayPauseButton(show_play_pause_button);
+  GetController().SetAlwaysHideMuteButton(show_mute_button);
+  GetController().SetActiveSession(this);
 }
 
 void PictureInPictureSession::NotifyWindowResized(const gfx::Size& size) {
@@ -98,8 +88,7 @@ void PictureInPictureSession::StopInternal(StopCallback callback) {
   else
     observer_->OnStopped();
 
-  if (auto* controller = GetController())
-    controller->SetActiveSession(nullptr);
+  GetController().SetActiveSession(nullptr);
 
   // Reset must happen after everything is done as it will destroy |this|.
   service_->active_session_.reset();
@@ -114,8 +103,8 @@ WebContentsImpl* PictureInPictureSession::GetWebContentsImpl() {
   return static_cast<WebContentsImpl*>(service_->web_contents());
 }
 
-PictureInPictureWindowControllerImpl* PictureInPictureSession::GetController() {
-  return PictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
+PictureInPictureWindowControllerImpl& PictureInPictureSession::GetController() {
+  return *PictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
       GetWebContentsImpl());
 }
 

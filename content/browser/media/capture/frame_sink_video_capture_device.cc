@@ -21,7 +21,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -57,12 +57,9 @@ class ScopedFrameDoneHelper
 std::unique_ptr<service_manager::Connector> MaybeGetServiceConnector() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // In some testing contexts, the service manager connection isn't initialized.
-  if (auto* connection = ServiceManagerConnection::GetForProcess()) {
-    service_manager::Connector* connector = connection->GetConnector();
-    DCHECK(connector);
+  // In some testing environments, the system Connector isn't initialized.
+  if (auto* connector = GetSystemConnector())
     return connector->Clone();  // Clone for use on a different thread.
-  }
   return nullptr;
 }
 

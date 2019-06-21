@@ -574,68 +574,6 @@ html[darkmode=true] .customize-dialog::backdrop {
   width: 100%;
 }
 
-/* The box containing the slider */
-.switch {
-  background-color: #fff;
-  border-radius: 8px;
-  display: inline-block;
-  height: 12px;
-  left: 3px;
-  position: absolute;
-  top: 2px;
-  transition: background-color linear 80ms;
-  width: 28px;
-  z-index: 0;
-}
-
-/* Hide default checkbox */
-.switch input {
-  display: none;
-}
-
-/* Rounded background element for the toggle */
-.toggle {
-  background-color: #ccc;
-  border-radius: 34px;
-  bottom: 0;
-  cursor: pointer;
-  display: block;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: transform linear 80ms, background-color linear 80ms;
-}
-
-.toggle::before {
-  background-color: #fff;
-  border-radius: 50%;
-  bottom: -2px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  content: '';
-  display: block;
-  height: 16px;
-  left: -6px;
-  position: absolute;
-  transition: transform linear 80ms, background-color linear 80ms;
-  width: 16px;
-}
-
-input:checked + .toggle {
-  background-color: rgba(var(--GB600-rgb), .5);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-}
-
-input:focus + .toggle {
-  box-shadow: 0 0 1px rgb(33, 150, 243);
-}
-
-input:checked + .toggle::before {
-  -webkit-transform: translateX(26px);
-  background-color: rgb(var(--GB600-rgb));
-  transform: translateX(26px);
-}
-
 #error-notice-container {
   bottom: -50px;
   margin-bottom: 16px;
@@ -838,6 +776,7 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
   color: rgb(var(--GG700-rgb));
   height: 528px;
   padding: 0;
+  user-select: none;
   width: 800px;
 }
 
@@ -1372,6 +1311,12 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 100%;
 }
 
+#sh-hide.selected {
+  background-color: rgb(var(--GB050-rgb));
+  border-color: rgb(var(--GB600-rgb));
+  color: rgb(var(--GB600-rgb));
+}
+
 #sh-hide > div {
   margin-bottom: auto;
   margin-top: auto;
@@ -1388,13 +1333,100 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 24px;
 }
 
+.selected #sh-hide-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
 #sh-hide-title {
   font-weight: bold;
 }
 
-#sh-hide-toggle {
+#sh-hide-toggle-wrapper {
+  height: 16px;
   margin-inline-end: 20px;
   margin-inline-start: auto;
+  position: relative;
+  width: 34px;
+}
+
+/* The toggle's container. */
+.switch {
+  background-color: white;
+  border-radius: 8px;
+  display: inline-block;
+  height: 12px;
+  left: 3px;
+  position: absolute;
+  top: 2px;
+  transition: background-color linear 80ms;
+  width: 28px;
+  z-index: 0;
+}
+
+/* Hide the toggle's default checkbox. */
+.switch input {
+  opacity: 0;
+}
+
+/* The slider for the toggle. */
+.toggle {
+  background-color: #ccc;
+  border-radius: 34px;
+  bottom: 0;
+  cursor: pointer;
+  display: block;
+  left: -3px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: transform linear 80ms, background-color linear 80ms;
+}
+
+/* The knob for the toggle. */
+.toggle .knob {
+  background-color: white;
+  border-radius: 50%;
+  bottom: -2px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4);
+  content: '';
+  display: block;
+  height: 16px;
+  left: 0;
+  position: absolute;
+  transition: transform linear 80ms, background-color linear 80ms;
+  width: 16px;
+}
+
+/* Gray/blue highlight around the knob. */
+.toggle .highlight {
+  background-color: rgb(128, 134, 139);
+  border-radius: 50%;
+  height: 40px;
+  left: -12px;
+  opacity: 0;
+  position: absolute;
+  top: -14px;
+  transition: transform linear 80ms, opacity linear 80ms;
+  width: 40px;
+}
+
+input:checked + .toggle {
+  background-color: rgba(var(--GB600-rgb), .5);
+}
+
+input:focus + .toggle {
+  box-shadow: 0 0 1px rgb(33, 150, 243);
+}
+
+input:active + .toggle .highlight,
+#customization-menu:not(.using-mouse-nav) input:focus + .toggle .highlight {
+  opacity: .15;
+}
+
+input:checked + .toggle .knob,
+input:checked + .toggle .highlight {
+  background-color: rgb(var(--GB600-rgb));
+  transform: translateX(18px);
 }
 
 #colors-default-icon {

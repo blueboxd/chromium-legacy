@@ -508,14 +508,9 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           arc::IsArcAllowedForProfile(profile));
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
-  // TODO(mash): Support Chrome power settings in Mash. https://crbug.com/644348
-  bool enable_power_settings = !::features::IsMultiProcessMash();
-  html_source->AddBoolean("enablePowerSettings", enable_power_settings);
-  if (enable_power_settings) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::PowerHandler>(
-            profile->GetPrefs()));
-  }
+  html_source->AddBoolean("enablePowerSettings", true);
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
 
   html_source->AddBoolean(
       "showApps", base::FeatureList::IsEnabled(features::kAppManagement));

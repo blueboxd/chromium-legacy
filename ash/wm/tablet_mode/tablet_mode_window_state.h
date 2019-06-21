@@ -41,7 +41,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
 
   // Leaves the tablet mode by reverting to previous state object.
-  void LeaveTabletMode(wm::WindowState* window_state, bool was_in_overview);
+  void LeaveTabletMode(wm::WindowState* window_state);
 
   // WindowState::State overrides:
   void OnWMEvent(wm::WindowState* window_state,

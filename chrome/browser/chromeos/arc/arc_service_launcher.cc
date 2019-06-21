@@ -76,7 +76,7 @@
 #include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
@@ -111,9 +111,8 @@ ArcServiceLauncher::ArcServiceLauncher()
                      arc::IsArcVmEnabled() ? "1" : "0", 1));
 
   ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &cros_display_config);
   default_scale_factor_retriever_.Start(std::move(cros_display_config));
 }
 

@@ -23,6 +23,10 @@ namespace {
 // general corner in which the menu is displayed.
 const int kMenuViewBoundsBuffer = 100;
 
+// The buffers in dips around a scroll point where the scroll menu is shown.
+const int kScrollViewBoundsXBuffer = 110;
+const int kScrollViewBoundsYBuffer = 10;
+
 ui::GestureEvent CreateTapEvent() {
   return ui::GestureEvent(0, 0, 0, base::TimeTicks(),
                           ui::GestureEventDetails(ui::ET_GESTURE_TAP));
@@ -262,7 +266,7 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleShowsAndCloses) {
             controller->GetAutoclickEventType());
 }
 
-TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubblePositioning) {
+TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleDefaultPositioning) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
@@ -308,6 +312,60 @@ TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubblePositioning) {
                   GetMenuViewBounds().bottom_center()),
               kMenuViewBoundsBuffer);
     EXPECT_EQ(GetScrollViewBounds().x(), GetMenuViewBounds().x());
+  }
+}
+
+TEST_F(AutoclickMenuBubbleControllerTest, ScrollBubbleManualPositioning) {
+  UpdateDisplay("1000x800");
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetAutoclickEventType(mojom::AutoclickEventType::kScroll);
+
+  const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
+  for (auto& test : kTestCases) {
+    base::i18n::SetRTLForTesting(test.is_RTL);
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kTopRight);
+
+    // Start with a point no where near the autoclick menu.
+    gfx::Point point = gfx::Point(400, 400);
+    GetBubbleController()->SetScrollPoint(point);
+
+    // In-line with the point in the Y axis.
+    EXPECT_LT(abs(GetScrollViewBounds().right_center().y() - point.y()),
+              kScrollViewBoundsYBuffer);
+
+    // Off to the side, but relatively close, in the X axis.
+    if (test.is_RTL) {
+      EXPECT_LT(abs(GetScrollViewBounds().right() - point.x()),
+                kScrollViewBoundsXBuffer);
+    } else {
+      EXPECT_LT(abs(GetScrollViewBounds().x() - point.x()),
+                kScrollViewBoundsXBuffer);
+    }
+
+    // Moving the autoclick bubble doesn't impact the scroll bubble once it
+    // has been manually set.
+    gfx::Rect scroll_bounds = GetScrollViewBounds();
+    controller->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kBottomRight);
+    EXPECT_EQ(scroll_bounds, GetScrollViewBounds());
+
+    // If we position it by the edge of the screen, it should stay on-screen,
+    // regardless of LTR vs RTL.
+    point = gfx::Point(0, 0);
+    GetBubbleController()->SetScrollPoint(point);
+    EXPECT_LT(abs(GetScrollViewBounds().x() - point.x()),
+              kScrollViewBoundsXBuffer);
+    EXPECT_LT(abs(GetScrollViewBounds().y() - point.y()),
+              kScrollViewBoundsYBuffer);
+
+    point = gfx::Point(1000, 400);
+    GetBubbleController()->SetScrollPoint(point);
+    EXPECT_LT(abs(GetScrollViewBounds().right() - point.x()),
+              kScrollViewBoundsXBuffer);
+    EXPECT_LT(abs(GetScrollViewBounds().left_center().y() - point.y()),
+              kScrollViewBoundsYBuffer);
   }
 }
 

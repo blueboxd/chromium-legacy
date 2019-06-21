@@ -10,20 +10,20 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
-#include "components/spellcheck/common/spellcheck_result.h"
+#include "components/spellcheck/browser/spellcheck_platform.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-#if !defined(OS_MACOSX)
-// Mac needs different constructor and destructor for Mac-only members.
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spelling_request.h"
+#endif
 
 SpellCheckHostChromeImpl::SpellCheckHostChromeImpl(
     const service_manager::Identity& renderer_identity)
     : renderer_identity_(renderer_identity), weak_factory_(this) {}
 
 SpellCheckHostChromeImpl::~SpellCheckHostChromeImpl() = default;
-#endif
 
 // static
 void SpellCheckHostChromeImpl::Create(
@@ -64,7 +64,7 @@ void SpellCheckHostChromeImpl::NotifyChecked(const base::string16& word,
     spellcheck->GetMetrics()->RecordCheckedWordStats(word, misspelled);
 }
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 void SpellCheckHostChromeImpl::CallSpellingService(
     const base::string16& text,
     CallSpellingServiceCallback callback) {
@@ -123,7 +123,74 @@ std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
 
   return results;
 }
-#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+
+void SpellCheckHostChromeImpl::CheckSpelling(const base::string16& word,
+                                             int route_id,
+                                             CheckSpellingCallback callback) {
+  bool correct = spellcheck_platform::CheckSpelling(word, route_id);
+  std::move(callback).Run(correct);
+}
+
+void SpellCheckHostChromeImpl::FillSuggestionList(
+    const base::string16& word,
+    FillSuggestionListCallback callback) {
+  std::vector<base::string16> suggestions;
+  spellcheck_platform::FillSuggestionList(word, &suggestions);
+  std::move(callback).Run(suggestions);
+}
+
+void SpellCheckHostChromeImpl::RequestTextCheck(
+    const base::string16& text,
+    int route_id,
+    RequestTextCheckCallback callback) {
+  DCHECK(!text.empty());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Initialize the spellcheck service if needed. The service will send the
+  // language code for text breaking to the renderer. (Text breaking is required
+  // for the context menu to show spelling suggestions.) Initialization must
+  // happen on UI thread.
+  GetSpellcheckService();
+
+  // |SpellingRequest| self-destructs on completion.
+  // OK to store unretained |this| in a |SpellingRequest| owned by |this|.
+  requests_.insert(std::make_unique<SpellingRequest>(
+      &client_, text, renderer_identity_, route_id, std::move(callback),
+      base::BindOnce(&SpellCheckHostChromeImpl::OnRequestFinished,
+                     base::Unretained(this))));
+}
+
+void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
+  auto iterator = requests_.find(request);
+  requests_.erase(iterator);
+}
+
+// static
+void SpellCheckHostChromeImpl::CombineResultsForTesting(
+    std::vector<SpellCheckResult>* remote_results,
+    const std::vector<SpellCheckResult>& local_results) {
+  SpellingRequest::CombineResults(remote_results, local_results);
+}
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+int SpellCheckHostChromeImpl::ToDocumentTag(int route_id) {
+  if (!tag_map_.count(route_id))
+    tag_map_[route_id] = spellcheck_platform::GetDocumentTag();
+  return tag_map_[route_id];
+}
+
+// TODO(groby): We are currently not notified of retired tags. We need
+// to track destruction of RenderViewHosts on the browser process side
+// to update our mappings when a document goes away.
+void SpellCheckHostChromeImpl::RetireDocumentTag(int route_id) {
+  spellcheck_platform::CloseDocumentWithTag(ToDocumentTag(route_id));
+  tag_map_.erase(route_id);
+}
+#endif  // defined(OS_MACOSX)
 
 SpellcheckService* SpellCheckHostChromeImpl::GetSpellcheckService() const {
   return SpellcheckServiceFactory::GetForRenderer(renderer_identity_);

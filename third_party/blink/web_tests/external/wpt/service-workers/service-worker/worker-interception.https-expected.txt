@@ -7,7 +7,9 @@ PASS Verify a cors worker script served by a service worker fails dedicated work
 PASS Verify a cors worker script served by a service worker fails shared worker start.
 PASS Verify a no-cors cross-origin worker script served by a service worker fails dedicated worker start.
 PASS Verify a no-cors cross-origin worker script served by a service worker fails shared worker start.
-PASS Verify subresource requests on a dedicated worker controlled by a service worker.
-FAIL Verify subresource requests on a shared worker controlled by a service worker. assert_equals: expected "finish" but got "failure:Error: assert_equals: expected \"This load was successfully intercepted.\" but got \"Unexpected error! Worker is not defined\""
+FAIL Verify subresource requests on a dedicated worker controlled by a service worker. assert_equals: expected "finish" but got "failure:Error: assert_equals: expected \"This load was successfully intercepted.\" but got \"{\\\"error\\": {\\"message\\": \\"\\", \\"code\\": 404}}\""
+PASS Verify subresource requests on a shared worker controlled by a service worker.
+FAIL Verify subresource requests on a nested dedicated worker created from a dedicated worker and controlled by a service worker. assert_equals: expected "finish" but got "failure:Error: assert_equals: expected \"This load was successfully intercepted.\" but got \"{\\\"error\\": {\\"message\\": \\"\\", \\"code\\": 404}}\""
+FAIL Verify subresource requests on a nested dedicated worker created from a shared worker and controlled by a service worker. assert_equals: expected "finish" but got "failure:Error: assert_equals: expected \"This load was successfully intercepted.\" but got \"Unexpected error! Worker is not defined\""
 Harness: the test ran to completion.
 

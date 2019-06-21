@@ -94,7 +94,6 @@ enum TextStyle {
 VIEWS_EXPORT const gfx::FontList& GetFont(int context, int style);
 VIEWS_EXPORT SkColor GetColor(const views::View& view, int context, int style);
 VIEWS_EXPORT int GetLineHeight(int context, int style);
-VIEWS_EXPORT int GetExpectedTextWidth(int context, int style, int length);
 
 }  // namespace style
 }  // namespace views

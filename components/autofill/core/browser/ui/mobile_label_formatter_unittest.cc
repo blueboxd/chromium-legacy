@@ -217,13 +217,14 @@ TEST(MobileLabelFormatterTest,
   // different names.
   profileB = GetProfileA();
   profileB.SetInfo(NAME_FIRST, base::ASCIIToUTF16("firstB"), "en-US");
+  profileB.SetInfo(NAME_LAST, base::ASCIIToUTF16("lastB"), "en-US");
   profiles = {&profileA, &profileB};
 
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusContactFieldTypes());
-  EXPECT_THAT(
-      formatter->GetLabels(),
-      ElementsAre(base::ASCIIToUTF16("firstA"), base::ASCIIToUTF16("firstB")));
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("firstA lastA"),
+                          base::ASCIIToUTF16("firstB lastB")));
 
   // Tests that a phone number is shown when the address cannot be shown, when
   // profiles have the same data for unfocused form fields, and when the form
@@ -254,9 +255,9 @@ TEST(MobileLabelFormatterTest,
   profiles = {&profileA, &profileB};
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressOnlyFieldTypes());
-  EXPECT_THAT(
-      formatter->GetLabels(),
-      ElementsAre(base::ASCIIToUTF16("firstA"), base::ASCIIToUTF16("firstA")));
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("firstA lastA"),
+                          base::ASCIIToUTF16("firstA lastA")));
 }
 
 TEST(MobileLabelFormatterTest,
@@ -294,7 +295,7 @@ TEST(MobileLabelFormatterTest,
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressOnlyFieldTypes());
   EXPECT_THAT(formatter->GetLabels(),
-              ElementsAre(base::ASCIIToUTF16("firstA")));
+              ElementsAre(base::ASCIIToUTF16("firstA lastA")));
 }
 
 TEST(MobileLabelFormatterTest, GetLabels_DistinctProfiles_ShowAll) {
@@ -422,7 +423,7 @@ TEST(MobileLabelFormatterTest, GetDefaultLabel_ShowAll) {
       LabelFormatter::Create(profiles, "en-US", PHONE_HOME_WHOLE_NUMBER,
                              {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER});
   EXPECT_THAT(formatter->GetLabels(),
-              ElementsAre(base::ASCIIToUTF16("firstA")));
+              ElementsAre(base::ASCIIToUTF16("firstA lastA")));
 
   // Tests that a non street address is shown when a form contains only
   // non focused street address fields and a focused non street address.

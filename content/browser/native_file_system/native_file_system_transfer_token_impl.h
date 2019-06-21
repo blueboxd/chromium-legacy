@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_TRANSFER_TOKEN_IMPL_H_
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_TRANSFER_TOKEN_IMPL_H_
 
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom.h"
@@ -19,12 +20,13 @@ namespace content {
 class NativeFileSystemTransferTokenImpl
     : public blink::mojom::NativeFileSystemTransferToken {
  public:
+  using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
+
   enum class HandleType { kFile, kDirectory };
 
-  NativeFileSystemTransferTokenImpl(
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system,
-      HandleType type);
+  NativeFileSystemTransferTokenImpl(const storage::FileSystemURL& url,
+                                    const SharedHandleState& handle_state,
+                                    HandleType type);
 
   const base::UnguessableToken& token() const { return token_; }
   const storage::FileSystemURL& url() const { return url_; }
@@ -36,7 +38,7 @@ class NativeFileSystemTransferTokenImpl
  private:
   const base::UnguessableToken token_;
   const storage::FileSystemURL url_;
-  const storage::IsolatedContext::ScopedFSHandle file_system_;
+  const SharedHandleState handle_state_;
   const HandleType type_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemTransferTokenImpl);

@@ -25,6 +25,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -58,6 +59,7 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/test/test_data_pipe_getter.h"
@@ -1936,6 +1938,58 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
 
     EXPECT_TRUE(client.has_received_completion());
     EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client.completion_status().error_code);
+  }
+}
+
+TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
+  base::HistogramTester histograms;
+
+  TestURLLoaderClient client;
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  client.RunUntilRedirectReceived();
+
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader(net::HttpRequestHeaders::kReferer,
+                             "https://somewhere.test/");
+  redirect_headers.SetHeader(net::HttpRequestHeaders::kTransferEncoding, "Hat");
+  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+
+  client.RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_TRUE(client.has_received_completion());
+  EXPECT_EQ(net::OK, client.completion_status().error_code);
+
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.AddedOnRedirect", true, 1);
+  histograms.ExpectBucketCount(
+      "NetworkService.ConcerningRequestHeader.AddedOnRedirect", false, 0);
+  for (int i = 0; i < static_cast<int>(ConcerningHeaderId::kMaxValue); ++i) {
+    if (i == static_cast<int>(ConcerningHeaderId::kReferer) ||
+        i == static_cast<int>(ConcerningHeaderId::kTransferEncoding)) {
+      histograms.ExpectBucketCount(
+          "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect", i, 1);
+    } else {
+      histograms.ExpectBucketCount(
+          "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect", i, 0);
+    }
   }
 }
 

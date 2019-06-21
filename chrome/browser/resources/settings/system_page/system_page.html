@@ -29,9 +29,18 @@
         </cr-button>
       </template>
     </settings-toggle-button>
+
     <div id="proxy" class="settings-box" on-click="onProxyTap_"
-        actionable$="[[!isProxyEnforcedByPolicy_]]">
-      <div class="start">$i18n{proxySettingsLabel}</div>
+        actionable$="[[isProxyDefault_]]">
+      <div class="start" hidden$="[[!isProxyDefault_]]">
+        $i18n{proxySettingsLabel}
+      </div>
+      <div class="start" hidden$="[[!prefs.proxy.extensionId]]">
+        $i18n{proxySettingsExtensionLabel}
+      </div>
+      <div class="start" hidden$="[[!isProxyEnforcedByPolicy_]]">
+        $i18n{proxySettingsPolicyLabel}
+      </div>
       <cr-icon-button class="icon-external"
           hidden$="[[isProxyEnforcedByPolicy_]]"
           aria-label="$i18n{proxySettingsLabel}"></cr-icon-button>

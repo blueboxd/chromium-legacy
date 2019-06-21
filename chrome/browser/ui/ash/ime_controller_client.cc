@@ -10,7 +10,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -58,9 +58,8 @@ ImeControllerClient::~ImeControllerClient() {
 
 void ImeControllerClient::Init() {
   // Connect to the controller in ash.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &ime_controller_ptr_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &ime_controller_ptr_);
   BindAndSetClient();
 }
 

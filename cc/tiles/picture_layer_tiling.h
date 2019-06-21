@@ -40,8 +40,7 @@ class CC_EXPORT PictureLayerTilingClient {
   // Create a tile at the given content_rect (in the contents scale of the
   // tiling) This might return null if the client cannot create such a tile.
   virtual std::unique_ptr<Tile> CreateTile(const Tile::CreateInfo& info) = 0;
-  virtual gfx::Size CalculateTileSize(
-    const gfx::Size& content_bounds) const = 0;
+  virtual gfx::Size CalculateTileSize(const gfx::Size& content_bounds) = 0;
   // This invalidation region defines the area (if any, it can by null) that
   // tiles can not be shared between pending and active trees.
   virtual const Region* GetPendingInvalidation() = 0;

@@ -67,7 +67,7 @@ class MediaControlTimelineMetrics {
   State state_ = State::kInactive;
 
   // The following are only valid during a pointer gesture.
-  TimeTicks drag_start_time_ticks_;
+  base::TimeTicks drag_start_time_ticks_;
   float drag_delta_media_seconds_ = 0;
   float drag_sum_abs_delta_media_seconds_ = 0;
 };

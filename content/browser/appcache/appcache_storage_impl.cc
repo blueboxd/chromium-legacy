@@ -175,7 +175,7 @@ class AppCacheStorageImpl::DatabaseTask
 
   AppCacheStorageImpl* storage_;
   AppCacheDatabase* const database_;
-  DelegateReferenceVector delegates_;
+  std::vector<scoped_refptr<DelegateReference>> delegates_;
 
  private:
   void CallRun();
@@ -371,7 +371,10 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
 
 void AppCacheStorageImpl::GetAllInfoTask::RunCompleted() {
   DCHECK_EQ(1U, delegates_.size());
-  FOR_EACH_DELEGATE(delegates_, OnAllInfo(info_collection_.get()));
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnAllInfo(info_collection_.get());
+      });
 }
 
 // StoreOrLoadTask -------
@@ -517,7 +520,10 @@ void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
     DCHECK(cache_record_.cache_id == cache_id_);
     CreateCacheAndGroupFromRecords(&cache, &group);
   }
-  FOR_EACH_DELEGATE(delegates_, OnCacheLoaded(cache.get(), cache_id_));
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnCacheLoaded(cache.get(), cache_id_);
+      });
 }
 
 // GroupLoadTask -------
@@ -569,7 +575,10 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
       }
     }
   }
-  FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group.get(), manifest_url_));
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnGroupLoaded(group.get(), manifest_url_);
+      });
 }
 
 // StoreGroupAndCacheTask -------
@@ -782,10 +791,11 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
       group_->set_creation_time(group_record_.creation_time);
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
-  FOR_EACH_DELEGATE(
-      delegates_,
-      OnGroupAndNewestCacheStored(
-          group_.get(), cache_.get(), success_, would_exceed_quota_));
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnGroupAndNewestCacheStored(group_.get(), cache_.get(),
+                                              success_, would_exceed_quota_);
+      });
   group_ = nullptr;
   cache_ = nullptr;
 
@@ -1195,8 +1205,11 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
       storage_->working_set()->RemoveGroup(group_.get());
     }
   }
-  FOR_EACH_DELEGATE(
-      delegates_, OnGroupMadeObsolete(group_.get(), success_, response_code_));
+
+  AppCacheStorage::ForEachDelegate(
+      delegates_, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnGroupMadeObsolete(group_.get(), success_, response_code_);
+      });
   group_ = nullptr;
 }
 
@@ -1587,7 +1600,7 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
     scoped_refptr<AppCache> cache,
     scoped_refptr<DelegateReference> delegate_ref) {
   if (delegate_ref->delegate) {
-    DelegateReferenceVector delegates(1, delegate_ref);
+    std::vector<scoped_refptr<DelegateReference>> delegates(1, delegate_ref);
     CallOnMainResponseFound(
         &delegates, url, found_entry, GURL(), AppCacheEntry(),
         cache.get() ? cache->cache_id() : blink::mojom::kAppCacheNoCacheId,
@@ -1597,7 +1610,7 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
 }
 
 void AppCacheStorageImpl::CallOnMainResponseFound(
-    DelegateReferenceVector* delegates,
+    std::vector<scoped_refptr<DelegateReference>>* delegates,
     const GURL& url,
     const AppCacheEntry& entry,
     const GURL& namespace_entry_url,
@@ -1605,11 +1618,12 @@ void AppCacheStorageImpl::CallOnMainResponseFound(
     int64_t cache_id,
     int64_t group_id,
     const GURL& manifest_url) {
-  FOR_EACH_DELEGATE(
-      (*delegates),
-      OnMainResponseFound(url, entry,
-                          namespace_entry_url, fallback_entry,
-                          cache_id, group_id, manifest_url));
+  AppCacheStorage::ForEachDelegate(
+      *delegates, [&](AppCacheStorage::Delegate* delegate) {
+        delegate->OnMainResponseFound(url, entry, namespace_entry_url,
+                                      fallback_entry, cache_id, group_id,
+                                      manifest_url);
+      });
 }
 
 void AppCacheStorageImpl::FindResponseForSubRequest(

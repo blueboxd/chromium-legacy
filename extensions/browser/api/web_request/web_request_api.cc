@@ -81,7 +81,6 @@
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -813,9 +812,6 @@ void WebRequestAPI::ForceProxyForTesting() {
 
 bool WebRequestAPI::MayHaveProxies() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-
   if (base::FeatureList::IsEnabled(
           extensions_features::kForceWebRequestProxyForTest)) {
     return true;
@@ -825,9 +821,6 @@ bool WebRequestAPI::MayHaveProxies() const {
 }
 
 void WebRequestAPI::UpdateMayHaveProxies() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   bool may_have_proxies = MayHaveProxies();
   if (!may_have_proxies_ && may_have_proxies) {
     content::BrowserContext::GetDefaultStoragePartition(browser_context_)

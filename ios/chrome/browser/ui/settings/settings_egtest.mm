@@ -27,7 +27,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -553,7 +552,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 // Verifies the UI elements are accessible on the Settings page.
 - (void)testAccessibilityOnSettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
@@ -562,7 +561,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnContentSettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -573,7 +572,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI tapSettingsMenuButton:ContentSettingsButton()];
   [[EarlGrey selectElementWithMatcher:BlockPopupsButton()]
       performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -581,7 +580,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnPrivacySettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -592,7 +591,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [[EarlGrey selectElementWithMatcher:PrivacyHandoffButton()]
       performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -602,7 +601,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -611,7 +610,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnBandwidthManagementSettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:BandwidthSettingsButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -622,7 +621,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI tapSettingsMenuButton:BandwidthSettingsButton()];
   [[EarlGrey selectElementWithMatcher:BandwidthPreloadWebpagesButton()]
       performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -631,7 +630,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SearchEngineButton()]
       performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -639,7 +638,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnPaymentMethods {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:PaymentMethodsButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -647,7 +646,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnAddresses {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:AddressesButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -655,7 +654,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnGoogleChrome {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleChromeButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -663,7 +662,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 - (void)testAccessibilityOnVoiceSearch {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:VoiceSearchButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 
@@ -728,7 +727,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [ChromeEarlGreyUI tapPrivacyMenuButton:SendUsageDataButton()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [self closeSubSettingsMenu];
 }
 

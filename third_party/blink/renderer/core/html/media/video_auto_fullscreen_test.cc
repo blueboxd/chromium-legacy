@@ -158,4 +158,30 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenDoesNotPauseWithPlaysInline) {
   EXPECT_FALSE(Video()->paused());
 }
 
+TEST_F(VideoAutoFullscreen, OnPlayTriggersFullscreenWithoutGesture) {
+  Video()->SetSrc("http://example.com/foo.mp4");
+  {
+    std::unique_ptr<UserGestureIndicator> user_gesture_scope =
+        LocalFrame::NotifyUserActivation(GetFrame(),
+                                         UserGestureToken::kNewGesture);
+    Video()->Play();
+  }
+  MakeGarbageCollected<WaitForEvent>(Video(), event_type_names::kPlay);
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(Video()->IsFullscreen());
+
+  GetWebView()->ExitFullscreen(*GetFrame());
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(Video()->paused());
+  EXPECT_FALSE(Video()->IsFullscreen());
+
+  Video()->Play();
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(Video()->paused());
+  EXPECT_TRUE(Video()->IsFullscreen());
+}
+
 }  // namespace blink

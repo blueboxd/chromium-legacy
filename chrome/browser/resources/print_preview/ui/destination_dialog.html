@@ -46,10 +46,8 @@
         height: calc(100vh - 2 * var(--print-preview-dialog-margin));
       }
 
-      #dialog {
-        --cr-dialog-body-container: {
-          flex: 1;
-        };
+      #dialog::part(body-container) {
+        flex: 1;
       }
 
       print-preview-search-box {

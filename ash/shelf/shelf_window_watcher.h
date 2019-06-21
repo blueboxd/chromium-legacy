@@ -20,9 +20,6 @@ class ShelfModel;
 // ShelfWindowWatcher manages ShelfItems for dialogs in the default container
 // with valid ShelfItemType and ShelfID window properties (ie. task manager).
 // ShelfWindowWatcher also tracks the active shelf item via window activation.
-//
-// Some windows are experimentally given default properties in MultiProcessMash.
-// TODO(crbug.com/722496|887156): Resolve, KSV etc. tracking approach for Mash.
 class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
                            public ShellObserver {
  public:

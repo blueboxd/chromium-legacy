@@ -97,16 +97,11 @@ public class ProgressBarMediatorTest {
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), false);
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
 
-        // Mock key press before timeout and page load finish.
+        // Mock display timeout before page load finish.
         mTabObserver.getValue().onPageLoadStarted(mTab, SAMPLE_URL);
-        progressBarMediator.onKeyEvent();
-        Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
-        Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
-
-        // Mock display timeout before page load finish, and after key press.
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertEquals(mModel.get(ProgressBarProperties.IS_ENABLED), true);
-        Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), false);
+        Assert.assertEquals(mModel.get(ProgressBarProperties.IS_VISIBLE), true);
     }
 
     @Test

@@ -229,6 +229,9 @@ public class MockWebContents implements WebContents {
     public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {}
 
     @Override
+    public void setSpatialNavigationDisabled(boolean disabled) {}
+
+    @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {}
 

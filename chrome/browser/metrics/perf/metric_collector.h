@@ -21,9 +21,8 @@ namespace metrics {
 class SampledProfile;
 
 // Provides a common interface for metric collectors with custom trigger
-// definitions. Extends base::SupportWeakPtr to pass around the "this"
-// pointer across threads safely.
-class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
+// definitions.
+class MetricCollector {
  public:
   explicit MetricCollector(const std::string& name);
   explicit MetricCollector(const std::string& name,
@@ -75,6 +74,9 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
     DATA_COLLECTION_FAILED,
     NUM_OUTCOMES
   };
+
+  // Returns a WeakPtr to this instance.
+  virtual base::WeakPtr<MetricCollector> GetWeakPtr() = 0;
 
   // Saves the given outcome to the uma histogram associated with the collector.
   void AddToUmaHistogram(CollectionAttemptStatus outcome) const;

@@ -5,6 +5,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
@@ -235,6 +236,20 @@ AccessibilityPanelLayoutManager* GetLayoutManager() {
   // updates.
   return static_cast<AccessibilityPanelLayoutManager*>(
       container->layout_manager());
+}
+
+std::string PrefKeyForSwitchAccessCommand(mojom::SwitchAccessCommand command) {
+  switch (command) {
+    case mojom::SwitchAccessCommand::kSelect:
+      return prefs::kAccessibilitySwitchAccessSelectKeyCodes;
+    case mojom::SwitchAccessCommand::kNext:
+      return prefs::kAccessibilitySwitchAccessNextKeyCodes;
+    case mojom::SwitchAccessCommand::kPrevious:
+      return prefs::kAccessibilitySwitchAccessPreviousKeyCodes;
+    case mojom::SwitchAccessCommand::kNone:
+      NOTREACHED();
+      return "";
+  }
 }
 
 }  // namespace
@@ -790,6 +805,13 @@ void AccessibilityController::FlushMojoForTest() {
     switch_access_event_handler_->FlushMojoForTest();
 }
 
+SwitchAccessEventHandler*
+AccessibilityController::GetSwitchAccessEventHandlerForTest() {
+  if (switch_access_event_handler_)
+    return switch_access_event_handler_.get();
+  return nullptr;
+}
+
 void AccessibilityController::OnTabletModeStarted() {
   if (spoken_feedback_enabled())
     ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);
@@ -894,6 +916,21 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       prefs::kAccessibilitySwitchAccessEnabled,
       base::BindRepeating(&AccessibilityController::UpdateSwitchAccessFromPref,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+      base::BindRepeating(
+          &AccessibilityController::UpdateSwitchAccessKeyCodesFromPref,
+          base::Unretained(this), mojom::SwitchAccessCommand::kSelect));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessNextKeyCodes,
+      base::BindRepeating(
+          &AccessibilityController::UpdateSwitchAccessKeyCodesFromPref,
+          base::Unretained(this), mojom::SwitchAccessCommand::kNext));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+      base::BindRepeating(
+          &AccessibilityController::UpdateSwitchAccessKeyCodesFromPref,
+          base::Unretained(this), mojom::SwitchAccessCommand::kPrevious));
   pref_change_registrar_->Add(
       prefs::kAccessibilityVirtualKeyboardEnabled,
       base::BindRepeating(
@@ -1243,6 +1280,24 @@ void AccessibilityController::UpdateSwitchAccessFromPref() {
   NotifyAccessibilityStatusChanged();
 }
 
+void AccessibilityController::UpdateSwitchAccessKeyCodesFromPref(
+    mojom::SwitchAccessCommand command) {
+  if (!switch_access_event_handler_)
+    return;
+
+  DCHECK(active_user_prefs_);
+
+  std::string pref_key = PrefKeyForSwitchAccessCommand(command);
+  const base::ListValue* key_codes_pref = active_user_prefs_->GetList(pref_key);
+  std::set<int> key_codes;
+  for (const base::Value& v : *key_codes_pref) {
+    int key_code = v.GetInt();
+    key_codes.insert(key_code);
+  }
+
+  switch_access_event_handler_->SetKeyCodesForCommand(key_codes, command);
+}
+
 void AccessibilityController::MaybeCreateSwitchAccessEventHandler() {
   // Sometimes the handler is not yet created if the prefs change has taken
   // longer to propogate than setting the delegate from Chrome.
@@ -1255,6 +1310,14 @@ void AccessibilityController::MaybeCreateSwitchAccessEventHandler() {
 
   switch_access_event_handler_ = std::make_unique<SwitchAccessEventHandler>(
       std::move(switch_access_event_handler_delegate_ptr_));
+
+  if (!active_user_prefs_)
+    return;
+
+  // Update the key codes for each command once the handler is initialized.
+  UpdateSwitchAccessKeyCodesFromPref(mojom::SwitchAccessCommand::kSelect);
+  UpdateSwitchAccessKeyCodesFromPref(mojom::SwitchAccessCommand::kNext);
+  UpdateSwitchAccessKeyCodesFromPref(mojom::SwitchAccessCommand::kPrevious);
 }
 
 void AccessibilityController::UpdateVirtualKeyboardFromPref() {

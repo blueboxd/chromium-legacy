@@ -169,7 +169,7 @@ class DownloadManagerCoordinatorImpl
     @Override
     public void openSettings() {
         RecordUserAction.record("Android.DownloadManager.Settings");
-        PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+        PreferencesLauncher.launchSettingsPageCompat(mActivity, DownloadPreferences.class);
     }
 
     private void notifyFilterChanged(@FilterType int filter) {

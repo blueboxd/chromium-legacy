@@ -30,7 +30,7 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &gurl_string);
+  clipboard->ReadAsciiText(ui::ClipboardType::kCopyPaste, &gurl_string);
   base::TrimWhitespaceASCII(gurl_string, base::TrimPositions::TRIM_ALL,
                             &gurl_string);
 
@@ -48,7 +48,7 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
     // Fall back to unicode / UTF16, as some URLs may use international domain
     // names, not punycode.
     base::string16 gurl_string16;
-    clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &gurl_string16);
+    clipboard->ReadText(ui::ClipboardType::kCopyPaste, &gurl_string16);
     base::TrimWhitespace(gurl_string16, base::TrimPositions::TRIM_ALL,
                          &gurl_string16);
     if (gurl_string16.find_first_of(base::kWhitespaceUTF16) !=

@@ -97,9 +97,10 @@ std::string SerializeStringFieldWithTag(int field, const std::string& value) {
 // Allows access to some private methods for testing.
 class TestMetricCollector : public MetricCollector {
  public:
-  TestMetricCollector() : MetricCollector("UMA.CWP.TestData") {}
+  TestMetricCollector() : TestMetricCollector(CollectionParams()) {}
   explicit TestMetricCollector(const CollectionParams& collection_params)
-      : MetricCollector("UMA.CWP.TestData", collection_params) {}
+      : MetricCollector("UMA.CWP.TestData", collection_params),
+        weak_factory_(this) {}
 
   void CollectProfile(
       std::unique_ptr<SampledProfile> sampled_profile) override {
@@ -107,6 +108,10 @@ class TestMetricCollector : public MetricCollector {
     SaveSerializedPerfProto(std::move(sampled_profile),
                             PerfProtoType::PERF_TYPE_DATA,
                             perf_data_proto.SerializeAsString());
+  }
+
+  base::WeakPtr<MetricCollector> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
   }
 
   using MetricCollector::collection_params;
@@ -118,6 +123,8 @@ class TestMetricCollector : public MetricCollector {
 
  private:
   std::vector<SampledProfile> stored_profiles_;
+
+  base::WeakPtrFactory<TestMetricCollector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetricCollector);
 };

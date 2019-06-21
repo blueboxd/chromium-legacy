@@ -49,7 +49,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -170,9 +170,8 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, url_loader_factory, pref_service, language_histogram,
-      base::BindRepeating(
-          &data_decoder::SafeJsonParser::Parse,
-          content::ServiceManagerConnection::GetForProcess()->GetConnector()),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
+                          content::GetSystemConnector()),
       GetFetchEndpoint(), api_key, user_classifier);
 
   auto provider = std::make_unique<RemoteSuggestionsProviderImpl>(

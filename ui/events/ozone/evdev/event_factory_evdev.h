@@ -21,9 +21,9 @@
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 #include "ui/events/ozone/gamepad/gamepad_event.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/sequential_id_generator.h"
+#include "ui/ozone/public/system_input_injector.h"
 
 namespace gfx {
 class PointF;

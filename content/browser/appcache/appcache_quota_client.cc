@@ -87,13 +87,13 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
     return;
   }
 
-  const AppCacheStorage::UsageMap* map = GetUsageMap();
-  auto found = map->find(origin);
-  if (found == map->end()) {
+  const std::map<url::Origin, int64_t>& map = GetUsageMap();
+  auto it = map.find(origin);
+  if (it == map.end()) {
     std::move(callback).Run(0);
     return;
   }
-  std::move(callback).Run(found->second);
+  std::move(callback).Run(it->second);
 }
 
 void AppCacheQuotaClient::GetOriginsForType(StorageType type,
@@ -182,7 +182,7 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   }
 
   std::set<url::Origin> origins;
-  for (const auto& pair : *GetUsageMap()) {
+  for (const auto& pair : GetUsageMap()) {
     if (opt_host.empty() || pair.first.host() == opt_host)
       origins.insert(pair.first);
   }
@@ -203,7 +203,7 @@ void AppCacheQuotaClient::DeletePendingRequests() {
   pending_serial_requests_.clear();
 }
 
-const AppCacheStorage::UsageMap* AppCacheQuotaClient::GetUsageMap() {
+const std::map<url::Origin, int64_t>& AppCacheQuotaClient::GetUsageMap() const {
   DCHECK(service_);
   return service_->storage()->usage_map();
 }

@@ -19,15 +19,23 @@ public class AwHistogramRecorder {
     @IntDef({WebViewCallbackType.ON_RECEIVED_LOGIN_REQUEST,
             WebViewCallbackType.ON_RECEIVED_CLIENT_CERT_REQUEST,
             WebViewCallbackType.ON_RECEIVED_HTTP_AUTH_REQUEST,
-            WebViewCallbackType.ON_DOWNLOAD_START})
-    @interface WebViewCallbackType {
+            WebViewCallbackType.ON_DOWNLOAD_START, WebViewCallbackType.ON_PAGE_STARTED,
+            WebViewCallbackType.ON_PAGE_FINISHED, WebViewCallbackType.ON_LOAD_RESOURCE,
+            WebViewCallbackType.ON_PAGE_COMMIT_VISIBLE,
+            WebViewCallbackType.SHOULD_OVERRIDE_URL_LOADING})
+    public @interface WebViewCallbackType {
         // These values are used for UMA. Don't reuse or reorder values.
         // If you add something, update NUM_ENTRIES.
         int ON_RECEIVED_LOGIN_REQUEST = 0;
         int ON_RECEIVED_CLIENT_CERT_REQUEST = 1;
         int ON_RECEIVED_HTTP_AUTH_REQUEST = 2;
         int ON_DOWNLOAD_START = 3;
-        int NUM_ENTRIES = 4;
+        int ON_PAGE_STARTED = 4;
+        int ON_PAGE_FINISHED = 5;
+        int ON_LOAD_RESOURCE = 6;
+        int ON_PAGE_COMMIT_VISIBLE = 7;
+        int SHOULD_OVERRIDE_URL_LOADING = 8;
+        int NUM_ENTRIES = 9;
     }
 
     // not meant to be instantiated

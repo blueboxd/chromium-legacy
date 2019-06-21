@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
@@ -588,15 +589,19 @@ TEST_P(PaintLayerTest, NegativeZIndexChangeToPositive) {
 
   PaintLayer* target = GetPaintLayerByElementId("target");
 
-  EXPECT_TRUE(target->StackingNode()->HasNegativeZOrderList());
-  EXPECT_FALSE(target->StackingNode()->HasPositiveZOrderList());
+  EXPECT_TRUE(
+      PaintLayerPaintOrderIterator(*target, kNegativeZOrderChildren).Next());
+  EXPECT_FALSE(
+      PaintLayerPaintOrderIterator(*target, kPositiveZOrderChildren).Next());
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "z-index: 1");
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(target->StackingNode()->HasNegativeZOrderList());
-  EXPECT_TRUE(target->StackingNode()->HasPositiveZOrderList());
+  EXPECT_FALSE(
+      PaintLayerPaintOrderIterator(*target, kNegativeZOrderChildren).Next());
+  EXPECT_TRUE(
+      PaintLayerPaintOrderIterator(*target, kPositiveZOrderChildren).Next());
 }
 
 TEST_P(PaintLayerTest, HasDescendantWithClipPath) {

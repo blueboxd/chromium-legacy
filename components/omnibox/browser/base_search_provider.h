@@ -151,6 +151,9 @@ class BaseSearchProvider : public AutocompleteProvider {
       const SearchSuggestionParser::SuggestResult& suggest_result,
       const TemplateURL* template_url);
 
+  // Callers should pass |sending_search_terms| as true if user input is being
+  // sent along with the |current_page_url|.
+  //
   // Returns whether we can send the URL of the current page in any suggest
   // requests.  Doing this requires that all the following hold:
   // * The suggest request is sent over HTTPS.  This avoids leaking the current
@@ -161,20 +164,24 @@ class BaseSearchProvider : public AutocompleteProvider {
   //   providers to see this data someday, but for now this has only been
   //   implemented for Google.
   // * The user is not on the NTP.
-  // * The current URL is HTTP, or HTTPS with the same domain as the suggest
-  //   server.  Non-HTTP[S] URLs (e.g. FTP/file URLs) may contain sensitive
-  //   information.  HTTPS URLs may also contain sensitive information, but if
-  //   they're on the same domain as the suggest server, then the relevant
-  //   entity could have already seen/logged this data.
-  // * The user consented to sending URLs of current page to Google and have
-  //   them associated with their Google account.
+  // * The current URL is HTTP or HTTPS.
+  // * Either one of:
+  //   * The user consented to sending URLs of current page to Google and have
+  //     them associated with their Google account.
+  //   * The suggest endpoint and current page URL are same-origin and
+  //     |sending_search_terms| is false. Same-origin suggest endpoints could
+  //     have already logged the current page URL when the user accessed it, but
+  //     Chrome still shouldn't leak the association between typed search terms
+  //     and which tab the user is looking at. On-focus suggest requests never
+  //     send search terms.
   static bool CanSendURL(
       const GURL& current_page_url,
       const GURL& suggest_url,
       const TemplateURL* template_url,
       metrics::OmniboxEventProto::PageClassification page_classification,
       const SearchTermsData& search_terms_data,
-      AutocompleteProviderClient* client);
+      AutocompleteProviderClient* client,
+      bool sending_search_terms);
 
   // If the |deletion_url| is valid, then set |match.deletable| to true and
   // save the |deletion_url| into the |match|'s additional info under

@@ -14,9 +14,11 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -33,6 +35,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
@@ -42,6 +45,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
@@ -63,6 +67,7 @@ import java.util.concurrent.ExecutionException;
  * Tests for the Settings menu.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@EnableFeatures(ChromeFeatureList.CAPTION_SETTINGS)
 public class PreferencesTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
@@ -311,12 +316,12 @@ public class PreferencesTest {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragment();
+                                                             .getMainFragmentCompat();
         SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
                 AccessibilityPreferences.PREF_TEXT_SCALE);
-        SeekBarLinkedCheckBoxPreference forceEnableZoomPref =
-                (SeekBarLinkedCheckBoxPreference) accessibilityPref
-                        .findPreference(AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
+        ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref =
+                (ChromeBaseCheckBoxPreferenceCompat) accessibilityPref.findPreference(
+                        AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
         NumberFormat percentFormat = NumberFormat.getPercentInstance();
         // Arbitrary value 0.4f to be larger and smaller than threshold.
         float fontSmallerThanThreshold =
@@ -352,6 +357,29 @@ public class PreferencesTest {
         userSetTextScale(accessibilityPref, textScalePref, fontSmallerThanThreshold);
         Assert.assertTrue(forceEnableZoomPref.isChecked());
         assertFontSizePrefs(true, fontSmallerThanThreshold);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Accessibility"})
+    public void testCaptionPreferences() throws Exception {
+        String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
+        AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
+                InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
+                                                             .getMainFragmentCompat();
+        android.support.v7.preference.Preference captionsPref =
+                accessibilityPref.findPreference(AccessibilityPreferences.PREF_CAPTIONS);
+        Assert.assertNotNull(captionsPref);
+        Assert.assertNotNull(captionsPref.getOnPreferenceClickListener());
+
+        Instrumentation.ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation().addMonitor(
+                        new IntentFilter(Settings.ACTION_CAPTIONING_SETTINGS), null, false);
+
+        onView(withText(R.string.accessibility_captions_title)).perform(click());
+        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
+        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
     }
 
     @Test
@@ -397,7 +425,7 @@ public class PreferencesTest {
     }
 
     private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
-            final SeekBarLinkedCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
+            final ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref, final boolean enabled) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
     }

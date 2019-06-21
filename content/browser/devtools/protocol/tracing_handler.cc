@@ -42,6 +42,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -243,6 +244,7 @@ class TracingHandler::TracingSession {
                               size_t approximate_event_count)>
           on_buffer_usage_callback) = 0;
   virtual bool HasTracingFailed() = 0;
+  virtual bool HasDataLossOccurred() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TracingSession);
@@ -285,6 +287,7 @@ class TracingHandler::LegacyTracingSession
   }
 
   bool HasTracingFailed() override { return false; }
+  bool HasDataLossOccurred() override { return false; }
 };
 
 class TracingHandler::PerfettoTracingSession
@@ -303,8 +306,8 @@ class TracingHandler::PerfettoTracingSession
     DCHECK(!tracing_active_);
     tracing_active_ = true;
 
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &consumer_host_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &consumer_host_);
 
     perfetto::TraceConfig perfetto_config =
         CreatePerfettoConfiguration(chrome_config);
@@ -338,6 +341,8 @@ class TracingHandler::PerfettoTracingSession
 
   void ChangeTraceConfig(
       const base::trace_event::TraceConfig& chrome_config) override {
+    if (!tracing_session_host_)
+      return;
     auto perfetto_config = CreatePerfettoConfiguration(chrome_config);
     tracing_session_host_->ChangeTraceConfig(perfetto_config);
   }
@@ -358,9 +363,10 @@ class TracingHandler::PerfettoTracingSession
     tracing_active_ = false;
 
     if (!tracing_session_host_) {
-      if (endpoint_)
+      if (endpoint_) {
+        // Will delete |this|.
         endpoint_->ReceiveTraceFinalContents(nullptr);
-
+      }
       return;
     }
 
@@ -391,27 +397,21 @@ class TracingHandler::PerfettoTracingSession
   void GetBufferUsage(base::OnceCallback<void(float percent_full,
                                               size_t approximate_event_count)>
                           on_buffer_usage_callback) override {
+    if (!tracing_session_host_) {
+      std::move(on_buffer_usage_callback).Run(0.0f, 0);
+      return;
+    }
     DCHECK(on_buffer_usage_callback);
     tracing_session_host_->RequestBufferUsage(base::BindOnce(
         &PerfettoTracingSession::OnBufferUsage, base::Unretained(this),
         std::move(on_buffer_usage_callback)));
   }
 
-  void OnBufferUsage(base::OnceCallback<void(float percent_full,
-                                             size_t approximate_event_count)>
-                         on_buffer_usage_callback,
-                     bool success,
-                     float percent_full) {
-    if (!success) {
-      std::move(on_buffer_usage_callback).Run(0.0f, 0);
-      return;
-    }
-    std::move(on_buffer_usage_callback).Run(percent_full, 0);
-  }
-
   bool HasTracingFailed() override {
     return tracing_active_ && !tracing_session_host_;
   }
+
+  bool HasDataLossOccurred() override { return data_loss_; }
 
   // tracing::mojom::TracingSessionClient implementation:
   void OnTracingEnabled() override {
@@ -484,8 +484,23 @@ class TracingHandler::PerfettoTracingSession
 
     if (endpoint_) {
       // TODO(oysteine): Signal to the client that tracing failed.
+      // Will delete |this|.
       endpoint_->ReceiveTraceFinalContents(nullptr);
     }
+  }
+
+  void OnBufferUsage(base::OnceCallback<void(float percent_full,
+                                             size_t approximate_event_count)>
+                         on_buffer_usage_callback,
+                     bool success,
+                     float percent_full,
+                     bool data_loss) {
+    if (!success) {
+      std::move(on_buffer_usage_callback).Run(0.0f, 0);
+      return;
+    }
+    data_loss_ |= data_loss;
+    std::move(on_buffer_usage_callback).Run(percent_full, 0);
   }
 
   // mojo::DataPipeDrainer::Client implementation:
@@ -507,8 +522,17 @@ class TracingHandler::PerfettoTracingSession
 
   void MaybeTraceComplete() {
     if (read_buffers_complete_ && data_complete_ && endpoint_) {
-      endpoint_->ReceiveTraceFinalContents(nullptr);
+      // Request stats to check if data loss occurred.
+      GetBufferUsage(base::BindOnce(&PerfettoTracingSession::OnFinalBufferUsage,
+                                    base::Unretained(this)));
     }
+  }
+
+  void OnFinalBufferUsage(float percent_full, size_t approximate_event_count) {
+    if (!endpoint_)
+      return;
+    // Will delete |this|.
+    endpoint_->ReceiveTraceFinalContents(nullptr);
   }
 
   mojo::Binding<tracing::mojom::TracingSessionClient> binding_{this};
@@ -526,6 +550,7 @@ class TracingHandler::PerfettoTracingSession
   bool data_complete_ = false;
   bool read_buffers_complete_ = false;
   bool tracing_active_ = false;
+  bool data_loss_ = false;
 
 #if DCHECK_IS_ON()
   base::trace_event::TraceConfig last_config_for_perfetto_;
@@ -630,8 +655,9 @@ void TracingHandler::OnTraceComplete() {
   DCHECK(!trace_data_buffer_state_.in_string);
   DCHECK(!trace_data_buffer_state_.slashed);
 
+  bool data_loss = session_->HasDataLossOccurred();
   session_.reset();
-  frontend_->TracingComplete();
+  frontend_->TracingComplete(data_loss);
 }
 
 std::string TracingHandler::UpdateTraceDataBuffer(
@@ -693,13 +719,15 @@ std::string TracingHandler::UpdateTraceDataBuffer(
 }
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
+  bool data_loss = session_->HasDataLossOccurred();
   session_.reset();
   std::string stream_format = (proto_format_ ? Tracing::StreamFormatEnum::Proto
                                              : Tracing::StreamFormatEnum::Json);
   std::string stream_compression =
       (gzip_compression_ ? Tracing::StreamCompressionEnum::Gzip
                          : Tracing::StreamCompressionEnum::None);
-  frontend_->TracingComplete(stream_handle, stream_format, stream_compression);
+  frontend_->TracingComplete(data_loss, stream_handle, stream_format,
+                             stream_compression);
 }
 
 void TracingHandler::Start(Maybe<std::string> categories,

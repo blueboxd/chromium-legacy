@@ -44,6 +44,10 @@ class ArcSystemModel {
   // in the model unchanged.
   void Trim(uint64_t trim_timestamp);
 
+  // Closes range for each value event type by extending the latest value till
+  // the |max_timestamp|.
+  void CloseRangeForValueEvents(uint64_t max_timestamp);
+
   void CopyFrom(const ArcSystemModel& other);
   base::DictionaryValue Serialize() const;
   bool Load(const base::Value* root);

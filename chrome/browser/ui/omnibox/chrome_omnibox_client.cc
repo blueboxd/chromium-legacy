@@ -477,7 +477,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(nullptr, BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
                        ProfileMetrics::GetBrowserProfileType(profile_));
 }
 

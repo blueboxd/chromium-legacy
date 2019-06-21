@@ -1248,6 +1248,14 @@ LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   return LocalFrame::LazyLoadImageSetting::kEnabledAutomatic;
 }
 
+bool LocalFrame::ShouldForceDeferScript() const {
+  // Check if enabled by runtime feature (for testing/evaluation) or if enabled
+  // by PreviewsState (for live intervention).
+  return RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
+         (Client() && Client()->GetPreviewsStateForFrame() ==
+                          WebURLRequest::kDeferAllScriptOn);
+}
+
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
   if (!url_loader_factory_)
     url_loader_factory_ = Client()->CreateURLLoaderFactory();

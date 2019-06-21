@@ -53,7 +53,9 @@ class ElementArea {
   // elements, which might be empty.
   void SetOnUpdate(
       base::RepeatingCallback<void(const RectF& visual_viewport,
-                                   const std::vector<RectF>& rectangles)> cb) {
+                                   const std::vector<RectF>& touchable_area,
+                                   const std::vector<RectF>& restricted_area)>
+          cb) {
     on_update_ = cb;
   }
 
@@ -64,7 +66,8 @@ class ElementArea {
   // not be empty.
   //
   // Note that the vector is not cleared before rectangles are added.
-  void GetRectangles(std::vector<RectF>* area);
+  void GetTouchableRectangles(std::vector<RectF>* area);
+  void GetRestrictedRectangles(std::vector<RectF>* area);
 
   // Gets the coordinates of the visual viewport, in CSS pixels relative to the
   // layout viewport. Empty if the size of the visual viewport is not known.
@@ -96,6 +99,7 @@ class ElementArea {
   struct Rectangle {
     std::vector<ElementPosition> positions;
     bool full_width = false;
+    bool restricted = false;
 
     Rectangle();
     Rectangle(const Rectangle& orig);
@@ -108,6 +112,9 @@ class ElementArea {
     void FillRect(RectF* rect, const RectF& visual_viewport) const;
   };
 
+  void AddRectangles(const ::google::protobuf::RepeatedPtrField<
+                         ElementAreaProto::Rectangle>& rectangles_proto,
+                     bool restricted);
   void OnGetElementPosition(const Selector& selector,
                             bool found,
                             const RectF& rect);
@@ -128,7 +135,8 @@ class ElementArea {
   base::RepeatingTimer timer_;
 
   base::RepeatingCallback<void(const RectF& visual_viewport,
-                               const std::vector<RectF>& rectangles)>
+                               const std::vector<RectF>& touchable_area,
+                               const std::vector<RectF>& restricted_area)>
       on_update_;
 
   base::WeakPtrFactory<ElementArea> weak_ptr_factory_;

@@ -58,6 +58,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {Gltf2Node} from '../js/cottontail/src/nodes/gltf2.js';
       import {QueryArgs} from '../js/cottontail/src/util/query-args.js';
       import {FallbackHelper} from '../js/cottontail/src/util/fallback-helper.js';
+      import {vec3} from '../js/cottontail/src/math/gl-matrix.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -149,8 +150,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace('viewer');
+            // the local-floor reference space, but a viewer space is guaranteed.
+            return session.requestReferenceSpace('viewer').then((viewerRefSpace) => {
+              // Adjust the viewer space for an estimated user height. Otherwise,
+              // the poses queried with this space will originate from the floor.
+              let xform = new XRRigidTransform({x: 0, y: -1.5, z: 0});
+              return viewerRefSpace.getOffsetReferenceSpace(xform);
+            });
           } else {
             throw e;
           }

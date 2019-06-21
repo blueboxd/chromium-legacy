@@ -167,8 +167,9 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 100, 2);
 
-  tester.Start();
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  tester.Start(run_loop.QuitClosure());
+  run_loop.Run();
   tester.CheckResults();
 }
 

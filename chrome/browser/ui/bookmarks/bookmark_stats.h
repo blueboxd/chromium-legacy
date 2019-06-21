@@ -7,10 +7,6 @@
 
 #include "components/profile_metrics/browser_profile_type.h"
 
-namespace bookmarks {
-class BookmarkNode;
-}
-
 // This enum is used for the Bookmarks.EntryPoint histogram.
 enum BookmarkEntryPoint {
   BOOKMARK_ENTRY_POINT_ACCELERATOR,
@@ -46,14 +42,12 @@ enum BookmarkLaunchLocation {
 };
 
 // Records the launch of a bookmark for UMA purposes.
-void RecordBookmarkLaunch(const bookmarks::BookmarkNode* node,
-                          BookmarkLaunchLocation location,
+void RecordBookmarkLaunch(BookmarkLaunchLocation location,
                           profile_metrics::BrowserProfileType profile_type);
 
 // Records the user launching all bookmarks in a folder (via middle-click, etc.)
 // for UMA purposes.
-void RecordBookmarkFolderLaunch(const bookmarks::BookmarkNode* node,
-                                BookmarkLaunchLocation location);
+void RecordBookmarkFolderLaunch(BookmarkLaunchLocation location);
 
 // Records the user opening a folder of bookmarks for UMA purposes.
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);

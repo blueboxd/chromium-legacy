@@ -45,7 +45,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
       visible_(true),
       weak_ptr_factory_(this) {
   if (status == PackageOperationStatus::RUNNING) {
-    running_start_time_ = base::Time::Now();
+    running_start_time_ = base::TimeTicks::Now();
   }
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
@@ -135,7 +135,7 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
                                                  int progress_percent) {
   if (status == PackageOperationStatus::RUNNING &&
       current_status_ != PackageOperationStatus::RUNNING) {
-    running_start_time_ = base::Time::Now();
+    running_start_time_ = base::TimeTicks::Now();
   }
   current_status_ = status;
 

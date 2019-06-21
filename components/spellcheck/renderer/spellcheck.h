@@ -100,9 +100,9 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
       const base::string16& text,
       blink::WebVector<blink::WebTextCheckingResult>* results);
 
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void RequestTextChecking(
       const base::string16& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion);
@@ -156,20 +156,20 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
    void NotifyDictionaryObservers(
        const blink::WebVector<blink::WebString>& words_added);
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Posts delayed spellcheck task and clear it if any.
-  // Takes ownership of |request|.
-  void PostDelayedSpellCheckTask(SpellcheckRequest* request);
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+   // Posts delayed spellcheck task and clear it if any.
+   // Takes ownership of |request|.
+   void PostDelayedSpellCheckTask(SpellcheckRequest* request);
 
-  // Performs spell checking from the request queue.
-  void PerformSpellCheck(SpellcheckRequest* request);
+   // Performs spell checking from the request queue.
+   void PerformSpellCheck(SpellcheckRequest* request);
 
-  // The parameters of a pending background-spellchecking request. When WebKit
-  // sends a background-spellchecking request before initializing hunspell,
-  // we save its parameters and start spellchecking after we finish initializing
-  // hunspell. (When WebKit sends two or more requests, we cancel the previous
-  // requests so we do not have to use vectors.)
-  std::unique_ptr<SpellcheckRequest> pending_request_param_;
+   // The parameters of a pending background-spellchecking request. When WebKit
+   // sends a background-spellchecking request before initializing hunspell,
+   // we save its parameters and start spellchecking after we finish
+   // initializing hunspell. (When WebKit sends two or more requests, we cancel
+   // the previous requests so we do not have to use vectors.)
+   std::unique_ptr<SpellcheckRequest> pending_request_param_;
 #endif
 
   // Bindings for SpellChecker clients.

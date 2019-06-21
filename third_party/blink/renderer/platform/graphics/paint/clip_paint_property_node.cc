@@ -46,16 +46,12 @@ std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {
                   String::Format("%p", state_.local_transform_space.get()));
   json->SetString("rect", state_.clip_rect.ToString());
   if (state_.clip_rect_excluding_overlay_scrollbars) {
-    json->SetString("rectExcludingOverlayScrollbars",
-                    state_.clip_rect_excluding_overlay_scrollbars->ToString());
+    json->SetString(
+        "rectExcludingOverlayScrollbars",
+        state_.clip_rect_excluding_overlay_scrollbars->Rect().ToString());
   }
   if (state_.clip_path) {
     json->SetBoolean("hasClipPath", true);
-  }
-  if (state_.direct_compositing_reasons != CompositingReason::kNone) {
-    json->SetString(
-        "directCompositingReasons",
-        CompositingReason::ToString(state_.direct_compositing_reasons));
   }
   return json;
 }

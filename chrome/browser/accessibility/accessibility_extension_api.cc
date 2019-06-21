@@ -25,7 +25,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
@@ -61,9 +61,8 @@ constexpr int kBackButtonHeight = 45;
 ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
   // Connect to the accessibility mojo interface in ash.
   ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller);
   return accessibility_controller;
 }
 #endif

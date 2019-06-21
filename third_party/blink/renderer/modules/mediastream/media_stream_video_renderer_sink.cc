@@ -159,7 +159,7 @@ void MediaStreamVideoRendererSink::Start() {
       // This callback is run on IO thread. It is safe to use base::Unretained
       // here because |frame_receiver_| will be destroyed on IO thread after
       // sink is disconnected from track.
-      ConvertToBaseCallback(WTF::CrossThreadBind(
+      ConvertToBaseCallback(WTF::CrossThreadBindRepeating(
           &FrameDeliverer::OnVideoFrame,
           WTF::CrossThreadUnretained(frame_deliverer_.get()))),
       // Local display video rendering is considered a secure link.

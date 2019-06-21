@@ -39,8 +39,13 @@ class ScopedFeatureList final {
   ~ScopedFeatureList();
 
   struct FeatureAndParams {
+    FeatureAndParams(const Feature& feature, const FieldTrialParams& params);
+    ~FeatureAndParams();
+
+    FeatureAndParams(const FeatureAndParams& other);
+
     const Feature& feature;
-    const FieldTrialParams& params;
+    const FieldTrialParams params;
   };
 
   // Resets the instance to a non-initialized state.

@@ -15,6 +15,8 @@ The name and some functionalities of this script should be adjusted for
 use with other benchmarks.
 """
 
+from __future__ import print_function
+
 import argparse
 import csv
 import json
@@ -29,8 +31,8 @@ BENCHMARK = 'rendering.desktop'
 # AVG_ERROR_MARGIN determines how much more the value of frame times can be
 # compared to the recorded value
 AVG_ERROR_MARGIN = 2.0
-# CI stands for comfidence intrevals. "ci_095"s recorded in the data is the
-# reocrded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
+# CI stands for confidence intervals. "ci_095"s recorded in the data is the
+# recorded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
 # acceptable ratio of calculated ci_095 to the recorded ones.
 CI_ERROR_MARGIN = 2.0
 
@@ -41,44 +43,120 @@ class ResultRecorder(object):
     self.start_time = time.time()
     self.output = {}
     self.return_code = 0
+    self._failed_stories = set()
 
-  def setTests(self, output, testNum):
+  def set_tests(self, output):
     self.output = output
-    self.tests = testNum
     self.fails = 0
     if 'FAIL' in output['num_failures_by_type']:
       self.fails = output['num_failures_by_type']['FAIL']
+    self.tests = self.fails + output['num_failures_by_type']['PASS']
 
-  def addFailure(self, name):
+  def add_failure(self, name):
     self.output['tests'][BENCHMARK][name]['actual'] = 'FAIL'
     self.output['tests'][BENCHMARK][name]['is_unexpected'] = True
+    self._failed_stories.add(name)
     self.fails += 1
 
-  def getOutput(self, return_code):
+  def remove_failure(self, name):
+    self.output['tests'][BENCHMARK][name]['actual'] = 'PASS'
+    self.output['tests'][BENCHMARK][name]['is_unexpected'] = False
+    self._failed_stories.remove(name)
+    self.fails -= 1
+
+  @property
+  def failed_stories(self):
+    return self._failed_stories
+
+  def get_output(self, return_code):
     self.output['seconds_since_epoch'] = time.time() - self.start_time
     self.output['num_failures_by_type']['PASS'] = self.tests - self.fails
     if self.fails > 0:
       self.output['num_failures_by_type']['FAIL'] = self.fails
     if return_code == 1:
-      self.output["interrupted"] = True
+      self.output['interrupted'] = True
 
-    if self.fails == 0:
-      print "[  PASSED  ] " + str(self.tests) + " tests."
-    else:
-      print "[  FAILED  ] " + str(self.fails) + "/" + str(self.tests)+ " tests."
+    plural = lambda n, s, p: '%d %s' % (n, p if n != 1 else s)
+    tests = lambda n: plural(n, 'test', 'tests')
+
+    print('[  PASSED  ] ' + tests(self.tests - self.fails) + '.')
+    if self.fails > 0:
+      print('[  FAILED  ] ' + tests(self.fails) + '.')
       self.return_code = 1
 
     return (self.output, self.return_code)
 
-  def setAllToFail(self):
-    self.fails = self.tests
+def interpret_run_benchmark_results(upper_limit_data,
+    isolated_script_test_output):
+  out_dir_path = os.path.dirname(isolated_script_test_output)
+  output_path = os.path.join(out_dir_path, BENCHMARK, 'test_results.json')
+  result_recorder = ResultRecorder()
+
+  with open(output_path, 'r+') as resultsFile:
+    initialOut = json.load(resultsFile)
+    result_recorder.set_tests(initialOut)
+
+    results_path = os.path.join(out_dir_path, BENCHMARK, 'perf_results.csv')
+    marked_stories = set()
+
+    with open(results_path) as csv_file:
+      reader = csv.DictReader(csv_file)
+      for row in reader:
+        # For now only frame_times is used for testing representatives'
+        # performance.
+        if row['name'] != 'frame_times':
+          continue
+        story_name = row['stories']
+        if (story_name in marked_stories or story_name not in
+          upper_limit_data):
+          continue
+        marked_stories.add(story_name)
+
+        upper_limit_avg = upper_limit_data[story_name]['avg']
+        upper_limit_ci = upper_limit_data[story_name]['ci_095']
+
+        if row['avg'] == '' or row['count'] == 0:
+          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name + ' ' +
+            row['name'] + ' has no values for ' + row['name'] +
+            '. check run_benchmark logs for more information.')
+          result_recorder.add_failure(story_name)
+        elif (float(row['ci_095']) > upper_limit_ci * CI_ERROR_MARGIN):
+          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name + ' ' +
+            row['name'] + ' has higher noise' + '(' + str(row['ci_095']) +
+            ') compared to upper limit(' + str(upper_limit_ci) + ').')
+          result_recorder.add_failure(story_name)
+        elif (float(row['avg']) > upper_limit_avg + AVG_ERROR_MARGIN):
+          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name +
+            ' higher average ' + row['name'] + '(' + str(row['avg']) +
+            ') compared to upper limit(' + str(upper_limit_avg) + ').')
+          result_recorder.add_failure(story_name)
+        else:
+          print('[       OK ] '+ BENCHMARK + '/' + story_name +
+            ' lower average ' + row['name'] + '(' + str(row['avg']) +
+            ') compared to upper limit(' + str(upper_limit_avg) + ').')
+
+    # Clearing the result of run_benchmark and write the gated perf results
+    resultsFile.seek(0)
+    resultsFile.truncate(0)
+
+  return result_recorder
+
+def replace_arg_values(args, key_value_pairs):
+  for index in range(0, len(args)):
+    for (key, value) in key_value_pairs:
+      if args[index].startswith(key):
+        if '=' in args[index]:
+          args[index] = key + '=' + value
+        else:
+          args[index+1] = value
+  return args
 
 def main():
   overall_return_code = 0
 
   # Linux does not have it's own specific representatives
-  # and uses the representatives chosen for winodws.
-  if sys.platform == 'win32':
+  # and uses the representatives chosen for windows.
+  if sys.platform == 'win32' or sys.platform.startswith('linux'):
     platform = 'win'
     story_tag = 'representative_win_desktop'
   elif sys.platform == 'darwin':
@@ -89,10 +167,10 @@ def main():
 
   options = parse_arguments()
   args = sys.argv
+  re_run_args = sys.argv
   args.extend(['--story-tag-filter', story_tag])
 
   overall_return_code = run_performance_tests.main(args)
-  result_recorder = ResultRecorder()
 
   # The values used as the upper limit are the 99th percentile of the
   # avg and ci_095 frame_times recorded by dashboard in the past 200 revisions.
@@ -107,51 +185,47 @@ def main():
     upper_limit_data = json.load(bound_data)
 
   out_dir_path = os.path.dirname(options.isolated_script_test_output)
-  test_count = len(upper_limit_data[platform])
-
   output_path = os.path.join(out_dir_path, BENCHMARK, 'test_results.json')
+  result_recorder = interpret_run_benchmark_results(upper_limit_data[platform],
+      options.isolated_script_test_output)
 
   with open(output_path, 'r+') as resultsFile:
-    initialOut = json.load(resultsFile)
-    result_recorder.setTests(initialOut, test_count)
+    if len(result_recorder.failed_stories) > 0:
+      # For failed stories we run_tests again to make sure it's not a false
+      # positive.
+      print('============ Re_run the failed tests ============')
+      all_failed_stories = '('+'|'.join(result_recorder.failed_stories)+')'
+      re_run_args.extend(
+        ['--story-filter', all_failed_stories, '--pageset-repeat=3'])
 
-    results_path = os.path.join(out_dir_path, BENCHMARK, 'perf_results.csv')
-    marked_stories = set()
-    with open(results_path) as csv_file:
-      reader = csv.DictReader(csv_file)
-      for row in reader:
-        # For now only frame_times is used for testing representatives'
-        # performance.
-        if row['name'] != 'frame_times':
-          continue
-        story_name = row['stories']
-        if (story_name in marked_stories or story_name not in
-          upper_limit_data[platform]):
-          continue
-        marked_stories.add(story_name)
+      re_run_isolated_script_test_dir = os.path.join(out_dir_path,
+        're_run_failures')
+      re_run_isolated_script_test_output = os.path.join(
+        re_run_isolated_script_test_dir,
+        os.path.basename(options.isolated_script_test_output))
+      re_run_isolated_script_test_perf_output = os.path.join(
+        re_run_isolated_script_test_dir,
+        os.path.basename(options.isolated_script_test_perf_output))
 
-        if row['avg'] == '' or row['count'] == 0:
-          print "No values for " + story_name
-          result_recorder.addFailure(story_name)
-        elif (float(row['ci_095']) >
-          upper_limit_data[platform][story_name]['ci_095'] * CI_ERROR_MARGIN):
-          print "Noisy data on frame_times for " + story_name + ".\n"
-          result_recorder.addFailure(story_name)
-        elif (float(row['avg']) >
-          upper_limit_data[platform][story_name]['avg'] + AVG_ERROR_MARGIN):
-          print (story_name + ": average frame_times is higher than 99th " +
-            "percentile of the past 200 recorded frame_times(" +
-            row['avg'] + ")" + ".\n")
-          result_recorder.addFailure(story_name)
+      re_run_args = replace_arg_values(re_run_args, [
+        ('--isolated-script-test-output', re_run_isolated_script_test_output),
+        ('--isolated-script-test-perf-output',
+          re_run_isolated_script_test_perf_output)
+      ])
+
+      overall_return_code |= run_performance_tests.main(re_run_args)
+      re_run_result_recorder = interpret_run_benchmark_results(
+          upper_limit_data[platform], re_run_isolated_script_test_output)
+
+      for story_name in result_recorder.failed_stories.copy():
+        if story_name not in re_run_result_recorder.failed_stories:
+          result_recorder.remove_failure(story_name)
 
     (
       finalOut,
       overall_return_code
-    ) = result_recorder.getOutput(overall_return_code)
+    ) = result_recorder.get_output(overall_return_code)
 
-    # Clearing the result of run_benchmark and write the gated perf results
-    resultsFile.seek(0)
-    resultsFile.truncate(0)
     json.dump(finalOut, resultsFile, indent=4)
 
     with open(options.isolated_script_test_output, 'w') as outputFile:

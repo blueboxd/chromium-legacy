@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -38,8 +39,7 @@ SendTabToSelfClientServiceFactory::SendTabToSelfClientServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "SendTabToSelfClientService",
           BrowserContextDependencyManager::GetInstance()) {
-  // TODO(tgupta): Add that this depends on the DisplayNotificationService as
-  // well
+  DependsOn(NotificationDisplayServiceFactory::GetInstance());
   DependsOn(SendTabToSelfSyncServiceFactory::GetInstance());
 }
 
@@ -68,6 +68,7 @@ KeyedService* SendTabToSelfClientServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 #endif
 
+  // TODO(crbug.com/976741) refactor profile out of STTSClient constructor.
   return new SendTabToSelfClientService(profile,
                                         sync_service->GetSendTabToSelfModel());
 }

@@ -59,17 +59,13 @@
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
-      #dialog {
-        --cr-dialog-body-container: {
-          max-height: 450px;
-        };
+      #dialog::part(body-container) {
+        max-height: 450px;
       }
 
       @media all and (max-height: 714px) {
-        #dialog {
-          --cr-dialog-body-container: {
-            max-height: 270px;
-          };
+        #dialog::part(body-container) {
+          max-height: 270px;
         }
       }
     </style>

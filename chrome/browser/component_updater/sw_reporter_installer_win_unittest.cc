@@ -29,7 +29,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,26 +70,19 @@ class SwReporterInstallerTest : public ::testing::Test {
   }
 
   void CreateFeatureWithoutTag() {
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     CreateFeatureWithParams(params);
   }
 
   void CreateFeatureWithTag(const std::string& tag) {
-    std::map<std::string, std::string> params{{"reporter_omaha_tag", tag}};
+    base::FieldTrialParams params{{"reporter_omaha_tag", tag}};
     CreateFeatureWithParams(params);
   }
 
-  void CreateFeatureWithParams(
-      const std::map<std::string, std::string>& params) {
-    // Assign the given variation params to the experiment group until
-    // |variations_| goes out of scope when the test exits. This will also
-    // create a FieldTrial for this group and associate the params with the
-    // feature. For the test just re-use the feature name as the trial name.
-    variations_ = std::make_unique<variations::testing::VariationParamsManager>(
-        "SwReporterInstallerTestTrialName", params,
-        /*associated_features=*/
-        std::set<std::string>{
-            safe_browsing::kChromeCleanupDistributionFeature.name});
+  void CreateFeatureWithParams(const base::FieldTrialParams& params) {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        safe_browsing::kChromeCleanupDistributionFeature, params);
   }
 
   void ExpectAttributesWithTag(const SwReporterInstallerPolicy& policy,
@@ -204,7 +196,6 @@ class SwReporterInstallerTest : public ::testing::Test {
                                    SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS, 1);
   }
 
-  std::unique_ptr<variations::testing::VariationParamsManager> variations_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histograms_;
 

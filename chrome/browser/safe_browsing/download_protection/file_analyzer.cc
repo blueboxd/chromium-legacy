@@ -15,7 +15,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 namespace safe_browsing {
 
@@ -151,7 +151,7 @@ void FileAnalyzer::StartExtractZipFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnZipAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   zip_analyzer_->Start();
 }
 
@@ -224,7 +224,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnRarAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   rar_analyzer_->Start();
 }
 
@@ -287,7 +287,7 @@ void FileAnalyzer::StartExtractDmgFeatures() {
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
       base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
   dmg_analyzer_->Start();
   dmg_analysis_start_time_ = base::TimeTicks::Now();
 }

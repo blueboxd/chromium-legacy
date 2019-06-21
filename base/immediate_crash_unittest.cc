@@ -20,6 +20,11 @@
 
 namespace base {
 
+// Compile test.
+int TestImmediateCrashTreatedAsNoReturn() {
+  IMMEDIATE_CRASH();
+}
+
 // iOS is excluded, since it doesn't support loading shared libraries.
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) ||      \
     defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS) || \
@@ -80,27 +85,12 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   ASSERT_NE(function_body.end(), it) << "Failed to find return! ";
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
-  base::Optional<uint8_t> nonce;
   for (int i = 0; i < 2; ++i) {
     // INT 3
     EXPECT_EQ(0xCC, *++it);
     // UD2
     EXPECT_EQ(0x0F, *++it);
     EXPECT_EQ(0x0B, *++it);
-    // PUSH
-    EXPECT_EQ(0x6A, *++it);
-    // Immediate nonce argument to PUSH
-    if (!nonce) {
-      nonce = *++it;
-    } else {
-      EXPECT_NE(*nonce, *++it);
-    }
-#if (defined(OS_WIN) && defined(ARCH_CPU_64_BITS)) || defined(OS_MACOSX)
-    // On Windows x64 and Mac, __builtin_unreachable() generates UD2. See
-    // https://crbug.com/958373.
-    EXPECT_EQ(0x0F, *++it);
-    EXPECT_EQ(0x0B, *++it);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
   }
 
 #elif defined(ARCH_CPU_ARMEL)
@@ -129,17 +119,11 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   ASSERT_NE(function_body.end(), it) << "Failed to find return! ";
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
-  base::Optional<uint8_t> nonce;
   for (int i = 0; i < 2; ++i) {
     // BKPT #0
     EXPECT_EQ(0xBE00, *++it);
-    // UDF #<nonce>
-    EXPECT_EQ(0xDE00, *++it & 0xFF00);
-    if (!nonce) {
-      nonce = *it & 0x00FF;
-    } else {
-      EXPECT_NE(*nonce, *it & 0x00FF);
-    }
+    // UDF #0
+    EXPECT_EQ(0xDE00, *++it);
   }
 
 #elif defined(ARCH_CPU_ARM64)
@@ -158,22 +142,11 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   ASSERT_NE(function_body.end(), it) << "Failed to find return! ";
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
-  base::Optional<uint16_t> nonce;
   for (int i = 0; i < 2; ++i) {
     // BRK #0
     EXPECT_EQ(0XD4200000, *++it);
-    // HLT #<nonce>
-    EXPECT_EQ(0xD4400000, *++it & 0xFFE00000);
-    if (!nonce) {
-      nonce = (*it >> 5) & 0xFFFF;
-    } else {
-      EXPECT_NE(*nonce, (*it >> 5) & 0xFFFF);
-    }
-#if defined(OS_WIN)
-    // On Windows ARM64 __builtin_unreachable() produces an extra 'brk #1'
-    // instruction with clang-cl. https://crbug.com/973794.
-    EXPECT_EQ(0XD4200020, *++it);
-#endif
+    // HLT #0
+    EXPECT_EQ(0xD4400000, *++it);
   }
 
 #endif  // defined(ARCH_CPU_X86_FAMILY)

@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 TestServiceManagerListener::TestServiceManagerListener() : binding_(this) {}
@@ -18,10 +18,8 @@ void TestServiceManagerListener::Init() {
   // Register a listener on the ServiceManager to track when services are
   // started.
   mojo::InterfacePtr<service_manager::mojom::ServiceManager> service_manager;
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_manager::mojom::kServiceName,
-                           &service_manager);
+  content::GetSystemConnector()->BindInterface(
+      service_manager::mojom::kServiceName, &service_manager);
   service_manager::mojom::ServiceManagerListenerPtr listener_ptr;
   binding_.Bind(mojo::MakeRequest(&listener_ptr));
   service_manager->AddListener(std::move(listener_ptr));

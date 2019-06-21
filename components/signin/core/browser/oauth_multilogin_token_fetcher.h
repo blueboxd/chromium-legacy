@@ -27,21 +27,29 @@ namespace signin {
 // It is safe to delete this object from within the callbacks.
 class OAuthMultiloginTokenFetcher : public OAuth2TokenService::Consumer {
  public:
-  using SuccessCallback = base::OnceCallback<void(
-      const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>&)>;
+  struct AccountIdTokenPair {
+    CoreAccountId account_id;
+    std::string token;
+
+    AccountIdTokenPair(const CoreAccountId& account_id,
+                       const std::string& token)
+        : account_id(account_id), token(token) {}
+  };
+  using SuccessCallback =
+      base::OnceCallback<void(const std::vector<AccountIdTokenPair>&)>;
   using FailureCallback =
       base::OnceCallback<void(const GoogleServiceAuthError&)>;
 
   OAuthMultiloginTokenFetcher(SigninClient* signin_client,
                               OAuth2TokenService* token_service,
-                              const std::vector<std::string>& account_ids,
+                              const std::vector<CoreAccountId>& account_ids,
                               SuccessCallback success_callback,
                               FailureCallback failure_callback);
 
   ~OAuthMultiloginTokenFetcher() override;
 
  private:
-  void StartFetchingToken(const std::string& account_id);
+  void StartFetchingToken(const CoreAccountId& account_id);
 
   // Overridden from OAuth2TokenService::Consumer.
   void OnGetTokenSuccess(
@@ -55,14 +63,14 @@ class OAuthMultiloginTokenFetcher : public OAuth2TokenService::Consumer {
 
   SigninClient* signin_client_;
   OAuth2TokenService* token_service_;
-  const std::vector<std::string> account_ids_;
+  const std::vector<CoreAccountId> account_ids_;
 
   SuccessCallback success_callback_;
   FailureCallback failure_callback_;
 
   std::vector<std::unique_ptr<OAuth2TokenService::Request>> token_requests_;
-  std::map<std::string, std::string> access_tokens_;
-  std::set<std::string> retried_requests_;  // Requests are retried once.
+  std::map<CoreAccountId, std::string> access_tokens_;
+  std::set<CoreAccountId> retried_requests_;  // Requests are retried once.
 
   base::WeakPtrFactory<OAuthMultiloginTokenFetcher> weak_ptr_factory_;
 

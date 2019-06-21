@@ -28,7 +28,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/tracing_controller.h"
-#include "content/public/common/service_manager_connection.h"
 
 namespace heap_profiling {
 
@@ -686,7 +685,6 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
   }
 
   service_manager::Connector* connector = content::GetSystemConnector();
-  content::ServiceManagerConnection::GetForProcess();
   if (!connector) {
     LOG(ERROR) << "A system Connector is not available in this environment.";
     return false;
@@ -739,7 +737,6 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
   }
 
   service_manager::Connector* connector = content::GetSystemConnector();
-  content::ServiceManagerConnection::GetForProcess();
   if (!connector) {
     LOG(ERROR) << "A system Connector is not available in this environment.";
     return false;

@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_result.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -85,6 +84,23 @@ enum IncludeSelfOrNot { kIncludeSelf, kExcludeSelf };
 enum CompositingQueryMode {
   kCompositingQueriesAreAllowed,
   kCompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases
+};
+
+// Used in PaintLayerPaintOrderIterator.
+enum PaintLayerIteration {
+  kNegativeZOrderChildren = 1,
+  // Normal flow children are not mandated by CSS 2.1 but are an artifact of
+  // our implementation: we allocate PaintLayers for elements that
+  // are not treated as stacking contexts and thus we need to walk them
+  // during painting and hit-testing.
+  kNormalFlowChildren = 1 << 1,
+  kPositiveZOrderChildren = 1 << 2,
+
+  kStackedChildren = kNegativeZOrderChildren | kPositiveZOrderChildren,
+  kNormalFlowAndPositiveZOrderChildren =
+      kNormalFlowChildren | kPositiveZOrderChildren,
+  kAllChildren =
+      kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren
 };
 
 // FIXME: remove this once the compositing query DCHECKS are no longer hit.
@@ -250,9 +266,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // good but we can't use it for now because it conflicts with
   // PaintInfo::paintContainer.
   PaintLayer* CompositingContainer() const;
+  PaintLayer* AncestorStackingContext() const;
 
   void AddChild(PaintLayer* new_child, PaintLayer* before_child = nullptr);
-  PaintLayer* RemoveChild(PaintLayer*);
+  void RemoveChild(PaintLayer*);
 
   void ClearClipRects(ClipRectsCacheSlot = kNumberOfClipRectsCacheSlots);
 
@@ -329,9 +346,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                       : PhysicalOffset();
   }
 
-  PaintLayerStackingNode* StackingNode() { return stacking_node_.get(); }
-  const PaintLayerStackingNode* StackingNode() const {
-    return stacking_node_.get();
+  bool IsStackingContextWithNegativeZOrderChildren() const {
+    DCHECK(!stacking_node_ || GetLayoutObject().StyleRef().IsStackingContext());
+    return stacking_node_ && !stacking_node_->NegZOrderList().IsEmpty();
   }
 
   bool SubtreeIsInvisible() const {
@@ -1086,6 +1103,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   PaintLayerStackingNode* StackingParent() { return stacking_parent_; }
   bool IsInStackingParentZOrderLists() const;
+  bool LayerListMutationAllowed() const { return layer_list_mutation_allowed_; }
 #endif
 
   void SetNeedsCompositingLayerAssignment();
@@ -1146,7 +1164,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       double* z_offset = nullptr,
       const PhysicalOffset& translation_offset = PhysicalOffset());
   PaintLayer* HitTestChildren(
-      ChildrenIteration,
+      PaintLayerIteration,
       PaintLayer* root_layer,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
@@ -1187,7 +1205,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool ShouldBeSelfPaintingLayer() const;
 
-  void UpdateStackingNode(bool needs_stacking_node);
+  void UpdateStackingNode();
 
   FilterOperations FilterOperationsIncludingReflection() const;
 
@@ -1259,6 +1277,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return *ancestor_dependent_compositing_inputs_;
   }
 
+  // This is private because PaintLayerStackingNode is only for PaintLayer and
+  // PaintLayerPaintOrderIterator.
+  PaintLayerStackingNode* StackingNode() const { return stacking_node_.get(); }
+
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
   // case.
@@ -1316,6 +1338,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned has_fixed_position_descendant_ : 1;
   unsigned has_sticky_position_descendant_ : 1;
   unsigned has_non_contained_absolute_position_descendant_ : 1;
+  unsigned has_stacked_descendant_in_current_stacking_context_ : 1;
 
   unsigned self_painting_status_changed_ : 1;
 
@@ -1339,6 +1362,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned has_self_painting_layer_descendant_ : 1;
   unsigned is_non_stacked_with_in_flow_stacked_descendant_ : 1;
+
+#if DCHECK_IS_ON()
+  mutable unsigned layer_list_mutation_allowed_ : 1;
+#endif
 
   LayoutBoxModelObject& layout_object_;
 
@@ -1382,6 +1409,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayerStackingNode* stacking_parent_;
 #endif
 
+  // For layer_list_mutation_allowed_.
+  friend class PaintLayerListMutationDetector;
+
+  // For stacking_node_ to avoid exposing it publicly.
+  friend class PaintLayerPaintOrderIterator;
+  friend class PaintLayerPaintOrderReverseIterator;
+  friend class PaintLayerStackingNode;
+
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
                            DescendantDependentFlagsStopsAtThrottledFrames);
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
@@ -1389,6 +1424,27 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   DISALLOW_COPY_AND_ASSIGN(PaintLayer);
 };
+
+#if DCHECK_IS_ON()
+class PaintLayerListMutationDetector {
+  STACK_ALLOCATED();
+
+ public:
+  explicit PaintLayerListMutationDetector(const PaintLayer& layer)
+      : layer_(layer),
+        previous_mutation_allowed_state_(layer.layer_list_mutation_allowed_) {
+    layer.layer_list_mutation_allowed_ = false;
+  }
+
+  ~PaintLayerListMutationDetector() {
+    layer_.layer_list_mutation_allowed_ = previous_mutation_allowed_state_;
+  }
+
+ private:
+  const PaintLayer& layer_;
+  bool previous_mutation_allowed_state_;
+};
+#endif
 
 }  // namespace blink
 

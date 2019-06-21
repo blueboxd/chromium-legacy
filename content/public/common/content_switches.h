@@ -55,7 +55,7 @@ CONTENT_EXPORT extern const char kDisableGpuEarlyInit[];
 CONTENT_EXPORT extern const char kDisableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kDisableGpuMemoryBufferVideoFrames[];
 extern const char kDisableGpuProcessCrashLimit[];
-extern const char kDisableSoftwareCompositingFallback[];
+CONTENT_EXPORT extern const char kDisableSoftwareCompositingFallback[];
 CONTENT_EXPORT extern const char kDisableGpuWatchdog[];
 CONTENT_EXPORT extern const char kDisableImageAnimationResync[];
 CONTENT_EXPORT extern const char kDisableIpcFloodingProtection[];

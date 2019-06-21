@@ -14,8 +14,8 @@
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -104,13 +104,8 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
   if (!enabled_)
     return false;
 
-  // |connection| and |connector| may be nullptr in some tests.
-  ServiceManagerConnection* connection =
-      ServiceManagerConnection::GetForProcess();
-  if (!connection)
-    return false;
-
-  service_manager::Connector* connector = connection->GetConnector();
+  // |connector| may be nullptr in some tests.
+  service_manager::Connector* connector = GetSystemConnector();
   if (!connector)
     return false;
 

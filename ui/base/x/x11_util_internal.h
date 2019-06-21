@@ -61,7 +61,13 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
                              Visual** visual,
                              int* depth,
                              Colormap* colormap,
-                             bool* using_argb_visual);
+                             bool* visual_is_argb);
+
+  bool GetVisualInfo(VisualID visual_id,
+                     Visual** visual,
+                     int* depth,
+                     Colormap* colormap,
+                     bool* visual_is_argb);
 
   // Called by GpuDataManagerImplPrivate when GPUInfo becomes available.  It is
   // necessary for the GPU process to find out which visuals are best for GL
@@ -93,6 +99,12 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   };
 
   XVisualManager();
+
+  bool GetVisualInfoImpl(VisualID visual_id,
+                         Visual** visual,
+                         int* depth,
+                         Colormap* colormap,
+                         bool* visual_is_argb);
 
   mutable base::Lock lock_;
 

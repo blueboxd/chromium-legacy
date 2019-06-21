@@ -19,3 +19,10 @@ include_rules = [
     "+third_party/blink/renderer/modules",
     "-web",
 ]
+
+specific_include_rules = {
+    "media_capabilities_fuzzer.cc": [
+        "+testing/libfuzzer/proto/lpm_interface.h",
+        "+third_party/protobuf/src/google/protobuf/repeated_field.h",
+    ]
+}

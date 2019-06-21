@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -49,10 +48,7 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->cursor_manager()->AddObserver(this);
 
-  // In-process ash uses the InputMethod shared between ash and browser. Mash
-  // receives caret updates from the browser over mojo.
-  if (!::features::IsMultiProcessMash())
-    GetSharedInputMethod()->AddObserver(this);
+  GetSharedInputMethod()->AddObserver(this);
 }
 
 AccessibilityHighlightController::~AccessibilityHighlightController() {
@@ -62,8 +58,7 @@ AccessibilityHighlightController::~AccessibilityHighlightController() {
   controller->HideCaretRing();
   controller->HideCursorRing();
 
-  if (!::features::IsMultiProcessMash())
-    GetSharedInputMethod()->RemoveObserver(this);
+  GetSharedInputMethod()->RemoveObserver(this);
   Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }

@@ -179,11 +179,9 @@ bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,
 void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
 
-  const BookmarkNode* node = menu_id_to_node_map_[id];
-  std::vector<const BookmarkNode*> selection;
-  selection.push_back(node);
+  std::vector<const BookmarkNode*> selection = {menu_id_to_node_map_[id]};
 
-  RecordBookmarkLaunch(node, location_,
+  RecordBookmarkLaunch(location_,
                        ProfileMetrics::GetBrowserProfileType(profile_));
   chrome::OpenAll(parent_->GetNativeWindow(), page_navigator_, selection,
                   ui::DispositionFromEventFlags(mouse_event_flags),

@@ -147,14 +147,15 @@ class AppCacheStorageImpl : public AppCacheStorage {
       scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
 
-  void CallOnMainResponseFound(DelegateReferenceVector* delegates,
-                               const GURL& url,
-                               const AppCacheEntry& entry,
-                               const GURL& namespace_entry_url,
-                               const AppCacheEntry& fallback_entry,
-                               int64_t cache_id,
-                               int64_t group_id,
-                               const GURL& manifest_url);
+  void CallOnMainResponseFound(
+      std::vector<scoped_refptr<DelegateReference>>* delegates,
+      const GURL& url,
+      const AppCacheEntry& entry,
+      const GURL& namespace_entry_url,
+      const AppCacheEntry& fallback_entry,
+      int64_t cache_id,
+      int64_t group_id,
+      const GURL& manifest_url);
 
   // Don't call this when |is_disabled_| is true.
   CONTENT_EXPORT AppCacheDiskCache* disk_cache();

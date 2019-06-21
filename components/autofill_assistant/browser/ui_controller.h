@@ -80,12 +80,18 @@ class UiController {
   // the layout viewport. It might be empty if not known or the touchable area
   // is empty.
   //
-  // |rectangles| contains one element per configured rectangles, though these
-  // can correspond to empty rectangles.
+  // |touchable_areas| contains one element per configured rectangle that should
+  // be visible/touchable, though these can correspond to empty rectangles.
+  //
+  // |restricted_areas| contains one element per configured rectangle that
+  // shouldn't be visible nor touchable. Those rectangles have precedence over
+  // |touchable_areas|.
   //
   // All rectangles are expressed in absolute CSS coordinates.
-  virtual void OnTouchableAreaChanged(const RectF& visual_viewport,
-                                      const std::vector<RectF>& rectangles);
+  virtual void OnTouchableAreaChanged(
+      const RectF& visual_viewport,
+      const std::vector<RectF>& touchable_areas,
+      const std::vector<RectF>& restricted_areas);
 
   // Called when the viewport resize flag has changed.
   virtual void OnResizeViewportChanged(bool resize_viewport);

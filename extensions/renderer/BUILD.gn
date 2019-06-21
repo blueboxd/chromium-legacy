@@ -26,8 +26,6 @@ jumbo_source_set("renderer") {
     "api_definitions_natives.h",
     "app_window_custom_bindings.cc",
     "app_window_custom_bindings.h",
-    "async_scripts_run_info.cc",
-    "async_scripts_run_info.h",
     "binding_generating_native_handler.cc",
     "binding_generating_native_handler.h",
     "bindings/api_binding.cc",

@@ -428,7 +428,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       preview_document_load_state_(LOAD_STATE_COMPLETE),
       uma_(this),
       told_browser_about_unsupported_feature_(false),
-      font_substitution_reported_(false),
       print_preview_page_count_(-1),
       print_preview_loaded_page_count_(-1),
       last_progress_sent_(0),
@@ -1643,8 +1642,6 @@ void OutOfProcessInstance::DocumentLoadComplete(
   document_load_state_ = LOAD_STATE_COMPLETE;
   UserMetricsRecordAction("PDF.LoadSuccess");
   HistogramEnumeration("PDF.DocumentFeature", LOADED_DOCUMENT, FEATURES_COUNT);
-  if (!font_substitution_reported_)
-    HistogramEnumeration("PDF.IsFontSubstituted", 0, 2);
 
   // Note: If we are in print preview mode the scroll location is retained
   // across document loads so we don't want to scroll again and override it.
@@ -1773,13 +1770,6 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));
   message.Set(pp::Var(kJSProgressPercentage), pp::Var(-1));
   PostMessage(message);
-}
-
-void OutOfProcessInstance::FontSubstituted() {
-  if (font_substitution_reported_)
-    return;
-  font_substitution_reported_ = true;
-  uma_.HistogramEnumeration("PDF.IsFontSubstituted", 1, 2);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadFailed() {

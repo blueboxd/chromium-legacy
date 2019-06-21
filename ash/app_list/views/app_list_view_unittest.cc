@@ -1642,7 +1642,7 @@ TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  ASSERT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
 // Tests that pressing escape when in half screen changes the state to peeking.
@@ -1667,7 +1667,7 @@ TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  ASSERT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
 // Tests that pressing escape when in fullscreen side-shelf closes the app list.
@@ -1678,7 +1678,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  ASSERT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
 // Tests that pressing escape when in tablet mode closes the app list.
@@ -1833,7 +1833,7 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
   ui::Event::DispatcherApi tap_dispatcher_api(static_cast<ui::Event*>(&tap));
   tap_dispatcher_api.set_target(view_);
   view_->OnGestureEvent(&tap);
-  EXPECT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(1, delegate_->dismiss_count());
 
   Show();
 
@@ -1851,7 +1851,7 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
       std::make_unique<ui::Event::DispatcherApi>(&mouse_release);
   mouse_click_dispatcher_api->set_target(view_);
   view_->OnMouseEvent(&mouse_release);
-  EXPECT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(2, delegate_->dismiss_count());
 }
 
 // Tests that search box should not become a rectangle during drag.

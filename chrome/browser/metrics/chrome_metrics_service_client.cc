@@ -147,7 +147,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/notification_helper/notification_helper_constants.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -654,7 +654,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<AntiVirusMetricsProvider>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector()));
+          content::GetSystemConnector()));
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

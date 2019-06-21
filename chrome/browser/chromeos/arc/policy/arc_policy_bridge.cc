@@ -34,7 +34,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "crypto/sha2.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
@@ -434,8 +434,7 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      request,
+      content::GetSystemConnector(), request,
       base::BindOnce(&ArcPolicyBridge::OnReportComplianceParseSuccess,
                      weak_ptr_factory_.GetWeakPtr(), repeating_callback),
       base::BindOnce(&OnReportComplianceParseFailure, repeating_callback));

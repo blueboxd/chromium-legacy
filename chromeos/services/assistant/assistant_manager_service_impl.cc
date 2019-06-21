@@ -968,7 +968,8 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   display_connection_ = std::make_unique<CrosDisplayConnection>(
-      this, assistant::features::IsFeedbackUiEnabled());
+      this, assistant::features::IsFeedbackUiEnabled(),
+      assistant::features::IsMediaSessionIntegrationEnabled());
 
   base::AutoLock lock(new_assistant_manager_lock_);
   new_assistant_manager_.reset(assistant_client::AssistantManager::Create(

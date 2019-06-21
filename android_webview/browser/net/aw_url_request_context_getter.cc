@@ -305,7 +305,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
 
-  // Quic is not currently supported in WebView (http://crbug.com/763187).
+  // Quic is only supported when network service is enabled.
   builder.SetSpdyAndQuicEnabled(true, false);
 
   builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());

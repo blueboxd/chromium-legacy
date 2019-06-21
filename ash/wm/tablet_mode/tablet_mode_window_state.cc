@@ -197,18 +197,19 @@ TabletModeWindowState::~TabletModeWindowState() {
   creator_->WindowStateDestroyed(window_);
 }
 
-void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state,
-                                            bool was_in_overview) {
-  // TODO(minch): Keep the current animation if leaving tablet mode from
-  // overview. Need more investigation for windows' transform animation and
-  // updates bounds animation when overview is active.
-  bool use_default = was_in_overview || window_state->IsSnapped() ||
-                     IsTopWindow(window_state->window());
+void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state) {
+  // Only do bounds change animation if the window is the top window or a window
+  // showing in splitview, and the window has changed its state. Otherwise,
+  // restore its bounds immediately.
+  EnterAnimationType animation_type =
+      window_state->IsSnapped() || IsTopWindow(window_state->window())
+          ? DEFAULT
+          : IMMEDIATE;
   if (old_state_->GetType() == window_state->GetStateType() &&
       !window_state->IsNormalStateType()) {
-    use_default = false;
+    animation_type = IMMEDIATE;
   }
-  old_state_->set_enter_animation_type(use_default ? DEFAULT : IMMEDIATE);
+  old_state_->set_enter_animation_type(animation_type);
   // Note: When we return we will destroy ourselves with the |our_reference|.
   std::unique_ptr<wm::WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));

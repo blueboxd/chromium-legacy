@@ -42,6 +42,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -410,10 +411,8 @@ AffiliatedInvalidationServiceProviderImpl::
         std::make_unique<invalidation::FCMInvalidationService>(
             device_identity_provider_.get(), g_browser_process->gcm_driver(),
             device_instance_id_driver_.get(), g_browser_process->local_state(),
-            base::BindRepeating(
-                data_decoder::SafeJsonParser::Parse,
-                content::ServiceManagerConnection::GetForProcess()
-                    ->GetConnector()),
+            base::BindRepeating(data_decoder::SafeJsonParser::Parse,
+                                content::GetSystemConnector()),
             url_loader_factory.get(), policy::kPolicyFCMInvalidationSenderID);
     device_invalidation_service->Init();
     return device_invalidation_service;

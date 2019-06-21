@@ -11,8 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "storage/browser/fileapi/file_system_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class FileSystemUsageCacheTest : public testing::Test,
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir data_dir_;
   FileSystemUsageCache usage_cache_;
 

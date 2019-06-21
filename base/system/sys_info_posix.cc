@@ -167,7 +167,7 @@ int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
   return total;
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 // static
 std::string SysInfo::OperatingSystemName() {
   struct utsname info;

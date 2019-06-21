@@ -160,7 +160,7 @@ StatusIconLinuxDbus::~StatusIconLinuxDbus() {
       FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, bus_));
 }
 
-void StatusIconLinuxDbus::SetImage(const gfx::ImageSkia& image) {
+void StatusIconLinuxDbus::SetIcon(const gfx::ImageSkia& image) {
   if (!properties_)
     return;
 
@@ -202,14 +202,14 @@ void StatusIconLinuxDbus::ExecuteCommand(int command_id, int event_flags) {
 
 void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
   if (!response) {
-    delegate_->OnImplInitialized(false);
+    delegate_->OnImplInitializationFailed();
     return;
   }
 
   dbus::MessageReader reader(response);
   bool registered = false;
   if (!reader.PopVariantOfBool(&registered) || !registered) {
-    delegate_->OnImplInitialized(false);
+    delegate_->OnImplInitializationFailed();
     return;
   }
 
@@ -223,7 +223,7 @@ void StatusIconLinuxDbus::OnHostRegisteredResponse(dbus::Response* response) {
 void StatusIconLinuxDbus::OnOwnership(const std::string& service_name,
                                       bool success) {
   if (!success) {
-    delegate_->OnImplInitialized(false);
+    delegate_->OnImplInitializationFailed();
     return;
   }
 
@@ -293,7 +293,7 @@ void StatusIconLinuxDbus::OnExported(const std::string& interface_name,
 
 void StatusIconLinuxDbus::OnInitialized(bool success) {
   if (!success) {
-    delegate_->OnImplInitialized(false);
+    delegate_->OnImplInitializationFailed();
     return;
   }
 
@@ -307,7 +307,8 @@ void StatusIconLinuxDbus::OnInitialized(bool success) {
 }
 
 void StatusIconLinuxDbus::OnRegistered(dbus::Response* response) {
-  delegate_->OnImplInitialized(response);
+  if (!response)
+    delegate_->OnImplInitializationFailed();
 }
 
 void StatusIconLinuxDbus::OnActivate(

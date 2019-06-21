@@ -139,8 +139,9 @@ TEST_F(ThirdPartyAuthenticatorTest, SuccessfulAuth) {
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
 
-  tester.Start();
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  tester.Start(run_loop.QuitClosure());
+  run_loop.Run();
   tester.CheckResults();
 }
 

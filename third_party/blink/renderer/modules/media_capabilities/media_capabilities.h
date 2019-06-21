@@ -7,6 +7,7 @@
 
 #include "media/base/video_codecs.h"  // for media::VideoCodecProfile
 #include "media/mojo/interfaces/video_decode_perf_history.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
@@ -22,7 +23,7 @@ class ScriptState;
 struct WebMediaDecodingConfiguration;
 struct WebVideoConfiguration;
 
-class MediaCapabilities final : public ScriptWrappable {
+class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

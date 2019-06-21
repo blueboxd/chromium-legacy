@@ -24,6 +24,25 @@ namespace network {
 struct HttpRawRequestResponseInfo;
 struct ResourceResponse;
 
+// Enumeration for UMA histograms logged by LogConcerningRequestHeaders().
+// Entries should not be renumbered and numeric values should never be reused.
+// Please keep in sync with "NetworkServiceConcerningRequestHeaders" in
+// src/tools/metrics/histograms/enums.xml.
+enum class ConcerningHeaderId {
+  kConnection = 0,
+  kCookie = 1,
+  kCookie2 = 2,
+  kContentTransferEncoding = 3,
+  kDate = 4,
+  kExpect = 5,
+  kKeepAlive = 6,
+  kReferer = 7,
+  kTe = 8,
+  kTransferEncoding = 9,
+  kVia = 10,
+  kMaxValue = kVia,
+};
+
 // The name of the "Accept" header.
 COMPONENT_EXPORT(NETWORK_SERVICE) extern const char kAcceptHeader[];
 
@@ -60,6 +79,10 @@ std::string ComputeReferrer(const GURL& referrer);
 // individually.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers);
+
+COMPONENT_EXPORT(NETWORK_SERVICE)
+void LogConcerningRequestHeaders(const net::HttpRequestHeaders& request_headers,
+                                 bool added_during_redirect);
 
 }  // namespace network
 

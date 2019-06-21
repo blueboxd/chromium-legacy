@@ -362,8 +362,8 @@ TEST_F(TimingFunctionTest, CubicEvaluate) {
   scoped_refptr<TimingFunction> cubic_ease_timing =
       CubicBezierTimingFunction::Preset(
           CubicBezierTimingFunction::EaseType::EASE);
-  EXPECT_NEAR(0.418, cubic_ease_timing->Evaluate(0.25, tolerance), tolerance);
-  EXPECT_NEAR(0.805, cubic_ease_timing->Evaluate(0.50, tolerance), tolerance);
+  EXPECT_NEAR(0.409, cubic_ease_timing->Evaluate(0.25, tolerance), tolerance);
+  EXPECT_NEAR(0.802, cubic_ease_timing->Evaluate(0.50, tolerance), tolerance);
   EXPECT_NEAR(0.960, cubic_ease_timing->Evaluate(0.75, tolerance), tolerance);
 
   scoped_refptr<TimingFunction> cubic_ease_in_timing =
@@ -371,25 +371,25 @@ TEST_F(TimingFunctionTest, CubicEvaluate) {
           CubicBezierTimingFunction::EaseType::EASE_IN);
   EXPECT_NEAR(0.093, cubic_ease_in_timing->Evaluate(0.25, tolerance),
               tolerance);
-  EXPECT_NEAR(0.305, cubic_ease_in_timing->Evaluate(0.50, tolerance),
+  EXPECT_NEAR(0.315, cubic_ease_in_timing->Evaluate(0.50, tolerance),
               tolerance);
-  EXPECT_NEAR(0.620, cubic_ease_in_timing->Evaluate(0.75, tolerance),
+  EXPECT_NEAR(0.622, cubic_ease_in_timing->Evaluate(0.75, tolerance),
               tolerance);
 
   scoped_refptr<TimingFunction> cubic_ease_out_timing =
       CubicBezierTimingFunction::Preset(
           CubicBezierTimingFunction::EaseType::EASE_OUT);
-  EXPECT_NEAR(0.379, cubic_ease_out_timing->Evaluate(0.25, tolerance),
+  EXPECT_NEAR(0.378, cubic_ease_out_timing->Evaluate(0.25, tolerance),
               tolerance);
-  EXPECT_NEAR(0.694, cubic_ease_out_timing->Evaluate(0.50, tolerance),
+  EXPECT_NEAR(0.685, cubic_ease_out_timing->Evaluate(0.50, tolerance),
               tolerance);
-  EXPECT_NEAR(0.906, cubic_ease_out_timing->Evaluate(0.75, tolerance),
+  EXPECT_NEAR(0.907, cubic_ease_out_timing->Evaluate(0.75, tolerance),
               tolerance);
 
   scoped_refptr<TimingFunction> cubic_ease_in_out_timing =
       CubicBezierTimingFunction::Preset(
           CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
-  EXPECT_NEAR(0.128, cubic_ease_in_out_timing->Evaluate(0.25, tolerance),
+  EXPECT_NEAR(0.129, cubic_ease_in_out_timing->Evaluate(0.25, tolerance),
               tolerance);
   EXPECT_NEAR(0.500, cubic_ease_in_out_timing->Evaluate(0.50, tolerance),
               tolerance);

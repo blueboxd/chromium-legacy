@@ -13,6 +13,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -184,9 +185,7 @@ ArcWakeLockBridge::WakeLockRequester* ArcWakeLockBridge::GetWakeLockRequester(
     return it->second.get();
 
   service_manager::Connector* connector =
-      connector_for_test_
-          ? connector_for_test_
-          : content::ServiceManagerConnection::GetForProcess()->GetConnector();
+      connector_for_test_ ? connector_for_test_ : content::GetSystemConnector();
   DCHECK(connector);
 
   it = wake_lock_requesters_

@@ -12842,6 +12842,21 @@ TEST_F(URLRequestTestFTP, RawBodyBytes) {
   EXPECT_EQ(6, req->GetRawBodyBytes());
 }
 
+TEST_F(URLRequestTestFTP, AuthCancellation) {
+  ftp_test_server_.set_no_anonymous_ftp_user(true);
+  ASSERT_TRUE(ftp_test_server_.Start());
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      ftp_test_server_.GetURL("simple.html"), DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->Start();
+  d.RunUntilComplete();
+
+  ASSERT_TRUE(d.auth_required_called());
+  EXPECT_EQ(ERR_FTP_FAILED, d.request_status());
+  EXPECT_TRUE(req->auth_challenge_info());
+}
+
 class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
  public:
   // Test interface:

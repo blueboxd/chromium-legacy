@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/url_loader.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data_element_mojom_traits.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data_mojom_traits.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
 
@@ -174,7 +175,7 @@ TEST_F(EncodedFormDataMojomTraitsTest, Roundtrips_EncodedFormData) {
   original1->SetContainsPasswordData(true);
   scoped_refptr<EncodedFormData> copied1 = EncodedFormData::Create();
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              network::mojom::blink::URLRequestBody>(&original1, &copied1));
+              blink::mojom::blink::FetchAPIRequestBody>(&original1, &copied1));
   EXPECT_EQ(original1->Identifier(), copied1->Identifier());
   EXPECT_EQ(original1->ContainsPasswordData(), copied1->ContainsPasswordData());
 }

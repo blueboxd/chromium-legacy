@@ -48,11 +48,11 @@ void DeviceOAuth2TokenService::OnValidationCompleted(
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate)
     : OAuth2TokenService(std::move(delegate)) {
-  GetDeviceDelegate()->SetValidationStatusDelegate(this);
+  GetDeviceDelegate()->InitializeWithValidationStatusDelegate(this);
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
-  GetDeviceDelegate()->SetValidationStatusDelegate(nullptr);
+  GetDeviceDelegate()->ClearValidationStatusDelegate();
   FlushPendingRequests(false, GoogleServiceAuthError::REQUEST_CANCELED);
 }
 

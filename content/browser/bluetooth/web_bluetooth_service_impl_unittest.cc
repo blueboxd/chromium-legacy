@@ -4,6 +4,8 @@
 
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -144,7 +146,7 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
                                                        name_prefix);
   }
 
-  void RequestScanningStart(
+  blink::mojom::RequestScanningStartResultPtr RequestScanningStart(
       const blink::mojom::WebBluetoothLeScanFilter& filter,
       FakeWebBluetoothScanClientImpl* client_impl) {
     blink::mojom::WebBluetoothScanClientAssociatedPtrInfo client_info;
@@ -154,13 +156,16 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
     auto filter_ptr = blink::mojom::WebBluetoothLeScanFilter::New(filter);
     options->filters->push_back(std::move(filter_ptr));
     base::RunLoop loop;
+    blink::mojom::RequestScanningStartResultPtr result;
     service_->RequestScanningStart(
         std::move(client_info), std::move(options),
         base::BindLambdaForTesting(
             [&](blink::mojom::RequestScanningStartResultPtr p) {
+              result = std::move(p);
               loop.Quit();
             }));
     loop.Run();
+    return result;
   }
 
   WebBluetoothServiceImpl* service_;
@@ -178,7 +183,9 @@ TEST_F(WebBluetoothServiceImplTest, PermissionAllowed) {
   EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
 
   FakeWebBluetoothScanClientImpl client_impl;
-  RequestScanningStart(*filter, &client_impl);
+  blink::mojom::RequestScanningStartResultPtr result =
+      RequestScanningStart(*filter, &client_impl);
+  EXPECT_FALSE(result->is_error_result());
   // |filters| should be allowed.
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
 }
@@ -196,7 +203,11 @@ TEST_F(WebBluetoothServiceImplTest, PermissionPromptCanceled) {
   delegate_.set_event(content::BluetoothScanningPrompt::Event::kCanceled);
 
   FakeWebBluetoothScanClientImpl client_impl;
-  RequestScanningStart(*filter, &client_impl);
+  blink::mojom::RequestScanningStartResultPtr result =
+      RequestScanningStart(*filter, &client_impl);
+  EXPECT_TRUE(result->is_error_result());
+  EXPECT_EQ(blink::mojom::WebBluetoothResult::PROMPT_CANCELED,
+            result->get_error_result());
   // |filters| should still not be allowed.
   EXPECT_FALSE(service_->AreScanFiltersAllowed(filters));
 }
@@ -208,7 +219,9 @@ TEST_F(WebBluetoothServiceImplTest,
   filters.emplace();
   filters->push_back(filter.Clone());
   FakeWebBluetoothScanClientImpl client_impl;
-  RequestScanningStart(*filter, &client_impl);
+  blink::mojom::RequestScanningStartResultPtr result =
+      RequestScanningStart(*filter, &client_impl);
+  EXPECT_FALSE(result->is_error_result());
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters));
 
   contents()->SetVisibility(content::Visibility::HIDDEN);
@@ -241,7 +254,9 @@ TEST_F(WebBluetoothServiceImplTest,
   filters_1.emplace();
   filters_1->push_back(filter_1.Clone());
   FakeWebBluetoothScanClientImpl client_impl_1;
-  RequestScanningStart(*filter_1, &client_impl_1);
+  blink::mojom::RequestScanningStartResultPtr result_1 =
+      RequestScanningStart(*filter_1, &client_impl_1);
+  EXPECT_FALSE(result_1->is_error_result());
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters_1));
   EXPECT_FALSE(client_impl_1.on_connection_error_called());
 
@@ -251,7 +266,9 @@ TEST_F(WebBluetoothServiceImplTest,
   filters_2.emplace();
   filters_2->push_back(filter_2.Clone());
   FakeWebBluetoothScanClientImpl client_impl_2;
-  RequestScanningStart(*filter_2, &client_impl_2);
+  blink::mojom::RequestScanningStartResultPtr result_2 =
+      RequestScanningStart(*filter_2, &client_impl_2);
+  EXPECT_FALSE(result_2->is_error_result());
   EXPECT_TRUE(service_->AreScanFiltersAllowed(filters_2));
   EXPECT_FALSE(client_impl_2.on_connection_error_called());
 
@@ -266,7 +283,11 @@ TEST_F(WebBluetoothServiceImplTest,
   filters_3.emplace();
   filters_3->push_back(filter_3.Clone());
   FakeWebBluetoothScanClientImpl client_impl_3;
-  RequestScanningStart(*filter_3, &client_impl_3);
+  blink::mojom::RequestScanningStartResultPtr result_3 =
+      RequestScanningStart(*filter_3, &client_impl_3);
+  EXPECT_TRUE(result_3->is_error_result());
+  EXPECT_EQ(blink::mojom::WebBluetoothResult::SCANNING_BLOCKED,
+            result_3->get_error_result());
   EXPECT_FALSE(service_->AreScanFiltersAllowed(filters_3));
 
   // The previously granted Bluetooth scanning permission should be revoked.

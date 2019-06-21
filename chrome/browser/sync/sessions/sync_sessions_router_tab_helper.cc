@@ -4,14 +4,18 @@
 
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "components/favicon/core/features.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace sync_sessions {
 
@@ -38,6 +42,11 @@ SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
   // A translate client is not always attached to web contents (e.g. tests).
   if (chrome_translate_client_)
     chrome_translate_client_->translate_driver().AddObserver(this);
+
+  favicon_driver_ =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents);
+  if (favicon_driver_)
+    favicon_driver_->AddObserver(this);
 }
 
 SyncSessionsRouterTabHelper::~SyncSessionsRouterTabHelper() {}
@@ -56,6 +65,8 @@ void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
   NotifyRouter();
   if (chrome_translate_client_)
     chrome_translate_client_->translate_driver().RemoveObserver(this);
+  if (favicon_driver_)
+    favicon_driver_->RemoveObserver(this);
 }
 
 void SyncSessionsRouterTabHelper::DidFinishLoad(
@@ -100,6 +111,19 @@ void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(
 void SyncSessionsRouterTabHelper::NotifyRouter(bool page_load_completed) {
   if (router_)
     router_->NotifyTabModified(web_contents(), page_load_completed);
+}
+
+void SyncSessionsRouterTabHelper::OnFaviconUpdated(
+    favicon::FaviconDriver* favicon_driver,
+    FaviconDriverObserver::NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  if (icon_url_changed &&
+      base::FeatureList::IsEnabled(
+          favicon::kNotifySessionsOfMostRecentIconUrlChange)) {
+    NotifyRouter();
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SyncSessionsRouterTabHelper)

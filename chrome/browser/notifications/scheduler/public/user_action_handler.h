@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
 

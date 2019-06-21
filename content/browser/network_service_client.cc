@@ -427,6 +427,7 @@ void FinishGenerateNegotiateAuthToken(
 }
 #endif
 
+// TODO(crbug.com/977040): Remove when no longer needed.
 void DeprecateSameSiteCookies(int process_id,
                               int routing_id,
                               const net::CookieStatusList& excluded_cookies) {
@@ -480,37 +481,14 @@ void DeprecateSameSiteCookies(int process_id,
         net::CanonicalCookie::CookieInclusionStatus::
             EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
       samesite_treated_as_lax_cookies = true;
-
-      if (emit_messages) {
-        root_frame_host->AddUniqueMessageToConsole(
-            blink::mojom::ConsoleMessageLevel::kWarning,
-            "[Deprecation] A cookie associated with a cross-site resource at " +
-                cookie_url +
-                " was set without the `SameSite` attribute. "
-                "A future release of Chrome will only deliver cookies with "
-                "cross-site requests if they are set with `SameSite=None`. You "
-                "can review cookies in developer tools under "
-                "Application>Storage>Cookies and see more details at "
-                "https://www.chromestatus.com/feature/5088147346030592.");
-      }
     }
-
     if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
                                       EXCLUDE_SAMESITE_NONE_INSECURE) {
       samesite_none_insecure_cookies = true;
-
-      if (emit_messages) {
-        root_frame_host->AddUniqueMessageToConsole(
-            blink::mojom::ConsoleMessageLevel::kWarning,
-            "[Deprecation] A cookie associated with a resource at " +
-                cookie_url +
-                " was set with `SameSite=None` but without `Secure`. "
-                "A future release of Chrome will only deliver cookies marked "
-                "`SameSite=None` if they are also marked `Secure`. You "
-                "can review cookies in developer tools under "
-                "Application>Storage>Cookies and see more details at "
-                "https://www.chromestatus.com/feature/5633521622188032.");
-      }
+    }
+    if (emit_messages) {
+      root_frame_host->AddSameSiteCookieDeprecationMessage(
+          cookie_url, excluded_cookie.status);
     }
   }
 

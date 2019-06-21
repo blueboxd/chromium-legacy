@@ -6,6 +6,7 @@
 
 import argparse
 import contextlib
+import logging
 import os
 import subprocess
 import sys
@@ -16,6 +17,7 @@ _SRC_ROOT = os.path.abspath(
 sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
 from devil.android import device_utils
 from devil.android.sdk import version_codes
+from devil.utils import logging_common
 
 sys.path.append(os.path.join(_SRC_ROOT, 'build', 'android'))
 import devil_chromium
@@ -37,7 +39,13 @@ def Asan(args):
   try:
     if disable_verity:
       device.EnableRoot()
-      device.adb.DisableVerity()
+      # TODO(crbug.com/790202): Stop logging output after diagnosing
+      # issues on android-asan.
+      verity_output = device.adb.DisableVerity()
+      if verity_output:
+        logging.info('disable-verity output:')
+        for line in verity_output.splitlines():
+          logging.info('  %s', line)
       device.Reboot()
     # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
     # get tripped up by the root timeout.
@@ -54,12 +62,19 @@ def Asan(args):
       teardown_cmd += ['--device', args.device]
     subprocess.check_call(teardown_cmd, env=env)
     if disable_verity:
-      device.adb.EnableVerity()
+      # TODO(crbug.com/790202): Stop logging output after diagnosing
+      # issues on android-asan.
+      verity_output = device.adb.EnableVerity()
+      if verity_output:
+        logging.info('enable-verity output:')
+        for line in verity_output.splitlines():
+          logging.info('  %s', line)
       device.Reboot()
 
 
 def main(raw_args):
   parser = argparse.ArgumentParser()
+  logging_common.AddLoggingArguments(parser)
   parser.add_argument(
       '--adb', type=os.path.realpath, required=True,
       help='Path to adb binary.')
@@ -74,6 +89,12 @@ def main(raw_args):
       help='Command to run with ASAN installed.')
   args = parser.parse_args()
 
+  # TODO(crbug.com/790202): Remove this after diagnosing issues
+  # with android-asan.
+  if not args.quiet:
+    args.verbose += 1
+
+  logging_common.InitializeLogging(args)
   devil_chromium.Initialize(adb_path=args.adb)
 
   with Asan(args):

@@ -474,11 +474,11 @@ const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 // Smaller, denser shelf in clamshell mode.
 const char kShelfDenseClamshell[] = "shelf-dense-clamshell";
 
+// New modular design for the shelf with apps separated into a hotseat UI.
+const char kShelfHotseat[] = "shelf-hotseat";
+
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
-
-// New modular UI design for the shelf.
-const char kShelfNewUi[] = "shelf-new-ui";
 
 // Scrollable list of apps on the shelf.
 const char kShelfScrollable[] = "shelf-scrollable";
@@ -615,12 +615,12 @@ bool ShouldShowShelfDenseClamshell() {
       kShelfDenseClamshell);
 }
 
-bool ShouldShowShelfHoverPreviews() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
+bool ShouldShowShelfHotseat() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHotseat);
 }
 
-bool ShouldShowShelfNewUi() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfNewUi);
+bool ShouldShowShelfHoverPreviews() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
 }
 
 bool ShouldShowScrollableShelf() {

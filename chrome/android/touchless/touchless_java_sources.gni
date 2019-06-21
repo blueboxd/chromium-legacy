@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 touchless_java_sources = [
+  "touchless/java/src/org/chromium/chrome/browser/download/TouchlessDownloadActivity.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/AboveTheFoldViewHolder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/ContentSuggestionsViewBinder.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/DinoActivity.java",
@@ -81,6 +82,7 @@ touchless_junit_test_java_sources = [
 ]
 
 touchess_fallback_java_sources = [
+  "touchless/fallback/java/src/org/chromium/chrome/browser/download/TouchlessDownloadActivity.java",
   "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessModelCoordinator.java",
   "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiCoordinator.java",

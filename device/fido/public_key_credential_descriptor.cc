@@ -37,6 +37,8 @@ PublicKeyCredentialDescriptor::CreateFromCBORValue(const cbor::Value& cbor) {
                                        id->second.GetBytestring());
 }
 
+PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor() = default;
+
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     CredentialType credential_type,
     std::vector<uint8_t> id)
@@ -70,6 +72,12 @@ PublicKeyCredentialDescriptor& PublicKeyCredentialDescriptor::operator=(
     PublicKeyCredentialDescriptor&& other) = default;
 
 PublicKeyCredentialDescriptor::~PublicKeyCredentialDescriptor() = default;
+
+bool PublicKeyCredentialDescriptor::operator==(
+    const PublicKeyCredentialDescriptor& other) const {
+  return credential_type_ == other.credential_type_ && id_ == other.id_ &&
+         transports_ == other.transports_;
+}
 
 cbor::Value AsCBOR(const PublicKeyCredentialDescriptor& desc) {
   cbor::Value::MapValue cbor_descriptor_map;

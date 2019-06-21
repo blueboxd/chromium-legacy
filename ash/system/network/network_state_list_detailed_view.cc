@@ -380,19 +380,21 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   const DeviceStateProperties* device =
       network ? model_->GetDevice(network->type) : nullptr;
   if (device) {
-    ipv4_address = device->ipv4_address.ToString();
-    ipv6_address = device->ipv6_address.ToString();
+    if (device->ipv4_address)
+      ipv4_address = device->ipv4_address->ToString();
+    if (device->ipv6_address)
+      ipv6_address = device->ipv6_address->ToString();
   }
 
   std::string ethernet_address, wifi_address;
   if (list_type_ == LIST_TYPE_NETWORK) {
     const DeviceStateProperties* ethernet =
         model_->GetDevice(NetworkType::kEthernet);
-    if (ethernet)
-      ethernet_address = ethernet->mac_address;
+    if (ethernet && ethernet->mac_address)
+      ethernet_address = *ethernet->mac_address;
     const DeviceStateProperties* wifi = model_->GetDevice(NetworkType::kWiFi);
-    if (wifi)
-      wifi_address = wifi->mac_address;
+    if (wifi && wifi->mac_address)
+      wifi_address = *wifi->mac_address;
   }
 
   base::string16 bubble_text;

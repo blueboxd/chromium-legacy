@@ -860,11 +860,6 @@
           'shards': 2,
         },
       },
-      'Linux Tests (dbg)(1)(32)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
@@ -1096,7 +1091,6 @@
   },
   'non_network_service_webkit_layout_tests' : {
     'remove_from': [
-      'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.mac. TODO(https://crbug.com/944117): Remove this.
       'mac-dummy-rel',
     ],
@@ -1131,7 +1125,7 @@
       # chromium.linux
       # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
       'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
+
       # chromium.mac. TODO(https://crbug.com/944117): Remove this.
       'mac-dummy-rel',
     ],
@@ -1229,12 +1223,6 @@
         },
       },
     },
- },
- 'remoting_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
-    ],
   },
   'sandbox_linux_unittests': {
     'modifications': {
@@ -1418,7 +1406,6 @@
       },
     },
     'remove_from': [
-      'Linux Tests (dbg)(1)(32)',
       # crbug.com/936540
       'Mac10.10 Tests',
       'Mac10.11 Tests',
@@ -1674,8 +1661,6 @@
   },
   'webkit_layout_tests': {
     'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',

@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -33,6 +35,28 @@ mojom::EnforcementMode GetDefaultEnforcementMode() {
 
 }  // namespace
 
+// MediaPowerDelegate will pause all playback if the device is suspended.
+class MediaPowerDelegate : public base::PowerObserver {
+ public:
+  explicit MediaPowerDelegate(base::WeakPtr<AudioFocusManager> owner)
+      : owner_(owner) {
+    base::PowerMonitor::AddObserver(this);
+  }
+
+  ~MediaPowerDelegate() override { base::PowerMonitor::RemoveObserver(this); }
+
+  // base::PowerObserver:
+  void OnSuspend() override {
+    DCHECK(owner_);
+    owner_->SuspendAllSessions();
+  }
+
+ private:
+  const base::WeakPtr<AudioFocusManager> owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaPowerDelegate);
+};
+
 void AudioFocusManager::RequestAudioFocus(
     mojom::AudioFocusRequestClientRequest request,
     mojom::MediaSessionPtr media_session,
@@ -55,9 +79,9 @@ void AudioFocusManager::RequestGroupedAudioFocus(
 
   RequestAudioFocusInternal(
       std::make_unique<AudioFocusRequest>(
-          this, std::move(request), std::move(media_session),
-          std::move(session_info), type, request_id, GetBindingSourceName(),
-          group_id),
+          weak_ptr_factory_.GetWeakPtr(), std::move(request),
+          std::move(media_session), std::move(session_info), type, request_id,
+          GetBindingSourceName(), group_id),
       type);
 
   std::move(callback).Run(request_id);
@@ -173,6 +197,8 @@ void AudioFocusManager::CreateMediaControllerForSession(
 }
 
 void AudioFocusManager::SuspendAllSessions() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   for (auto& row : audio_focus_stack_)
     row->ipc()->Suspend(mojom::MediaSession::SuspendType::kUI);
 }
@@ -265,6 +291,9 @@ void AudioFocusManager::MaybeUpdateActiveSession() {
 AudioFocusManager::AudioFocusManager()
     : enforcement_mode_(GetDefaultEnforcementMode()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  power_delegate_ =
+      std::make_unique<MediaPowerDelegate>(weak_ptr_factory_.GetWeakPtr());
 }
 
 AudioFocusManager::~AudioFocusManager() = default;

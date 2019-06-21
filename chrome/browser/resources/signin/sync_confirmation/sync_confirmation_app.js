@@ -63,7 +63,7 @@ Polymer({
 
   /** @private */
   onKeyDown_: function(e) {
-    if (e.key == 'Enter' && !/^(A|PAPER-BUTTON)$/.test(e.path[0].tagName)) {
+    if (e.key == 'Enter' && !/^(A|CR-BUTTON)$/.test(e.path[0].tagName)) {
       this.onConfirm_(e);
       e.preventDefault();
     }

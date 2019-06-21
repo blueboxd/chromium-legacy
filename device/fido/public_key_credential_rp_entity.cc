@@ -44,6 +44,8 @@ PublicKeyCredentialRpEntity::CreateFromCBORValue(const cbor::Value& cbor) {
   return rp;
 }
 
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity() = default;
+
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
     : id(std::move(rp_id)) {}
 
@@ -60,6 +62,11 @@ PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
     PublicKeyCredentialRpEntity&& other) = default;
 
 PublicKeyCredentialRpEntity::~PublicKeyCredentialRpEntity() = default;
+
+bool PublicKeyCredentialRpEntity::operator==(
+    const PublicKeyCredentialRpEntity& other) const {
+  return id == other.id && name == other.name && icon_url == other.icon_url;
+}
 
 cbor::Value AsCBOR(const PublicKeyCredentialRpEntity& entity) {
   cbor::Value::MapValue rp_map;

@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"

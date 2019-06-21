@@ -27,11 +27,13 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
+#include "chromeos/printing/usb_printer_id.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -128,9 +130,24 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
         GuessEffectiveMakeAndModel(device_info));
     entry.ppd_search_data.discovery_type =
         PrinterSearchData::PrinterDiscoveryType::kUsb;
-    // TODO(https://crbug.com/895037): Add in command set from IEEE1284
 
-    printers_[device_info.guid] = entry;
+    // Query printer for an IEEE Device ID.
+    device::mojom::UsbDevicePtr device_ptr;
+    device_manager_->GetDevice(device_info.guid, mojo::MakeRequest(&device_ptr),
+                               nullptr /* device_client */);
+    GetDeviceId(std::move(device_ptr),
+                base::BindOnce(&UsbPrinterDetectorImpl::OnGetDeviceId,
+                               weak_factory_.GetWeakPtr(), std::move(entry),
+                               device_info.guid));
+  }
+
+  void OnGetDeviceId(DetectedPrinter entry,
+                     std::string guid,
+                     UsbPrinterId printer_id) {
+    entry.ppd_search_data.printer_id = std::move(printer_id);
+
+    // Add detected printer.
+    printers_[guid] = entry;
     if (on_printers_found_callback_) {
       on_printers_found_callback_.Run(GetPrinters());
     }
@@ -175,11 +192,8 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
   // Bind to the DeviceService for USB device manager.
   device::mojom::UsbDeviceManagerPtrInfo usb_manager_info;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&usb_manager_info));
-
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_info));
   return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager_info));
 }
 

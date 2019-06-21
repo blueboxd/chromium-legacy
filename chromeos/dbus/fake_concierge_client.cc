@@ -211,6 +211,14 @@ void FakeConciergeClient::ListUsbDevices(
       base::BindOnce(std::move(callback), list_usb_devices_response_));
 }
 
+void FakeConciergeClient::StartArcVm(
+    const vm_tools::concierge::StartArcVmRequest& request,
+    DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) {
+  start_arc_vm_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
+}
+
 void FakeConciergeClient::InitializeProtoResponses() {
   create_disk_image_response_.Clear();
   create_disk_image_response_.set_status(

@@ -239,8 +239,8 @@ std::string CopySideData(blink::mojom::Blob* actual_blob) {
   base::RunLoop loop;
   actual_blob->ReadSideData(base::BindLambdaForTesting(
       [&](const base::Optional<mojo_base::BigBuffer> data) {
-        ASSERT_TRUE(data);
-        output.append(data->data(), data->data() + data->size());
+        if (data)
+          output.append(data->data(), data->data() + data->size());
         loop.Quit();
       }));
   loop.Run();

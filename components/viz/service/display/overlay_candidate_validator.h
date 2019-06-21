@@ -10,7 +10,6 @@
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/ipc/common/surface_handle.h"
 
 namespace viz {
 class RendererSettings;

@@ -796,7 +796,6 @@ void AutomationInternalCustomBindings::AddRoutes() {
             node->GetString16Attribute(ax::mojom::StringAttribute::kName));
         result.Set(gin::ConvertToV8(isolate, word_ends));
       });
-
   // Bindings that take a Tree ID and Node ID and string attribute name
   // and return a property of the node.
 

@@ -20,7 +20,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_flags.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -203,10 +202,7 @@ void ArcImeService::ReattachInputMethod(aura::Window* old_window,
 // Overridden from aura::EnvObserver:
 
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
-  // TODO(mash): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsMultiProcessMash() &&
-      keyboard::KeyboardController::HasInstance()) {
+  if (keyboard::KeyboardController::HasInstance()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->IsEnabled() &&
         !keyboard_controller->HasObserver(this)) {
@@ -358,10 +354,7 @@ void ArcImeService::RequestHideIme() {
   if (!focused_arc_window_)
     return;
 
-  // TODO(mash): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsMultiProcessMash() &&
-      keyboard::KeyboardController::HasInstance()) {
+  if (keyboard::KeyboardController::HasInstance()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->IsEnabled())
       keyboard_controller->HideKeyboardImplicitlyBySystem();

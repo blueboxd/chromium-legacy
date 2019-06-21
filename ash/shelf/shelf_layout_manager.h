@@ -126,6 +126,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns true if at least one window is visible.
   bool HasVisibleWindow() const;
 
+  // Cancel the drag if the shelf is in drag progress.
+  void CancelDragOnShelfIfInProgress();
+
   // wm::WmSnapToPixelLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,

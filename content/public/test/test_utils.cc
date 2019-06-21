@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/url_schemes.h"
@@ -212,23 +211,6 @@ GURL GetWebUIURL(const std::string& host) {
 std::string GetWebUIURLString(const std::string& host) {
   return std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator +
          host;
-}
-
-void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
-                                      const std::string& param_name,
-                                      const std::string& param_value,
-                                      base::CommandLine* command_line) {
-  static const char kFakeTrialName[] = "TrialNameForTesting";
-  static const char kFakeTrialGroupName[] = "TrialGroupForTesting";
-
-  // Enable all the |feature|, associating them with |trial_name|.
-  command_line->AppendSwitchASCII(
-      switches::kEnableFeatures,
-      std::string(feature.name) + "<" + kFakeTrialName);
-
-  std::map<std::string, std::string> param_values = {{param_name, param_value}};
-  variations::testing::VariationParamsManager::AppendVariationParams(
-      kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
 
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {

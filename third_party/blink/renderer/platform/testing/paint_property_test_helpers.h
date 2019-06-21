@@ -155,12 +155,10 @@ CreateAnimatingBackdropFilterEffect(
 inline scoped_refptr<ClipPaintPropertyNode> CreateClip(
     const ClipPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
-    const FloatRoundedRect& clip_rect,
-    CompositingReasons compositing_reasons = CompositingReason::kNone) {
+    const FloatRoundedRect& clip_rect) {
   ClipPaintPropertyNode::State state;
   state.local_transform_space = &local_transform_space;
   state.clip_rect = clip_rect;
-  state.direct_compositing_reasons = compositing_reasons;
   return ClipPaintPropertyNode::Create(parent, std::move(state));
 }
 

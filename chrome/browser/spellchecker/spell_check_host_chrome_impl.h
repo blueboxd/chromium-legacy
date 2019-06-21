@@ -35,7 +35,7 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
 
@@ -55,9 +55,9 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       const std::vector<SpellCheckResult>& service_results);
 #endif
 
-#if defined(OS_MACOSX)
-  // Non-Mac (i.e., Android) implementations of the following APIs are in the
-  // base class SpellCheckHostImpl.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // Non-Mac and non-Win(i.e., Android) implementations of the following APIs
+  // are in the base class SpellCheckHostImpl.
   void CheckSpelling(const base::string16& word,
                      int route_id,
                      CheckSpellingCallback callback) override;
@@ -75,13 +75,15 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       std::vector<SpellCheckResult>* remote_results,
       const std::vector<SpellCheckResult>& local_results);
 
-  int ToDocumentTag(int route_id);
-  void RetireDocumentTag(int route_id);
-  std::map<int, int> tag_map_;
-
   // All pending requests.
   std::set<std::unique_ptr<SpellingRequest>, base::UniquePtrComparator>
       requests_;
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+  int ToDocumentTag(int route_id);
+  void RetireDocumentTag(int route_id);
+  std::map<int, int> tag_map_;
 #endif  // defined(OS_MACOSX)
 
   // Returns the SpellcheckService of our |render_process_id_|. The return

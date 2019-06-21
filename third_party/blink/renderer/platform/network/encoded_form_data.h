@@ -38,13 +38,11 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace network {
-namespace mojom {
-class URLRequestBodyDataView;
-}  // namespace mojom
-}  // namespace network
-
 namespace blink {
+
+namespace mojom {
+class FetchAPIRequestBodyDataView;
+}  // namespace mojom
 
 class BlobDataHandle;
 class WrappedDataPipeGetter;
@@ -153,7 +151,7 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   bool IsSafeToSendToAnotherThread() const;
 
  private:
-  friend struct mojo::StructTraits<network::mojom::URLRequestBodyDataView,
+  friend struct mojo::StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
                                    scoped_refptr<blink::EncodedFormData>>;
   EncodedFormData();
   EncodedFormData(const EncodedFormData&);

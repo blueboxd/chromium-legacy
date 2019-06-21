@@ -143,9 +143,7 @@ class CustomTabBarTitleOriginView : public views::View {
     // preferred size is at least as wide as the minimum size, and the
     // minimum height of the control should be the preferred height.
     constexpr int kMinCharacters = 20;
-    return views::style::GetExpectedTextWidth(
-        title_label_->text_context(), views::style::TextStyle::STYLE_PRIMARY,
-        kMinCharacters);
+    return title_label_->font_list().GetExpectedTextWidth(kMinCharacters);
   }
 
   // views::View:

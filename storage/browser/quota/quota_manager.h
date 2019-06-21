@@ -402,8 +402,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void DidGetLRUOrigin(std::unique_ptr<base::Optional<url::Origin>> origin,
                        bool success);
   void GetQuotaSettings(QuotaSettingsCallback callback);
-  void DidGetSettings(base::TimeTicks start_ticks,
-                      base::Optional<QuotaSettings> settings);
+  void DidGetSettings(base::Optional<QuotaSettings> settings);
   void GetStorageCapacity(StorageCapacityCallback callback);
   void ContinueIncognitoGetStorageCapacity(const QuotaSettings& settings);
   void DidGetStorageCapacity(

@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 namespace chromeos {
 
@@ -28,8 +28,7 @@ std::unique_ptr<RecommendAppsFetcher> RecommendAppsFetcher::Create(
   if (g_factory_callback)
     return g_factory_callback->Run(delegate);
   return std::make_unique<RecommendAppsFetcherImpl>(
-      delegate,
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      delegate, content::GetSystemConnector(),
       content::BrowserContext::GetDefaultStoragePartition(
           ProfileManager::GetActiveUserProfile())
           ->GetURLLoaderFactoryForBrowserProcess()

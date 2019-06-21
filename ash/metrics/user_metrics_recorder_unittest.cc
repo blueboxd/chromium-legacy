@@ -132,11 +132,9 @@ TEST_F(UserMetricsRecorderTest, VerifyStatsRecordedByRecordPeriodicMetrics) {
 TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   CreateUserSessions(1);
 
-  // Make sure the shelf contains the app list launcher and back button.
+  // Make sure the shelf model is empty at first.
   ShelfModel* shelf_model = ShelfModel::Get();
-  ASSERT_EQ(2u, shelf_model->items().size());
-  ASSERT_EQ(TYPE_BACK_BUTTON_DEPRECATED, shelf_model->items()[0].type);
-  ASSERT_EQ(TYPE_APP_LIST_DEPRECATED, shelf_model->items()[1].type);
+  ASSERT_EQ(0u, shelf_model->items().size());
 
   ShelfItem shelf_item;
   shelf_item.type = ash::TYPE_PINNED_APP;

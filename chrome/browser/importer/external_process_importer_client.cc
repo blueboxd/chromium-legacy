@@ -15,7 +15,7 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -39,10 +39,8 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
 
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(chrome::mojom::kProfileImportServiceName,
-                      &profile_import_);
+  content::GetSystemConnector()->BindInterface(
+      chrome::mojom::kProfileImportServiceName, &profile_import_);
 
   profile_import_.set_connection_error_handler(
       base::BindOnce(&ExternalProcessImporterClient::OnProcessCrashed, this));

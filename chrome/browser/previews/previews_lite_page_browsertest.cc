@@ -394,7 +394,7 @@ class PreviewsLitePageServerBrowserTest
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
     EXPECT_TRUE(previews_data->HasCommittedPreviewsType());
-    EXPECT_EQ(previews_data->committed_previews_type(),
+    EXPECT_EQ(previews_data->CommittedPreviewsType(),
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
@@ -446,7 +446,7 @@ class PreviewsLitePageServerBrowserTest
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
     EXPECT_FALSE(previews_data->HasCommittedPreviewsType());
-    EXPECT_NE(previews_data->committed_previews_type(),
+    EXPECT_NE(previews_data->CommittedPreviewsType(),
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
@@ -2007,7 +2007,7 @@ IN_PROC_BROWSER_TEST_P(
   previews::PreviewsUserData* previews_data =
       ui_tab_helper->previews_user_data();
   EXPECT_TRUE(previews_data->HasCommittedPreviewsType());
-  EXPECT_EQ(previews_data->committed_previews_type(),
+  EXPECT_EQ(previews_data->CommittedPreviewsType(),
             previews::PreviewsType::RESOURCE_LOADING_HINTS);
 
   ClearDeciderState();
@@ -2108,10 +2108,8 @@ class CoinFlipHoldbackExperimentBrowserTest
     }
 
     if (want_resource_loading_committed) {
-      EXPECT_EQ(previews_data->committed_previews_type(),
+      EXPECT_EQ(previews_data->CommittedPreviewsType(),
                 previews::PreviewsType::RESOURCE_LOADING_HINTS);
-      EXPECT_NE(previews_data->coin_flip_holdback_result(),
-                previews::CoinFlipHoldbackResult::kHoldback);
     }
 
     EXPECT_EQ(want_ukm_coin_flip_holdback_result,

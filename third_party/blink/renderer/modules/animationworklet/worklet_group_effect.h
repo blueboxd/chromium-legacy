@@ -18,7 +18,7 @@ class MODULES_EXPORT WorkletGroupEffect : public ScriptWrappable {
 
  public:
   explicit WorkletGroupEffect(
-      const std::vector<base::Optional<TimeDelta>>& local_times,
+      const std::vector<base::Optional<base::TimeDelta>>& local_times,
       const Vector<Timing>& timings);
   const HeapVector<Member<WorkletAnimationEffect>>& getChildren() {
     return effects_;

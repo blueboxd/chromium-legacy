@@ -662,6 +662,10 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
     return;
   }
 
+  if (!modified_headers.IsEmpty())
+    LogConcerningRequestHeaders(modified_headers,
+                                true /* added_during_redirect */);
+
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 

@@ -251,23 +251,8 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
   destination_url_data->set_valid_until(base::Time::Now() +
                                         GetCacheValidUntil(response));
 
-  uint32_t reasons = GetReasonsForUncacheability(response);
-  destination_url_data->set_cacheable(reasons == 0);
-  UMA_HISTOGRAM_BOOLEAN("Media.CacheUseful", reasons == 0);
-  int shift = 0;
-  int max_enum = base::bits::Log2Ceiling(kMaxReason);
-  while (reasons) {
-    DCHECK_LT(shift, max_enum);  // Sanity check.
-    if (reasons & 0x1) {
-      // Note: this uses an exact linear UMA to fake an enum UMA, as the actual
-      // enum is a bitmask.
-      UMA_HISTOGRAM_EXACT_LINEAR("Media.UncacheableReason", shift,
-                                 max_enum);  // PRESUBMIT_IGNORE_UMA_MAX
-    }
-
-    reasons >>= 1;
-    ++shift;
-  }
+  destination_url_data->set_cacheable(GetReasonsForUncacheability(response) ==
+                                      0);
 
   // Expected content length can be |kPositionNotSpecified|, in that case
   // |content_length_| is not specified and this is a streaming response.

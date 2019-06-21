@@ -402,6 +402,17 @@ const char kMediaCacheSize[]                = "media-cache-size";
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
 
+// Requests a native messaging connection be established between the native
+// messaging host named by this switch and the extension with ID specified by
+// kNativeMessagingConnectExtension.
+const char kNativeMessagingConnectHost[] = "native-messaging-connect-host";
+
+// Requests a native messaging connection be established between the extension
+// with ID specified by this switch and the native messaging host named by the
+// kNativeMessagingConnectHost switch.
+const char kNativeMessagingConnectExtension[] =
+    "native-messaging-connect-extension";
+
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

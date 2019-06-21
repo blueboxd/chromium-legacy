@@ -23,6 +23,8 @@ namespace {
 
 const CoreAccountId kAccountId("account_id_1");
 const CoreAccountId kAccountId2("account_id_2");
+const char kGaiaId[] = "gaia_id_1";
+const char kGaiaId2[] = "gaia_id_2";
 const char kAccessToken[] = "access_token_1";
 const char kAccessToken2[] = "access_token_2";
 
@@ -119,8 +121,8 @@ const char kMultiloginInvalidTokenResponse[] =
        {
          "status": "INVALID_TOKENS",
          "failed_accounts": [
-           { "obfuscated_id": "account_id_1", "status": "RECOVERABLE" },
-           { "obfuscated_id": "account_id_2", "status": "OK" }
+           { "obfuscated_id": "gaia_id_1", "status": "RECOVERABLE" },
+           { "obfuscated_id": "gaia_id_2", "status": "OK" }
          ]
        }
       )";
@@ -169,17 +171,19 @@ class OAuthMultiloginHelperTest : public testing::Test {
   ~OAuthMultiloginHelperTest() override = default;
 
   std::unique_ptr<OAuthMultiloginHelper> CreateHelper(
-      const std::vector<std::string> account_ids) {
+      const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>
+          accounts) {
     return std::make_unique<OAuthMultiloginHelper>(
-        &test_signin_client_, token_service(), account_ids, std::string(),
+        &test_signin_client_, token_service(), accounts, std::string(),
         base::BindOnce(&OAuthMultiloginHelperTest::OnOAuthMultiloginFinished,
                        base::Unretained(this)));
   }
 
   std::unique_ptr<OAuthMultiloginHelper> CreateHelperWithExternalCcResult(
-      const std::vector<std::string> account_ids) {
+      const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>
+          accounts) {
     return std::make_unique<OAuthMultiloginHelper>(
-        &test_signin_client_, token_service(), account_ids, kExternalCcResult,
+        &test_signin_client_, token_service(), accounts, kExternalCcResult,
         base::BindOnce(&OAuthMultiloginHelperTest::OnOAuthMultiloginFinished,
                        base::Unretained(this)));
   }
@@ -221,7 +225,8 @@ class OAuthMultiloginHelperTest : public testing::Test {
 // Everything succeeds.
 TEST_F(OAuthMultiloginHelperTest, Success) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
@@ -249,7 +254,8 @@ TEST_F(OAuthMultiloginHelperTest, Success) {
 // Multiple cookies in the multilogin response.
 TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
@@ -284,7 +290,7 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
 TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
   token_service()->AddAccount(kAccountId);
   std::unique_ptr<OAuthMultiloginHelper> helper =
-      CreateHelperWithExternalCcResult({kAccountId});
+      CreateHelperWithExternalCcResult({{kAccountId, kGaiaId}});
 
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
@@ -320,7 +326,8 @@ TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
 // Failure to get the access token.
 TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   token_service()->IssueErrorForAllPendingRequestsForAccount(
       kAccountId,
@@ -332,7 +339,8 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
 // Retry on transient errors in the multilogin call.
 TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
@@ -368,7 +376,8 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
 TEST_F(OAuthMultiloginHelperTest,
        OneAccountTransientMultiloginErrorMaxRetries) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   // Issue access token.
   OAuth2AccessTokenConsumer::TokenResponse success_response;
@@ -391,7 +400,8 @@ TEST_F(OAuthMultiloginHelperTest,
 // Persistent error in the multilogin call.
 TEST_F(OAuthMultiloginHelperTest, OneAccountPersistentMultiloginError) {
   token_service()->AddAccount(kAccountId);
-  std::unique_ptr<OAuthMultiloginHelper> helper = CreateHelper({kAccountId});
+  std::unique_ptr<OAuthMultiloginHelper> helper =
+      CreateHelper({{kAccountId, kGaiaId}});
 
   // Issue access token.
   OAuth2AccessTokenConsumer::TokenResponse success_response;
@@ -412,7 +422,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
   token_service()->AddAccount(kAccountId);
   token_service()->AddAccount(kAccountId2);
   std::unique_ptr<OAuthMultiloginHelper> helper =
-      CreateHelper({kAccountId, kAccountId2});
+      CreateHelper({{kAccountId, kGaiaId}, {kAccountId2, kGaiaId2}});
 
   // Configure mock cookie manager:
   // - check that the cookie is the expected one
@@ -460,7 +470,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenErrorMaxRetries) {
   token_service()->AddAccount(kAccountId);
   token_service()->AddAccount(kAccountId2);
   std::unique_ptr<OAuthMultiloginHelper> helper =
-      CreateHelper({kAccountId, kAccountId2});
+      CreateHelper({{kAccountId, kGaiaId}, {kAccountId2, kGaiaId2}});
 
   // The failed access token should be invalidated.
   EXPECT_CALL(*token_service(),

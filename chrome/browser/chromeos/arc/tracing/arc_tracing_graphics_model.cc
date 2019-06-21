@@ -1627,6 +1627,8 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
 
   NormalizeTimestamps();
 
+  system_model_.CloseRangeForValueEvents(duration_ - 1 /* max_timestamp */);
+
   return true;
 }
 

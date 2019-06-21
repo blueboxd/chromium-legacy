@@ -8,29 +8,25 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_filter.h"
 
 FakeAccessibilityController::FakeAccessibilityController() {
-  CHECK(content::ServiceManagerConnection::GetForProcess())
+  CHECK(content::GetSystemConnector())
       << "ServiceManager is uninitialized. Did you forget to create a "
          "content::TestServiceManagerContext?";
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->OverrideBinderForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::AccessibilityController::Name_,
-          base::BindRepeating(&FakeAccessibilityController::Bind,
-                              base::Unretained(this)));
+  content::GetSystemConnector()->OverrideBinderForTesting(
+      service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
+      ash::mojom::AccessibilityController::Name_,
+      base::BindRepeating(&FakeAccessibilityController::Bind,
+                          base::Unretained(this)));
 }
 
 FakeAccessibilityController::~FakeAccessibilityController() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->ClearBinderOverrideForTesting(
-          service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
-          ash::mojom::AccessibilityController::Name_);
+  content::GetSystemConnector()->ClearBinderOverrideForTesting(
+      service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
+      ash::mojom::AccessibilityController::Name_);
 }
 
 void FakeAccessibilityController::SetClient(

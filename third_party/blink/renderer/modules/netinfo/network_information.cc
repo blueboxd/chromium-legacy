@@ -120,7 +120,7 @@ String NetworkInformation::effectiveType() {
 
 uint32_t NetworkInformation::rtt() {
   MaybeShowWebHoldbackConsoleMsg();
-  base::Optional<TimeDelta> override_rtt =
+  base::Optional<base::TimeDelta> override_rtt =
       GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
   if (override_rtt) {
     return GetNetworkStateNotifier().RoundRtt(Host(), override_rtt.value());
@@ -162,8 +162,8 @@ void NetworkInformation::ConnectionChange(
     WebConnectionType type,
     double downlink_max_mbps,
     WebEffectiveConnectionType effective_type,
-    const base::Optional<TimeDelta>& http_rtt,
-    const base::Optional<TimeDelta>& transport_rtt,
+    const base::Optional<base::TimeDelta>& http_rtt,
+    const base::Optional<base::TimeDelta>& transport_rtt,
     const base::Optional<double>& downlink_mbps,
     bool save_data) {
   DCHECK(GetExecutionContext()->IsContextThread());
@@ -281,7 +281,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       web_holdback_console_message_shown_(false),
       context_stopped_(false) {
-  base::Optional<TimeDelta> http_rtt;
+  base::Optional<base::TimeDelta> http_rtt;
   base::Optional<double> downlink_mbps;
 
   GetNetworkStateNotifier().GetMetricsWithWebHoldback(

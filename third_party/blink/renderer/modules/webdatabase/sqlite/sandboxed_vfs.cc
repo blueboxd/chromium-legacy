@@ -125,13 +125,13 @@ String StringFromFullPath(const char* full_path) {
 }
 
 // SQLite measures time according to the Julian calendar.
-WTF::Time SqliteEpoch() {
+base::Time SqliteEpoch() {
   constexpr const double kMicroSecondsPerDay = 24 * 60 * 60 * 1000;
   // The ".5" is intentional -- days in the Julian calendar start at noon.
   // The offset is in the SQLite source code (os_unix.c) multiplied by 10.
   constexpr const double kUnixEpochAsJulianDay = 2440587.5;
 
-  return WTF::Time::FromJsTime(-kUnixEpochAsJulianDay * kMicroSecondsPerDay);
+  return base::Time::FromJsTime(-kUnixEpochAsJulianDay * kMicroSecondsPerDay);
 }
 
 }  // namespace
@@ -290,7 +290,7 @@ int SandboxedVfs::Randomness(int result_size, char* result) {
 
 int SandboxedVfs::Sleep(int microseconds) {
   DCHECK_GE(microseconds, 0);
-  base::PlatformThread::Sleep(WTF::TimeDelta::FromMicroseconds(microseconds));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(microseconds));
   return SQLITE_OK;
 }
 
@@ -311,7 +311,7 @@ int SandboxedVfs::GetLastError(int message_size, char* message) const {
 int SandboxedVfs::CurrentTimeInt64(sqlite3_int64* result_ms) {
   DCHECK(result_ms);
 
-  WTF::TimeDelta delta = WTF::Time::Now() - sqlite_epoch_;
+  base::TimeDelta delta = base::Time::Now() - sqlite_epoch_;
   *result_ms = delta.InMilliseconds();
   return SQLITE_OK;
 }

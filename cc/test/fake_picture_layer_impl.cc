@@ -60,7 +60,7 @@ void FakePictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 }
 
 gfx::Size FakePictureLayerImpl::CalculateTileSize(
-    const gfx::Size& content_bounds) const {
+    const gfx::Size& content_bounds) {
   if (fixed_tile_size_.IsEmpty()) {
     return PictureLayerImpl::CalculateTileSize(content_bounds);
   }

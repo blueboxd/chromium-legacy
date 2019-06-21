@@ -199,7 +199,7 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     // and use CrossThreadBind
     PostCrossThreadTask(
         *io_task_runner_, FROM_HERE,
-        CrossThreadBind(new_frame_callback_, frame, current_time));
+        CrossThreadBindRepeating(new_frame_callback_, frame, current_time));
   }
 
   // Calculate the time in the future where the next frame should be created.

@@ -780,7 +780,6 @@ if (!is_android) {
       "../browser/browsing_data/counters/sync_aware_counter_browsertest.cc",
       "../browser/browsing_data/navigation_entry_remover_browsertest.cc",
       "../browser/chrome_content_browser_client_browsertest.cc",
-      "../browser/chrome_content_browser_client_browsertest_chromeos.cc",
       "../browser/chrome_do_not_track_browsertest.cc",
       "../browser/chrome_find_request_manager_browsertest.cc",
       "../browser/chrome_main_browsertest.cc",
@@ -2333,6 +2332,7 @@ if (!is_android) {
     if (is_win) {
       sources += [
         "../browser/printing/pdf_to_emf_converter_browsertest.cc",
+        "../browser/spellchecker/spell_check_host_chrome_impl_win_browsertest.cc",
         "../browser/ui/startup/credential_provider_signin_dialog_win_browsertest.cc",
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
@@ -2557,13 +2557,6 @@ group("telemetry_perf_unittests") {
     "//build/android/pylib/",
     "//tools/swarming_client/",
   ]
-
-  if (enable_mus) {
-    deps += [ "//chrome:chrome_test" ]
-    data_deps = [
-      "//chrome:chrome_test",
-    ]
-  }
 }
 
 group("telemetry_perf_tests") {
@@ -3964,7 +3957,7 @@ test("unit_tests") {
       "../tools/convert_dict/convert_dict_unittest.cc",
     ]
 
-    if (!use_browser_spellchecker) {
+    if (use_renderer_spellchecker) {
       sources +=
           [ "../browser/spellchecker/spell_check_host_chrome_impl_unittest.cc" ]
     }
@@ -6120,13 +6113,6 @@ if (!is_android && !is_fuchsia) {
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
-
-    if (enable_mus) {
-      deps += [ "//chrome:chrome_test" ]
-      data_deps = [
-        "//chrome:chrome_test",
-      ]
-    }
   }
 
   group("telemetry_gpu_unittests_run") {

@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -55,14 +54,14 @@ void WaitForHistoryToDisappear() {
 
 // Tests that all items are accessible on the most visited page.
 - (void)testAccessibilityOnMostVisited {
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all items are accessible on the incognito page.
 - (void)testAccessibilityOnIncognitoTab {
   [ChromeEarlGrey openNewIncognitoTab];
   WaitForHistoryToDisappear();
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
   [ChromeEarlGrey closeAllIncognitoTabs];
 }
 

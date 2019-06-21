@@ -53,8 +53,8 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
 
   Gamepad(Client* client,
           unsigned index,
-          TimeTicks time_origin,
-          TimeTicks time_floor);
+          base::TimeTicks time_origin,
+          base::TimeTicks time_floor);
   ~Gamepad() override;
 
   void UpdateFromDeviceState(const device::Gamepad&);
@@ -150,10 +150,10 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   bool is_button_data_dirty_;
 
   // Base time on which all relative timestamps are based.
-  const TimeTicks time_origin_;
+  const base::TimeTicks time_origin_;
 
   // Minimum value to use for timestamps from the device.
-  const TimeTicks time_floor_;
+  const base::TimeTicks time_floor_;
 };
 
 }  // namespace blink

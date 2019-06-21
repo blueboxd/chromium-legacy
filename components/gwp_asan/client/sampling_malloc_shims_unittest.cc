@@ -243,6 +243,8 @@ TEST_F(SamplingMallocShimsTest, CrashKey) {
 }
 #endif  // !defined(COMPONENT_BUILD)
 
+// malloc_usable_size() is not currently used/shimmed on Android.
+#if !defined(OS_ANDROID)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     GetSizeEstimate,
     SamplingMallocShimsTest::multiprocessTestSetup) {
@@ -264,6 +266,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 TEST_F(SamplingMallocShimsTest, GetSizeEstimate) {
   runTest("GetSizeEstimate");
 }
+#endif
 
 #if defined(OS_WIN)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(

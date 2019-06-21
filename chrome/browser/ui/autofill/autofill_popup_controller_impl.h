@@ -20,7 +20,6 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/native_theme/native_theme.h"
 
 namespace content {
 struct NativeWebKeyboardEvent;
@@ -109,7 +108,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
-  ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
   void SetSelectedLine(base::Optional<int> selected_line) override;
   base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;

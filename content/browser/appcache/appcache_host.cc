@@ -17,9 +17,9 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
@@ -61,12 +61,14 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
 
 bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
   DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
-  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
   return document_url.is_empty() ||       // window.open("javascript:''") case.
          document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
          document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
          document_url == GURL("data:,") ||  // CSP blocked_urls.
-         security_policy->CanAccessDataForOrigin(process_id, document_url);
+         security_policy->CanAccessDataForOrigin(process_id,
+                                                 document_url) ||
+         !security_policy->HasSecurityState(process_id);  // process shutdown.
 }
 
 }  // namespace
@@ -152,9 +154,10 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     return;
   }
 
-  auto* security_policy = ChildProcessSecurityPolicy::GetInstance();
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!manifest_url.is_empty() &&
-      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url)) {
+      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url) &&
+      security_policy->HasSecurityState(process_id_)) {
     mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
     return;
   }

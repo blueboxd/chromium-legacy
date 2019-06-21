@@ -9,7 +9,7 @@
 namespace media_session {
 
 AudioFocusRequest::AudioFocusRequest(
-    AudioFocusManager* owner,
+    base::WeakPtr<AudioFocusManager> owner,
     mojom::AudioFocusRequestClientRequest request,
     mojom::MediaSessionPtr session,
     mojom::MediaSessionInfoPtr session_info,
@@ -25,7 +25,7 @@ AudioFocusRequest::AudioFocusRequest(
       id_(id),
       source_name_(source_name),
       group_id_(group_id),
-      owner_(owner) {
+      owner_(std::move(owner)) {
   // Listen for mojo errors.
   binding_.set_connection_error_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
@@ -164,7 +164,7 @@ void AudioFocusRequest::OnConnectionError() {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AudioFocusManager::AbandonAudioFocusInternal,
-                                base::Unretained(owner_), id_));
+                                owner_, id_));
 }
 
 }  // namespace media_session

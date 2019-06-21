@@ -41,7 +41,7 @@ enum class TaskPriority : uint8_t {
   // - Reporting metrics.
   // - Persisting data to disk.
   // - Loading data that is required for a potential future user interaction
-  //   (Note: Use CreateUpdateableSequencedTaskRunnerWithTraits() to increase
+  //   (Note: Use CreateUpdateableSequencedTaskRunner() to increase
   //    the priority when that user interactions happens).
   BEST_EFFORT = LOWEST,
 

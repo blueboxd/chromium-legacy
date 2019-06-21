@@ -27,7 +27,7 @@ namespace {
 
 // Only expect precision up to 1 microsecond with an additional epsilon to
 // account for float conversion error (mainly due to timeline time getting
-// converted between float and TimeDelta).
+// converted between float and base::TimeDelta).
 static constexpr double time_error_ms = 0.001 + 1e-13;
 
 #define EXPECT_TIME_NEAR(expected, value) \
@@ -233,8 +233,8 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Last peek request fulfilled. No need to peek.
-  std::vector<base::Optional<TimeDelta>> local_times;
-  local_times.push_back(TimeDelta());
+  std::vector<base::Optional<base::TimeDelta>> local_times;
+  local_times.push_back(base::TimeDelta());
   AnimationWorkletOutput::AnimationState output_with_value(id);
   output_with_value.local_times = local_times;
   worklet_animation_->SetOutputState(output_with_value);

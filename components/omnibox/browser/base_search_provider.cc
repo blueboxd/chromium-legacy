@@ -31,6 +31,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 // SuggestionDeletionHandler -------------------------------------------------
 
@@ -379,7 +380,8 @@ bool BaseSearchProvider::CanSendURL(
     const TemplateURL* template_url,
     metrics::OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    AutocompleteProviderClient* client) {
+    AutocompleteProviderClient* client,
+    bool sending_search_terms) {
   // Make sure we are sending the suggest request through a cryptographically
   // secure channel to prevent exposing the current page URL or personalized
   // results without encryption.
@@ -416,8 +418,22 @@ bool BaseSearchProvider::CanSendURL(
   if (!scheme_allowed)
     return false;
 
-  if (!client->IsPersonalizedUrlDataCollectionActive())
-    return false;
+  // If URL data collection is off, forbid sending the current page URL to the
+  // suggest endpoint - unless both of these hold:
+  //  * The suggest endpoint and current page must be same-origin. In that
+  //    case, the suggest endpoint could have already logged the current URL
+  //    when the user accessed it from the server.
+  //  * The search terms must be empty. When the user is typing new search
+  //    terms, Chrome should not leak to the endpoint which tab the user is
+  //    looking at. On-focus suggest requests don't contain a query.
+  if (!client->IsPersonalizedUrlDataCollectionActive()) {
+    bool safe_to_send_url_without_data_collection_active =
+        url::IsSameOriginWith(current_page_url, suggest_url) &&
+        !sending_search_terms;
+
+    if (!safe_to_send_url_without_data_collection_active)
+      return false;
+  }
 
   return true;
 }

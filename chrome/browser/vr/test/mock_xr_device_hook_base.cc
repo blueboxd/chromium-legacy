@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -52,9 +52,7 @@ MockXRDeviceHookBase::MockXRDeviceHookBase()
     : tracked_classes_{device_test::mojom::TrackedDeviceClass::
                            kTrackedDeviceInvalid},
       binding_(this) {
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(
+  content::GetSystemConnector()->BindInterface(
       device::mojom::kVrIsolatedServiceName,
       mojo::MakeRequest(&service_test_hook_));
 

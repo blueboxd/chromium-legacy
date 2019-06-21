@@ -67,7 +67,7 @@
         <iron-icon icon="[[item.polymerIcon]]"></iron-icon>
       </template>
       <div id="divText" class="layout horizontal flex">
-        <div>[[ariaLabel]]</div>
+        <div aria-hidden="true">[[getItemName_(item)]]</div>
         <div id="networkStateText"
             hidden$="[[!isStateTextVisible_(networkState)]]"
             connected$="[[isConnected_(networkState)]]">

@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/feature_list.h"
+#include "base/i18n/i18n_constants.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,6 +33,7 @@
 using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsPlaceholderUrl;
 using web::wk_navigation_util::kReferrerHeaderName;
+using web::wk_navigation_util::URLNeedsUserAgentType;
 
 namespace {
 // Values for the histogram that counts slow/fast back/forward navigations.
@@ -254,6 +256,99 @@ enum class BackForwardNavigationType {
         else
           [_delegate webRequestControllerStopLoading:self];
       }));
+}
+
+- (void)loadData:(NSData*)data
+         webView:(WKWebView*)webView
+        MIMEType:(NSString*)MIMEType
+          forURL:(const GURL&)URL {
+  [_delegate webRequestControllerStopLoading:self];
+  web::NavigationItemImpl* item =
+      self.navigationManagerImpl->GetLastCommittedItemImpl();
+  auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
+      self.webState, URL,
+      /*has_user_gesture=*/true, item->GetTransitionType(),
+      /*is_renderer_initiated=*/false);
+  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
+  navigationContext->SetNavigationItemUniqueID(item->GetUniqueID());
+
+  item->SetNavigationInitiationType(
+      web::NavigationInitiationType::BROWSER_INITIATED);
+  // The error_retry_state_machine may still be in the
+  // |kDisplayingWebErrorForFailedNavigation| from the navigation that is being
+  // replaced. As the navigation is now successful, the error can be cleared.
+  item->error_retry_state_machine().SetNoNavigationError();
+  // The load data call will replace the current navigation and the webView URL
+  // of the navigation will be replaced by |URL|. Set the URL of the
+  // navigationItem to keep them synced.
+  // Note: it is possible that the URL in item already match |url|. But item can
+  // also contain a placeholder URL intended to be replaced.
+  item->SetURL(URL);
+  navigationContext->SetMimeType(MIMEType);
+  if (item->GetUserAgentType() == web::UserAgentType::NONE &&
+      URLNeedsUserAgentType(URL)) {
+    item->SetUserAgentType(web::UserAgentType::MOBILE);
+  }
+
+  WKNavigation* navigation =
+      [webView loadData:data
+                       MIMEType:MIMEType
+          characterEncodingName:base::SysUTF8ToNSString(base::kCodepageUTF8)
+                        baseURL:net::NSURLWithGURL(URL)];
+
+  [self.navigationHandler.navigationStates
+         setContext:std::move(navigationContext)
+      forNavigation:navigation];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
+}
+
+- (void)loadHTML:(NSString*)HTML
+         webView:(WKWebView*)webView
+          forURL:(const GURL&)URL {
+  DCHECK(HTML.length);
+  // Remove the transient content view.
+  self.webState->ClearTransientContent();
+
+  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
+
+  WKNavigation* navigation = [webView loadHTMLString:HTML
+                                             baseURL:net::NSURLWithGURL(URL)];
+  [self.navigationHandler.navigationStates
+           setState:web::WKNavigationState::REQUESTED
+      forNavigation:navigation];
+  std::unique_ptr<web::NavigationContextImpl> context;
+  const ui::PageTransition loadHTMLTransition =
+      ui::PageTransition::PAGE_TRANSITION_TYPED;
+  if (self.webState->HasWebUI()) {
+    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
+    // should not be treated as a navigation, but WKNavigationDelegate callbacks
+    // still expect a valid context.
+    context = web::NavigationContextImpl::CreateNavigationContext(
+        self.webState, URL, /*has_user_gesture=*/true, loadHTMLTransition,
+        /*is_renderer_initiated=*/false);
+    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
+    if (web::features::StorePendingItemInContext()) {
+      // Transfer pending item ownership to NavigationContext.
+      // NavigationManager owns pending item after navigation is requested and
+      // until navigation context is created.
+      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
+    }
+  } else {
+    context = [_delegate webRequestController:self
+                    registerLoadRequestForURL:URL
+                                     referrer:web::Referrer()
+                                   transition:loadHTMLTransition
+                       sameDocumentNavigation:NO
+                               hasUserGesture:YES
+                            rendererInitiated:NO
+                        placeholderNavigation:NO];
+  }
+  context->SetLoadingHtmlString(true);
+  context->SetMimeType(@"text/html");
+  [self.navigationHandler.navigationStates setContext:std::move(context)
+                                        forNavigation:navigation];
 }
 
 // Reports Navigation.IOSWKWebViewSlowFastBackForward UMA. No-op if pending

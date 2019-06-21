@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -45,7 +45,7 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 OobeDisplayChooser::OobeDisplayChooser()
     : scoped_observer_(this), weak_ptr_factory_(this) {
   // |connector| may be null in tests.
-  auto* connector = ash_util::GetServiceManagerConnector();
+  auto* connector = content::GetSystemConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);

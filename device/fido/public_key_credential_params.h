@@ -23,7 +23,8 @@ namespace device {
 // request parameter for AuthenticatorMakeCredential.
 class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialParams {
  public:
-  struct CredentialInfo {
+  struct COMPONENT_EXPORT(DEVICE_FIDO) CredentialInfo {
+    bool operator==(const CredentialInfo& other) const;
     CredentialType type = CredentialType::kPublicKey;
     int algorithm = base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
   };

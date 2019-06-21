@@ -15,6 +15,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 namespace cc {
 class DisplayResourceProvider;
@@ -22,6 +23,8 @@ class DisplayResourceProvider;
 
 namespace viz {
 class OverlayCandidateValidator;
+class RendererSettings;
+class ContextProvider;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
@@ -54,11 +57,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
-  explicit OverlayProcessor(const ContextProvider* context_provider);
-  virtual ~OverlayProcessor();
+  static std::unique_ptr<OverlayProcessor> CreateOverlayProcessor(
+      const ContextProvider* context_provider,
+      gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings);
 
-  void SetOverlayCandidateValidator(
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator);
+  virtual ~OverlayProcessor();
 
   gfx::Rect GetAndResetOverlayDamage();
   void SetSoftwareMirrorMode(bool software_mirror_mode);
@@ -90,6 +94,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   }
 
  protected:
+  explicit OverlayProcessor(const ContextProvider* context_provider);
+  void SetOverlayCandidateValidator(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator);
+
   StrategyList strategies_;
   std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
   gfx::Rect overlay_damage_rect_;

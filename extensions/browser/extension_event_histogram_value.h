@@ -457,6 +457,7 @@ enum HistogramValue {
   MIME_HANDLER_PRIVATE_SAVE = 436,
   RUNTIME_ON_CONNECT_NATIVE = 437,
   ACTION_ON_CLICKED = 438,
+  ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND = 439,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

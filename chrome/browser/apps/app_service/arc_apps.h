@@ -25,6 +25,8 @@ class Profile;
 
 namespace apps {
 
+class AppServiceProxy;
+
 // An app publisher (in the App Service sense) of ARC++ apps,
 //
 // See chrome/services/app_service/README.md.
@@ -38,11 +40,16 @@ class ArcApps : public KeyedService,
 
   static ArcApps* Get(Profile* profile);
 
+  static ArcApps* CreateForTesting(Profile* profile,
+                                   apps::AppServiceProxy* proxy);
+
   explicit ArcApps(Profile* profile);
 
   ~ArcApps() override;
 
  private:
+  ArcApps(Profile* profile, apps::AppServiceProxy* proxy);
+
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;

@@ -22,15 +22,6 @@
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
 
-namespace {
-
-// Default min time gap between two periodic sync events for a given
-// Periodic Background Sync registration.
-constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
-    base::TimeDelta::FromHours(12);
-
-}  // namespace
-
 // static
 const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
 const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
@@ -47,6 +38,8 @@ const char BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName[] =
     "min_recovery_time_sec";
 const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
     "max_sync_event_duration_sec";
+const char BackgroundSyncControllerImpl::kMinPeriodicSyncEventsInterval[] =
+    "min_periodic_sync_events_interval_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
     : profile_(profile),
@@ -131,6 +124,15 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
+  if (base::Contains(field_params, kMinPeriodicSyncEventsInterval)) {
+    int min_periodic_sync_events_interval_sec;
+    if (base::StringToInt(field_params[kMinPeriodicSyncEventsInterval],
+                          &min_periodic_sync_events_interval_sec)) {
+      parameters->min_periodic_sync_events_interval =
+          base::TimeDelta::FromSeconds(min_periodic_sync_events_interval_sec);
+    }
+  }
+
   return;
 }
 
@@ -211,7 +213,7 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
 
         int64_t effective_gap_ms =
             site_engagement_factor *
-            kMinGapBetweenPeriodicSyncEvents.InMilliseconds();
+            parameters->min_periodic_sync_events_interval.InMilliseconds();
         return base::TimeDelta::FromMilliseconds(
             std::max(min_interval, effective_gap_ms));
     }

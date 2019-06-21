@@ -17,7 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -165,7 +165,7 @@ class ChromeMojoProxyResolverFactoryBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Access the service manager so a listener for service creation/destruction
     // can be set-up.
-    content::ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+    content::GetSystemConnector()->Connect(
         service_manager::mojom::kServiceName,
         service_manager_.BindNewPipeAndPassReceiver());
 

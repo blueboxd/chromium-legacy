@@ -913,9 +913,9 @@
       invalidate: "Paint",
     },
     {
-      name: "darkModeTextPolicy",
-      initial: "DarkModeTextPolicy::kInvertAll",
-      type: "DarkModeTextPolicy",
+      name: "darkModeTextBrightnessThreshold",
+      initial: "256",
+      type: "int",
       invalidate: "Paint",
     },
     {

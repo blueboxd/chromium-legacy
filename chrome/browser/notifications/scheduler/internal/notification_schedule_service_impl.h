@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_SCHEDULE_SERVICE_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
+#include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
 namespace notifications {
 
@@ -17,7 +19,8 @@ struct NotificationParams;
 
 class NotificationScheduleServiceImpl
     : public NotificationScheduleService,
-      public NotificationBackgroundTaskScheduler::Handler {
+      public NotificationBackgroundTaskScheduler::Handler,
+      public UserActionHandler {
  public:
   explicit NotificationScheduleServiceImpl(
       std::unique_ptr<NotificationScheduler> scheduler);
@@ -29,10 +32,17 @@ class NotificationScheduleServiceImpl
       std::unique_ptr<NotificationParams> notification_params) override;
   NotificationBackgroundTaskScheduler::Handler*
   GetBackgroundTaskSchedulerHandler() override;
+  UserActionHandler* GetUserActionHandler() override;
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
   void OnStartTask() override;
   void OnStopTask() override;
+
+  // UserActionHandler implementation.
+  void OnClick(const std::string& notification_id) override;
+  void OnActionClick(const std::string& notification_id,
+                     ActionButtonType button_type) override;
+  void OnDismiss(const std::string& notification_id) override;
 
   // Provides the actual notification scheduling functionalities.
   std::unique_ptr<NotificationScheduler> scheduler_;

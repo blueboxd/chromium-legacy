@@ -36,6 +36,10 @@
 
 namespace content {
 
+namespace {
+const int64_t kUnsetCacheId = -222;
+}
+
 class AppCacheHostTest : public testing::Test {
  public:
   AppCacheHostTest()
@@ -57,7 +61,7 @@ class AppCacheHostTest : public testing::Test {
    public:
     MockFrontend(WebContents* web_contents)
         : WebContentsObserver(web_contents),
-          last_cache_id_(-222),
+          last_cache_id_(kUnsetCacheId),
           last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
           last_event_id_(
               blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
@@ -391,7 +395,7 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_EQ(cache1, host.swappable_cache_.get());
 
   mock_frontend_.last_cache_id_ =
-      -222;  // to verify we received OnCacheSelected
+      kUnsetCacheId;  // to verify we received OnCacheSelected
 
   host.AssociateCompleteCache(cache1.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
@@ -677,6 +681,109 @@ TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
                                  blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED",
               bad_message_observer.WaitForBadMessage());
+  }
+}
+
+TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  const GURL kDocumentURL("http://foo.com/document");
+  const GURL kManifestURL("http://foo.com/manifest");
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    nullptr, &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
+
+  EXPECT_TRUE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Destroy the WebContents so the process gets cleaned up.
+  web_contents_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Verify that the document and manifest URLs do not trigger a bad message.
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+
+    EXPECT_EQ(kUnsetCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+              mock_frontend_.last_status_);
+
+    host_ptr->SelectCache(kDocumentURL, blink::mojom::kAppCacheNoCacheId,
+                          kManifestURL);
+
+    // Run loop to allow the bad message code to run if a bad message was
+    // triggered.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(bad_message_observer.got_bad_message());
+
+    // Verify the frontend was still called.
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
+  }
+}
+
+TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
+  // Lock process to |kProcessLockURL| so we can only accept URLs from
+  // that site.
+  const GURL kProcessLockURL("http://foo.com");
+  const GURL kDocumentURL("http://foo.com/document");
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                kProcessIdForTest, kProcessLockURL);
+
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    nullptr, &service_);
+  host.set_frontend_for_testing(&mock_frontend_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
+
+  EXPECT_TRUE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_TRUE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Destroy the WebContents so the process gets cleaned up.
+  web_contents_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(
+      security_policy->CanAccessDataForOrigin(kProcessIdForTest, kDocumentURL));
+  EXPECT_FALSE(security_policy->HasSecurityState(kProcessIdForTest));
+
+  // Verify that a document URL does not trigger a bad message.
+  {
+    mojo::test::BadMessageObserver bad_message_observer;
+
+    EXPECT_EQ(kUnsetCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+              mock_frontend_.last_status_);
+
+    host_ptr->MarkAsForeignEntry(kDocumentURL,
+                                 blink::mojom::kAppCacheNoCacheId);
+
+    // Run loop to allow the bad message code to run if a bad message was
+    // triggered.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(bad_message_observer.got_bad_message());
+
+    // Verify the frontend was still called.
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
   }
 }
 }  // namespace content

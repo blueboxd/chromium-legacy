@@ -103,15 +103,6 @@ ClientAndroid::~ClientAndroid() {
                                               java_object_);
 }
 
-void ClientAndroid::ShowOnboarding(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jexperiment_ids,
-    const JavaParamRef<jobject>& on_accept) {
-  ShowUI();
-  ui_controller_android_->ShowOnboarding(env, jexperiment_ids, on_accept);
-}
-
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_object_);
 }
@@ -121,8 +112,15 @@ void ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jstring>& jinitial_url,
                           const JavaParamRef<jstring>& jexperiment_ids,
                           const JavaParamRef<jobjectArray>& parameterNames,
-                          const JavaParamRef<jobjectArray>& parameterValues) {
+                          const JavaParamRef<jobjectArray>& parameterValues,
+                          const JavaParamRef<jobject>& joverlay_coordinator) {
   CreateController();
+
+  // If an overlay is already shown, then show the rest of the UI.
+  if (joverlay_coordinator) {
+    CreateUI(joverlay_coordinator);
+  }
+
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   std::map<std::string, std::string> parameters;
   FillParametersFromJava(env, parameterNames, parameterValues, &parameters);
@@ -191,11 +189,17 @@ void ClientAndroid::ShowUI() {
     // onboarding.
   }
   if (!ui_controller_android_) {
-    std::unique_ptr<UiControllerAndroid> ui_ptr =
-        UiControllerAndroid::CreateFromWebContents(web_contents_);
-    if (ui_ptr)
-      SetUI(std::move(ui_ptr));
+    CreateUI(nullptr);
   }
+}
+
+void ClientAndroid::CreateUI(
+    const JavaParamRef<jobject>& joverlay_coordinator) {
+  std::unique_ptr<UiControllerAndroid> ui_ptr =
+      UiControllerAndroid::CreateFromWebContents(web_contents_,
+                                                 joverlay_coordinator);
+  if (ui_ptr)
+    SetUI(std::move(ui_ptr));
 }
 
 void ClientAndroid::DestroyUI() {

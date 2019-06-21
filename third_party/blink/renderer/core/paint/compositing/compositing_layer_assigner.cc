@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -339,10 +340,8 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     }
   }
 
-  if (layer->StackingDescendantNeedsCompositingLayerAssignment() &&
-      layer->GetLayoutObject().StyleRef().IsStackingContext()) {
-    PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
-                                            kNegativeZOrderChildren);
+  if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
+    PaintLayerPaintOrderIterator iterator(*layer, kNegativeZOrderChildren);
     while (PaintLayer* child_node = iterator.Next()) {
       AssignLayersToBackingsInternal(child_node, squashing_state,
                                      layers_needing_paint_invalidation);
@@ -359,10 +358,9 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         layers_needing_paint_invalidation);
   }
 
-  if (layer->StackingNode() &&
-      layer->StackingDescendantNeedsCompositingLayerAssignment()) {
-    PaintLayerStackingNodeIterator iterator(
-        *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
+  if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
+    PaintLayerPaintOrderIterator iterator(*layer,
+                                          kNormalFlowAndPositiveZOrderChildren);
     while (PaintLayer* curr_layer = iterator.Next()) {
       AssignLayersToBackingsInternal(curr_layer, squashing_state,
                                      layers_needing_paint_invalidation);

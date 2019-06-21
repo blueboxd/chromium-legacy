@@ -84,8 +84,7 @@ cr.define('issue_banner', function() {
       // Checks whether parts of the UI is visible.
       var checkButtonVisibility = function(optAction) {
         assertEquals(
-            !optAction,
-            banner.$['buttons'].querySelector('paper-button').hidden);
+            !optAction, banner.$['buttons'].querySelector('cr-button').hidden);
       };
 
       // Import issue_banner.html before running suite.

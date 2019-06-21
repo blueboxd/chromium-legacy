@@ -26,6 +26,7 @@
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_thread.h"
@@ -267,7 +268,9 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       }
     }
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    spellcheck_platform::AddWord(misspelled_word_);
+    if (spellcheck::UseBrowserSpellChecker()) {
+      spellcheck_platform::AddWord(misspelled_word_);
+    }
 #endif
   }
 

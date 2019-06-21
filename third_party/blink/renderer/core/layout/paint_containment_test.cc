@@ -28,8 +28,7 @@ static void CheckIsClippingStackingContextAndContainer(
   // clipping and stacking performed by paint containment.
   DCHECK(obj.Layer());
   PaintLayer* layer = obj.Layer();
-  EXPECT_TRUE(layer->StackingNode() &&
-              layer->GetLayoutObject().StyleRef().IsStackingContext());
+  EXPECT_TRUE(layer->GetLayoutObject().StyleRef().IsStackingContext());
 }
 
 TEST_F(PaintContainmentTest, BlockPaintContainment) {

@@ -60,6 +60,9 @@ public class PreferencesLauncher {
      *
      * @param context The current Activity, or an application context if no Activity is available.
      * @param fragment The fragment to show, or null to show the top-level page.
+     *
+     * TODO(crbug.com/967022): Remove this method when Preference Support Library migration is
+     * complete.
      */
     public static void launchSettingsPage(
             Context context, @Nullable Class<? extends Fragment> fragment) {
@@ -70,11 +73,40 @@ public class PreferencesLauncher {
      * Launches settings, either on the top-level page or on a subpage.
      *
      * @param context The current Activity, or an application context if no Activity is available.
+     * @param fragment The fragment to show, or null to show the top-level page.
+     */
+    public static void launchSettingsPageCompat(
+            Context context, @Nullable Class<? extends android.support.v4.app.Fragment> fragment) {
+        launchSettingsPageCompat(context, fragment, null);
+    }
+
+    /**
+     * Launches settings, either on the top-level page or on a subpage.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
      * @param fragment The name of the fragment to show, or null to show the top-level page.
      * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     *
+     * TODO(crbug.com/967022): Remove this method when Preference Support Library migration is
+     * complete.
      */
     public static void launchSettingsPage(Context context,
             @Nullable Class<? extends Fragment> fragment, @Nullable Bundle fragmentArgs) {
+        String fragmentName = fragment != null ? fragment.getName() : null;
+        Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
+        IntentUtils.safeStartActivity(context, intent);
+    }
+
+    /**
+     * Launches settings, either on the top-level page or on a subpage.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
+     * @param fragment The name of the fragment to show, or null to show the top-level page.
+     * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     */
+    public static void launchSettingsPageCompat(Context context,
+            @Nullable Class<? extends android.support.v4.app.Fragment> fragment,
+            @Nullable Bundle fragmentArgs) {
         String fragmentName = fragment != null ? fragment.getName() : null;
         Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
         IntentUtils.safeStartActivity(context, intent);

@@ -61,7 +61,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void ResetResult();
 
   // Variables logging CallSpellingService() mojo calls.
@@ -84,7 +84,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void RequestDictionary() override;
   void NotifyChecked(const base::string16& word, bool misspelled) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void CallSpellingService(const base::string16& text,
                            CallSpellingServiceCallback callback) override;
   void OnCallSpellingService(const base::string16& text);

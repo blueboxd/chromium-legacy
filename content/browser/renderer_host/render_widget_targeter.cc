@@ -5,8 +5,6 @@
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
 #include "base/bind.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -14,10 +12,8 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -459,16 +455,6 @@ void RenderWidgetTargeter::FoundTarget(
         // If the result did not change, it is likely that viz hit test finds
         // the wrong target.
         match_result = HitTestResultsMatch::kDoNotMatch;
-        RenderViewHostImpl* rvh =
-            RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
-        if (rvh && rvh->GetMainFrame()) {
-          static auto* crash_key = base::debug::AllocateCrashKeyString(
-              "viz-hit-testing-mismatch", base::debug::CrashKeySize::Size256);
-          const std::string& url =
-              rvh->GetMainFrame()->GetLastCommittedURL().spec();
-          base::debug::SetCrashKeyString(crash_key, url);
-          base::debug::DumpWithoutCrashing();
-        }
       } else {
         // Hit test data changed, so the result is no longer reliable.
         match_result = HitTestResultsMatch::kHitTestResultChanged;

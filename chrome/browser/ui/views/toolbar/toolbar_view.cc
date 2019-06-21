@@ -65,8 +65,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -242,8 +242,8 @@ void ToolbarView::Init() {
 
   std::unique_ptr<MediaToolbarButtonView> media_button;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
-    media_button = std::make_unique<MediaToolbarButtonView>(
-        content::ServiceManagerConnection::GetForProcess()->GetConnector());
+    media_button =
+        std::make_unique<MediaToolbarButtonView>(content::GetSystemConnector());
   }
 
   std::unique_ptr<ToolbarPageActionIconContainerView>

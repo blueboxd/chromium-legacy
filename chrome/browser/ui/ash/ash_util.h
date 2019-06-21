@@ -13,10 +13,6 @@ namespace aura {
 class Window;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ash_util {
 
 // Sets up |params| to place the widget in an ash shell window container on
@@ -30,10 +26,6 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
 // returns the LockSystemModalContainer id so that the dialog appears above the
 // lock screen.
 int GetSystemModalDialogContainerId();
-
-// Returns the connector from ServiceManagerConnection::GetForProcess().
-// May be null in unit tests.
-service_manager::Connector* GetServiceManagerConnector();
 
 // Triggers the window bounce animation.
 void BounceWindow(aura::Window* window);

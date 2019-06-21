@@ -229,5 +229,5 @@ class OncMojo {
 /** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
 OncMojo.DeviceStateProperties;
 
-/** @typedef {chromeos.networkConfig.mojom.NetworkType} */
-OncMojo.NetworkType = chromeos.networkConfig.mojom.NetworkType;
+/** @typedef {chromeos.networkConfig.mojom.NetworkStateProperties} */
+OncMojo.NetworkStateProperties;

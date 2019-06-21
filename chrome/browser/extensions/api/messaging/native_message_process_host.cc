@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -16,6 +17,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
@@ -37,6 +40,14 @@ const size_t kMessageHeaderSize = 4;
 
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
+
+base::FilePath GetProfilePathIfEnabled(Profile* profile,
+                                       const std::string& extension_id,
+                                       const std::string& host_id) {
+  // TODO(crbug.com/967262): Return an empty path if the extension would not
+  // accept an inbound native messaging connection.
+  return profile->GetPath();
+}
 
 }  // namespace
 
@@ -82,15 +93,18 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 
 // static
 std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
+    content::BrowserContext* browser_context,
     gfx::NativeView native_view,
     const std::string& source_extension_id,
     const std::string& native_host_name,
     bool allow_user_level,
     std::string* error_message) {
   return NativeMessageProcessHost::CreateWithLauncher(
-      source_extension_id,
-      native_host_name,
-      NativeProcessLauncher::CreateDefault(allow_user_level, native_view));
+      source_extension_id, native_host_name,
+      NativeProcessLauncher::CreateDefault(
+          allow_user_level, native_view,
+          GetProfilePathIfEnabled(Profile::FromBrowserContext(browser_context),
+                                  source_extension_id, native_host_name)));
 }
 
 // static

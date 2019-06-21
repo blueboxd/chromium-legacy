@@ -39,7 +39,7 @@
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -624,17 +624,14 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
 
   // Service manager connection might be not initialized in some testing
   // contexts.
-  if (!content::ServiceManagerConnection::GetForProcess())
+  if (!content::GetSystemConnector())
     return wake_lock_.get();
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  DCHECK(connector);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,

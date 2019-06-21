@@ -106,14 +106,7 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // |next_handler_| in response to OnWillRead.
   void StopLocalBuffering(bool copy_data_to_next_handler);
 
-  // Helpers for UMA and UKM logging.
-  static void LogBlockedResponseOnUIThread(
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      bool needed_sniffing,
-      network::CrossOriginReadBlocking::MimeType canonical_mime_type,
-      ResourceType resource_type,
-      int http_response_code,
-      int64_t content_length);
+  // Helper for UMA logging.
   void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
                           int http_response_code);
 

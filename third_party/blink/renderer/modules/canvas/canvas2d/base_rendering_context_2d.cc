@@ -1268,7 +1268,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
       duration_histogram_name.append(".CPU");
     }
 
-    base::TimeDelta elapsed = TimeTicks::Now() - start_time;
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
     base::UmaHistogramMicrosecondsTimes(duration_histogram_name, elapsed);
 
     float sqrt_pixels_float =

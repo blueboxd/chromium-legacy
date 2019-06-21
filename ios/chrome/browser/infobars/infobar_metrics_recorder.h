@@ -87,6 +87,9 @@ enum class MobileMessagesBadgeState {
 // Records histogram for Banner |dismissType|.
 - (void)recordBannerDismissType:(MobileMessagesBannerDismissType)dismissType;
 
+// Records histogram for Banner On Screen duration.
+- (void)recordBannerOnScreenDuration:(double)duration;
+
 // Records histogram for Modal |event|.
 - (void)recordModalEvent:(MobileMessagesModalEvent)event;
 

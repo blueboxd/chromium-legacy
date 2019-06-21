@@ -165,6 +165,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse>
           callback) = 0;
 
+  // Starts ARCVM if there is not already one running.
+  // |callback| is called after the method call finishes.
+  virtual void StartArcVm(
+      const vm_tools::concierge::StartArcVmRequest& request,
+      DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) = 0;
+
   // Creates an instance of ConciergeClient.
   static std::unique_ptr<ConciergeClient> Create();
 

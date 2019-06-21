@@ -76,7 +76,7 @@ class MODULES_EXPORT HtmlVideoElementCapturerSource final
   VideoCaptureDeliverFrameCB new_frame_callback_;
   double capture_frame_rate_;
 
-  // TimeTicks on which the first captured VideoFrame is produced.
+  // base::TimeTicks on which the first captured VideoFrame is produced.
   base::TimeTicks start_capture_time_;
 
   // Target time for the next frame.

@@ -1504,7 +1504,6 @@ interface WebGL2ComputeRenderingContext
     attribute ELEMENT_ARRAY_BUFFER
     attribute ELEMENT_ARRAY_BUFFER_BINDING
     attribute EQUAL
-    attribute FALSE
     attribute FASTEST
     attribute FLOAT
     attribute FLOAT_32_UNSIGNED_INT_24_8_REV
@@ -1935,7 +1934,6 @@ interface WebGL2ComputeRenderingContext
     attribute TRIANGLES
     attribute TRIANGLE_FAN
     attribute TRIANGLE_STRIP
-    attribute TRUE
     attribute TYPE
     attribute UNIFORM
     attribute UNIFORM_ARRAY_STRIDE

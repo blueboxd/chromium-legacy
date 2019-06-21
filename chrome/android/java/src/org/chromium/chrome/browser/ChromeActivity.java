@@ -26,7 +26,6 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -34,7 +33,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
@@ -139,7 +137,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -175,7 +172,6 @@ import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.Clipboard;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -297,9 +293,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private int mUiMode;
     private int mDensityDpi;
-    private int mScreenWidthDp;
-    private int mScreenHeightDp;
-    private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
     private final ManualFillingComponent mManualFillingComponent =
@@ -1170,7 +1163,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // If the Activity was launched in multi-window mode, record a user action and the screen
         // width.
         recordMultiWindowModeChangedUserAction(true);
-        recordMultiWindowModeScreenSize(true, true);
     }
 
     /**
@@ -1214,8 +1206,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         } else {
             mDensityDpi = getResources().getDisplayMetrics().densityDpi;
         }
-        mScreenWidthDp = config.screenWidthDp;
-        mScreenHeightDp = config.screenHeightDp;
         mStarted = true;
     }
 
@@ -1927,31 +1917,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mDensityDpi = newConfig.densityDpi;
             }
         }
-
-        boolean widthChanged = newConfig.screenWidthDp != mScreenWidthDp;
-        boolean heightChanged = newConfig.screenHeightDp != mScreenHeightDp;
-        if (widthChanged || heightChanged) {
-            mScreenWidthDp = newConfig.screenWidthDp;
-            mScreenHeightDp = newConfig.screenHeightDp;
-            final Activity activity = this;
-
-            if (mRecordMultiWindowModeScreenWidthRunnable != null) {
-                mHandler.removeCallbacks(mRecordMultiWindowModeScreenWidthRunnable);
-            }
-
-            // When exiting Android N multi-window mode, onConfigurationChanged() gets called before
-            // isInMultiWindowMode() returns false. Delay to avoid recording width when exiting
-            // multi-window mode. This also ensures that we don't record intermediate widths seen
-            // only for a brief period of time.
-            mRecordMultiWindowModeScreenWidthRunnable = () -> {
-                mRecordMultiWindowModeScreenWidthRunnable = null;
-                if (MultiWindowUtils.getInstance().isInMultiWindowMode(activity)) {
-                    recordMultiWindowModeScreenSize(widthChanged, heightChanged);
-                }
-            };
-            mHandler.postDelayed(mRecordMultiWindowModeScreenWidthRunnable,
-                    RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS);
-        }
     }
 
     private static boolean didChangeNonVrUiMode(int oldMode, int newMode) {
@@ -2298,26 +2263,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return;
         }
         // Record session metrics.
-        mUmaSessionStats.logMultiWindowStats(windowArea(), displayArea(),
-                TabWindowManager.getInstance().getNumberOfAssignedTabModelSelectors());
         mUmaSessionStats.logAndEndSession();
-    }
-
-    private int windowArea() {
-        Window window = getWindow();
-        if (window != null) {
-            View view =  window.getDecorView();
-            return view.getWidth() * view.getHeight();
-        }
-        return -1;
-    }
-
-    private int displayArea() {
-        if (getResources() != null && getResources().getDisplayMetrics() != null) {
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
-            return metrics.heightPixels * metrics.widthPixels;
-        }
-        return -1;
     }
 
     public final void postDeferredStartupIfNeeded() {
@@ -2429,34 +2375,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private void setLowEndTheme() {
         if (getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd)
             setTheme(R.style.Theme_Chromium_WithWindowAnimation_LowEnd);
-    }
-
-    /**
-     * Records UMA histograms for the current screen size. Should only be called when the activity
-     * is in Android N multi-window mode.
-     * @param widthChanged Whether the screen width changed since this method was last called.
-     * @param heightChanged Whether the screen height changed since this method was last called.
-     */
-    protected void recordMultiWindowModeScreenSize(boolean widthChanged, boolean heightChanged) {
-        if (widthChanged) {
-            RecordHistogram.recordSparseHistogram("Android.MultiWindowMode.ScreenWidth",
-                    MathUtils.clamp(mScreenWidthDp, 200, 1200));
-        }
-        if (heightChanged) {
-            RecordHistogram.recordSparseHistogram("Android.MultiWindowMode.ScreenHeight",
-                    MathUtils.clamp(mScreenHeightDp, 200, 1200));
-        }
-
-        if (!isTablet() || !widthChanged) return;
-
-        RecordHistogram.recordBooleanHistogram(
-                "Android.MultiWindowMode.IsTabletScreenWidthBelow600",
-                mScreenWidthDp < DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP);
-
-        if (mScreenWidthDp < DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
-            RecordHistogram.recordLinearCountHistogram("Android.MultiWindowMode.TabletScreenWidth",
-                    mScreenWidthDp, 1, DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP, 50);
-        }
     }
 
     /**

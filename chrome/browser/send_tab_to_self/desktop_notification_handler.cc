@@ -12,7 +12,6 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -53,9 +52,9 @@ void DesktopNotificationHandler::DisplayNewEntries(
     // Declare a notification
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
-        base::UTF8ToUTF16(entry->GetTitle()), device_info,
-        GetImageForNotification(), base::UTF8ToUTF16(url.host()), url,
-        message_center::NotifierId(url), optional_fields, /*delegate=*/nullptr);
+        base::UTF8ToUTF16(entry->GetTitle()), device_info, gfx::Image(),
+        base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
+        optional_fields, /*delegate=*/nullptr);
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
         /*metadata=*/nullptr);
@@ -121,7 +120,7 @@ void DesktopNotificationHandler::DisplaySendingConfirmation(
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kDesktopNotificationSharedPrefix + entry.GetGUID(), confirm_str,
-      base::UTF8ToUTF16(entry.GetTitle()), GetImageForNotification(),
+      base::UTF8ToUTF16(entry.GetTitle()), gfx::Image(),
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       message_center::RichNotificationData(), /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
@@ -137,7 +136,7 @@ void DesktopNotificationHandler::DisplayFailureMessage(const GURL& url) {
           IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_TITLE),
       l10n_util::GetStringUTF16(
           IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_MESSAGE),
-      GetImageForNotification(), base::UTF8ToUTF16(url.host()), url,
+      gfx::Image(), base::UTF8ToUTF16(url.host()), url,
       message_center::NotifierId(url), message_center::RichNotificationData(),
       /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(

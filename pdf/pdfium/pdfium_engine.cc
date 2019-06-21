@@ -132,8 +132,6 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
     base::TimeDelta::FromMilliseconds(250);
 
-PDFiumEngine* g_engine_for_fontmapper = nullptr;
-
 #if defined(OS_LINUX)
 
 PP_Instance g_last_instance_id;
@@ -274,9 +272,6 @@ void* MapFont(FPDF_SYSFONTINFO*,
     return nullptr;
   }
 
-  if (g_engine_for_fontmapper)
-    g_engine_for_fontmapper->FontSubstituted();
-
   PP_Resource font_resource = pp::PDF::GetFontFileWithFallback(
       pp::InstanceHandle(g_last_instance_id),
       &description.pp_font_description(),
@@ -309,111 +304,6 @@ void DeleteFont(FPDF_SYSFONTINFO*, void* font_id) {
 
 FPDF_SYSFONTINFO g_font_info = {1,           0, EnumFonts, MapFont,   0,
                                 GetFontData, 0, 0,         DeleteFont};
-#else
-struct FPDF_SYSFONTINFO_WITHMETRICS : public FPDF_SYSFONTINFO {
-  explicit FPDF_SYSFONTINFO_WITHMETRICS(FPDF_SYSFONTINFO* sysfontinfo) {
-    version = sysfontinfo->version;
-    default_sysfontinfo = sysfontinfo;
-  }
-
-  ~FPDF_SYSFONTINFO_WITHMETRICS() {
-    FPDF_FreeDefaultSystemFontInfo(default_sysfontinfo);
-  }
-
-  FPDF_SYSFONTINFO* default_sysfontinfo;
-};
-
-FPDF_SYSFONTINFO_WITHMETRICS* g_font_info = nullptr;
-
-void* MapFontWithMetrics(FPDF_SYSFONTINFO* sysfontinfo,
-                         int weight,
-                         int italic,
-                         int charset,
-                         int pitch_family,
-                         const char* face,
-                         int* exact) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->MapFont)
-    return nullptr;
-  void* mapped_font = fontinfo_with_metrics->default_sysfontinfo->MapFont(
-      fontinfo_with_metrics->default_sysfontinfo, weight, italic, charset,
-      pitch_family, face, exact);
-  if (mapped_font && g_engine_for_fontmapper)
-    g_engine_for_fontmapper->FontSubstituted();
-  return mapped_font;
-}
-
-void DeleteFont(FPDF_SYSFONTINFO* sysfontinfo, void* font_id) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->DeleteFont)
-    return;
-  fontinfo_with_metrics->default_sysfontinfo->DeleteFont(
-      fontinfo_with_metrics->default_sysfontinfo, font_id);
-}
-
-void EnumFonts(FPDF_SYSFONTINFO* sysfontinfo, void* mapper) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->EnumFonts)
-    return;
-  fontinfo_with_metrics->default_sysfontinfo->EnumFonts(
-      fontinfo_with_metrics->default_sysfontinfo, mapper);
-}
-
-unsigned long GetFaceName(FPDF_SYSFONTINFO* sysfontinfo,
-                          void* hFont,
-                          char* buffer,
-                          unsigned long buffer_size) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->GetFaceName)
-    return 0;
-  return fontinfo_with_metrics->default_sysfontinfo->GetFaceName(
-      fontinfo_with_metrics->default_sysfontinfo, hFont, buffer, buffer_size);
-}
-
-void* GetFont(FPDF_SYSFONTINFO* sysfontinfo, const char* face) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->GetFont)
-    return nullptr;
-  return fontinfo_with_metrics->default_sysfontinfo->GetFont(
-      fontinfo_with_metrics->default_sysfontinfo, face);
-}
-
-int GetFontCharset(FPDF_SYSFONTINFO* sysfontinfo, void* hFont) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->GetFontCharset)
-    return 0;
-  return fontinfo_with_metrics->default_sysfontinfo->GetFontCharset(
-      fontinfo_with_metrics->default_sysfontinfo, hFont);
-}
-
-unsigned long GetFontData(FPDF_SYSFONTINFO* sysfontinfo,
-                          void* hFont,
-                          unsigned int table,
-                          unsigned char* buffer,
-                          unsigned long buf_size) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->GetFontData)
-    return 0;
-  return fontinfo_with_metrics->default_sysfontinfo->GetFontData(
-      fontinfo_with_metrics->default_sysfontinfo, hFont, table, buffer,
-      buf_size);
-}
-
-void Release(FPDF_SYSFONTINFO* sysfontinfo) {
-  auto* fontinfo_with_metrics =
-      static_cast<FPDF_SYSFONTINFO_WITHMETRICS*>(sysfontinfo);
-  if (!fontinfo_with_metrics->default_sysfontinfo->Release)
-    return;
-  fontinfo_with_metrics->default_sysfontinfo->Release(
-      fontinfo_with_metrics->default_sysfontinfo);
-}
 #endif  // defined(OS_LINUX)
 
 PDFiumEngine::CreateDocumentLoaderFunction
@@ -667,19 +557,6 @@ bool InitializeSDK() {
 #if defined(OS_LINUX)
   // Font loading doesn't work in the renderer sandbox in Linux.
   FPDF_SetSystemFontInfo(&g_font_info);
-#else
-  g_font_info =
-      new FPDF_SYSFONTINFO_WITHMETRICS(FPDF_GetDefaultSystemFontInfo());
-  g_font_info->Release = Release;
-  g_font_info->EnumFonts = EnumFonts;
-  // Set new MapFont that calculates metrics
-  g_font_info->MapFont = MapFontWithMetrics;
-  g_font_info->GetFont = GetFont;
-  g_font_info->GetFaceName = GetFaceName;
-  g_font_info->GetFontCharset = GetFontCharset;
-  g_font_info->GetFontData = GetFontData;
-  g_font_info->DeleteFont = DeleteFont;
-  FPDF_SetSystemFontInfo(g_font_info);
 #endif
 
   InitializeUnsupportedFeaturesHandler();
@@ -689,9 +566,6 @@ bool InitializeSDK() {
 
 void ShutdownSDK() {
   FPDF_DestroyLibrary();
-#if !defined(OS_LINUX)
-  delete g_font_info;
-#endif
   TearDownV8();
 }
 
@@ -1051,10 +925,6 @@ void PDFiumEngine::UnsupportedFeature(const std::string& feature) {
   client_->DocumentHasUnsupportedFeature(feature);
 }
 
-void PDFiumEngine::FontSubstituted() {
-  client_->FontSubstituted();
-}
-
 FPDF_AVAIL PDFiumEngine::fpdf_availability() const {
   return document_ ? document_->fpdf_availability() : nullptr;
 }
@@ -1148,7 +1018,6 @@ pp::Resource PDFiumEngine::PrintPages(
     uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings,
     const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  ScopedSubstFont scoped_subst_font(this);
   if (!page_range_count)
     return pp::Resource();
 
@@ -2628,7 +2497,6 @@ void PDFiumEngine::LoadDocument() {
     return;
 
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
-  ScopedSubstFont scoped_subst_font(this);
   bool needs_password = false;
   if (TryLoadingDoc(std::string(), &needs_password)) {
     ContinueLoadingDocument(std::string());
@@ -2688,7 +2556,6 @@ void PDFiumEngine::OnGetPasswordComplete(int32_t result,
 
 void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
-  ScopedSubstFont scoped_subst_font(this);
 
   bool needs_password = false;
   bool loaded = TryLoadingDoc(password, &needs_password);
@@ -3746,15 +3613,6 @@ void PDFiumEngine::ProgressivePaint::SetBitmapAndImageData(
     pp::ImageData image_data) {
   bitmap_ = std::move(bitmap);
   image_data_ = std::move(image_data);
-}
-
-ScopedSubstFont::ScopedSubstFont(PDFiumEngine* engine)
-    : old_engine_(g_engine_for_fontmapper) {
-  g_engine_for_fontmapper = engine;
-}
-
-ScopedSubstFont::~ScopedSubstFont() {
-  g_engine_for_fontmapper = old_engine_;
 }
 
 }  // namespace chrome_pdf

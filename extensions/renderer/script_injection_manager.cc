@@ -20,7 +20,6 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/renderer/async_scripts_run_info.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/programmatic_script_injector.h"
@@ -404,8 +403,6 @@ void ScriptInjectionManager::InjectScripts(
   active_injection_frames_.insert(frame);
 
   ScriptsRunInfo scripts_run_info(frame, run_location);
-  scoped_refptr<AsyncScriptsRunInfo> async_run_info =
-      base::MakeRefCounted<AsyncScriptsRunInfo>(run_location);
 
   for (auto iter = frame_injections.begin(); iter != frame_injections.end();) {
     // It's possible for the frame to be invalidated in the course of injection
@@ -414,8 +411,7 @@ void ScriptInjectionManager::InjectScripts(
       break;
     std::unique_ptr<ScriptInjection> injection(std::move(*iter));
     iter = frame_injections.erase(iter);
-    TryToInject(std::move(injection), run_location, &scripts_run_info,
-                async_run_info);
+    TryToInject(std::move(injection), run_location, &scripts_run_info);
   }
 
   // We are done running in the frame.
@@ -427,15 +423,14 @@ void ScriptInjectionManager::InjectScripts(
 void ScriptInjectionManager::TryToInject(
     std::unique_ptr<ScriptInjection> injection,
     UserScript::RunLocation run_location,
-    ScriptsRunInfo* scripts_run_info,
-    scoped_refptr<AsyncScriptsRunInfo> async_run_info) {
+    ScriptsRunInfo* scripts_run_info) {
   // Try to inject the script. If the injection is waiting (i.e., for
   // permission), add it to the list of pending injections. If the injection
   // has blocked, add it to the list of running injections.
   // The Unretained below is safe because this object owns all the
   // ScriptInjections, so is guaranteed to outlive them.
   switch (injection->TryToInject(
-      run_location, scripts_run_info, std::move(async_run_info),
+      run_location, scripts_run_info,
       base::Bind(&ScriptInjectionManager::OnInjectionFinished,
                  base::Unretained(this)))) {
     case ScriptInjection::INJECTION_WAITING:
@@ -472,7 +467,7 @@ void ScriptInjectionManager::HandleExecuteCode(
       iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second;
 
   ScriptsRunInfo scripts_run_info(render_frame, run_location);
-  TryToInject(std::move(injection), run_location, &scripts_run_info, nullptr);
+  TryToInject(std::move(injection), run_location, &scripts_run_info);
 }
 
 void ScriptInjectionManager::HandleExecuteDeclarativeScript(
@@ -488,7 +483,7 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     ScriptsRunInfo scripts_run_info(render_frame, UserScript::BROWSER_DRIVEN);
     // TODO(markdittmer): Use return value of TryToInject for error handling.
     TryToInject(std::move(injection), UserScript::BROWSER_DRIVEN,
-                &scripts_run_info, nullptr);
+                &scripts_run_info);
 
     scripts_run_info.LogRun(activity_logging_enabled_);
   }

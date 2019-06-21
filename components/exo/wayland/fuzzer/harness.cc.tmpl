@@ -71,13 +71,22 @@ namespace wayland_fuzzer {
       ::{{interface.name}}* receiver = harness->get_{{interface.name}}(action.receiver());
       if (!receiver)
         return;
+      {% for arg in request.args %}
+        {% if arg.type == 'object' %}
+          {{arg.cpp_type}} {{arg.name}} = harness->get_{{arg.interface}}(action.{{arg.name}}());
+          {% if not arg.nullable %}
+            if (!{{arg.name}})
+	      return;
+          {% endif %}
+        {% endif %}
+      {% endfor %}
       {% if request.is_constructor %}
         ::{{request.constructed}}* new_object =
       {% endif %}
       {{interface.name}}_{{request.name}}(receiver
         {% for arg in request.args %}
           {% if arg.type == 'object' %}
-            , harness->get_{{arg.interface}}(action.{{arg.name}}())
+            , {{arg.name}}
           {% elif arg.type != 'new_id' %}
             , action.{{arg.name}}(){% if arg.type == 'string' %}.c_str(){% endif %}
           {% endif %}

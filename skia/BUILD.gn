@@ -280,6 +280,7 @@ component("skia") {
 
   # The imported Skia gni source paths are made absolute by gn.
   defines = skia_core_defines
+  sources += skia_sksl_sources
   sources += skia_utils_sources
   sources += skia_xps_sources
   sources += [
@@ -522,7 +523,6 @@ component("skia") {
   if (skia_support_gpu) {
     sources += skia_gpu_sources
     sources += skia_null_gpu_sources
-    sources += skia_sksl_sources
     sources += skia_sksl_gpu_sources
     if (enable_vulkan) {
       sources += skia_vk_sources

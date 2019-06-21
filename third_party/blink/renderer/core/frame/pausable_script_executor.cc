@@ -91,7 +91,6 @@ class V8FunctionExecutor : public PausableScriptExecutor::Executor {
   ScopedPersistent<v8::Function> function_;
   ScopedPersistent<v8::Value> receiver_;
   V8PersistentValueVector<v8::Value> args_;
-  scoped_refptr<UserGestureToken> gesture_token_;
 };
 
 V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
@@ -101,8 +100,7 @@ V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
                                        v8::Local<v8::Value> argv[])
     : function_(isolate, function),
       receiver_(isolate, receiver),
-      args_(isolate),
-      gesture_token_(UserGestureIndicator::CurrentToken()) {
+      args_(isolate) {
   args_.ReserveCapacity(argc);
   for (int i = 0; i < argc; ++i)
     args_.Append(argv[i]);
@@ -118,11 +116,6 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
   for (wtf_size_t i = 0; i < args_size; ++i)
     args.push_back(args_.Get(i));
   {
-    std::unique_ptr<UserGestureIndicator> gesture_indicator;
-    if (gesture_token_) {
-      gesture_indicator =
-          std::make_unique<UserGestureIndicator>(std::move(gesture_token_));
-    }
     if (V8ScriptRunner::CallFunction(function_.NewLocal(isolate),
                                      frame->GetDocument(),
                                      receiver_.NewLocal(isolate), args.size(),

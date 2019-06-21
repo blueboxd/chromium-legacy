@@ -376,20 +376,12 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START:
       Drop(translated_target, *translated_event.get());
       break;
-    case ui::ET_GESTURE_END:
-      // This case occurs when IsUsingWindowService() is true and the user
-      // presses, pauses, and releases a touch without any movement between.
-      // That gesture should be interpreted as a long tap and show a menu, etc.
-      // Classic Ash handles this scenario below via ET_GESTURE_LONG_TAP, while
-      // Mash handles it in DragDropControllerMus::OnPerformDragDropCompleted.
-      DoDragCancel(kTouchCancelAnimationDuration);
-      break;
     case ui::ET_GESTURE_LONG_TAP:
       // Ideally we would want to just forward this long tap event to the
       // |drag_source_window_|. However, webkit does not accept events while a
       // drag drop is still in progress. The drag drop ends only when the nested
       // message loop ends. Due to this stupidity, we have to defer forwarding
-      // the long tap. This only occurs when IsUsingWindowService() is false.
+      // the long tap.
       pending_long_tap_.reset(new ui::GestureEvent(
           *event,
           static_cast<aura::Window*>(drag_drop_tracker_->capture_window()),

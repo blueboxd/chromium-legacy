@@ -197,6 +197,9 @@ def _GenerateBundleConfigJson(uncompressed_assets, compress_shared_libraries,
           'uncompressNativeLibraries': {
               'enabled': not compress_shared_libraries,
           },
+          'uncompressDexFiles': {
+              'enabled': True,  # Applies only for P+.
+          }
       },
       'compression': {
           'uncompressedGlob': sorted(uncompressed_globs),

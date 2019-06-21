@@ -416,7 +416,7 @@ void MessageService::OpenChannelToNativeApp(
   // any issues arise from it.
   std::unique_ptr<MessagePort> receiver(
       messaging_delegate_->CreateReceiverForNativeApp(
-          weak_factory_.GetWeakPtr(), source_rfh, extension->id(),
+          context_, weak_factory_.GetWeakPtr(), source_rfh, extension->id(),
           receiver_port_id, native_app_name,
           policy_permission == MessagingDelegate::PolicyPermission::ALLOW_ALL,
           &error));

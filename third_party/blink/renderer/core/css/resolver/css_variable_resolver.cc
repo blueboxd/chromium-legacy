@@ -397,11 +397,22 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     CSSPropertyID id,
     const cssvalue::CSSPendingSubstitutionValue& pending_value,
     const Options& options) {
+  DCHECK_NE(CSSPropertyID::kVariable, id);
+
+  // For -internal-visited-* properties, we pretend that we're resolving the
+  // unvisited counterpart. This is because the CSSPendingSubstitutionValue
+  // held by the -internal-visited-* property contains a shorthand that expands
+  // to unvisited properties.
+  const CSSProperty& property = CSSProperty::Get(id);
+  CSSPropertyID cache_id = id;
+  if (property.IsVisited())
+    cache_id = property.GetUnvisitedProperty()->PropertyID();
+
   // Longhands from shorthand references follow this path.
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>& property_cache =
       state_.ParsedPropertiesForPendingSubstitutionCache(pending_value);
 
-  const CSSValue* value = property_cache.at(id);
+  const CSSValue* value = property_cache.at(cache_id);
   if (!value) {
     // TODO(timloh): We shouldn't retry this for all longhands if the shorthand
     // ends up invalid.
@@ -424,7 +435,7 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
         }
       }
     }
-    value = property_cache.at(id);
+    value = property_cache.at(cache_id);
   }
 
   if (value)

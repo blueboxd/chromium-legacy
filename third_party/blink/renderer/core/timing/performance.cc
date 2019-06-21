@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
@@ -93,6 +94,7 @@ constexpr size_t kDefaultResourceTimingBufferSize = 250;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 constexpr size_t kDefaultElementTimingBufferSize = 150;
 constexpr size_t kDefaultLayoutJankBufferSize = 150;
+constexpr size_t kDefaultLargestContenfulPaintSize = 150;
 
 Performance::Performance(
     base::TimeTicks time_origin,
@@ -250,6 +252,11 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
                         WebFeature::kLayoutJankExplicitlyRequested);
       for (const auto& layout_jank : layout_jank_buffer_)
         entries.push_back(layout_jank);
+      break;
+    case PerformanceEntry::kLargestContentfulPaint:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kLargestContentfulPaintExplicitlyRequested);
+      entries.AppendVector(largest_contentful_paint_buffer_);
       break;
     case PerformanceEntry::kInvalid:
       break;
@@ -574,6 +581,13 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
 void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
   if (layout_jank_buffer_.size() < kDefaultLayoutJankBufferSize)
     layout_jank_buffer_.push_back(&entry);
+}
+
+void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
+  if (largest_contentful_paint_buffer_.size() <
+      kDefaultLargestContenfulPaintSize) {
+    largest_contentful_paint_buffer_.push_back(entry);
+  }
 }
 
 unsigned Performance::ElementTimingBufferSize() const {
@@ -962,6 +976,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(layout_jank_buffer_);
+  visitor->Trace(largest_contentful_paint_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);
   visitor->Trace(first_paint_timing_);

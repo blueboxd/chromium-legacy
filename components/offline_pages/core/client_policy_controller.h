@@ -52,7 +52,7 @@ class ClientPolicyController {
 
   // Returns whether pages for |name_space| can be saved only if specific user
   // settings are properly set. See
-  // FeaturePolicy::requires_specific_user_settings for details).
+  // OfflinePageClientPolicy::requires_specific_user_settings for details).
   bool RequiresSpecificUserSettings(const std::string& name_space) const;
 
   // Returns whether pages for |name_space| originate from suggested URLs and
@@ -65,6 +65,11 @@ class ClientPolicyController {
       const std::string& name_space) const;
 
  private:
+  OfflinePageClientPolicy* AddTemporaryPolicy(
+      const std::string& name_space,
+      const base::TimeDelta& expiration_period);
+  OfflinePageClientPolicy* AddPersistentPolicy(const std::string& name_space);
+
   // The map from name_space to a client policy. Will be generated
   // as pre-defined values for now.
   std::map<std::string, OfflinePageClientPolicy> policies_;

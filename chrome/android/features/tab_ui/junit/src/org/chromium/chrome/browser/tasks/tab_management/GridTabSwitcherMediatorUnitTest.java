@@ -152,10 +152,16 @@ public class GridTabSwitcherMediatorUnitTest {
                 .addTabModelFilterObserver(mTabModelObserverCaptor.capture());
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
         doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
-        doReturn(mTab2).when(mTabModelFilter).getTabAt(2);
+        doReturn(mTab3).when(mTabModelFilter).getTabAt(2);
         doReturn(false).when(mTabModelFilter).isIncognito();
         doReturn(2).when(mTabModelFilter).index();
         doReturn(3).when(mTabModelFilter).getCount();
+
+        doReturn(2).when(mTabModel).index();
+        doReturn(3).when(mTabModel).getCount();
+        doReturn(mTab1).when(mTabModel).getTabAt(0);
+        doReturn(mTab2).when(mTabModel).getTabAt(1);
+        doReturn(mTab3).when(mTabModel).getTabAt(2);
 
         doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getBottomControlsHeight();
         doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getTopControlsHeight();

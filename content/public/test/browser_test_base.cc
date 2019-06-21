@@ -40,17 +40,18 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_sanity_checker.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
@@ -228,8 +229,22 @@ void BrowserTestBase::SetUp() {
   // GPU blacklisting decisions were made.
   command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
-  if (use_software_compositing_)
+  // Make sure software compositing tests don't attempt to force hardware
+  // compositing.
+  if (use_software_compositing_) {
     command_line->AppendSwitch(switches::kDisableGpu);
+    command_line->RemoveSwitch(switches::kDisableSoftwareCompositingFallback);
+#if defined(USE_X11)
+    // If Vulkan is enabled, make sure it uses SwiftShader instead of native,
+    // though only on platforms where it is supported.
+    // TODO(samans): Support Swiftshader on more platforms.
+    // https://crbug.com/963988
+    if (command_line->HasSwitch(switches::kUseVulkan)) {
+      command_line->AppendSwitchASCII(
+          switches::kUseVulkan, switches::kVulkanImplementationNameSwiftshader);
+    }
+#endif
+  }
 
   // The layout of windows on screen is unpredictable during tests, so disable
   // occlusion when running browser tests.
@@ -454,8 +469,8 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
 
   base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   network_service_test.set_connection_error_handler(run_loop.QuitClosure());
@@ -656,8 +671,8 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-      mojom::kNetworkServiceName, &network_service_test);
+  GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                      &network_service_test);
 
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native

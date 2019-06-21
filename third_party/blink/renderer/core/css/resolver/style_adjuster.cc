@@ -672,5 +672,17 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       style.SetTextOverflow(text_control->ValueForTextOverflow());
     }
   }
+
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    // When establishing a block fragmentation context for LayoutNG, we require
+    // that everything fragmentable inside can be laid out by NG natively, since
+    // NG and legacy layout cannot cooperate within the same fragmentation
+    // context. Set a flag, so that we can quickly determine whether we need to
+    // check that an element is compatible with the NG block fragmentation
+    // machinery.
+    if (style.SpecifiesColumns() ||
+        (element && element->GetDocument().Printing()))
+      style.SetInsideNGFragmentationContext(true);
+  }
 }
 }  // namespace blink

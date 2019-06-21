@@ -236,6 +236,7 @@ for filename, substitutions in (
     ('foreground/elements/files_toast.html', ()),
     ('foreground/elements/files_toggle_ripple.html', ()),
     ('foreground/elements/files_tooltip.html', ()),
+    ('foreground/elements/files_xf_elements.css', ()),
     ('foreground/elements/icons.html', ()),
     ):
   buf = i18n(read('ui/file_manager/file_manager/' + filename))

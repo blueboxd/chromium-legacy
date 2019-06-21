@@ -5,6 +5,7 @@
 #include "cc/scheduler/compositor_frame_reporting_controller.h"
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -108,24 +109,24 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BF
-  // Should replace previous reporter
+  // Should replace previous reporter.
   reporting_controller_.WillBeginImplFrame();
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF
-  // Should add new reporter
+  // Should add new reporter.
   reporting_controller_.WillBeginMainFrame();
   reporting_controller_.WillBeginImplFrame();
   EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF -> Commit
-  // Should stay same
+  // Should stay same.
   reporting_controller_.WillCommit();
   reporting_controller_.DidCommit();
   EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF -> Commit -> BMF -> Activate -> Commit -> Activation
-  // Having two reporters at Activate phase should delete the older one
+  // Having two reporters at Activate phase should delete the older one.
   reporting_controller_.WillBeginMainFrame();
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
@@ -138,7 +139,7 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   reporting_controller_.DidSubmitCompositorFrame();
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
-  // 4 simultaneous reporters
+  // 4 simultaneous reporters active.
   SimulateActivate();
 
   SimulateCommit();
@@ -148,9 +149,75 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   SimulateBeginImplFrame();
   EXPECT_EQ(4, reporting_controller_.ActiveReporters());
 
-  // Any additional BeginImplFrame's would be ignored
+  // Any additional BeginImplFrame's would be ignored.
   SimulateBeginImplFrame();
   EXPECT_EQ(4, reporting_controller_.ActiveReporters());
+}
+
+TEST_F(CompositorFrameReportingControllerTest,
+       SubmittedFrameHistogramReporting) {
+  base::HistogramTester histogram_tester;
+
+  // 2 reporters active.
+  SimulateActivate();
+  SimulateBeginImplFrame();
+
+  // Submitting the next reporter should be missed.
+  SimulateSubmitCompositorFrame();
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.EndCommitToActivation", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 1);
+
+  // Other histograms should not be reported.
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 0);
+
+  // Submitting the next reporter will not be counted as missed.
+  // In practice this submitted frame should be considered as missed because a
+  // new BeginFrame would have been issued, which is the cause for this frame
+  // submission.
+  SimulateSubmitCompositorFrame();
+  // Other histograms should not be reported.
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.EndCommitToActivation",
+                                    1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
+
+  // Missed frame histogram counts should not change.
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Commit", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.EndCommitToActivation", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.MissedFrame.Activation",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 1);
 }
 }  // namespace
 }  // namespace cc

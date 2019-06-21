@@ -3688,7 +3688,7 @@
             'properties': {
               'installation_mode': {
                 'type': 'string',
-                'enum': ['blocked', 'allowed']
+                'enum': ['blocked', 'allowed', 'removed']
               },
               'blocked_permissions': {
                 '$ref': 'ListOfPermissions',
@@ -3705,7 +3705,7 @@
             'properties': {
               'installation_mode': {
                 'type': 'string',
-                'enum': ['blocked', 'allowed']
+                'enum': ['blocked', 'allowed', 'removed']
               },
               'blocked_permissions': {
                 '$ref': 'ListOfPermissions',

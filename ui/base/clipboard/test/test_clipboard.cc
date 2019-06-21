@@ -16,7 +16,7 @@
 namespace ui {
 
 TestClipboard::TestClipboard()
-    : default_store_type_(CLIPBOARD_TYPE_COPY_PASTE) {}
+    : default_store_type_(ClipboardType::kCopyPaste) {}
 
 TestClipboard::~TestClipboard() = default;
 
@@ -153,7 +153,7 @@ void TestClipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   default_store_type_ = type;
   for (const auto& kv : objects)
     DispatchObject(static_cast<ObjectType>(kv.first), kv.second);
-  default_store_type_ = CLIPBOARD_TYPE_COPY_PASTE;
+  default_store_type_ = ClipboardType::kCopyPaste;
 }
 
 void TestClipboard::WriteText(const char* text_data, size_t text_len) {
@@ -161,8 +161,8 @@ void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   GetDefaultStore().data[ClipboardFormatType::GetPlainTextType()] = text;
   // Create a dummy entry.
   GetDefaultStore().data[ClipboardFormatType::GetPlainTextWType()];
-  if (IsSupportedClipboardType(CLIPBOARD_TYPE_SELECTION))
-    GetStore(CLIPBOARD_TYPE_SELECTION)
+  if (IsSupportedClipboardType(ClipboardType::kSelection))
+    GetStore(ClipboardType::kSelection)
         .data[ClipboardFormatType::GetPlainTextType()] = text;
   ui::ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }

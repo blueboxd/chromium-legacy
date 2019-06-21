@@ -13,6 +13,9 @@ namespace ash {
 // NOTE: Code in chrome should use TabletModeClientObserver.
 class ASH_EXPORT TabletModeObserver {
  public:
+  // Called when the tablet mode is about to start.
+  virtual void OnTabletModeStarting() {}
+
   // Called when the tablet mode has started. Windows might still be animating
   // though.
   virtual void OnTabletModeStarted() {}

@@ -136,6 +136,8 @@ class CORE_EXPORT UseCounterHelper final {
   void Trace(blink::Visitor*);
 
  private:
+  friend class UseCounterHelperTest;
+
   // Notifies that a feature is newly counted to |m_observers|. This shouldn't
   // be called when the counter is disabled by |m_muteCount| or when |m_context|
   // if kDisabledContext.

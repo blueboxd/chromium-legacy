@@ -281,7 +281,9 @@ void FakeSessionManagerClient::RestartJob(int socket_fd,
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {}
+void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {
+  login_password_ = password;
+}
 
 void FakeSessionManagerClient::StartSession(
     const cryptohome::AccountIdentifier& cryptohome_id) {

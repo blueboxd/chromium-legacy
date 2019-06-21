@@ -25,7 +25,6 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
@@ -208,9 +207,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
 // TODO(stevenjb/shend): Investigate/fix.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
                        CanDragFloatingKeyboardWithMouse) {
-  if (::features::IsMultiProcessMash())
-    return;
-
   ChromeKeyboardControllerClient::Get()->SetContainerType(
       keyboard::ContainerType::kFloating, base::nullopt, base::DoNothing());
 
@@ -379,9 +375,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, OpenAndCloseAndOpen) {
 // whether this needs to be tested in a keyboard::KeyboardController unit test.
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
-  if (::features::IsMultiProcessMash())
-    return;
-
   auto* controller = keyboard::KeyboardController::Get();
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);
   KeyboardLoadedWaiter().Wait();
@@ -390,9 +383,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest, StateResolvesAfterPreload) {
 
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        OpenAndCloseAndOpenInternal) {
-  if (::features::IsMultiProcessMash())
-    return;
-
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(false);
   // Need to wait the extension to be loaded. Hence LOADING_EXTENSION.
@@ -410,9 +400,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 // See crbug.com/755354.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        DisablingKeyboardGoesToInitialState) {
-  if (::features::IsMultiProcessMash())
-    return;
-
   auto* controller = keyboard::KeyboardController::Get();
 
   EXPECT_EQ(controller->GetStateForTest(), keyboard::KeyboardUIState::kLoading);

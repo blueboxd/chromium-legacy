@@ -260,6 +260,23 @@ class ChannelBootstrapFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
 };
 
+class ContentClientConnectionFilter : public ConnectionFilter {
+ public:
+  ContentClientConnectionFilter() = default;
+
+ private:
+  // ConnectionFilter:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override {
+    GetContentClient()->BindChildProcessInterface(interface_name,
+                                                  interface_pipe);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ContentClientConnectionFilter);
+};
+
 }  // namespace
 
 ChildThread* ChildThread::Get() {
@@ -441,6 +458,9 @@ void ChildThreadImpl::Init(const Options& options) {
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ =
       new ThreadSafeSender(main_thread_runner_, sync_message_filter_.get());
+
+  GetServiceManagerConnection()->AddConnectionFilter(
+      std::make_unique<ContentClientConnectionFilter>());
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
@@ -676,8 +696,6 @@ void ChildThreadImpl::OnAssociatedInterfaceRequest(
 
 void ChildThreadImpl::StartServiceManagerConnection() {
   DCHECK(service_manager_connection_);
-  GetContentClient()->OnServiceManagerConnected(
-      service_manager_connection_.get());
 
   // NOTE: You must register any ConnectionFilter instances on
   // |service_manager_connection_| *before* this call to |Start()|, otherwise

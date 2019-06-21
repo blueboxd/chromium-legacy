@@ -21,7 +21,7 @@ namespace signin {
 
 namespace {
 
-const char kAccountId[] = "account_id";
+const CoreAccountId kAccountId("account_id");
 const char kAccessToken[] = "access_token";
 
 // Status of the token fetch.
@@ -36,7 +36,7 @@ class OAuthMultiloginTokenFetcherTest : public testing::Test {
   ~OAuthMultiloginTokenFetcherTest() override = default;
 
   std::unique_ptr<OAuthMultiloginTokenFetcher> CreateFetcher(
-      const std::vector<std::string> account_ids) {
+      const std::vector<CoreAccountId> account_ids) {
     return std::make_unique<OAuthMultiloginTokenFetcher>(
         &test_signin_client_, &token_service_, account_ids,
         base::BindOnce(&OAuthMultiloginTokenFetcherTest::OnSuccess,
@@ -55,12 +55,13 @@ class OAuthMultiloginTokenFetcherTest : public testing::Test {
 
  protected:
   // Success callback for OAuthMultiloginTokenFetcher.
-  void OnSuccess(const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>&
-                     token_id_pairs) {
+  void OnSuccess(
+      const std::vector<OAuthMultiloginTokenFetcher::AccountIdTokenPair>&
+          account_id_token_pairs) {
     DCHECK(!success_callback_called_);
-    DCHECK(token_id_pairs_.empty());
+    DCHECK(account_id_token_pairs_.empty());
     success_callback_called_ = true;
-    token_id_pairs_ = token_id_pairs;
+    account_id_token_pairs_ = account_id_token_pairs;
   }
 
   // Failure callback for OAuthMultiloginTokenFetcher.
@@ -75,7 +76,8 @@ class OAuthMultiloginTokenFetcherTest : public testing::Test {
   bool success_callback_called_ = false;
   bool failure_callback_called_ = false;
   GoogleServiceAuthError error_;
-  std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> token_id_pairs_;
+  std::vector<OAuthMultiloginTokenFetcher::AccountIdTokenPair>
+      account_id_token_pairs_;
 
   TestSigninClient test_signin_client_;
   FakeOAuth2TokenService token_service_;
@@ -91,9 +93,9 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountSuccess) {
   token_service_.IssueAllTokensForAccount(kAccountId, success_response);
   EXPECT_EQ(FetchStatus::kSuccess, GetFetchStatus());
   // Check result.
-  EXPECT_EQ(1u, token_id_pairs_.size());
-  EXPECT_EQ(kAccountId, token_id_pairs_[0].gaia_id_);
-  EXPECT_EQ(kAccessToken, token_id_pairs_[0].token_);
+  EXPECT_EQ(1u, account_id_token_pairs_.size());
+  EXPECT_EQ(kAccountId, account_id_token_pairs_[0].account_id);
+  EXPECT_EQ(kAccessToken, account_id_token_pairs_[0].token);
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountPersistentError) {
@@ -123,9 +125,9 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientError) {
   token_service_.IssueAllTokensForAccount(kAccountId, success_response);
   EXPECT_EQ(FetchStatus::kSuccess, GetFetchStatus());
   // Check result.
-  EXPECT_EQ(1u, token_id_pairs_.size());
-  EXPECT_EQ(kAccountId, token_id_pairs_[0].gaia_id_);
-  EXPECT_EQ(kAccessToken, token_id_pairs_[0].token_);
+  EXPECT_EQ(1u, account_id_token_pairs_.size());
+  EXPECT_EQ(kAccountId, account_id_token_pairs_[0].account_id);
+  EXPECT_EQ(kAccessToken, account_id_token_pairs_[0].token);
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientErrorMaxRetries) {
@@ -147,76 +149,85 @@ TEST_F(OAuthMultiloginTokenFetcherTest, OneAccountTransientErrorMaxRetries) {
 
 // The flow succeeds even if requests are received out of order.
 TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsSuccess) {
-  token_service_.AddAccount("account_1");
-  token_service_.AddAccount("account_2");
-  token_service_.AddAccount("account_3");
+  const CoreAccountId account_1("account_1");
+  const CoreAccountId account_2("account_2");
+  const CoreAccountId account_3("account_3");
+  token_service_.AddAccount(account_1);
+  token_service_.AddAccount(account_2);
+  token_service_.AddAccount(account_3);
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
-      CreateFetcher({"account_1", "account_2", "account_3"});
+      CreateFetcher({account_1, account_2, account_3});
   OAuth2AccessTokenConsumer::TokenResponse success_response;
   success_response.access_token = "token_3";
-  token_service_.IssueAllTokensForAccount("account_3", success_response);
+  token_service_.IssueAllTokensForAccount(account_3, success_response);
   success_response.access_token = "token_1";
-  token_service_.IssueAllTokensForAccount("account_1", success_response);
+  token_service_.IssueAllTokensForAccount(account_1, success_response);
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());
   success_response.access_token = "token_2";
-  token_service_.IssueAllTokensForAccount("account_2", success_response);
+  token_service_.IssueAllTokensForAccount(account_2, success_response);
   EXPECT_EQ(FetchStatus::kSuccess, GetFetchStatus());
   // Check result.
-  EXPECT_EQ(3u, token_id_pairs_.size());
-  EXPECT_EQ("account_1", token_id_pairs_[0].gaia_id_);
-  EXPECT_EQ("account_2", token_id_pairs_[1].gaia_id_);
-  EXPECT_EQ("account_3", token_id_pairs_[2].gaia_id_);
-  EXPECT_EQ("token_1", token_id_pairs_[0].token_);
-  EXPECT_EQ("token_2", token_id_pairs_[1].token_);
-  EXPECT_EQ("token_3", token_id_pairs_[2].token_);
+  EXPECT_EQ(3u, account_id_token_pairs_.size());
+  EXPECT_EQ(account_1, account_id_token_pairs_[0].account_id);
+  EXPECT_EQ(account_2, account_id_token_pairs_[1].account_id);
+  EXPECT_EQ(account_3, account_id_token_pairs_[2].account_id);
+  EXPECT_EQ("token_1", account_id_token_pairs_[0].token);
+  EXPECT_EQ("token_2", account_id_token_pairs_[1].token);
+  EXPECT_EQ("token_3", account_id_token_pairs_[2].token);
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsTransientError) {
-  token_service_.AddAccount("account_1");
-  token_service_.AddAccount("account_2");
-  token_service_.AddAccount("account_3");
+  const CoreAccountId account_1("account_1");
+  const CoreAccountId account_2("account_2");
+  const CoreAccountId account_3("account_3");
+  token_service_.AddAccount(account_1);
+  token_service_.AddAccount(account_2);
+  token_service_.AddAccount(account_3);
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
-      CreateFetcher({"account_1", "account_2", "account_3"});
+      CreateFetcher({account_1, account_2, account_3});
   // Connection failures will be retried.
   token_service_.IssueErrorForAllPendingRequestsForAccount(
-      "account_1",
+      account_1,
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
   token_service_.IssueErrorForAllPendingRequestsForAccount(
-      "account_2",
+      account_2,
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
   token_service_.IssueErrorForAllPendingRequestsForAccount(
-      "account_3",
+      account_3,
       GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
   // Success on retry.
   OAuth2AccessTokenConsumer::TokenResponse success_response;
   success_response.access_token = kAccessToken;
   success_response.access_token = "token_1";
-  token_service_.IssueAllTokensForAccount("account_1", success_response);
+  token_service_.IssueAllTokensForAccount(account_1, success_response);
   success_response.access_token = "token_2";
-  token_service_.IssueAllTokensForAccount("account_2", success_response);
+  token_service_.IssueAllTokensForAccount(account_2, success_response);
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());
   success_response.access_token = "token_3";
-  token_service_.IssueAllTokensForAccount("account_3", success_response);
+  token_service_.IssueAllTokensForAccount(account_3, success_response);
   EXPECT_EQ(FetchStatus::kSuccess, GetFetchStatus());
   // Check result.
-  EXPECT_EQ(3u, token_id_pairs_.size());
-  EXPECT_EQ("account_1", token_id_pairs_[0].gaia_id_);
-  EXPECT_EQ("account_2", token_id_pairs_[1].gaia_id_);
-  EXPECT_EQ("account_3", token_id_pairs_[2].gaia_id_);
-  EXPECT_EQ("token_1", token_id_pairs_[0].token_);
-  EXPECT_EQ("token_2", token_id_pairs_[1].token_);
-  EXPECT_EQ("token_3", token_id_pairs_[2].token_);
+  EXPECT_EQ(3u, account_id_token_pairs_.size());
+  EXPECT_EQ(account_1, account_id_token_pairs_[0].account_id);
+  EXPECT_EQ(account_2, account_id_token_pairs_[1].account_id);
+  EXPECT_EQ(account_3, account_id_token_pairs_[2].account_id);
+  EXPECT_EQ("token_1", account_id_token_pairs_[0].token);
+  EXPECT_EQ("token_2", account_id_token_pairs_[1].token);
+  EXPECT_EQ("token_3", account_id_token_pairs_[2].token);
 }
 
 TEST_F(OAuthMultiloginTokenFetcherTest, MultipleAccountsPersistentError) {
-  token_service_.AddAccount("account_1");
-  token_service_.AddAccount("account_2");
-  token_service_.AddAccount("account_3");
+  const CoreAccountId account_1("account_1");
+  const CoreAccountId account_2("account_2");
+  const CoreAccountId account_3("account_3");
+  token_service_.AddAccount(account_1);
+  token_service_.AddAccount(account_2);
+  token_service_.AddAccount(account_3);
   std::unique_ptr<OAuthMultiloginTokenFetcher> fetcher =
-      CreateFetcher({"account_1", "account_2", "account_3"});
+      CreateFetcher({account_1, account_2, account_3});
   EXPECT_EQ(FetchStatus::kPending, GetFetchStatus());
   token_service_.IssueErrorForAllPendingRequestsForAccount(
-      "account_2",
+      account_2,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   // Fail as soon as one of the accounts is in error.
   EXPECT_EQ(FetchStatus::kFailure, GetFetchStatus());

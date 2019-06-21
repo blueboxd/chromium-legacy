@@ -60,9 +60,9 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_fetcher.h"
 #include "device/vr/android/gvr/gvr_device.h"
@@ -193,9 +193,8 @@ VrShell::VrShell(JNIEnv* env,
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &geolocation_config_);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {

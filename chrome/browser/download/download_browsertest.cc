@@ -102,11 +102,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -1199,9 +1199,7 @@ class DownloadWakeLockTest : public DownloadTest {
   DownloadWakeLockTest() = default;
 
   void Initialize() {
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    auto* connector = connection->GetConnector();
-    connector_ = connector->Clone();
+    connector_ = content::GetSystemConnector()->Clone();
     connector_->BindInterface(device::mojom::kServiceName,
                               &wake_lock_provider_);
   }

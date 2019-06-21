@@ -31,8 +31,8 @@
 //
 // IMPORTANT: Only use this API as a last resort. Prefer storing a
 // (Sequenced|SingleThread)TaskRunner returned by
-// base::Create(Sequenced|SingleThread|COMSTA)TaskRunnerWithTraits() as a member
-// on an object accessible by all PostTask() call sites.
+// base::Create(Sequenced|SingleThread|COMSTA)TaskRunner() as a member on an
+// object accessible by all PostTask() call sites.
 //
 // Example usage 1:
 //

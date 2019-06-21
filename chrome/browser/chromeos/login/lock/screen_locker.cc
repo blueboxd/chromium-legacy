@@ -65,10 +65,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -180,9 +180,8 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &fp_service_);
 
   device::mojom::FingerprintObserverPtr observer;
   fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));

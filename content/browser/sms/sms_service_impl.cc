@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "content/browser/sms/sms_manager_impl.h"
+#include "content/browser/sms/sms_receiver_impl.h"
 
 namespace content {
 
@@ -23,12 +23,12 @@ SmsServiceImpl::~SmsServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SmsServiceImpl::Bind(blink::mojom::SmsManagerRequest request,
+void SmsServiceImpl::Bind(blink::mojom::SmsReceiverRequest request,
                           const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bindings_.AddBinding(
-      std::make_unique<SmsManagerImpl>(sms_provider_.get(), origin),
+      std::make_unique<SmsReceiverImpl>(sms_provider_.get(), origin),
       std::move(request));
 }
 

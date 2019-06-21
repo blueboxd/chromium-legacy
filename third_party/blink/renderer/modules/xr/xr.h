@@ -73,7 +73,7 @@ class XR final : public EventTargetWithInlineData,
 
   void ExitPresent();
 
-  TimeTicks NavigationStart() const { return navigation_start_; }
+  base::TimeTicks NavigationStart() const { return navigation_start_; }
 
  private:
   // These values are persisted to logs. Entries should not be renumbered and
@@ -219,7 +219,7 @@ class XR final : public EventTargetWithInlineData,
 
   // Time at which navigation started. Used as the base for relative timestamps,
   // such as for Gamepad objects.
-  TimeTicks navigation_start_;
+  base::TimeTicks navigation_start_;
 };
 
 }  // namespace blink

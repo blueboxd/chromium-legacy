@@ -19,7 +19,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
@@ -197,13 +196,8 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
   generator.Wait();
 
   Browser* active = chrome::FindLastActive();
-  LeftSnapWaiter waiter(
-      features::IsUsingWindowService()
-          ? active->window()->GetNativeWindow()->GetRootWindow()
-          : active->window()->GetNativeWindow());
-
   // Wait for the window to be snapped.
-  waiter.Wait();
+  LeftSnapWaiter(active->window()->GetNativeWindow()).Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(,

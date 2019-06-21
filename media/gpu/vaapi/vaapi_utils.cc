@@ -107,11 +107,10 @@ ScopedVAImage::~ScopedVAImage() {
   }
 }
 
-bool FillVP8DataStructuresAndPassToVaapiWrapper(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    VASurfaceID va_surface_id,
-    const Vp8FrameHeader& frame_header,
-    const Vp8ReferenceFrameVector& reference_frames) {
+bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+                           VASurfaceID va_surface_id,
+                           const Vp8FrameHeader& frame_header,
+                           const Vp8ReferenceFrameVector& reference_frames) {
   DCHECK_NE(va_surface_id, VA_INVALID_SURFACE);
   DCHECK(vaapi_wrapper);
 
@@ -278,12 +277,8 @@ bool FillVP8DataStructuresAndPassToVaapiWrapper(
   if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType, &slice_param))
     return false;
 
-  if (!vaapi_wrapper->SubmitBuffer(
-          VASliceDataBufferType, frame_header.frame_size, frame_header.data)) {
-    return false;
-  }
-
-  return vaapi_wrapper->ExecuteAndDestroyPendingBuffers(va_surface_id);
+  return vaapi_wrapper->SubmitBuffer(
+      VASliceDataBufferType, frame_header.frame_size, frame_header.data);
 }
 
 }  // namespace media

@@ -16,7 +16,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -84,8 +84,8 @@ class PerfettoTracingSession
     }
 #endif
 
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &consumer_host_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &consumer_host_);
 
     perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
         chrome_config, /*privacy_filtering_enabled=*/true);

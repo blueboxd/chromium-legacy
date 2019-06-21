@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/common/extension.h"
@@ -254,7 +254,7 @@ bool ExternalCacheImpl::GetExtensionExistingVersion(const std::string& id,
 service_manager::Connector* ExternalCacheImpl::GetConnector() {
   if (use_null_connector_)
     return nullptr;
-  return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  return content::GetSystemConnector();
 }
 
 void ExternalCacheImpl::UpdateExtensionLoader() {

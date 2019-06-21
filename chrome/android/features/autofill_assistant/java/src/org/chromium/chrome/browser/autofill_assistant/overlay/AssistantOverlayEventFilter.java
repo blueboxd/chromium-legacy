@@ -71,6 +71,9 @@ class AssistantOverlayEventFilter extends EventFilter {
     /** Touchable area, expressed in CSS pixels relative to the layout viewport. */
     private List<RectF> mTouchableArea = Collections.emptyList();
 
+    /** Restricted area, expressed in CSS pixels relative to the layout viewport. */
+    private List<RectF> mRestrictedArea = Collections.emptyList();
+
     /**
      * Detects taps: {@link GestureDetector#onTouchEvent} returns {@code true} after a tap event.
      */
@@ -149,6 +152,13 @@ class AssistantOverlayEventFilter extends EventFilter {
      */
     void setTouchableArea(List<RectF> touchableArea) {
         mTouchableArea = touchableArea;
+    }
+
+    /**
+     * Set the restricted area. This only applies if current state is AssistantOverlayState.PARTIAL.
+     */
+    void setRestrictedArea(List<RectF> restrictedArea) {
+        mRestrictedArea = restrictedArea;
     }
 
     /** Sets the visual viewport. */
@@ -341,6 +351,11 @@ class AssistantOverlayEventFilter extends EventFilter {
                 ((float) mVisualViewport.width()) / ((float) mCompositorView.getWidth());
         float absoluteXCss = (x * physicalPixelsToCss) + mVisualViewport.left;
         float absoluteYCss = (y * physicalPixelsToCss) + mVisualViewport.top;
+
+        for (RectF rect : mRestrictedArea) {
+            if (rect.contains(absoluteXCss, absoluteYCss)) return false;
+        }
+
         for (RectF rect : mTouchableArea) {
             if (rect.contains(absoluteXCss, absoluteYCss)) return true;
         }

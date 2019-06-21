@@ -400,6 +400,12 @@ public interface WebContents extends Parcelable {
     void setOverscrollRefreshHandler(OverscrollRefreshHandler handler);
 
     /**
+     * Controls use of spatial-navigation mode.
+     * @param disable True if spatial navigation should never be used.
+     */
+    void setSpatialNavigationDisabled(boolean disabled);
+
+    /**
      * Requests an image snapshot of the content and stores it in the specified folder.
      *
      * @param width The width of the resulting bitmap, or 0 for "auto."

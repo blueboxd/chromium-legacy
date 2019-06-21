@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -493,15 +493,9 @@ void TtsControllerImpl::StripSSML(
     return;
   }
 
-  // Get ServiceManagerConnection and Connector.
-  ServiceManagerConnection* service_manager_connection =
-      ServiceManagerConnection::GetForProcess();
-  CHECK(service_manager_connection);
-  service_manager::Connector* connector =
-      service_manager_connection->GetConnector();
-  CHECK(connector);
-
   // Parse using safe, out-of-process Xml Parser.
+  service_manager::Connector* connector = GetSystemConnector();
+  DCHECK(connector);
   data_decoder::ParseXml(connector, utterance,
                          base::BindOnce(&TtsControllerImpl::StripSSMLHelper,
                                         utterance, std::move(on_ssml_parsed)));

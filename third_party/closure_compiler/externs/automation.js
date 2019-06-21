@@ -652,17 +652,18 @@ chrome.automation.AutomationNode.prototype.wordStarts;
 chrome.automation.AutomationNode.prototype.wordEnds;
 
 /**
- * The start and end index of each word within the node's name. Different from wordStarts and wordEnds because they're not restricted to inline text boxes and can be used for any type of element.
+ * The start index of each word within the node's name. This is different from wordStarts because it is not restricted to inline text boxes and can be used for any type of element.
  * @type {(!Array<number>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-wordStartOffsets
+ * @see https://developer.chrome.com/extensions/automation#type-nonInlineTextWordStarts
  */
-chrome.automation.AutomationNode.prototype.wordStartOffsets;
+chrome.automation.AutomationNode.prototype.nonInlineTextWordStarts;
 
 /**
+ * The end index of each word within the node's name. This is different from wordEnds because it is not restricted to inline text boxes and can be used for any type of element.
  * @type {(!Array<number>|undefined)}
- * @see https://developer.chrome.com/extensions/automation#type-wordEndOffsets
+ * @see https://developer.chrome.com/extensions/automation#type-nonInlineTextWordEnds
  */
-chrome.automation.AutomationNode.prototype.wordEndOffsets;
+chrome.automation.AutomationNode.prototype.nonInlineTextWordEnds;
 
 /**
  * The nodes, if any, which this node is specified to control via <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls"> <code>aria-controls</code></a>.

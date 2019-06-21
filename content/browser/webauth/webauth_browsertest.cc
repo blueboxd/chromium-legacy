@@ -449,26 +449,27 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
 
   blink::mojom::PublicKeyCredentialCreationOptionsPtr
   BuildBasicCreateOptions() {
-    auto rp = blink::mojom::PublicKeyCredentialRpEntity::New(
-        "acme.com", "acme.com", base::nullopt);
+    device::PublicKeyCredentialRpEntity rp("acme.com");
+    rp.name = "acme.com";
 
     std::vector<uint8_t> kTestUserId{0, 0, 0};
-    auto user = blink::mojom::PublicKeyCredentialUserEntity::New(
-        kTestUserId, "name", base::nullopt, "displayName");
+    device::PublicKeyCredentialUserEntity user(kTestUserId);
+    user.name = "name";
+    user.display_name = "displayName";
 
     static constexpr int32_t kCOSEAlgorithmIdentifierES256 = -7;
-    auto param = blink::mojom::PublicKeyCredentialParameters::New();
-    param->type = blink::mojom::PublicKeyCredentialType::PUBLIC_KEY;
-    param->algorithm_identifier = kCOSEAlgorithmIdentifierES256;
-    std::vector<blink::mojom::PublicKeyCredentialParametersPtr> parameters;
-    parameters.push_back(std::move(param));
+    device::PublicKeyCredentialParams::CredentialInfo param;
+    param.type = device::CredentialType::kPublicKey;
+    param.algorithm = kCOSEAlgorithmIdentifierES256;
+    std::vector<device::PublicKeyCredentialParams::CredentialInfo> parameters;
+    parameters.push_back(param);
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = blink::mojom::PublicKeyCredentialCreationOptions::New(
-        std::move(rp), std::move(user), kTestChallenge, std::move(parameters),
-        base::TimeDelta::FromSeconds(30),
-        std::vector<blink::mojom::PublicKeyCredentialDescriptorPtr>(), nullptr,
-        blink::mojom::AttestationConveyancePreference::NONE, nullptr,
+        rp, user, kTestChallenge, parameters, base::TimeDelta::FromSeconds(30),
+        std::vector<device::PublicKeyCredentialDescriptor>(),
+        device::AuthenticatorSelectionCriteria(),
+        device::AttestationConveyancePreference::kNone, nullptr,
         false /* no hmac_secret */, blink::mojom::ProtectionPolicy::UNSPECIFIED,
         false /* protection policy not enforced */);
 
@@ -476,23 +477,22 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   blink::mojom::PublicKeyCredentialRequestOptionsPtr BuildBasicGetOptions() {
-    std::vector<blink::mojom::PublicKeyCredentialDescriptorPtr> credentials;
-    std::vector<blink::mojom::AuthenticatorTransport> transports;
-    transports.push_back(blink::mojom::AuthenticatorTransport::USB);
+    std::vector<device::PublicKeyCredentialDescriptor> credentials;
+    base::flat_set<device::FidoTransportProtocol> transports;
+    transports.emplace(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
 
-    auto descriptor = blink::mojom::PublicKeyCredentialDescriptor::New(
-        blink::mojom::PublicKeyCredentialType::PUBLIC_KEY,
+    device::PublicKeyCredentialDescriptor descriptor(
+        device::CredentialType::kPublicKey,
         device::fido_parsing_utils::Materialize(
             device::test_data::kTestGetAssertionCredentialId),
         transports);
-    credentials.push_back(std::move(descriptor));
+    credentials.push_back(descriptor);
 
     std::vector<uint8_t> kTestChallenge{0, 0, 0};
     auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New(
         kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
-        std::move(credentials),
-        blink::mojom::UserVerificationRequirement::PREFERRED, base::nullopt,
-        std::vector<blink::mojom::CableAuthenticationPtr>());
+        std::move(credentials), device::UserVerificationRequirement::kPreferred,
+        base::nullopt, std::vector<device::CableDiscoveryData>());
     return mojo_options;
   }
 
@@ -594,8 +594,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
     InjectVirtualFidoDeviceFactory();
     TestCreateCallbackReceiver create_callback_receiver;
     auto options = BuildBasicCreateOptions();
-    options->attestation =
-        blink::mojom::AttestationConveyancePreference::DIRECT;
+    options->attestation = device::AttestationConveyancePreference::kDirect;
     authenticator()->MakeCredential(std::move(options),
                                     create_callback_receiver.callback());
     bool attestation_callback_was_invoked = false;
@@ -1290,19 +1289,18 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest,
     auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
     virtual_device_factory->SetSupportedProtocol(protocol);
     auto make_credential_request = BuildBasicCreateOptions();
-    auto excluded_credential = blink::mojom::PublicKeyCredentialDescriptor::New(
-        blink::mojom::PublicKeyCredentialType::PUBLIC_KEY,
+    device::PublicKeyCredentialDescriptor excluded_credential(
+        device::CredentialType::kPublicKey,
         device::fido_parsing_utils::Materialize(
             device::test_data::kCtap2MakeCredentialCredentialId),
-        std::vector<blink::mojom::AuthenticatorTransport>{
-            blink::mojom::AuthenticatorTransport::USB});
-    make_credential_request->exclude_credentials.push_back(
-        std::move(excluded_credential));
+        std::vector<device::FidoTransportProtocol>{
+            device::FidoTransportProtocol::kUsbHumanInterfaceDevice});
+    make_credential_request->exclude_credentials.push_back(excluded_credential);
 
     ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
         device::fido_parsing_utils::Materialize(
             device::test_data::kCtap2MakeCredentialCredentialId),
-        make_credential_request->relying_party->id));
+        make_credential_request->relying_party.id));
 
     TestCreateCallbackReceiver create_callback_receiver;
     authenticator()->MakeCredential(std::move(make_credential_request),

@@ -29,13 +29,13 @@ const ui::ClipboardFormatType& BookmarkNodeData::GetBookmarkFormatType() {
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   NSPasteboard* pb =
-      ui::ClipboardUtil::PasteboardFromType(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      ui::ClipboardUtil::PasteboardFromType(ui::ClipboardType::kCopyPaste);
   return PasteboardContainsBookmarks(pb);
 }
 
 void BookmarkNodeData::WriteToClipboard() {
   NSPasteboard* pb =
-      ui::ClipboardUtil::PasteboardFromType(ui::CLIPBOARD_TYPE_COPY_PASTE);
+      ui::ClipboardUtil::PasteboardFromType(ui::ClipboardType::kCopyPaste);
   WriteBookmarksToPasteboard(pb, elements, profile_path_);
 }
 

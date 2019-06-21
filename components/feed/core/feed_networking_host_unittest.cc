@@ -11,10 +11,10 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/feed/feed_feature_list.h"
-#include "components/variations/variations_params_manager.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -374,10 +374,9 @@ TEST_F(FeedNetworkingHostTest, TestDefaultTimeout) {
 }
 
 TEST_F(FeedNetworkingHostTest, TestParamTimeout) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kTimeoutDurationSeconds.name, "2"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions, {{kTimeoutDurationSeconds.name, "2"}});
   MockResponseDoneCallback done_callback;
   GURL url = GURL("http://foobar.com/feed");
   std::vector<uint8_t> request_body;

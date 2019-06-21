@@ -27,9 +27,6 @@ const char kHistogramPrefixMultiTabLoading2OrMore[] =
 const char kHistogramPrefixMultiTabLoading5OrMore[] =
     "PageLoad.Clients.MultiTabLoading.5OrMore.";
 
-const char kHistogramMultiTabLoadingNumTabsWithInflightLoad[] =
-    "PageLoad.Clients.MultiTabLoading.NumTabsWithInflightLoad";
-
 }  // namespace internal
 
 MultiTabLoadingPageLoadMetricsObserver::
@@ -45,17 +42,6 @@ MultiTabLoadingPageLoadMetricsObserver::OnStart(
     bool started_in_foreground) {
   num_loading_tabs_when_started_ =
       NumberOfTabsWithInflightLoad(navigation_handle);
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-MultiTabLoadingPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
-  // Report here so that this is logged only for normal page loads.
-  UMA_HISTOGRAM_COUNTS_100(
-      internal::kHistogramMultiTabLoadingNumTabsWithInflightLoad,
-      num_loading_tabs_when_started_);
   return num_loading_tabs_when_started_ > 0 ? CONTINUE_OBSERVING
                                             : STOP_OBSERVING;
 }

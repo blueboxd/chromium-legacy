@@ -176,6 +176,7 @@ public class TabGroupModelFilterUnitTest {
         }).when(mTabModel).getCount();
 
         doReturn(0).when(mTabModel).index();
+        doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
     }
 
     private Tab addTabToTabModel() {
@@ -185,18 +186,7 @@ public class TabGroupModelFilterUnitTest {
         return tab;
     }
 
-    @Before
-    public void setUp() {
-        RecordUserAction.setDisabledForTests(true);
-        RecordHistogram.setDisabledForTests(true);
-
-        MockitoAnnotations.initMocks(this);
-
-        setUpTab();
-        setUpTabModel();
-
-        doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
-
+    private void setupTabGroupModelFilter(boolean isTabRestoreCompleted) {
         mTabGroupModelFilter = new TabGroupModelFilter(mTabModel);
         mTabGroupModelFilter.addTabGroupObserver(mTabGroupModelFilterObserver);
 
@@ -217,6 +207,22 @@ public class TabGroupModelFilterUnitTest {
 
         mTabModel.addTab(mTab6, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(mTab6, TabLaunchType.FROM_CHROME_UI);
+
+        if (isTabRestoreCompleted) {
+            mTabGroupModelFilter.restoreCompleted();
+        }
+    }
+
+    @Before
+    public void setUp() {
+        RecordUserAction.setDisabledForTests(true);
+        RecordHistogram.setDisabledForTests(true);
+
+        MockitoAnnotations.initMocks(this);
+
+        setUpTab();
+        setUpTabModel();
+        setupTabGroupModelFilter(true);
     }
 
     @After
@@ -462,5 +468,25 @@ public class TabGroupModelFilterUnitTest {
         verify(mTabModel).moveTab(mTab6.getId(), startIndex + 2);
         verify(mTabGroupModelFilterObserver).didMoveTabGroup(mTab6, POSITION6, startIndex + 2);
         assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+    }
+
+    @Test
+    public void ignoreUnrelatedMoveTab() {
+        // Simulate that the tab restoring is not yet finished.
+        setupTabGroupModelFilter(false);
+
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION1, POSITION6);
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab1, POSITION6, POSITION1);
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab2, POSITION2, POSITION5);
+        mTabModelObserverCaptor.getValue().didMoveTab(mTab2, POSITION5, POSITION2);
+
+        // No call should be made here.
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveTabOutOfGroup(any(Tab.class), anyInt());
+        verify(mTabGroupModelFilterObserver, never()).didMergeTabToGroup(any(Tab.class), anyInt());
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveWithinGroup(any(Tab.class), anyInt(), anyInt());
+        verify(mTabGroupModelFilterObserver, never())
+                .didMoveTabGroup(any(Tab.class), anyInt(), anyInt());
     }
 }

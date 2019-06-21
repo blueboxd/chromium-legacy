@@ -7,10 +7,10 @@
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_webcam_browsertest.h"
 #include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -80,11 +80,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureBrowserTest,
   ASSERT_EQ("OK", result);
 
   // Simulate crash in video capture process
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
   video_capture::mojom::TestingControlsPtr service_controls;
-  connector->BindInterface(video_capture::mojom::kServiceName,
-                           mojo::MakeRequest(&service_controls));
+  GetSystemConnector()->BindInterface(video_capture::mojom::kServiceName,
+                                      mojo::MakeRequest(&service_controls));
   service_controls->Crash();
 
   // Wait for video element to turn black

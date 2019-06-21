@@ -164,8 +164,13 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void OnDragAnimationCompleted();
 
   // Updates |phantoms_for_dragging_|. If |phantoms_for_dragging_| is null, then
-  // a new object is created for it.
-  void UpdatePhantomsForDragging(const gfx::PointF& location_in_screen);
+  // a new object is created for it. If |allow_original_window_opacity_change|
+  // is true, then it's allowed to change the opacity of the dragged window to
+  // be transparent when the drag point exits the original display's boundaries.
+  // This is so it won't interfere with opacity changes done when the window is
+  // on the Desks bar.
+  void UpdatePhantomsForDragging(const gfx::PointF& location_in_screen,
+                                 bool allow_original_window_opacity_change);
 
   void DestroyPhantomsForDragging();
 
@@ -188,7 +193,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   OverviewAnimationType GetExitTransformAnimationType();
 
   // CaptionContainerView::EventDelegate:
-  void HandlePressEvent(const gfx::PointF& location_in_screen) override;
+  void HandlePressEvent(const gfx::PointF& location_in_screen,
+                        bool from_touch_gesture) override;
   void HandleReleaseEvent(const gfx::PointF& location_in_screen) override;
   void HandleDragEvent(const gfx::PointF& location_in_screen) override;
   void HandleLongPressEvent(const gfx::PointF& location_in_screen) override;

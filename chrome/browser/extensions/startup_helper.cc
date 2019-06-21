@@ -17,7 +17,7 @@
 #include "chrome/common/initialize_extensions_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
@@ -94,13 +94,10 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   const base::string16& error() const { return error_; }
 
   void Start() {
-    std::unique_ptr<::service_manager::Connector> connector =
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone();
     GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ValidateCrxHelper::StartOnBlockingThread,
-                                  this, std::move(connector)));
+        FROM_HERE,
+        base::BindOnce(&ValidateCrxHelper::StartOnBlockingThread, this,
+                       content::GetSystemConnector()->Clone()));
   }
 
  protected:

@@ -13,6 +13,7 @@
 
 namespace notifications {
 
+class UserActionHandler;
 struct NotificationParams;
 
 // Service to schedule a notification to display in the future. An internal
@@ -24,9 +25,13 @@ class NotificationScheduleService : public KeyedService {
   // Schedules a notification to display.
   virtual void Schedule(
       std::unique_ptr<NotificationParams> notification_params) = 0;
+
   // Returns NotificationBackgroundTaskScheduler Handler.
   virtual NotificationBackgroundTaskScheduler::Handler*
   GetBackgroundTaskSchedulerHandler() = 0;
+
+  // Returns the user action handler to process notification events.
+  virtual UserActionHandler* GetUserActionHandler() = 0;
 
  protected:
   NotificationScheduleService() = default;

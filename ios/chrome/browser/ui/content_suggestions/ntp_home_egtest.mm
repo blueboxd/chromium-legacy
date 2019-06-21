@@ -39,7 +39,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/base/scoped_block_swizzler.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -193,7 +192,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that all items are accessible on the home page.
 - (void)testAccessibility {
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that the collections shortcut are displayed and working.

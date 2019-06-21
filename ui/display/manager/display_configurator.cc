@@ -4,7 +4,6 @@
 
 #include "ui/display/manager/display_configurator.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <utility>
 
@@ -13,17 +12,15 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/display.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
-#include "ui/display/manager/apply_content_protection_task.h"
+#include "ui/display/manager/content_protection_manager.h"
 #include "ui/display/manager/display_layout_manager.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/display/manager/query_content_protection_task.h"
 #include "ui/display/manager/update_display_configuration_task.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
@@ -580,18 +577,23 @@ DisplayConfigurator::DisplayConfigurator()
       display_control_changing_(false),
       displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
+      content_protection_manager_(new ContentProtectionManager(
+          layout_manager_.get(),
+          base::BindRepeating(&DisplayConfigurator::configurator_disabled,
+                              base::Unretained(this)))),
       has_unassociated_display_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  AddObserver(content_protection_manager_.get());
+}
 
 DisplayConfigurator::~DisplayConfigurator() {
+  RemoveObserver(content_protection_manager_.get());
+
   if (native_display_delegate_)
     native_display_delegate_->RemoveObserver(this);
 
   CallAndClearInProgressCallbacks(false);
   CallAndClearQueuedCallbacks(false);
-
-  // Destroy to fire failure callbacks before weak pointers for |this| expire.
-  content_protection_tasks_ = {};
 }
 
 void DisplayConfigurator::SetDelegateForTesting(
@@ -642,6 +644,9 @@ void DisplayConfigurator::Init(
     native_display_delegate_ = std::move(display_delegate);
 
   native_display_delegate_->AddObserver(this);
+
+  content_protection_manager_->set_native_display_delegate(
+      native_display_delegate_.get());
 }
 
 void DisplayConfigurator::TakeControl(DisplayControlCallback callback) {
@@ -754,160 +759,6 @@ void DisplayConfigurator::ForceInitialConfigure() {
   configuration_task_->Run();
 }
 
-DisplayConfigurator::ContentProtectionClientId
-DisplayConfigurator::RegisterContentProtectionClient() {
-  if (configurator_disabled())
-    return base::nullopt;
-
-  ContentProtectionClientId client_id = next_content_protection_client_id_++;
-  bool success =
-      content_protection_requests_.emplace(*client_id, ContentProtections())
-          .second;
-  DCHECK(success);
-
-  return client_id;
-}
-
-void DisplayConfigurator::UnregisterContentProtectionClient(
-    ContentProtectionClientId client_id) {
-  if (configurator_disabled())
-    return;
-
-  DCHECK(GetContentProtections(client_id));
-  content_protection_requests_.erase(*client_id);
-
-  QueueContentProtectionTask(std::make_unique<ApplyContentProtectionTask>(
-      layout_manager_.get(), native_display_delegate_.get(),
-      AggregateContentProtections(),
-      base::BindOnce(&DisplayConfigurator::OnContentProtectionApplied,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ApplyContentProtectionCallback(), base::nullopt)));
-}
-
-void DisplayConfigurator::QueryContentProtection(
-    ContentProtectionClientId client_id,
-    int64_t display_id,
-    QueryContentProtectionCallback callback) {
-  DCHECK(configurator_disabled() || GetContentProtections(client_id));
-
-  // Exclude virtual displays so that protected content will not be recaptured
-  // through the cast stream.
-  const DisplaySnapshot* display = GetDisplay(display_id);
-  if (configurator_disabled() || !display ||
-      !IsPhysicalDisplayType(display->type())) {
-    std::move(callback).Run(/*success=*/false, DISPLAY_CONNECTION_TYPE_NONE,
-                            CONTENT_PROTECTION_METHOD_NONE);
-    return;
-  }
-
-  QueueContentProtectionTask(std::make_unique<QueryContentProtectionTask>(
-      layout_manager_.get(), native_display_delegate_.get(), display_id,
-      base::BindOnce(&DisplayConfigurator::OnContentProtectionQueried,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     client_id, display_id)));
-}
-
-void DisplayConfigurator::OnContentProtectionQueried(
-    QueryContentProtectionCallback callback,
-    ContentProtectionClientId client_id,
-    int64_t display_id,
-    ContentProtectionTask::Status status,
-    uint32_t connection_mask,
-    uint32_t protection_mask) {
-  // Only run callback if client is still registered.
-  if (const auto* protections = GetContentProtections(client_id)) {
-    bool success = status == ContentProtectionTask::Status::SUCCESS;
-
-    // Conceal protections requested by other clients.
-    uint32_t client_mask = CONTENT_PROTECTION_METHOD_NONE;
-
-    if (success) {
-      auto it = protections->find(display_id);
-      if (it != protections->end())
-        client_mask = it->second;
-    }
-
-    protection_mask &= client_mask;
-
-    std::move(callback).Run(success, connection_mask, protection_mask);
-  }
-
-  if (status != ContentProtectionTask::Status::KILLED)
-    DequeueContentProtectionTask();
-}
-
-void DisplayConfigurator::ApplyContentProtection(
-    ContentProtectionClientId client_id,
-    int64_t display_id,
-    uint32_t protection_mask,
-    ApplyContentProtectionCallback callback) {
-  ContentProtections* protections = GetContentProtections(client_id);
-  DCHECK(configurator_disabled() || protections);
-
-  if (configurator_disabled() || !GetDisplay(display_id)) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  protections->insert_or_assign(display_id, protection_mask);
-
-  QueueContentProtectionTask(std::make_unique<ApplyContentProtectionTask>(
-      layout_manager_.get(), native_display_delegate_.get(),
-      AggregateContentProtections(),
-      base::BindOnce(&DisplayConfigurator::OnContentProtectionApplied,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     client_id)));
-}
-
-void DisplayConfigurator::QueueContentProtectionTask(
-    std::unique_ptr<ContentProtectionTask> task) {
-  content_protection_tasks_.emplace(std::move(task));
-
-  if (content_protection_tasks_.size() == 1)
-    content_protection_tasks_.front()->Run();
-}
-
-void DisplayConfigurator::DequeueContentProtectionTask() {
-  DCHECK(!content_protection_tasks_.empty());
-  content_protection_tasks_.pop();
-
-  if (!content_protection_tasks_.empty())
-    content_protection_tasks_.front()->Run();
-}
-
-void DisplayConfigurator::OnContentProtectionApplied(
-    ApplyContentProtectionCallback callback,
-    ContentProtectionClientId client_id,
-    ContentProtectionTask::Status status) {
-  // Only run callback if client is still registered.
-  if (GetContentProtections(client_id))
-    std::move(callback).Run(status == ContentProtectionTask::Status::SUCCESS);
-
-  if (status != ContentProtectionTask::Status::KILLED)
-    DequeueContentProtectionTask();
-}
-
-DisplayConfigurator::ContentProtections*
-DisplayConfigurator::GetContentProtections(
-    ContentProtectionClientId client_id) {
-  if (!client_id)
-    return nullptr;
-
-  auto it = content_protection_requests_.find(*client_id);
-  return it == content_protection_requests_.end() ? nullptr : &it->second;
-}
-
-DisplayConfigurator::ContentProtections
-DisplayConfigurator::AggregateContentProtections() const {
-  ContentProtections protections;
-
-  for (const auto& requests_pair : content_protection_requests_)
-    for (const auto& protections_pair : requests_pair.second)
-      protections[protections_pair.first] |= protections_pair.second;
-
-  return protections;
-}
-
 bool DisplayConfigurator::SetColorMatrix(
     int64_t display_id,
     const std::vector<float>& color_matrix) {
@@ -939,15 +790,6 @@ chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()
 
 void DisplayConfigurator::PrepareForExit() {
   configure_display_ = false;
-}
-
-const DisplaySnapshot* DisplayConfigurator::GetDisplay(
-    int64_t display_id) const {
-  auto it = std::find_if(cached_displays_.begin(), cached_displays_.end(),
-                         [display_id](const DisplaySnapshot* display) {
-                           return display->display_id() == display_id;
-                         });
-  return it == cached_displays_.end() ? nullptr : *it;
 }
 
 void DisplayConfigurator::SetDisplayPowerInternal(
@@ -1176,15 +1018,6 @@ void DisplayConfigurator::OnConfigured(
     if (!configure_timer_.IsRunning())
       CallAndClearQueuedCallbacks(success);
   }
-
-  // Filter out content protection requests for removed displays.
-  for (auto& requests : content_protection_requests_) {
-    base::EraseIf(requests.second,
-                  [this](const auto& pair) { return !GetDisplay(pair.first); });
-  }
-
-  // Kill tasks to fire failure callbacks.
-  content_protection_tasks_ = {};
 }
 
 void DisplayConfigurator::UpdatePowerState(

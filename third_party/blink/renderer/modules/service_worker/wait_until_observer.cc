@@ -29,10 +29,10 @@ namespace {
 const unsigned kWindowInteractionTimeout = 10;
 const unsigned kWindowInteractionTimeoutForTest = 1;
 
-TimeDelta WindowInteractionTimeout() {
-  return TimeDelta::FromSeconds(WebTestSupport::IsRunningWebTest()
-                                    ? kWindowInteractionTimeoutForTest
-                                    : kWindowInteractionTimeout);
+base::TimeDelta WindowInteractionTimeout() {
+  return base::TimeDelta::FromSeconds(WebTestSupport::IsRunningWebTest()
+                                          ? kWindowInteractionTimeoutForTest
+                                          : kWindowInteractionTimeout);
 }
 
 }  // anonymous namespace

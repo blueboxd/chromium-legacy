@@ -63,6 +63,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAllowStartingServiceManagerOnly,
     &features::kAppNotificationStatusMessaging,
+    &features::kCaptionSettings,
     &features::kClearOldBrowsingData,
     &features::kDownloadsLocationChange,
     &features::kGenericSensorExtraClasses,

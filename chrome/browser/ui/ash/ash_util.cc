@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/common/service_manager_connection.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -27,14 +26,6 @@ int GetSystemModalDialogContainerId() {
                  session_manager::SessionState::ACTIVE
              ? ash::kShellWindowId_SystemModalContainer
              : ash::kShellWindowId_LockSystemModalContainer;
-}
-
-service_manager::Connector* GetServiceManagerConnector() {
-  content::ServiceManagerConnection* manager_connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (!manager_connection)
-    return nullptr;
-  return manager_connection->GetConnector();
 }
 
 void BounceWindow(aura::Window* window) {

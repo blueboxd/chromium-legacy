@@ -37,8 +37,6 @@
 
 namespace blink {
 
-static const base::TimeDelta kMaxIntervalForUserGestureForwarding =
-    base::TimeDelta::FromMilliseconds(1000);  // One second matches Gecko.
 static const int kMaxTimerNestingLevel = 5;
 // Chromium uses a minimum timer interval of 4ms. We'd like to go
 // lower; however, there are poorly coded websites out there which do
@@ -47,16 +45,6 @@ static const int kMaxTimerNestingLevel = 5;
 // the smallest possible interval timer.
 static constexpr base::TimeDelta kMinimumInterval =
     base::TimeDelta::FromMilliseconds(4);
-
-static inline bool ShouldForwardUserGesture(base::TimeDelta interval,
-                                            int nesting_level) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled())
-    return false;
-  return UserGestureIndicator::ProcessingUserGestureThreadSafe() &&
-         interval <= kMaxIntervalForUserGestureForwarding &&
-         nesting_level ==
-             1;  // Gestures should not be forwarded to nested timers.
-}
 
 int DOMTimer::Install(ExecutionContext* context,
                       ScheduledAction* action,
@@ -88,11 +76,6 @@ DOMTimer::DOMTimer(ExecutionContext* context,
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
   DCHECK_GT(timeout_id, 0);
-  if (ShouldForwardUserGesture(interval, nesting_level_)) {
-    // Thread safe because shouldForwardUserGesture will only return true if
-    // execution is on the the main thread.
-    user_gesture_token_ = UserGestureIndicator::CurrentToken();
-  }
 
   base::TimeDelta interval_milliseconds =
       std::max(base::TimeDelta::FromMilliseconds(1), interval);
@@ -123,7 +106,6 @@ void DOMTimer::Stop() {
       GetExecutionContext(), is_interval ? "clearInterval" : "clearTimeout",
       this);
 
-  user_gesture_token_ = nullptr;
   // Need to release JS objects potentially protected by ScheduledAction
   // because they can form circular references back to the ExecutionContext
   // which will cause a memory leak.
@@ -144,7 +126,6 @@ void DOMTimer::Fired() {
   DCHECK(!context->IsContextPaused());
   // Only the first execution of a multi-shot timer should get an affirmative
   // user gesture indicator.
-  UserGestureIndicator gesture_indicator(std::move(user_gesture_token_));
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
                inspector_timer_fire_event::Data(context, timeout_id_));

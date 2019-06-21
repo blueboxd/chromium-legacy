@@ -1057,5 +1057,10 @@
     "prefix": "forced-colors",
     "base": "external/wpt/css/css-forced-color-adjust",
     "args": ["--enable-blink-features=ForcedColors"]
+  },
+  {
+    "prefix": "force-defer-script",
+    "base": "defer-script",
+    "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
   }
 ]

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -33,24 +34,23 @@ namespace content {
 class CONTENT_EXPORT NativeFileSystemHandleBase {
  public:
   using BindingContext = NativeFileSystemManagerImpl::BindingContext;
+  using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
   using PermissionStatus = blink::mojom::PermissionStatus;
 
-  NativeFileSystemHandleBase(
-      NativeFileSystemManagerImpl* manager,
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system);
+  NativeFileSystemHandleBase(NativeFileSystemManagerImpl* manager,
+                             const BindingContext& context,
+                             const storage::FileSystemURL& url,
+                             const SharedHandleState& handle_state);
   virtual ~NativeFileSystemHandleBase();
 
   const storage::FileSystemURL& url() const { return url_; }
+  const SharedHandleState& handle_state() const { return handle_state_; }
   const storage::IsolatedContext::ScopedFSHandle& file_system() const {
-    return file_system_;
+    return handle_state_.file_system;
   }
 
-  PermissionStatus GetReadPermissionStatus() const {
-    return read_permission_status_;
-  }
-  PermissionStatus GetWritePermissionStatus() const;
+  PermissionStatus GetReadPermissionStatus();
+  PermissionStatus GetWritePermissionStatus();
 
   // Implementation for the GetPermissionStatus method in the
   // blink::mojom::NativeFileSystemFileHandle and DirectoryHandle interfaces.
@@ -84,17 +84,14 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
     return manager()->blob_context();
   }
 
+  virtual base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() = 0;
+
  private:
   // The NativeFileSystemManagerImpl that owns this instance.
   NativeFileSystemManagerImpl* const manager_;
   const BindingContext context_;
   const storage::FileSystemURL url_;
-  const storage::IsolatedContext::ScopedFSHandle file_system_;
-
-  // TODO(mek): We'll likely end up with something more complicated than simple
-  // fields like this, but this will do for now.
-  PermissionStatus read_permission_status_ = PermissionStatus::GRANTED;
-  PermissionStatus write_permission_status_ = PermissionStatus::ASK;
+  const SharedHandleState handle_state_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };

@@ -24,6 +24,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 
 namespace network {
@@ -92,27 +93,11 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     std::string id_;
   };
 
-  // Classes that want to monitor status of access token and access token
+  // Classes that want to monitor status of refresh token and refresh token
   // request should implement this interface and register with the
   // AddDiagnosticsObserver() call.
   class DiagnosticsObserver {
    public:
-    // Called when receiving request for access token.
-    virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
-                                        const std::string& consumer_id,
-                                        const ScopeSet& scopes) {}
-    // Called when access token fetching finished successfully or
-    // unsuccessfully. |expiration_time| are only valid with
-    // successful completion.
-    virtual void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
-                                            const std::string& consumer_id,
-                                            const ScopeSet& scopes,
-                                            GoogleServiceAuthError error,
-                                            base::Time expiration_time) {}
-    // Called when an access token was removed.
-    virtual void OnAccessTokenRemoved(const CoreAccountId& account_id,
-                                      const ScopeSet& scopes) {}
-
     // Caled when a new refresh token is available. Contains diagnostic
     // information about the source of the update credentials operation.
     virtual void OnRefreshTokenAvailableFromSource(
@@ -158,6 +143,14 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
+  // TODO(https://crbug.com/967598): Remove these APIs once we can use
+  // OAuth2AccessTokenManager without OAuth2TokenService.
+  // Add or remove observers of access token manager.
+  void AddAccessTokenDiagnosticsObserver(
+      AccessTokenDiagnosticsObserver* observer);
+  void RemoveAccessTokenDiagnosticsObserver(
+      AccessTokenDiagnosticsObserver* observer);
+
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
   // using the OAuth2 refresh token maintained by this instance for that
@@ -165,6 +158,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted. Virtual for mocking.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual std::unique_ptr<Request> StartRequest(const CoreAccountId& account_id,
                                                 const ScopeSet& scopes,
                                                 Consumer* consumer);
@@ -179,6 +173,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   std::unique_ptr<Request> StartRequestForClient(
       const CoreAccountId& account_id,
       const std::string& client_id,
@@ -189,6 +184,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // This method does the same as |StartRequest| except it uses the
   // URLLoaderfactory given by |url_loader_factory| instead of using the one
   // returned by |GetURLLoaderFactory| implemented by derived classes.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   std::unique_ptr<Request> StartRequestWithContext(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -260,11 +256,18 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   OAuth2TokenService::TokenCache& token_cache();
 
   const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
-  GetDiagnicsObservers() {
+  GetDiagnosticsObservers() {
     return diagnostics_observer_list_;
   }
 
+  const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
+  GetAccessTokenDiagnosticsObservers();
+
  protected:
+  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
+  // fully manages access tokens independently of OAuth2TokenService.
+  friend class OAuth2AccessTokenManager;
+
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
@@ -357,23 +360,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Provide a URLLoaderFactory used for fetching access tokens with the
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
-
-  // This method does the same as |StartRequestWithContext| except it
-  // uses |client_id| and |client_secret| to identify OAuth
-  // client app instead of using Chrome's default values.
-  std::unique_ptr<Request> StartRequestForClientWithContext(
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const ScopeSet& scopes,
-      Consumer* consumer);
-
-  // Posts a task to fire the Consumer callback with the cached token response.
-  void InformConsumerWithCachedTokenResponse(
-      const OAuth2AccessTokenConsumer::TokenResponse* token_response,
-      RequestImpl* request,
-      const RequestParameters& client_scopes);
 
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should

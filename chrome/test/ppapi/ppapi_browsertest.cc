@@ -30,10 +30,10 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -362,10 +362,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(content::mojom::kNetworkServiceName,
-                      &network_service_test);
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
   network_service_test->CrashOnResolveHost("crash.com");
 
   RunTestViaHTTP(STRIP_PREFIXES(TCPSocketPrivateCrash_Resolve));
@@ -1262,10 +1260,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(content::mojom::kNetworkServiceName,
-                      &network_service_test);
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
   network_service_test->CrashOnResolveHost("crash.com");
 
   RunTestViaHTTP(STRIP_PREFIXES(HostResolverCrash_Basic));

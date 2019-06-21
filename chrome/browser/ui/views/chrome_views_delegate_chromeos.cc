@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -27,10 +26,6 @@ views::ViewsDelegate::ProcessMenuAcceleratorResult
 ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     const ui::Accelerator& accelerator) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
-
-  // Early return because mash chrome does not have access to ash::Shell
-  if (features::IsMultiProcessMash())
-    return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 
   if (ash::AcceleratorController::Get()->OnMenuAccelerator(accelerator)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

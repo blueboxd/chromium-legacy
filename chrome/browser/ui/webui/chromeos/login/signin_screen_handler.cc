@@ -119,10 +119,14 @@ const size_t kMaxUsers = 18;
 
 // Timeout to delay first notification about offline state for a
 // current network.
-const int kOfflineTimeoutSec = 5;
+constexpr base::TimeDelta kOfflineTimeout = base::TimeDelta::FromSeconds(1);
+
+// Timeout to delay first notification about offline state when authenticating
+// to a proxy.
+constexpr base::TimeDelta kProxyAuthTimeout = base::TimeDelta::FromSeconds(5);
 
 // Timeout used to prevent infinite connecting to a flaky network.
-const int kConnectingTimeoutSec = 60;
+constexpr base::TimeDelta kConnectingTimeout = base::TimeDelta::FromSeconds(60);
 
 // Max number of Gaia Reload to Show Proxy Auth Dialog.
 const int kMaxGaiaReloadForProxyAuthDialog = 3;
@@ -617,9 +621,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                    true));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, update_state_closure_.callback(),
-        is_offline_timeout_for_test_set_
-            ? offline_timeout_for_test_
-            : base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+        is_offline_timeout_for_test_set_ ? offline_timeout_for_test_
+                                         : kOfflineTimeout);
     return;
   }
 
@@ -633,8 +636,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                      reason,
                      true));
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, connecting_closure_.callback(),
-          base::TimeDelta::FromSeconds(kConnectingTimeoutSec));
+          FROM_HERE, connecting_closure_.callback(), kConnectingTimeout);
     }
     return;
   }
@@ -980,7 +982,7 @@ void SigninScreenHandler::Observe(int type,
         ReenableNetworkStateUpdatesAfterProxyAuth();
       } else {
         // Gaia is not hidden behind an error yet. Discard last cached network
-        // state notification and wait for |kOfflineTimeoutSec| before
+        // state notification and wait for |kProxyAuthTimeout| before
         // considering network update notifications again (hoping the network
         // will become ONLINE by then).
         update_state_closure_.Cancel();
@@ -989,7 +991,7 @@ void SigninScreenHandler::Observe(int type,
             base::BindOnce(
                 &SigninScreenHandler::ReenableNetworkStateUpdatesAfterProxyAuth,
                 weak_factory_.GetWeakPtr()),
-            base::TimeDelta::FromSeconds(kOfflineTimeoutSec));
+            kProxyAuthTimeout);
       }
       break;
     }
@@ -1056,8 +1058,6 @@ void SigninScreenHandler::AuthenticateExistingUser(const AccountId& account_id,
     user_context = UserContext(*user);
   }
   user_context.SetKey(Key(password));
-  // Save the user's plaintext password for possible authentication to a
-  // network. See https://crbug.com/386606 for details.
   user_context.SetPasswordKey(Key(password));
   user_context.SetIsUsingPin(authenticated_by_pin);
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {

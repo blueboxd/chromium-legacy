@@ -403,7 +403,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     }
   } else if (sender == close_button_) {
     frame_->Close();
-    if (TabletMode::Get()->IsEnabled())
+    if (TabletMode::Get()->InTabletMode())
       RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
     else
       RecordAction(UserMetricsAction("CloseButton_Clk"));

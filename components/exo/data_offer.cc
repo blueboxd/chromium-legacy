@@ -110,7 +110,7 @@ ui::ClipboardFormatType GetClipboardFormatType() {
 void ReadTextFromClipboard(const std::string& charset, base::ScopedFD fd) {
   base::string16 text;
   std::string encoded_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
                                                  &text);
   base::UTF16ToCodepage(text, charset.c_str(),
                         base::OnStringConversionError::SUBSTITUTE,
@@ -124,7 +124,7 @@ void ReadHTMLFromClipboard(const std::string& charset, base::ScopedFD fd) {
   std::string url;
   uint32_t start, end;
   std::string encoded_text;
-  ui::Clipboard::GetForCurrentThread()->ReadHTML(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadHTML(ui::ClipboardType::kCopyPaste,
                                                  &text, &url, &start, &end);
   base::UTF16ToCodepage(text, charset.c_str(),
                         base::OnStringConversionError::SUBSTITUTE,
@@ -135,7 +135,7 @@ void ReadHTMLFromClipboard(const std::string& charset, base::ScopedFD fd) {
 
 void ReadRTFFromClipboard(base::ScopedFD fd) {
   std::string text;
-  ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadRTF(ui::ClipboardType::kCopyPaste,
                                                 &text);
   WriteFileDescriptor(std::move(fd), base::RefCountedString::TakeString(&text));
 }
@@ -155,7 +155,7 @@ void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap sk_bitmap) {
 
 void ReadPNGFromClipboard(base::ScopedFD fd) {
   const SkBitmap sk_bitmap = ui::Clipboard::GetForCurrentThread()->ReadImage(
-      ui::CLIPBOARD_TYPE_COPY_PASTE);
+      ui::ClipboardType::kCopyPaste);
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SendAsPNGOnWorkerThread, std::move(fd),
@@ -266,7 +266,7 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
                                  const ui::Clipboard& data) {
   DCHECK_EQ(0u, data_.size());
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextWType(),
-                             ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+                             ui::ClipboardType::kCopyPaste)) {
     auto utf8_callback =
         base::BindRepeating(&ReadTextFromClipboard, std::string(kUTF8));
     delegate_->OnOffer(std::string(kTextMimeTypeUtf8));
@@ -279,7 +279,7 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
         base::BindRepeating(&ReadTextFromClipboard, std::string(kUTF16)));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetHtmlType(),
-                             ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+                             ui::ClipboardType::kCopyPaste)) {
     delegate_->OnOffer(std::string(kTextHtmlMimeTypeUtf8));
     data_callbacks_.emplace(
         std::string(kTextHtmlMimeTypeUtf8),
@@ -290,13 +290,13 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
         base::BindRepeating(&ReadHTMLFromClipboard, std::string(kUTF16)));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetRtfType(),
-                             ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+                             ui::ClipboardType::kCopyPaste)) {
     delegate_->OnOffer(std::string(kTextRtfMimeType));
     data_callbacks_.emplace(std::string(kTextRtfMimeType),
                             base::BindRepeating(&ReadRTFFromClipboard));
   }
   if (data.IsFormatAvailable(ui::ClipboardFormatType::GetBitmapType(),
-                             ui::CLIPBOARD_TYPE_COPY_PASTE)) {
+                             ui::ClipboardType::kCopyPaste)) {
     delegate_->OnOffer(std::string(kImagePngMimeType));
     data_callbacks_.emplace(std::string(kImagePngMimeType),
                             base::BindRepeating(&ReadPNGFromClipboard));

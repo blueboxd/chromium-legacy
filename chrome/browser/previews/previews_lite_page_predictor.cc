@@ -102,44 +102,46 @@ bool PreviewsLitePagePredictor::IsVisible() const {
   return web_contents()->GetVisibility() == content::Visibility::VISIBLE;
 }
 
-bool PreviewsLitePagePredictor::ShouldPreresolveOnPage() const {
+base::Optional<GURL> PreviewsLitePagePredictor::ShouldPreresolveOnPage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!previews::params::LitePageRedirectPreviewShouldPresolve())
-    return false;
+    return base::nullopt;
 
   if (!web_contents()->GetController().GetLastCommittedEntry())
-    return false;
+    return base::nullopt;
 
   if (web_contents()->GetController().GetPendingEntry())
-    return false;
+    return base::nullopt;
 
   if (!DataSaverIsEnabled())
-    return false;
+    return base::nullopt;
 
-  // TODO(crbug.com/971918): Maybe preconnect to origin if this is true by
-  // returning an optional URL.
   if (!previews::params::IsLitePageServerPreviewsEnabled())
-    return false;
+    return base::nullopt;
 
   if (!ECTIsSlow())
-    return false;
+    return base::nullopt;
 
   GURL url = web_contents()->GetController().GetLastCommittedEntry()->GetURL();
 
   if (!url.SchemeIs(url::kHttpsScheme))
-    return false;
+    return base::nullopt;
 
-  if (PageIsBlacklisted(url))
-    return false;
-
-  if (previews::IsLitePageRedirectPreviewDomain(url))
-    return false;
+  // Only check if the url is blacklisted if it is not a preview page.
+  if (!previews::IsLitePageRedirectPreviewDomain(url) && PageIsBlacklisted(url))
+    return base::nullopt;
 
   if (!IsVisible())
-    return false;
+    return base::nullopt;
 
-  return true;
+  // If a preview is currently being shown, preresolve the original page.
+  // Otherwise, preresolve the preview.
+  std::string original_url;
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(url, &original_url))
+    return GURL(original_url);
+
+  return PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(url);
 }
 
 void PreviewsLitePagePredictor::MaybeTogglePreresolveTimer() {
@@ -148,14 +150,14 @@ void PreviewsLitePagePredictor::MaybeTogglePreresolveTimer() {
   // If the timer is not null, it should be running.
   DCHECK(!timer_ || timer_->IsRunning());
 
-  bool should_have_timer = ShouldPreresolveOnPage();
-  if (should_have_timer == bool(timer_))
+  url_ = ShouldPreresolveOnPage();
+  if (url_.has_value() == bool(timer_))
     return;
 
   UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.ToggledPreresolve",
-                        should_have_timer);
+                        url_.has_value());
 
-  if (should_have_timer) {
+  if (url_.has_value()) {
     timer_.reset(new base::RepeatingTimer());
     // base::Unretained is safe because the timer will stop firing once deleted,
     // and |timer_| is owned by this.
@@ -171,15 +173,13 @@ void PreviewsLitePagePredictor::MaybeTogglePreresolveTimer() {
   }
 }
 
-void PreviewsLitePagePredictor::Preresolve() {
+void PreviewsLitePagePredictor::Preresolve() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(timer_);
 
-  // TODO(crbug.com/971918): Also need to preconnect to origin.
-  return;
-
-  GURL previews_url = PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-      web_contents()->GetController().GetLastCommittedEntry()->GetURL());
+  UMA_HISTOGRAM_BOOLEAN(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer",
+      previews::IsLitePageRedirectPreviewDomain(url_.value()));
 
   predictors::LoadingPredictor* loading_predictor =
       predictors::LoadingPredictorFactory::GetForProfile(
@@ -188,12 +188,7 @@ void PreviewsLitePagePredictor::Preresolve() {
   if (!loading_predictor || !loading_predictor->preconnect_manager())
     return;
 
-  loading_predictor->preconnect_manager()->StartPreresolveHost(previews_url);
-
-  // Record a local histogram for browser testing.
-  base::BooleanHistogram::FactoryGet("Previews.ServerLitePage.Preresolved",
-                                     base::HistogramBase::kNoFlags)
-      ->Add(true);
+  loading_predictor->preconnect_manager()->StartPreresolveHost(url_.value());
 }
 
 void PreviewsLitePagePredictor::DidStartNavigation(

@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -30,6 +31,7 @@ class MockMediaSession;
 
 class AudioFocusRequest;
 class MediaController;
+class MediaPowerDelegate;
 
 struct EnforcementState {
   bool should_duck = false;
@@ -148,11 +150,16 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   // A MediaSession must abandon audio focus before its destruction.
   std::list<std::unique_ptr<AudioFocusRequest>> audio_focus_stack_;
 
+  // Controls media playback when device power events occur.
+  std::unique_ptr<MediaPowerDelegate> power_delegate_;
+
   mojom::EnforcementMode enforcement_mode_;
 
   // Adding observers should happen on the same thread that the service is
   // running on.
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<AudioFocusManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManager);
 };

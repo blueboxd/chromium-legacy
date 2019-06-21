@@ -91,8 +91,8 @@ class VideoTrackRecorderTest
     video_track_recorder_.reset(new VideoTrackRecorder(
         codec, blink_track_,
         ConvertToBaseCallback(
-            CrossThreadBind(&VideoTrackRecorderTest::OnEncodedVideo,
-                            CrossThreadUnretained(this))),
+            CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
+                                     CrossThreadUnretained(this))),
         0 /* bits_per_second */,
         scheduler::GetSingleThreadTaskRunnerForTesting()));
   }

@@ -18845,6 +18845,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -18867,6 +18868,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -18882,6 +18884,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -18912,6 +18915,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -18942,6 +18946,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -18957,6 +18962,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -19931,6 +19937,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -19961,6 +19968,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]
@@ -19976,6 +19984,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "cpu": "x86",
               "os": "Ubuntu-14.04"
             }
           ]

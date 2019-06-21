@@ -45,10 +45,6 @@ public_app_shared_deps = [
   "//services/service_manager/public/cpp",
 ]
 
-if (enable_mus) {
-  public_app_shared_deps += [ "//ui/aura" ]
-}
-
 if (is_component_build) {
   source_set("both_sources") {
     # Only the main content shared library can pull this in.

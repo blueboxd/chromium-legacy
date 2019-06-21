@@ -6,14 +6,6 @@
 
 namespace content {
 
-namespace {
-
-// Default min time gap (in ms) between two periodic sync events for a given
-// Periodic Background Sync registration.
-constexpr int64_t kMinGapBetweenPeriodicSyncEventsMs = 12 * 60 * 60 * 1000;
-
-}  // namespace
-
 void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
@@ -48,7 +40,8 @@ base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
-        int64_t effective_gap_ms = kMinGapBetweenPeriodicSyncEventsMs;
+        int64_t effective_gap_ms =
+            parameters->min_periodic_sync_events_interval.InMilliseconds();
         return base::TimeDelta::FromMilliseconds(
             std::max(min_interval, effective_gap_ms));
     }

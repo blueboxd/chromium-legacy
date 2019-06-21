@@ -225,13 +225,15 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
   const GURL page_url("http://www.google.com");
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(root, 0, page_title, page_url);
+  const gfx::Point expected_point(100, 100);
 
   auto run_loop = std::make_unique<base::RunLoop>();
 
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
-      [&run_loop, page_title, page_url](
+      [&run_loop, page_title, page_url, expected_point](
           const ui::OSExchangeData& drag_data, gfx::NativeView native_view,
-          ui::DragDropTypes::DragEventSource source, int operation) {
+          ui::DragDropTypes::DragEventSource source, gfx::Point point,
+          int operation) {
         GURL url;
         base::string16 title;
         EXPECT_TRUE(drag_data.provider().GetURLAndTitle(
@@ -246,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
         // See https://crbug.com/893388.
         EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
 #endif
+        EXPECT_EQ(expected_point, point);
         run_loop->Quit();
       });
 
@@ -255,7 +258,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
       {{node},
        kDragNodeIndex,
        platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()),
-       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE},
+       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+       expected_point},
       std::move(cb));
 
   run_loop->Run();
@@ -270,13 +274,15 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* node1 = model->AddURL(root, 0, page_title, page_url);
   const BookmarkNode* node2 = model->AddFolder(root, 0, page_title);
+  const gfx::Point expected_point(100, 100);
 
   auto run_loop = std::make_unique<base::RunLoop>();
 
   chrome::DoBookmarkDragCallback cb = base::BindLambdaForTesting(
-      [&run_loop](const ui::OSExchangeData& drag_data,
-                  gfx::NativeView native_view,
-                  ui::DragDropTypes::DragEventSource source, int operation) {
+      [&run_loop, expected_point](const ui::OSExchangeData& drag_data,
+                                  gfx::NativeView native_view,
+                                  ui::DragDropTypes::DragEventSource source,
+                                  gfx::Point point, int operation) {
 #if !defined(OS_MACOSX)
         GURL url;
         base::string16 title;
@@ -293,6 +299,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
         // See https://crbug.com/893388.
         EXPECT_FALSE(drag_data.provider().GetDragImage().isNull());
 #endif
+        EXPECT_EQ(expected_point, point);
         run_loop->Quit();
       });
 
@@ -304,6 +311,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
                                    platform_util::GetViewForWindow(
                                        browser()->window()->GetNativeWindow()),
                                    ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE,
+                                   expected_point,
                                },
                                std::move(cb));
 

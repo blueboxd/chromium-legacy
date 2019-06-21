@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace base {
@@ -161,6 +162,8 @@ class OobeUI : public ui::MojoWebUIController {
       multidevice_setup::mojom::MultiDeviceSetupRequest request);
   void BindPrivilegedHostDeviceSetter(
       multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request);
+  void BindCrosNetworkConfig(
+      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
 
   // Type of UI.
   std::string display_type_;

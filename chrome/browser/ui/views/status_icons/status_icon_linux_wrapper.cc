@@ -39,7 +39,7 @@ StatusIconLinuxWrapper::StatusIconLinuxWrapper(
       image_(image),
       tool_tip_(tool_tip),
       menu_model_(nullptr) {
-  status_icon_->set_delegate(this);
+  status_icon_->SetDelegate(this);
 }
 
 StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
@@ -48,11 +48,15 @@ StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
 }
 
 void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
-  status_icon_->SetImage(image);
+  image_ = image;
+  if (status_icon_)
+    status_icon_->SetIcon(image);
 }
 
 void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {
-  status_icon_->SetToolTip(tool_tip);
+  tool_tip_ = tool_tip;
+  if (status_icon_)
+    status_icon_->SetToolTip(tool_tip);
 }
 
 void StatusIconLinuxWrapper::DisplayBalloon(
@@ -83,16 +87,13 @@ ui::MenuModel* StatusIconLinuxWrapper::GetMenuModel() const {
   return menu_model_;
 }
 
-void StatusIconLinuxWrapper::OnImplInitialized(bool success) {
-  if (success)
-    return;
-
+void StatusIconLinuxWrapper::OnImplInitializationFailed() {
   switch (status_icon_type_) {
     case kTypeDbus:
 #if defined(USE_X11)
       status_icon_ = std::make_unique<StatusIconLinuxX11>();
-      status_icon_->set_delegate(this);
       status_icon_type_ = kTypeX11;
+      status_icon_->SetDelegate(this);
       return;
 #else
       // Fallthrough needs to be omitted if USE_X11, otherwise clang will
@@ -102,6 +103,9 @@ void StatusIconLinuxWrapper::OnImplInitialized(bool success) {
     case kTypeX11:
       status_icon_.reset();
       status_icon_type_ = kTypeOther;
+      if (menu_model_)
+        menu_model_->RemoveObserver(this);
+      menu_model_ = nullptr;
       return;
     case kTypeOther:
       NOTREACHED();
@@ -109,7 +113,8 @@ void StatusIconLinuxWrapper::OnImplInitialized(bool success) {
 }
 
 void StatusIconLinuxWrapper::OnMenuStateChanged() {
-  status_icon_->RefreshPlatformContextMenu();
+  if (status_icon_)
+    status_icon_->RefreshPlatformContextMenu();
 }
 
 std::unique_ptr<StatusIconLinuxWrapper>
@@ -141,6 +146,9 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
 
 void StatusIconLinuxWrapper::UpdatePlatformContextMenu(
     StatusIconMenuModel* model) {
+  if (!status_icon_)
+    return;
+
   // If a menu already exists, remove ourself from its observer list.
   if (menu_model_)
     menu_model_->RemoveObserver(this);

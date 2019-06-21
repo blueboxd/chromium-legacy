@@ -291,7 +291,7 @@ void MemoryPressureMonitorNotifying::ScheduleEarlyCheck() {
 }
 
 void MemoryPressureMonitorNotifying::ScheduleWaitForKernelNotification() {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, kernel_waiting_callback_,
       base::BindRepeating(
           &MemoryPressureMonitorNotifying::HandleKernelNotification,

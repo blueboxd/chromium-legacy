@@ -13,67 +13,16 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "net/base/hex_utils.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_gssapi_posix.h"
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/net_buildflags.h"
-
-// Based on RFC 2744 Appendix A (https://tools.ietf.org/html/rfc2744#appendix-A)
-// These constants are defined here for use in diagnostics without adding a
-// dependency on an external library.
-namespace {
-
-static gss_OID_desc GSS_C_NT_USER_NAME_VAL = {
-  10,
-  const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x01")
-};
-static gss_OID_desc GSS_C_NT_MACHINE_UID_NAME_VAL = {
-  10,
-  const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x02")
-};
-static gss_OID_desc GSS_C_NT_STRING_UID_NAME_VAL = {
-  10,
-  const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x03")
-};
-static gss_OID_desc GSS_C_NT_HOSTBASED_SERVICE_X_VAL = {
-  6,
-  const_cast<char*>("\x2b\x06\x01\x05\x06\x02")
-};
-static gss_OID_desc GSS_C_NT_HOSTBASED_SERVICE_VAL = {
-  10,
-  const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x04")
-};
-static gss_OID_desc GSS_C_NT_ANONYMOUS_VAL = {
-  6,
-  const_cast<char*>("\x2b\x06\01\x05\x06\x03")
-};
-static gss_OID_desc GSS_C_NT_EXPORT_NAME_VAL = {
-  6,
-  const_cast<char*>("\x2b\x06\x01\x05\x06\x04")
-};
-
-}  // namespace
-
-// Heimdal >= 1.4 will define the following as preprocessor macros.
-// To avoid conflicting declarations, we have to undefine these.
-#undef GSS_C_NT_USER_NAME
-#undef GSS_C_NT_MACHINE_UID_NAME
-#undef GSS_C_NT_STRING_UID_NAME
-#undef GSS_C_NT_HOSTBASED_SERVICE_X
-#undef GSS_C_NT_HOSTBASED_SERVICE
-#undef GSS_C_NT_ANONYMOUS
-#undef GSS_C_NT_EXPORT_NAME
-
-gss_OID GSS_C_NT_USER_NAME = &GSS_C_NT_USER_NAME_VAL;
-gss_OID GSS_C_NT_MACHINE_UID_NAME = &GSS_C_NT_MACHINE_UID_NAME_VAL;
-gss_OID GSS_C_NT_STRING_UID_NAME = &GSS_C_NT_STRING_UID_NAME_VAL;
-gss_OID GSS_C_NT_HOSTBASED_SERVICE_X = &GSS_C_NT_HOSTBASED_SERVICE_X_VAL;
-gss_OID GSS_C_NT_HOSTBASED_SERVICE = &GSS_C_NT_HOSTBASED_SERVICE_VAL;
-gss_OID GSS_C_NT_ANONYMOUS = &GSS_C_NT_ANONYMOUS_VAL;
-gss_OID GSS_C_NT_EXPORT_NAME = &GSS_C_NT_EXPORT_NAME_VAL;
 
 namespace net {
 
@@ -93,98 +42,22 @@ gss_OID CHROME_GSS_SPNEGO_MECH_OID_DESC =
 // Debugging helpers.
 namespace {
 
-std::string DisplayStatus(OM_uint32 major_status,
-                          OM_uint32 minor_status) {
-  if (major_status == GSS_S_COMPLETE)
-    return "OK";
-  return base::StringPrintf("0x%08X 0x%08X", major_status, minor_status);
-}
-
-std::string DisplayCode(GSSAPILibrary* gssapi_lib,
-                        OM_uint32 status,
-                        OM_uint32 status_code_type) {
-  const int kMaxDisplayIterations = 8;
-  const size_t kMaxMsgLength = 4096;
-  // msg_ctx needs to be outside the loop because it is invoked multiple times.
-  OM_uint32 msg_ctx = 0;
-  std::string rv = base::StringPrintf("(0x%08X)", status);
-
-  // This loop should continue iterating until msg_ctx is 0 after the first
-  // iteration. To be cautious and prevent an infinite loop, it stops after
-  // a finite number of iterations as well. As an added sanity check, no
-  // individual message may exceed |kMaxMsgLength|, and the final result
-  // will not exceed |kMaxMsgLength|*2-1.
-  for (int i = 0; i < kMaxDisplayIterations && rv.size() < kMaxMsgLength;
-       ++i) {
-    OM_uint32 min_stat;
-    gss_buffer_desc_struct msg = GSS_C_EMPTY_BUFFER;
-    OM_uint32 maj_stat =
-        gssapi_lib->display_status(&min_stat, status, status_code_type,
-                                   GSS_C_NULL_OID, &msg_ctx, &msg);
-    if (maj_stat == GSS_S_COMPLETE) {
-      int msg_len = (msg.length > kMaxMsgLength) ?
-          static_cast<int>(kMaxMsgLength) :
-          static_cast<int>(msg.length);
-      if (msg_len > 0 && msg.value != nullptr) {
-        rv += base::StringPrintf(" %.*s", msg_len,
-                                 static_cast<char*>(msg.value));
-      }
-    }
-    gssapi_lib->release_buffer(&min_stat, &msg);
-    if (!msg_ctx)
-      break;
+OM_uint32 DelegationTypeToFlag(DelegationType delegation_type) {
+  switch (delegation_type) {
+    case DelegationType::kNone:
+      return 0;
+    case DelegationType::kByKdcPolicy:
+      return GSS_C_DELEG_POLICY_FLAG;
+    case DelegationType::kUnconstrained:
+      return GSS_C_DELEG_FLAG;
   }
-  return rv;
 }
-
-std::string DisplayExtendedStatus(GSSAPILibrary* gssapi_lib,
-                                  OM_uint32 major_status,
-                                  OM_uint32 minor_status) {
-  if (major_status == GSS_S_COMPLETE)
-    return "OK";
-  std::string major = DisplayCode(gssapi_lib, major_status, GSS_C_GSS_CODE);
-  std::string minor = DisplayCode(gssapi_lib, minor_status, GSS_C_MECH_CODE);
-  return base::StringPrintf("Major: %s | Minor: %s", major.c_str(),
-                            minor.c_str());
-}
-
-// ScopedName releases a gss_name_t when it goes out of scope.
-class ScopedName {
- public:
-  ScopedName(gss_name_t name,
-             GSSAPILibrary* gssapi_lib)
-      : name_(name),
-        gssapi_lib_(gssapi_lib) {
-    DCHECK(gssapi_lib_);
-  }
-
-  ~ScopedName() {
-    if (name_ != GSS_C_NO_NAME) {
-      OM_uint32 minor_status = 0;
-      OM_uint32 major_status =
-          gssapi_lib_->release_name(&minor_status, &name_);
-      if (major_status != GSS_S_COMPLETE) {
-        LOG(WARNING) << "Problem releasing name. "
-                     << DisplayStatus(major_status, minor_status);
-      }
-      name_ = GSS_C_NO_NAME;
-    }
-  }
-
- private:
-  gss_name_t name_;
-  GSSAPILibrary* gssapi_lib_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedName);
-};
 
 // ScopedBuffer releases a gss_buffer_t when it goes out of scope.
 class ScopedBuffer {
  public:
-  ScopedBuffer(gss_buffer_t buffer,
-               GSSAPILibrary* gssapi_lib)
-      : buffer_(buffer),
-        gssapi_lib_(gssapi_lib) {
+  ScopedBuffer(gss_buffer_t buffer, GSSAPILibrary* gssapi_lib)
+      : buffer_(buffer), gssapi_lib_(gssapi_lib) {
     DCHECK(gssapi_lib_);
   }
 
@@ -194,8 +67,8 @@ class ScopedBuffer {
       OM_uint32 major_status =
           gssapi_lib_->release_buffer(&minor_status, buffer_);
       if (major_status != GSS_S_COMPLETE) {
-        LOG(WARNING) << "Problem releasing buffer. "
-                     << DisplayStatus(major_status, minor_status);
+        DLOG(WARNING) << "Problem releasing buffer. major=" << major_status
+                      << ", minor=" << minor_status;
       }
       buffer_ = GSS_C_NO_BUFFER;
     }
@@ -208,124 +81,203 @@ class ScopedBuffer {
   DISALLOW_COPY_AND_ASSIGN(ScopedBuffer);
 };
 
-namespace {
+// ScopedName releases a gss_name_t when it goes out of scope.
+class ScopedName {
+ public:
+  ScopedName(gss_name_t name, GSSAPILibrary* gssapi_lib)
+      : name_(name), gssapi_lib_(gssapi_lib) {
+    DCHECK(gssapi_lib_);
+  }
 
-std::string AppendIfPredefinedValue(gss_OID oid,
-                                    gss_OID predefined_oid,
-                                    const char* predefined_oid_name) {
-  DCHECK(oid);
-  DCHECK(predefined_oid);
-  DCHECK(predefined_oid_name);
-  std::string output;
-  if (oid->length != predefined_oid->length)
-    return output;
-  if (0 != memcmp(oid->elements,
-                  predefined_oid->elements,
-                  predefined_oid->length))
-    return output;
+  ~ScopedName() {
+    if (name_ != GSS_C_NO_NAME) {
+      OM_uint32 minor_status = 0;
+      OM_uint32 major_status = gssapi_lib_->release_name(&minor_status, &name_);
+      if (major_status != GSS_S_COMPLETE) {
+        DLOG(WARNING) << "Problem releasing name. "
+                      << GetGssStatusValue(nullptr, "gss_release_name",
+                                           major_status, minor_status);
+      }
+      name_ = GSS_C_NO_NAME;
+    }
+  }
 
-  output += " (";
-  output += predefined_oid_name;
-  output += ")";
-  return output;
+ private:
+  gss_name_t name_;
+  GSSAPILibrary* gssapi_lib_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedName);
+};
+
+bool OidEquals(const gss_OID left, const gss_OID right) {
+  if (left->length != right->length)
+    return false;
+  return 0 == memcmp(left->elements, right->elements, right->length);
 }
 
 }  // namespace
 
-std::string DescribeOid(GSSAPILibrary* gssapi_lib, const gss_OID oid) {
-  if (!oid)
-    return "<NULL>";
-  std::string output;
-  const size_t kMaxCharsToPrint = 1024;
-  OM_uint32 byte_length = oid->length;
-  size_t char_length = byte_length / sizeof(char);
-  if (char_length > kMaxCharsToPrint) {
-    // This might be a plain ASCII string.
-    // Check if the first |kMaxCharsToPrint| characters
-    // contain only printable characters and are NUL terminated.
-    const char* str = reinterpret_cast<const char*>(oid);
-    size_t str_length = 0;
-    for ( ; str_length < kMaxCharsToPrint; ++str_length) {
-      if (!str[str_length] || !isprint(str[str_length]))
-        break;
-    }
-    if (!str[str_length]) {
-      output += base::StringPrintf("\"%s\"", str);
-      return output;
-    }
-  }
-  output = base::StringPrintf("(%u) \"", byte_length);
-  if (!oid->elements) {
-    output += "<NULL>";
-    return output;
-  }
-  const unsigned char* elements =
-      reinterpret_cast<const unsigned char*>(oid->elements);
-  // Don't print more than |kMaxCharsToPrint| characters.
-  size_t i = 0;
-  for ( ; (i < byte_length) && (i < kMaxCharsToPrint); ++i) {
-    output += base::StringPrintf("\\x%02X", elements[i]);
-  }
-  if (i >= kMaxCharsToPrint)
-    output += "...";
-  output += "\"";
+base::Value GetGssStatusCodeValue(GSSAPILibrary* gssapi_lib,
+                                  OM_uint32 status,
+                                  OM_uint32 status_code_type) {
+  base::Value rv{base::Value::Type::DICTIONARY};
 
-  // Check if the OID is one of the predefined values.
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_USER_NAME,
-                                    "GSS_C_NT_USER_NAME");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_MACHINE_UID_NAME,
-                                    "GSS_C_NT_MACHINE_UID_NAME");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_STRING_UID_NAME,
-                                    "GSS_C_NT_STRING_UID_NAME");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_HOSTBASED_SERVICE_X,
-                                    "GSS_C_NT_HOSTBASED_SERVICE_X");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_HOSTBASED_SERVICE,
-                                    "GSS_C_NT_HOSTBASED_SERVICE");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_ANONYMOUS,
-                                    "GSS_C_NT_ANONYMOUS");
-  output += AppendIfPredefinedValue(oid,
-                                    GSS_C_NT_EXPORT_NAME,
-                                    "GSS_C_NT_EXPORT_NAME");
+  rv.SetIntKey("status", status);
 
-  return output;
+  // Message lookups aren't performed if there's no library or if the status
+  // indicates success.
+  if (!gssapi_lib || status == GSS_S_COMPLETE)
+    return rv;
+
+  // gss_display_status() can potentially return multiple strings by sending
+  // each string on successive invocations. State is maintained across these
+  // invocations in a caller supplied OM_uint32.  After each successful call,
+  // the context is set to a non-zero value that should be passed as a message
+  // context to each successive gss_display_status() call.  The initial and
+  // terminal values of this context storage is 0.
+  OM_uint32 message_context = 0;
+
+  // To account for the off chance that gss_display_status() misbehaves and gets
+  // into an infinite loop, we'll artificially limit the number of iterations to
+  // |kMaxDisplayIterations|. This limit is arbitrary.
+  constexpr size_t kMaxDisplayIterations = 8;
+  size_t iterations = 0;
+
+  // In addition, each message string is again arbitrarily limited to
+  // |kMaxMsgLength|. There's no real documented limit to work with here.
+  constexpr size_t kMaxMsgLength = 4096;
+
+  base::Value messages{base::Value::Type::LIST};
+  do {
+    gss_buffer_desc_struct message_buffer = GSS_C_EMPTY_BUFFER;
+    ScopedBuffer message_buffer_releaser(&message_buffer, gssapi_lib);
+
+    OM_uint32 minor_status = 0;
+    OM_uint32 major_status = gssapi_lib->display_status(
+        &minor_status, status, status_code_type, GSS_C_NO_OID, &message_context,
+        &message_buffer);
+
+    if (major_status != GSS_S_COMPLETE || message_buffer.length == 0 ||
+        !message_buffer.value) {
+      continue;
+    }
+
+    base::StringPiece message_string{
+        static_cast<const char*>(message_buffer.value),
+        std::min(kMaxMsgLength, message_buffer.length)};
+
+    // The returned string is almost assuredly ASCII, but be defensive.
+    if (!base::IsStringUTF8(message_string))
+      continue;
+
+    messages.GetList().emplace_back(message_string);
+  } while (message_context != 0 && ++iterations < kMaxDisplayIterations);
+
+  if (messages.GetList().size() > 0)
+    rv.SetKey("message", std::move(messages));
+  return rv;
 }
 
-std::string DescribeName(GSSAPILibrary* gssapi_lib, const gss_name_t name) {
+base::Value GetGssStatusValue(GSSAPILibrary* gssapi_lib,
+                              base::StringPiece method,
+                              OM_uint32 major_status,
+                              OM_uint32 minor_status) {
+  base::Value params{base::Value::Type::DICTIONARY};
+  params.SetStringKey("function", method);
+  params.SetKey("major_status", GetGssStatusCodeValue(gssapi_lib, major_status,
+                                                      GSS_C_GSS_CODE));
+  params.SetKey("minor_status", GetGssStatusCodeValue(gssapi_lib, minor_status,
+                                                      GSS_C_MECH_CODE));
+  return params;
+}
+
+base::Value OidToValue(gss_OID oid) {
+  base::Value params(base::Value::Type::DICTIONARY);
+
+  if (!oid || oid->length == 0) {
+    params.SetStringKey("oid", "<Empty OID>");
+    return params;
+  }
+
+  params.SetIntKey("length", oid->length);
+  if (!oid->elements)
+    return params;
+
+  // Cap OID content at arbitrary limit 1k.
+  constexpr OM_uint32 kMaxOidDataSize = 1024;
+  const base::StringPiece oid_contents(reinterpret_cast<char*>(oid->elements),
+                                       std::min(kMaxOidDataSize, oid->length));
+
+  params.SetStringKey("bytes", HexDump(oid_contents));
+
+  // Based on RFC 2744 Appendix A. Hardcoding the OIDs in the list below to
+  // avoid having a static dependency on the library.
+  static const struct {
+    const char* symbolic_name;
+    const gss_OID_desc oid_desc;
+  } kWellKnownOIDs[] = {
+      {"GSS_C_NT_USER_NAME",
+       {10, const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x01")}},
+      {"GSS_C_NT_MACHINE_UID_NAME",
+       {10, const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x02")}},
+      {"GSS_C_NT_STRING_UID_NAME",
+       {10, const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x03")}},
+      {"GSS_C_NT_HOSTBASED_SERVICE_X",
+       {6, const_cast<char*>("\x2b\x06\x01\x05\x06\x02")}},
+      {"GSS_C_NT_HOSTBASED_SERVICE",
+       {10, const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x04")}},
+      {"GSS_C_NT_ANONYMOUS", {6, const_cast<char*>("\x2b\x06\01\x05\x06\x03")}},
+      {"GSS_C_NT_EXPORT_NAME",
+       {6, const_cast<char*>("\x2b\x06\x01\x05\x06\x04")}}};
+
+  for (auto& well_known_oid : kWellKnownOIDs) {
+    if (OidEquals(oid, const_cast<const gss_OID>(&well_known_oid.oid_desc)))
+      params.SetStringKey("oid", well_known_oid.symbolic_name);
+  }
+
+  return params;
+}
+
+base::Value GetDisplayNameValue(GSSAPILibrary* gssapi_lib,
+                                const gss_name_t gss_name) {
   OM_uint32 major_status = 0;
   OM_uint32 minor_status = 0;
-  gss_buffer_desc_struct output_name_buffer = GSS_C_EMPTY_BUFFER;
-  gss_OID_desc output_name_type_desc = GSS_C_EMPTY_BUFFER;
-  gss_OID output_name_type = &output_name_type_desc;
-  major_status = gssapi_lib->display_name(&minor_status,
-                                          name,
-                                          &output_name_buffer,
-                                          &output_name_type);
-  ScopedBuffer scoped_output_name(&output_name_buffer, gssapi_lib);
+  gss_buffer_desc_struct name = GSS_C_EMPTY_BUFFER;
+  gss_OID name_type = GSS_C_NO_OID;
+
+  base::Value rv{base::Value::Type::DICTIONARY};
+  major_status =
+      gssapi_lib->display_name(&minor_status, gss_name, &name, &name_type);
+  ScopedBuffer scoped_output_name(&name, gssapi_lib);
   if (major_status != GSS_S_COMPLETE) {
-    std::string error =
-        base::StringPrintf("Unable to describe name 0x%p, %s",
-                           name,
-                           DisplayExtendedStatus(gssapi_lib,
-                                                 major_status,
-                                                 minor_status).c_str());
-    return error;
+    rv.SetKey("error", GetGssStatusValue(gssapi_lib, "gss_display_name",
+                                         major_status, minor_status));
+    return rv;
   }
-  int len = output_name_buffer.length;
-  std::string description = base::StringPrintf(
-      "%.*s (Type %s)", len,
-      reinterpret_cast<const char*>(output_name_buffer.value),
-      DescribeOid(gssapi_lib, output_name_type).c_str());
-  return description;
+  auto name_string =
+      base::StringPiece(reinterpret_cast<const char*>(name.value), name.length);
+  rv.SetStringKey("name", base::IsStringUTF8(name_string)
+                              ? name_string
+                              : HexDump(name_string));
+  rv.SetKey("type", OidToValue(name_type));
+  return rv;
 }
 
-std::string DescribeContext(GSSAPILibrary* gssapi_lib,
-                            const gss_ctx_id_t context_handle) {
+base::Value ContextFlagsToValue(OM_uint32 flags) {
+  // TODO(asanka): This should break down known flags. At least the
+  // GSS_C_DELEG_FLAG.
+  return base::Value(base::StringPrintf("%08x", flags));
+}
+
+base::Value GetContextStateAsValue(GSSAPILibrary* gssapi_lib,
+                                   const gss_ctx_id_t context_handle) {
+  base::Value rv{base::Value::Type::DICTIONARY};
+  if (context_handle == GSS_C_NO_CONTEXT) {
+    rv.SetKey("error",
+              GetGssStatusValue(nullptr, "<none>", GSS_S_NO_CONTEXT, 0));
+    return rv;
+  }
+
   OM_uint32 major_status = 0;
   OM_uint32 minor_status = 0;
   gss_name_t src_name = GSS_C_NO_NAME;
@@ -335,8 +287,6 @@ std::string DescribeContext(GSSAPILibrary* gssapi_lib,
   OM_uint32 ctx_flags = 0;
   int locally_initiated = 0;
   int open = 0;
-  if (context_handle == GSS_C_NO_CONTEXT)
-    return std::string("Context: GSS_C_NO_CONTEXT");
   major_status = gssapi_lib->inquire_context(&minor_status,
                                              context_handle,
                                              &src_name,
@@ -346,51 +296,24 @@ std::string DescribeContext(GSSAPILibrary* gssapi_lib,
                                              &ctx_flags,
                                              &locally_initiated,
                                              &open);
+  if (major_status != GSS_S_COMPLETE) {
+    rv.SetKey("error", GetGssStatusValue(gssapi_lib, "gss_inquire_context",
+                                         major_status, minor_status));
+    return rv;
+  }
   ScopedName scoped_src_name(src_name, gssapi_lib);
   ScopedName scoped_targ_name(targ_name, gssapi_lib);
-  if (major_status != GSS_S_COMPLETE) {
-    std::string error =
-        base::StringPrintf("Unable to describe context 0x%p, %s",
-                           context_handle,
-                           DisplayExtendedStatus(gssapi_lib,
-                                                 major_status,
-                                                 minor_status).c_str());
-    return error;
-  }
-  std::string source(DescribeName(gssapi_lib, src_name));
-  std::string target(DescribeName(gssapi_lib, targ_name));
-  std::string description = base::StringPrintf("Context 0x%p: "
-                                               "Source \"%s\", "
-                                               "Target \"%s\", "
-                                                "lifetime %d, "
-                                                "mechanism %s, "
-                                                "flags 0x%08X, "
-                                                "local %d, "
-                                                "open %d",
-                                                context_handle,
-                                                source.c_str(),
-                                                target.c_str(),
-                                                lifetime_rec,
-                                                DescribeOid(gssapi_lib,
-                                                            mech_type).c_str(),
-                                                ctx_flags,
-                                                locally_initiated,
-                                                open);
-  return description;
-}
 
-OM_uint32 DelegationTypeToFlag(DelegationType delegation_type) {
-  switch (delegation_type) {
-    case DelegationType::kNone:
-      return 0;
-    case DelegationType::kByKdcPolicy:
-      return GSS_C_DELEG_POLICY_FLAG;
-    case DelegationType::kUnconstrained:
-      return GSS_C_DELEG_FLAG;
-  }
+  rv.SetKey("source", GetDisplayNameValue(gssapi_lib, src_name));
+  rv.SetKey("target", GetDisplayNameValue(gssapi_lib, targ_name));
+  // lifetime_rec is a uint32, while base::Value only takes ints. On 32 bit
+  // platforms uint32 doesn't fit on an int.
+  rv.SetStringKey("lifetime", base::NumberToString(lifetime_rec));
+  rv.SetKey("mechanism", OidToValue(mech_type));
+  rv.SetKey("flags", ContextFlagsToValue(ctx_flags));
+  rv.SetBoolKey("open", !!open);
+  return rv;
 }
-
-}  // namespace
 
 GSSAPISharedLibrary::GSSAPISharedLibrary(const std::string& gssapi_library_name)
     : gssapi_library_name_(gssapi_library_name) {}
@@ -682,7 +605,8 @@ ScopedSecurityContext::~ScopedSecurityContext() {
         &minor_status, &security_context_, &output_token);
     if (major_status != GSS_S_COMPLETE) {
       LOG(WARNING) << "Problem releasing security_context. "
-                   << DisplayStatus(major_status, minor_status);
+                   << GetGssStatusValue(gssapi_lib_, "gss_delete_sec_context",
+                                        major_status, minor_status);
     }
     security_context_ = GSS_C_NO_CONTEXT;
   }
@@ -854,6 +778,13 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
                                          const std::string& channel_bindings,
                                          gss_buffer_t in_token,
                                          gss_buffer_t out_token) {
+  // GSSAPI header files, to this day, require OIDs passed in as non-const
+  // pointers. Rather than const casting, let's just leave this as non-const.
+  // Even if the OID pointer is const, the inner |elements| pointer is still
+  // non-const.
+  static gss_OID_desc kGSS_C_NT_HOSTBASED_SERVICE = {
+      10, const_cast<char*>("\x2a\x86\x48\x86\xf7\x12\x01\x02\x01\x04")};
+
   // Create a name for the principal
   // TODO(cbentzel): Just do this on the first pass?
   std::string spn_principal = spn;
@@ -862,16 +793,15 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
   spn_buffer.length = spn_principal.size() + 1;
   OM_uint32 minor_status = 0;
   gss_name_t principal_name = GSS_C_NO_NAME;
-  OM_uint32 major_status = library_->import_name(
-      &minor_status,
-      &spn_buffer,
-      GSS_C_NT_HOSTBASED_SERVICE,
-      &principal_name);
+  OM_uint32 major_status =
+      library_->import_name(&minor_status, &spn_buffer,
+                            &kGSS_C_NT_HOSTBASED_SERVICE, &principal_name);
   int rv = MapImportNameStatusToError(major_status);
   if (rv != OK) {
     LOG(ERROR) << "Problem importing name from "
                << "spn \"" << spn_principal << "\"\n"
-               << DisplayExtendedStatus(library_, major_status, minor_status);
+               << GetGssStatusValue(library_, "gss_import_name", major_status,
+                                    minor_status);
     return rv;
   }
   ScopedName scoped_name(principal_name, library_);
@@ -889,9 +819,10 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
   rv = MapInitSecContextStatusToError(major_status);
   if (rv != OK) {
     LOG(ERROR) << "Problem initializing context. \n"
-               << DisplayExtendedStatus(library_, major_status, minor_status)
+               << GetGssStatusValue(library_, "gss_init_sec_context",
+                                    major_status, minor_status)
                << '\n'
-               << DescribeContext(library_, scoped_sec_context_.get());
+               << GetContextStateAsValue(library_, scoped_sec_context_.get());
   }
   return rv;
 }

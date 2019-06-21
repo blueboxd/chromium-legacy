@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-#include "ui/events/system_input_injector.h"
+#include "ui/ozone/public/system_input_injector.h"
 
 namespace ui {
 

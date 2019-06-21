@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/modules/sms/sms_receiver.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/sms/sms_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -66,26 +66,26 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));
   }
 
-  service_->GetNextMessage(
-      base::TimeDelta::FromSeconds(timeout_seconds),
-      WTF::Bind(&SMSReceiver::OnGetNextMessage, WrapPersistent(this),
-                WrapPersistent(resolver)));
+  service_->Receive(base::TimeDelta::FromSeconds(timeout_seconds),
+                    WTF::Bind(&SMSReceiver::OnReceive, WrapPersistent(this),
+                              WrapPersistent(resolver)));
 
   return resolver->Promise();
 }
 
 SMSReceiver::~SMSReceiver() = default;
 
-void SMSReceiver::OnGetNextMessage(ScriptPromiseResolver* resolver,
-                                   mojom::blink::SmsMessagePtr sms) {
+void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
+                            mojom::blink::SmsStatus status,
+                            const WTF::String& sms) {
   requests_.erase(resolver);
 
-  if (sms->status == mojom::blink::SmsStatus::kTimeout) {
+  if (status == mojom::blink::SmsStatus::kTimeout) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
     return;
   }
-  resolver->Resolve(MakeGarbageCollected<blink::SMS>(std::move(sms->content)));
+  resolver->Resolve(MakeGarbageCollected<blink::SMS>(sms));
 }
 
 void SMSReceiver::OnSMSReceiverConnectionError() {

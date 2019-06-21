@@ -50,6 +50,9 @@ def check_property_parameters(property_to_check):
     if property_to_check['mutable']:
         assert property_to_check['field_template'] == 'monotonic_flag', \
             'mutable keyword only implemented for monotonic_flag'
+    if property_to_check['alias_for']:
+        assert not property_to_check['is_internal'], \
+            'Internal aliases is not supported'
 
 
 class CSSProperties(object):

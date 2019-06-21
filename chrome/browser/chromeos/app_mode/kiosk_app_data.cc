@@ -26,7 +26,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -91,9 +91,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() {
-    auto connector = content::ServiceManagerConnection::GetForProcess()
-                         ->GetConnector()
-                         ->Clone();
+    auto connector = content::GetSystemConnector()->Clone();
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(&CrxLoader::StartInThreadPool, this,
                                           std::move(connector)));

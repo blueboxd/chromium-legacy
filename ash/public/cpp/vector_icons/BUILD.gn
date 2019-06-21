@@ -13,6 +13,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "assistant_mic.icon",
     "notification_assistant.icon",
     "notification_captive_portal.icon",
+    "notification_battery.icon",
     "notification_cellular_alert.icon",
     "notification_download.icon",
     "notification_end_of_support.icon",

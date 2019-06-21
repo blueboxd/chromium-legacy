@@ -10,7 +10,6 @@ mojom("interfaces") {
   sources = [
     "accessibility_controller.mojom",
     "accessibility_controller_enums.mojom",
-    "ash_message_center_controller.mojom",
     "assistant_controller.mojom",
     "assistant_volume_control.mojom",
     "constants.mojom",
@@ -27,7 +26,6 @@ mojom("interfaces") {
     "//chromeos/components/proximity_auth/public/interfaces",
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id/interfaces",
-    "//components/arc/common:notifications",
     "//components/sync/mojo:interfaces",
     "//mojo/public/mojom/base",
     "//services/content/public/mojom",

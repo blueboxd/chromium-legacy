@@ -17,7 +17,7 @@
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_request_utils.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_service.h"
@@ -50,13 +50,6 @@ void GetDownloadManagerOnProfileCreation(Profile* profile) {
   DCHECK(manager);
 }
 
-service_manager::Connector* GetServiceConnector() {
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  if (!connection)
-    return nullptr;
-  return connection->GetConnector();
-}
-
 void CreateInProgressDownloadManager(SimpleFactoryKey* key) {
   auto& map = GetInProgressManagerMap();
   auto it = map.find(key);
@@ -67,7 +60,7 @@ void CreateInProgressDownloadManager(SimpleFactoryKey* key) {
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
-            GetServiceConnector());
+            content::GetSystemConnector());
     download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(key);
     coordinator->SetSimpleDownloadManager(in_progress_manager.get(), false);

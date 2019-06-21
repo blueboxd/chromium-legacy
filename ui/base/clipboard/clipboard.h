@@ -36,16 +36,20 @@ class ScopedClipboardWriter;
 
 class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  public:
-  static bool IsSupportedClipboardType(int32_t type) {
+  static bool IsSupportedClipboardType(ClipboardType type) {
     switch (type) {
-      case CLIPBOARD_TYPE_COPY_PASTE:
+      case ClipboardType::kCopyPaste:
         return true;
+      case ClipboardType::kSelection:
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-      case CLIPBOARD_TYPE_SELECTION:
         return true;
+#else
+        return false;
 #endif
+      case ClipboardType::kDrag:
+        return false;
     }
-    return false;
+    NOTREACHED();
   }
 
   // Sets the list of threads that are allowed to access the clipboard.

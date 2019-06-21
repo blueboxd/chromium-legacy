@@ -18,7 +18,6 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
@@ -202,12 +201,10 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   }
 
   auto* guest_view = GetGuestView();
-  // When the network service is enabled, subresource requests like plugins are
-  // made directly from the renderer to the network service. So we need to
-  // intercept the URLLoader and send it to the browser so that it can forward
-  // it to the plugin.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      is_embedded_) {
+  // Subresource requests like plugins are made directly from the renderer to
+  // the network service. So we need to intercept the URLLoader and send it to
+  // the browser so that it can forward it to the plugin.
+  if (is_embedded_) {
     if (transferrable_url_loader_.is_null())
       return;
 

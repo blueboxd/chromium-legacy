@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
@@ -48,13 +48,6 @@ void RecordPinnedResult(const std::string& histogram_suffix,
       is_pinned);
 }
 
-// Returns a new Connector that can be used on a different thread.
-std::unique_ptr<service_manager::Connector> GetClonedConnector() {
-  return content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->Clone();
-}
-
 }  // namespace
 
 WelcomeWin10Handler::WelcomeWin10Handler() : weak_ptr_factory_(this) {
@@ -82,7 +75,7 @@ WelcomeWin10Handler::~WelcomeWin10Handler() {
     base::Closure error_callback =
         base::Bind(&RecordPinnedResult, histogram_suffix, false, false);
     shell_integration::win::GetIsPinnedToTaskbarState(
-        GetClonedConnector(), error_callback,
+        content::GetSystemConnector()->Clone(), error_callback,
         base::Bind(&RecordPinnedResult, histogram_suffix));
   }
 }
@@ -158,7 +151,7 @@ void WelcomeWin10Handler::StartIsPinnedToTaskbarCheck() {
                  weak_ptr_factory_.GetWeakPtr(), false, true);
 
   shell_integration::win::GetIsPinnedToTaskbarState(
-      GetClonedConnector(), error_callback,
+      content::GetSystemConnector()->Clone(), error_callback,
       base::Bind(&WelcomeWin10Handler::OnIsPinnedToTaskbarResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }

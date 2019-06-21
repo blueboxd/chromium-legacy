@@ -93,6 +93,8 @@ class HTMLParserScriptRunner final
   void ExecuteScriptsWaitingForResources();
 
   // Invoked when parsing is stopping, to execute any deferred scripts.
+  // This includes forced deferred scripts as well as developer deferred
+  // scripts.
   bool ExecuteScriptsWaitingForParsing();
 
   bool HasParserBlockingScript() const;
@@ -115,6 +117,7 @@ class HTMLParserScriptRunner final
 
   void RequestParsingBlockingScript(ScriptLoader*);
   void RequestDeferredScript(ScriptLoader*);
+  void RequestForceDeferredScript(ScriptLoader*);
 
   // Processes the provided script element, but does not execute any
   // parsing-blocking scripts that may remain after execution.
@@ -129,6 +132,12 @@ class HTMLParserScriptRunner final
 
   void PossiblyFetchBlockedDocWriteScript(PendingScript*);
 
+  // Takes and returns the first PendingScript from |waiting_scripts| if it is
+  // ready for execution. Otherwise, informs it that |this| is a
+  // PendingScriptClient to be informed when it is ready.
+  PendingScript* TryTakeReadyScriptWaitingForParsing(
+      HeapDeque<Member<PendingScript>>* waiting_scripts);
+
   scoped_refptr<HTMLParserReentryPermit> reentry_permit_;
   Member<Document> document_;
   Member<HTMLParserScriptRunnerHost> host_;
@@ -136,6 +145,13 @@ class HTMLParserScriptRunner final
   // https://html.spec.whatwg.org/C/#pending-parsing-blocking-script
   Member<PendingScript> parser_blocking_script_;
 
+  // Scripts that were force deferred by the defer all script optimization.
+  // These scripts will be executed after parsing but before
+  // |scripts_to_execute_after_parsing_|.  This is an ordered list.
+  // https://crbug.com/976061
+  HeapDeque<Member<PendingScript>> force_deferred_scripts_;
+
+  // Scripts that were deferred by the web developer. This is an ordered list.
   // https://html.spec.whatwg.org/C/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<Member<PendingScript>> scripts_to_execute_after_parsing_;
 

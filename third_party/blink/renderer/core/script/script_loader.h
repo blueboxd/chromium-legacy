@@ -96,6 +96,7 @@ class CORE_EXPORT ScriptLoader final
   bool WillExecuteWhenDocumentFinishedParsing() const {
     return will_execute_when_document_finished_parsing_;
   }
+  bool IsForceDeferred() const { return force_deferred_; }
   bool IsParserInserted() const { return parser_inserted_; }
   bool AlreadyStarted() const { return already_started_; }
   bool IsNonBlocking() const { return non_blocking_; }
@@ -179,6 +180,9 @@ class CORE_EXPORT ScriptLoader final
   bool will_be_parser_executed_;
 
   bool will_execute_when_document_finished_parsing_;
+
+  // The script will be force deferred (https://crbug.com/976061).
+  bool force_deferred_;
 
   // A PendingScript is first created in PrepareScript() and stored in
   // |prepared_pending_script_|.

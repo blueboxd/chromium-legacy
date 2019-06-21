@@ -24,8 +24,8 @@ NSString* const kZoomKey = @"zoom";
 NSString* const kDeprecatedXOffsetKey = @"scrollX";
 NSString* const kDeprecatedYOffsetKey = @"scrollY";
 // Invalid consts.
-const CGPoint kInvalidContentOffset = CGPointMake(NAN, NAN);
-const UIEdgeInsets kInvalidContentInset = UIEdgeInsetsMake(NAN, NAN, NAN, NAN);
+const CGPoint kInvalidContentOffset = {NAN, NAN};
+const UIEdgeInsets kInvalidContentInset = {NAN, NAN, NAN, NAN};
 // Equality checkers.  Return true if both values are NAN or equivalent.
 inline bool StateValuesAreEqual(CGFloat value1, CGFloat value2) {
   return std::isnan(value1) ? std::isnan(value2) : value1 == value2;

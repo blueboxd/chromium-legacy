@@ -16,27 +16,122 @@
 
 namespace content {
 
-CacheStorageCacheEntryHandler::BlobDataHandle::BlobDataHandle(
+namespace {
+
+constexpr int kInvalidSideDataIndex = -1;
+
+// A |BlobDataItem::DataHandle| implementation that wraps a
+// |DiskCacheBlobEntry|.  In addition, each |DataHandleImpl| maps the main
+// and side data to particular disk_cache indices.
+//
+// The |DataHandleImpl| is a "readable" handle.  It overrides the virtual
+// size and reading methods to access the underlying disk_cache entry.
+class DataHandleImpl : public storage::BlobDataItem::DataHandle {
+ public:
+  DataHandleImpl(
+      scoped_refptr<CacheStorageCacheEntryHandler::DiskCacheBlobEntry>
+          blob_entry,
+      int disk_cache_index,
+      int side_data_disk_cache_index)
+      : blob_entry_(std::move(blob_entry)),
+        disk_cache_index_(disk_cache_index),
+        side_data_disk_cache_index_(side_data_disk_cache_index) {}
+
+  uint64_t GetSize() const override {
+    return blob_entry_->GetSize(disk_cache_index_);
+  }
+
+  int Read(scoped_refptr<net::IOBuffer> dst_buffer,
+           uint64_t src_offset,
+           int bytes_to_read,
+           base::OnceCallback<void(int)> callback) override {
+    return blob_entry_->Read(std::move(dst_buffer), disk_cache_index_,
+                             src_offset, bytes_to_read, std::move(callback));
+  }
+
+  uint64_t GetSideDataSize() const override {
+    if (side_data_disk_cache_index_ == kInvalidSideDataIndex)
+      return 0;
+    return blob_entry_->GetSize(side_data_disk_cache_index_);
+  }
+
+  int ReadSideData(scoped_refptr<net::IOBuffer> dst_buffer,
+                   base::OnceCallback<void(int)> callback) override {
+    if (side_data_disk_cache_index_ == kInvalidSideDataIndex)
+      return net::ERR_FAILED;
+    return blob_entry_->Read(std::move(dst_buffer), side_data_disk_cache_index_,
+                             /* offset= */ 0, GetSideDataSize(),
+                             std::move(callback));
+  }
+
+  void PrintTo(::std::ostream* os) const override {
+    blob_entry_->PrintTo(os);
+    *os << ",disk_cache_index:" << disk_cache_index_;
+  }
+
+  const char* BytesReadHistogramLabel() const override {
+    return "DiskCache.CacheStorage";
+  }
+
+ private:
+  ~DataHandleImpl() override = default;
+
+  const scoped_refptr<CacheStorageCacheEntryHandler::DiskCacheBlobEntry>
+      blob_entry_;
+  const int disk_cache_index_;
+  const int side_data_disk_cache_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataHandleImpl);
+};
+
+}  // namespace
+
+CacheStorageCacheEntryHandler::DiskCacheBlobEntry::DiskCacheBlobEntry(
+    util::PassKey<CacheStorageCacheEntryHandler> key,
     base::WeakPtr<CacheStorageCacheEntryHandler> entry_handler,
     CacheStorageCacheHandle cache_handle,
-    disk_cache::ScopedEntryPtr entry)
+    disk_cache::ScopedEntryPtr disk_cache_entry)
     : entry_handler_(std::move(entry_handler)),
       cache_handle_(std::move(cache_handle)),
-      entry_(std::move(entry)) {}
+      disk_cache_entry_(std::move(disk_cache_entry)) {}
 
-bool CacheStorageCacheEntryHandler::BlobDataHandle::IsValid() {
-  return entry_ != nullptr;
+int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::Read(
+    scoped_refptr<net::IOBuffer> dst_buffer,
+    int disk_cache_index,
+    uint64_t offset,
+    int bytes_to_read,
+    base::OnceCallback<void(int)> callback) {
+  if (!disk_cache_entry_)
+    return net::ERR_CACHE_READ_FAILURE;
+
+  return disk_cache_entry_->ReadData(disk_cache_index, offset, dst_buffer.get(),
+                                     bytes_to_read, std::move(callback));
 }
 
-void CacheStorageCacheEntryHandler::BlobDataHandle::Invalidate() {
+int CacheStorageCacheEntryHandler::DiskCacheBlobEntry::GetSize(
+    int disk_cache_index) const {
+  if (!disk_cache_entry_)
+    return 0;
+  return disk_cache_entry_->GetDataSize(disk_cache_index);
+}
+
+void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::PrintTo(
+    ::std::ostream* os) const {
+  if (disk_cache_entry_)
+    *os << "disk_cache_key:" << disk_cache_entry_->GetKey();
+  else
+    *os << "<invalidated>";
+}
+
+void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::Invalidate() {
   cache_handle_ = base::nullopt;
   entry_handler_ = nullptr;
-  entry_ = nullptr;
+  disk_cache_entry_ = nullptr;
 }
 
-CacheStorageCacheEntryHandler::BlobDataHandle::~BlobDataHandle() {
+CacheStorageCacheEntryHandler::DiskCacheBlobEntry::~DiskCacheBlobEntry() {
   if (entry_handler_)
-    entry_handler_->EraseBlobDataHandle(this);
+    entry_handler_->EraseDiskCacheBlobEntry(this);
 }
 
 PutContext::PutContext(blink::mojom::FetchAPIRequestPtr request,
@@ -88,9 +183,9 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
         std::move(side_data_blob), side_data_blob_size, trace_id);
   }
 
-  void PopulateResponseBody(scoped_refptr<BlobDataHandle> data_handle,
+  void PopulateResponseBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                             blink::mojom::FetchAPIResponse* response) override {
-    disk_cache::Entry* entry = data_handle->entry().get();
+    disk_cache::Entry* entry = blob_entry->disk_cache_entry().get();
     DCHECK(entry);
 
     // Create a blob with the response body data.
@@ -101,16 +196,17 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
     auto blob_data =
         std::make_unique<storage::BlobDataBuilder>(response->blob->uuid);
 
-    blob_data->AppendDiskCacheEntryWithSideData(
-        std::move(data_handle), entry, CacheStorageCache::INDEX_RESPONSE_BODY,
+    auto inner_handle = MakeDataHandleWithSideData(
+        std::move(blob_entry), CacheStorageCache::INDEX_RESPONSE_BODY,
         CacheStorageCache::INDEX_SIDE_DATA);
+    blob_data->AppendReadableDataHandle(std::move(inner_handle));
     auto blob_handle = blob_context_->AddFinishedBlob(std::move(blob_data));
 
     storage::BlobImpl::Create(std::move(blob_handle),
                               MakeRequest(&response->blob->blob));
   }
 
-  void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,
+  void PopulateRequestBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                            blink::mojom::FetchAPIRequest* request) override {}
 
  private:
@@ -125,32 +221,33 @@ CacheStorageCacheEntryHandler::CacheStorageCacheEntryHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : blob_context_(blob_context) {}
 
-scoped_refptr<CacheStorageCacheEntryHandler::BlobDataHandle>
-CacheStorageCacheEntryHandler::CreateBlobDataHandle(
+scoped_refptr<CacheStorageCacheEntryHandler::DiskCacheBlobEntry>
+CacheStorageCacheEntryHandler::CreateDiskCacheBlobEntry(
     CacheStorageCacheHandle cache_handle,
-    disk_cache::ScopedEntryPtr entry) {
-  auto handle =
-      base::MakeRefCounted<CacheStorageCacheEntryHandler::BlobDataHandle>(
-          GetWeakPtr(), std::move(cache_handle), std::move(entry));
-  DCHECK_EQ(blob_data_handles_.count(handle.get()), 0u);
-  blob_data_handles_.insert(handle.get());
-  return handle;
+    disk_cache::ScopedEntryPtr disk_cache_entry) {
+  auto blob_entry =
+      base::MakeRefCounted<CacheStorageCacheEntryHandler::DiskCacheBlobEntry>(
+          util::PassKey<CacheStorageCacheEntryHandler>(), GetWeakPtr(),
+          std::move(cache_handle), std::move(disk_cache_entry));
+  DCHECK_EQ(blob_entries_.count(blob_entry.get()), 0u);
+  blob_entries_.insert(blob_entry.get());
+  return blob_entry;
 }
 
 CacheStorageCacheEntryHandler::~CacheStorageCacheEntryHandler() = default;
 
-void CacheStorageCacheEntryHandler::InvalidateBlobDataHandles() {
+void CacheStorageCacheEntryHandler::InvalidateDiskCacheBlobEntrys() {
   // Calling Invalidate() can cause the CacheStorageCacheEntryHandler to be
   // destroyed. Be careful not to touch |this| after calling Invalidate().
-  std::set<BlobDataHandle*> handles = std::move(blob_data_handles_);
-  for (auto* handle : handles)
-    handle->Invalidate();
+  std::set<DiskCacheBlobEntry*> entries = std::move(blob_entries_);
+  for (auto* entry : entries)
+    entry->Invalidate();
 }
 
-void CacheStorageCacheEntryHandler::EraseBlobDataHandle(
-    BlobDataHandle* handle) {
-  DCHECK_NE(blob_data_handles_.count(handle), 0u);
-  blob_data_handles_.erase(handle);
+void CacheStorageCacheEntryHandler::EraseDiskCacheBlobEntry(
+    DiskCacheBlobEntry* blob_entry) {
+  DCHECK_NE(blob_entries_.count(blob_entry), 0u);
+  blob_entries_.erase(blob_entry);
 }
 
 // static
@@ -167,6 +264,25 @@ CacheStorageCacheEntryHandler::CreateCacheEntryHandler(
           std::move(blob_context));
   }
   NOTREACHED();
+}
+
+// static
+scoped_refptr<storage::BlobDataItem::DataHandle>
+CacheStorageCacheEntryHandler::MakeDataHandle(
+    scoped_refptr<DiskCacheBlobEntry> blob_entry,
+    int disk_cache_index) {
+  return MakeDataHandleWithSideData(std::move(blob_entry), disk_cache_index,
+                                    kInvalidSideDataIndex);
+}
+
+// static
+scoped_refptr<storage::BlobDataItem::DataHandle>
+CacheStorageCacheEntryHandler::MakeDataHandleWithSideData(
+    scoped_refptr<DiskCacheBlobEntry> blob_entry,
+    int disk_cache_index,
+    int side_data_disk_cache_index) {
+  return base::MakeRefCounted<DataHandleImpl>(
+      std::move(blob_entry), disk_cache_index, side_data_disk_cache_index);
 }
 
 }  // namespace content

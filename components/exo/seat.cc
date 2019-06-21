@@ -129,7 +129,7 @@ Surface* Seat::GetFocusedSurface() {
 
 void Seat::SetSelection(DataSource* source) {
   if (!source) {
-    ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardType::kCopyPaste);
     // selection_source_ is Cancelled() and reset() in OnClipboardDataChanged().
     return;
   }
@@ -142,7 +142,7 @@ void Seat::SetSelection(DataSource* source) {
   selection_source_ = std::make_unique<ScopedDataSource>(source, this);
   scoped_refptr<RefCountedScopedClipboardWriter> writer =
       base::MakeRefCounted<RefCountedScopedClipboardWriter>(
-          ui::CLIPBOARD_TYPE_COPY_PASTE);
+          ui::ClipboardType::kCopyPaste);
 
   base::RepeatingClosure data_read_callback = base::BarrierClosure(
       kMaxClipboardDataTypes,

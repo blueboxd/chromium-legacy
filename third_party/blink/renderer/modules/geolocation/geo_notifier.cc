@@ -55,12 +55,12 @@ void GeoNotifier::SetFatalError(PositionError* error) {
   fatal_error_ = error;
   // An existing timer may not have a zero timeout.
   timer_->Stop();
-  timer_->StartOneShot(TimeDelta(), FROM_HERE);
+  timer_->StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void GeoNotifier::SetUseCachedPosition() {
   use_cached_position_ = true;
-  timer_->StartOneShot(TimeDelta(), FROM_HERE);
+  timer_->StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void GeoNotifier::RunSuccessCallback(Geoposition* position) {
@@ -73,7 +73,7 @@ void GeoNotifier::RunErrorCallback(PositionError* error) {
 }
 
 void GeoNotifier::StartTimer() {
-  timer_->StartOneShot(TimeDelta::FromMilliseconds(options_->timeout()),
+  timer_->StartOneShot(base::TimeDelta::FromMilliseconds(options_->timeout()),
                        FROM_HERE);
 }
 
@@ -89,7 +89,7 @@ void GeoNotifier::Timer::Trace(blink::Visitor* visitor) {
   visitor->Trace(notifier_);
 }
 
-void GeoNotifier::Timer::StartOneShot(TimeDelta interval,
+void GeoNotifier::Timer::StartOneShot(base::TimeDelta interval,
                                       const base::Location& caller) {
   DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
   timer_.StartOneShot(interval, caller);

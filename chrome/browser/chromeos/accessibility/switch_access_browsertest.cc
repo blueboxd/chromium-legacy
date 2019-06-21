@@ -9,7 +9,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -21,9 +21,8 @@ namespace {
 ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
   // Connect to the accessibility mojo interface in ash.
   ash::mojom::AccessibilityControllerPtr controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &controller);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &controller);
   return controller;
 }
 

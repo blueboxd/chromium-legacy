@@ -839,8 +839,7 @@ bool PaintLayerCompositor::NeedsContentsCompositingLayer(
     const PaintLayer* layer) const {
   if (!layer->HasCompositingDescendant())
     return false;
-  return layer->StackingNode() &&
-         layer->StackingNode()->HasNegativeZOrderList();
+  return layer->IsStackingContextWithNegativeZOrderChildren();
 }
 
 static void UpdateTrackingRasterInvalidationsRecursive(

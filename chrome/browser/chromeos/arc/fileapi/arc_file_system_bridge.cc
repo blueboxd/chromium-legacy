@@ -342,6 +342,7 @@ void ArcFileSystemBridge::OnFileSelectorEvent(
 }
 
 void ArcFileSystemBridge::GetFileSelectorElements(
+    mojom::GetFileSelectorElementsRequestPtr request,
     GetFileSelectorElementsCallback callback) {
   if (!IsTestImageBuild()) {
     LOG(ERROR)
@@ -349,7 +350,8 @@ void ArcFileSystemBridge::GetFileSelectorElements(
     std::move(callback).Run(mojom::FileSelectorElements::New());
     return;
   }
-  select_files_handler_->GetFileSelectorElements(std::move(callback));
+  select_files_handler_->GetFileSelectorElements(std::move(request),
+                                                 std::move(callback));
 }
 
 void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(

@@ -8,14 +8,14 @@ namespace content {
 
 NativeFileSystemTransferTokenImpl::NativeFileSystemTransferTokenImpl(
     const storage::FileSystemURL& url,
-    storage::IsolatedContext::ScopedFSHandle file_system,
+    const SharedHandleState& handle_state,
     HandleType type)
     : token_(base::UnguessableToken::Create()),
       url_(url),
-      file_system_(std::move(file_system)),
+      handle_state_(handle_state),
       type_(type) {
   DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
-            file_system_.is_valid())
+            handle_state_.file_system.is_valid())
       << url_.mount_type();
 }
 

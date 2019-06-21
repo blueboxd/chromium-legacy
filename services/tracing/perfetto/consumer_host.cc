@@ -330,7 +330,7 @@ void ConsumerHost::TracingSession::ReadBuffers(
 void ConsumerHost::TracingSession::RequestBufferUsage(
     RequestBufferUsageCallback callback) {
   if (!request_buffer_usage_callback_.is_null()) {
-    std::move(callback).Run(false, 0);
+    std::move(callback).Run(false, 0, false);
     return;
   }
 
@@ -433,7 +433,7 @@ void ConsumerHost::TracingSession::OnTraceStats(
   }
 
   if (!success || stats.buffer_stats_size() != 1) {
-    std::move(request_buffer_usage_callback_).Run(false, 0.0f);
+    std::move(request_buffer_usage_callback_).Run(false, 0.0f, false);
     return;
   }
 
@@ -445,7 +445,10 @@ void ConsumerHost::TracingSession::OnTraceStats(
   double percent_full =
       bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
   percent_full = std::min(std::max(0.0, percent_full), 1.0);
-  std::move(request_buffer_usage_callback_).Run(true, percent_full);
+  bool data_loss = buf_stats.chunks_overwritten() > 0 ||
+                   buf_stats.chunks_discarded() > 0 ||
+                   buf_stats.abi_violations() > 0;
+  std::move(request_buffer_usage_callback_).Run(true, percent_full, data_loss);
 }
 
 void ConsumerHost::TracingSession::Flush(

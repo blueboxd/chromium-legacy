@@ -39,8 +39,7 @@ const char kDefaultWarmupUrl[] = "http://check.googlezip.net/e2e_probe";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
-const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
-const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
+const char kLitePageFieldTrial[] = "DataCompressionProxyLoFi";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] =
@@ -113,15 +112,6 @@ bool IsIncludedInHoldbackFieldTrial() {
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
-
-const char* GetLoFiFieldTrialName() {
-  return kLoFiFieldTrial;
-}
-
-const char* GetLoFiFlagFieldTrialName() {
-  return kLoFiFlagFieldTrial;
-}
-
 
 bool FetchWarmupProbeURLEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -242,9 +232,8 @@ bool ShouldForceEnableDataReductionProxy() {
 }
 
 int LitePageVersion() {
-  return GetFieldTrialParameterAsInteger(
-      data_reduction_proxy::params::GetLoFiFieldTrialName(),
-      kLitePageBlackListVersion, 0, 0);
+  return GetFieldTrialParameterAsInteger(kLitePageFieldTrial,
+                                         kLitePageBlackListVersion, 0, 0);
 }
 
 int GetFieldTrialParameterAsInteger(const std::string& group,

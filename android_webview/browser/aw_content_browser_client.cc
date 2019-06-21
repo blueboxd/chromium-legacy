@@ -362,9 +362,6 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
 
-  // Quic is not currently supported in WebView (http://crbug.com/763187).
-  content::GetNetworkService()->DisableQuic();
-
   // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
   // Cookies APIs).
   PassMojoCookieManagerToAwCookieManager(network_context);

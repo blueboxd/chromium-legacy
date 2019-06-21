@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
@@ -157,9 +157,8 @@ device::mojom::WakeLock* PowerAPI::GetWakeLock() {
 
   device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
 
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  auto* connector = content::GetSystemConnector();
+  DCHECK(connector);
   device::mojom::WakeLockProviderPtr wake_lock_provider;
   connector->BindInterface(device::mojom::kServiceName,
                            mojo::MakeRequest(&wake_lock_provider));

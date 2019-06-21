@@ -305,42 +305,61 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   icu::RegexMatcher* dangerous_pattern =
       reinterpret_cast<icu::RegexMatcher*>(DangerousPatternTLS().Get());
   if (!dangerous_pattern) {
-    // Disallow the katakana no, so, zo, or n, as they may be mistaken for
-    // slashes when they're surrounded by non-Japanese scripts (i.e. scripts
-    // other than Katakana, Hiragana or Han). If {no, so, zo, n} next to a
-    // non-Japanese script on either side is disallowed, legitimate cases like
-    // '{vitamin in Katakana}b6' are blocked. Note that trying to block those
-    // characters when used alone as a label is futile because those cases
-    // would not reach here.
-    // Also disallow what used to be blocked by mixed-script-confusable (MSC)
-    // detection. ICU 58 does not detect MSC any more for a single input string.
-    // See http://bugs.icu-project.org/trac/ticket/12823 .
-    // TODO(jshin): adjust the pattern once the above ICU bug is fixed.
-    // - Disallow U+30FB (Katakana Middle Dot) and U+30FC (Hiragana-Katakana
-    //   Prolonged Sound) used out-of-context.
-    // - Dislallow U+30FD/E (Katakana iteration mark/voiced iteration mark)
-    //   unless they're preceded by a Katakana.
-    // - Disallow three Hiragana letters (U+307[8-A]) or Katakana letters
-    //   (U+30D[8-A]) that look exactly like each other when they're used in a
-    //   label otherwise entirely in Katakna or Hiragana.
-    // - Disallow combining diacritical mark (U+0300-U+0339) after a non-LGC
-    //   character. Other combining diacritical marks are not in the allowed
-    //   character set.
-    // - Disallow dotless i (U+0131) followed by a combining mark.
-    // - Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i (U+0131).
-    //   Dotless j (U+0237) is not in the allowed set to begin with.
+    // The parentheses in the below strings belong to the raw string sequence
+    // R("..."). They are NOT part of the regular expression. Each sub
+    // regex is OR'ed with the | operator.
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
+            // Disallow the katakana no (U+30ce), so (U+30bd), zo (U+30be), or
+            // n (U+30f3), as they may be mistaken for slashes when they're
+            // surrounded by non-Japanese scripts (i.e. scripts other than
+            // Katakana, Hiragana or Han). If {no, so, zo, n} next to a
+            // non-Japanese script on either side is disallowed, legitimate
+            // cases like '{vitamin in Katakana}b6' are blocked. Note that
+            // trying to block those characters when used alone as a label is
+            // futile because those cases would not reach here. Also disallow
+            // what used to be blocked by mixed-script-confusable (MSC)
+            // detection. ICU 58 does not detect MSC any more for a single input
+            // string. See http://bugs.icu-project.org/trac/ticket/12823 .
+            // TODO(jshin): adjust the pattern once the above ICU bug is fixed.
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
             R"([\u30ce\u30f3\u30bd\u30be])"
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
-            R"([^\p{scx=kana}\p{scx=hira}]\u30fc|^\u30fc|)"
+
+            // Disallow U+30FD (Katakana iteration mark) and U+30FE (Katakana
+            // voiced iteration mark) unless they're preceded by a Katakana.
             R"([^\p{scx=kana}][\u30fd\u30fe]|^[\u30fd\u30fe]|)"
+
+            // Disallow three Hiragana letters (U+307[8-A]) or Katakana letters
+            // (U+30D[8-A]) that look exactly like each other when they're used
+            // in a label otherwise entirely in Katakana or Hiragana.
             R"(^[\p{scx=kana}]+[\u3078-\u307a][\p{scx=kana}]+$|)"
             R"(^[\p{scx=hira}]+[\u30d8-\u30da][\p{scx=hira}]+$|)"
+
+            // Disallow U+30FB (Katakana Middle Dot) and U+30FC (Hiragana-
+            // Katakana Prolonged Sound) used out-of-context.
+            R"([^\p{scx=kana}\p{scx=hira}]\u30fc|^\u30fc|)"
             R"([a-z]\u30fb|\u30fb[a-z]|)"
+
+            // Disallow U+4E00 (CJK unified ideograph) and U+3127 (Bopomofo
+            // Letter I) unless they are next to Hiragana, Katagana or Han.
+            // U+2F00 (Kangxi Radical One) is similar, but it's normalized to
+            // U+4E00 so it's not explicitly checked here.
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
+            R"([\u4e00\u3127])"
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
+
+            // Disallow combining diacritical mark (U+0300-U+0339) after a
+            // non-LGC character. Other combining diacritical marks are not in
+            // the allowed character set.
             R"([^\p{scx=latn}\p{scx=grek}\p{scx=cyrl}][\u0300-\u0339]|)"
+
+            // Disallow dotless i (U+0131) followed by a combining mark.
             R"(\u0131[\u0300-\u0339]|)"
+
+            // Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i
+            // (U+0131). Dotless j (U+0237) is not in the allowed set to begin
+            // with.
             R"([ijl]\u0307)",
             -1, US_INV),
         0, status);
@@ -355,8 +374,9 @@ std::string IDNSpoofChecker::GetSimilarTopDomain(base::StringPiece16 hostname) {
   for (const std::string& skeleton : GetSkeletons(hostname)) {
     DCHECK(!skeleton.empty());
     std::string matching_top_domain = LookupSkeletonInTopDomains(skeleton);
-    if (!matching_top_domain.empty())
+    if (!matching_top_domain.empty()) {
       return matching_top_domain;
+    }
   }
   return std::string();
 }

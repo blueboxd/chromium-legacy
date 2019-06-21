@@ -143,6 +143,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
     auto registered_task_source = task_tracker_->WillQueueTaskSource(sequence);
     if (!registered_task_source)
       return false;
+    task_tracker_->WillPostTaskNow(task, transaction.traits().priority());
     transaction.PushTask(std::move(task));
     bool should_wakeup = EnqueueTaskSource(
         {std::move(registered_task_source), std::move(transaction)});

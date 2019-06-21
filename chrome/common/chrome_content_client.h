@@ -106,9 +106,9 @@ class ChromeContentClient : public content::ContentClient {
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 
-  // This method isn't called by utility processes.
-  void OnServiceManagerConnected(
-      content::ServiceManagerConnection* connection) override;
+  void BindChildProcessInterface(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* receiving_handle) override;
 
  private:
   // Used to lock when |origin_trial_policy_| is initialized.

@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_manager_connection.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/vr_device_provider.h"
@@ -99,12 +99,10 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
 #endif
 #endif  // ENABLE_ISOLATED_XR_SERVICE
 
-  content::ServiceManagerConnection* connection =
-      content::ServiceManagerConnection::GetForProcess();
-  if (connection) {
+  auto* connector = content::GetSystemConnector();
+  if (connector) {
     providers.emplace_back(
-        std::make_unique<device::VROrientationDeviceProvider>(
-            connection->GetConnector()));
+        std::make_unique<device::VROrientationDeviceProvider>(connector));
   }
 
   return CreateInstance(std::move(providers));

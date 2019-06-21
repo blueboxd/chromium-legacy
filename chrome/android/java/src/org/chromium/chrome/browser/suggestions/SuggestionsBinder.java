@@ -10,8 +10,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.text.TextUtils;
@@ -24,6 +22,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
@@ -249,20 +248,16 @@ public class SuggestionsBinder {
     private String getArticleAge(SnippetArticle suggestion) {
         if (suggestion.mPublishTimestampMilliseconds == 0) return "";
 
+        CharSequence relativeTimeSpan;
         // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
         // has never been called before it loads the current time zone from disk. In most likelihood
         // this will have been called previously and the current time zone will have been cached,
         // but in some cases (eg instrumentation tests) it will cause a strict mode violation.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        CharSequence relativeTimeSpan;
-        try {
-            long time = SystemClock.elapsedRealtime();
+        // TODO(crbug.com/640210): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             relativeTimeSpan =
                     DateUtils.getRelativeTimeSpanString(suggestion.mPublishTimestampMilliseconds,
                             System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS);
-            SuggestionsMetrics.recordDateFormattingDuration(SystemClock.elapsedRealtime() - time);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
 
         // We add a dash before the elapsed time, e.g. " - 14 minutes ago".

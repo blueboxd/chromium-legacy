@@ -439,7 +439,7 @@ bool TouchSelectionControllerClientAura::IsCommandIdEnabled(
     case IDS_APP_PASTE: {
       base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+          ui::ClipboardType::kCopyPaste, &result);
       return editable && !result.empty();
     }
     default:

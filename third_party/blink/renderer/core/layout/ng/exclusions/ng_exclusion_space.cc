@@ -26,8 +26,8 @@ void InsertClosedArea(
 
   // We go backwards through the list as there is a higher probability that a
   // new area will be at the end of the list.
-  for (wtf_size_t j = areas->size() - 1; j >= 0; --j) {
-    const NGExclusionSpaceInternal::NGClosedArea& other = areas->at(j);
+  for (wtf_size_t i = areas->size(); i--;) {
+    const NGExclusionSpaceInternal::NGClosedArea& other = areas->at(i);
     if (other.opportunity.rect.BlockStartOffset() <=
         area.opportunity.rect.BlockStartOffset()) {
 #if DCHECK_IS_ON()
@@ -42,12 +42,21 @@ void InsertClosedArea(
       }
 #endif
 
-      areas->insert(j + 1, area);
+      areas->insert(i + 1, area);
       return;
     }
   }
 
-  NOTREACHED();
+  // The first closed-off area we insert is almost always at LayoutUnit::Min().
+  //
+  // However if a float is placed at LayoutUnit::Min() it is possible to get
+  // into a state where this isn't the case (the first closed-off area might be
+  // directly below that float for example).
+  //
+  // When a subsequent float gets placed, it might create a closed-off area at
+  // LayoutUnit::Min(), and should be inserted at the front of the areas list.
+  DCHECK_EQ(area.opportunity.rect.BlockStartOffset(), LayoutUnit::Min());
+  areas->push_front(area);
 }
 
 // Returns true if there is at least one edge between block_start and block_end.

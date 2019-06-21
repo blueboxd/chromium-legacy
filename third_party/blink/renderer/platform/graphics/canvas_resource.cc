@@ -796,7 +796,6 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
   // param is not atomic so the display may draw with incorrect params, but its
   // a good enough fix for now.
   resource->needs_gl_filter_reset_ = true;
-  resource->SetGLFilterIfNeeded();
   auto weak_provider = resource->WeakProvider();
   ReleaseFrameResources(std::move(weak_provider), std::move(resource),
                         sync_token, is_lost);
@@ -824,6 +823,8 @@ void CanvasResourceSharedImage::Transfer() {
 }
 
 scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
+  TRACE_EVENT0("blink", "CanvasResourceSharedImage::Bitmap");
+
   // The |release_callback| keeps a ref on this resource to ensure the backing
   // shared image is kept alive until the lifetime of the image.
   // Note that the code in CanvasResourceProvider::RecycleResource also uses the

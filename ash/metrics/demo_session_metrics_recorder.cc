@@ -145,18 +145,10 @@ DemoModeApp GetAppFromWindow(const aura::Window* window) {
   if (app_id == extension_misc::kChromeAppId)
     return DemoModeApp::kBrowser;
 
-  auto is_default = [](const std::string& app_id) {
-    if (!features::IsMultiProcessMash())
-      return app_id.empty();
-
-    return base::StartsWith(app_id, ShelfWindowWatcher::kDefaultShelfIdPrefix,
-                            base::CompareCase::SENSITIVE);
-  };
-
   // If the window is the "browser" type, having an app ID other than the
   // default indicates a hosted/bookmark app.
   if (app_type == AppType::CHROME_APP ||
-      (app_type == AppType::BROWSER && !is_default(app_id))) {
+      (app_type == AppType::BROWSER && !app_id.empty())) {
     return GetAppFromAppId(app_id);
   }
 

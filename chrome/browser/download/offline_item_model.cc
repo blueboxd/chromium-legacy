@@ -4,9 +4,12 @@
 
 #include "chrome/browser/download/offline_item_model.h"
 
+#include <string>
+
 #include "base/time/time.h"
 #include "chrome/browser/download/offline_item_model_manager.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 
@@ -29,9 +32,9 @@ OfflineItemModel::OfflineItemModel(OfflineItemModelManager* manager,
                                    const OfflineItem& offline_item)
     : manager_(manager),
       offline_item_(std::make_unique<OfflineItem>(offline_item)) {
+  Profile* profile = Profile::FromBrowserContext(manager_->browser_context());
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(
-          manager_->browser_context());
+      OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
   offline_item_observer_ =
       std::make_unique<FilteredOfflineItemObserver>(aggregator);
   offline_item_observer_->AddObserver(offline_item_->id, this);
@@ -214,9 +217,9 @@ bool OfflineItemModel::ShouldRemoveFromShelfWhenComplete() const {
 }
 
 OfflineContentProvider* OfflineItemModel::GetProvider() const {
+  Profile* profile = Profile::FromBrowserContext(manager_->browser_context());
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(
-          manager_->browser_context());
+      OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
   return aggregator;
 }
 

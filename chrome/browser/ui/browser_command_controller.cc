@@ -612,10 +612,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->OpenFile();
       break;
     case IDC_CREATE_SHORTCUT:
+      base::RecordAction(base::UserMetricsAction("CreateShortcut"));
       CreateBookmarkAppFromCurrentWebContents(browser_,
                                               true /* force_shortcut_app */);
       break;
     case IDC_INSTALL_PWA:
+      base::RecordAction(base::UserMetricsAction("InstallWebAppFromMenu"));
       CreateBookmarkAppFromCurrentWebContents(browser_,
                                               false /* force_shortcut_app */);
       break;

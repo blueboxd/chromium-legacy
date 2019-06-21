@@ -41,7 +41,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -255,20 +255,18 @@ AffiliatedInvalidationServiceProviderImplTest::
                                      is_fcm_enabled());
 
   if (is_fcm_enabled()) {
+    service_manager::mojom::ConnectorRequest conector_request;
+    content::SetSystemConnectorForTesting(
+        service_manager::Connector::Create(&conector_request));
     data_decoder::SafeJsonParser::SetFactoryForTesting(
         &CreateTestingJsonParser);
-
-    content::ServiceManagerConnection::SetForProcess(
-        content::ServiceManagerConnection::Create(
-            nullptr, base::CreateSingleThreadTaskRunnerWithTraits(
-                         {content::BrowserThread::IO})));
   }
 }
 
 AffiliatedInvalidationServiceProviderImplTest::
     ~AffiliatedInvalidationServiceProviderImplTest() {
   if (is_fcm_enabled()) {
-    content::ServiceManagerConnection::DestroyForProcess();
+    content::SetSystemConnectorForTesting(nullptr);
     data_decoder::SafeJsonParser::SetFactoryForTesting(nullptr);
   }
 }

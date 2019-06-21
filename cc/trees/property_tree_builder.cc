@@ -180,6 +180,14 @@ static LayerImpl* ClipParent(LayerImpl* layer) {
   return layer->test_properties()->clip_parent;
 }
 
+static bool HasClipRect(Layer* layer) {
+  return !layer->clip_rect().IsEmpty();
+}
+
+static bool HasClipRect(LayerImpl* layer) {
+  return false;
+}
+
 static inline const FilterOperations& Filters(Layer* layer) {
   return layer->filters();
 }
@@ -202,15 +210,6 @@ static bool HasRoundedCorner(Layer* layer) {
 
 static bool HasRoundedCorner(LayerImpl* layer) {
   return !layer->test_properties()->rounded_corner_bounds.IsEmpty();
-}
-
-static gfx::RRectF RoundedCornerBounds(Layer* layer) {
-  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())),
-                     layer->corner_radii());
-}
-
-static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
-  return layer->test_properties()->rounded_corner_bounds;
 }
 
 static PictureLayer* MaskLayer(Layer* layer) {
@@ -310,9 +309,46 @@ static int GetTransformParent(const DataForRecursion& data, LayerType* layer) {
 }
 
 template <typename LayerType>
+static bool LayerClipsSubtreeToItsBounds(LayerType* layer) {
+  return layer->masks_to_bounds() || MaskLayer(layer);
+}
+
+template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || MaskLayer(layer) ||
-         HasRoundedCorner(layer);
+  return LayerClipsSubtreeToItsBounds(layer) || HasRoundedCorner(layer) ||
+         HasClipRect(layer);
+}
+
+gfx::RectF EffectiveClipRect(Layer* layer) {
+  // If the layer does not have a clip rect set, then the subtree is clipped by
+  // the bounds of this layer.
+  const gfx::RectF layer_bounds(gfx::PointF(), gfx::SizeF(layer->bounds()));
+  if (!HasClipRect(layer))
+    return layer_bounds;
+
+  const gfx::RectF clip_rect(layer->clip_rect());
+
+  // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
+  // two to get the effective clip.
+  if (LayerClipsSubtreeToItsBounds(layer) ||
+      Filters(layer).HasFilterThatMovesPixels()) {
+    return gfx::IntersectRects(layer_bounds, clip_rect);
+  }
+
+  // Clip rect is the only clip effecting the layer.
+  return clip_rect;
+}
+
+gfx::RectF EffectiveClipRect(LayerImpl* layer) {
+  return gfx::RectF(gfx::PointF(), gfx::SizeF(layer->bounds()));
+}
+
+static gfx::RRectF RoundedCornerBounds(Layer* layer) {
+  return gfx::RRectF(EffectiveClipRect(layer), layer->corner_radii());
+}
+
+static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
+  return layer->test_properties()->rounded_corner_bounds;
 }
 
 template <typename LayerType>
@@ -355,6 +391,12 @@ static inline bool HasLatestSequenceNumber(const LayerImpl*, int) {
   return true;
 }
 
+static inline void SetHasClipNode(Layer* layer, bool val) {
+  layer->SetHasClipNode(val);
+}
+
+static inline void SetHasClipNode(LayerImpl* layer, bool val) {}
+
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     const DataForRecursion& data_from_ancestor,
@@ -376,8 +418,11 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     data_for_children->clip_tree_parent = parent_id;
   } else {
     ClipNode node;
-    node.clip = gfx::RectF(gfx::PointF() + layer->offset_to_transform_parent(),
-                           gfx::SizeF(layer->bounds()));
+    node.clip = EffectiveClipRect(layer);
+
+    // Move the clip bounds so that it is relative to the transform parent.
+    node.clip += layer->offset_to_transform_parent();
+
     node.transform_id = created_transform_node
                             ? data_for_children->transform_tree_parent
                             : GetTransformParent(data_from_ancestor, layer);
@@ -391,6 +436,7 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     data_for_children->clip_tree_parent = clip_tree_.Insert(node, parent_id);
   }
 
+  SetHasClipNode(layer, requires_node);
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 

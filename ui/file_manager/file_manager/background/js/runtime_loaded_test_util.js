@@ -440,18 +440,28 @@ test.util.sync.fakeMouseClick =
       if (opt_button !== undefined) {
         props.button = opt_button;
       }
+      if (!targetQuery) {
+        return false;
+      }
+      if (typeof targetQuery === 'string') {
+        targetQuery = [targetQuery];
+      }
+      const elems = test.util.sync.deepQuerySelectorAll_(
+          contentWindow.document, /** @type !Array<string> */ (targetQuery));
+      if (elems.length === 0) {
+        return false;
+      }
+      // Only sends the event to the first matched element.
+      const target = elems[0];
+
       const mouseOverEvent = new MouseEvent('mouseover', props);
-      const resultMouseOver =
-          test.util.sync.sendEvent(contentWindow, targetQuery, mouseOverEvent);
+      const resultMouseOver = target.dispatchEvent(mouseOverEvent);
       const mouseDownEvent = new MouseEvent('mousedown', props);
-      const resultMouseDown =
-          test.util.sync.sendEvent(contentWindow, targetQuery, mouseDownEvent);
+      const resultMouseDown = target.dispatchEvent(mouseDownEvent);
       const mouseUpEvent = new MouseEvent('mouseup', props);
-      const resultMouseUp =
-          test.util.sync.sendEvent(contentWindow, targetQuery, mouseUpEvent);
+      const resultMouseUp = target.dispatchEvent(mouseUpEvent);
       const clickEvent = new MouseEvent('click', props);
-      const resultClick =
-          test.util.sync.sendEvent(contentWindow, targetQuery, clickEvent);
+      const resultClick = target.dispatchEvent(clickEvent);
       return resultMouseOver && resultMouseDown && resultMouseUp && resultClick;
     };
 

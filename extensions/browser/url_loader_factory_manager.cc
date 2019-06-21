@@ -32,7 +32,6 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -379,16 +378,8 @@ void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
     std::vector<url::Origin> request_initiators,
     bool push_to_renderer_now) {
   DCHECK(!request_initiators.empty());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-        std::move(request_initiators), push_to_renderer_now);
-  } else {
-    // TODO(lukasza): In non-NetworkService implementation of CORB, make an
-    // exception only for specific extensions (e.g. based on process id,
-    // similarly to how r585124 does it for plugins).  Doing so will likely
-    // interfere with Extensions.CrossOriginFetchFromContentScript2 Rappor
-    // metric, so this needs to wait until this metric is not needed anymore.
-  }
+  frame->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+      std::move(request_initiators), push_to_renderer_now);
 }
 
 // If |match_about_blank| is true, then traverses parent/opener chain until the

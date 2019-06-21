@@ -19,8 +19,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -142,10 +142,8 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
     DCHECK(content::GetNetworkService());
 
     network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
     base::RunLoop run_loop;
     network_service_test->SimulateNetworkQualityChange(
         type, base::BindOnce([](base::RunLoop* run_loop) { run_loop->Quit(); },

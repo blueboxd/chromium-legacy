@@ -137,6 +137,12 @@ class LauncherStateWaiter {
 ShellTestApi::ShellTestApi() : shell_(Shell::Get()) {}
 ShellTestApi::~ShellTestApi() = default;
 
+// static
+void ShellTestApi::SetTabletControllerUseScreenshotForTest(
+    bool use_screenshot) {
+  TabletModeController::SetUseScreenshotForTest(use_screenshot);
+}
+
 MessageCenterController* ShellTestApi::message_center_controller() {
   return shell_->message_center_controller_.get();
 }
@@ -182,7 +188,6 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
 
 void ShellTestApi::SetTabletModeEnabledForTest(bool enable) {
   AccelerometerReader::GetInstance()->DisableForTest();
-  TabletModeController::SetForceNoScreenshotForTest();
   shell_->tablet_mode_controller()->SetEnabledForTest(enable);
 }
 

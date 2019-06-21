@@ -48,6 +48,7 @@ class PerfCollector : public MetricCollector {
       const std::string& perf_stdout);
 
   // MetricCollector:
+  base::WeakPtr<MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
 

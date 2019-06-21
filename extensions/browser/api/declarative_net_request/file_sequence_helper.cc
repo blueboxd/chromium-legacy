@@ -15,7 +15,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
@@ -350,10 +350,7 @@ LoadRequestData::LoadRequestData(LoadRequestData&&) = default;
 LoadRequestData& LoadRequestData::operator=(LoadRequestData&&) = default;
 
 FileSequenceHelper::FileSequenceHelper()
-    : connector_(content::ServiceManagerConnection::GetForProcess()
-                     ->GetConnector()
-                     ->Clone()),
-      weak_factory_(this) {}
+    : connector_(content::GetSystemConnector()->Clone()), weak_factory_(this) {}
 
 FileSequenceHelper::~FileSequenceHelper() {
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());

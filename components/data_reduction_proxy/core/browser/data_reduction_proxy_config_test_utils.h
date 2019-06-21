@@ -58,9 +58,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // TODO(jeremyim): Rationalize with test_params().
   DataReductionProxyConfigValues* config_values();
 
-  // Resets the Lo-Fi status to default state.
-  void ResetLoFiStatusForTest();
-
   // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
   // passed to the callee.
   void SetTickClock(const base::TickClock* tick_clock);

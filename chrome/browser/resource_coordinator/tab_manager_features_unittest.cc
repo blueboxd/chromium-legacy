@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
-#include "components/variations/variations_params_manager.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -19,19 +19,17 @@ class TabManagerFeaturesTest : public testing::Test {
   // Enables the proactive tab discarding feature, and sets up the associated
   // variations parameter values.
   void EnableProactiveTabFreezeAndDiscard() {
-    std::set<std::string> features;
-    features.insert(features::kProactiveTabFreezeAndDiscard.name);
-    variations_manager_.SetVariationParamsWithFeatureAssociations(
-        "DummyTrial", params_, features);
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kProactiveTabFreezeAndDiscard, params_);
   }
 
   // Enables the site characteristics database feature, and sets up the
   // associated variations parameter values.
   void EnableSiteCharacteristicsDatabase() {
-    std::set<std::string> features;
-    features.insert(features::kSiteCharacteristicsDatabase.name);
-    variations_manager_.SetVariationParamsWithFeatureAssociations(
-        "DummyTrial", params_, features);
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kSiteCharacteristicsDatabase, params_);
   }
 
   void SetParam(base::StringPiece key, base::StringPiece value) {
@@ -162,8 +160,8 @@ class TabManagerFeaturesTest : public testing::Test {
   }
 
  private:
-  std::map<std::string, std::string> params_;
-  variations::testing::VariationParamsManager variations_manager_;
+  base::FieldTrialParams params_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace

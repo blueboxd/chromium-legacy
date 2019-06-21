@@ -55,7 +55,9 @@ mojom("interfaces") {
   enabled_features = []
   if (use_browser_spellchecker) {
     enabled_features += [ "USE_BROWSER_SPELLCHECKER" ]
-  } else {
+  }
+
+  if (use_renderer_spellchecker) {
     enabled_features += [ "USE_RENDERER_SPELLCHECKER" ]
   }
 }

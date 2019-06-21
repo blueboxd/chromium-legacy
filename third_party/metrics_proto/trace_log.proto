@@ -22,52 +22,5 @@ message TraceLog {
   // Client uploads the trace data as a byte buffer.
   optional bytes raw_data = 1;
 
-  // Metadata related to the trace log, like trigger for the upload, etc.
-  optional TraceMetadata metadata = 3;
-}
-
-// This field contains metadata associated with the trace.
-message TraceMetadata {
-  // Information about a trigger rule defined in the experiment config.
-  message TriggerRule {
-    enum TriggerType {
-      UNKNOWN = 0;
-
-      // Traces are triggered by specific range of values of an UMA histogram.
-      MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE = 1;
-
-      // Traces are triggered by specific named events in chromium codebase,
-      // like "second-update-failure".
-      MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED = 2;
-    }
-    optional TriggerType trigger_type = 1;
-
-    // Configuration of histogram trigger.
-    message HistogramRule {
-      // UMA histogram name hash, same as HistogramEventProto.name_hash.
-      optional fixed64 histogram_name_hash = 1;
-
-      // Range of values of the histogram that activates trigger.
-      optional int64 histogram_min_trigger = 2;
-      optional int64 histogram_max_trigger = 3;
-    }
-    optional HistogramRule histogram_rule = 2;
-
-    // Configuration of named trigger.
-    message NamedRule {
-      enum EventType {
-        INVALID = 0;
-        SESSION_RESTORE = 1;
-        NAVIGATION = 2;
-      }
-      optional EventType event_type = 1;
-    }
-    optional NamedRule named_rule = 3;
-  }
-
-  // Specifies the rule that caused the trace to be uploaded.
-  optional TriggerRule triggered_rule = 1;
-
-  // List of all active triggers in current session, when trace was triggered.
-  repeated TriggerRule active_rules = 2;
+  reserved 3;
 }

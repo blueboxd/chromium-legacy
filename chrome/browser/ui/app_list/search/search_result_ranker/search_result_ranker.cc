@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "url/gurl.h"
 
 namespace app_list {
 namespace {
@@ -78,6 +79,27 @@ FileOpenType GetTypeFromFileTaskNotifier(FileTasksObserver::OpenType type) {
       return FileOpenType::kDownload;
     default:
       return FileOpenType::kUnknown;
+  }
+}
+
+// Performs any per-type normalization required on a search result ID. This is
+// meant to simplify the space of IDs in cases where they are too sparse.
+std::string NormalizeId(const std::string& id, RankingItemType type) {
+  // Put any further normalizations here.
+  switch (type) {
+    case RankingItemType::kOmniboxGeneric:
+    case RankingItemType::kOmniboxBookmark:
+    case RankingItemType::kOmniboxDocument:
+    case RankingItemType::kOmniboxHistory:
+    case RankingItemType::kOmniboxSearch:
+      // Heuristically check if the URL points to a Drive file. If so, strip
+      // some extra information from it.
+      if (GURL(id).host() == "docs.google.com")
+        return SimplifyGoogleDocsUrlId(id);
+      else
+        return SimplifyUrlId(id);
+    default:
+      return id;
   }
 }
 
@@ -202,8 +224,8 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
               3.0);
         }
       } else if (query_based_mixed_types_ranker_) {
-        // TODO(931149): Add some normalization for URLs.
-        const auto& rank_it = query_mixed_ranks_.find(result.result->id());
+        const auto& rank_it =
+            query_mixed_ranks_.find(NormalizeId(result.result->id(), type));
         if (rank_it != query_mixed_ranks_.end()) {
           result.score = std::min(
               result.score + rank_it->second * results_list_boost_coefficient_,
@@ -216,12 +238,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 
 void SearchResultRanker::Train(const std::string& id, RankingItemType type) {
   if (ModelForType(type) == Model::MIXED_TYPES) {
-    // TODO(931149): Add some normalization for URLs.
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(
           base::NumberToString(static_cast<int>(type)));
     } else if (query_based_mixed_types_ranker_) {
-      query_based_mixed_types_ranker_->Record(id);
+      query_based_mixed_types_ranker_->Record(NormalizeId(id, type));
     }
   }
 }

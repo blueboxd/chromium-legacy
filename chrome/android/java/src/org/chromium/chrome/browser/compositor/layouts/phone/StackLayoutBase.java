@@ -1458,6 +1458,7 @@ public abstract class StackLayoutBase extends Layout {
         mIsHidingBecauseOfNewTabCreation = false;
 
         super.doneHiding();
+        RecordUserAction.record("MobileExitStackView");
 
         mInnerMarginPercent = 0.0f;
         mStackOffsetYPercent = 0.0f;

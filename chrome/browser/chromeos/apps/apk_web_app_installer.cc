@@ -16,7 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -44,9 +44,8 @@ void ApkWebAppInstaller::Install(Profile* profile,
   // CompleteInstallation().
   auto* installer =
       new ApkWebAppInstaller(profile, std::move(callback), weak_owner);
-  installer->Start(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      std::move(web_app_info), icon_png_data);
+  installer->Start(content::GetSystemConnector(), std::move(web_app_info),
+                   icon_png_data);
 }
 
 ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,

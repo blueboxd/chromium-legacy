@@ -169,6 +169,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
         chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
         content::NotificationService::AllSources(),
         content::Details<Profile>(user_profile));
+    session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+        ProfileHelper::Get()->GetUserByProfile(user_profile)->GetAccountId());
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
     session_manager::SessionManager::Get()->SessionStarted();

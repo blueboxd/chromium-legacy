@@ -14,7 +14,8 @@ namespace blink {
 namespace {
 
 // Amount of time that media controls are visible.
-constexpr WTF::TimeDelta kTimeToHideControl = TimeDelta::FromMilliseconds(3000);
+constexpr base::TimeDelta kTimeToHideControl =
+    base::TimeDelta::FromMilliseconds(3000);
 
 const char kTransparentCSSClass[] = "transparent";
 const char kTransparentImmediateCSSClass[] = "transparent-immediate";

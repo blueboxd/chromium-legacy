@@ -594,6 +594,11 @@ bool ShelfLayoutManager::HasVisibleWindow() const {
   return !pip_container->children().empty();
 }
 
+void ShelfLayoutManager::CancelDragOnShelfIfInProgress() {
+  if (drag_status_ == kDragInProgress || drag_status_ == kDragAppListInProgress)
+    CancelDrag();
+}
+
 void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }

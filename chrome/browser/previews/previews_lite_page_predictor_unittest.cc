@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/web_contents.h"
@@ -91,7 +92,7 @@ class PreviewsLitePagePredictorUnitTest
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
-TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet) {
+TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -104,6 +105,27 @@ TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet) {
   EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
   histogram_tester.ExpectUniqueSample(
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
+}
+
+TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
+  RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
+          true /* ect_is_slow */, false /* page_is_blacklisted */,
+          true /* is_visible */);
+
+  base::HistogramTester histogram_tester;
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(
+          PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+              GURL(kTestUrl)));
+
+  EXPECT_TRUE(preresolver()->ShouldPreresolveOnPage());
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.ToggledPreresolve", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", false, 1);
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
@@ -191,6 +213,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
       "Previews.ServerLitePage.ToggledPreresolve", true, 2);
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 2);
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
@@ -213,6 +237,8 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
 }
 
 TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
@@ -234,4 +260,6 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
       "Previews.ServerLitePage.ToggledPreresolve", true, 1);
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.ToggledPreresolve", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
 }

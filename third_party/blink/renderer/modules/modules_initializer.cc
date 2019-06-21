@@ -328,7 +328,7 @@ void ModulesInitializer::RegisterInterfaces(
     service_manager::BinderRegistry& registry) {
   DCHECK(Platform::Current());
   registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&WebDatabaseImpl::Create)),
+      ConvertToBaseCallback(CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
       Platform::Current()->GetIOTaskRunner());
 }
 

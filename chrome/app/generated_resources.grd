@@ -5084,10 +5084,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL" desc="The label for the option to show most visited sites in the customization menu on the New Tab Page">
         Most visited sites
       </message>
-      <message name="IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC" desc="The description for the option to show user selected shortcuts in the customization menu on the New Tab Page">
+      <message name="IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC" desc="The description for the option to show user selected shortcuts in the customization menu on the New Tab Page">
         Shortcuts are suggested based on websites you visit often
       </message>
-      <message name="IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC" desc="The description for the option to show most visited sites in the customization menu on the New Tab Page">
+      <message name="IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_DESC" desc="The description for the option to show most visited sites in the customization menu on the New Tab Page">
         Shortcuts are curated by you
       </message>
 

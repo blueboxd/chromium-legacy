@@ -42,7 +42,8 @@ class ScheduledNotificationManager {
 
   // Creates the instance.
   static std::unique_ptr<ScheduledNotificationManager> Create(
-      std::unique_ptr<CollectionStore<NotificationEntry>> store);
+      std::unique_ptr<CollectionStore<NotificationEntry>> store,
+      const std::vector<SchedulerClientType>& clients);
 
   // Initializes the notification store.
   virtual void Init(Delegate* delegate, InitCallback callback) = 0;
@@ -57,7 +58,12 @@ class ScheduledNotificationManager {
 
   // Gets all scheduled notifications. For each type, notifications are sorted
   // by creation timestamp.
-  virtual void GetAllNotifications(Notifications* notifications) = 0;
+  virtual void GetAllNotifications(Notifications* notifications) const = 0;
+
+  // Gets all notifications for a particular type, notifications are not sorted.
+  virtual void GetNotifications(
+      SchedulerClientType type,
+      std::vector<const NotificationEntry*>* notifications) const = 0;
 
   // Deletes all notifications of given SchedulerClientType.
   virtual void DeleteNotifications(SchedulerClientType type) = 0;

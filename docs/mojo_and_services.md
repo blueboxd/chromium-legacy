@@ -617,9 +617,9 @@ an interface request to our service. This is accessible from the main thread of
 the browser process. Somewhere in `src/chrome/browser`, we can write:
 
 ``` cpp
-// This gives us the global content_browser's Connector
-service_manager::Connector* connector =
-    content::ServiceManagerConnection::GetForProcess()->GetConnector();
+// This gives us the system Connector for the browser process, which has access
+// to most service interfaces.
+service_manager::Connector* connector = content::GetSystemConnector();
 
 // Recall from the earlier Mojo section that mojo::MakeRequest creates a new
 // message pipe for our interface. Connector passes the request endpoint to

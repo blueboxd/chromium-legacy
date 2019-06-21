@@ -120,7 +120,7 @@ void PlatformSpeechSynthesizerMock::SpeakNow() {
 
   // Give the fake speech job some time so that pause and other functions have
   // time to be called.
-  speaking_finished_timer_.StartOneShot(TimeDelta::FromMilliseconds(100),
+  speaking_finished_timer_.StartOneShot(base::TimeDelta::FromMilliseconds(100),
                                         FROM_HERE);
 }
 
@@ -132,8 +132,8 @@ void PlatformSpeechSynthesizerMock::Cancel() {
   queued_utterances_.clear();
 
   speaking_finished_timer_.Stop();
-  speaking_error_occurred_timer_.StartOneShot(TimeDelta::FromMilliseconds(100),
-                                              FROM_HERE);
+  speaking_error_occurred_timer_.StartOneShot(
+      base::TimeDelta::FromMilliseconds(100), FROM_HERE);
 }
 
 void PlatformSpeechSynthesizerMock::Pause() {

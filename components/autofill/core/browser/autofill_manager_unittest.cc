@@ -588,7 +588,6 @@ class AutofillManagerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -13,6 +14,8 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.webapk.lib.client.WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
@@ -43,6 +47,7 @@ import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.io.File;
@@ -84,6 +89,7 @@ public class WebApkUpdateManagerUnitTest {
     private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;
+    private static final int DEFAULT_BACKGROUND_COLOR = 3;
     private static final String SHARE_TARGET_ACTION = "/share_action.html";
     private static final String SHARE_TARGET_PARAM_TITLE = "share_params_title";
     private static final String SHARE_TARGET_METHOD_GET = "GET";
@@ -214,12 +220,31 @@ public class WebApkUpdateManagerUnitTest {
         public int orientation;
         public long themeColor;
         public long backgroundColor;
+        public int defaultBackgroundColor;
         public String shareTargetAction;
         public String shareTargetParamTitle;
         public String shareTargetMethod;
         public String shareTargetEncType;
         public String[] shareTargetFileNames;
         public String[][] shareTargetFileAccepts;
+    }
+
+    private static class FakeDefaultBackgroundColorResource extends Resources {
+        private static final int ID = 10;
+        private int mColorValue;
+
+        public FakeDefaultBackgroundColorResource(int colorValue) {
+            super(new AssetManager(), null, null);
+            mColorValue = colorValue;
+        }
+
+        @Override
+        public int getColor(int id, Resources.Theme theme) {
+            if (id != ID) {
+                throw new Resources.NotFoundException("id 0x" + Integer.toHexString(id));
+            }
+            return mColorValue;
+        }
     }
 
     private static String getWebApkId(String packageName) {
@@ -246,6 +271,8 @@ public class WebApkUpdateManagerUnitTest {
         metaData.putString(WebApkMetaDataKeys.SHORT_NAME, manifestData.shortName);
         metaData.putString(WebApkMetaDataKeys.THEME_COLOR, manifestData.themeColor + "L");
         metaData.putString(WebApkMetaDataKeys.BACKGROUND_COLOR, manifestData.backgroundColor + "L");
+        metaData.putInt(WebApkMetaDataKeys.DEFAULT_BACKGROUND_COLOR_ID,
+                FakeDefaultBackgroundColorResource.ID);
         metaData.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, WEB_MANIFEST_URL);
 
         String iconUrlsAndIconMurmur2Hashes = "";
@@ -292,6 +319,8 @@ public class WebApkUpdateManagerUnitTest {
 
         WebApkTestHelper.registerWebApkWithMetaData(
                 packageName, metaData, new Bundle[] {shareTargetMetaData});
+        WebApkTestHelper.setResource(packageName,
+                new FakeDefaultBackgroundColorResource(manifestData.defaultBackgroundColor));
     }
 
     private static ManifestData defaultManifestData() {
@@ -313,6 +342,7 @@ public class WebApkUpdateManagerUnitTest {
         manifestData.orientation = ORIENTATION;
         manifestData.themeColor = THEME_COLOR;
         manifestData.backgroundColor = BACKGROUND_COLOR;
+        manifestData.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
         manifestData.shareTargetAction = SHARE_TARGET_ACTION;
         manifestData.shareTargetParamTitle = SHARE_TARGET_PARAM_TITLE;
 
@@ -332,8 +362,9 @@ public class WebApkUpdateManagerUnitTest {
                 new WebApkInfo.Icon(manifestData.primaryIcon),
                 new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
-                manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
-                WEB_MANIFEST_URL, manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                manifestData.themeColor, manifestData.backgroundColor,
+                manifestData.defaultBackgroundColor, kPackageName, -1, WEB_MANIFEST_URL,
+                manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
                 manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null,
@@ -1002,6 +1033,30 @@ public class WebApkUpdateManagerUnitTest {
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
         fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl1, null);
         fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl2, hash4);
+
+        assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
+    }
+
+    /**
+     * Test that an upgrade is not requested if the AndroidManifest does not have a valid background
+     * color and the default background color in the WebAPK's resources is different than
+     * {@link SplashLayout#getDefaultBackgroundColor()} (due to a change in the return value of
+     * {@link SplashLayout#getDefaultBackgroundColor()} in a new Chrome version).
+     */
+    @Test
+    public void testDefaultBackgroundColorHasChangedShouldUpgrade() {
+        int oldDefaultBackgroundColor = 3;
+        int splashLayoutDefaultBackgroundColor =
+                SplashLayout.getDefaultBackgroundColor(RuntimeEnvironment.application);
+        assertNotEquals(oldDefaultBackgroundColor, splashLayoutDefaultBackgroundColor);
+
+        ManifestData androidManifestData = defaultManifestData();
+        androidManifestData.backgroundColor = ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        androidManifestData.defaultBackgroundColor = oldDefaultBackgroundColor;
+
+        ManifestData fetchedManifestData = defaultManifestData();
+        fetchedManifestData.backgroundColor = ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        fetchedManifestData.defaultBackgroundColor = splashLayoutDefaultBackgroundColor;
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
     }

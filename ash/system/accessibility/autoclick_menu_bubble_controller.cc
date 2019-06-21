@@ -98,8 +98,11 @@ void AutoclickMenuBubbleController::SetEventType(
                       -kCollisionWindowWorkAreaInsetsDp);
     scroll_bubble_controller_->ShowBubble(
         anchor_rect, GetScrollAnchorAlignmentForPosition(position_));
-  } else {
+  } else if (scroll_bubble_controller_) {
     scroll_bubble_controller_ = nullptr;
+    // Update the bubble menu's position in case it had moved out of the way
+    // for the scroll bubble.
+    SetPosition(position_);
   }
 }
 
@@ -191,6 +194,11 @@ void AutoclickMenuBubbleController::SetPosition(
   // Position the scroll bubble with respect to the menu.
   scroll_bubble_controller_->UpdateAnchorRect(
       resting_bounds, GetScrollAnchorAlignmentForPosition(new_position));
+}
+
+void AutoclickMenuBubbleController::SetScrollPoint(
+    gfx::Point scroll_location_in_dips) {
+  scroll_bubble_controller_->SetScrollPoint(scroll_location_in_dips);
 }
 
 void AutoclickMenuBubbleController::ShowBubble(

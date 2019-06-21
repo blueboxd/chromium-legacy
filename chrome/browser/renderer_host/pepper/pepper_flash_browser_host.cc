@@ -16,7 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ppapi/c/pp_errors.h"
@@ -39,7 +39,6 @@
 using content::BrowserPpapiHost;
 using content::BrowserThread;
 using content::RenderProcessHost;
-using content::ServiceManagerConnection;
 
 namespace {
 
@@ -60,11 +59,9 @@ scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
 void PepperBindConnectorRequest(
     service_manager::mojom::ConnectorRequest connector_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(ServiceManagerConnection::GetForProcess());
-
-  ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(connector_request));
+  DCHECK(content::GetSystemConnector());
+  content::GetSystemConnector()->BindConnectorRequest(
+      std::move(connector_request));
 }
 
 }  // namespace
@@ -184,9 +181,8 @@ device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
 
   device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
 
-  // Service manager connection might be not initialized in some testing
-  // contexts.
-  if (!ServiceManagerConnection::GetForProcess())
+  // The system Connector might be not initialized in some testing environments.
+  if (!content::GetSystemConnector())
     return wake_lock_.get();
 
   service_manager::mojom::ConnectorRequest connector_request;

@@ -458,8 +458,7 @@ void InputInjectorWin::Core::HandleTouch(const TouchEvent& event) {
 // static
 std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return base::WrapUnique(
       new InputInjectorWin(main_task_runner, ui_task_runner));
 }

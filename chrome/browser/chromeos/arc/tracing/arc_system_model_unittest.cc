@@ -142,4 +142,27 @@ TEST_F(ArcSystemModelTest, TrimByTimestampMemory) {
             model.memory_events()[7]);
 }
 
+TEST_F(ArcSystemModelTest, CloseRange) {
+  ArcSystemModel model;
+
+  model.memory_events().emplace_back(
+      0 /* timestamp */, ArcValueEvent::Type::kGpuFreq, 100 /* value */);
+  model.memory_events().emplace_back(
+      0 /* timestamp */, ArcValueEvent::Type::kCpuTemp, 20 /* value */);
+  model.memory_events().emplace_back(
+      100 /* timestamp */, ArcValueEvent::Type::kGpuFreq, 150 /* value */);
+  model.memory_events().emplace_back(
+      200 /* timestamp */, ArcValueEvent::Type::kCpuTemp, 50 /* value */);
+
+  EXPECT_EQ(4u, model.memory_events().size());
+
+  model.CloseRangeForValueEvents(200 /* timestamp */);
+
+  // kGpuFreq is extended.
+  ASSERT_EQ(5u, model.memory_events().size());
+  EXPECT_EQ(ArcValueEvent(200 /* timestamp */, ArcValueEvent::Type::kGpuFreq,
+                          150 /* value */),
+            model.memory_events().back());
+}
+
 }  // namespace arc

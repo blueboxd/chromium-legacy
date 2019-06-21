@@ -67,6 +67,9 @@ cr.define('print_preview', function() {
 
       /** @private {number} The number of total pages in the document. */
       this.pageCount_ = 1;
+
+      /** @private {?print_preview.PageLayoutInfo} Page layout information */
+      this.pageLayoutInfo_ = null;
     }
 
     /** @param {number} pageCount The number of pages in the document. */
@@ -110,6 +113,10 @@ cr.define('print_preview', function() {
       }
       const pageRanges = printTicketParsed.pageRange;
       const requestId = printTicketParsed.requestID;
+      if (this.pageLayoutInfo_) {
+        cr.webUIListenerCallback(
+            'page-layout-ready', this.pageLayoutInfo_, false);
+      }
       if (pageRanges.length == 0) {  // assume full length document, 1 page.
         cr.webUIListenerCallback(
             'page-count-ready', this.pageCount_, requestId, 100);
@@ -261,6 +268,11 @@ cr.define('print_preview', function() {
      */
     setInvalidPrinterId(id) {
       this.badPrinterId_ = id;
+    }
+
+    /** @param {!print_preview.PageLayoutInfo} pageLayoutInfo */
+    setPageLayoutInfo(pageLayoutInfo) {
+      this.pageLayoutInfo_ = pageLayoutInfo;
     }
   }
 

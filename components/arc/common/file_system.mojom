@@ -164,6 +164,9 @@ struct SelectFilesRequest {
   // Filled only when DocumentsContract.EXTRA_INITIAL_URI points to a document
   // served by a DocumentsProvider.
   DocumentPath? initial_document_path;
+
+  // Android task ID of the request sender.
+  int32 task_id;
 };
 
 // Represents a path to a document served by a DocumentsProvider.
@@ -195,6 +198,10 @@ struct FileSelectorEvent {
 
   // Specifies the target directory/file for CLICK_DIRECTORY/CLICK_FILE.
   FileSelectorElement click_target;
+
+  // Android task ID of the activity that created the file selector by sending
+  // a SelectFilesRequest.
+  int32 creator_task_id;
 };
 
 // Types of UI events for FileSelectorEvent.
@@ -204,6 +211,13 @@ enum FileSelectorEventType {
   CLICK_DIRECTORY,  // Clicks a directory in the left pane.
   CLICK_FILE,       // Clicks a file in the right pane.
   CLICK_CANCEL,     // Clicks Cancel button.
+};
+
+// Request for GetFileSelectorElements.
+struct GetFileSelectorElementsRequest {
+  // Android task ID of the activity that created the file selector by sending
+  // a SelectFilesRequest.
+  int32 creator_task_id;
 };
 
 // Represents a clickable UI element shown on ChromeOS file selector.
@@ -259,7 +273,8 @@ interface FileSystemHost {
   // Returns UI elements shown on the ChromeOS file selector previously opened
   // by SelectFiles@5. This exists for running Android UI tests (CTS) on
   // ChromeOS file selector, and thus it is only allowed under test conditions.
-  [MinVersion=11] GetFileSelectorElements@8() =>
+  [MinVersion=11] GetFileSelectorElements@8(
+      GetFileSelectorElementsRequest request) =>
       (FileSelectorElements elements);
 };
 

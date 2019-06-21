@@ -395,7 +395,9 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: user consent.
-- (void)testDismissSigninFromTabSwitcher {
+// TODO(crbug.com/976828): Test flaky based on the screen size and the number
+// of recently closed tabs from the previous tests.
+- (void)DISABLED_testDismissSigninFromTabSwitcher {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:NO];
 }
@@ -403,7 +405,9 @@ void TapOnPrimarySignInButtonInRecentTabs() {
 // Tests to dismiss sign-in by opening an URL from another app.
 // Sign-in opened from: tab switcher.
 // Interrupted at: advanced sign-in.
-- (void)testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
+// TODO(crbug.com/976828): Test flaky based on the screen size and the number
+// of recently closed tabs from the previous tests.
+- (void)DISABLED_testDismissSigninFromTabSwitcherFromAdvancedSigninSettings {
   [self assertOpenURLWhenSigninFromView:OpenSigninMethodFromTabSwitcher
                         tapSettingsLink:YES];
 }

@@ -45,6 +45,7 @@ Polymer({
 
   listeners: {
     'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
+    'show-cups-printer-toast': 'openResultToast_',
   },
 
   /**
@@ -101,6 +102,18 @@ Polymer({
           entry.ConnectionState == 'Connected';
     });
   },
+
+  /**
+   * @param {!CustomEvent<!{
+    *      resultCode: PrinterSetupResult,
+    *      printerName: string
+    * }>} event
+    * @private
+    */
+   openResultToast_: function(event) {
+     this.onAddOrEditPrinter_(event.detail.resultCode,
+                              event.detail.printerName);
+   },
 
   /**
    * @param {PrinterSetupResult} result_code

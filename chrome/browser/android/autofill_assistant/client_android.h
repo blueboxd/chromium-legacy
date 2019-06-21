@@ -38,19 +38,13 @@ class ClientAndroid : public Client,
   // Returns the corresponding Java AutofillAssistantClient.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  // Called from the Java side:
-  void ShowOnboarding(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jexperiment_ids,
-      const base::android::JavaParamRef<jobject>& on_accept);
-
   void Start(JNIEnv* env,
              const base::android::JavaParamRef<jobject>& jcaller,
              const base::android::JavaParamRef<jstring>& jinitial_url,
              const base::android::JavaParamRef<jstring>& jexperiment_ids,
              const base::android::JavaParamRef<jobjectArray>& parameterNames,
-             const base::android::JavaParamRef<jobjectArray>& parameterValues);
+             const base::android::JavaParamRef<jobjectArray>& parameterValues,
+             const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   void DestroyUI(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller);
   void TransferUITo(
@@ -90,6 +84,8 @@ class ClientAndroid : public Client,
   explicit ClientAndroid(content::WebContents* web_contents);
   void CreateController();
   void DestroyController();
+  void CreateUI(
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   bool NeedsUI();
   void SetUI(std::unique_ptr<UiControllerAndroid> ui_controller_android);
 

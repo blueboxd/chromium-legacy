@@ -1358,6 +1358,7 @@ jumbo_component("platform") {
     "webrtc/track_observer.cc",
     "webrtc/webrtc_logging.cc",
     "webrtc/webrtc_video_frame_adapter.cc",
+    "webrtc/webrtc_video_utils.cc",
     "windows_keyboard_codes.h",
   ]
 

@@ -21,7 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,9 +62,8 @@ FingerprintHandler::FingerprintHandler(Profile* profile)
       binding_(this),
       session_observer_(this),
       weak_ptr_factory_(this) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &fp_service_);
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
 }
 

@@ -10,7 +10,7 @@ List of customizable styles:
   --cr-checkbox-border-size
   --cr-checkbox-checked-box-color
   --cr-checkbox-label-color
-  --cr-checkbox-label-container (CSS mixin)
+  --cr-checkbox-label-padding-start
   --cr-checkbox-mark-color
   --cr-checkbox-ripple-checked-color
   --cr-checkbox-ripple-size
@@ -137,10 +137,8 @@ List of customizable styles:
 
       #label-container {
         color: var(--cr-checkbox-label-color, var(--cr-primary-text-color));
-        padding-inline-start: 20px;
+        padding-inline-start: var(--cr-checkbox-label-padding-start, 20px);
         white-space: normal;
-
-        @apply --cr-checkbox-label-container;
       }
 
       :host(.no-label) #label-container {
@@ -160,7 +158,9 @@ List of customizable styles:
         aria-describedby="ariaDescription">
       <span id="checkmark"></span>
     </div>
-    <div id="label-container" aria-hidden="true"><slot></slot></div>
+    <div id="label-container" aria-hidden="true" part="label-container">
+      <slot></slot>
+    </div>
     <div id="ariaDescription">[[ariaDescription]]</div>
   </template>
   <script src="cr_checkbox.js"></script>

@@ -192,7 +192,7 @@ class Promise {
   auto CatchOn(const TaskTraits& traits,
                const Location& from_here,
                RejectCb&& on_reject) noexcept {
-    return CatchOn(CreateTaskRunnerWithTraits(traits), from_here,
+    return CatchOn(CreateTaskRunner(traits), from_here,
                    std::forward<RejectCb>(on_reject));
   }
 
@@ -266,7 +266,7 @@ class Promise {
   auto ThenOn(const TaskTraits& traits,
               const Location& from_here,
               ResolveCb&& on_resolve) noexcept {
-    return ThenOn(CreateTaskRunnerWithTraits(traits), from_here,
+    return ThenOn(CreateTaskRunner(traits), from_here,
                   std::forward<ResolveCb>(on_resolve));
   }
 
@@ -367,7 +367,7 @@ class Promise {
               const Location& from_here,
               ResolveCb&& on_resolve,
               RejectCb&& on_reject) noexcept {
-    return ThenOn(CreateTaskRunnerWithTraits(traits), from_here,
+    return ThenOn(CreateTaskRunner(traits), from_here,
                   std::forward<ResolveCb>(on_resolve),
                   std::forward<RejectCb>(on_reject));
   }
@@ -421,7 +421,7 @@ class Promise {
   auto FinallyOn(const TaskTraits& traits,
                  const Location& from_here,
                  FinallyCb&& finally_callback) noexcept {
-    return FinallyOn(CreateTaskRunnerWithTraits(traits), from_here,
+    return FinallyOn(CreateTaskRunner(traits), from_here,
                      std::move(finally_callback));
   }
 

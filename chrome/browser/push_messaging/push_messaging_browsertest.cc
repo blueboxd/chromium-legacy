@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -1597,6 +1599,56 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   EXPECT_EQ("testdata", script_result);
 
   ASSERT_EQ(0u, GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       PushEventIgnoresScheduledNotificationsForEnforcement) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  RemoveAllNotifications();
+
+  // We'll need to specify the web_contents in which to eval script, since we're
+  // going to run script in a background tab.
+  content::WebContents* web_contents =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
+
+  // Initialize site engagement score to have no budget for silent pushes.
+  SetSiteEngagementScore(web_contents->GetURL(), 0);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      GetBrowser(), GURL("about:blank"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  gcm::IncomingMessage message;
+  message.sender_id = GetTestApplicationServerKey();
+  message.raw_data = "shownotification-with-showtrigger";
+  message.decrypted = true;
+
+  // If the Service Worker push event handler only schedules a notification, we
+  // should show a forced one providing there is no foreground tab and the
+  // origin ran out of budget.
+  SendMessageAndWaitUntilHandled(app_identifier, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("shownotification-with-showtrigger", script_result);
+
+  // Because scheduled notifications do not count as displayed notifications,
+  // this should have shown a default notification.
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(notifications.size(), 1u);
+
+  EXPECT_TRUE(TagEquals(notifications[0], kPushMessagingForcedNotificationTag));
+  EXPECT_TRUE(notifications[0].silent());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

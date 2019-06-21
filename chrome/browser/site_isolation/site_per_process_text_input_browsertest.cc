@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
       destruction_observer(
           new content::TestRenderWidgetHostViewDestructionObserver(first_view));
   {
-    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    content::ScopedAllowRendererCrashes allow_renderer_crashes(frames[0]);
     frames[0]->GetProcess()->Shutdown(0);
     destruction_observer->Wait();
   }
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
       new content::TestRenderWidgetHostViewDestructionObserver(
           frames[1]->GetView()));
   {
-    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    content::ScopedAllowRendererCrashes allow_renderer_crashes(frames[1]);
     frames[1]->GetProcess()->Shutdown(0);
     destruction_observer->Wait();
   }

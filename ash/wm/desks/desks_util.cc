@@ -125,7 +125,7 @@ aura::Window* GetDeskContainerForContext(aura::Window* context) {
 
 bool ShouldDesksBarBeCreated() {
   return features::IsVirtualDesksEnabled() &&
-         (!TabletMode::Get()->IsEnabled() ||
+         (!TabletMode::Get()->InTabletMode() ||
           DesksController::Get()->desks().size() > 1);
 }
 

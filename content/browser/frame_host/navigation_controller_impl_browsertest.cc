@@ -9893,4 +9893,54 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             shell()->web_contents()->GetLastCommittedURL());
 }
 
+// Tests a renderer aborting the navigation it started, while still waiting on a
+// long cross-process subframe beforeunload handler.
+// Regression test: https://crbug.com/972154
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationAbortDuringLongCrossProcessIframeBeforeUnload) {
+  // This test relies on the main frame and the iframe to live in different
+  // processes. This allows one renderer process to cancel a navigation while
+  // the other renderer process is busy executing its beforeunload handler.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  const GURL navigated_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Have a first page with a cross process iframe.
+  // The iframe itself does have a dialog-showing beforeunload handler.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  std::string script =
+      "window.addEventListener('beforeunload', function (event) {"
+      "  event.returnValue='blocked'"
+      "});";
+  EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+  TestNavigationObserver load_observer(web_contents);
+  NavigationHandleObserver abort_observer(web_contents, navigated_url);
+  BeforeUnloadBlockingDelegate beforeunload_pauser(web_contents);
+
+  // Navigate to any page, renderer initiated.
+  EXPECT_TRUE(ExecJs(shell(), "location.href = 'title1.html'"));
+
+  // The previous navigation is paused while the beforeunloadhandler dialog is
+  // shown to the user. In the meantime, the navigation is aborted:
+  beforeunload_pauser.Wait();
+  EXPECT_TRUE(ExecJs(shell(), "document.write()"));  // Cancel the navigation.
+
+  // Wait for javascript to get processed, and its consequences (aborting the
+  // navigation) to finish. To achieve that we simply wait for DidStopLoading.
+  load_observer.Wait();
+
+  // Verify that the navigation was aborted as expected.
+  EXPECT_FALSE(abort_observer.has_committed());
+}
+
 }  // namespace content

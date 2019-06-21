@@ -1250,6 +1250,9 @@
     </receiver>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.notifications.scheduler.DisplayAgent$Receiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.offlinepages.AutoFetchNotifier$CompleteNotificationReceiver"/>
     <receiver
         android:exported="false"

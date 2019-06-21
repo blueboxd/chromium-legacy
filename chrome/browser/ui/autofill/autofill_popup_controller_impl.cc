@@ -409,13 +409,6 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   return true;
 }
 
-ui::NativeTheme::ColorId
-AutofillPopupControllerImpl::GetBackgroundColorIDForRow(int index) const {
-  return selected_line_ && index == *selected_line_
-             ? ui::NativeTheme::kColorId_ResultsTableHoveredBackground
-             : ui::NativeTheme::kColorId_ResultsTableNormalBackground;
-}
-
 base::Optional<int> AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
 }

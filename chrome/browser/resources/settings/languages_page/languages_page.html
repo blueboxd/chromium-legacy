@@ -147,10 +147,9 @@
 
       .spell-check-radio-button.enhanced {
         align-items: start;
-        --cr-radio-button-disc: {
-          /* Align with just the first line of text */
-          margin-top: calc((1.5em - var(--cr-radio-button-size)) / 2);
-        }
+        /* Align with just the first line of text */
+        --cr-radio-button-disc-margin-block-start: calc(
+            (1.5em - var(--cr-radio-button-size)) / 2);
       }
 
       .enhanced-spellcheck-description {
@@ -172,7 +171,7 @@
         display: none;
       }
 
-      .restart-button {
+      #restartButton {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
@@ -231,8 +230,9 @@
                 </div>
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
-                        item.language.code, languages.prospectiveUILanguage)]]">
-                  <cr-button class="restart-button"
+                    item.language.code, languages.prospectiveUILanguage)]]"
+                    restamp>
+                  <cr-button id="restartButton"
                       hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
                       on-click="onRestartTap_">
                     $i18n{restart}
@@ -403,7 +403,7 @@
 </if> <!-- _google_chrome or not is_macosx -->
         <cr-lazy-render id="menu">
           <template>
-            <cr-action-menu
+            <cr-action-menu on-close="onCloseMenu_"
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
               <cr-checkbox id="uiLanguageItem"
@@ -415,7 +415,7 @@
                   on-change="onUILanguageChange_"
                   disabled="[[disableUILanguageCheckbox_(
                       detailLanguage_, languages.prospectiveUILanguage)]]">
-                <span>$i18n{isDisplayedInThisLanguage}</span>
+                <span>$i18n{displayInThisLanguage}</span>
                 <iron-icon class="policy" icon="cr20:domain" hidden$="[[
                     !detailLanguage_.language.isProhibitedLanguage]]">
                 </iron-icon>

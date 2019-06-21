@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -148,8 +149,9 @@ TEST_F(ChannelMultiplexerTest, OneChannel) {
 
   StreamConnectionTester tester(host_socket.get(), client_socket.get(),
                                 kMessageSize, kMessages);
-  tester.Start();
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  tester.Start(run_loop.QuitClosure());
+  run_loop.Run();
   tester.CheckResults();
 }
 
@@ -168,11 +170,11 @@ TEST_F(ChannelMultiplexerTest, TwoChannels) {
                                 kMessageSize, kMessages);
   StreamConnectionTester tester2(host_socket2_.get(), client_socket2_.get(),
                                  kMessageSize, kMessages);
-  tester1.Start();
-  tester2.Start();
-  while (!tester1.done() || !tester2.done()) {
-    base::RunLoop().Run();
-  }
+  base::RunLoop run_loop;
+  auto done_barrier = base::BarrierClosure(2, run_loop.QuitClosure());
+  tester1.Start(done_barrier);
+  tester2.Start(done_barrier);
+  run_loop.Run();
   tester1.CheckResults();
   tester2.CheckResults();
 }
@@ -207,14 +209,13 @@ TEST_F(ChannelMultiplexerTest, FourChannels) {
                                  kMessageSize, kMessages);
   StreamConnectionTester tester4(client_socket4.get(), host_socket4.get(),
                                  kMessageSize, kMessages);
-  tester1.Start();
-  tester2.Start();
-  tester3.Start();
-  tester4.Start();
-  while (!tester1.done() || !tester2.done() ||
-         !tester3.done() || !tester4.done()) {
-    base::RunLoop().Run();
-  }
+  base::RunLoop run_loop;
+  auto done_barrier = base::BarrierClosure(4, run_loop.QuitClosure());
+  tester1.Start(done_barrier);
+  tester2.Start(done_barrier);
+  tester3.Start(done_barrier);
+  tester4.Start(done_barrier);
+  run_loop.Run();
   tester1.CheckResults();
   tester2.CheckResults();
   tester3.CheckResults();

@@ -37,7 +37,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -160,13 +159,8 @@ AdaptiveScreenBrightnessManager::~AdaptiveScreenBrightnessManager() = default;
 
 std::unique_ptr<AdaptiveScreenBrightnessManager>
 AdaptiveScreenBrightnessManager::CreateInstance() {
-  // TODO(jiameng): video detector below doesn't work with MASH. Temporary
-  // solution is to disable logging if we're under MASH env.
-  // https://crbug.com/871914
-  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook ||
-      features::IsMultiProcessMash()) {
+  if (chromeos::GetDeviceType() != chromeos::DeviceType::kChromebook)
     return nullptr;
-  }
 
   chromeos::PowerManagerClient* const power_manager_client =
       chromeos::PowerManagerClient::Get();

@@ -29,7 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/notification_types.h"
@@ -63,10 +63,8 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 
     // Connect to the ash test interface for the StatusAreaWidget.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName,
-                        &status_area_widget_test_api_);
+    content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &status_area_widget_test_api_);
 
     content::WindowedNotificationObserver extension_load_waiter(
         extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,

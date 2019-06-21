@@ -90,11 +90,14 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
 
 OverviewWindowDragController::OverviewWindowDragController(
     OverviewSession* overview_session,
-    OverviewItem* item)
+    OverviewItem* item,
+    bool allow_drag_to_close)
     : overview_session_(overview_session),
       split_view_controller_(Shell::Get()->split_view_controller()),
       item_(item),
       on_desks_bar_item_size_(GetItemSizeWhenOnDesksBar(item)),
+      display_count_(Shell::GetAllRootWindows().size()),
+      should_allow_drag_to_close_(allow_drag_to_close),
       should_allow_split_view_(ShouldAllowSplitView()),
       virtual_desks_bar_enabled_(desks_util::ShouldDesksBarBeCreated()) {}
 
@@ -128,28 +131,23 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       return;
     }
 
-    if (std::abs(distance.x()) < std::abs(distance.y())) {
-      current_drag_behavior_ = DragBehavior::kDragToClose;
-      overview_session_->GetGridWithRootWindow(item_->root_window())
-          ->StartNudge(item_);
-      did_move_ = true;
+    if (should_allow_drag_to_close_ &&
+        (std::abs(distance.x()) < std::abs(distance.y()))) {
+      StartDragToCloseMode();
     } else if (should_allow_split_view_ || virtual_desks_bar_enabled_) {
       StartNormalDragMode(location_in_screen);
+    } else {
+      return;
     }
   }
 
-  gfx::RectF bounds(item_->target_bounds());
   if (current_drag_behavior_ == DragBehavior::kDragToClose)
-    bounds = ContinueDragToClose(location_in_screen);
+    ContinueDragToClose(location_in_screen);
   else if (current_drag_behavior_ == DragBehavior::kNormalDrag)
-    bounds = ContinueNormalDrag(location_in_screen);
+    ContinueNormalDrag(location_in_screen);
 
   if (presentation_time_recorder_)
     presentation_time_recorder_->RequestNext();
-
-  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
-  if (current_drag_behavior_ == DragBehavior::kNormalDrag)
-    item_->UpdatePhantomsForDragging(location_in_screen);
 }
 
 OverviewWindowDragController::DragResult
@@ -277,7 +275,16 @@ void OverviewWindowDragController::ResetOverviewSession() {
   overview_session_ = nullptr;
 }
 
-gfx::RectF OverviewWindowDragController::ContinueDragToClose(
+void OverviewWindowDragController::StartDragToCloseMode() {
+  DCHECK(should_allow_drag_to_close_);
+
+  did_move_ = true;
+  current_drag_behavior_ = DragBehavior::kDragToClose;
+  overview_session_->GetGridWithRootWindow(item_->root_window())
+      ->StartNudge(item_);
+}
+
+void OverviewWindowDragController::ContinueDragToClose(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kDragToClose);
 
@@ -301,7 +308,7 @@ gfx::RectF OverviewWindowDragController::ContinueDragToClose(
 
   // When dragging to close, only update the y component.
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
-  return bounds;
+  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
 }
 
 OverviewWindowDragController::DragResult
@@ -323,7 +330,7 @@ OverviewWindowDragController::CompleteDragToClose(
   return DragResult::kCanceledDragToClose;
 }
 
-gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
+void OverviewWindowDragController::ContinueNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
 
@@ -335,13 +342,15 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
   gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
 
+  bool allow_original_window_opacity_change = true;
   if (virtual_desks_bar_enabled_) {
     if (item_->overview_grid()->UpdateDesksBarDragDetails(
-            gfx::ToRoundedPoint(location_in_screen))) {
+            gfx::ToRoundedPoint(location_in_screen), /*for_drop=*/false)) {
       // The drag location intersects the bounds of the DesksBarView, in this
       // case we scale down the item, and center it around the drag location.
       bounds.set_size(on_desks_bar_item_size_);
       item_->SetOpacity(kDragToDeskItemOpacity);
+      allow_original_window_opacity_change = false;
       centerpoint = location_in_screen;
       // To make the dragged window contents appear centered around the drag
       // location, we need to take into account the margins applied on the
@@ -362,7 +371,11 @@ gfx::RectF OverviewWindowDragController::ContinueNormalDrag(
 
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
-  return bounds;
+  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  if (display_count_ > 1u) {
+    item_->UpdatePhantomsForDragging(location_in_screen,
+                                     allow_original_window_opacity_change);
+  }
 }
 
 OverviewWindowDragController::DragResult

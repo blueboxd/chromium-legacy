@@ -29,10 +29,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/cache_test_util.h"
@@ -454,8 +454,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   void SetUpMockCertVerifier(int32_t default_result) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     network::mojom::NetworkServiceTestPtr network_service_test;
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &network_service_test);
+    GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                        &network_service_test);
 
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     network_service_test->MockCertVerifierSetDefaultResult(

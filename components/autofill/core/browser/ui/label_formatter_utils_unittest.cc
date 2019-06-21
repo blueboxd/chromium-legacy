@@ -4,14 +4,13 @@
 
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 
-#include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -223,6 +222,26 @@ TEST(LabelFormatterUtilsTest,
                        "", "", "", "", "", "DE", "");
   EXPECT_FALSE(HaveSamePhoneNumbers({&profile1, &profile2}, "de"));
   EXPECT_FALSE(HaveSamePhoneNumbers({&profile2, &profile1}, "de"));
+}
+
+TEST(LabelFormatterUtilsTest, GetLabelName) {
+  AutofillProfile profile =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  profile.SetInfo(NAME_FULL, base::ASCIIToUTF16("Maria Margaretha Kirch"),
+                  "de");
+
+  EXPECT_EQ(base::ASCIIToUTF16("Maria Margaretha Kirch"),
+            GetLabelName({NAME_SUFFIX, NAME_FULL}, profile, "de"));
+  EXPECT_EQ(base::ASCIIToUTF16("Maria Kirch"),
+            GetLabelName({NAME_SUFFIX, NAME_FIRST, NAME_LAST}, profile, "de"));
+  EXPECT_EQ(base::ASCIIToUTF16("Maria"),
+            GetLabelName({NAME_SUFFIX, NAME_FIRST}, profile, "de"));
+  EXPECT_EQ(base::ASCIIToUTF16("Kirch"),
+            GetLabelName({NAME_SUFFIX, NAME_LAST}, profile, "de"));
+  EXPECT_EQ(base::ASCIIToUTF16("Margaretha"),
+            GetLabelName({NAME_MIDDLE}, profile, "de"));
+  EXPECT_EQ(base::string16(), GetLabelName({EMPTY_TYPE}, profile, "de"));
+  EXPECT_EQ(base::string16(), GetLabelName({}, profile, "de"));
 }
 
 }  // namespace

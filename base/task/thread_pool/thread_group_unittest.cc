@@ -166,13 +166,13 @@ class ThreadGroupTest : public testing::TestWithParam<PoolExecutionType>,
   }
 
   scoped_refptr<TaskRunner> CreateTaskRunner(
-      const TaskTraits& traits = TaskTraits()) {
+      const TaskTraits& traits = TaskTraits(ThreadPool())) {
     return test::CreateTaskRunnerWithExecutionMode(
         GetParam().execution_mode, &mock_pooled_task_runner_delegate_, traits);
   }
 
   Thread service_thread_;
-  TaskTracker task_tracker_ = {"Test"};
+  TaskTracker task_tracker_{"Test"};
   DelayedTaskManager delayed_task_manager_;
   test::MockPooledTaskRunnerDelegate mock_pooled_task_runner_delegate_ = {
       task_tracker_.GetTrackedRef(), &delayed_task_manager_};
@@ -301,8 +301,8 @@ TEST_P(ThreadGroupTest, PostDelayedTask) {
 TEST_P(ThreadGroupTest, SequencedRunsTasksInCurrentSequence) {
   StartThreadGroup();
   auto task_runner = CreateTaskRunner();
-  auto sequenced_task_runner = test::CreateSequencedTaskRunnerWithTraits(
-      TaskTraits(), &mock_pooled_task_runner_delegate_);
+  auto sequenced_task_runner = test::CreateSequencedTaskRunner(
+      TaskTraits(ThreadPool()), &mock_pooled_task_runner_delegate_);
 
   WaitableEvent task_ran;
   task_runner->PostTask(
@@ -349,7 +349,9 @@ TEST_P(ThreadGroupTest, CanRunPolicyBasic) {
   StartThreadGroup();
   test::TestCanRunPolicyBasic(
       thread_group_.get(),
-      [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
+      [this](TaskPriority priority) {
+        return CreateTaskRunner({ThreadPool(), priority});
+      },
       &task_tracker_);
 }
 
@@ -361,7 +363,9 @@ TEST_P(ThreadGroupTest, CanRunPolicyUpdatedBeforeRun) {
     return;
   test::TestCanRunPolicyChangedBeforeRun(
       thread_group_.get(),
-      [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
+      [this](TaskPriority priority) {
+        return CreateTaskRunner({ThreadPool(), priority});
+      },
       &task_tracker_);
 }
 
@@ -369,7 +373,9 @@ TEST_P(ThreadGroupTest, CanRunPolicyLoad) {
   StartThreadGroup();
   test::TestCanRunPolicyLoad(
       thread_group_.get(),
-      [this](TaskPriority priority) { return CreateTaskRunner({priority}); },
+      [this](TaskPriority priority) {
+        return CreateTaskRunner({ThreadPool(), priority});
+      },
       &task_tracker_);
 }
 
@@ -389,7 +395,7 @@ TEST_P(ThreadGroupTest, UpdatePriorityBestEffortToUserBlocking) {
 
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runners.push_back(MakeRefCounted<PooledSequencedTaskRunner>(
-        TaskTraits(TaskPriority::BEST_EFFORT),
+        TaskTraits(ThreadPool(), TaskPriority::BEST_EFFORT),
         &mock_pooled_task_runner_delegate_));
     task_runners.back()->PostTask(
         FROM_HERE, BindLambdaForTesting([&]() {
@@ -439,7 +445,7 @@ TEST_P(ThreadGroupTest, ScopedBlockingCallTwice) {
   StartThreadGroup();
   auto task_runner = test::CreateTaskRunnerWithExecutionMode(
       GetParam().execution_mode, &mock_pooled_task_runner_delegate_,
-      {MayBlock()});
+      {ThreadPool(), MayBlock()});
 
   WaitableEvent task_ran;
   task_runner->PostTask(FROM_HERE,

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "jni/NfcHost_jni.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/nfc.mojom.h"
@@ -30,9 +30,8 @@ NFCHost::NFCHost(WebContents* web_contents)
   java_nfc_host_.Reset(
       Java_NfcHost_create(env, web_contents_->GetJavaWebContents(), id_));
 
-  if (ServiceManagerConnection::GetForProcess()) {
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
+  service_manager::Connector* connector = content::GetSystemConnector();
+  if (connector) {
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&nfc_provider_));
   }

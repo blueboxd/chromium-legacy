@@ -120,6 +120,7 @@ cr.define('settings', function() {
     /**
      * @param {string} printerId
      * @param {string} printerName
+     * @return {!Promise<!PrinterSetupResult>}
      */
     updateCupsPrinter(printerId, printerName) {}
 
@@ -136,11 +137,13 @@ cr.define('settings', function() {
 
     /**
      * @param {!CupsPrinterInfo} newPrinter
+     * @return {!Promise<!PrinterSetupResult>}
      */
     addCupsPrinter(newPrinter) {}
 
     /**
      * @param {!CupsPrinterInfo} printer
+     * @return {!Promise<!PrinterSetupResult>}
      */
     reconfigureCupsPrinter(printer) {}
 
@@ -201,7 +204,7 @@ cr.define('settings', function() {
 
     /** @override */
     updateCupsPrinter(printerId, printerName) {
-      chrome.send('updateCupsPrinter', [printerId, printerName]);
+      return cr.sendWithPromise('updateCupsPrinter', printerId, printerName);
     }
 
     /** @override */
@@ -211,12 +214,12 @@ cr.define('settings', function() {
 
     /** @override */
     addCupsPrinter(newPrinter) {
-      chrome.send('addCupsPrinter', [newPrinter]);
+      return cr.sendWithPromise('addCupsPrinter', newPrinter);
     }
 
     /** @override */
     reconfigureCupsPrinter(printer) {
-      chrome.send('reconfigureCupsPrinter', [printer]);
+      return cr.sendWithPromise('reconfigureCupsPrinter', printer);
     }
 
     /** @override */

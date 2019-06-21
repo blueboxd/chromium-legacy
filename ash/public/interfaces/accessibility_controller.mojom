@@ -28,7 +28,12 @@ interface SelectToSpeakEventHandlerDelegate {
 interface SwitchAccessEventHandlerDelegate {
   // Sends a KeyEvent to the Switch Access extension in Chrome. The event
   // is cast to a key event with a type CHECK.
+  // TODO(anastasi): Remove once settings migration is complete.
   DispatchKeyEvent(ui.mojom.Event event);
+
+  // Sends a command to Switch Access, based on what key was pressed and the
+  // user's settings.
+  SendSwitchAccessCommand(SwitchAccessCommand command);
 };
 
 // Interface for ash client (e.g. Chrome) to control and query accessibility

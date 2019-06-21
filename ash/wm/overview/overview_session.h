@@ -153,7 +153,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // repositioned.
   void RemoveItem(OverviewItem* overview_item);
 
-  void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
+  void InitiateDrag(OverviewItem* item,
+                    const gfx::PointF& location_in_screen,
+                    bool allow_drag_to_close);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void StartNormalDragMode(const gfx::PointF& location_in_screen);

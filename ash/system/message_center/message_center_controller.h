@@ -8,11 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
-#include "ash/system/message_center/arc/arc_notification_manager.h"
+#include "ash/public/cpp/arc_notifications_host_initializer.h"
 #include "base/macros.h"
-#include "components/arc/common/notifications.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
 
@@ -22,6 +19,7 @@ class NotificationBlocker;
 
 namespace ash {
 
+class ArcNotificationManager;
 class FullscreenNotificationBlocker;
 class InactiveUserNotificationBlocker;
 class SessionStateNotificationBlocker;
@@ -29,16 +27,14 @@ class SessionStateNotificationBlocker;
 // This class manages the ash message center and allows clients (like Chrome) to
 // add and remove notifications.
 class ASH_EXPORT MessageCenterController
-    : public mojom::AshMessageCenterController {
+    : public ArcNotificationsHostInitializer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   MessageCenterController();
   ~MessageCenterController() override;
 
-  void BindRequest(mojom::AshMessageCenterControllerRequest request);
-
-  // mojom::AshMessageCenterController:
+  // ArcNotificationsHostInitializer:
   void SetArcNotificationsInstance(
       arc::mojom::NotificationsInstancePtr arc_notification_instance) override;
 
@@ -55,8 +51,6 @@ class ASH_EXPORT MessageCenterController
   std::unique_ptr<SessionStateNotificationBlocker>
       session_state_notification_blocker_;
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
-
-  mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
 
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
 

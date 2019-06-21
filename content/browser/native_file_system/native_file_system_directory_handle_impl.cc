@@ -56,11 +56,8 @@ NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
     const storage::FileSystemURL& url,
-    storage::IsolatedContext::ScopedFSHandle file_system)
-    : NativeFileSystemHandleBase(manager,
-                                 context,
-                                 url,
-                                 std::move(file_system)) {}
+    const SharedHandleState& handle_state)
+    : NativeFileSystemHandleBase(manager, context, url, handle_state) {}
 
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
     default;
@@ -221,7 +218,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(
 
   std::move(callback).Run(
       NativeFileSystemError::New(base::File::FILE_OK),
-      manager()->CreateFileHandle(context(), url, file_system()));
+      manager()->CreateFileHandle(context(), url, handle_state()));
 }
 
 void NativeFileSystemDirectoryHandleImpl::GetDirectoryWithWritePermission(
@@ -251,7 +248,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
 
   std::move(callback).Run(
       NativeFileSystemError::New(base::File::FILE_OK),
-      manager()->CreateDirectoryHandle(context(), url, file_system()));
+      manager()->CreateDirectoryHandle(context(), url, handle_state()));
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
@@ -343,16 +340,21 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
     return NativeFileSystemEntry::New(
         NativeFileSystemHandle::NewDirectory(
             manager()
-                ->CreateDirectoryHandle(context(), url, file_system())
+                ->CreateDirectoryHandle(context(), url, handle_state())
                 .PassInterface()),
         name);
   }
   return NativeFileSystemEntry::New(
       NativeFileSystemHandle::NewFile(
           manager()
-              ->CreateFileHandle(context(), url, file_system())
+              ->CreateFileHandle(context(), url, handle_state())
               .PassInterface()),
       name);
+}
+
+base::WeakPtr<NativeFileSystemHandleBase>
+NativeFileSystemDirectoryHandleImpl::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace content

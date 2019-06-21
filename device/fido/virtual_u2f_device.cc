@@ -40,13 +40,24 @@ base::Optional<std::vector<uint8_t>> ErrorStatus(
 
 }  // namespace
 
+// VirtualU2fDevice ----------------------------------------------------------
+
+// static
+bool VirtualU2fDevice::IsTransportSupported(FidoTransportProtocol transport) {
+  return base::Contains(base::flat_set<FidoTransportProtocol>(
+                            {FidoTransportProtocol::kUsbHumanInterfaceDevice,
+                             FidoTransportProtocol::kBluetoothLowEnergy,
+                             FidoTransportProtocol::kNearFieldCommunication}),
+                        transport);
+}
+
 VirtualU2fDevice::VirtualU2fDevice()
     : VirtualFidoDevice(), weak_factory_(this) {}
 
-// VirtualU2fDevice ----------------------------------------------------------
-
 VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
-    : VirtualFidoDevice(std::move(state)), weak_factory_(this) {}
+    : VirtualFidoDevice(std::move(state)), weak_factory_(this) {
+  DCHECK(IsTransportSupported(mutable_state()->transport));
+}
 
 VirtualU2fDevice::~VirtualU2fDevice() = default;
 

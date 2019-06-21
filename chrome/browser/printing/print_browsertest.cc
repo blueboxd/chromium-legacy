@@ -510,8 +510,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
 // a timed out test which indicates the print preview hung.
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
                        SubframeUnavailableDuringPrint) {
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
       embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
@@ -526,6 +524,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
 
   auto filter =
       base::MakeRefCounted<KillPrintFrameContentMsgFilter>(subframe_rph);
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(subframe_rph);
   subframe_rph->AddFilter(filter.get());
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);

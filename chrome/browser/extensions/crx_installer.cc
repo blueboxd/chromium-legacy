@@ -43,7 +43,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -1089,10 +1089,8 @@ void CrxInstaller::ConfirmReEnable() {
 }
 
 service_manager::Connector* CrxInstaller::GetConnector() const {
-  return connector_for_test_
-             ? connector_for_test_
-             : content::ServiceManagerConnection::GetForProcess()
-                   ->GetConnector();
+  return connector_for_test_ ? connector_for_test_
+                             : content::GetSystemConnector();
 }
 
 }  // namespace extensions

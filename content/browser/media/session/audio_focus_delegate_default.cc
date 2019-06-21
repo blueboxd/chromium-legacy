@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -182,10 +182,8 @@ void AudioFocusDelegateDefault::EnsureServiceConnection() {
   audio_focus_ptr_.reset();
 
   // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&audio_focus_ptr_));
+  GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
+                                      mojo::MakeRequest(&audio_focus_ptr_));
 
   audio_focus_ptr_->SetSourceName(kAudioFocusSourceName);
 }

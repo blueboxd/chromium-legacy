@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -695,14 +696,12 @@ static void Write(WTF::TextStream& ts,
     Write(ts, layer.GetLayoutObject(), indent + 1, behavior);
 }
 
-static PaintLayerStackingNode::PaintLayers NormalFlowListFor(
-    PaintLayerStackingNode* node) {
-  PaintLayerStackingNode::PaintLayers vector;
-  if (node) {
-    PaintLayerStackingNodeIterator it(*node, kNormalFlowChildren);
-    while (PaintLayer* normal_flow_child = it.Next())
-      vector.push_back(normal_flow_child);
-  }
+static Vector<PaintLayer*> ChildLayers(const PaintLayer* layer,
+                                       PaintLayerIteration which_children) {
+  Vector<PaintLayer*> vector;
+  PaintLayerPaintOrderIterator it(*layer, which_children);
+  while (PaintLayer* child = it.Next())
+    vector.push_back(child);
   return vector;
 }
 
@@ -749,29 +748,23 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   }
 #endif
 
-  bool paints_background_separately = false;
-  if (layer->StackingNode()) {
-    PaintLayerStackingNode::PaintLayers* neg_list =
-        layer->StackingNode()->NegZOrderList();
-    paints_background_separately = neg_list && neg_list->size() > 0;
-    if (should_paint && paints_background_separately) {
-      Write(ts, *layer, layer_bounds, damage_rect.Rect(),
-            clip_rect_to_apply.Rect(), kLayerPaintPhaseBackground, indent,
-            behavior, marked_layer);
-    }
+  const auto& neg_list = ChildLayers(layer, kNegativeZOrderChildren);
+  bool paints_background_separately = !neg_list.IsEmpty();
+  if (should_paint && paints_background_separately) {
+    Write(ts, *layer, layer_bounds, damage_rect.Rect(),
+          clip_rect_to_apply.Rect(), kLayerPaintPhaseBackground, indent,
+          behavior, marked_layer);
+  }
 
-    if (neg_list) {
-      int curr_indent = indent;
-      if (behavior & kLayoutAsTextShowLayerNesting) {
-        WriteIndent(ts, indent);
-        ts << " negative z-order list(" << neg_list->size() << ")\n";
-        ++curr_indent;
-      }
-      for (unsigned i = 0; i != neg_list->size(); ++i) {
-        WriteLayers(ts, root_layer, neg_list->at(i), curr_indent, behavior,
-                    marked_layer);
-      }
+  if (!neg_list.IsEmpty()) {
+    int curr_indent = indent;
+    if (behavior & kLayoutAsTextShowLayerNesting) {
+      WriteIndent(ts, indent);
+      ts << " negative z-order list(" << neg_list.size() << ")\n";
+      ++curr_indent;
     }
+    for (auto* layer : neg_list)
+      WriteLayers(ts, root_layer, layer, curr_indent, behavior, marked_layer);
   }
 
   if (should_paint) {
@@ -782,35 +775,28 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
           indent, behavior, marked_layer);
   }
 
-  if (layer->StackingNode()) {
-    PaintLayerStackingNode::PaintLayers normal_flow_list =
-        NormalFlowListFor(layer->StackingNode());
-    if (!normal_flow_list.IsEmpty()) {
-      int curr_indent = indent;
-      if (behavior & kLayoutAsTextShowLayerNesting) {
-        WriteIndent(ts, indent);
-        ts << " normal flow list(" << normal_flow_list.size() << ")\n";
-        ++curr_indent;
-      }
-      for (unsigned i = 0; i != normal_flow_list.size(); ++i) {
-        WriteLayers(ts, root_layer, normal_flow_list.at(i), curr_indent,
-                    behavior, marked_layer);
-      }
+  const auto& normal_flow_list = ChildLayers(layer, kNormalFlowChildren);
+  if (!normal_flow_list.IsEmpty()) {
+    int curr_indent = indent;
+    if (behavior & kLayoutAsTextShowLayerNesting) {
+      WriteIndent(ts, indent);
+      ts << " normal flow list(" << normal_flow_list.size() << ")\n";
+      ++curr_indent;
     }
+    for (auto* layer : normal_flow_list)
+      WriteLayers(ts, root_layer, layer, curr_indent, behavior, marked_layer);
+  }
 
-    if (PaintLayerStackingNode::PaintLayers* pos_list =
-            layer->StackingNode()->PosZOrderList()) {
-      int curr_indent = indent;
-      if (behavior & kLayoutAsTextShowLayerNesting) {
-        WriteIndent(ts, indent);
-        ts << " positive z-order list(" << pos_list->size() << ")\n";
-        ++curr_indent;
-      }
-      for (unsigned i = 0; i != pos_list->size(); ++i) {
-        WriteLayers(ts, root_layer, pos_list->at(i), curr_indent, behavior,
-                    marked_layer);
-      }
+  const auto& pos_list = ChildLayers(layer, kPositiveZOrderChildren);
+  if (!pos_list.IsEmpty()) {
+    int curr_indent = indent;
+    if (behavior & kLayoutAsTextShowLayerNesting) {
+      WriteIndent(ts, indent);
+      ts << " positive z-order list(" << pos_list.size() << ")\n";
+      ++curr_indent;
     }
+    for (auto* layer : pos_list)
+      WriteLayers(ts, root_layer, layer, curr_indent, behavior, marked_layer);
   }
 }
 

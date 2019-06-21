@@ -282,7 +282,8 @@ const char* CaptionContainerView::GetClassName() const {
 bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMousePressed(event);
-  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()),
+                                    /*from_touch_gesture=*/false);
   return true;
 }
 
@@ -313,7 +314,7 @@ void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      event_delegate_->HandlePressEvent(location);
+      event_delegate_->HandlePressEvent(location, /*from_touch_gesture=*/true);
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       event_delegate_->HandleDragEvent(location);

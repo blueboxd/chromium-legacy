@@ -555,26 +555,17 @@ void LocalDOMWindow::SchedulePostMessage(
       ->PostTask(FROM_HERE,
                  WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
                            WrapPersistent(this), WrapPersistent(event),
-                           WrapRefCounted(UserGestureIndicator::CurrentToken()),
                            std::move(target), std::move(location)));
   probe::AsyncTaskScheduled(document(), "postMessage", event);
 }
 
 void LocalDOMWindow::DispatchPostMessage(
     MessageEvent* event,
-    scoped_refptr<UserGestureToken> token,
     scoped_refptr<const SecurityOrigin> intended_target_origin,
     std::unique_ptr<SourceLocation> location) {
   probe::AsyncTask async_task(document(), event);
   if (!IsCurrentlyDisplayedInFrame())
     return;
-
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && token &&
-      token->HasGestures() && document()) {
-    gesture_indicator =
-        LocalFrame::NotifyUserActivation(document()->GetFrame(), token.get());
-  }
 
   event->EntangleMessagePorts(document());
 

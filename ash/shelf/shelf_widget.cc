@@ -631,8 +631,16 @@ void ShelfWidget::ShowIfHidden() {
 }
 
 void ShelfWidget::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
     keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
+
+    // If the shelf receives the mouse pressing event, the RootView of the shelf
+    // will reset the gesture handler. As a result, if the shelf is in drag
+    // progress when the mouse is pressed, shelf will not receive the gesture
+    // end event. So explicitly cancel the drag in this scenario.
+    shelf_layout_manager_->CancelDragOnShelfIfInProgress();
+  }
+
   views::Widget::OnMouseEvent(event);
 }
 

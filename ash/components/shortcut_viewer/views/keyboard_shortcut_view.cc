@@ -207,6 +207,14 @@ const char* KeyboardShortcutView::GetClassName() const {
   return "KeyboardShortcutView";
 }
 
+ax::mojom::Role KeyboardShortcutView::GetAccessibleWindowRole() {
+  return ax::mojom::Role::kWindow;
+}
+
+base::string16 KeyboardShortcutView::GetAccessibleWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_KSV_TITLE);
+}
+
 bool KeyboardShortcutView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK_EQ(ui::VKEY_W, accelerator.key_code());

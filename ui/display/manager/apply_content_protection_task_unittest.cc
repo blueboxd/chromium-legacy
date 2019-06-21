@@ -60,7 +60,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToInternalDisplay) {
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
@@ -78,7 +78,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToExternalDisplay) {
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
@@ -97,7 +97,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToUnknownDisplay) {
   TestDisplayLayoutManager layout_manager(std::move(displays),
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
@@ -116,7 +116,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotGetHdcp) {
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
   display_delegate_.set_get_hdcp_state_expectation(false);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
@@ -135,7 +135,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
   display_delegate_.set_set_hdcp_state_expectation(false);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_HDCP;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,
@@ -155,7 +155,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyNoProtectionToExternalDisplay) {
                                           MULTIPLE_DISPLAY_STATE_SINGLE);
   display_delegate_.set_hdcp_state(HDCP_STATE_UNDESIRED);
 
-  DisplayConfigurator::ContentProtections request;
+  ContentProtectionManager::ContentProtections request;
   request[1] = CONTENT_PROTECTION_METHOD_NONE;
   ApplyContentProtectionTask task(
       &layout_manager, &display_delegate_, request,

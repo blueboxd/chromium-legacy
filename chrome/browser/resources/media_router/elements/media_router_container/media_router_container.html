@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
@@ -36,10 +37,10 @@
           </cr-checkbox>
         </div>
         <div id="first-run-button-container">
-          <paper-button id="first-run-button" class="button"
-              on-tap="acknowledgeFirstRunFlow_">
+          <cr-button id="first-run-button" class="button"
+              on-click="acknowledgeFirstRunFlow_">
             <span>[[i18n('firstRunFlowButtonText')]]</span>
-          </paper-button>
+          </cr-button>
         </div>
       </div>
     </template>

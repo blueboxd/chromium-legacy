@@ -28,14 +28,19 @@
       .checkbox cr-checkbox {
         min-height: var(--print-preview-row-height);
         --cr-checkbox-ripple-size: var(--print-preview-row-height);
-        --cr-checkbox-label-container: {
-          overflow: hidden;
-          padding-inline-start: 16px;
-        };
+      }
+
+      .checkbox cr-checkbox::part(label-container) {
+        overflow: hidden;
+        padding-inline-start: 16px;
       }
 
       cr-input {
         line-height: 20px;
+      }
+
+      cr-input::part(row-container) {
+        min-height: var(--print-preview-row-height);
       }
 
       a[href],

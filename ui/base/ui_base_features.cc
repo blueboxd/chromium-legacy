@@ -120,29 +120,11 @@ const base::Feature kDirectManipulationStylus = {
 };
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSingleProcessMash = {"SingleProcessMash",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsFormControlsRefreshEnabled() {
   return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
-}
-
-bool IsUsingWindowService() {
-  return IsSingleProcessMash() || IsMultiProcessMash();
-}
-
-bool IsMultiProcessMash() {
-  return base::FeatureList::IsEnabled(features::kMash);
-}
-
-bool IsSingleProcessMash() {
-  return base::FeatureList::IsEnabled(features::kSingleProcessMash) &&
-         !base::FeatureList::IsEnabled(features::kMash);
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {
@@ -169,8 +151,7 @@ const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsOzoneDrmMojo() {
-  return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo) ||
-         IsMultiProcessMash();
+  return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo);
 }
 
 #if defined(OS_CHROMEOS)

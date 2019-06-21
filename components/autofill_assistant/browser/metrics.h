@@ -43,7 +43,7 @@ class Metrics {
     GET_SCRIPTS_FAILED = 17,
     GET_SCRIPTS_UNPARSABLE = 18,
     NO_INITIAL_SCRIPTS = 19,
-    DFM_CANCELLED = 19,
+    DFM_INSTALL_FAILED = 20,
 
     NUM_ENTRIES = 21,
   };
@@ -145,6 +145,12 @@ class Metrics {
 
       case NO_INITIAL_SCRIPTS:
         out << "NO_INITIAL_SCRIPTS";
+        break;
+
+      case DFM_INSTALL_FAILED:
+        out << "DFM_INSTALL_FAILED";
+        break;
+
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
     }

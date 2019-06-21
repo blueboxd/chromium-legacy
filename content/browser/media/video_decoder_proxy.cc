@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/renderer_extensions.mojom.h"
@@ -93,9 +93,8 @@ void VideoDecoderProxy::ConnectToMediaService() {
   media::mojom::MediaServicePtr media_service;
   // TODO(slan): Use the BrowserContext Connector instead.
   // See https://crbug.com/638950.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(media::mojom::kMediaServiceName, &media_service);
+  GetSystemConnector()->BindInterface(media::mojom::kMediaServiceName,
+                                      &media_service);
 
   // TODO(sandersd): Do we need to bind an empty |interfaces| implementation?
   service_manager::mojom::InterfaceProviderPtr interfaces;

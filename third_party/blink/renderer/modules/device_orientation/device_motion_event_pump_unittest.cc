@@ -423,7 +423,7 @@ TEST_F(DeviceMotionEventPumpTest,
 // (crbug.com/421691)
 TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   // Confirm that the delay for pumping events is 60 Hz.
-  EXPECT_GE(60, WTF::Time::kMicrosecondsPerSecond /
+  EXPECT_GE(60, base::Time::kMicrosecondsPerSecond /
                     DeviceMotionEventPump::kDefaultPumpDelayMicroseconds);
 
   controller()->RegisterWithDispatcher();
@@ -439,7 +439,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   base::RunLoop loop;
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE, loop.QuitWhenIdleClosure(),
-      WTF::TimeDelta::FromMilliseconds(100));
+      base::TimeDelta::FromMilliseconds(100));
   loop.Run();
   controller()->motion_pump()->Stop();
 

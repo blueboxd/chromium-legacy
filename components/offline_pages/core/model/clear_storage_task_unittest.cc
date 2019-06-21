@@ -164,10 +164,9 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
     AddPage();
   }
 
-  generator()->SetLastAccessTime(clock_.Now() -
-                                 policy_controller()
-                                     ->GetPolicy(setting.name_space)
-                                     .lifetime_policy.expiration_period);
+  generator()->SetLastAccessTime(
+      clock_.Now() -
+      policy_controller()->GetPolicy(setting.name_space).expiration_period);
   for (int i = 0; i < setting.expired_page_count; ++i) {
     AddPage();
   }
@@ -264,12 +263,12 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
 
   // Check preconditions, especially that last_n expiration is longer than
   // bookmark's.
-  LifetimePolicy bookmark_policy =
-      policy_controller()->GetPolicy(kBookmarkNamespace).lifetime_policy;
-  LifetimePolicy last_n_policy =
-      policy_controller()->GetPolicy(kLastNNamespace).lifetime_policy;
-  LifetimePolicy download_policy =
-      policy_controller()->GetPolicy(kDownloadNamespace).lifetime_policy;
+  OfflinePageClientPolicy bookmark_policy =
+      policy_controller()->GetPolicy(kBookmarkNamespace);
+  OfflinePageClientPolicy last_n_policy =
+      policy_controller()->GetPolicy(kLastNNamespace);
+  OfflinePageClientPolicy download_policy =
+      policy_controller()->GetPolicy(kDownloadNamespace);
   ASSERT_EQ(LifetimeType::TEMPORARY, bookmark_policy.lifetime_type);
   ASSERT_EQ(LifetimeType::TEMPORARY, last_n_policy.lifetime_type);
   ASSERT_EQ(LifetimeType::PERSISTENT, download_policy.lifetime_type);

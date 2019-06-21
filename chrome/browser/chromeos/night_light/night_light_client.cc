@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/clock.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -50,10 +50,8 @@ void NightLightClient::Start() {
   timezone_settings->AddObserver(this);
 
   if (!night_light_controller_) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(ash::mojom::kServiceName,
-                             &night_light_controller_);
+    content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &night_light_controller_);
   }
   ash::mojom::NightLightClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));

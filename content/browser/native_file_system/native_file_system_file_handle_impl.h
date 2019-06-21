@@ -35,11 +35,10 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileHandle {
  public:
-  NativeFileSystemFileHandleImpl(
-      NativeFileSystemManagerImpl* manager,
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system);
+  NativeFileSystemFileHandleImpl(NativeFileSystemManagerImpl* manager,
+                                 const BindingContext& context,
+                                 const storage::FileSystemURL& url,
+                                 const SharedHandleState& handle_state);
   ~NativeFileSystemFileHandleImpl() override;
 
   // blink::mojom::NativeFileSystemFileHandle:
@@ -85,6 +84,8 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                 bool complete);
 
   void TruncateImpl(uint64_t length, TruncateCallback callback);
+
+  base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 
   base::WeakPtrFactory<NativeFileSystemFileHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemFileHandleImpl);

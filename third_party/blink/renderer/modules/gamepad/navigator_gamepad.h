@@ -116,12 +116,12 @@ class MODULES_EXPORT NavigatorGamepad final
 
   // The timestamp for the navigationStart attribute. Gamepad timestamps are
   // reported relative to this value.
-  TimeTicks navigation_start_;
+  base::TimeTicks navigation_start_;
 
   // The timestamp when gamepads were made available to the page. If no data has
   // been received from the hardware, the gamepad timestamp should be equal to
   // this value.
-  TimeTicks gamepads_start_;
+  base::TimeTicks gamepads_start_;
 
   // True if there is at least one listener for gamepad connection or
   // disconnection events.

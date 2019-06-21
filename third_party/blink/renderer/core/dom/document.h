@@ -610,7 +610,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Corresponds to "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
-  void Abort(bool for_form_submission);
+  void Abort();
 
   void CheckCompleted();
 
@@ -1838,6 +1838,8 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned throw_on_dynamic_markup_insertion_count_;
   // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#ignore-opens-during-unload-counter
   unsigned ignore_opens_during_unload_count_;
+
+  bool ignore_opens_and_writes_for_abort_ = false;
 
   String title_;
   String raw_title_;

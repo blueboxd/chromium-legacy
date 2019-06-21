@@ -24,7 +24,7 @@ public class SplashUtils {
         Bitmap icon = WebApkUtils.decodeBitmapFromDrawable(resources, R.drawable.splash_icon);
         @SplashLayout.IconClassification
         int iconClassification = SplashLayout.classifyIcon(resources, icon, false);
-        int backgroundColor = WebApkUtils.getColor(resources, R.color.background_color);
+        int backgroundColor = WebApkUtils.getColor(resources, R.color.background_color_non_empty);
 
         FrameLayout layout = new FrameLayout(context);
         SplashLayout.createLayout(context, layout, icon, false /* isIconAdaptive */,

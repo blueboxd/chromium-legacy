@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/scheduler/internal/init_aware_scheduler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 
@@ -24,25 +26,67 @@ void InitAwareNotificationScheduler::Init(InitCallback init_callback) {
 
 void InitAwareNotificationScheduler::Schedule(
     std::unique_ptr<NotificationParams> params) {
-  if (init_success_.has_value() && *init_success_) {
+  if (IsReady()) {
     impl_->Schedule(std::move(params));
     return;
   }
-
-  if (init_success_.has_value() && !*init_success_)
-    return;
-
-  cached_closures_.emplace_back(
-      base::BindOnce(&InitAwareNotificationScheduler::Schedule,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(params)));
+  MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::Schedule,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(params)));
 }
 
 void InitAwareNotificationScheduler::OnStartTask() {
-  impl_->OnStartTask();
+  if (IsReady()) {
+    impl_->OnStartTask();
+    return;
+  }
+  MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnStartTask,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InitAwareNotificationScheduler::OnStopTask() {
-  impl_->OnStopTask();
+  if (IsReady()) {
+    impl_->OnStopTask();
+    return;
+  }
+  MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnStopTask,
+                                   weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InitAwareNotificationScheduler::OnClick(
+    const std::string& notification_id) {
+  if (IsReady()) {
+    impl_->OnClick(std::move(notification_id));
+    return;
+  }
+  MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnClick,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(notification_id)));
+}
+
+void InitAwareNotificationScheduler::OnActionClick(
+    const std::string& notification_id,
+    ActionButtonType button_type) {
+  if (IsReady()) {
+    impl_->OnActionClick(std::move(notification_id), button_type);
+    return;
+  }
+
+  MaybeCacheClosure(base::BindOnce(
+      &InitAwareNotificationScheduler::OnActionClick,
+      weak_ptr_factory_.GetWeakPtr(), std::move(notification_id), button_type));
+}
+
+void InitAwareNotificationScheduler::OnDismiss(
+    const std::string& notification_id) {
+  if (IsReady()) {
+    impl_->OnDismiss(std::move(notification_id));
+    return;
+  }
+
+  MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnDismiss,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(notification_id)));
 }
 
 void InitAwareNotificationScheduler::OnInitialized(InitCallback init_callback,
@@ -60,6 +104,22 @@ void InitAwareNotificationScheduler::OnInitialized(InitCallback init_callback,
   }
   cached_closures_.clear();
   std::move(init_callback).Run(true);
+}
+
+bool InitAwareNotificationScheduler::IsReady() const {
+  return init_success_.has_value() && *init_success_;
+}
+
+void InitAwareNotificationScheduler::MaybeCacheClosure(
+    base::OnceClosure closure) {
+  DCHECK(closure);
+
+  // Drop the call if initialization failed.
+  if (init_success_.has_value() && !*init_success_)
+    return;
+
+  // Cache the closure to invoke later.
+  cached_closures_.emplace_back(std::move(closure));
 }
 
 }  // namespace notifications

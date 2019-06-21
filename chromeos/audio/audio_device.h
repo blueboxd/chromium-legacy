@@ -65,6 +65,8 @@ struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
 
   bool IsExternalDevice() const;
 
+  bool IsInternalMic() const;
+
   bool is_input = false;
 
   // Id of this audio device. The legacy |id| is assigned to be unique everytime

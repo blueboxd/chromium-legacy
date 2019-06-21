@@ -90,7 +90,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -595,15 +594,11 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   // We should emit this signal only at login screen (after reboot or sign out).
   login_view_->set_should_emit_login_prompt_visible(false);
 
-  if (!features::IsMultiProcessMash()) {
-    // Lock container can be transparent after lock screen animation.
-    aura::Window* lock_container = ash::Shell::GetContainer(
-        ash::Shell::GetPrimaryRootWindow(),
-        ash::kShellWindowId_LockScreenContainersContainer);
-    lock_container->layer()->SetOpacity(1.0);
-  } else {
-    NOTIMPLEMENTED();
-  }
+  // Lock container can be transparent after lock screen animation.
+  aura::Window* lock_container = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(),
+      ash::kShellWindowId_LockScreenContainersContainer);
+  lock_container->layer()->SetOpacity(1.0);
 
   CreateExistingUserController();
 
@@ -874,13 +869,6 @@ void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
 // LoginDisplayHostWebUI, private
 
 void LoginDisplayHostWebUI::ScheduleWorkspaceAnimation() {
-  // TODO(mash): Support finalize animations without reaching directly into
-  // ash::Shell.
-  if (features::IsMultiProcessMash()) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLoginAnimations)) {
     ash::Shell::Get()->DoInitialWorkspaceAnimation();
@@ -963,9 +951,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   if (login_window_)
     return;
 
-  // TODO(crbug.com/881390): Mash support for keyboard driven OOBE.
-  if (!features::IsMultiProcessMash() &&
-      system::InputDeviceSettings::ForceKeyboardDrivenUINavigation()) {
+  if (system::InputDeviceSettings::ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
     focus_ring_controller_ = std::make_unique<ash::FocusRingController>();
     focus_ring_controller_->SetVisible(true);
@@ -1023,16 +1009,10 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
   }
 
   if (login_window_) {
-    if (features::IsUsingWindowService()) {
-      // TODO(mash): CompositorObserver::OnCompositingDidCommit() doesn't fire
-      // for either SingleProcessMash or MultiProcessMash.
-      login_window_->Close();
-    } else {
-      login_window_->Hide();
-      // This CompositorObserver becomes "owned" by login_window_ after
-      // construction and will delete itself once login_window_ is destroyed.
-      new CloseAfterCommit(login_window_);
-    }
+    login_window_->Hide();
+    // This CompositorObserver becomes "owned" by login_window_ after
+    // construction and will delete itself once login_window_ is destroyed.
+    new CloseAfterCommit(login_window_);
     login_window_->RemoveRemovalsObserver(this);
     login_window_->RemoveObserver(this);
     login_window_ = nullptr;

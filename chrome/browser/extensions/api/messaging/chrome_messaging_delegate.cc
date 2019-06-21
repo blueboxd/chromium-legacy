@@ -127,6 +127,7 @@ std::unique_ptr<MessagePort> ChromeMessagingDelegate::CreateReceiverForTab(
 
 std::unique_ptr<MessagePort>
 ChromeMessagingDelegate::CreateReceiverForNativeApp(
+    content::BrowserContext* browser_context,
     base::WeakPtr<MessagePort::ChannelDelegate> channel_delegate,
     content::RenderFrameHost* source,
     const std::string& extension_id,
@@ -136,8 +137,9 @@ ChromeMessagingDelegate::CreateReceiverForNativeApp(
     std::string* error_out) {
   DCHECK(error_out);
   gfx::NativeView native_view = source ? source->GetNativeView() : nullptr;
-  std::unique_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
-      native_view, extension_id, native_app_name, allow_user_level, error_out);
+  std::unique_ptr<NativeMessageHost> native_host =
+      NativeMessageHost::Create(browser_context, native_view, extension_id,
+                                native_app_name, allow_user_level, error_out);
   if (!native_host.get())
     return nullptr;
   return std::make_unique<NativeMessagePort>(channel_delegate, receiver_port_id,

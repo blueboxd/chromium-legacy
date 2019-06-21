@@ -3448,7 +3448,7 @@ TYPED_TEST(GPURendererPixelTest, TrilinearFiltering) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("trilinear_filtering.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {

@@ -116,6 +116,8 @@ customize.IDS = {
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
+  SHORTCUTS_HIDE: 'sh-hide',
+  SHORTCUTS_HIDE_TOGGLE: 'sh-hide-toggle',
   SHORTCUTS_MENU: 'shortcuts-menu',
   SHORTCUTS_OPTION_CUSTOM_LINKS: 'sh-option-cl',
   SHORTCUTS_OPTION_MOST_VISITED: 'sh-option-mv',
@@ -1073,6 +1075,10 @@ customize.richerPicker_resetCustomizationMenu = function() {
         customize.CLASSES.SELECTED, false);
     customize.richerPicker_selectedOption = null;
   }
+  // Reset the shortcut visibility option.
+  $(customize.IDS.SHORTCUTS_HIDE)
+      .classList.toggle(customize.CLASSES.SELECTED, false);
+  $(customize.IDS.SHORTCUTS_HIDE_TOGGLE).checked = false;
 };
 
 /**
@@ -1537,6 +1543,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     }
   };
 
+  const richerPicker = $(customize.IDS.CUSTOMIZATION_MENU);
+  richerPicker.onclick = function(event) {
+    richerPicker.classList.add(customize.CLASSES.MOUSE_NAV);
+  };
+  richerPicker.onkeydown = function(event) {
+    richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
+  };
+
   const richerPickerOpenBackgrounds = function() {
     customize.richerPicker_resetCustomizationMenu();
     customize.richerPicker_selectMenuOption(
@@ -1571,6 +1585,23 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
         event.keyCode === customize.KEYCODES.SPACE) {
       customize.richerPicker_selectShortcutOption(mvOption);
     }
+  };
+
+  const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
+  hideToggle.onchange = function(event) {
+    $(customize.IDS.SHORTCUTS_HIDE)
+        .classList.toggle(customize.CLASSES.SELECTED, hideToggle.checked);
+  };
+  hideToggle.onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      hideToggle.onchange(event);
+    }
+  };
+  hideToggle.onclick = function(event) {
+    // Enter and space fire the 'onclick' event (which will remove special
+    // keyboard navigation styling) unless propagation is stopped.
+    event.stopPropagation();
   };
 
   const richerPickerOpenShortcuts = function() {

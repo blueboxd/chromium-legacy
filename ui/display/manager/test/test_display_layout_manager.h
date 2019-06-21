@@ -22,6 +22,10 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
       MultipleDisplayState display_state);
   ~TestDisplayLayoutManager() override;
 
+  void set_displays(std::vector<std::unique_ptr<DisplaySnapshot>> displays) {
+    displays_ = std::move(displays);
+  }
+
   // DisplayLayoutManager:
   DisplayConfigurator::StateController* GetStateController() const override;
   DisplayConfigurator::SoftwareMirroringController*

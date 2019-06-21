@@ -2335,7 +2335,7 @@ void NavigationRequest::UpdateCommitNavigationParamsHistory() {
 }
 
 void NavigationRequest::OnRendererAbortedNavigation() {
-  if (navigation_handle_->IsWaitingToCommit()) {
+  if (IsWaitingToCommit()) {
     render_frame_host_->NavigationRequestCancelled(this);
   } else {
     frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
@@ -2852,6 +2852,10 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 std::unique_ptr<AppCacheNavigationHandle>
 NavigationRequest::TakeAppCacheHandle() {
   return std::move(appcache_handle_);
+}
+
+bool NavigationRequest::IsWaitingToCommit() {
+  return handle_state_ == NavigationRequest::READY_TO_COMMIT;
 }
 
 }  // namespace content

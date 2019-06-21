@@ -539,17 +539,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TableGroupingIndicatorColor:
       return system_colors_[COLOR_GRAYTEXT];
 
-    // Results Tables
-    case kColorId_ResultsTableNormalBackground:
-      return system_colors_[COLOR_WINDOW];
-    case kColorId_ResultsTableHoveredBackground:
-      return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHT],
-                                     system_colors_[COLOR_WINDOW], 0.25f);
-    case kColorId_ResultsTableNormalText:
-      return system_colors_[COLOR_WINDOWTEXT];
-    case kColorId_ResultsTableDimmedText:
-      return color_utils::AlphaBlend(system_colors_[COLOR_WINDOWTEXT],
-                                     system_colors_[COLOR_WINDOW], 0.5f);
     default:
       break;
   }

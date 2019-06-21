@@ -14,7 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,9 +54,8 @@ FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &fp_service_);
   device::mojom::FingerprintObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   fp_service_->AddFingerprintObserver(std::move(observer));

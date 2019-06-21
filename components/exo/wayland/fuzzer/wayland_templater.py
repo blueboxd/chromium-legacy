@@ -11,11 +11,10 @@ instantiates the template based on the wayland content.
 from __future__ import absolute_import
 from __future__ import print_function
 
-import argparse
 import sys
-from xml.etree import ElementTree
 
 import jinja2
+import wayland_utils as wlu
 
 proto_type_conversions = {
     'object': 'small_value',
@@ -33,84 +32,6 @@ cpp_type_conversions = {
     'array': 'struct wl_array*',
     'fd': 'int32_t',
 }
-
-
-def AllInterfaces(protocols):
-  """Get the interfaces in these protocols.
-
-  Args:
-    protocols: the list of protocols you want the interfaces of.
-
-  Yields:
-    Tuples (p, i) of (p)rotocol (i)nterface.
-  """
-  for p in protocols:
-    for i in p.findall('interface'):
-      yield (p, i)
-
-
-def AllMessages(protocols):
-  """Get the messages in these protocols.
-
-  Args:
-    protocols: the list of protocols you want the messages of.
-
-  Yields:
-    Tuples (p, i, m) of (p)rotocol, (i)nterface, and (m)essage.
-  """
-  for (p, i) in AllInterfaces(protocols):
-    for r in i.findall('request'):
-      yield (p, i, r)
-    for e in i.findall('event'):
-      yield (p, i, e)
-
-
-def GetConstructorArg(message):
-  """Get the argument that this message constructs, or None.
-
-  Args:
-    message: the message which you want to find the constructor arg of.
-
-  Returns:
-    The argument (as an ElementTree node) that constructs a new interface, or
-    None.
-  """
-  return message.find('arg[@type="new_id"]')
-
-
-def IsConstructor(message):
-  """Check if a message is a constructor.
-
-  Args:
-    message: the message which you want to check.
-
-  Returns:
-    True if the message constructs an object (via new_id), False otherwise.
-  """
-  return GetConstructorArg(message) is not None
-
-
-def GetConstructedInterface(message):
-  """Gets the interface constructed by a message.
-
-  Note that even if IsConstructor(message) returns true, get_constructed can
-  still return None when the message constructs an unknown interface (e.g.
-  wl_registry.bind()).
-
-  Args:
-    message: the event/request which may be a constructor.
-
-  Returns:
-    The name of the constructed interface (if there is one), or None.
-  """
-  cons_arg = GetConstructorArg(message)
-  if cons_arg is None:
-    return None
-  return cons_arg.attrib.get('interface')
-
-
-def NeedsListener(interface):
-  return interface.find('event') is not None
 
 
 def GetCppType(arg):
@@ -131,12 +52,12 @@ class TemplaterContext(object):
 
   def __init__(self, protocols):
     self.non_global_names = {
-        GetConstructedInterface(m) for _, _, m in AllMessages(protocols)
+        wlu.GetConstructedInterface(m) for _, _, m in wlu.AllMessages(protocols)
     } - {None}
     self.interfaces_with_listeners = {
         i.attrib['name']
-        for p, i in AllInterfaces(protocols)
-        if NeedsListener(i)
+        for p, i in wlu.AllInterfaces(protocols)
+        if wlu.NeedsListener(i)
     }
     self.counts = {}
 
@@ -159,6 +80,7 @@ def GetArg(arg):
   return {
       'name': arg.attrib['name'],
       'type': ty,
+      'nullable': arg.attrib.get('allow-null', 'false') == 'true',
       'proto_type': proto_type_conversions.get(ty),
       'cpp_type': GetCppType(arg),
       'interface': arg.attrib.get('interface'),
@@ -167,7 +89,7 @@ def GetArg(arg):
 
 def GetMessage(message, context):
   name = message.attrib['name']
-  constructed = GetConstructedInterface(message)
+  constructed = wlu.GetConstructedInterface(message)
   return {
       'name':
           name,
@@ -175,7 +97,7 @@ def GetMessage(message, context):
           context.GetAndIncrementCount('message_index'),
       'args': [GetArg(a) for a in message.findall('arg')],
       'is_constructor':
-          IsConstructor(message),
+          wlu.IsConstructor(message),
       'constructed':
           constructed,
       'constructed_has_listener':
@@ -197,12 +119,12 @@ def GetInterface(interface, context):
           GetMessage(m, context) for m in interface.findall('request')
       ],
       'has_listener':
-          NeedsListener(interface)
+          wlu.NeedsListener(interface)
   }
 
 
 def GetTemplateData(protocol_paths):
-  protocols = [ElementTree.parse(path).getroot() for path in protocol_paths]
+  protocols = wlu.ReadProtocols(protocol_paths)
   context = TemplaterContext(protocols)
   interfaces = []
   for p in protocols:
@@ -214,44 +136,26 @@ def GetTemplateData(protocol_paths):
   }
 
 
+def InstantiateTemplate(in_tmpl, in_ctx, output, in_directory):
+  env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(in_directory),
+      keep_trailing_newline=True,  # newline-terminate generated files
+      lstrip_blocks=True,
+      trim_blocks=True)  # so don't need {%- -%} everywhere
+  template = env.get_template(in_tmpl)
+  with open(output, 'w') as out_fi:
+    out_fi.write(template.render(in_ctx))
+
+
 def main(argv):
   """Execute the templater, based on the user provided args.
 
   Args:
     argv: the command line arguments (including the script name)
   """
-  parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      '-d',
-      '--directory',
-      help='treat input paths as relative to this directory',
-      default='.')
-  parser.add_argument(
-      '-i',
-      '--input',
-      help='path to the input template file (relative to -d)',
-      required=True)
-  parser.add_argument(
-      '-o',
-      '--output',
-      help='path to write the generated file to',
-      required=True)
-  parser.add_argument(
-      '-s',
-      '--spec',
-      help='path(s) to the wayland specification(s)',
-      nargs='+',
-      required=True)
-  parsed_args = parser.parse_args(argv[1:])
-
-  env = jinja2.Environment(
-      loader=jinja2.FileSystemLoader(parsed_args.directory),
-      keep_trailing_newline=True,  # newline-terminate generated files
-      lstrip_blocks=True,
-      trim_blocks=True)  # so don't need {%- -%} everywhere
-  template = env.get_template(parsed_args.input)
-  with open(parsed_args.output, 'w') as out_fi:
-    out_fi.write(template.render(GetTemplateData(parsed_args.spec)))
+  parsed_args = wlu.ParseOpts(argv)
+  InstantiateTemplate(parsed_args.input, GetTemplateData(parsed_args.spec),
+                      parsed_args.output, parsed_args.directory)
 
 
 if __name__ == '__main__':

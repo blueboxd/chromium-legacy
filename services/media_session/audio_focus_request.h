@@ -6,6 +6,7 @@
 #define SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -19,7 +20,7 @@ class MediaController;
 
 class AudioFocusRequest : public mojom::AudioFocusRequestClient {
  public:
-  AudioFocusRequest(AudioFocusManager* owner,
+  AudioFocusRequest(base::WeakPtr<AudioFocusManager> owner,
                     mojom::AudioFocusRequestClientRequest request,
                     mojom::MediaSessionPtr session,
                     mojom::MediaSessionInfoPtr session_info,
@@ -92,7 +93,7 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   base::UnguessableToken const group_id_;
 
   // Weak pointer to the owning |AudioFocusManager| instance.
-  AudioFocusManager* const owner_;
+  const base::WeakPtr<AudioFocusManager> owner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusRequest);
 };

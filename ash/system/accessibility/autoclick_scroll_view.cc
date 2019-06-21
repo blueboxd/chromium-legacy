@@ -12,6 +12,7 @@
 #include "ash/system/unified/custom_shape_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -58,6 +59,8 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     Shell::Get()->autoclick_controller()->DoScrollAction(
         AutoclickController::ScrollPadAction::kScrollClose);
+    base::RecordAction(base::UserMetricsAction(
+        "Accessibility.Autoclick.ScrollMenu.CloseButton"));
   }
 
   // views::View:
@@ -90,6 +93,10 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
                          kScrollButtonCloseSizeDips / 2, flags);
     }
     views::ImageButton::PaintButtonContents(canvas);
+  }
+
+  const char* GetClassName() const override {
+    return "AutoclickScrollCloseButton";
   }
 
  private:
@@ -148,7 +155,26 @@ class AutoclickScrollButton : public CustomShapeButton,
 
   void ProcessAction(AutoclickController::ScrollPadAction action) {
     Shell::Get()->autoclick_controller()->DoScrollAction(action);
-    // TODO(katie): Log UMA for scroll user action.
+    switch (action) {
+      case AutoclickController::ScrollPadAction::kScrollUp:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollUp"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollDown:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollDown"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollLeft:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollLeft"));
+        return;
+      case AutoclickController::ScrollPadAction::kScrollRight:
+        base::RecordAction(
+            base::UserMetricsAction("Accessibility.Autoclick.ScrollRight"));
+        return;
+      default:
+        return;
+    }
   }
 
   void DoScrollAction() {
@@ -282,6 +308,8 @@ class AutoclickScrollButton : public CustomShapeButton,
     SchedulePaint();
   }
 
+  const char* GetClassName() const override { return "AutoclickScrollButton"; }
+
  private:
   const AutoclickController::ScrollPadAction action_;
   gfx::Size size_;
@@ -354,15 +382,25 @@ void AutoclickScrollView::Layout() {
   scroll_down_button_->SetBounds(0, kScrollPadButtonHypotenuseDips / 2,
                                  kScrollPadButtonHypotenuseDips,
                                  kScrollPadButtonHypotenuseDips / 2);
-  scroll_left_button_->SetBounds(0, 0, kScrollPadButtonHypotenuseDips / 2,
-                                 kScrollPadButtonHypotenuseDips);
-  scroll_right_button_->SetBounds(kScrollPadButtonHypotenuseDips / 2, 0,
-                                  kScrollPadButtonHypotenuseDips / 2,
-                                  kScrollPadButtonHypotenuseDips);
+  // In RTL languages, the left and right buttons bounds should be inverted
+  // so that they still draw on the correct side of the screen.
+  gfx::Rect left_bounds(0, 0, kScrollPadButtonHypotenuseDips / 2,
+                        kScrollPadButtonHypotenuseDips);
+  gfx::Rect right_bounds(kScrollPadButtonHypotenuseDips / 2, 0,
+                         kScrollPadButtonHypotenuseDips / 2,
+                         kScrollPadButtonHypotenuseDips);
+  scroll_left_button_->SetBoundsRect(base::i18n::IsRTL() ? right_bounds
+                                                         : left_bounds);
+  scroll_right_button_->SetBoundsRect(base::i18n::IsRTL() ? left_bounds
+                                                          : right_bounds);
   close_scroll_button_->SetBounds(
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
       kScrollPadButtonHypotenuseDips / 2 - kScrollButtonCloseSizeDips / 2,
       kScrollButtonCloseSizeDips, kScrollButtonCloseSizeDips);
+}
+
+const char* AutoclickScrollView::GetClassName() const {
+  return "AutoclickScrollView";
 }
 
 }  // namespace ash

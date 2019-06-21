@@ -107,15 +107,15 @@ std::string SysInfo::HardwareModelName() {
 void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits({}).get(), FROM_HERE,
+      base::CreateCOMSTATaskRunner({}).get(), FROM_HERE,
       base::BindOnce(&GetHardwareInfoSync), std::move(callback));
 #elif defined(OS_ANDROID) || defined(OS_MACOSX)
   base::PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
 #elif defined(OS_LINUX)
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::BindOnce(&GetHardwareInfoSync),
-      std::move(callback));
+  base::PostTaskAndReplyWithResult(FROM_HERE, {ThreadPool(), base::MayBlock()},
+                                   base::BindOnce(&GetHardwareInfoSync),
+                                   std::move(callback));
 #else
   NOTIMPLEMENTED();
   base::PostTask(FROM_HERE,

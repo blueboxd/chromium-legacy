@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "printing/backend/cups_jobs.h"
+#include "printing/printer_query_result_chromeos.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
@@ -113,13 +113,15 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the result of adding a printer which the user specified the
   // location of (i.e. a printer that was not 'discovered' automatically).
-  void OnAddedOrEditedSpecifiedPrinter(const Printer& printer,
+  void OnAddedOrEditedSpecifiedPrinter(const std::string& callback_id,
+                                       const Printer& printer,
                                        bool is_printer_edit,
                                        PrinterSetupResult result);
 
   // Handles the result of failure to add a printer. |result_code| is used to
   // determine the reason for the failure.
-  void OnAddOrEditPrinterError(PrinterSetupResult result_code);
+  void OnAddOrEditPrinterError(const std::string& callback_id,
+                               PrinterSetupResult result_code);
 
   // Get a list of all manufacturers for which we have at least one model of
   // printer supported.  Takes one argument, the callback id for the result.

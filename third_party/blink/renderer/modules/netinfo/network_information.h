@@ -41,8 +41,8 @@ class NetworkInformation final
   void ConnectionChange(WebConnectionType,
                         double downlink_max_mbps,
                         WebEffectiveConnectionType effective_type,
-                        const base::Optional<TimeDelta>& http_rtt,
-                        const base::Optional<TimeDelta>& transport_rtt,
+                        const base::Optional<base::TimeDelta>& http_rtt,
+                        const base::Optional<base::TimeDelta>& transport_rtt,
                         const base::Optional<double>& downlink_mbps,
                         bool save_data) override;
 

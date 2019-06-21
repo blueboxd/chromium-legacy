@@ -98,11 +98,12 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
 DownloadOfflineContentProvider*
 DownloadCoreServiceImpl::CreateDownloadOfflineContentProvider() {
 #if defined(OS_ANDROID)
-  return DownloadUtils::GetDownloadOfflineContentProvider(profile_);
+  return DownloadUtils::GetDownloadOfflineContentProvider(
+      profile_->GetProfileKey());
 #else
   download_provider_.reset(new DownloadOfflineContentProvider(
-      OfflineContentAggregatorFactory::GetForBrowserContext(
-          profile_->GetOriginalProfile()),
+      OfflineContentAggregatorFactory::GetForKey(
+          profile_->GetOriginalProfile()->GetProfileKey()),
       offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
           OfflineItemUtils::GetDownloadNamespacePrefix(
               profile_->IsOffTheRecord()),

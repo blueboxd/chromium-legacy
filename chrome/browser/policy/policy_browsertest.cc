@@ -183,6 +183,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -190,7 +191,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -813,10 +813,8 @@ class PolicyTest : public InProcessBrowserTest {
   void SetShouldRequireCTForTesting(bool* required) {
     if (content::IsOutOfProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
       network::mojom::NetworkServiceTest::ShouldRequireCT required_ct;
       if (!required) {
         required_ct =
@@ -2220,6 +2218,31 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
   EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
 }
 
+// Ensure that when INSTALLATION_REMOVED is set for wildcard
+// that blacklisted extensions are removed from the device.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionWildcardRemovedPolicy) {
+  EXPECT_TRUE(InstallExtension(kGoodCrxName));
+
+  extensions::ExtensionService* service = extension_service();
+  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
+
+  // Should uninstall good_v1.crx.
+  base::DictionaryValue dict_value;
+  dict_value.SetString(
+      std::string("*") + "." + extensions::schema_constants::kInstallationMode,
+      extensions::schema_constants::kRemoved);
+  PolicyMap policies;
+  policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               dict_value.CreateDeepCopy(), nullptr);
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+  UpdateProviderPolicy(policies);
+  observer.WaitForExtensionUnloaded();
+
+  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
+}
+
 // Ensure that bookmark apps are not blocked by the ExtensionAllowedTypes
 // policy.
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
@@ -2603,7 +2626,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   // Test policy-installed extensions are reloaded when killed.
   {
-    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
     BackgroundContentsService::
         SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
     content::WindowedNotificationObserver extension_crashed_observer(
@@ -2614,8 +2636,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
     extensions::ExtensionHost* extension_host =
         extensions::ProcessManager::Get(browser()->profile())
             ->GetBackgroundHostForExtension(kGoodCrxId);
-    extension_host->render_process_host()->Shutdown(
-        content::RESULT_CODE_KILLED);
+    content::RenderProcessHost* process = extension_host->render_process_host();
+    content::ScopedAllowRendererCrashes allow_renderer_crashes(process);
+    process->Shutdown(content::RESULT_CODE_KILLED);
     extension_crashed_observer.Wait();
     extension_loaded_observer.WaitForExtensionLoaded();
   }

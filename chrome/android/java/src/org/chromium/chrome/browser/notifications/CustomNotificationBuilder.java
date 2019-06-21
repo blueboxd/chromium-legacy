@@ -13,16 +13,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -101,17 +99,10 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         bigView.setInt(R.id.body, "setMaxLines", calculateMaxBodyLines(fontScale));
         int scaledPadding =
                 calculateScaledPadding(fontScale, mContext.getResources().getDisplayMetrics());
-        String formattedTime = "";
-
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            long time = SystemClock.elapsedRealtime();
+        String formattedTime;
+        // TODO(crbug.com/577185): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             formattedTime = DateFormat.getTimeFormat(mContext).format(new Date());
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.NotificationUIBuildTime",
-                    SystemClock.elapsedRealtime() - time);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
 
         for (RemoteViews view : new RemoteViews[] {compactView, bigView}) {

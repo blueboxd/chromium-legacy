@@ -269,6 +269,32 @@ cr.define('languages_page_tests', function() {
         }
       }
 
+      /**
+       * @return {HTMLElement} Traverses the DOM tree to find the lowest level
+       *     active element.
+       */
+      function getActiveElement() {
+        let node = document.activeElement;
+        let lastNode;
+        while (node) {
+          lastNode = node;
+          node = (node.shadowRoot || node).activeElement;
+        }
+        return lastNode;
+      }
+
+      /**
+       * Assert whether the 'restart' button should be active.
+       * @param {boolean} shouldBeActive True to assert that the 'restart'
+       *     button is present and active or false the assert the negation.
+       */
+      function assertRestartButtonActiveState(shouldBeActive) {
+        const activeElement = getActiveElement();
+        isRestartButtonActive =
+            activeElement && (activeElement.id == 'restartButton');
+        assertEquals(isRestartButtonActive, shouldBeActive);
+      }
+
       test('structure', function() {
         const languageOptionsDropdownTrigger =
             languagesCollapse.querySelector('cr-icon-button');
@@ -336,6 +362,47 @@ cr.define('languages_page_tests', function() {
           assertEquals(
               1, num_visibles,
               'Not exactly one target info label (' + num_visibles + ').');
+        });
+      });
+
+      test('changing UI language in CrOS', function() {
+        if (!cr.isChromeOS) {
+          return;
+        }
+
+        // Mock changing language.
+        languageHelper.setProspectiveUILanguage = languageCode => {
+          languagesPage.set('languages.prospectiveUILanguage', languageCode);
+        };
+
+        // Restart button is not active.
+        assertRestartButtonActiveState(false);
+
+        const swListItem = languagesCollapse.querySelectorAll('.list-item')[1];
+        // Open options for 'sw'.
+        const languageOptionsDropdownTrigger =
+            swListItem.querySelector('cr-icon-button');
+        assertTrue(!!languageOptionsDropdownTrigger);
+        // No restart button in 'sw' list-item.
+        assertTrue(!swListItem.querySelector('#restartButton'));
+        languageOptionsDropdownTrigger.click();
+        assertTrue(actionMenu.open);
+
+        // OS language is not 'sw'
+        const uiLanguageOption = getMenuItem('displayInThisLanguage');
+        assertFalse(uiLanguageOption.disabled);
+        assertFalse(uiLanguageOption.checked);
+
+        return new Promise(resolve => {
+          actionMenu.addEventListener('close', () => {
+            // Restart button is attached to 'sw' list item and is active.
+            assertTrue(!!swListItem.querySelector('#restartButton'));
+            assertRestartButtonActiveState(true);
+            resolve();
+          });
+
+          // Change UI language.
+          uiLanguageOption.click();
         });
       });
 

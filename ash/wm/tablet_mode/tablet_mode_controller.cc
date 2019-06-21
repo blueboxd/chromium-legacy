@@ -104,8 +104,8 @@ constexpr char kTabletModeEnterHistogram[] =
 constexpr char kTabletModeExitHistogram[] =
     "Ash.TabletMode.AnimationSmoothness.Exit";
 
-// Set to true for unit tests so tablet mode can be changed synchronously.
-bool force_no_screenshot = false;
+// Set to false for tests so tablet mode can be changed synchronously.
+bool use_screenshot_for_test = true;
 
 // The angle between AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
@@ -261,12 +261,8 @@ TabletModeController::~TabletModeController() {
 }
 
 // static
-void TabletModeController::SetForceNoScreenshotForTest() {
-  force_no_screenshot = true;
-}
-
-bool TabletModeController::InTabletMode() const {
-  return !!tablet_mode_window_manager_;
+void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
+  use_screenshot_for_test = use_screenshot;
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {
@@ -343,8 +339,8 @@ void TabletModeController::SetTabletModeToggleObserver(
   toggle_observer_ = observer;
 }
 
-bool TabletModeController::IsEnabled() const {
-  return InTabletMode();
+bool TabletModeController::InTabletMode() const {
+  return !!tablet_mode_window_manager_;
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
@@ -610,7 +606,7 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     bool top_window_on_primary_display =
         top_window &&
         top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
-    if (!force_no_screenshot && top_window_on_primary_display) {
+    if (use_screenshot_for_test && top_window_on_primary_display) {
       screenshot_set_callback_.Reset(
           base::BindOnce(&TabletModeController::FinishInitTabletMode,
                          weak_factory_.GetWeakPtr()));
@@ -740,7 +736,7 @@ bool TabletModeController::CanEnterTabletMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger tablet mode at some point in the future.
   // All TabletMode-enabled devices can enter tablet mode.
-  return have_seen_accelerometer_data_ || IsEnabled();
+  return have_seen_accelerometer_data_ || InTabletMode();
 }
 
 void TabletModeController::AttemptEnterTabletMode() {
@@ -910,6 +906,8 @@ void TabletModeController::ResetPauser() {
 }
 
 void TabletModeController::FinishInitTabletMode() {
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeStarting();
   tablet_mode_window_manager_ = std::make_unique<TabletModeWindowManager>();
   tablet_mode_window_manager_->Init();
 

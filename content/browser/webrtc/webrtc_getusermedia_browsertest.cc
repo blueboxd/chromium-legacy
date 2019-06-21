@@ -17,9 +17,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -866,12 +866,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   ExecuteJavascriptAndWaitForOk("setUpForAudioServiceCrash()");
 
-  // Crash the utility process for the audio service
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
+  // Crash the audio service process.
   audio::mojom::TestingApiPtr service_testing_api;
-  connector->BindInterface(audio::mojom::kServiceName,
-                           mojo::MakeRequest(&service_testing_api));
+  GetSystemConnector()->BindInterface(audio::mojom::kServiceName,
+                                      mojo::MakeRequest(&service_testing_api));
   service_testing_api->Crash();
 
   ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");

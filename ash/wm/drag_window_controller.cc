@@ -73,7 +73,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
                                       drag_window_->parent(), &bounds);
     drag_window_->SetBounds(bounds);
     drag_window_->SetTransform(original_window->transform());
-    SetOpacity(original_window, opacity);
+    SetOpacity(opacity);
   }
 
  private:
@@ -124,7 +124,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     layer_owner_->root()->SetVisible(false);
   }
 
-  void SetOpacity(const aura::Window* original_window, float opacity) {
+  void SetOpacity(float opacity) {
     ui::Layer* layer = drag_window_->layer();
     ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
     layer->SetOpacity(opacity);

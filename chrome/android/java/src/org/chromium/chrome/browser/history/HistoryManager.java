@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -57,7 +56,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Displays and manages the UI for browsing history.
@@ -220,7 +218,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             mSelectionDelegate.clearSelection();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_delete_menu_id) {
-            recordSelectionCountHistorgram("Remove");
             recordUserActionWithOptionalSearch("RemoveSelected");
 
             int numItemsRemoved = 0;
@@ -416,7 +413,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {
-        recordSelectionCountHistorgram("Open");
         recordUserActionWithOptionalSearch("OpenSelected" + (isIncognito ? "Incognito" : ""));
 
         for (HistoryItem item : items) {
@@ -460,16 +456,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     void recordUserActionWithOptionalSearch(String action) {
         recordUserAction((mIsSearching ? "Search." : "") + action);
-    }
-
-    /**
-     * Records the number of selected items when a multi-select action is performed.
-     * @param action The multi-select action that was performed.
-     */
-    private void recordSelectionCountHistorgram(String action) {
-        Set<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
-        RecordHistogram.recordCount100Histogram(
-                METRICS_PREFIX + action + "Selected", selectedItems.size());
     }
 
     /**

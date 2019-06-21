@@ -110,6 +110,16 @@ std::string HexDecodeString(const std::string& input) {
 
 }  // namespace
 
+ScopedFeatureList::FeatureAndParams::FeatureAndParams(
+    const Feature& feature,
+    const FieldTrialParams& params)
+    : feature(feature), params(params) {}
+
+ScopedFeatureList::FeatureAndParams::~FeatureAndParams() = default;
+
+ScopedFeatureList::FeatureAndParams::FeatureAndParams(
+    const FeatureAndParams& other) = default;
+
 ScopedFeatureList::ScopedFeatureList() = default;
 
 ScopedFeatureList::~ScopedFeatureList() {

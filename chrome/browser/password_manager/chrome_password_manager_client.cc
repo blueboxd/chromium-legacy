@@ -699,7 +699,7 @@ void ChromePasswordManagerClient::OnPaste() {
 
 base::string16 ChromePasswordManagerClient::GetTextFromClipboard() {
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
                                                  &text);
   return text;
 }

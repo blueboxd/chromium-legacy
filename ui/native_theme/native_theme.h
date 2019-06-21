@@ -367,11 +367,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TableHeaderText,
     kColorId_TableHeaderBackground,
     kColorId_TableHeaderSeparator,
-    // Results Tables, such as the omnibox.
-    kColorId_ResultsTableNormalBackground,
-    kColorId_ResultsTableHoveredBackground,
-    kColorId_ResultsTableNormalText,
-    kColorId_ResultsTableDimmedText,
     // Colors for the material spinner (aka throbber).
     kColorId_ThrobberSpinningColor,
     kColorId_ThrobberWaitingColor,

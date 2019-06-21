@@ -13,10 +13,11 @@
       :host {
         display: flex;
         font-size: calc(13/15 * 1em);
-        --cr-input-row-container: {
-          min-height: 32px;
-        }
         --cr-input-error-display: none;
+      }
+
+      cr-input::part(row-container) {
+        min-height: 32px;
       }
 
       #icon,

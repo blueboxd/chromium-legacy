@@ -25,28 +25,6 @@
 
 namespace ash {
 
-namespace {
-
-std::unique_ptr<ShelfModel> CreateKioskNextShelfModel() {
-  auto shelf_model = std::make_unique<ShelfModel>();
-
-  DCHECK_EQ(0, shelf_model->ItemIndexByID(ShelfID(kBackButtonId)));
-  DCHECK_EQ(1, shelf_model->ItemIndexByID(ShelfID(kAppListId)));
-
-  ShelfItem back_item = shelf_model->items()[0];
-  ShelfItem home_item = shelf_model->items()[1];
-
-  back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
-  home_item.title =
-      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
-
-  shelf_model->Set(0, back_item);
-  shelf_model->Set(1, home_item);
-  return shelf_model;
-}
-
-}  // namespace
-
 KioskNextShellControllerImpl::KioskNextShellControllerImpl() = default;
 
 KioskNextShellControllerImpl::~KioskNextShellControllerImpl() = default;
@@ -115,7 +93,9 @@ void KioskNextShellControllerImpl::LaunchKioskNextShellIfEnabled() {
       session_controller->GetPrimaryUserSession()->user_info.account_id);
   UMA_HISTOGRAM_BOOLEAN("KioskNextShell.Launched", true);
 
-  shelf_model_ = CreateKioskNextShelfModel();
+  // Since the kiosk next shelf only has navigation buttons (back and home),
+  // its shelf model for apps is empty.
+  shelf_model_ = std::make_unique<ShelfModel>();
 
   // Notify observers that KioskNextShell has been enabled.
   for (KioskNextShellObserver& observer : observer_list_) {

@@ -57,7 +57,6 @@ buildflag_header("buildflags") {
   flags = [
     "ENABLE_HIDPI=$enable_hidpi",
     "ENABLE_MESSAGE_CENTER=$enable_message_center",
-    "ENABLE_MUS=$enable_mus",
     "USE_ATK=$use_atk",
     "USE_XKBCOMMON=$use_xkbcommon",
     "HAS_NATIVE_ACCESSIBILITY=$has_native_accessibility",

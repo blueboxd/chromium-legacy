@@ -32,10 +32,6 @@ public class ProgressBarCoordinator {
         mMediator.onActivityResume();
     }
 
-    public void onKeyEvent() {
-        mMediator.onKeyEvent();
-    }
-
     public void destroy() {
         mMediator.destroy();
     }

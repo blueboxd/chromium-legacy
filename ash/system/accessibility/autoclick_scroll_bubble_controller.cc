@@ -23,6 +23,8 @@ namespace ash {
 namespace {
 // Autoclick scroll menu constants.
 constexpr int kAutoclickScrollMenuSizeDips = 192;
+const int kScrollPointBufferDips = 100;
+
 }  // namespace
 
 AutoclickScrollBubbleController::AutoclickScrollBubbleController() {}
@@ -35,8 +37,23 @@ AutoclickScrollBubbleController::~AutoclickScrollBubbleController() {
 void AutoclickScrollBubbleController::UpdateAnchorRect(
     gfx::Rect rect,
     views::BubbleBorder::Arrow alignment) {
+  menu_bubble_rect_ = rect;
+  if (set_scroll_point_)
+    return;
   bubble_view_->SetArrow(alignment);
   bubble_view_->UpdateAnchorRect(rect);
+}
+
+void AutoclickScrollBubbleController::SetScrollPoint(
+    gfx::Point scroll_location_in_dips) {
+  set_scroll_point_ = true;
+  gfx::Rect anchor =
+      gfx::Rect(scroll_location_in_dips.x(), scroll_location_in_dips.y(), 0, 0);
+  // Buffer around the point so that the scroll bubble does not overlap it.
+  // ScrollBubbleController will automatically layout to avoid edges.
+  anchor.Inset(-kScrollPointBufferDips, -kScrollPointBufferDips);
+  bubble_view_->SetArrow(views::BubbleBorder::Arrow::LEFT_CENTER);
+  bubble_view_->UpdateAnchorRect(anchor);
 }
 
 void AutoclickScrollBubbleController::ShowBubble(
@@ -81,7 +98,7 @@ void AutoclickScrollBubbleController::ShowBubble(
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
       bubble_widget_->GetNativeWindow(),
-      CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
+      CollisionDetectionUtils::RelativePriority::kAutomaticClicksScrollMenu);
   bubble_view_->InitializeAndShowBubble();
 
   if (app_list_features::IsBackgroundBlurEnabled()) {

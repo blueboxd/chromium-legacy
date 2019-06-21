@@ -227,6 +227,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
 
+  // The original clipping on the layer of the window before entering overview
+  // mode.
+  gfx::Rect original_clip_rect_;
+
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;

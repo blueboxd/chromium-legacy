@@ -29,12 +29,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -275,20 +275,11 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
     const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
     bool is_incognito) {
-  auto credential_params = mojo::ConvertTo<
-      std::vector<device::PublicKeyCredentialParams::CredentialInfo>>(
-      options->public_key_parameters);
-
   device::CtapMakeCredentialRequest make_credential_param(
-      client_data_json,
-      mojo::ConvertTo<device::PublicKeyCredentialRpEntity>(
-          options->relying_party),
-      mojo::ConvertTo<device::PublicKeyCredentialUserEntity>(options->user),
-      device::PublicKeyCredentialParams(std::move(credential_params)));
+      client_data_json, options->relying_party, options->user,
+      device::PublicKeyCredentialParams(options->public_key_parameters));
 
-  make_credential_param.exclude_list =
-      mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
-          options->exclude_credentials);
+  make_credential_param.exclude_list = options->exclude_credentials;
 
   make_credential_param.hmac_secret = options->hmac_create_secret;
   make_credential_param.is_incognito_mode = is_incognito;
@@ -314,13 +305,9 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
                                                     client_data_json);
 
-  request_parameter.allow_list =
-      mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
-          options->allow_credentials);
+  request_parameter.allow_list = options->allow_credentials;
 
-  request_parameter.user_verification =
-      mojo::ConvertTo<device::UserVerificationRequirement>(
-          options->user_verification);
+  request_parameter.user_verification = options->user_verification;
 
   if (app_id) {
     request_parameter.alternative_application_parameter =
@@ -329,9 +316,7 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   }
 
   if (!options->cable_authentication_data.empty()) {
-    request_parameter.cable_extension =
-        mojo::ConvertTo<std::vector<device::CableDiscoveryData>>(
-            options->cable_authentication_data);
+    request_parameter.cable_extension = options->cable_authentication_data;
   }
   request_parameter.is_incognito_mode = is_incognito;
   return request_parameter;
@@ -424,10 +409,7 @@ CreateMakeCredentialResponse(
     AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
   }
 
-  for (auto transport : transports) {
-    response->transports.push_back(
-        mojo::ConvertTo<blink::mojom::AuthenticatorTransport>(transport));
-  }
+  response->transports = std::move(transports);
 
   const base::Optional<cbor::Value>& maybe_extensions =
       response_data.attestation_object().authenticator_data().extensions();
@@ -695,7 +677,7 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  if (!IsRelyingPartyIdValid(options->relying_party->id, caller_origin)) {
+  if (!IsRelyingPartyIdValid(options->relying_party.id, caller_origin)) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
@@ -707,7 +689,7 @@ void AuthenticatorCommon::MakeCredential(
   }
 
   caller_origin_ = caller_origin;
-  relying_party_id_ = options->relying_party->id;
+  relying_party_id_ = options->relying_party.id;
 
   UpdateRequestDelegate();
   if (!request_delegate_) {
@@ -724,7 +706,7 @@ void AuthenticatorCommon::MakeCredential(
   }
 
   bool resident_key = options->authenticator_selection &&
-                      options->authenticator_selection->require_resident_key;
+                      options->authenticator_selection->require_resident_key();
   if (resident_key &&
       (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
        !request_delegate_->SupportsResidentKeys())) {
@@ -737,8 +719,7 @@ void AuthenticatorCommon::MakeCredential(
 
   authenticator_selection_criteria_ =
       options->authenticator_selection
-          ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
-                options->authenticator_selection)
+          ? options->authenticator_selection
           : device::AuthenticatorSelectionCriteria();
 
   // Reject any non-sensical credProtect extension values.
@@ -779,7 +760,7 @@ void AuthenticatorCommon::MakeCredential(
       FROM_HERE, options->adjusted_timeout,
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
   if (!connector_)
-    connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector_ = GetSystemConnector();
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
@@ -792,7 +773,7 @@ void AuthenticatorCommon::MakeCredential(
     // in Cryptotoken requests as the relying party name, which should be used
     // as part of client data.
     client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kU2fRegisterType, options->relying_party->name,
+        client_data::kU2fRegisterType, *options->relying_party.name,
         std::move(options->challenge), true /* use_legacy_u2f_type_key */);
   } else {
     client_data_json_ = SerializeCollectedClientDataToJson(
@@ -812,8 +793,7 @@ void AuthenticatorCommon::MakeCredential(
 
   // Compute the effective attestation conveyance preference and set
   // |attestation_requested_| for showing the attestation consent prompt later.
-  auto attestation = mojo::ConvertTo<::device::AttestationConveyancePreference>(
-      options->attestation);
+  ::device::AttestationConveyancePreference attestation = options->attestation;
   if (attestation == ::device::AttestationConveyancePreference::kEnterprise &&
       !request_delegate_->ShouldPermitIndividualAttestation(
           relying_party_id_)) {
@@ -942,7 +922,7 @@ void AuthenticatorCommon::GetAssertion(
       base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
 
   if (!connector_)
-    connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector_ = GetSystemConnector();
 
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,

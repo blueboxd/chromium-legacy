@@ -25,12 +25,14 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
   static base::Optional<PublicKeyCredentialRpEntity> CreateFromCBORValue(
       const cbor::Value& cbor);
 
+  PublicKeyCredentialRpEntity();
   explicit PublicKeyCredentialRpEntity(std::string rp_id);
   PublicKeyCredentialRpEntity(const PublicKeyCredentialRpEntity& other);
   PublicKeyCredentialRpEntity(PublicKeyCredentialRpEntity&& other);
   PublicKeyCredentialRpEntity& operator=(
       const PublicKeyCredentialRpEntity& other);
   PublicKeyCredentialRpEntity& operator=(PublicKeyCredentialRpEntity&& other);
+  bool operator==(const PublicKeyCredentialRpEntity& other) const;
   ~PublicKeyCredentialRpEntity();
 
   std::string id;

@@ -18,6 +18,7 @@
 #import "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -71,7 +72,7 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() reload];
 }
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 + (void)selectTabAtIndex:(NSUInteger)index {
   chrome_test_util::SelectTabAtIndexInCurrentMode(index);
@@ -257,7 +258,7 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID {
   std::string utfGUID = base::SysNSStringToUTF8(GUID);
@@ -446,7 +447,20 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return blockResult;
 }
 
-#pragma mark - Check features
+#pragma mark - Accessibility Utilities (EG2)
+
++ (NSError*)verifyAccessibilityForCurrentScreen {
+  NSError* error = nil;
+  bool success = chrome_test_util::VerifyAccessibilityForCurrentScreen(error);
+  if (!success || error) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Accessibility checks failed! Error: %@", error];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
+}
+
+#pragma mark - Check features (EG2)
 
 + (BOOL)isSlimNavigationManagerEnabled {
   return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);

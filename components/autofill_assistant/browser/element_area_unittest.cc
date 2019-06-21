@@ -85,15 +85,23 @@ class ElementAreaTest : public testing::Test {
   }
 
   void SetElement(const std::string& selector) {
+    SetElement(selector, /* restricted= */ false);
+  }
+
+  void SetElement(const std::string& selector, bool restricted) {
     ElementAreaProto area;
-    area.add_rectangles()->add_elements()->add_selectors(selector);
+    auto* rectangle = restricted ? area.add_restricted() : area.add_touchable();
+    rectangle->add_elements()->add_selectors(selector);
     element_area_.SetFromProto(area);
   }
 
-  void OnUpdate(const RectF& visual_viewport, const std::vector<RectF>& area) {
+  void OnUpdate(const RectF& visual_viewport,
+                const std::vector<RectF>& touchable_area,
+                const std::vector<RectF>& restricted_area) {
     on_update_call_count_++;
     reported_visual_viewport_ = visual_viewport;
-    reported_area_ = area;
+    reported_area_ = touchable_area;
+    reported_restricted_area_ = restricted_area;
   }
 
   // scoped_task_environment_ must be first to guarantee other field
@@ -106,13 +114,14 @@ class ElementAreaTest : public testing::Test {
   int on_update_call_count_ = 0;
   RectF reported_visual_viewport_;
   std::vector<RectF> reported_area_;
+  std::vector<RectF> reported_restricted_area_;
 };
 
 TEST_F(ElementAreaTest, Empty) {
   EXPECT_THAT(reported_area_, IsEmpty());
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, IsEmpty());
 
   RectF viewport;
@@ -125,7 +134,7 @@ TEST_F(ElementAreaTest, ElementNotFound) {
   EXPECT_THAT(reported_area_, ElementsAre(EmptyRectF()));
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(EmptyRectF()));
 }
 
@@ -143,7 +152,7 @@ TEST_F(ElementAreaTest, OneRectangle) {
 
   SetElement("#found");
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(25, 25, 75, 75)));
 }
 
@@ -197,12 +206,12 @@ TEST_F(ElementAreaTest, TwoRectangles) {
       .WillOnce(RunOnceCallback<1>(true, RectF(25, 25, 100, 100)));
 
   ElementAreaProto area_proto;
-  area_proto.add_rectangles()->add_elements()->add_selectors("#top_left");
-  area_proto.add_rectangles()->add_elements()->add_selectors("#bottom_right");
+  area_proto.add_touchable()->add_elements()->add_selectors("#top_left");
+  area_proto.add_touchable()->add_elements()->add_selectors("#bottom_right");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0, 0, 25, 25),
                                       MatchingRectF(25, 25, 100, 100)));
 }
@@ -218,13 +227,13 @@ TEST_F(ElementAreaTest, OneRectangleTwoElements) {
       .WillOnce(RunOnceCallback<1>(true, RectF(5, 2, 6, 5)));
 
   ElementAreaProto area_proto;
-  auto* rectangle_proto = area_proto.add_rectangles();
+  auto* rectangle_proto = area_proto.add_touchable();
   rectangle_proto->add_elements()->add_selectors("#element1");
   rectangle_proto->add_elements()->add_selectors("#element2");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(1, 2, 6, 5)));
 }
 
@@ -242,7 +251,7 @@ TEST_F(ElementAreaTest, DoNotReportIncompleteRectangles) {
       .WillOnce(DoNothing());  // overrides default action
 
   ElementAreaProto area_proto;
-  auto* rectangle_proto = area_proto.add_rectangles();
+  auto* rectangle_proto = area_proto.add_touchable();
   rectangle_proto->add_elements()->add_selectors("#element1");
   rectangle_proto->add_elements()->add_selectors("#element2");
   element_area_.SetFromProto(area_proto);
@@ -250,7 +259,7 @@ TEST_F(ElementAreaTest, DoNotReportIncompleteRectangles) {
   EXPECT_THAT(reported_area_, IsEmpty());
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(1, 3, 2, 4)));
 }
 
@@ -273,7 +282,7 @@ TEST_F(ElementAreaTest, OneRectangleFourElements) {
       .WillOnce(RunOnceCallback<1>(true, RectF(9, 0, 100, 1)));
 
   ElementAreaProto area_proto;
-  auto* rectangle_proto = area_proto.add_rectangles();
+  auto* rectangle_proto = area_proto.add_touchable();
   rectangle_proto->add_elements()->add_selectors("#element1");
   rectangle_proto->add_elements()->add_selectors("#element2");
   rectangle_proto->add_elements()->add_selectors("#element3");
@@ -281,7 +290,7 @@ TEST_F(ElementAreaTest, OneRectangleFourElements) {
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0, 0, 100, 100)));
 }
 
@@ -296,13 +305,13 @@ TEST_F(ElementAreaTest, OneRectangleMissingElementsReported) {
       .WillOnce(RunOnceCallback<1>(false, RectF()));
 
   ElementAreaProto area_proto;
-  auto* rectangle_proto = area_proto.add_rectangles();
+  auto* rectangle_proto = area_proto.add_touchable();
   rectangle_proto->add_elements()->add_selectors("#element1");
   rectangle_proto->add_elements()->add_selectors("#element2");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(1, 1, 2, 2)));
 
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(1, 1, 2, 2)));
@@ -321,14 +330,14 @@ TEST_F(ElementAreaTest, FullWidthRectangle) {
       .WillRepeatedly(RunOnceCallback<0>(true, RectF(100, 0, 200, 400)));
 
   ElementAreaProto area_proto;
-  auto* rectangle_proto = area_proto.add_rectangles();
+  auto* rectangle_proto = area_proto.add_touchable();
   rectangle_proto->add_elements()->add_selectors("#element1");
   rectangle_proto->add_elements()->add_selectors("#element2");
   rectangle_proto->set_full_width(true);
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
 
   // left and right of the box come from the visual viewport, top from the 1st
   // element, bottom from the 2nd.
@@ -346,7 +355,7 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
   SetElement("#element");
 
   std::vector<RectF> original;
-  element_area_.GetRectangles(&original);
+  element_area_.GetTouchableRectangles(&original);
   EXPECT_THAT(original, ElementsAre(MatchingRectF(0, 25, 100, 50)));
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(0, 25, 100, 50)));
 
@@ -354,7 +363,7 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
 
   // Updated area is available
   std::vector<RectF> updated;
-  element_area_.GetRectangles(&updated);
+  element_area_.GetTouchableRectangles(&updated);
   EXPECT_THAT(updated, ElementsAre(MatchingRectF(0, 50, 100, 75)));
 
   // Updated area is reported
@@ -378,11 +387,34 @@ TEST_F(ElementAreaTest, ElementMovesWithTime) {
 
   // Updated area is available
   std::vector<RectF> rectangles;
-  element_area_.GetRectangles(&rectangles);
+  element_area_.GetTouchableRectangles(&rectangles);
   EXPECT_THAT(rectangles, ElementsAre(MatchingRectF(0, 50, 100, 75)));
 
   // Updated area is reported
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(0, 50, 100, 75)));
+}
+
+TEST_F(ElementAreaTest, RestrictedElement) {
+  EXPECT_CALL(mock_web_controller_,
+              OnGetElementPosition(
+                  Eq(Selector({"#restricted_element"}).MustBeVisible()), _))
+      .WillOnce(RunOnceCallback<1>(true, RectF(25, 25, 75, 75)));
+
+  SetElement("#restricted_element", /* restricted= */ true);
+
+  EXPECT_EQ(on_update_call_count_, 1);
+  EXPECT_THAT(reported_area_, IsEmpty());
+  EXPECT_THAT(reported_restricted_area_,
+              ElementsAre(MatchingRectF(25, 25, 75, 75)));
+
+  std::vector<RectF> touchable_rectangles;
+  std::vector<RectF> restricted_rectangles;
+  element_area_.GetTouchableRectangles(&touchable_rectangles);
+  element_area_.GetRestrictedRectangles(&restricted_rectangles);
+
+  EXPECT_THAT(touchable_rectangles, IsEmpty());
+  EXPECT_THAT(restricted_rectangles,
+              ElementsAre(MatchingRectF(25, 25, 75, 75)));
 }
 }  // namespace
 }  // namespace autofill_assistant

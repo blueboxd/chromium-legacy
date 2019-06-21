@@ -86,6 +86,7 @@ template("fuchsia_package_runner") {
         "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
         "${qemu_root}/",
         "${fuchsia_sdk}/",
+        "${boot_image_root}/",
       ]
 
       data_deps = [

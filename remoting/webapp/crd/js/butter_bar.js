@@ -65,11 +65,6 @@ remoting.ButterBar.prototype.init = function() {
       var responseObj = response.getJson();
       /** @type {string} */
       var email = results[1];
-      if (email.toLocaleLowerCase().endsWith('@google.com') &&
-          !Boolean(responseObj.includeGooglers)) {
-        result.resolve();
-        return;
-      }
       /** @type {number} The index of the message to display. */
       var index = base.assertNumber(responseObj.index);
       /** @type {string} The URL of the website. */
@@ -120,12 +115,6 @@ remoting.ButterBar.prototype.show_ = function(url) {
   if (anchorTags.length == 1) {
     anchorTags[0].addEventListener(
         'click', this.onLinkClicked_.bind(this), false);
-  }
-  if (dismissable) {
-    this.dismiss_.addEventListener('click', this.dismiss.bind(this), false);
-  } else {
-    this.dismiss_.hidden = true;
-    this.root_.classList.add('red');
   }
   this.root_.hidden = false;
 }

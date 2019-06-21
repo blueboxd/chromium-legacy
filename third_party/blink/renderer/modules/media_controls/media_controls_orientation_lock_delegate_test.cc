@@ -168,7 +168,7 @@ class MediaControlsOrientationLockDelegateTest
   using DeviceOrientationType =
       MediaControlsOrientationLockDelegate::DeviceOrientationType;
 
-  static constexpr TimeDelta GetUnlockDelay() {
+  static constexpr base::TimeDelta GetUnlockDelay() {
     return MediaControlsOrientationLockDelegate::kLockToAnyDelay;
   }
 
@@ -1418,7 +1418,8 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // delegate unlocks the screen orientation, so Android changes the screen
   // orientation back to portrait because it hasn't yet processed the device
   // orientation change to landscape.
-  constexpr TimeDelta kMinUnlockDelay = TimeDelta::FromMilliseconds(249);
+  constexpr base::TimeDelta kMinUnlockDelay =
+      base::TimeDelta::FromMilliseconds(249);
   static_assert(GetUnlockDelay() > kMinUnlockDelay,
                 "GetUnlockDelay() should significantly exceed kMinUnlockDelay");
   test::RunDelayedTasks(kMinUnlockDelay);

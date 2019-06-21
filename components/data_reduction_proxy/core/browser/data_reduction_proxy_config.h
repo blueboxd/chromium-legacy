@@ -209,8 +209,6 @@ class DataReductionProxyConfig
                            AreProxiesBypassedRetryDelay);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           ShouldAcceptServerLoFi);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            ShouldAcceptServerPreview);
 
   // Values of the estimated network quality at the beginning of the most

@@ -21,11 +21,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/core/features.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/proto_value_conversions.h"
+#include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/session_store.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -107,6 +109,49 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
 
  private:
   const std::string url_;
+  fake_server::FakeServer* fake_server_;
+};
+
+class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
+ public:
+  IsIconURLSyncedChecker(const std::string& page_url,
+                         const std::string& icon_url,
+                         fake_server::FakeServer* fake_server,
+                         syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service),
+        page_url_(page_url),
+        icon_url_(icon_url),
+        fake_server_(fake_server) {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    std::vector<sync_pb::SyncEntity> sessions =
+        fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
+    for (const auto& entity : sessions) {
+      const sync_pb::SessionSpecifics& session_specifics =
+          entity.specifics().session();
+      if (!session_specifics.has_tab()) {
+        continue;
+      }
+      for (int i = 0; i < session_specifics.tab().navigation_size(); i++) {
+        const sync_pb::TabNavigation& nav =
+            session_specifics.tab().navigation(i);
+        if (nav.has_virtual_url() && nav.has_favicon_url() &&
+            nav.virtual_url() == page_url_ && nav.favicon_url() == icon_url_) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for URLs to be commited to the server";
+  }
+
+ private:
+  const std::string page_url_;
+  const std::string icon_url_;
   fake_server::FakeServer* fake_server_;
 };
 
@@ -746,6 +791,31 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
                          /*sample=*/true, /*expected_inclusive_lower_bound=*/1);
     histogram_tester.ExpectTotalCount("Sync.CookieJarEmptyOnMismatch", 0);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       ShouldNotifyLoadedIconUrl) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      favicon::kNotifySessionsOfMostRecentIconUrlChange);
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  // Url with endoded 1 pixel icon.
+  std::string icon_url =
+      "data:image/png;base64,"
+      "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  std::string page_url =
+      "data:text/html,<html><title>TestWithFavicon</title><link rel=icon "
+      "href=" +
+      icon_url + " /></html>";
+
+  ASSERT_TRUE(OpenTab(0, GURL(page_url)));
+
+  IsIconURLSyncedChecker checker(page_url, icon_url, GetFakeServer(),
+                                 GetSyncService(0));
+  EXPECT_TRUE(checker.Wait());
 }
 
 }  // namespace

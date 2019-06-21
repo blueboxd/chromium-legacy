@@ -4,12 +4,12 @@
 
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
-#include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/peerconnection/media_stream_remote_video_source.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ RemoteVideoTrackAdapter::RemoteVideoTrackAdapter(
 RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (initialized()) {
-    static_cast<MediaStreamRemoteVideoSource*>(
+    static_cast<blink::MediaStreamRemoteVideoSource*>(
         web_track()->Source().GetPlatformSource())
         ->OnSourceTerminated();
   }
@@ -38,9 +38,9 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
     std::unique_ptr<blink::TrackObserver> observer,
     bool enabled) {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  std::unique_ptr<MediaStreamRemoteVideoSource> video_source_ptr =
-      std::make_unique<MediaStreamRemoteVideoSource>(std::move(observer));
-  MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
+  auto video_source_ptr = std::make_unique<blink::MediaStreamRemoteVideoSource>(
+      std::move(observer));
+  blink::MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeVideo);
   web_track()->Source().SetPlatformSource(std::move(video_source_ptr));
 

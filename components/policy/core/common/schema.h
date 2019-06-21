@@ -33,7 +33,11 @@ struct POLICY_EXPORT PropertiesNode;
 // list items might be ignored (or dropped in Normalize()) or trigger whole
 // dictionary/list validation failure.
 enum SchemaOnErrorStrategy {
-  // No errors will be allowed.
+  // No errors will be allowed. This should not be used for policies, since it
+  // basically prevents future changes to the policy (Server sends newField, but
+  // clients running older versions of Chrome reject the policy because they
+  // don't know newField). Prefer to use |SCHEMA_ALLOW_UNKNOWN| for policies
+  // instead.
   SCHEMA_STRICT = 0,
   // Unknown properties in the top-level dictionary will be ignored.
   SCHEMA_ALLOW_UNKNOWN_TOPLEVEL,

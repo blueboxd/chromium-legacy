@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   navigation_observer.Wait();
 
   // Simulate a crash on the page.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(contents);
   contents->GetController().LoadURL(GURL(content::kChromeUICrashURL),
                                     content::Referrer(),
                                     ui::PAGE_TRANSITION_TYPED, std::string());
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
   navigation_observer.Wait();
 
   // Simulate the page being killed due to being unresponsive.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(contents);
   contents->GetMainFrame()->GetProcess()->Shutdown(content::RESULT_CODE_HUNG);
 
   upload_response()->WaitForRequest();

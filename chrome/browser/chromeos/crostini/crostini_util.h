@@ -171,7 +171,7 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
 // Returns a string to be displayed in a notification with the estimated time
 // left for an operation to run which started and time |start| and is current
 // at |percent| way through.
-base::string16 GetTimeRemainingMessage(base::Time start, int percent);
+base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent);
 
 }  // namespace crostini
 

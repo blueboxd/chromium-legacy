@@ -88,10 +88,8 @@
 }
 
 #hangouts-local-present-checkbox {
-  --cr-checkbox-label-container: {
-    padding-inline-start: 14px;
-  }
   align-items: start;
+  --cr-checkbox-label-padding-start: 14px;
 }
 
 #hangouts-local-present-checkbox-subtitle {

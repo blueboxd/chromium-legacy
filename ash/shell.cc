@@ -192,6 +192,7 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/message_center.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
@@ -845,10 +846,8 @@ Shell::~Shell() {
 
   shell_delegate_.reset();
 
-  if (!::features::IsMultiProcessMash()) {
-    // Must be shut down after detachable_base_handler_.
-    chromeos::HammerdClient::Shutdown();
-  }
+  // Must be shut down after detachable_base_handler_.
+  chromeos::HammerdClient::Shutdown();
 
   for (auto& observer : shell_observers_)
     observer.OnShellDestroyed();
@@ -1156,8 +1155,7 @@ void Shell::Init(
   user_metrics_recorder_->OnShellInitialized();
 
   // Initialize the D-Bus bus and services for ash.
-  if (!::features::IsMultiProcessMash())
-    ash_dbus_helper_ = AshDBusHelper::CreateWithExistingBus(dbus_bus);
+  ash_dbus_helper_ = AshDBusHelper::CreateWithExistingBus(dbus_bus);
   ash_dbus_services_ = std::make_unique<AshDBusServices>(dbus_bus.get());
 
   // By this point ash shell should have initialized its D-Bus signal

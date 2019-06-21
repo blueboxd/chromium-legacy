@@ -67,7 +67,7 @@ class OAuthMultiloginResult {
   ~OAuthMultiloginResult();
 
   std::vector<net::CanonicalCookie> cookies() const { return cookies_; }
-  std::vector<std::string> failed_accounts() const { return failed_accounts_; }
+  std::vector<std::string> failed_gaia_ids() const { return failed_gaia_ids_; }
   OAuthMultiloginResponseStatus status() const { return status_; }
 
  private:
@@ -84,7 +84,7 @@ class OAuthMultiloginResult {
   void TryParseFailedAccountsFromValue(base::Value* json_value);
 
   std::vector<net::CanonicalCookie> cookies_;
-  std::vector<std::string> failed_accounts_;
+  std::vector<std::string> failed_gaia_ids_;
   OAuthMultiloginResponseStatus status_;
 };
 

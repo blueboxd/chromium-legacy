@@ -65,10 +65,12 @@ class QemuTarget(target.Target):
         '-m', str(self._ram_size_mb),
         '-nographic',
         '-kernel', EnsurePathExists(
-            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                    'qemu-kernel.bin')),
+            boot_data.GetTargetFile('qemu-kernel.kernel',
+                                    self._GetTargetSdkArch(),
+                                    boot_data.TARGET_TYPE_QEMU)),
         '-initrd', EnsurePathExists(
-            boot_data.GetBootImage(self._output_dir, self._GetTargetSdkArch())),
+            boot_data.GetBootImage(self._output_dir, self._GetTargetSdkArch(),
+                                   boot_data.TARGET_TYPE_QEMU)),
         '-smp', str(self._cpu_cores),
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard

@@ -88,27 +88,6 @@ QUnit.module('ButterBar', {
   }
 });
 
-QUnit.test('should stay hidden for google.com addresses by default',
-           function(assert) {
-  this.currentMessage = 0;
-  this.percent = 100;
-  this.email = 'uSeR@gOoGlE.cOm';
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-  });
-});
-
-QUnit.test('should stay hidden for google.com addresses when disabled',
-           function(assert) {
-  this.currentMessage = 0;
-  this.percent = 100;
-  this.email = 'uSeR@gOoGlE.cOm';
-  this.includeGooglers = false;
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-  });
-});
-
 QUnit.test('should be shown for google.com addresses when enabled',
            function(assert) {
   this.currentMessage = 0;
@@ -118,40 +97,6 @@ QUnit.test('should be shown for google.com addresses when enabled',
   chrome.storage.sync.get.callsArgWith(1, {});
   return this.butterBar.init().then(() => {
     assert.ok(this.butterBar.root_.hidden == false);
-  });
-});
-
-QUnit.test('should stay hidden if XHR fails', function(assert) {
-  this.currentMessage = undefined;
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-  });
-});
-
-QUnit.test('should stay hidden if index==-1', function(assert) {
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-  });
-});
-
-QUnit.test('should stay hidden if not selected by percentage',
-           function(assert) {
-  this.currentMessage = 0;
-  this.percent = 50;
-  this.hash = 64;
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-  });
-});
-
-QUnit.test('should be shown, yellow and dismissable if index==0',
-           function(assert) {
-  this.currentMessage = 0;
-  chrome.storage.sync.get.callsArgWith(1, {});
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == false);
-    assert.ok(this.butterBar.dismiss_.hidden == false);
-    assert.ok(!this.butterBar.root_.classList.contains('red'));
   });
 });
 
@@ -214,40 +159,6 @@ QUnit.test(
   });
 });
 
-QUnit.test('should stay hidden if the timeout has elapsed', function(assert) {
-  this.currentMessage = 0;
-  chrome.storage.sync.get.callsArgWith(1, {
-    "message-state": {
-      "hidden": false,
-      "index": 0,
-      "timestamp": 0,
-    }
-  });
-  this.now = remoting.ButterBar.kTimeout_+ 1;
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-    sinon.assert.notCalled(logWriterSpy);
-  });
-});
-
-
-QUnit.test('should stay hidden if it was previously dismissed',
-           function(assert) {
-  this.currentMessage = 0;
-  chrome.storage.sync.get.callsArgWith(1, {
-    "message-state": {
-      "hidden": true,
-      "index": 0,
-      "timestamp": 0,
-    }
-  });
-  return this.butterBar.init().then(() => {
-    assert.ok(this.butterBar.root_.hidden == true);
-    sinon.assert.notCalled(logWriterSpy);
-  });
-});
-
-
 QUnit.test('should be shown if the index has increased', function(assert) {
   var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;
   var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
@@ -304,33 +215,6 @@ QUnit.test('should be red and not dismissable for the final message',
     verifyLog(
         assert, 0, MigrationEvent.DEPRECATION_NOTICE_IMPRESSION,
         MigrationPhase.DEPRECATION_2)
-  });
-});
-
-QUnit.test('dismiss button updates local storage', function(assert) {
-  var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;
-  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
-
-  this.currentMessage = 0;
-  chrome.storage.sync.get.callsArgWith(1, {});
-  return this.butterBar.init().then(() => {
-    this.butterBar.dismiss_.click();
-    // The first call is in response to showing the message; the second is in
-    // response to dismissing the message.
-    assert.deepEqual(chrome.storage.sync.set.secondCall.args,
-                     [{
-                       "message-state": {
-                         "hidden": true,
-                         "index": 0,
-                         "timestamp": 0,
-                       }
-                     }]);
-    verifyLog(
-        assert, 0, MigrationEvent.DEPRECATION_NOTICE_IMPRESSION,
-        MigrationPhase.BETA)
-    verifyLog(
-        assert, 1, MigrationEvent.DEPRECATION_NOTICE_DISMISSAL,
-        MigrationPhase.BETA)
   });
 });
 

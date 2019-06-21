@@ -463,8 +463,7 @@ int QuicHttpStream::DoLoop(int rv) {
   CHECK(!in_loop_);
   base::AutoReset<bool> auto_reset_in_loop(&in_loop_, true);
   std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher> packet_flusher =
-      quic_session()->CreatePacketBundler(
-          quic::QuicConnection::AckBundling::SEND_ACK_IF_QUEUED);
+      quic_session()->CreatePacketBundler();
   do {
     State state = next_state_;
     next_state_ = STATE_NONE;

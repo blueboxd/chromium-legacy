@@ -42,6 +42,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   static const char kRetryDelayFactorParameterName[];
   static const char kMinSyncRecoveryTimeName[];
   static const char kMaxSyncEventDurationName[];
+  static const char kMinPeriodicSyncEventsInterval[];
 
   static const int kEngagementLevelNonePenalty = 0;
   static const int kEngagementLevelHighOrMaxPenalty = 1;

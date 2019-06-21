@@ -18,6 +18,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -33,6 +34,7 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -85,6 +87,7 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     private final RectF mVisualViewport = new RectF();
 
     private final List<Box> mTransparentArea = new ArrayList<>();
+    private List<RectF> mRestrictedArea = Collections.emptyList();
 
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
@@ -226,6 +229,12 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         invalidateSelf();
     }
 
+    /** Set or update the restricted area. */
+    void setRestrictedArea(List<RectF> restrictedArea) {
+        mRestrictedArea = restrictedArea;
+        invalidateSelf();
+    }
+
     @Override
     public void setAlpha(int alpha) {
         // Alpha is ignored.
@@ -260,6 +269,16 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         float cssPixelsToPhysical = ((float) width) / mVisualViewport.width();
 
         int yTop = mFullscreenManager.getContentOffset();
+
+        // Don't draw on top of the restricted area.
+        for (RectF rect : mRestrictedArea) {
+            mDrawRect.left = (rect.left - mVisualViewport.left) * cssPixelsToPhysical;
+            mDrawRect.top = yTop + (rect.top - mVisualViewport.top) * cssPixelsToPhysical;
+            mDrawRect.right = (rect.right - mVisualViewport.left) * cssPixelsToPhysical;
+            mDrawRect.bottom = yTop + (rect.bottom - mVisualViewport.top) * cssPixelsToPhysical;
+            canvas.clipRect(mDrawRect, Region.Op.DIFFERENCE);
+        }
+
         for (Box box : mTransparentArea) {
             RectF rect = box.getRectToDraw();
             if (rect.isEmpty() || (!mPartial && box.mAnimationType != AnimationType.FADE_IN)) {

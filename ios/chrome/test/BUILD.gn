@@ -163,6 +163,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/network_activity:unit_tests",
     "//ios/chrome/browser/ntp:unit_tests",
     "//ios/chrome/browser/omaha:unit_tests",
+    "//ios/chrome/browser/open_in:unit_tests",
     "//ios/chrome/browser/overlays:unit_tests",
     "//ios/chrome/browser/overscroll_actions:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",

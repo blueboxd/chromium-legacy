@@ -115,18 +115,6 @@ void AppListPresenterDelegateImpl::OnClosed() {
   controller_->ViewClosed();
 }
 
-base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(
-    aura::Window* root_window,
-    bool is_visible) {
-  // If the view is below the shelf, just hide immediately.
-  if (view_->GetBoundsInScreen().y() >
-      Shelf::ForWindow(root_window)->GetIdealBounds().y()) {
-    return base::TimeDelta::FromMilliseconds(0);
-  }
-  return GetAnimationDurationFullscreen(IsSideShelf(root_window),
-                                        view_->is_fullscreen());
-}
-
 bool AppListPresenterDelegateImpl::IsTabletMode() const {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }

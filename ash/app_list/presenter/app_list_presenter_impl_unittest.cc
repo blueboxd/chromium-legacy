@@ -54,10 +54,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   void ShowForDisplay(int64_t display_id) override {}
   void OnClosing() override { on_dismissed_called_ = true; }
   void OnClosed() override {}
-  base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
-                                                 bool is_visible) override {
-    return base::TimeDelta::FromMilliseconds(0);
-  }
   bool IsTabletMode() const override { return false; }
   bool GetOnScreenKeyboardShown() override { return false; }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {

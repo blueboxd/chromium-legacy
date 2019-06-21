@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "printing/printing_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -240,13 +240,8 @@ void PrintCompositeClient::RemoveCompositeRequest(int cookie) {
 }
 
 mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
-  if (!connector_) {
-    service_manager::mojom::ConnectorRequest connector_request;
-    connector_ = service_manager::Connector::Create(&connector_request);
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindConnectorRequest(std::move(connector_request));
-  }
+  if (!connector_)
+    connector_ = content::GetSystemConnector()->Clone();
   mojom::PdfCompositorPtr compositor;
   connector_->BindInterface(mojom::kServiceName, &compositor);
   compositor->SetWebContentsURL(web_contents()->GetLastCommittedURL());

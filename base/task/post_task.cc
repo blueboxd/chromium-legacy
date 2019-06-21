@@ -61,13 +61,13 @@ bool PostTask(const Location& from_here, OnceClosure task) {
 bool PostDelayedTask(const Location& from_here,
                      OnceClosure task,
                      TimeDelta delay) {
-  return PostDelayedTask(from_here, TaskTraits(), std::move(task), delay);
+  return PostDelayedTask(from_here, {ThreadPool()}, std::move(task), delay);
 }
 
 bool PostTaskAndReply(const Location& from_here,
                       OnceClosure task,
                       OnceClosure reply) {
-  return PostTaskAndReply(from_here, TaskTraits(), std::move(task),
+  return PostTaskAndReply(from_here, {ThreadPool()}, std::move(task),
                           std::move(reply));
 }
 

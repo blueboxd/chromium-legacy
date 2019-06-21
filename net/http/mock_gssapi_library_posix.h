@@ -128,6 +128,28 @@ class MockGSSAPILibrary : public GSSAPILibrary {
                          const gss_name_t input_name,
                          gss_buffer_t output_name_buffer,
                          gss_OID* output_name_type) override;
+
+  // These special status values can be used to trigger specific behavior in
+  // |display_status()|.
+  enum class DisplayStatusSpecials : OM_uint32 {
+    // A multiline status message.
+    MultiLine = 128,
+
+    // Multiline, execept there's no ending message.
+    InfiniteLines,
+
+    // Causes |display_status()| to fail.
+    Fail,
+
+    // Returns an empty message.
+    EmptyMessage,
+
+    // Returns successfully without modifying |status_string|.
+    UninitalizedBuffer,
+
+    // Returns a message that's invalid UTF-8.
+    InvalidUtf8
+  };
   OM_uint32 display_status(OM_uint32* minor_status,
                            OM_uint32 status_value,
                            int status_type,

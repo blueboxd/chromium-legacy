@@ -62,11 +62,10 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     const TaskTraits& traits) {
   switch (execution_mode) {
     case TaskSourceExecutionMode::kParallel:
-      return CreateTaskRunnerWithTraits(traits,
-                                        mock_pooled_task_runner_delegate);
+      return CreateTaskRunner(traits, mock_pooled_task_runner_delegate);
     case TaskSourceExecutionMode::kSequenced:
-      return CreateSequencedTaskRunnerWithTraits(
-          traits, mock_pooled_task_runner_delegate);
+      return CreateSequencedTaskRunner(traits,
+                                       mock_pooled_task_runner_delegate);
     default:
       // Fall through.
       break;
@@ -75,14 +74,14 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
   return nullptr;
 }
 
-scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
+scoped_refptr<TaskRunner> CreateTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
   return MakeRefCounted<PooledParallelTaskRunner>(
       traits, mock_pooled_task_runner_delegate);
 }
 
-scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
   return MakeRefCounted<PooledSequencedTaskRunner>(

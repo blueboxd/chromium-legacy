@@ -31,15 +31,18 @@ namespace autofill_assistant {
 class UiControllerAndroid : public UiController {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
   // this instance.
   //
   // Pointer to |ui_delegate| must remain valid for the lifetime of this
   // instance or until WillShutdown is called.
-  UiControllerAndroid(JNIEnv* env,
-                      const base::android::JavaRef<jobject>& jactivity);
+  UiControllerAndroid(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jactivity,
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -52,12 +55,6 @@ class UiControllerAndroid : public UiController {
   void Attach(content::WebContents* web_contents,
               Client* client,
               UiDelegate* ui_delegate);
-
-  // Called by ClientAndroid.
-  void ShowOnboarding(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& jexperiment_ids,
-      const base::android::JavaParamRef<jobject>& on_accept);
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -73,8 +70,10 @@ class UiControllerAndroid : public UiController {
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
-  void OnTouchableAreaChanged(const RectF& visual_viewport,
-                              const std::vector<RectF>& areas) override;
+  void OnTouchableAreaChanged(
+      const RectF& visual_viewport,
+      const std::vector<RectF>& touchable_areas,
+      const std::vector<RectF>& restricted_areas) override;
   void OnResizeViewportChanged(bool resize_viewport) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;

@@ -32,12 +32,12 @@ const size_t kMaxClipboardWriteSize = 1000000;
 ui::ClipboardType ConvertClipboardType(uint32_t type) {
   switch (type) {
     case PP_FLASH_CLIPBOARD_TYPE_STANDARD:
-      return ui::CLIPBOARD_TYPE_COPY_PASTE;
+      return ui::ClipboardType::kCopyPaste;
     case PP_FLASH_CLIPBOARD_TYPE_SELECTION:
-      return ui::CLIPBOARD_TYPE_SELECTION;
+      return ui::ClipboardType::kSelection;
   }
   NOTREACHED();
-  return ui::CLIPBOARD_TYPE_COPY_PASTE;
+  return ui::ClipboardType::kCopyPaste;
 }
 
 // Functions to pack/unpack custom data from a pickle. See the header file for

@@ -201,6 +201,10 @@ bool SpatialNavigationController::HandleImeSubmitKeyboardEvent(
 
   HTMLFormControlElement* element =
       ToHTMLFormControlElement(GetFocusedElement());
+
+  if (!element->formOwner())
+    return false;
+
   element->formOwner()->SubmitImplicitly(*event, true);
   return true;
 }

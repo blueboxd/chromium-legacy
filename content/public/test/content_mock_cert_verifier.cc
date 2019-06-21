@@ -5,9 +5,9 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 
 #include "base/command_line.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_service_test_helper.h"
@@ -73,8 +73,8 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
 void ContentMockCertVerifier::CertVerifier::
     EnsureNetworkServiceTestInitialized() {
   if (!network_service_test_) {
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &network_service_test_);
+    GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                        &network_service_test_);
   }
   // TODO(crbug.com/901026): Make sure the network process is started to avoid a
   // deadlock on Android.

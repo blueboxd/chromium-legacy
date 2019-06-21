@@ -52,7 +52,7 @@ class ClipboardOzone::AsyncClipboardOzone {
   base::span<uint8_t> ReadClipboardDataAndWait(ClipboardType type,
                                                const std::string& mime_type) {
     // TODO(tonikitoo): add selection support.
-    if (type == ClipboardType::CLIPBOARD_TYPE_SELECTION)
+    if (type == ClipboardType::kSelection)
       return base::span<uint8_t>();
 
     // We can use a fastpath if we are the owner of the selection.
@@ -104,7 +104,7 @@ class ClipboardOzone::AsyncClipboardOzone {
   void ClearOfferedData() { offered_data_.clear(); }
 
   uint64_t GetSequenceNumber(ClipboardType type) {
-    if (type == ClipboardType::CLIPBOARD_TYPE_COPY_PASTE)
+    if (type == ClipboardType::kCopyPaste)
       return clipboard_sequence_number_;
     // TODO(tonikitoo): add sequence number for the selection clipboard type.
     return 0;
@@ -273,7 +273,7 @@ bool ClipboardOzone::IsFormatAvailable(const ClipboardFormatType& format,
                                        ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   // TODO(tonikitoo): add selection support.
-  if (type == ClipboardType::CLIPBOARD_TYPE_SELECTION)
+  if (type == ClipboardType::kSelection)
     return false;
 
   auto available_types = async_clipboard_ozone_->RequestMimeTypes();
@@ -297,7 +297,7 @@ void ClipboardOzone::ReadAvailableTypes(ClipboardType type,
   types->clear();
 
   // TODO(tonikitoo): add selection support.
-  if (type == ClipboardType::CLIPBOARD_TYPE_SELECTION)
+  if (type == ClipboardType::kSelection)
     return;
 
   auto available_types = async_clipboard_ozone_->RequestMimeTypes();
@@ -382,14 +382,14 @@ void ClipboardOzone::ReadData(const ClipboardFormatType& format,
                               std::string* result) const {
   DCHECK(CalledOnValidThread());
   auto clipboard_data = async_clipboard_ozone_->ReadClipboardDataAndWait(
-      ClipboardType::CLIPBOARD_TYPE_COPY_PASTE, format.ToString());
+      ClipboardType::kCopyPaste, format.ToString());
   result->assign(clipboard_data.begin(), clipboard_data.end());
 }
 
 void ClipboardOzone::WriteObjects(ClipboardType type,
                                   const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  if (type == ClipboardType::CLIPBOARD_TYPE_COPY_PASTE) {
+  if (type == ClipboardType::kCopyPaste) {
     async_clipboard_ozone_->ClearOfferedData();
 
     for (const auto& object : objects)

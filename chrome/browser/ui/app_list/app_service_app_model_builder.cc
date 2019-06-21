@@ -5,11 +5,16 @@
 #include "chrome/browser/ui/app_list/app_service_app_model_builder.h"
 
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_service_app_item.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
+
+// static
+apps::AppServiceProxy*
+    AppServiceAppModelBuilder::app_service_proxy_for_testing_ = nullptr;
 
 // Folder items are created by the Ash process and their existence is
 // communicated to chrome via the AppListClient. Therefore, Crostini has an
@@ -56,9 +61,19 @@ AppServiceAppModelBuilder::~AppServiceAppModelBuilder() {
   }
 }
 
+// static
+apps::AppServiceProxy* AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
+    apps::AppServiceProxy* proxy) {
+  apps::AppServiceProxy* old = app_service_proxy_for_testing_;
+  app_service_proxy_for_testing_ = proxy;
+  return old;
+}
+
 void AppServiceAppModelBuilder::BuildModel() {
   apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
+      app_service_proxy_for_testing_
+          ? app_service_proxy_for_testing_
+          : apps::AppServiceProxyFactory::GetForProfile(profile());
   if (proxy) {
     proxy->AppRegistryCache().ForEachApp(
         [this](const apps::AppUpdate& update) { OnAppUpdate(update); });
@@ -97,7 +112,13 @@ void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
       }
 
     } else {
-      RemoveApp(update.AppId(), false /* unsynced_change */);
+      bool unsynced_change = false;
+      if (update.AppType() == apps::mojom::AppType::kArc) {
+        // Don't sync app removal in case it was caused by disabling Google
+        // Play Store.
+        unsynced_change = !arc::IsArcPlayStoreEnabledForProfile(profile());
+      }
+      RemoveApp(update.AppId(), unsynced_change);
     }
 
   } else if (show) {

@@ -269,10 +269,8 @@ double LocationIconView::WidthMultiplier() const {
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
     gfx::Size size) const {
   const int kMinCharacters = 10;
-  const int expected_text_width = views::style::GetExpectedTextWidth(
-      label()->text_context(), views::style::TextStyle::STYLE_PRIMARY,
-      kMinCharacters);
-  size.SetToMin(GetSizeForLabelWidth(expected_text_width));
+  size.SetToMin(
+      GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
   return size;
 }
 

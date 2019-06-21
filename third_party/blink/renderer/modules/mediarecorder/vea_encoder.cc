@@ -146,7 +146,7 @@ void VEAEncoder::BitstreamBufferReady(
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
-          WTF::Passed(CrossThreadBind(on_encoded_video_callback_)),
+          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
           front_frame.first, std::move(data), nullptr, front_frame.second,
           metadata.key_frame));
 

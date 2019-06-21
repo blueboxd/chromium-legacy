@@ -22,7 +22,7 @@
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace performance_manager {
@@ -247,12 +247,11 @@ void PerformanceManager::BatchDeleteNodesImpl(
 void PerformanceManager::OnStart() {
   // Some tests don't initialize the service manager connection, so this class
   // tolerates its absence for tests.
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  auto* connector = content::GetSystemConnector();
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PerformanceManager::OnStartImpl, base::Unretained(this),
-          connection ? connection->GetConnector()->Clone() : nullptr));
+      base::BindOnce(&PerformanceManager::OnStartImpl, base::Unretained(this),
+                     connector ? connector->Clone() : nullptr));
 }
 
 void PerformanceManager::CallOnGraphImpl(GraphCallback graph_callback) {

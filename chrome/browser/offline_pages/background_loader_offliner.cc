@@ -403,7 +403,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
     previews::PreviewsUserData* previews_user_data =
         previews_tab_helper->GetPreviewsUserData(navigation_handle);
     if (previews_user_data)
-      previews_state = previews_user_data->committed_previews_state();
+      previews_state = previews_user_data->CommittedPreviewsState();
   }
 
   RecordOffliningPreviewsUMA(pending_request_->client_id(), previews_state);

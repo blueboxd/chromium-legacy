@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
@@ -32,8 +34,9 @@ class PreviewsOptimizationGuide;
 // Manages background preresolving or preconnecting for lite page redirect
 // previews. When a set of conditions are met, this class causes the litepage
 // version of the current committed page URL to be preresolved in a loop so that
-// the DNS entry for the litepage is always cached. This helps to mitigate the
-// delay of loading a preview of the same origin.
+// the DNS entry for the litepage is always cached, or the origin URL to be
+// preresolved if the current page is a preview. This helps to mitigate the
+// delay of loading a preview or the original page of the same origin.
 //
 // All of the following conditions must be met to preresolve the litepages host
 // on a background loop during a page load:
@@ -41,7 +44,7 @@ class PreviewsOptimizationGuide;
 // * A page is committed.
 // * There is no ongoing navigation.
 // * Lite mode is enabled for the user. - Note this change is not directly
-// observed because we find that it seldom changes in practice.
+//   observed because we find that it seldom changes in practice.
 // * The lite page redirect feature is enabled.
 // * ECT is at or below the lite page redirect threshold.
 // * The current page's host is not blacklisted by server hints.
@@ -78,7 +81,10 @@ class PreviewsLitePagePredictor
 
  private:
   friend class content::WebContentsUserData<PreviewsLitePagePredictor>;
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, AllConditionsMet);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+                           AllConditionsMet_Origin);
+  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
+                           AllConditionsMet_Preview);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest, FeatureDisabled);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
                            DataSaverDisabled);
@@ -94,20 +100,22 @@ class PreviewsLitePagePredictor
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePagePredictorUnitTest,
                            ToggleMultipleTimes_Visibility);
 
-  // Returns true if the current page should be preresolved.
-  bool ShouldPreresolveOnPage() const;
+  // Returns the GURL that should be preresolved, if any.
+  base::Optional<GURL> ShouldPreresolveOnPage() const;
 
   // Toggles preresolving to either start or stop as needed. This operates
   // statelessly, but should be called every time a change potentially needs to
   // be made. See observers below.
   void MaybeTogglePreresolveTimer();
 
-  // Immediately causes the preview URL for the current committed page to be
-  // preresolved.
-  void Preresolve();
+  // Immediately causes |url_| to be preresolved.
+  void Preresolve() const;
 
   // Set if the preview URL is actively being preresolved.
   std::unique_ptr<base::RepeatingTimer> timer_;
+
+  // The url that should be preresolved, if any.
+  base::Optional<GURL> url_;
 
   // A reference to the DRP Settings.
   data_reduction_proxy::DataReductionProxySettings* drp_settings_;

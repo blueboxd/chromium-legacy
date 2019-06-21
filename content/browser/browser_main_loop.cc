@@ -80,7 +80,6 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_keys_listener_manager_impl.h"
-#include "content/browser/memory/swap_metrics_delegate_uma.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -98,7 +97,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/thread_pool_util.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -107,7 +105,6 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/swap_metrics_driver.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -320,12 +317,6 @@ enum WorkerPoolType : size_t {
   FOREGROUND_BLOCKING,
   WORKER_POOL_COUNT  // Always last.
 };
-
-#if !defined(OS_FUCHSIA)
-// Time between updating and recording swap rates.
-constexpr base::TimeDelta kSwapMetricsInterval =
-    base::TimeDelta::FromSeconds(60);
-#endif  // !defined(OS_FUCHSIA)
 
 #if defined(OS_FUCHSIA)
 // Create and register the job which will contain all child processes
@@ -1477,17 +1468,6 @@ bool BrowserMainLoop::UsingInProcessGpu() const {
 
 void BrowserMainLoop::InitializeMemoryManagementComponent() {
   memory_pressure_monitor_ = CreateMemoryPressureMonitor(parsed_command_line_);
-
-  std::unique_ptr<SwapMetricsDriver::Delegate> delegate(
-      base::WrapUnique<SwapMetricsDriver::Delegate>(
-          new SwapMetricsDelegateUma()));
-
-#if !defined(OS_FUCHSIA)
-  swap_metrics_driver_ =
-      SwapMetricsDriver::Create(std::move(delegate), kSwapMetricsInterval);
-  if (swap_metrics_driver_)
-    swap_metrics_driver_->Start();
-#endif  // !defined(OS_FUCHSIA)
 }
 
 bool BrowserMainLoop::InitializeToolkit() {
@@ -1553,9 +1533,6 @@ void BrowserMainLoop::InitializeMojo() {
     // thread.
     mojo::SyncCallRestrictions::DisallowSyncCall();
   }
-
-  GetContentClient()->OnServiceManagerConnected(
-      ServiceManagerConnection::GetForProcess());
 
   // Ensure that any NavigableContentsViews constructed in the browser process
   // know they're running in the same process as the service.

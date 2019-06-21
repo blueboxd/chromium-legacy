@@ -18,7 +18,7 @@ namespace display {
 ApplyContentProtectionTask::ApplyContentProtectionTask(
     DisplayLayoutManager* layout_manager,
     NativeDisplayDelegate* native_display_delegate,
-    DisplayConfigurator::ContentProtections requests,
+    ContentProtectionManager::ContentProtections requests,
     ResponseCallback callback)
     : layout_manager_(layout_manager),
       native_display_delegate_(native_display_delegate),

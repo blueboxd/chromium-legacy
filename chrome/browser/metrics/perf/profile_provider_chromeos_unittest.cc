@@ -61,9 +61,10 @@ PerfDataProto GetExamplePerfDataProto(int tstamp_sec) {
 template <int TSTAMP>
 class TestMetricCollector : public MetricCollector {
  public:
-  TestMetricCollector() = default;
+  TestMetricCollector() : TestMetricCollector(CollectionParams()) {}
   explicit TestMetricCollector(const CollectionParams& collection_params)
-      : MetricCollector("UMA.CWP.TestData", collection_params) {}
+      : MetricCollector("UMA.CWP.TestData", collection_params),
+        weak_factory_(this) {}
 
   void CollectProfile(
       std::unique_ptr<SampledProfile> sampled_profile) override {
@@ -73,7 +74,13 @@ class TestMetricCollector : public MetricCollector {
                             perf_data_proto.SerializeAsString());
   }
 
+  base::WeakPtr<MetricCollector> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
+  base::WeakPtrFactory<TestMetricCollector> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TestMetricCollector);
 };
 

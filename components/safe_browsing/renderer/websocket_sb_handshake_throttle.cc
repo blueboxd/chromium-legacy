@@ -40,8 +40,6 @@ WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() {
     UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Abandoned",
                         base::TimeTicks::Now() - start_time_);
   }
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.WebSocket.Result", result_,
-                            Result::RESULT_COUNT);
 }
 
 void WebSocketSBHandshakeThrottle::ThrottleHandshake(

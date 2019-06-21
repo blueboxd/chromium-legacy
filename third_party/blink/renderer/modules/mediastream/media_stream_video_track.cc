@@ -136,9 +136,10 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::AddCallbackOnIO,
-                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
-                          WTF::Passed(CrossThreadBind(std::move(callback)))));
+      CrossThreadBindOnce(
+          &FrameDeliverer::AddCallbackOnIO, WrapRefCounted(this),
+          WTF::CrossThreadUnretained(id),
+          WTF::Passed(CrossThreadBindRepeating(std::move(callback)))));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
@@ -314,7 +315,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(this, VideoTrackAdapterSettings(),
-                   ConvertToBaseCallback(CrossThreadBind(
+                   ConvertToBaseCallback(CrossThreadBindRepeating(
                        &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                        frame_deliverer_)),
                    media::BindToCurrentLoop(WTF::BindRepeating(
@@ -346,7 +347,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(this, adapter_settings,
-                   ConvertToBaseCallback(CrossThreadBind(
+                   ConvertToBaseCallback(CrossThreadBindRepeating(
                        &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                        frame_deliverer_)),
                    media::BindToCurrentLoop(WTF::BindRepeating(

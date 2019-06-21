@@ -21,6 +21,8 @@ namespace credential_provider {
 
 namespace testing {
 
+constexpr char kFakeResourceId[] = "fake_resource_id";
+
 class GcpGaiaCredentialBaseTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpGaiaCredentialBaseTest, Advise) {
@@ -968,7 +970,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // retrieval.
   std::string generate_success_response =
       fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
-          "public_key", "resource_id");
+          "public_key", kFakeResourceId);
 
   std::string get_key_success_response =
       fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
@@ -996,7 +998,8 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
       generate_key_event ? generate_key_event->handle() : INVALID_HANDLE_VALUE);
 
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(),
+      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(
+          kFakeResourceId),
       FakeWinHttpUrlFetcher::Headers(),
       get_private_key_result != 1 ? get_key_success_response : "{}",
       get_key_event ? get_key_event->handle() : INVALID_HANDLE_VALUE);
@@ -1192,7 +1195,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   // retrieval.
   std::string generate_success_response =
       fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
-          "public_key", "resource_id");
+          "public_key", kFakeResourceId);
 
   std::string get_key_success_response =
       fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
@@ -1203,7 +1206,8 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
       FakeWinHttpUrlFetcher::Headers(), generate_success_response);
 
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(),
+      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(
+          kFakeResourceId),
       FakeWinHttpUrlFetcher::Headers(), get_key_success_response);
 
   // Sign on once to store the password in the LSA

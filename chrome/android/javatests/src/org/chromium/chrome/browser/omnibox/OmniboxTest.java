@@ -781,6 +781,7 @@ public class OmniboxTest {
     @Feature({"Omnibox"})
     @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @DisabledTest // https://crbug.com/950556
     public void testSuggestionDirectionSwitching() throws InterruptedException {
         final TextView urlBarView =
                 (TextView) mActivityTestRule.getActivity().findViewById(R.id.url_bar);

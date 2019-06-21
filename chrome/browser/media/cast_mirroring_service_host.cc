@@ -30,9 +30,9 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -187,9 +187,8 @@ void CastMirroringServiceHost::Start(
   }
 
   // Connect to the Mirroring Service.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(mojom::kServiceName, &mirroring_service_);
+  content::GetSystemConnector()->BindInterface(mojom::kServiceName,
+                                               &mirroring_service_);
   mojom::ResourceProviderPtr provider;
   resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
   mirroring_service_->Start(

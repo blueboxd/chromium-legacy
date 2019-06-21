@@ -58,7 +58,7 @@ class MODULES_EXPORT RespondWithObserver
  protected:
   RespondWithObserver(ExecutionContext*, int event_id, WaitUntilObserver*);
   const int event_id_;
-  TimeTicks event_dispatch_time_;
+  base::TimeTicks event_dispatch_time_;
 
  private:
   class ThenFunction;

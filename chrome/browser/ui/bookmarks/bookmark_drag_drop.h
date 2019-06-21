@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -30,13 +31,15 @@ using DoBookmarkDragCallback =
     base::OnceCallback<void(const ui::OSExchangeData& drag_data,
                             gfx::NativeView native_view,
                             ui::DragDropTypes::DragEventSource source,
+                            gfx::Point start_point,
                             int operation)>;
 
 struct BookmarkDragParams {
   BookmarkDragParams(std::vector<const bookmarks::BookmarkNode*> nodes,
                      int drag_node_index,
                      gfx::NativeView view,
-                     ui::DragDropTypes::DragEventSource source);
+                     ui::DragDropTypes::DragEventSource source,
+                     gfx::Point start_point);
   ~BookmarkDragParams();
 
   // The bookmark nodes to be dragged.
@@ -50,6 +53,9 @@ struct BookmarkDragParams {
 
   // The source of the drag.
   ui::DragDropTypes::DragEventSource source;
+
+  // The point the drag started.
+  gfx::Point start_point;
 };
 
 // Starts the process of dragging a folder of bookmarks.

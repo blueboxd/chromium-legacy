@@ -114,6 +114,12 @@ void URLRequestFtpJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
+void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
+  std::unique_ptr<AuthChallengeInfo> challenge = GetAuthChallengeInfo();
+  if (challenge)
+    info->auth_challenge = *challenge;
+}
+
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
   proxy_resolve_request_ = nullptr;
 
@@ -166,7 +172,9 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
 
     NotifyHeadersComplete();
   } else if (ftp_transaction_ /* May be null if creation fails. */ &&
-             ftp_transaction_->GetResponseInfo()->needs_auth) {
+             ftp_transaction_->GetResponseInfo()->needs_auth &&
+             // If auth is cancelled, cancel the request with an error below.
+             (!auth_data_ || auth_data_->state != AUTH_STATE_CANCELED)) {
     HandleAuthNeededResponse();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
@@ -208,8 +216,6 @@ bool URLRequestFtpJob::NeedsAuth() {
 }
 
 std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
-  DCHECK(NeedsAuth());
-
   std::unique_ptr<AuthChallengeInfo> result =
       std::make_unique<AuthChallengeInfo>();
   result->is_proxy = false;
@@ -240,10 +246,10 @@ void URLRequestFtpJob::CancelAuth() {
 
   auth_data_->state = AUTH_STATE_CANCELED;
 
-  // Once the auth is cancelled, we proceed with the request as though
-  // there were no auth.  Schedule this for later so that we don't cause
-  // any recursing into the caller as a result of this call.
-  OnStartCompletedAsync(OK);
+  // Once the auth is cancelled, end the request with an error. Schedule this
+  // for later so that we don't cause any recursing into the caller as a result
+  // of this call.
+  OnStartCompletedAsync(ERR_FTP_FAILED);
 }
 
 int URLRequestFtpJob::ReadRawData(IOBuffer* buf, int buf_size) {

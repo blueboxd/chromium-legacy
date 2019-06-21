@@ -68,9 +68,11 @@ void TestDataSource::Flush(base::RepeatingClosure flush_complete_callback) {
 }
 
 MockProducerClient::MockProducerClient(
+    uint32_t num_data_sources,
     base::OnceClosure client_enabled_callback,
     base::OnceClosure client_disabled_callback)
     : ProducerClient(PerfettoTracedProcess::Get()->GetTaskRunner()),
+      num_data_sources_expected_(num_data_sources),
       client_enabled_callback_(std::move(client_enabled_callback)),
       client_disabled_callback_(std::move(client_disabled_callback)) {
   // We want to set the ProducerClient to this mock, but that 'requires' passing
@@ -99,7 +101,9 @@ void MockProducerClient::StartDataSource(
   ProducerClient::StartDataSource(id, std::move(data_source_config),
                                   std::move(callback));
 
-  if (client_enabled_callback_) {
+  DCHECK_LT(num_data_sources_active_, num_data_sources_expected_);
+  if (client_enabled_callback_ &&
+      ++num_data_sources_active_ == num_data_sources_expected_) {
     std::move(client_enabled_callback_).Run();
   }
 }
@@ -108,7 +112,8 @@ void MockProducerClient::StopDataSource(uint64_t id,
                                         StopDataSourceCallback callback) {
   ProducerClient::StopDataSource(id, std::move(callback));
 
-  if (client_disabled_callback_) {
+  DCHECK_GT(num_data_sources_active_, 0u);
+  if (client_disabled_callback_ && --num_data_sources_active_ == 0) {
     std::move(client_disabled_callback_).Run();
   }
 }
@@ -138,11 +143,12 @@ void MockProducerClient::SetAgentDisabledCallback(
   client_disabled_callback_ = std::move(client_disabled_callback);
 }
 
-MockConsumer::MockConsumer(std::string data_source_name,
+MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
                            perfetto::TracingService* service,
                            PacketReceivedCallback packet_received_callback)
     : packet_received_callback_(packet_received_callback),
-      data_source_name_(data_source_name) {
+      data_source_names_(data_source_names) {
+  DCHECK(!data_source_names_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
 }
 
@@ -160,9 +166,11 @@ void MockConsumer::StopTracing() {
 void MockConsumer::StartTracing() {
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(1024 * 32);
-  auto* ds_config = trace_config.add_data_sources()->mutable_config();
-  ds_config->set_name(data_source_name_);
-  ds_config->set_target_buffer(0);
+  for (const auto& name : data_source_names_) {
+    auto* ds_config = trace_config.add_data_sources()->mutable_config();
+    ds_config->set_name(name);
+    ds_config->set_target_buffer(0);
+  }
 
   consumer_endpoint_->EnableTracing(trace_config);
 }
@@ -252,8 +260,8 @@ MockProducer::MockProducer(const std::string& producer_name,
                            size_t num_packets) {
   data_source_ =
       std::make_unique<TestDataSource>(data_source_name, num_packets);
-  producer_client_ =
-      std::make_unique<MockProducerClient>(std::move(on_tracing_started));
+  producer_client_ = std::make_unique<MockProducerClient>(
+      /* num_data_sources = */ 1, std::move(on_tracing_started));
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),

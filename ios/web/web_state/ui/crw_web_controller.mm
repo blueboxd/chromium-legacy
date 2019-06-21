@@ -48,7 +48,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/common/referrer_util.h"
 #include "ios/web/common/url_util.h"
-#import "ios/web/favicon/favicon_util.h"
+#import "ios/web/favicon/favicon_manager.h"
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
@@ -78,7 +78,6 @@
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
-#include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
@@ -217,6 +216,9 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
+
+  // Manager for favicon JavaScript messages.
+  std::unique_ptr<web::FaviconManager> _faviconManager;
 }
 
 // The WKNavigationDelegate handler class.
@@ -403,6 +405,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
+    _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _legacyNativeController =
         [[CRWLegacyNativeContentController alloc] initWithWebState:webState];
     _legacyNativeController.delegate = self;
@@ -711,6 +714,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   _SSLStatusUpdater = nil;
   [self.UIHandler close];
   [self.JSNavigationHandler close];
+  _faviconManager.reset();
 
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
@@ -955,96 +959,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)loadData:(NSData*)data
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL {
-  [self stopLoading];
-  web::NavigationItemImpl* item =
-      self.navigationManagerImpl->GetLastCommittedItemImpl();
-  auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
-      self.webStateImpl, URL,
-      /*has_user_gesture=*/true, item->GetTransitionType(),
-      /*is_renderer_initiated=*/false);
-  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
-  navigationContext->SetNavigationItemUniqueID(item->GetUniqueID());
-
-  item->SetNavigationInitiationType(
-      web::NavigationInitiationType::BROWSER_INITIATED);
-  // The error_retry_state_machine may still be in the
-  // |kDisplayingWebErrorForFailedNavigation| from the navigation that is being
-  // replaced. As the navigation is now successful, the error can be cleared.
-  item->error_retry_state_machine().SetNoNavigationError();
-  // The load data call will replace the current navigation and the webView URL
-  // of the navigation will be replaced by |URL|. Set the URL of the
-  // navigationItem to keep them synced.
-  // Note: it is possible that the URL in item already match |url|. But item can
-  // also contain a placeholder URL intended to be replaced.
-  item->SetURL(URL);
-  navigationContext->SetMimeType(MIMEType);
-  if (item->GetUserAgentType() == web::UserAgentType::NONE &&
-      URLNeedsUserAgentType(URL)) {
-    item->SetUserAgentType(web::UserAgentType::MOBILE);
-  }
-
-  WKNavigation* navigation =
-      [self.webView loadData:data
-                       MIMEType:MIMEType
-          characterEncodingName:base::SysUTF8ToNSString(base::kCodepageUTF8)
-                        baseURL:net::NSURLWithGURL(URL)];
-
-  [self.navigationHandler.navigationStates
-         setContext:std::move(navigationContext)
-      forNavigation:navigation];
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::REQUESTED
-      forNavigation:navigation];
+  [_requestController loadData:data
+                       webView:self.webView
+                      MIMEType:MIMEType
+                        forURL:URL];
 }
 
 // Loads the HTML into the page at the given URL. Only for testing purpose.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
-  DCHECK(HTML.length);
-  // Remove the transient content view.
-  self.webStateImpl->ClearTransientContent();
-
-  self.navigationHandler.navigationState = web::WKNavigationState::REQUESTED;
-
   // Web View should not be created for App Specific URLs.
   if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
     [self ensureWebViewCreated];
     DCHECK(self.webView) << "self.webView null while trying to load HTML";
   }
-  WKNavigation* navigation =
-      [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::REQUESTED
-      forNavigation:navigation];
-  std::unique_ptr<web::NavigationContextImpl> context;
-  const ui::PageTransition loadHTMLTransition =
-      ui::PageTransition::PAGE_TRANSITION_TYPED;
-  if (self.webStateImpl->HasWebUI()) {
-    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
-    // should not be treated as a navigation, but WKNavigationDelegate callbacks
-    // still expect a valid context.
-    context = web::NavigationContextImpl::CreateNavigationContext(
-        self.webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
-        /*is_renderer_initiated=*/false);
-    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
-    if (web::features::StorePendingItemInContext()) {
-      // Transfer pending item ownership to NavigationContext.
-      // NavigationManager owns pending item after navigation is requested and
-      // until navigation context is created.
-      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
-    }
-  } else {
-    context = [self registerLoadRequestForURL:URL
-                                     referrer:web::Referrer()
-                                   transition:loadHTMLTransition
-                       sameDocumentNavigation:NO
-                               hasUserGesture:YES
-                            rendererInitiated:NO
-                        placeholderNavigation:NO];
-  }
-  context->SetLoadingHtmlString(true);
-  context->SetMimeType(@"text/html");
-  [self.navigationHandler.navigationStates setContext:std::move(context)
-                                        forNavigation:navigation];
+
+  [_requestController loadHTML:HTML webView:self.webView forURL:URL];
 }
 
 - (void)requirePageReconstruction {
@@ -1806,11 +1735,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   dispatch_once(&onceToken, ^{
     handlers = new std::map<std::string, SEL>();
     (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
-    (*handlers)["document.favicons"] =
-        @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
-    (*handlers)["restoresession.error"] =
-        @selector(handleRestoreSessionErrorMessage:context:);
   });
   DCHECK(handlers);
   auto iter = handlers->find(command);
@@ -1964,27 +1889,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return NO;
 }
 
-// Handles 'document.favicons' message.
-- (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
-                              context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-
-  std::vector<web::FaviconURL> URLs;
-  GURL originGURL;
-  id origin = context[kOriginURLKey];
-  if (origin) {
-    NSURL* originNSURL = base::mac::ObjCCastStrict<NSURL>(origin);
-    originGURL = net::GURLWithNSURL(originNSURL);
-  }
-  if (!web::ExtractFaviconURL(message, originGURL, &URLs))
-    return NO;
-
-  if (!URLs.empty())
-    self.webStateImpl->OnFaviconUrlUpdated(URLs);
-  return YES;
-}
-
 // Handles 'window.error' message.
 - (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message
                          context:(NSDictionary*)context {
@@ -1995,28 +1899,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
   DLOG(ERROR) << "JavaScript error: " << errorMessage
               << " URL:" << [self currentURL].spec();
-  return YES;
-}
-
-// Handles 'restoresession.error' message.
-- (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
-                                 context:(NSDictionary*)context {
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  std::string errorMessage;
-  if (!message->GetString("message", &errorMessage)) {
-    DLOG(WARNING) << "JS message parameter not found: message";
-    return NO;
-  }
-
-  // Restore session error is likely a result of coding error. Log diagnostics
-  // information that is sent back by the page to aid debugging.
-  NOTREACHED()
-      << "Session restore failed unexpectedly with error: " << errorMessage
-      << ". Web view URL: "
-      << (self.webView
-              ? net::GURLWithNSURL(self.webView.URL).possibly_invalid_spec()
-              : " N/A");
   return YES;
 }
 

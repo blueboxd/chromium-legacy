@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -58,7 +59,9 @@ class WilcoDtcSupportdBridge final
   // For use in tests.
   WilcoDtcSupportdBridge(
       std::unique_ptr<Delegate> delegate,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<WilcoDtcSupportdNotificationController>
+          notification_controller);
 
   ~WilcoDtcSupportdBridge() override;
 
@@ -78,6 +81,10 @@ class WilcoDtcSupportdBridge final
                ? wilco_dtc_supportd_service_mojo_ptr_.get()
                : nullptr;
   }
+
+  // wilco_dtc_supportd::mojom::WilcoDtcSupportdClient overrides.
+  void HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
 
  private:
   // Starts waiting until the wilco_dtc_supportd D-Bus service becomes available
@@ -130,6 +137,11 @@ class WilcoDtcSupportdBridge final
 
   // The service to perform diagnostics_processor's web requests.
   WilcoDtcSupportdWebRequestService web_request_service_;
+
+  // The wilco_dtc_supportd notification controller in charge of sending
+  // appropriate UI notifications.
+  std::unique_ptr<WilcoDtcSupportdNotificationController>
+      notification_controller_ = nullptr;
 
   // The Wilco DTC configuration data blob, passed from the device policy, is
   // stored and owned by |WilcoDtcSupportdManager|.

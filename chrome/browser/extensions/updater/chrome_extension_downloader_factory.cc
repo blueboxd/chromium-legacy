@@ -15,7 +15,7 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/common/verifier_formats.h"
@@ -58,12 +58,10 @@ std::unique_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForProfile(
     Profile* profile,
     ExtensionDownloaderDelegate* delegate) {
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   std::unique_ptr<ExtensionDownloader> downloader = CreateForURLLoaderFactory(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      delegate, connector,
+      delegate, content::GetSystemConnector(),
       extensions::GetPolicyVerifierFormat(
           extensions::ExtensionPrefs::Get(profile)
               ->InsecureExtensionUpdatesEnabled()),

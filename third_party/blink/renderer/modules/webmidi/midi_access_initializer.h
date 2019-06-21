@@ -82,7 +82,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           wtf_size_t length,
-                          TimeTicks time_stamp) override {}
+                          base::TimeTicks time_stamp) override {}
 
   void Trace(Visitor*) override;
 

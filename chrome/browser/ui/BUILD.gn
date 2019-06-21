@@ -2433,6 +2433,7 @@ jumbo_split_static_library("ui") {
       deps += [
         "//ui/events/devices",
         "//ui/events/devices/x11",
+        "//ui/events/platform/x11",
       ]
     }
     if (use_ozone) {

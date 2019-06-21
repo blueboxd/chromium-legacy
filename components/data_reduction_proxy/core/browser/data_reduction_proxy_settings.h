@@ -94,8 +94,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service);
 
   // Sets the |register_synthetic_field_trial_| callback and runs to register
-  // the DataReductionProxyEnabled and the DataReductionProxyLoFiEnabled
-  // synthetic field trial.
+  // the DataReductionProxyEnabled synthetic field trial.
   void SetCallbackToRegisterSyntheticFieldTrial(
       const SyntheticFieldTrialRegistrationCallback&
           on_data_reduction_proxy_enabled);
@@ -246,14 +245,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
                            TestInitDataReductionProxyOff);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            CheckInitMetricsWhenNotAllowed);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestLoFiImplicitOptOutClicksPerSession);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestLoFiImplicitOptOutConsecutiveSessions);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestLoFiImplicitOptOutHistograms);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
-                           TestLoFiSessionStateHistograms);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestSettingsEnabledStateHistograms);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,

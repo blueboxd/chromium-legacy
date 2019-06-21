@@ -165,10 +165,10 @@ void ImageCaptureFrameGrabber::GrabFrame(
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
       *track,
-      ConvertToBaseCallback(CrossThreadBind(
+      ConvertToBaseCallback(CrossThreadBindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),
-          WTF::Passed(CrossThreadBind(
+          WTF::Passed(CrossThreadBindRepeating(
               &ImageCaptureFrameGrabber::OnSkImage, weak_factory_.GetWeakPtr(),
               WTF::Passed(std::move(scoped_callbacks)))),
           WTF::Passed(std::move(task_runner)))),

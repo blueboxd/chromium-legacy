@@ -426,6 +426,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // Implementation for RAILModeObserver
   void OnRAILModeChanged(RAILMode new_mode) override;
 
+  bool VerifyMarkingEnabled() const;
+
  private:
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
@@ -474,8 +476,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void MarkPhaseVisitNotFullyConstructedObjects();
   bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
-
-  bool ShouldVerifyMarking() const;
 
   // ShouldForceConservativeGC
   // implements the heuristics that are used to determine when to collect

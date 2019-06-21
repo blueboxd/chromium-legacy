@@ -319,20 +319,18 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
       !GetFrame()->GetDocument()->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
-  // TODO(dcheng): Clean this up to not use ScriptState, to match
-  // executeScriptInIsolatedWorld.
-  ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
-  if (!script_state)
-    return v8::Local<v8::Value>();
+  // |context| should be initialized already due to the MainWorldProxy() call.
+  v8::Local<v8::Context> context =
+      window_proxy_manager_->MainWorldProxy()->ContextIfInitialized();
+
+  v8::Context::Scope scope(context);
   v8::EscapableHandleScope handle_scope(GetIsolate());
-  ScriptState::Scope scope(script_state);
 
   if (GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     GetFrame()->Loader().DidAccessInitialDocument();
 
   v8::Local<v8::Value> object = ExecuteScriptAndReturnValue(
-      script_state->GetContext(), source_code, base_url, sanitize_script_errors,
-      fetch_options);
+      context, source_code, base_url, sanitize_script_errors, fetch_options);
 
   if (object.IsEmpty())
     return v8::Local<v8::Value>();

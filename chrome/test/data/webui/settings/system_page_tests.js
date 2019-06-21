@@ -110,9 +110,9 @@ suite('settings system page', function() {
     });
     Polymer.dom.flush();
 
-    // The ability to show proxy settings should still be allowed when
-    // extensions are installed.
-    expectTrue(control.hasAttribute('actionable'));
+    // When managed by extensions, we disable the ability to show proxy
+    // settings.
+    expectFalse(control.hasAttribute('actionable'));
     expectEquals(null, control.querySelector('cr-policy-pref-indicator'));
     expectFalse(showProxyButton.hidden);
 

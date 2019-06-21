@@ -2965,7 +2965,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on mobile bookmarks are accessible.
@@ -2974,7 +2974,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on the bookmarks folder Edit page are accessible.
@@ -2998,7 +2998,7 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:grey_accessibilityID(
                                    kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on the bookmarks Edit page are accessible.
@@ -3015,6 +3015,8 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
       performAction:grey_tap()];
+  // TODO(crbug.com/976930): to support EG2 need to use [ChromeEarlGrey
+  // verifyAccessibilityForCurrentScreen]
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
@@ -3033,6 +3035,8 @@ id<GREYMatcher> SearchIconButton() {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
+  // TODO(crbug.com/976930): to support EG2 need to use [ChromeEarlGrey
+  // verifyAccessibilityForCurrentScreen]
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
@@ -3058,7 +3062,7 @@ id<GREYMatcher> SearchIconButton() {
                                    kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
@@ -3087,7 +3091,7 @@ id<GREYMatcher> SearchIconButton() {
   // Wait until it's gone.
   [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 // Tests that all elements on the bookmarks Select page are accessible.
@@ -3102,7 +3106,7 @@ id<GREYMatcher> SearchIconButton() {
                                    kBookmarkHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 @end

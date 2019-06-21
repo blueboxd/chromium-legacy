@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -316,6 +317,284 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_NonBase64EncodedToken) {
                                               second_challenge_text.end());
   EXPECT_EQ(HttpAuth::AUTHORIZATION_RESULT_INVALID,
             auth_gssapi.ParseChallenge(&second_challenge));
+}
+
+TEST(HttpAuthGSSAPITest, OidToValue_NIL) {
+  auto actual = OidToValue(GSS_C_NO_OID);
+  auto expected = base::JSONReader::Read(R"({ "oid": "<Empty OID>" })");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, OidToValue_Known) {
+  gss_OID_desc known = {6, const_cast<char*>("\x2b\x06\01\x05\x06\x03")};
+
+  auto actual = OidToValue(const_cast<const gss_OID>(&known));
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "oid"   : "GSS_C_NT_ANONYMOUS",
+        "length": 6,
+        "bytes" : "0x0000:  2b06 0105 0603                           +.....\n"
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, OidToValue_Unknown) {
+  gss_OID_desc unknown = {6, const_cast<char*>("\x2b\x06\01\x05\x06\x05")};
+  auto actual = OidToValue(const_cast<const gss_OID>(&unknown));
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "length": 6,
+        "bytes" : "0x0000:  2b06 0105 0605                           +.....\n"
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_NoLibrary) {
+  auto actual = GetGssStatusValue(nullptr, "my_method", GSS_S_BAD_NAME, 1);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 131072
+        },
+        "minor_status": {
+          "status": 1
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_WithLibrary) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(&library, "my_method", GSS_S_BAD_NAME, 1);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 131072,
+          "message": [ "Value: 131072, Type 1" ]
+        },
+        "minor_status": {
+          "status": 1,
+          "message": [ "Value: 1, Type 2" ]
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_Multiline) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::MultiLine),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 128,
+          "message": [
+            "Line 1 for status 128",
+            "Line 2 for status 128",
+            "Line 3 for status 128",
+            "Line 4 for status 128",
+            "Line 5 for status 128"
+          ]
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_InfiniteLines) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::InfiniteLines),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 129,
+          "message": [
+            "Line 1 for status 129",
+            "Line 2 for status 129",
+            "Line 3 for status 129",
+            "Line 4 for status 129",
+            "Line 5 for status 129",
+            "Line 6 for status 129",
+            "Line 7 for status 129",
+            "Line 8 for status 129"
+          ]
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_Failure) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::Fail),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 130
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_EmptyMessage) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::EmptyMessage),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 131
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_Misbehave) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::UninitalizedBuffer),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 132
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetGssStatusValue_NotUtf8) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetGssStatusValue(
+      &library, "my_method",
+      static_cast<OM_uint32>(
+          test::MockGSSAPILibrary::DisplayStatusSpecials::InvalidUtf8),
+      0);
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "function": "my_method",
+        "major_status": {
+          "status": 133
+        },
+        "minor_status": {
+          "status": 0
+        }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetContextStateAsValue_ValidContext) {
+  test::GssContextMockImpl context{"source_spn@somewhere",
+                                   "target_spn@somewhere.else",
+                                   /* lifetime_rec= */ 100,
+                                   *CHROME_GSS_SPNEGO_MECH_OID_DESC,
+                                   /* ctx_flags= */ 0,
+                                   /* locally_initiated= */ 1,
+                                   /* open= */ 0};
+  test::MockGSSAPILibrary library;
+  auto actual = GetContextStateAsValue(
+      &library, reinterpret_cast<const gss_ctx_id_t>(&context));
+  auto expected = base::JSONReader::Read(R"(
+      {
+        "source": {
+          "name": "source_spn@somewhere",
+          "type": {
+            "oid" : "<Empty OID>"
+          }
+        },
+        "target": {
+          "name": "target_spn@somewhere.else",
+          "type": {
+            "oid" : "<Empty OID>"
+          }
+        },
+        "lifetime": "100",
+        "mechanism": {
+          "oid": "<Empty OID>"
+        },
+        "flags": "00000000",
+        "open": false
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
+}
+
+TEST(HttpAuthGSSAPITest, GetContextStateAsValue_NoContext) {
+  test::MockGSSAPILibrary library;
+  auto actual = GetContextStateAsValue(&library, GSS_C_NO_CONTEXT);
+  auto expected = base::JSONReader::Read(R"(
+      {
+         "error": {
+            "function": "<none>",
+            "major_status": {
+               "status": 524288
+            },
+            "minor_status": {
+               "status": 0
+            }
+         }
+      }
+  )");
+  ASSERT_TRUE(expected.has_value());
+  EXPECT_EQ(actual, expected);
 }
 
 }  // namespace net

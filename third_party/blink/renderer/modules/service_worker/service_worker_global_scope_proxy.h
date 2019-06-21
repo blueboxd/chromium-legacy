@@ -89,7 +89,7 @@ class ServiceWorkerGlobalScopeProxy final
       int fetch_event_id,
       std::unique_ptr<WebServiceWorkerError>) override;
   void OnNavigationPreloadComplete(int fetch_event_id,
-                                   TimeTicks completion_time,
+                                   base::TimeTicks completion_time,
                                    int64_t encoded_data_length,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length) override;

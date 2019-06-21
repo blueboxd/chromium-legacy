@@ -249,7 +249,8 @@ HeapCollector::HeapCollector(HeapCollectionMode mode)
     : MetricCollector(kHeapCollectorName),
       sampling_period_bytes_(kHeapSamplingIntervalBytes),
       mode_(mode),
-      is_enabled_(false) {
+      is_enabled_(false),
+      weak_factory_(this) {
   BrowserList::AddObserver(this);
 
   if (mode_ == HeapCollectionMode::kShimLayer) {
@@ -342,6 +343,10 @@ void HeapCollector::SetCollectionParamsFromFeatureParams() {
       kRestoreSessionSamplingFactor.Get();
   collection_params_.restore_session.max_collection_delay =
       base::TimeDelta::FromSeconds(kRestoreSessionMaxDelaySec.Get());
+}
+
+base::WeakPtr<MetricCollector> HeapCollector::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool HeapCollector::ShouldCollect() const {

@@ -3126,7 +3126,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
-    update->FetchManifest(false);  // not first request
+    update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
     // MockURLLoaderFactory.
@@ -3165,7 +3165,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
-    update->FetchManifest(false);  // not first request
+    update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
     // MockURLLoaderFactory.
@@ -3336,7 +3336,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
-    update->FetchManifest(false);  // not first request
+    update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
     // MockURLLoaderFactory.
@@ -3377,7 +3377,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_status_ = AppCacheGroup::DOWNLOADING;
     update->manifest_response_info_ = std::move(response_info);
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
-    update->FetchManifest(false);  // not first request
+    update->RefetchManifest();
 
     // We need to wait for the URL load requests to make it to the
     // MockURLLoaderFactory.

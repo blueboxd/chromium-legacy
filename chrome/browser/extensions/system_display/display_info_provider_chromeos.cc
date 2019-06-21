@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/common/api/system_display.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
@@ -623,11 +623,7 @@ void DisplayInfoProviderChromeOS::OnTabletModeToggled(bool enabled) {
 
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
-  std::unique_ptr<service_manager::Connector> connector =
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone();
-  return new DisplayInfoProviderChromeOS(connector.get());
+  return new DisplayInfoProviderChromeOS(content::GetSystemConnector());
 }
 
 }  // namespace extensions

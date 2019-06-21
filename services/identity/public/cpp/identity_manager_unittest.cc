@@ -103,7 +103,7 @@ class CustomFakeProfileOAuth2TokenService
 
       // It should trigger OnAccessTokenRemovedFromCache from
       // IdentityManager::DiagnosticsObserver.
-      for (auto& observer : GetDiagnicsObservers())
+      for (auto& observer : GetAccessTokenDiagnosticsObservers())
         observer.OnAccessTokenRemoved(account_id, scopes);
 
       std::move(on_access_token_invalidated_callback_).Run();

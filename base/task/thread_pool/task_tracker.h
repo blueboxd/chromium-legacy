@@ -93,10 +93,15 @@ class BASE_EXPORT TaskTracker {
   void SetCanRunPolicy(CanRunPolicy can_run_policy);
 
   // Informs this TaskTracker that |task| with |shutdown_behavior| is about to
-  // be posted to a task source. Returns true if this operation is allowed
-  // (|task| should be pushed into its task source if-and-only-if it is). This
-  // method may also modify metadata on |task| if desired.
+  // be pushed to a task source (if non-delayed) or be added to the
+  // DelayedTaskManager (if delayed). Returns true if this operation is allowed
+  // (the operation should be performed if-and-only-if it is). This method may
+  // also modify metadata on |task| if desired.
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
+
+  // Informs this TaskTracker that |task| that is about to be pushed to a task
+  // source with |priority|.
+  void WillPostTaskNow(const Task& task, TaskPriority priority);
 
   // Informs this TaskTracker that |task_source| is about to be queued. Returns
   // a RegisteredTaskSource that should be queued if-and-only-if it evaluates to
@@ -224,6 +229,10 @@ class BASE_EXPORT TaskTracker {
                                    Task* task);
 
   TaskAnnotator task_annotator_;
+
+  // Indicates whether logging information about TaskPriority::BEST_EFFORT tasks
+  // was enabled with a command line switch.
+  const bool has_log_best_effort_tasks_switch_;
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown
   // has started.

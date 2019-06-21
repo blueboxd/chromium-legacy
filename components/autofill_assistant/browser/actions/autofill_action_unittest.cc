@@ -197,6 +197,25 @@ TEST_F(AutofillActionTest, NoSelectedAddress) {
             ProcessAction(action_proto));
 }
 
+TEST_F(AutofillActionTest, ShortWaitForElementVisible) {
+  EXPECT_CALL(
+      mock_action_delegate_,
+      OnShortWaitForElement(Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillOnce(RunOnceCallback<1>(true));
+
+  ActionProto action_proto = CreateUseAddressAction();
+  // Autofill succeeds.
+  EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(NotNull(), _, _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+
+  // Validation succeeds.
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(true, "not empty"));
+
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
+            ProcessAction(action_proto));
+}
+
 TEST_F(AutofillActionTest, ValidationSucceeds) {
   InSequence seq;
 
@@ -210,7 +229,8 @@ TEST_F(AutofillActionTest, ValidationSucceeds) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation succeeds.
@@ -234,7 +254,8 @@ TEST_F(AutofillActionTest, FallbackFails) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // Validation fails when getting FIRST_NAME.
@@ -270,7 +291,8 @@ TEST_F(AutofillActionTest, FallbackSucceeds) {
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,
-              OnFillAddressForm(NotNull(), Eq(Selector({kFakeSelector})), _))
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   {

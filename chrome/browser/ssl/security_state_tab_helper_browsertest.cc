@@ -59,11 +59,11 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -1124,10 +1124,8 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
     network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
     network_service_test->SetTransportSecurityStateSource(0);
 
     // This test class intentionally does not call the parent
@@ -1139,10 +1137,8 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
     network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
     // The tests don't depend on reporting, so the port doesn't matter.
     network_service_test->SetTransportSecurityStateSource(80);
 

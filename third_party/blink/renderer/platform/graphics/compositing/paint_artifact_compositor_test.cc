@@ -704,19 +704,26 @@ TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NestedClips) {
-  auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 700, 700),
-                          CompositingReason::kOverflowScrollingTouch);
-  auto clip2 = CreateClip(*clip1, t0(), FloatRoundedRect(200, 200, 700, 700),
-                          CompositingReason::kOverflowScrollingTouch);
+  auto transform1 =
+      CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                      CompositingReason::kWillChangeTransform);
+  auto clip1 =
+      CreateClip(c0(), *transform1, FloatRoundedRect(100, 100, 700, 700));
+
+  auto transform2 =
+      CreateTransform(*transform1, TransformationMatrix(), FloatPoint3D(),
+                      CompositingReason::kWillChangeTransform);
+  auto clip2 =
+      CreateClip(*clip1, *transform2, FloatRoundedRect(200, 200, 700, 700));
 
   TestPaintArtifact artifact;
-  artifact.Chunk(t0(), *clip1, e0())
+  artifact.Chunk(*transform1, *clip1, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kWhite);
-  artifact.Chunk(t0(), *clip2, e0())
+  artifact.Chunk(*transform2, *clip2, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kLightGray);
-  artifact.Chunk(t0(), *clip1, e0())
+  artifact.Chunk(*transform1, *clip1, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kDarkGray);
-  artifact.Chunk(t0(), *clip2, e0())
+  artifact.Chunk(*transform2, *clip2, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
@@ -762,22 +769,27 @@ TEST_P(PaintArtifactCompositorTest, NestedClips) {
 }
 
 TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
-  auto real_clip1 = CreateClip(c0(), t0(), FloatRoundedRect(100, 100, 700, 700),
-                               CompositingReason::kOverflowScrollingTouch);
+  auto transform1 =
+      CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                      CompositingReason::kWillChangeTransform);
+  auto real_clip1 =
+      CreateClip(c0(), *transform1, FloatRoundedRect(100, 100, 700, 700));
   auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
+  auto transform2 =
+      CreateTransform(*transform1, TransformationMatrix(), FloatPoint3D(),
+                      CompositingReason::kWillChangeTransform);
   auto real_clip2 =
-      CreateClip(*clip1, t0(), FloatRoundedRect(200, 200, 700, 700),
-                 CompositingReason::kOverflowScrollingTouch);
+      CreateClip(*clip1, *transform2, FloatRoundedRect(200, 200, 700, 700));
   auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
 
   TestPaintArtifact artifact;
-  artifact.Chunk(t0(), *clip1, e0())
+  artifact.Chunk(*transform1, *clip1, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kWhite);
-  artifact.Chunk(t0(), *clip2, e0())
+  artifact.Chunk(*transform2, *clip2, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kLightGray);
-  artifact.Chunk(t0(), *clip1, e0())
+  artifact.Chunk(*transform1, *clip1, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kDarkGray);
-  artifact.Chunk(t0(), *clip2, e0())
+  artifact.Chunk(*transform2, *clip2, e0())
       .RectDrawing(FloatRect(300, 350, 100, 100), Color::kBlack);
   Update(artifact.Build());
 

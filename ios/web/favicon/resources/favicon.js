@@ -16,7 +16,7 @@ goog.provide('__crWeb.favicon');
 (function() {
 
 __gCrWeb.message.invokeOnHost({
-  'command': 'document.favicons',
+  'command': 'favicon.favicons',
   'favicons': __gCrWeb.common.getFavicons()
 });
 }());  // End of anonymous object

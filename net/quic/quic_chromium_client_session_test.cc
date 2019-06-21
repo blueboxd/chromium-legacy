@@ -342,8 +342,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   IPEndPoint address;
   EXPECT_EQ(OK, handle->GetPeerAddress(&address));
   EXPECT_EQ(kIpEndPoint, address);
-  EXPECT_TRUE(handle->CreatePacketBundler(quic::QuicConnection::NO_ACK).get() !=
-              nullptr);
+  EXPECT_TRUE(handle->CreatePacketBundler().get() != nullptr);
 
   CompleteCryptoHandshake();
 
@@ -369,8 +368,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
   EXPECT_EQ(session_net_log.net_log(), handle->net_log().net_log());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, handle->GetPeerAddress(&address));
-  EXPECT_TRUE(handle->CreatePacketBundler(quic::QuicConnection::NO_ACK).get() ==
-              nullptr);
+  EXPECT_TRUE(handle->CreatePacketBundler().get() == nullptr);
   {
     // Verify that CreateHandle() works even after the session is closed.
     std::unique_ptr<QuicChromiumClientSession::Handle> handle2 =
@@ -394,8 +392,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_EQ(session_net_log.source().id, handle->net_log().source().id);
   EXPECT_EQ(session_net_log.net_log(), handle->net_log().net_log());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, handle->GetPeerAddress(&address));
-  EXPECT_TRUE(handle->CreatePacketBundler(quic::QuicConnection::NO_ACK).get() ==
-              nullptr);
+  EXPECT_TRUE(handle->CreatePacketBundler().get() == nullptr);
   ASSERT_EQ(
       ERR_CONNECTION_CLOSED,
       handle->RequestStream(/*requires_confirmation=*/false,

@@ -937,9 +937,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // toolbar is not visible (e.g. in tab switcher mode).
         if (isInTabSwitcherMode()) return;
 
+        int toolbarButtonVisibility = getToolbarButtonVisibility();
+        mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
         if (!mIsBottomToolbarVisible && !getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
-            int toolbarButtonVisibility = getToolbarButtonVisibility();
-            mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
             if (mHomeButton != null && mHomeButton.getVisibility() != GONE) {
                 mHomeButton.setVisibility(toolbarButtonVisibility);
             }

@@ -6,13 +6,16 @@
 #define CC_SCHEDULER_COMPOSITOR_FRAME_REPORTING_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/time/time.h"
 #include "cc/base/base_export.h"
+#include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
+#include "cc/scheduler/compositor_frame_reporter.h"
 
 namespace cc {
-class CompositorFrameReporter;
+class RollingTimeDeltaHistory;
 
 // This is used for managing simultaneous CompositorFrameReporter instances
 // in the case that the compositor has high latency. Calling one of the
@@ -31,7 +34,7 @@ class CC_EXPORT CompositorFrameReportingController {
     kNumPipelineStages
   };
 
-  CompositorFrameReportingController();
+  explicit CompositorFrameReportingController(bool is_single_threaded = false);
   virtual ~CompositorFrameReportingController();
 
   CompositorFrameReportingController(
@@ -52,13 +55,23 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void DidNotProduceFrame();
 
  protected:
+  base::TimeTicks Now() const;
   std::unique_ptr<CompositorFrameReporter>
       reporters_[PipelineStage::kNumPipelineStages];
 
  private:
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);
 
+  // Used by the managed reporters to differentiate the histogram names when
+  // reporting to UMA.
+  const bool is_single_threaded_;
   bool next_activate_has_invalidation_ = false;
+
+  // These keep track of stage durations for when a frame did not miss a
+  // deadline. The history is used by reporter instances to determine if a
+  // missed frame had a stage duration that was abnormally large.
+  std::unique_ptr<RollingTimeDeltaHistory> stage_history_[static_cast<size_t>(
+      CompositorFrameReporter::StageType::kStageTypeCount)];
 };
 }  // namespace cc
 

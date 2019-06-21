@@ -1,7 +1,7 @@
 # tags: [ android chromeos highsierra linux mac mojave win ]
 # tags: [ android-chromium android-webview-instrumentation debug ]
 # tags: [ skia-renderer no-skia-renderer ]
-# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e
+# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
 #         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
 #         qualcomm-adreno-(tm)-540
@@ -192,3 +192,6 @@ crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Failure ]
 
 # Fails when the browser feature SkiaRenderer is enabled
 crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]
+
+# Produces blank images on Intel HD 630 w/ Mesa 19.0.2
+crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Failure ]

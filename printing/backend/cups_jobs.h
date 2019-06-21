@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/version.h"
+#include "printing/printer_query_result_chromeos.h"
 #include "printing/printing_export.h"
 
 // This file contains a collection of functions used to query IPP printers or
@@ -141,13 +142,6 @@ struct PRINTING_EXPORT PrinterInfo {
 enum JobCompletionState {
   COMPLETED,  // only completed jobs
   PROCESSING  // only jobs that are being processed
-};
-
-// Specifies query status codes.
-enum PRINTING_EXPORT PrinterQueryResult {
-  UNKNOWN_FAILURE,  // catchall error
-  SUCCESS,          // successful
-  UNREACHABLE,      // failed to reach the host
 };
 
 // Extracts structured job information from the |response| for |printer_id|.

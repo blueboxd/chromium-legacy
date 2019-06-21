@@ -461,9 +461,8 @@ class MediaEngagementContentsObserverTest
       MediaEngagementContentsObserver::kSignificantMediaPlaybackTime +
       base::TimeDelta::FromSeconds(2);
 
-  // WebContentsImpl accesses
-  // content::ServiceManagerConnection::GetForProcess(), so
-  // we must make sure it is instantiated.
+  // WebContentsImpl accesses the system Connector so the Service Manager must
+  // be initialized.
   std::unique_ptr<content::TestServiceManagerContext>
       test_service_manager_context_;
 };

@@ -200,10 +200,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Changes the app list state.
   void SetState(ash::AppListViewState new_state);
 
-  // Starts the close animation.
-  void StartCloseAnimation(base::TimeDelta animation_duration,
-                           ui::ImplicitAnimationObserver* observer);
-
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
   void SetStateFromSearchBoxView(bool search_box_is_empty,
@@ -374,8 +370,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Applies a bounds animation on this views layer.
   void ApplyBoundsAnimation(ash::AppListViewState target_state,
-                            base::TimeDelta duration_ms,
-                            ui::ImplicitAnimationObserver* observer);
+                            base::TimeDelta duration_ms);
 
   // Records the state transition for UMA.
   void RecordStateTransitionForUma(ash::AppListViewState new_state);

@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -43,8 +43,7 @@ void WebstoreInstallHelper::Start(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      manifest_,
+      content::GetSystemConnector(), manifest_,
       base::BindOnce(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
       base::BindOnce(&WebstoreInstallHelper::OnJSONParseFailed, this));
 

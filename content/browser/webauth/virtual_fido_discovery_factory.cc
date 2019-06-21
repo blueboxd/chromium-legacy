@@ -13,6 +13,7 @@
 #include "content/browser/webauth/virtual_discovery.h"
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/virtual_ctap2_device.h"
+#include "device/fido/virtual_u2f_device.h"
 
 namespace content {
 
@@ -38,6 +39,10 @@ VirtualAuthenticator* VirtualFidoDiscoveryFactory::CreateAuthenticator(
     device::AuthenticatorAttachment attachment,
     bool has_resident_key,
     bool has_user_verification) {
+  if (protocol == device::ProtocolVersion::kU2f &&
+      !device::VirtualU2fDevice::IsTransportSupported(transport)) {
+    return nullptr;
+  }
   auto authenticator = std::make_unique<VirtualAuthenticator>(
       protocol, transport, attachment, has_resident_key, has_user_verification);
   auto* authenticator_ptr = authenticator.get();

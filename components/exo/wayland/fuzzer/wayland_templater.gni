@@ -21,6 +21,9 @@
 #     ":foo_tmpl",
 #   ]
 # }
+#
+# If needed, the user can set 'script_override=foo.py' to use a different
+# templating script to the default (wayland_templater.py).
 template("wayland_templater") {
   assert(defined(invoker.sources), "Need sources for wayland_templater")
   assert(defined(invoker.protocols), "Need protocols for wayland_templater")
@@ -32,6 +35,11 @@ template("wayland_templater") {
     dir = get_path_info(src, "dir")
     name = get_path_info(src, "name")
     template_outputs += [ "${target_gen_dir}/${dir}/${name}" ]
+  }
+
+  templater_script_name = "wayland_templater.py"
+  if (defined(invoker.script_override)) {
+    templater_script_name = invoker.script_override
   }
 
   # Jinja2 doesnt like having ".." in the target path, so we give it the
@@ -46,13 +54,13 @@ template("wayland_templater") {
     script = "//third_party/blink/renderer/build/scripts/run_with_pythonpath.py"
     sources = [
                 script,
-                "wayland_templater.py",
+                templater_script_name,
               ] + invoker.sources + invoker.protocols
     outputs = template_outputs
     args = [
              "-I",
              rebase_path("//third_party", root_build_dir),
-             rebase_path("wayland_templater.py", root_build_dir),
+             rebase_path(templater_script_name, root_build_dir),
              "--directory",
              build_to_src_path,
              "--input",

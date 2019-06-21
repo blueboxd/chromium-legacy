@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -51,7 +52,6 @@ class ContentClient;
 class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
-class ServiceManagerConnection;
 struct CdmInfo;
 struct PepperPluginInfo;
 
@@ -205,7 +205,11 @@ class CONTENT_EXPORT ContentClient {
   virtual media::MediaDrmBridgeClient* GetMediaDrmBridgeClient();
 #endif  // OS_ANDROID
 
-  virtual void OnServiceManagerConnected(ServiceManagerConnection* connection);
+  // Allows the embedder to handle incoming interface binding requests from
+  // the browser process to any type of child process.
+  virtual void BindChildProcessInterface(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* receiving_handle);
 
  private:
   friend class ContentClientInitializer;  // To set these pointers.

@@ -46,6 +46,24 @@ const char kImageSvg[] = "image/svg+xml";
 const char kDashVideo[] = "application/dash+xml";  // https://crbug.com/947498
 const char kTextJson[] = "text/json";
 const char kTextPlain[] = "text/plain";
+
+// Javascript MIME type suffixes for use in CORB protection logging. See also
+// https://mimesniff.spec.whatwg.org/#javascript-mime-type.
+const char* kJavaScriptSuffixes[] = {"ecmascript",
+                                     "javascript",
+                                     "x-ecmascript",
+                                     "x-javascript",
+                                     "javascript1.0",
+                                     "javascript1.1",
+                                     "javascript1.2",
+                                     "javascript1.3",
+                                     "javascript1.4",
+                                     "javascript1.5",
+                                     "jscript",
+                                     "livescript",
+                                     "js",
+                                     "x-js"};
+
 // TODO(lukasza): Remove kJsonProtobuf once this MIME type is not used in
 // practice.  See also https://crbug.com/826756#c3
 const char kJsonProtobuf[] = "application/json+protobuf";
@@ -600,33 +618,79 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
       response.headers ? response.headers->response_code() : 0;
   request_initiator_site_lock_ = request_initiator_site_lock;
 
+  // CORB should look directly at the Content-Type header if one has been
+  // received from the network. Ignoring |response.mime_type| helps avoid
+  // breaking legitimate websites (which might happen more often when blocking
+  // would be based on the mime type sniffed by MimeSniffingResourceHandler).
+  //
+  // This value could be computed later in ShouldBlockBasedOnHeaders after
+  // has_nosniff_header, but we compute it here to keep
+  // ShouldBlockBasedOnHeaders (which is called twice) const.
+  //
+  // TODO(nick): What if the mime type is omitted? Should that be treated the
+  // same as text/plain? https://crbug.com/795971
+  std::string mime_type;
+  if (response.headers)
+    response.headers->GetMimeType(&mime_type);
+  // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
+  // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
+  // the checks during the SniffForFetchOnlyResource() phase.
+  canonical_mime_type_ =
+      network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
+
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
-      request_mode, request_url, request_initiator, response);
+      request_mode, request_url, request_initiator, response,
+      request_initiator_site_lock, canonical_mime_type_);
   if (should_block_based_on_headers_ == kNeedToSniffMore)
     CreateSniffers();
+
+  // Check if the response seems sensitive and if so include in our CORB
+  // protection logging. We do not sniff, so the answer might be
+  // kNeedToSniffMore.
+  //
+  // TODO(krstnmnlsn): Add sniffing if we see a lot of results in the
+  // kNeedToSniffMore category.
+  if (SeemsSensitiveFromCORSHeuristic(response) ||
+      SeemsSensitiveFromCacheHeuristic(response)) {
+    // Create a new Origin with a unique internal identifier so we can pretend
+    // the request is cross-origin.
+    url::Origin cross_origin_request_initiator = url::Origin();
+    BlockingDecision would_protect_based_on_headers = ShouldBlockBasedOnHeaders(
+        request_mode, request_url, cross_origin_request_initiator, response,
+        cross_origin_request_initiator, canonical_mime_type_);
+    UMA_HISTOGRAM_BOOLEAN("SiteIsolation.CORBProtection.SensitiveResource",
+                          true);
+    LogSensitiveResponseProtection(response, would_protect_based_on_headers);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("SiteIsolation.CORBProtection.SensitiveResource",
+                          false);
+  }
 }
 
 CrossOriginReadBlocking::ResponseAnalyzer::~ResponseAnalyzer() = default;
 
+// static
 CrossOriginReadBlocking::ResponseAnalyzer::BlockingDecision
 CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     mojom::RequestMode request_mode,
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
-    const ResourceResponseInfo& response) {
+    const ResourceResponseInfo& response,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    MimeType canonical_mime_type) {
   // The checks in this method are ordered to rule out blocking in most cases as
   // quickly as possible.  Checks that are likely to lead to returning false or
   // that are inexpensive should be near the top.
   url::Origin target_origin = url::Origin::Create(request_url);
 
   // Check if |target_origin| seems to match the factory lock in
-  // |request_initiator_site_lock_|.  If so, then treat this request as
+  // |request_initiator_site_lock|.  If so, then treat this request as
   // same-origin (even if |request_initiator| might be cross-origin).  See
   // also https://crbug.com/918660.
   // TODO(lukasza): https://crbug.com/940068: Remove this code section
   // once request_initiator is always set to the webpage (and never to the
   // isolated world).
-  if (VerifyRequestInitiatorLock(request_initiator_site_lock_, target_origin) ==
+  if (VerifyRequestInitiatorLock(request_initiator_site_lock, target_origin) ==
       InitiatorLockCompatibility::kCompatibleLock) {
     return kAllow;
   }
@@ -636,7 +700,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // unique origin makes CORB treat the response as cross-origin and thus
   // considers it eligible for blocking (based on content-type, sniffing, etc.).
   url::Origin initiator = GetTrustworthyInitiator(
-      ShouldEnforceInitiatorLock() ? request_initiator_site_lock_
+      ShouldEnforceInitiatorLock() ? request_initiator_site_lock
                                    : base::nullopt,
       request_initiator);
 
@@ -707,24 +771,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   bool has_nosniff_header =
       base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 
-  // CORB should look directly at the Content-Type header if one has been
-  // received from the network.  Ignoring |response.mime_type| helps avoid
-  // breaking legitimate websites (which might happen more often when blocking
-  // would be based on the mime type sniffed by MimeSniffingResourceHandler).
-  //
-  // TODO(nick): What if the mime type is omitted? Should that be treated the
-  // same as text/plain? https://crbug.com/795971
-  std::string mime_type;
-  if (response.headers)
-    response.headers->GetMimeType(&mime_type);
-  // Canonicalize the MIME type.  Note that even if it doesn't claim to be a
-  // blockable type (i.e., HTML, XML, JSON, or plain text), it may still fail
-  // the checks during the SniffForFetchOnlyResource() phase.
-  canonical_mime_type_ =
-      network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
-
   // Some types (e.g. ZIP) are protected without any confirmation sniffing.
-  if (canonical_mime_type_ == MimeType::kNeverSniffed)
+  if (canonical_mime_type == MimeType::kNeverSniffed)
     return kBlock;
 
   // CORS is currently implemented in the renderer process, so it's useful for
@@ -755,7 +803,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(request_url, request_initiator,
                                         response, kOverreachingRequestMode,
-                                        request_initiator_site_lock_)) {
+                                        request_initiator_site_lock)) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;
@@ -767,7 +815,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   response.headers->GetNormalizedHeader("content-range", &range_header);
   bool has_range_header = !range_header.empty();
   if (has_range_header) {
-    switch (canonical_mime_type_) {
+    switch (canonical_mime_type) {
       case MimeType::kOthers:
       case MimeType::kPlain:  // See also https://crbug.com/801709
         return kAllow;
@@ -783,7 +831,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   }
 
   // Decide whether to block based on the MIME type.
-  switch (canonical_mime_type_) {
+  switch (canonical_mime_type) {
     case MimeType::kHtml:
     case MimeType::kXml:
     case MimeType::kJson:
@@ -810,6 +858,94 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   }
   NOTREACHED();
   return kBlock;
+}
+
+// static
+bool CrossOriginReadBlocking::ResponseAnalyzer::SeemsSensitiveFromCORSHeuristic(
+    const ResourceResponseInfo& response) {
+  // Check if the response has an Access-Control-Allow-Origin with a value other
+  // than "*" or "null" ("null" offers no more protection than "*" because it
+  // matches any unique origin).
+  if (!response.headers)
+    return false;
+  std::string cors_header_value;
+  response.headers->GetNormalizedHeader("access-control-allow-origin",
+                                        &cors_header_value);
+  if (cors_header_value != "*" && cors_header_value != "null" &&
+      cors_header_value != "") {
+    return true;
+  }
+  return false;
+}
+
+// static
+bool CrossOriginReadBlocking::ResponseAnalyzer::
+    SeemsSensitiveFromCacheHeuristic(const ResourceResponseInfo& response) {
+  // Check if the response has both Vary: Origin and Cache-Control: Private
+  // headers, which we take as a signal that it may be a sensitive resource. We
+  // require both to reduce the number of false positives (as both headers are
+  // sometimes used on non-sensitive resources). Cache-Control: no-store appears
+  // on non-sensitive resources that change frequently, so we ignore it here.
+  if (!response.headers)
+    return false;
+  bool has_vary_origin = response.headers->HasHeaderValue("vary", "origin");
+  bool has_cache_private =
+      response.headers->HasHeaderValue("cache-control", "private");
+  return has_vary_origin && has_cache_private;
+}
+
+// static
+CrossOriginReadBlocking::ResponseAnalyzer::MimeTypeBucket
+CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
+    const ResourceResponseInfo& response) {
+  std::string mime_type;
+  if (response.headers)
+    response.headers->GetMimeType(&mime_type);
+  MimeType canonical_mime_type = GetCanonicalMimeType(mime_type);
+  switch (canonical_mime_type) {
+    case MimeType::kHtml:
+    case MimeType::kXml:
+    case MimeType::kJson:
+    case MimeType::kNeverSniffed:
+    case MimeType::kPlain:
+      return kProtected;
+      break;
+    case MimeType::kOthers:
+      break;
+    case MimeType::kInvalidMimeType:
+      NOTREACHED();
+      break;
+  }
+
+  // Javascript is assumed public. See also
+  // https://mimesniff.spec.whatwg.org/#javascript-mime-type.
+  constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
+  for (const std::string& suffix : kJavaScriptSuffixes) {
+    if (base::EndsWith(mime_type, suffix, kCaseInsensitive)) {
+      return kPublic;
+    }
+  }
+
+  // Images are assumed public. See also
+  // https://mimesniff.spec.whatwg.org/#image-mime-type.
+  if (base::StartsWith(mime_type, "image", kCaseInsensitive)) {
+    return kPublic;
+  }
+
+  // Audio and video are assumed public. See also
+  // https://mimesniff.spec.whatwg.org/#audio-or-video-mime-type.
+  if (base::StartsWith(mime_type, "audio", kCaseInsensitive) ||
+      base::StartsWith(mime_type, "video", kCaseInsensitive) ||
+      base::LowerCaseEqualsASCII(mime_type, "application/ogg") ||
+      base::LowerCaseEqualsASCII(mime_type, "application/dash+xml")) {
+    return kPublic;
+  }
+
+  // CSS files are assumed public and must be sent with text/css.
+  if (base::LowerCaseEqualsASCII(mime_type, "text/css")) {
+    return kPublic;
+  }
+  return kOther;
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
@@ -963,6 +1099,65 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   UMA_HISTOGRAM_ENUMERATION(
       "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
       canonical_mime_type_);
+}
+
+// static
+void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
+    const ResourceResponseInfo& response,
+    BlockingDecision would_protect_based_on_headers) {
+  CrossOriginProtectionDecision protection_decision =
+      CrossOriginProtectionDecision::kNeedToSniffMore;
+  switch (would_protect_based_on_headers) {
+    case kAllow:
+      protection_decision = CrossOriginProtectionDecision::kAllow;
+      break;
+    case kBlock:
+      protection_decision = CrossOriginProtectionDecision::kBlock;
+      break;
+    case kNeedToSniffMore:
+      protection_decision = CrossOriginProtectionDecision::kNeedToSniffMore;
+      // TODO(krstnmnlsn): Add sniffing when we see a potentially sensitive
+      // resource and report either kAllowedAfterSniffing or
+      // kBlockedAfterSniffing.
+      break;
+  }
+  MimeTypeBucket mime_type_bucket = GetMimeTypeBucket(response);
+  if (SeemsSensitiveFromCORSHeuristic(response)) {
+    switch (mime_type_bucket) {
+      case kProtected:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType",
+            protection_decision);
+        break;
+      case kPublic:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CORSHeuristic.PublicMimeType",
+            protection_decision);
+        break;
+      case kOther:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CORSHeuristic.OtherMimeType",
+            protection_decision);
+    }
+  }
+  if (SeemsSensitiveFromCacheHeuristic(response)) {
+    switch (mime_type_bucket) {
+      case kProtected:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType",
+            protection_decision);
+        break;
+      case kPublic:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CacheHeuristic.PublicMimeType",
+            protection_decision);
+        break;
+      case kOther:
+        UMA_HISTOGRAM_ENUMERATION(
+            "SiteIsolation.CORBProtection.CacheHeuristic.OtherMimeType",
+            protection_decision);
+    }
+  }
 }
 
 // static

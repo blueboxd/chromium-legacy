@@ -125,8 +125,6 @@ struct CaptivePortalProvider {
 
 // The SIM card lock status for Cellular networks.
 struct SIMLockStatus {
-  // True when a SIM is required and not present.
-  bool sim_absent = false;
   // The status of SIM lock. Possible values are 'sim-pin', 'sim-puk' or empty.
   string lock_type;
   // Whether SIM lock is enabled.
@@ -220,12 +218,13 @@ struct NetworkStateProperties {
 struct DeviceStateProperties {
   // IP address for the primary network corresponding to the device type. If no
   // network is in a connected state, or the address type is not available,
-  // these will be empty. When there are multiple IP addresses, only the first
+  // these will be null. When there are multiple IP addresses, only the first
   // is provided.
-  network.mojom.IPAddress ipv4_address;
-  network.mojom.IPAddress ipv6_address;
+  network.mojom.IPAddress? ipv4_address;
+  network.mojom.IPAddress? ipv6_address;
   // AA:BB formatted MAC address for the device. Use for display purposes only.
-  string mac_address;
+  // May be null if no MAC address is available for the device.
+  string? mac_address;
   // Set if the device is currently scanning.
   bool scanning = false;
   // The SIM lock status if Type = Cellular and a SIM is present.

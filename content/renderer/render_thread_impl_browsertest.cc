@@ -31,10 +31,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/content_browser_test.h"
@@ -173,8 +173,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
         service_manager::Identity(mojom::kRendererServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        &invitation, ServiceManagerConnection::GetForProcess()->GetConnector(),
-        io_task_runner);
+        &invitation, GetSystemConnector(), io_task_runner);
 
     mojo::MessagePipe pipe;
     child_connection_->BindInterface(IPC::mojom::ChannelBootstrap::Name_,

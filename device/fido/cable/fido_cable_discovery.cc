@@ -100,6 +100,8 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 // CableDiscoveryData -------------------------------------
 
+CableDiscoveryData::CableDiscoveryData() = default;
+
 CableDiscoveryData::CableDiscoveryData(
     uint8_t version,
     const EidArray& client_eid,
@@ -117,6 +119,12 @@ CableDiscoveryData& CableDiscoveryData::operator=(
     const CableDiscoveryData& other) = default;
 
 CableDiscoveryData::~CableDiscoveryData() = default;
+
+bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
+  return version == other.version && client_eid == other.client_eid &&
+         authenticator_eid == other.authenticator_eid &&
+         session_pre_key == other.session_pre_key;
+}
 
 // FidoCableDiscovery ---------------------------------------------------------
 

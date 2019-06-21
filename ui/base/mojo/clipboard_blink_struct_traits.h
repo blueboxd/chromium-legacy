@@ -15,8 +15,8 @@ struct EnumTraits<blink::mojom::ClipboardBuffer, ui::ClipboardType> {
   static blink::mojom::ClipboardBuffer ToMojom(
       ui::ClipboardType clipboard_type) {
     // We only convert ui::Clipboardtype to blink::mojom::ClipboardBuffer
-    // in tests, and they use ui::CLIPBOARD_TYPE_COPY_PASTE.
-    DCHECK(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE);
+    // in tests, and they use ui::ClipboardType::kCopyPaste.
+    DCHECK(clipboard_type == ui::ClipboardType::kCopyPaste);
     return blink::mojom::ClipboardBuffer::kStandard;
   }
 
@@ -24,11 +24,11 @@ struct EnumTraits<blink::mojom::ClipboardBuffer, ui::ClipboardType> {
                         ui::ClipboardType* out) {
     switch (clipboard_type) {
       case blink::mojom::ClipboardBuffer::kStandard:
-        *out = ui::CLIPBOARD_TYPE_COPY_PASTE;
+        *out = ui::ClipboardType::kCopyPaste;
         return true;
       case blink::mojom::ClipboardBuffer::kSelection:
 #if defined(USE_X11)
-        *out = ui::CLIPBOARD_TYPE_SELECTION;
+        *out = ui::ClipboardType::kSelection;
         return true;
 #else
         return false;

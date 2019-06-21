@@ -94,12 +94,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count;
 
-#pragma mark - Settings Utilities
+#pragma mark - Settings Utilities (EG2)
 
 // Sets value for content setting.
 - (void)setContentSettings:(ContentSetting)setting;
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data.
 - (void)clearSyncServerData;
@@ -236,7 +236,7 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // exception if operation not succeeded.
 - (void)resetTabUsageRecorder;
 
-#pragma mark - SignIn Utilities
+#pragma mark - SignIn Utilities (EG2)
 
 // Signs the user out, clears the known accounts entirely and checks whether the
 // accounts were correctly removed from the keychain. Induces a GREYAssert if
@@ -311,14 +311,21 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // induced.
 - (id)executeJavaScript:(NSString*)javaScript;
 
-#pragma mark - Cookie Utilities
+#pragma mark - Cookie Utilities (EG2)
 
 // Returns cookies as key value pairs, where key is a cookie name and value is a
 // cookie value.
 // A GREYAssert is induced if cookies can not be returned.
 - (NSDictionary*)cookies;
 
-#pragma mark - Feature enables checkers
+#pragma mark - Accessibility Utilities (EG2)
+
+// Verifies that all interactive elements on screen (or at least one of their
+// descendants) are accessible.
+// A GREYAssert is induced if not all elements are accessible.
+- (void)verifyAccessibilityForCurrentScreen;
+
+#pragma mark - Feature enables checkers (EG2)
 
 // Returns YES if SlimNavigationManager feature is enabled.
 - (BOOL)isSlimNavigationManagerEnabled WARN_UNUSED_RESULT;

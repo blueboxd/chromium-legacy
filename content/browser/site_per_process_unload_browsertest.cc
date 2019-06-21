@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -308,73 +307,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(watcher.did_exit_normally());
 }
 
-class TestWCBeforeUnloadDelegate : public JavaScriptDialogManager,
-                                   public WebContentsDelegate {
- public:
-  explicit TestWCBeforeUnloadDelegate(WebContentsImpl* web_contents)
-      : web_contents_(web_contents) {
-    web_contents_->SetDelegate(this);
-  }
-
-  ~TestWCBeforeUnloadDelegate() override {
-    if (!callback_.is_null())
-      std::move(callback_).Run(true, base::string16());
-
-    web_contents_->SetDelegate(nullptr);
-    web_contents_->SetJavaScriptDialogManagerForTesting(nullptr);
-  }
-
-  void Wait() {
-    run_loop_->Run();
-    run_loop_ = std::make_unique<base::RunLoop>();
-  }
-
-  // WebContentsDelegate
-
-  JavaScriptDialogManager* GetJavaScriptDialogManager(
-      WebContents* source) override {
-    return this;
-  }
-
-  // JavaScriptDialogManager
-
-  void RunJavaScriptDialog(WebContents* web_contents,
-                           RenderFrameHost* render_frame_host,
-                           JavaScriptDialogType dialog_type,
-                           const base::string16& message_text,
-                           const base::string16& default_prompt_text,
-                           DialogClosedCallback callback,
-                           bool* did_suppress_message) override {
-    NOTREACHED();
-  }
-
-  void RunBeforeUnloadDialog(WebContents* web_contents,
-                             RenderFrameHost* render_frame_host,
-                             bool is_reload,
-                             DialogClosedCallback callback) override {
-    callback_ = std::move(callback);
-    run_loop_->Quit();
-  }
-
-  bool HandleJavaScriptDialog(WebContents* web_contents,
-                              bool accept,
-                              const base::string16* prompt_override) override {
-    NOTREACHED();
-    return true;
-  }
-
-  void CancelDialogs(WebContents* web_contents, bool reset_state) override {}
-
- private:
-  WebContentsImpl* web_contents_;
-
-  DialogClosedCallback callback_;
-
-  std::unique_ptr<base::RunLoop> run_loop_ = std::make_unique<base::RunLoop>();
-
-  DISALLOW_COPY_AND_ASSIGN(TestWCBeforeUnloadDelegate);
-};
-
 // This is a regression test for https://crbug.com/891423 in which tabs showing
 // beforeunload dialogs stalled navigation and triggered the "hung process"
 // dialog.
@@ -407,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       base::string16());
 
   // Hang the first contents in a beforeunload dialog.
-  TestWCBeforeUnloadDelegate test_delegate(web_contents);
+  BeforeUnloadBlockingDelegate test_delegate(web_contents);
   EXPECT_TRUE(
       ExecJs(web_contents, "window.onbeforeunload=function(e){ return 'x' }"));
   EXPECT_TRUE(ExecJs(web_contents,

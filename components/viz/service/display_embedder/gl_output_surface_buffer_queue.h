@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_BUFFER_QUEUE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_BUFFER_QUEUE_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
@@ -65,6 +67,8 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response) override;
 
   std::unique_ptr<BufferQueue> buffer_queue_;
+  unsigned current_texture_;
+  uint32_t fbo_;
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
   gfx::Size reshape_size_;

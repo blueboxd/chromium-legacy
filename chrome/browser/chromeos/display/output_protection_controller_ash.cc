@@ -9,8 +9,10 @@
 
 namespace {
 
-display::DisplayConfigurator* configurator() {
-  return ash::Shell::Get()->display_configurator();
+display::ContentProtectionManager* manager() {
+  return ash::Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager();
 }
 
 }  // namespace
@@ -18,18 +20,18 @@ display::DisplayConfigurator* configurator() {
 namespace chromeos {
 
 OutputProtectionControllerAsh::OutputProtectionControllerAsh()
-    : client_id_(configurator()->RegisterContentProtectionClient()) {}
+    : client_id_(manager()->RegisterClient()) {}
 
 OutputProtectionControllerAsh::~OutputProtectionControllerAsh() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  configurator()->UnregisterContentProtectionClient(client_id_);
+  manager()->UnregisterClient(client_id_);
 }
 
 void OutputProtectionControllerAsh::QueryStatus(
     int64_t display_id,
     const OutputProtectionDelegate::QueryStatusCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  configurator()->QueryContentProtection(client_id_, display_id, callback);
+  manager()->QueryContentProtection(client_id_, display_id, callback);
 }
 
 void OutputProtectionControllerAsh::SetProtection(
@@ -37,8 +39,8 @@ void OutputProtectionControllerAsh::SetProtection(
     uint32_t desired_method_mask,
     const OutputProtectionDelegate::SetProtectionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  configurator()->ApplyContentProtection(client_id_, display_id,
-                                         desired_method_mask, callback);
+  manager()->ApplyContentProtection(client_id_, display_id, desired_method_mask,
+                                    callback);
 }
 
 }  // namespace chromeos

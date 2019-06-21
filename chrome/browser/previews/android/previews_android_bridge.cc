@@ -123,6 +123,5 @@ PreviewsAndroidBridge::GetPreviewsType(
 
   return base::android::ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(
-          env,
-          previews::GetStringNameForType(data->committed_previews_type())));
+          env, previews::GetStringNameForType(data->CommittedPreviewsType())));
 }

@@ -62,7 +62,7 @@ void ClipboardMac::OnPreShutdown() {}
 
 uint64_t ClipboardMac::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   return [pb changeCount];
@@ -71,7 +71,7 @@ uint64_t ClipboardMac::GetSequenceNumber(ClipboardType type) const {
 bool ClipboardMac::IsFormatAvailable(const ClipboardFormatType& format,
                                      ClipboardType type) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   NSArray* types = [pb types];
@@ -87,7 +87,7 @@ bool ClipboardMac::IsFormatAvailable(const ClipboardFormatType& format,
 
 void ClipboardMac::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   [pb declareTypes:@[] owner:nil];
@@ -119,7 +119,7 @@ void ClipboardMac::ReadAvailableTypes(ClipboardType type,
 
 void ClipboardMac::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSPasteboardTypeString];
 
@@ -129,7 +129,7 @@ void ClipboardMac::ReadText(ClipboardType type, base::string16* result) const {
 void ClipboardMac::ReadAsciiText(ClipboardType type,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSPasteboardTypeString];
 
@@ -145,7 +145,7 @@ void ClipboardMac::ReadHTML(ClipboardType type,
                             uint32_t* fragment_start,
                             uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   // TODO(avi): src_url?
   markup->clear();
@@ -172,14 +172,14 @@ void ClipboardMac::ReadHTML(ClipboardType type,
 
 void ClipboardMac::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   return ReadData(ClipboardFormatType::GetRtfType(), result);
 }
 
 SkBitmap ClipboardMac::ReadImage(ClipboardType type, NSPasteboard* pb) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   // If the pasteboard's image data is not to its liking, the guts of NSImage
   // may throw, and that exception will leak. Prevent a crash in that case;
@@ -234,7 +234,7 @@ void ClipboardMac::ReadCustomData(ClipboardType clipboard_type,
                                   const base::string16& type,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(clipboard_type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(clipboard_type, ClipboardType::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   if ([[pb types] containsObject:kWebCustomDataPboardType]) {
@@ -273,7 +273,7 @@ void ClipboardMac::ReadData(const ClipboardFormatType& format,
 
 void ClipboardMac::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
+  DCHECK_EQ(type, ClipboardType::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   [pb declareTypes:@[] owner:nil];

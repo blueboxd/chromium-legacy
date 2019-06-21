@@ -10,8 +10,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.inputmethod.InputConnection;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -433,6 +435,12 @@ public abstract class AppHooks {
     public boolean interceptWebAppIntent(Intent intent, ChromeActivity activity) {
         return false;
     }
+
+    /**
+     * @see InputConnection#performPrivateCommand(java.lang.String, android.os.Bundle)
+     * @param webcontents The WebContents receiving the private IME command.
+     */
+    public void performPrivateImeCommand(WebContents webContents, String action, Bundle data) {}
 
     /**
      * @param registry The Chrome interface registry for the RenderFrameHost.

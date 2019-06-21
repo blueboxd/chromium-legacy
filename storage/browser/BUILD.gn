@@ -345,6 +345,8 @@ jumbo_static_library("test_support") {
     "test/async_file_test_helper.h",
     "test/fake_blob.cc",
     "test/fake_blob.h",
+    "test/fake_blob_data_handle.cc",
+    "test/fake_blob_data_handle.h",
     "test/fake_progress_client.cc",
     "test/fake_progress_client.h",
     "test/fileapi_test_file_set.cc",

@@ -29,7 +29,7 @@ class View;
 class ViewTracker;
 }
 class Browser;
-class EscapeTracker;
+class KeyEventTracker;
 class Tab;
 class TabDragControllerTest;
 class TabDragContext;
@@ -634,7 +634,7 @@ class TabDragController : public views::WidgetObserver {
   int attach_x_;
   int attach_index_;
 
-  std::unique_ptr<EscapeTracker> escape_tracker_;
+  std::unique_ptr<KeyEventTracker> key_event_tracker_;
 
   std::unique_ptr<SourceTabStripEmptinessTracker>
       source_context_emptiness_tracker_;

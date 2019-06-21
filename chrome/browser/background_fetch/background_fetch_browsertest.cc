@@ -251,7 +251,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
     // Register our observer for the offline items collection.
     OfflineContentAggregatorFactory::GetInstance()
-        ->GetForBrowserContext(profile)
+        ->GetForKey(profile->GetProfileKey())
         ->AddObserver(offline_content_provider_observer_.get());
 
     SetUpBrowser(browser());
@@ -281,7 +281,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     OfflineContentAggregatorFactory::GetInstance()
-        ->GetForBrowserContext(active_browser_->profile())
+        ->GetForKey(active_browser_->profile()->GetProfileKey())
         ->RemoveObserver(offline_content_provider_observer_.get());
 
     download_service_->GetLogger()->RemoveObserver(download_observer_.get());

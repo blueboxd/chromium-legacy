@@ -16,6 +16,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/virtual_fido_device.h"
+#include "device/fido/virtual_u2f_device.h"
 
 namespace content {
 namespace protocol {
@@ -23,10 +24,14 @@ namespace protocol {
 namespace {
 static constexpr char kAuthenticatorNotFound[] =
     "Could not find a Virtual Authenticator matching the ID";
+static constexpr char kCableNotSupportedOnU2f[] =
+    "U2F only supports the \"usb\", \"ble\" and \"nfc\" transports";
 static constexpr char kCouldNotCreateCredential[] =
     "An error occurred trying to create the credential";
 static constexpr char kDevToolsNotAttached[] =
     "The DevTools session is not attached to a frame";
+static constexpr char kErrorCreatingAuthenticator[] =
+    "An error occurred when trying to create the authenticator";
 static constexpr char kInvalidProtocol[] = "The protocol is not valid";
 static constexpr char kInvalidRpIdHash[] =
     "The Relying Party ID hash must have a size of ";
@@ -102,12 +107,20 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
   if (protocol == device::ProtocolVersion::kUnknown)
     return Response::InvalidParams(kInvalidProtocol);
 
+  if (protocol == device::ProtocolVersion::kU2f &&
+      !device::VirtualU2fDevice::IsTransportSupported(*transport)) {
+    return Response::InvalidParams(kCableNotSupportedOnU2f);
+  }
+
   auto* authenticator = virtual_discovery_factory_->CreateAuthenticator(
       protocol, *transport,
       transport == device::FidoTransportProtocol::kInternal
           ? device::AuthenticatorAttachment::kPlatform
           : device::AuthenticatorAttachment::kCrossPlatform,
       options->GetHasResidentKey(), options->GetHasUserVerification());
+  if (!authenticator)
+    return Response::Error(kErrorCreatingAuthenticator);
+
   authenticator->SetUserPresence(
       options->GetAutomaticPresenceSimulation(true /* default */));
 

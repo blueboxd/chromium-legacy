@@ -54,14 +54,6 @@ void BuildAndSendNotification(message_center::MessageCenter* message_center,
 
 using ShelfControllerTest = AshTestBase;
 
-TEST_F(ShelfControllerTest, InitializesBackButtonAndAppListItemDelegate) {
-  ShelfModel* model = Shell::Get()->shelf_controller()->model();
-  EXPECT_EQ(2, model->item_count());
-  EXPECT_EQ(kBackButtonId, model->items()[0].id.app_id);
-  EXPECT_FALSE(model->GetShelfItemDelegate(ShelfID(kBackButtonId)));
-  EXPECT_EQ(kAppListId, model->items()[1].id.app_id);
-}
-
 TEST_F(ShelfControllerTest, Shutdown) {
   // Simulate a display change occurring during shutdown (e.g. due to a screen
   // rotation animation being canceled).

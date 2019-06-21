@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip_reader.h"
@@ -63,8 +63,7 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, FailZipForAbsentFile) {
        base::Bind(&TestCallback, &success,
                   content::GetDeferredQuitTaskForRunLoop(&run_loop)),
        zip_base_dir(), paths, zip_archive_path()))
-      ->Start(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      ->Start(content::GetSystemConnector());
 
   content::RunThisRunLoop(&run_loop);
   EXPECT_FALSE(success);
@@ -96,8 +95,7 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
        base::Bind(&TestCallback, &success,
                   content::GetDeferredQuitTaskForRunLoop(&run_loop)),
        zip_base_dir(), paths, zip_archive_path()))
-      ->Start(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      ->Start(content::GetSystemConnector());
 
   content::RunThisRunLoop(&run_loop);
   EXPECT_TRUE(success);
@@ -192,8 +190,7 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, ZipDirectoryWithManyFiles) {
        base::Bind(&TestCallback, &success, run_loop.QuitClosure()), root_dir,
        std::vector<base::FilePath>(),  // Empty means zip everything in dir.
        zip_archive_path()))
-      ->Start(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      ->Start(content::GetSystemConnector());
 
   content::RunThisRunLoop(&run_loop);
   EXPECT_TRUE(success);

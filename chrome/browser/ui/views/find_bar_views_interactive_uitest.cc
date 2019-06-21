@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
       browser(), ui::VKEY_C, true, false, false, false));
 
   base::string16 str;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
                                                  &str);
 
   // Make sure the text is copied successfully.

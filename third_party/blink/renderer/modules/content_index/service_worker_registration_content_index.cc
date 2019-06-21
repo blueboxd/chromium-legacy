@@ -37,8 +37,12 @@ ContentIndex* ServiceWorkerRegistrationContentIndex::index(
 }
 
 ContentIndex* ServiceWorkerRegistrationContentIndex::index() {
-  if (!content_index_)
-    content_index_ = MakeGarbageCollected<ContentIndex>();
+  if (!content_index_) {
+    ExecutionContext* execution_context = registration_->GetExecutionContext();
+    content_index_ = MakeGarbageCollected<ContentIndex>(
+        registration_,
+        execution_context->GetTaskRunner(TaskType::kInternalIPC));
+  }
 
   return content_index_.Get();
 }

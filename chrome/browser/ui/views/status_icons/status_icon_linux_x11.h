@@ -5,22 +5,46 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_LINUX_X11_H_
 #define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_ICON_LINUX_X11_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "ui/gfx/x/x11_types.h"
+#include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
+#include "ui/views/widget/widget.h"
 
 // A status icon that uses the XEmbed protocol.
 // https://standards.freedesktop.org/xembed-spec/xembed-spec-latest.html
-class StatusIconLinuxX11 : public views::StatusIconLinux {
+class StatusIconLinuxX11 : public views::StatusIconLinux,
+                           public views::ImageButton,
+                           public views::ContextMenuController,
+                           public views::ButtonListener {
  public:
   StatusIconLinuxX11();
   ~StatusIconLinuxX11() override;
 
-  // StatusIcon:
-  void SetImage(const gfx::ImageSkia& image) override;
+  // views::StatusIcon:
+  void SetIcon(const gfx::ImageSkia& image) override;
   void SetToolTip(const base::string16& tool_tip) override;
   void UpdatePlatformContextMenu(ui::MenuModel* model) override;
+  void OnSetDelegate() override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
+  std::unique_ptr<views::Widget> widget_;
+
+  std::unique_ptr<views::MenuRunner> menu_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(StatusIconLinuxX11);
 };
 

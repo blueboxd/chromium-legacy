@@ -201,11 +201,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   DCHECK(!instance_);
   instance_ = this;
 
-  // ShelfModel initializes the app list item and back button.
   DCHECK(model_);
-  DCHECK_EQ(2, model_->item_count());
-  DCHECK_EQ(ash::kBackButtonId, model_->items()[0].id.app_id);
-  DCHECK_EQ(ash::kAppListId, model_->items()[1].id.app_id);
 
   if (!web_app::SystemWebAppManager::IsEnabled()) {
     settings_window_observer_ = std::make_unique<SettingsWindowObserver>();
@@ -885,12 +881,12 @@ void ChromeLauncherController::SyncPinPosition(const ash::ShelfID& shelf_id) {
 
   const int max_index = model_->item_count();
   const int index = model_->ItemIndexByID(shelf_id);
-  DCHECK_GT(index, 0);
+  DCHECK_GE(index, 0);
 
   ash::ShelfID shelf_id_before;
   std::vector<ash::ShelfID> shelf_ids_after;
 
-  for (int i = index - 1; i > 0; --i) {
+  for (int i = index - 1; i >= 0; --i) {
     shelf_id_before = model_->items()[i].id;
     if (IsPinned(shelf_id_before))
       break;
@@ -938,11 +934,6 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
       GetPinnedAppsFromSync(launcher_controller_helper_.get());
 
   int index = 0;
-  // Skip the app list and back button if they exist.
-  if (model_->items()[0].type == ash::TYPE_BACK_BUTTON_DEPRECATED)
-    ++index;
-  if (model_->items()[1].type == ash::TYPE_APP_LIST_DEPRECATED)
-    ++index;
 
   // Apply pins in two steps. At the first step, go through the list of apps to
   // pin, move existing pin to current position specified by |index| or create
@@ -1247,8 +1238,6 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
                                               int target_index) {
   // Update the pin position preference as needed.
   const ash::ShelfItem& item = model_->items()[target_index];
-  DCHECK_NE(ash::TYPE_BACK_BUTTON_DEPRECATED, item.type);
-  DCHECK_NE(ash::TYPE_APP_LIST_DEPRECATED, item.type);
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
     SyncPinPosition(item.id);
 }

@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
@@ -93,11 +94,6 @@ MessageCenterController::~MessageCenterController() {
   arc_notification_manager_.reset();
 
   message_center::MessageCenter::Shutdown();
-}
-
-void MessageCenterController::BindRequest(
-    mojom::AshMessageCenterControllerRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
 }
 
 void MessageCenterController::SetArcNotificationsInstance(

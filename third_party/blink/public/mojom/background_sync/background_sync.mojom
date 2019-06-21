@@ -50,10 +50,37 @@ struct BackgroundSyncRegistrationInfo {
   BackgroundSyncType sync_type;
 };
 
-interface BackgroundSyncService {
-  Register(SyncRegistrationOptions options, int64 service_worker_registration_id)
-      => (BackgroundSyncError err, SyncRegistrationOptions options);
+// Used by SyncManager for one-shot Background Sync.
+interface OneShotBackgroundSyncService {
+  // Used to register one-shot Background Sync tasks.
+  Register(SyncRegistrationOptions options,
+           int64 service_worker_registration_id)
+      => (BackgroundSyncError err, SyncRegistrationOptions? options);
+
+  // Used to indicate that the register() promise has been resolved by
+  // JavaScript code.
   DidResolveRegistration(BackgroundSyncRegistrationInfo registration_info);
-  GetOneShotSyncRegistrations(int64 service_worker_registration_id)
-      => (BackgroundSyncError err, array<SyncRegistrationOptions> registrations);
+
+  // Returns a list of all one-shot Background Sync registrations.
+  GetRegistrations(int64 service_worker_registration_id)
+      => (BackgroundSyncError err,
+          array<SyncRegistrationOptions> registrations);
+};
+
+// Used by PeriodicSyncManager for periodic Background Sync.
+interface PeriodicBackgroundSyncService {
+  // Used to register periodic Background Sync tasks.
+  Register(SyncRegistrationOptions options,
+           int64 service_worker_registration_id)
+      => (BackgroundSyncError err, SyncRegistrationOptions? options);
+
+  // Used to unregister periodic Background Sync tasks. Silently succeeds
+  // if called for non-existent periodic Background Sync registrations.
+  Unregister(int64 service_worker_registration_id, string tag)
+      => (BackgroundSyncError err);
+
+  // Returns a list of all periodic Background Sync registrations.
+  GetRegistrations(int64 service_worker_registration_id)
+      => (BackgroundSyncError err,
+          array<SyncRegistrationOptions> registrations);
 };

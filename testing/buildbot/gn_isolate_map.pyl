@@ -2258,6 +2258,7 @@
       "--benchmarks=rendering.desktop",
       "--output-format=csv",
       "--browser=release",
+      "--upload-results",
     ],
     "label": "//chrome/test:rendering_representative_perf_tests",
     "script": "//testing/scripts/run_rendering_benchmark_with_gated_performance.py",

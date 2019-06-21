@@ -25,6 +25,9 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<List<RectF>> TOUCHABLE_AREA =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<List<RectF>> RESTRICTED_AREA =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableObjectPropertyKey<RectF> VISUAL_VIEWPORT =
             new WritableObjectPropertyKey<>();
 
@@ -38,7 +41,7 @@ public class AssistantOverlayModel extends PropertyModel {
             new WritableObjectPropertyKey<>();
 
     public AssistantOverlayModel() {
-        super(STATE, TOUCHABLE_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
+        super(STATE, TOUCHABLE_AREA, RESTRICTED_AREA, VISUAL_VIEWPORT, DELEGATE, BACKGROUND_COLOR,
                 HIGHLIGHT_BORDER_COLOR);
     }
 
@@ -54,12 +57,21 @@ public class AssistantOverlayModel extends PropertyModel {
 
     @CalledByNative
     private void setTouchableArea(float[] coords) {
+        set(TOUCHABLE_AREA, toRectangles(coords));
+    }
+
+    private static List<RectF> toRectangles(float[] coords) {
         List<RectF> boxes = new ArrayList<>();
         for (int i = 0; i < coords.length; i += 4) {
             boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
                     /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
         }
-        set(TOUCHABLE_AREA, boxes);
+        return boxes;
+    }
+
+    @CalledByNative
+    private void setRestrictedArea(float[] coords) {
+        set(RESTRICTED_AREA, toRectangles(coords));
     }
 
     @CalledByNative

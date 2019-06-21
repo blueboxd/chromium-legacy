@@ -24,13 +24,13 @@ class CacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
       blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchAPIResponsePtr response,
       int64_t trace_id) override;
-  void PopulateResponseBody(scoped_refptr<BlobDataHandle> data_handle,
+  void PopulateResponseBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                             blink::mojom::FetchAPIResponse* response) override;
-  void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,
+  void PopulateRequestBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                            blink::mojom::FetchAPIRequest* request) override;
 
  private:
-  void PopulateBody(scoped_refptr<BlobDataHandle> data_handle,
+  void PopulateBody(scoped_refptr<DiskCacheBlobEntry> blob_entry,
                     const blink::mojom::SerializedBlobPtr& blob,
                     CacheStorageCache::EntryIndex index);
 

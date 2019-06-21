@@ -32,7 +32,7 @@ class TimedCanvasDrawListener final : public OnRequestCanvasDrawListener {
   // Implementation of TimerFiredFunction.
   void RequestFrameTimerFired(TimerBase*);
 
-  TimeDelta frame_interval_;
+  base::TimeDelta frame_interval_;
   TaskRunnerTimer<TimedCanvasDrawListener> request_frame_timer_;
 };
 

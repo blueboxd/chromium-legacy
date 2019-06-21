@@ -79,6 +79,7 @@
 /flatbuffers/src
 /fontconfig/src
 /freetype/src
+/fuchsia-sdk/images
 /fuchsia-sdk/sdk
 /gestures/gestures
 /gles1_conform

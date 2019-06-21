@@ -15,7 +15,6 @@
 #include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

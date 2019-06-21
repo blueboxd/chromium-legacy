@@ -260,14 +260,43 @@ base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
 base::string16 GetLabelName(const std::vector<ServerFieldType>& types,
                             const AutofillProfile& profile,
                             const std::string& app_locale) {
-  if (std::find(std::begin(types), std::end(types), NAME_FULL) !=
-      std::end(types)) {
-    return GetLabelFullName(profile, app_locale);
+  bool has_first_name = false;
+  bool has_last_name = false;
+  bool has_full_name = false;
+
+  for (const ServerFieldType type : types) {
+    if (type == NAME_FULL) {
+      has_full_name = true;
+      break;
+    }
+    if (type == NAME_FIRST) {
+      has_first_name = true;
+    }
+    if (type == NAME_LAST) {
+      has_last_name = true;
+    }
   }
-  if (std::find(std::begin(types), std::end(types), NAME_FIRST) !=
-      std::end(types)) {
+
+  if (has_full_name) {
+    return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
+  }
+
+  if (has_first_name && has_last_name) {
+    std::vector<base::string16> name_parts;
+    AddLabelPartIfNotEmpty(GetLabelFirstName(profile, app_locale), &name_parts);
+    AddLabelPartIfNotEmpty(profile.GetInfo(AutofillType(NAME_LAST), app_locale),
+                           &name_parts);
+    return base::JoinString(name_parts, base::ASCIIToUTF16(" "));
+  }
+
+  if (has_first_name) {
     return GetLabelFirstName(profile, app_locale);
   }
+
+  if (has_last_name) {
+    return profile.GetInfo(AutofillType(NAME_LAST), app_locale);
+  }
+
   // The form contains neither a full name field nor a first name field,
   // so choose some name field in the form and make it the label text.
   for (const ServerFieldType type : types) {
@@ -276,11 +305,6 @@ base::string16 GetLabelName(const std::vector<ServerFieldType>& types,
     }
   }
   return base::string16();
-}
-
-base::string16 GetLabelFullName(const AutofillProfile& profile,
-                                const std::string& app_locale) {
-  return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
 }
 
 base::string16 GetLabelFirstName(const AutofillProfile& profile,

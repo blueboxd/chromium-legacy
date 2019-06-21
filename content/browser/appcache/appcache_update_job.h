@@ -140,7 +140,12 @@ class CONTENT_EXPORT AppCacheUpdateJob
                           ResultType result,
                           const GURL& failed_resource_url);
 
-  void FetchManifest(bool is_first_fetch);
+  // Retrieves the cache's manifest.
+  //
+  // Called when a page referencing this job's manifest is loaded. This can
+  // result in a new cache getting created, or in an existing cache receiving a
+  // new master entry.
+  void FetchManifest();
   void HandleManifestFetchCompleted(URLFetcher* url_fetcher, int net_error);
   void ContinueHandleManifestFetchCompleted(bool changed);
 
@@ -148,7 +153,9 @@ class CONTENT_EXPORT AppCacheUpdateJob
   void HandleNewMasterEntryFetchCompleted(URLFetcher* url_fetcher,
                                           int net_error);
 
+  void RefetchManifest();
   void HandleManifestRefetchCompleted(URLFetcher* url_fetcher, int net_error);
+
   void OnManifestInfoWriteComplete(int result);
   void OnManifestDataWriteComplete(int result);
 

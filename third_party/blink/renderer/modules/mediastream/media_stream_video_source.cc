@@ -68,7 +68,7 @@ void MediaStreamVideoSource::AddTrack(
   switch (state_) {
     case NEW: {
       state_ = STARTING;
-      StartSourceImpl(ConvertToBaseCallback(CrossThreadBind(
+      StartSourceImpl(ConvertToBaseCallback(CrossThreadBindRepeating(
           &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)));
       break;
     }

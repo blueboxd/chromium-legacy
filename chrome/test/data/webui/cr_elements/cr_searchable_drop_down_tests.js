@@ -145,4 +145,16 @@ suite('cr-searchable-drop-down', function() {
     dropDown.showLoading = false;
     assertTrue(progress.hidden);
   });
+
+
+  // The readonly attribute is passed through to the inner cr-input.
+  test('readonly attribute', function() {
+    const input = dropDown.shadowRoot.querySelector('cr-input');
+
+    dropDown.readonly = true;
+    assertTrue(input.readonly);
+
+    dropDown.readonly = false;
+    assertFalse(input.readonly);
+  });
 });

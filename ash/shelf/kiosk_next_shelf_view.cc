@@ -109,12 +109,13 @@ KioskNextShelfView::KioskNextShelfView(ShelfModel* model,
                                        Shelf* shelf,
                                        ShelfWidget* shelf_widget)
     : ShelfView(model, shelf, shelf_widget) {
-  // Kiosk next shelf has 2 buttons and it is expected to be used in tablet mode
-  // with bottom shelf alignment. It can be adapted to different requirements,
-  // but they should be explicitly verified first.
+  // Kiosk next shelf has 2 navigation buttons (back and home), no app items
+  // in its shelf model, and it is expected to be used in tablet mode with
+  // bottom shelf alignment. It can be adapted to different requirements, but
+  // they should be explicitly verified first.
   DCHECK(IsTabletModeEnabled());
   DCHECK(shelf->IsHorizontalAlignment());
-  DCHECK_EQ(2, model->item_count());
+  DCHECK_EQ(0, model->item_count());
 }
 
 KioskNextShelfView::~KioskNextShelfView() = default;
@@ -128,14 +129,11 @@ void KioskNextShelfView::Init() {
   // code should be removed.
   DCHECK(overflow_button());
   overflow_button()->SetVisible(false);
-
-  set_first_visible_index(0);
-  set_last_visible_index(model()->item_count() - 1);
 }
 
 void KioskNextShelfView::CalculateIdealBounds() {
   DCHECK(shelf()->IsHorizontalAlignment());
-  DCHECK_EQ(2, model()->item_count());
+  DCHECK_EQ(0, model()->item_count());
   DCHECK_GE(kShelfSize, kKioskNextShelfControlHeightDp);
 
   // TODO(https://crbug.com/965690): Button spacing might be relative to shelf

@@ -217,13 +217,13 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
 NSPasteboard* ClipboardUtil::PasteboardFromType(ui::ClipboardType type) {
   NSString* type_string = nil;
   switch (type) {
-    case ui::CLIPBOARD_TYPE_COPY_PASTE:
+    case ui::ClipboardType::kCopyPaste:
       type_string = NSGeneralPboard;
       break;
-    case ui::CLIPBOARD_TYPE_DRAG:
+    case ui::ClipboardType::kDrag:
       type_string = NSDragPboard;
       break;
-    case ui::CLIPBOARD_TYPE_SELECTION:
+    case ui::ClipboardType::kSelection:
       NOTREACHED();
       break;
   }

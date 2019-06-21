@@ -106,8 +106,7 @@ void It2MeHost::Connect(
   desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
       host_context_->network_task_runner(),
       host_context_->video_capture_task_runner(),
-      host_context_->input_task_runner(), host_context_->ui_task_runner(),
-      host_context_->system_input_injector_factory()));
+      host_context_->input_task_runner(), host_context_->ui_task_runner()));
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(

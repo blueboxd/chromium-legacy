@@ -46,6 +46,7 @@ namespace {
 
 using ::chrome_cleaner::mojom::ChromePromptPtr;
 using ::chrome_cleaner::mojom::ChromePromptPtrInfo;
+using mojo::core::ScopedIPCSupport;
 using CrashPoint = MockChromeCleanerProcess::CrashPoint;
 using ExtensionCleaningFeatureStatus =
     MockChromeCleanerProcess::ExtensionCleaningFeatureStatus;
@@ -60,6 +61,115 @@ constexpr char kRegistryKeysReportingSwitch[] = "registry-keys-reporting";
 constexpr char kExtensionsReportingSwitch[] = "extensions-reporting";
 constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 
+// MockCleanerResults
+
+class MockCleanerResults {
+ public:
+  explicit MockCleanerResults(const MockChromeCleanerProcess::Options& options)
+      : options_(options) {}
+
+  virtual ~MockCleanerResults() = default;
+
+  virtual void SendScanResults(base::OnceClosure done_closure) = 0;
+
+  PromptAcceptance received_prompt_acceptance() const {
+    return received_prompt_acceptance_;
+  }
+
+  void ReceivePromptAcceptance(base::OnceClosure done_closure,
+                               PromptAcceptance acceptance) {
+    received_prompt_acceptance_ = acceptance;
+    if (options_.crash_point() == CrashPoint::kAfterResponseReceived)
+      ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
+    std::move(done_closure).Run();
+  }
+
+ protected:
+  MockChromeCleanerProcess::Options options_;
+  PromptAcceptance received_prompt_acceptance_ = PromptAcceptance::UNSPECIFIED;
+
+ private:
+  MockCleanerResults(const MockCleanerResults& other) = delete;
+  MockCleanerResults& operator=(const MockCleanerResults& other) = delete;
+};
+
+// MockCleanerResultsMojo
+
+class MockCleanerResultsMojo : public MockCleanerResults {
+ public:
+  // Sets up Mojo IPC support using |io_task_runner| to process messages.
+  // Connects to the IPC pipe given on |command_line|.
+  MockCleanerResultsMojo(
+      const MockChromeCleanerProcess::Options& options,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      const base::CommandLine& command_line)
+      : MockCleanerResults(options), io_task_runner_(io_task_runner) {
+    mojo::core::Init();
+    scoped_ipc_support_ = std::make_unique<ScopedIPCSupport>(
+        io_task_runner, ScopedIPCSupport::ShutdownPolicy::CLEAN);
+
+    auto invitation = mojo::IncomingInvitation::Accept(
+        mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+            command_line));
+    const std::string pipe_token = command_line.GetSwitchValueASCII(
+        chrome_cleaner::kChromeMojoPipeTokenSwitch);
+    ChromePromptPtrInfo prompt_ptr_info(
+        invitation.ExtractMessagePipe(pipe_token), 0);
+
+    // Mojo requires that the ChromePromptPtr is bound on the IO sequence.
+    io_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&ChromePromptPtr::Bind,
+                                  base::Unretained(chrome_prompt_ptr_.get()),
+                                  std::move(prompt_ptr_info), nullptr));
+  }
+
+  ~MockCleanerResultsMojo() override {
+    // Mojo requires that the ChromePromptPtr is deleted on the IO sequence.
+    // Do not shut down Mojo until after ChromePromptPtr is deleted.
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::unique_ptr<ChromePromptPtr> chrome_prompt_ptr,
+               std::unique_ptr<ScopedIPCSupport> scoped_ipc_support) {
+              chrome_prompt_ptr.release();
+              scoped_ipc_support.release();
+            },
+            std::move(chrome_prompt_ptr_), std::move(scoped_ipc_support_)));
+  }
+
+  void SendScanResults(base::OnceClosure done_closure) override {
+    if (options_.crash_point() == CrashPoint::kAfterRequestSent) {
+      // This task is posted to the IPC thread so that it will happen after the
+      // request is sent to the parent process and before the response gets
+      // handled on the IPC thread.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce([]() {
+            ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
+          }));
+    }
+
+    (*chrome_prompt_ptr_)
+        ->PromptUser(
+            options_.files_to_delete(), options_.registry_keys(),
+            options_.extension_ids(),
+            base::BindOnce(&MockCleanerResultsMojo::ReceivePromptUserResponse,
+                           base::Unretained(this), std::move(done_closure)));
+  }
+
+  void ReceivePromptUserResponse(
+      base::OnceClosure done_closure,
+      chrome_cleaner::mojom::PromptAcceptance acceptance) {
+    ReceivePromptAcceptance(std::move(done_closure),
+                            static_cast<PromptAcceptance>(acceptance));
+  }
+
+ private:
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  std::unique_ptr<ChromePromptPtr> chrome_prompt_ptr_ =
+      std::make_unique<ChromePromptPtr>();
+  std::unique_ptr<ScopedIPCSupport> scoped_ipc_support_;
+};
+
 scoped_refptr<extensions::Extension> CreateExtension(const base::string16& name,
                                                      const base::string16& id,
                                                      std::string* error) {
@@ -71,51 +181,6 @@ scoped_refptr<extensions::Extension> CreateExtension(const base::string16& name,
   return extensions::Extension::Create(base::FilePath(),
                                        extensions::Manifest::INTERNAL, manifest,
                                        0, base::UTF16ToUTF8(id), error);
-}
-
-void PromptUserCallback(
-    std::unique_ptr<ChromePromptPtr> chrome_prompt_ptr,
-    const MockChromeCleanerProcess::Options& options,
-    base::OnceClosure quit_closure,
-    PromptAcceptance* result_holder,
-    chrome_cleaner::mojom::PromptAcceptance prompt_acceptance) {
-  // Delete the ChromePromptPtr now that the PromptUser response callback has
-  // been received through it.
-  chrome_prompt_ptr.reset();
-
-  *result_holder = static_cast<PromptAcceptance>(prompt_acceptance);
-
-  if (options.crash_point() == CrashPoint::kAfterResponseReceived)
-    ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
-
-  std::move(quit_closure).Run();
-}
-
-void SendScanResults(const MockChromeCleanerProcess::Options& options,
-                     ChromePromptPtrInfo prompt_ptr_info,
-                     base::OnceClosure quit_closure,
-                     PromptAcceptance* result_holder) {
-  // This pointer will be deleted by PromptUserCallback.
-  auto chrome_prompt_ptr = std::make_unique<ChromePromptPtr>();
-  chrome_prompt_ptr->Bind(std::move(prompt_ptr_info));
-
-  if (options.crash_point() == CrashPoint::kAfterRequestSent) {
-    // This task is posted to the IPC thread so that it will happen after the
-    // request is sent to the parent process and before the response gets
-    // handled on the IPC thread.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce([]() {
-          ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
-        }));
-  }
-
-  (*chrome_prompt_ptr)
-      ->PromptUser(
-          options.files_to_delete(), options.registry_keys(),
-          options.extension_ids(),
-          base::BindOnce(&PromptUserCallback, std::move(chrome_prompt_ptr),
-                         options, std::move(quit_closure),
-                         base::Unretained(result_holder)));
 }
 
 }  // namespace
@@ -384,13 +449,14 @@ int MockChromeCleanerProcess::Options::ExpectedExitCode(
   return kDeclinedExitCode;
 }
 
+MockChromeCleanerProcess::MockChromeCleanerProcess() = default;
+
+MockChromeCleanerProcess::~MockChromeCleanerProcess() = default;
+
 bool MockChromeCleanerProcess::InitWithCommandLine(
     const base::CommandLine& command_line) {
+  command_line_ = std::make_unique<base::CommandLine>(command_line);
   if (!Options::FromCommandLine(command_line, &options_))
-    return false;
-  chrome_mojo_pipe_token_ = command_line.GetSwitchValueASCII(
-      chrome_cleaner::kChromeMojoPipeTokenSwitch);
-  if (chrome_mojo_pipe_token_.empty())
     return false;
   return true;
 }
@@ -401,31 +467,26 @@ int MockChromeCleanerProcess::Run() {
   // the test. Therefore, we use ::testing::Test::HasFailure() to detect
   // EXPECT_*() failures and return an error code that indicates that the test
   // should fail.
-  EXPECT_FALSE(chrome_mojo_pipe_token_.empty());
-  if (::testing::Test::HasFailure())
-    return kInternalTestFailureExitCode;
-
   if (options_.crash_point() == CrashPoint::kOnStartup)
     exit(kDeliberateCrashExitCode);
 
-  mojo::core::Init();
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   base::Thread io_thread("IPCThread");
   EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
 
-  mojo::core::ScopedIPCSupport ipc_support(
-      io_thread.task_runner(),
-      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+  std::unique_ptr<MockCleanerResults> mock_results;
 
-  auto channel_endpoint =
-      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-          *base::CommandLine::ForCurrentProcess());
-  auto invitation =
-      mojo::IncomingInvitation::Accept(std::move(channel_endpoint));
-  ChromePromptPtrInfo prompt_ptr_info(
-      invitation.ExtractMessagePipe(chrome_mojo_pipe_token_), 0);
+  if (command_line_->HasSwitch(chrome_cleaner::kChromeMojoPipeTokenSwitch)) {
+    mock_results = std::make_unique<MockCleanerResultsMojo>(
+        options_, io_thread.task_runner(), *command_line_);
+  } else {
+    // TODO(crbug.com/969139): Implement MockCleanerResultsProtobuf and
+    // initialize it here.
+    LOG(ERROR) << "Missing " << chrome_cleaner::kChromeMojoPipeTokenSwitch;
+    return kInternalTestFailureExitCode;
+  }
 
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
@@ -443,18 +504,19 @@ int MockChromeCleanerProcess::Run() {
       base::Passed(run_loop.QuitClosure()));
 
   io_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SendScanResults, options_, std::move(prompt_ptr_info),
-                     base::Passed(&quit_closure),
-                     base::Unretained(&received_prompt_acceptance_)));
+      FROM_HERE, base::BindOnce(&MockCleanerResults::SendScanResults,
+                                base::Unretained(mock_results.get()),
+                                base::Passed(&quit_closure)));
 
   run_loop.Run();
 
-  EXPECT_NE(received_prompt_acceptance_, PromptAcceptance::UNSPECIFIED);
-  EXPECT_EQ(received_prompt_acceptance_, options_.expected_user_response());
+  EXPECT_NE(mock_results->received_prompt_acceptance(),
+            PromptAcceptance::UNSPECIFIED);
+  EXPECT_EQ(mock_results->received_prompt_acceptance(),
+            options_.expected_user_response());
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
-  return options_.ExpectedExitCode(received_prompt_acceptance_);
+  return options_.ExpectedExitCode(mock_results->received_prompt_acceptance());
 }
 
 // Keep the printable names of these enums short since they're used in tests

@@ -115,10 +115,6 @@ enum ShelfItemType {
   // Represents a pinned shortcut to an app, the app may be running or not.
   TYPE_PINNED_APP,
 
-  // Toggles visibility of the app list. Deprecated, moved to a separate widget
-  // instead of being shown as a shelf item.
-  TYPE_APP_LIST_DEPRECATED,
-
   // The browser shortcut button, the browser may be running or not.
   TYPE_BROWSER_SHORTCUT,
 
@@ -130,10 +126,6 @@ enum ShelfItemType {
 
   // Represents an open dialog.
   TYPE_DIALOG,
-
-  // Represents the back button, which is shown in tablet mode. Deprecated,
-  // shown in a separate widget instead of as a shelf item.
-  TYPE_BACK_BUTTON_DEPRECATED,
 
   // Default value.
   TYPE_UNDEFINED,

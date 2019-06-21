@@ -50,8 +50,6 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   void ShowForDisplay(int64_t display_id) override;
   void OnClosing() override;
   void OnClosed() override;
-  base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
-                                                 bool is_visible) override;
   bool IsTabletMode() const override;
   app_list::AppListViewDelegate* GetAppListViewDelegate() override;
   bool GetOnScreenKeyboardShown() override;

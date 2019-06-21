@@ -106,16 +106,16 @@ TYPED_TEST_SUITE(ClipboardTest, TypesToTest, NamesOfTypesToTest);
 
 TYPED_TEST(ClipboardTest, ClearTest) {
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(ASCIIToUTF16("clear me"));
   }
-  this->clipboard().Clear(CLIPBOARD_TYPE_COPY_PASTE);
+  this->clipboard().Clear(ClipboardType::kCopyPaste);
 
-  EXPECT_TRUE(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE).empty());
+  EXPECT_TRUE(this->GetAvailableTypes(ClipboardType::kCopyPaste).empty());
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextWType(), ClipboardType::kCopyPaste));
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kCopyPaste));
 }
 
 TYPED_TEST(ClipboardTest, TextTest) {
@@ -123,20 +123,20 @@ TYPED_TEST(ClipboardTest, TextTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(text);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextWType(), ClipboardType::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_COPY_PASTE));
-  this->clipboard().ReadText(CLIPBOARD_TYPE_COPY_PASTE, &text_result);
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kCopyPaste));
+  this->clipboard().ReadText(ClipboardType::kCopyPaste, &text_result);
 
   EXPECT_EQ(text, text_result);
-  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_COPY_PASTE, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardType::kCopyPaste, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -146,18 +146,18 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
+  this->clipboard().ReadHTML(ClipboardType::kCopyPaste, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -176,16 +176,16 @@ TYPED_TEST(ClipboardTest, RTFTest) {
       "}";
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteRTF(rtf);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeRTF)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetRtfType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetRtfType(), ClipboardType::kCopyPaste));
   std::string result;
-  this->clipboard().ReadRTF(CLIPBOARD_TYPE_COPY_PASTE, &result);
+  this->clipboard().ReadRTF(ClipboardType::kCopyPaste, &result);
   EXPECT_EQ(rtf, result);
 }
 
@@ -198,37 +198,37 @@ TYPED_TEST(ClipboardTest, MultipleBufferTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(text);
   }
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_SELECTION);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kSelection);
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_SELECTION),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kSelection),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kCopyPaste));
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_SELECTION));
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kSelection));
 
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_SELECTION));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kSelection));
 
-  this->clipboard().ReadText(CLIPBOARD_TYPE_COPY_PASTE, &text_result);
+  this->clipboard().ReadText(ClipboardType::kCopyPaste, &text_result);
   EXPECT_EQ(text, text_result);
 
   base::string16 markup_result;
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_SELECTION, &markup_result,
+  this->clipboard().ReadHTML(ClipboardType::kSelection, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -243,18 +243,18 @@ TYPED_TEST(ClipboardTest, TrickyHTMLTest) {
   base::string16 plain(ASCIIToUTF16("Bye!")), plain_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
+  this->clipboard().ReadHTML(ClipboardType::kCopyPaste, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -274,17 +274,17 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
   std::string url, url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
+  this->clipboard().ReadHTML(ClipboardType::kCopyPaste, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -301,12 +301,12 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
   std::string url("http://www.example.com/"), url_result;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteBookmark(title, url);
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetUrlWType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetUrlWType(), ClipboardType::kCopyPaste));
   this->clipboard().ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -320,24 +320,24 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   std::string ascii_text;
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteHTML(markup, url);
     clipboard_writer.WriteText(text);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextWType(), ClipboardType::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kCopyPaste));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &markup_result,
+  this->clipboard().ReadHTML(ClipboardType::kCopyPaste, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -347,9 +347,9 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   // this.
   EXPECT_EQ(url, url_result);
 #endif  // defined(OS_WIN)
-  this->clipboard().ReadText(CLIPBOARD_TYPE_COPY_PASTE, &text_result);
+  this->clipboard().ReadText(ClipboardType::kCopyPaste, &text_result);
   EXPECT_EQ(text, text_result);
-  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_COPY_PASTE, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardType::kCopyPaste, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -357,23 +357,23 @@ TYPED_TEST(ClipboardTest, URLTest) {
   base::string16 url(ASCIIToUTF16("http://www.google.com/"));
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteText(url);
   }
 
-  EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
+  EXPECT_THAT(this->GetAvailableTypes(ClipboardType::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextWType(), ClipboardType::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetPlainTextType(), ClipboardType::kCopyPaste));
   base::string16 text_result;
-  this->clipboard().ReadText(CLIPBOARD_TYPE_COPY_PASTE, &text_result);
+  this->clipboard().ReadText(ClipboardType::kCopyPaste, &text_result);
 
   EXPECT_EQ(text_result, url);
 
   std::string ascii_text;
-  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_COPY_PASTE, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardType::kCopyPaste, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 
 // TODO(tonikitoo, msisov): enable back for ClipboardOzone implements
@@ -381,7 +381,7 @@ TYPED_TEST(ClipboardTest, URLTest) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   ascii_text.clear();
-  this->clipboard().ReadAsciiText(CLIPBOARD_TYPE_SELECTION, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardType::kSelection, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 #endif
 }
@@ -397,7 +397,7 @@ static void TestBitmapWrite(Clipboard* clipboard,
                             const T* bitmap_data,
                             const U8x4* expect_data) {
   {
-    ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
     SkBitmap bitmap;
     ASSERT_TRUE(bitmap.setInfo(info));
     bitmap.setPixels(
@@ -406,8 +406,8 @@ static void TestBitmapWrite(Clipboard* clipboard,
   }
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(ClipboardFormatType::GetBitmapType(),
-                                           CLIPBOARD_TYPE_COPY_PASTE));
-  const SkBitmap& image = clipboard->ReadImage(CLIPBOARD_TYPE_COPY_PASTE);
+                                           ClipboardType::kCopyPaste));
+  const SkBitmap& image = clipboard->ReadImage(ClipboardType::kCopyPaste);
   ASSERT_EQ(image.info().colorType(), kN32_SkColorType);
   ASSERT_NE(image.info().alphaType(), kUnpremul_SkAlphaType);
   EXPECT_EQ(gfx::Size(info.width(), info.height()),
@@ -530,12 +530,12 @@ TYPED_TEST(ClipboardTest, DataTest) {
   write_pickle.WriteString(payload);
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
   ASSERT_TRUE(
-      this->clipboard().IsFormatAvailable(kFormat, CLIPBOARD_TYPE_COPY_PASTE));
+      this->clipboard().IsFormatAvailable(kFormat, ClipboardType::kCopyPaste));
   std::string output;
   this->clipboard().ReadData(kFormat, &output);
   ASSERT_FALSE(output.empty());
@@ -561,14 +561,14 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   write_pickle2.WriteString(payload2);
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
   }
 
   ASSERT_TRUE(
-      this->clipboard().IsFormatAvailable(kFormat2, CLIPBOARD_TYPE_COPY_PASTE));
+      this->clipboard().IsFormatAvailable(kFormat2, ClipboardType::kCopyPaste));
 
   // Check string 2.
   std::string output2;
@@ -582,14 +582,14 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   EXPECT_EQ(payload2, unpickled_string2);
 
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
     // overwrite the previous pickle for fun
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
   }
 
   ASSERT_TRUE(
-      this->clipboard().IsFormatAvailable(kFormat1, CLIPBOARD_TYPE_COPY_PASTE));
+      this->clipboard().IsFormatAvailable(kFormat1, ClipboardType::kCopyPaste));
 
   // Check string 1.
   std::string output1;
@@ -614,15 +614,15 @@ TYPED_TEST(ClipboardTest, HyperlinkTest) {
   std::string url_result;
   base::string16 html_result;
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteHyperlink(ASCIIToUTF16(kTitle), kUrl);
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardFormatType::GetHtmlType(), ClipboardType::kCopyPaste));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(CLIPBOARD_TYPE_COPY_PASTE, &html_result,
+  this->clipboard().ReadHTML(ClipboardType::kCopyPaste, &html_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_EQ(kExpectedHtml,
             html_result.substr(fragment_end - kExpectedHtml.size(),
@@ -632,13 +632,13 @@ TYPED_TEST(ClipboardTest, HyperlinkTest) {
 
 TYPED_TEST(ClipboardTest, WebSmartPasteTest) {
   {
-    ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter clipboard_writer(ClipboardType::kCopyPaste);
     clipboard_writer.WriteWebSmartPaste();
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetWebKitSmartPasteType(),
-      CLIPBOARD_TYPE_COPY_PASTE));
+      ClipboardType::kCopyPaste));
 }
 
 #if defined(OS_WIN)  // Windows only tests.
@@ -690,7 +690,7 @@ TYPED_TEST(ClipboardTest, HtmlTest) {
 // Test writing all formats we have simultaneously.
 TYPED_TEST(ClipboardTest, WriteEverything) {
   {
-    ScopedClipboardWriter writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter writer(ClipboardType::kCopyPaste);
     writer.WriteText(UTF8ToUTF16("foo"));
     writer.WriteHTML(UTF8ToUTF16("foo"), "bar");
     writer.WriteBookmark(UTF8ToUTF16("foo"), "bar");
@@ -709,13 +709,13 @@ TYPED_TEST(ClipboardTest, WriteEverything) {
 #if !defined(OS_ANDROID)
 // Simple test that the sequence number appears to change when the clipboard is
 // written to.
-// TODO(dcheng): Add a version to test CLIPBOARD_TYPE_SELECTION.
+// TODO(dcheng): Add a version to test ClipboardType::kSelection.
 TYPED_TEST(ClipboardTest, GetSequenceNumber) {
   const uint64_t first_sequence_number =
-      this->clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
+      this->clipboard().GetSequenceNumber(ClipboardType::kCopyPaste);
 
   {
-    ScopedClipboardWriter writer(CLIPBOARD_TYPE_COPY_PASTE);
+    ScopedClipboardWriter writer(ClipboardType::kCopyPaste);
     writer.WriteText(UTF8ToUTF16("World"));
   }
 
@@ -724,7 +724,7 @@ TYPED_TEST(ClipboardTest, GetSequenceNumber) {
   base::RunLoop().RunUntilIdle();
 
   const uint64_t second_sequence_number =
-      this->clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
+      this->clipboard().GetSequenceNumber(ClipboardType::kCopyPaste);
 
   EXPECT_NE(first_sequence_number, second_sequence_number);
 }
@@ -733,37 +733,37 @@ TYPED_TEST(ClipboardTest, GetSequenceNumber) {
 // Test that writing empty parameters doesn't try to dereference an empty data
 // vector. Not crashing = passing.
 TYPED_TEST(ClipboardTest, WriteTextEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteText(base::string16());
 }
 
 TYPED_TEST(ClipboardTest, WriteHTMLEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteHTML(base::string16(), std::string());
 }
 
 TYPED_TEST(ClipboardTest, WriteRTFEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteRTF(std::string());
 }
 
 TYPED_TEST(ClipboardTest, WriteBookmarkEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteBookmark(base::string16(), std::string());
 }
 
 TYPED_TEST(ClipboardTest, WriteHyperlinkEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteHyperlink(base::string16(), std::string());
 }
 
 TYPED_TEST(ClipboardTest, WritePickledData) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WritePickledData(base::Pickle(), ClipboardFormatType::GetPlainTextType());
 }
 
 TYPED_TEST(ClipboardTest, WriteImageEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
+  ScopedClipboardWriter scw(ClipboardType::kCopyPaste);
   scw.WriteImage(SkBitmap());
 }
 

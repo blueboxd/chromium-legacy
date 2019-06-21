@@ -20,6 +20,8 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/internal/webui_client.h"
+#include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -38,11 +40,14 @@ KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
+    std::unique_ptr<DisplayAgent> display_agent,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir) {
   auto config = SchedulerConfig::Create();
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  client_registrar->RegisterClient(SchedulerClientType::kWebUI,
+                                   std::make_unique<WebUIClient>());
 
   // Build icon store.
   base::FilePath icon_store_dir = storage_dir.Append(kIconDBName);
@@ -61,7 +66,7 @@ KeyedService* CreateNotificationScheduleService(
   std::vector<SchedulerClientType> registered_clients;
   client_registrar->GetRegisteredClients(&registered_clients);
   auto impression_tracker = std::make_unique<ImpressionHistoryTrackerImpl>(
-      *config.get(), std::move(registered_clients), std::move(impression_store),
+      *config.get(), registered_clients, std::move(impression_store),
       base::DefaultClock::GetInstance());
 
   // Build scheduled notification manager.
@@ -73,15 +78,14 @@ KeyedService* CreateNotificationScheduleService(
       notification_store_dir, task_runner);
   auto notification_store =
       std::make_unique<NotificationStore>(std::move(notification_db));
-
-  std::unique_ptr<ScheduledNotificationManager> notification_manager;
-  notification_manager->Create(std::move(notification_store));
+  auto notification_manager = ScheduledNotificationManager::Create(
+      std::move(notification_store), registered_clients);
 
   auto context = std::make_unique<NotificationSchedulerContext>(
       std::move(client_registrar), std::move(background_task_scheduler),
       std::move(icon_store), std::move(impression_tracker),
-      std::move(notification_manager), DisplayDecider::Create(),
-      std::move(config));
+      std::move(notification_manager), std::move(display_agent),
+      DisplayDecider::Create(), std::move(config));
 
   auto scheduler = NotificationScheduler::Create(std::move(context));
   auto init_aware_scheduler =

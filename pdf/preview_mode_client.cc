@@ -136,10 +136,6 @@ void PreviewModeClient::DocumentHasUnsupportedFeature(
   NOTREACHED();
 }
 
-void PreviewModeClient::FontSubstituted() {
-  NOTREACHED();
-}
-
 void PreviewModeClient::FormTextFieldFocusChange(bool in_focus) {
   NOTREACHED();
 }

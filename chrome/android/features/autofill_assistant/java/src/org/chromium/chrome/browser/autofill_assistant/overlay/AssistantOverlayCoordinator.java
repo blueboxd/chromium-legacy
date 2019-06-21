@@ -19,6 +19,7 @@ import java.util.List;
  */
 public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
+    private final AssistantOverlayModel mModel;
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
     private final ScrimView mScrim;
@@ -26,6 +27,7 @@ public class AssistantOverlayCoordinator {
 
     public AssistantOverlayCoordinator(ChromeActivity activity, AssistantOverlayModel model) {
         mActivity = activity;
+        mModel = model;
         mScrim = mActivity.getScrim();
         mEventFilter = new AssistantOverlayEventFilter(
                 mActivity, mActivity.getFullscreenManager(), mActivity.getCompositorViewHolder());
@@ -44,6 +46,10 @@ public class AssistantOverlayCoordinator {
                 List<RectF> area = model.get(AssistantOverlayModel.TOUCHABLE_AREA);
                 mEventFilter.setTouchableArea(area);
                 mDrawable.setTransparentArea(area);
+            } else if (AssistantOverlayModel.RESTRICTED_AREA == propertyKey) {
+                List<RectF> area = model.get(AssistantOverlayModel.RESTRICTED_AREA);
+                mEventFilter.setRestrictedArea(area);
+                mDrawable.setRestrictedArea(area);
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
                 AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
                 mEventFilter.setDelegate(delegate);
@@ -55,6 +61,11 @@ public class AssistantOverlayCoordinator {
                         model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
             }
         });
+    }
+
+    /** Return the model observed by this coordinator. */
+    public AssistantOverlayModel getModel() {
+        return mModel;
     }
 
     /**

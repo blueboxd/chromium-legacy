@@ -1499,19 +1499,20 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
   VisualID visual_id = use_argb && transparent_visual_id_
                            ? transparent_visual_id_
                            : system_visual_id_;
-  XVisualData& visual_data = *visuals_[visual_id];
-  const XVisualInfo& visual_info = visual_data.visual_info;
 
-  bool is_default_visual = visual_id == default_visual_id_;
+  bool success =
+      GetVisualInfoImpl(visual_id, visual, depth, colormap, using_argb_visual);
+  DCHECK(success);
+}
 
-  if (visual)
-    *visual = visual_info.visual;
-  if (depth)
-    *depth = visual_info.depth;
-  if (colormap)
-    *colormap = is_default_visual ? CopyFromParent : visual_data.GetColormap();
-  if (using_argb_visual)
-    *using_argb_visual = use_argb;
+bool XVisualManager::GetVisualInfo(VisualID visual_id,
+                                   Visual** visual,
+                                   int* depth,
+                                   Colormap* colormap,
+                                   bool* using_argb_visual) {
+  base::AutoLock lock(lock_);
+  return GetVisualInfoImpl(visual_id, visual, depth, colormap,
+                           using_argb_visual);
 }
 
 bool XVisualManager::OnGPUInfoChanged(bool software_rendering,
@@ -1536,6 +1537,30 @@ bool XVisualManager::ArgbVisualAvailable() const {
   base::AutoLock lock(lock_);
   return using_compositing_wm_ &&
          (using_software_rendering_ || have_gpu_argb_visual_);
+}
+
+bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
+                                       Visual** visual,
+                                       int* depth,
+                                       Colormap* colormap,
+                                       bool* using_argb_visual) {
+  auto it = visuals_.find(visual_id);
+  if (it == visuals_.end())
+    return false;
+  XVisualData& visual_data = *it->second;
+  const XVisualInfo& visual_info = visual_data.visual_info;
+
+  bool is_default_visual = visual_id == default_visual_id_;
+
+  if (visual)
+    *visual = visual_info.visual;
+  if (depth)
+    *depth = visual_info.depth;
+  if (colormap)
+    *colormap = is_default_visual ? CopyFromParent : visual_data.GetColormap();
+  if (using_argb_visual)
+    *using_argb_visual = visual_id == transparent_visual_id_;
+  return true;
 }
 
 XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)

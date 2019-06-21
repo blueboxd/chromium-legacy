@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -104,6 +105,22 @@ class ObjectWithMixinWithCallbackBeforeInitializer
       : Mixin(std::move(cb)) {}
 
   void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
+};
+
+// Simple linked object to be used in tests.
+class LinkedObject : public GarbageCollected<LinkedObject> {
+ public:
+  LinkedObject() = default;
+  explicit LinkedObject(LinkedObject* next) : next_(next) {}
+
+  void set_next(LinkedObject* next) { next_ = next; }
+  LinkedObject* next() const { return next_; }
+  Member<LinkedObject>& next_ref() { return next_; }
+
+  void Trace(Visitor* visitor) { visitor->Trace(next_); }
+
+ private:
+  Member<LinkedObject> next_;
 };
 
 }  // namespace blink

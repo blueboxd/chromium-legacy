@@ -1538,7 +1538,9 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
     return E_INVALIDARG;
   }
 
-  std::string access_token = GetDictStringUTF8(properties, kKeyPassword);
+  // TODO(crbug.com/976744): Use the down scoped kKeyMdmAccessToken instead
+  // of login scoped token.
+  std::string access_token = GetDictStringUTF8(properties, kKeyAccessToken);
   if (!access_token.empty()) {
     // Update the password recovery information if possible.
     HRESULT hr = PasswordRecoveryManager::Get()->StoreWindowsPasswordIfNeeded(
@@ -1807,8 +1809,8 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   // password update prompt and continue without authenticating on the provider.
   if (!AreCredentialsValid()) {
     // Change UI into a mode where it expects to have the old password entered.
-    DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
     base::string16 old_windows_password;
+    needs_windows_password_ = true;
 
     // Pre-fill the old password if possible so that the sign in will proceed to
     // automatically update the password.
@@ -1816,10 +1818,10 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
       current_windows_password_ =
           ::SysAllocString(old_windows_password.c_str());
       SecurelyClearString(old_windows_password);
-
+    } else {
       // Fall-through to continue with auto sign in and try the recovered
       // password.
-    } else {
+      DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
       return S_FALSE;
     }
   }

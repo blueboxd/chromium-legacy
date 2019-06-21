@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
 
+import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.IdRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
@@ -69,9 +72,6 @@ public class AutofillAssistantUiTest {
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Mock
-    public AssistantCoordinator.Delegate mCoordinatorDelegateMock;
-
-    @Mock
     public Runnable mRunnableMock;
 
     @Rule
@@ -123,6 +123,37 @@ public class AutofillAssistantUiTest {
                 /* suppressSheetForContextualSearch= */ false);
     }
 
+    @Test
+    @MediumTest
+    public void testAcceptOnboarding() throws Exception {
+        testOnboarding(true, R.id.button_init_ok);
+    }
+
+    @Test
+    @MediumTest
+    public void testDeclineOnboarding() throws Exception {
+        testOnboarding(false, R.id.button_init_not_ok);
+    }
+
+    private void testOnboarding(boolean expectedAccepted, @IdRes int buttonToClick)
+            throws Exception {
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        Context context = getActivity();
+        AssistantBottomSheetContent bottomSheetContent = new AssistantBottomSheetContent(context);
+
+        AssistantOnboardingCoordinator.setOnboardingContent(
+                /* experimentIds= */ "", context, bottomSheetContent, accepted -> {
+                    Assert.assertEquals(expectedAccepted, accepted);
+                    mRunnableMock.run();
+                });
+
+        View button = bottomSheetContent.getContentView().findViewById(buttonToClick);
+        Assert.assertNotNull(button);
+
+        TestThreadUtils.runOnUiThreadBlocking(button::performClick);
+        TestThreadUtils.runOnUiThreadBlocking(() -> verify(mRunnableMock).run());
+    }
+
     // TODO(crbug.com/806868): Add more UI details test and check, like payment request UI,
     // highlight chips and so on.
     @Test
@@ -135,8 +166,8 @@ public class AutofillAssistantUiTest {
                 ThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> new AssistantCoordinator(
-                                getActivity(), mCoordinatorDelegateMock, bottomSheetController));
+                        -> new AssistantCoordinator(getActivity(), bottomSheetController,
+                                /* overlayCoordinator= */ null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
         ViewGroup bottomSheetContent =
@@ -145,16 +176,6 @@ public class AutofillAssistantUiTest {
 
         // Disable bottom sheet content animations. This is a workaround for http://crbug/943483.
         TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContent.setLayoutTransition(null));
-
-        // Show onboarding.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> assistantCoordinator.showOnboarding(/* experimentIds= */ "", mRunnableMock));
-        View onboardingView = bottomSheetContent.findViewById(R.id.assistant_onboarding);
-        Assert.assertNotNull(onboardingView);
-        View initOkButton = onboardingView.findViewById(R.id.button_init_ok);
-        Assert.assertNotNull(initOkButton);
-        ThreadUtils.runOnUiThreadBlocking(() -> { initOkButton.performClick(); });
-        ThreadUtils.runOnUiThreadBlocking(() -> inOrder.verify(mRunnableMock).run());
 
         // Show and check status message.
         String testStatusMessage = "test message";

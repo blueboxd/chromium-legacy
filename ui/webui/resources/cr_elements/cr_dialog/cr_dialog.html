@@ -70,14 +70,6 @@
         padding: 0 20px;
       }
 
-      /**
-       * When using mixins, avoid using padding shorthand. Using both the
-       * shorthand and top/bottom/start/end can lead to style override issues.
-       * This is only noticable when the |optimize_webui=true| build argument
-       * is used.
-       *
-       * See https://crbug.com/846254 and associated CL for more information.
-       */
       :host ::slotted([slot=title]) {
         color: var(--cr-primary-text-color);
         flex: 1;
@@ -87,17 +79,8 @@
         padding-inline-end: 20px;
         padding-inline-start: 20px;
         padding-top: 20px;
-        @apply --cr-dialog-title;
       }
 
-      /**
-       * When using mixins, avoid using padding shorthand. Using both the
-       * shorthand and top/bottom/start/end can lead to style override issues.
-       * This is only noticable when the |optimize_webui=true| build argument
-       * is used.
-       *
-       * See https://crbug.com/846254 and associated CL for more information.
-       */
       :host ::slotted([slot=button-container]) {
         display: flex;
         justify-content: flex-end;
@@ -105,7 +88,6 @@
         padding-inline-end: 16px;
         padding-inline-start: 16px;
         padding-top: 24px;
-        @apply --cr-dialog-button-container;
       }
 
       :host ::slotted([slot=footer]) {
@@ -128,8 +110,6 @@
         flex-direction: column;
         min-height: 1.375rem; /* Minimum reasonably usable height. */
         overflow: auto;
-
-        @apply --cr-dialog-body-container;
       }
 
       :host {
@@ -170,10 +150,6 @@
       }
 
       #close {
-        --layout-inline: {
-          display: flex;
-        };
-
         align-self: flex-start;
         margin-inline-end: 4px;
         margin-top: 4px;
@@ -194,7 +170,8 @@
           </cr-icon-button>
         </div>
         <slot name="header"></slot>
-        <div class="body-container" id="container" show-bottom-shadow>
+        <div class="body-container" id="container" show-bottom-shadow
+            part="body-container">
           <slot name="body"></slot>
         </div>
         <slot name="button-container"></slot>

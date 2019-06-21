@@ -23,4 +23,12 @@ Check that the WebAuthn addVirtualAuthenticator command validates parameters
     id : <number>
     sessionId : <string>
 }
+{
+    error : {
+        code : -32602
+        message : U2F only supports the "usb", "ble" and "nfc" transports
+    }
+    id : <number>
+    sessionId : <string>
+}
 

@@ -10,11 +10,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/view_type_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
@@ -70,14 +69,6 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   params.name = widget_name;
   params.shadow_elevation = wm::kShadowElevationInactiveWindow;
   widget_->Init(params);
-
-  // WebContentsObserver::DidFirstVisuallyNonEmptyPaint is not called under
-  // mash. Work around this by showing the window immediately.
-  // TODO(jamescook|fsamuel): Fix this. It causes a white flash when opening the
-  // window. The underlying problem is FrameToken plumbing, see
-  // ui::ws::ServerWindow::OnFrameTokenChanged. https://crbug.com/771331
-  if (features::IsMultiProcessMash())
-    widget_->Show();
 }
 
 AccessibilityPanel::~AccessibilityPanel() = default;
@@ -87,9 +78,8 @@ ash::mojom::AccessibilityControllerPtr
 AccessibilityPanel::GetAccessibilityController() {
   // Connect to the accessibility mojo interface in ash.
   ash::mojom::AccessibilityControllerPtr accessibility_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &accessibility_controller);
   return accessibility_controller;
 }
 

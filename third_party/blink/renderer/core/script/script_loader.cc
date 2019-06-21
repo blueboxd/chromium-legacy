@@ -71,7 +71,8 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool already_started)
     : element_(element),
       will_be_parser_executed_(false),
-      will_execute_when_document_finished_parsing_(false) {
+      will_execute_when_document_finished_parsing_(false),
+      force_deferred_(false) {
   // <spec href="https://html.spec.whatwg.org/C/#already-started">... The
   // cloning steps for script elements must set the "already started" flag on
   // the copy if it is set on the element being cloned.</spec>
@@ -718,6 +719,25 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     return true;
   }
 
+  // Check for external script that should be force deferred.
+  if (GetScriptType() == mojom::ScriptType::kClassic &&
+      element_->HasSourceAttribute() &&
+      context_document->GetFrame()->ShouldForceDeferScript() &&
+      context_document->IsHTMLDocument() && parser_inserted_ &&
+      !element_->AsyncAttributeValue()) {
+    // In terms of ScriptLoader flags, force deferred scripts behave like
+    // parser-blocking scripts, except that |force_deferred_| is set.
+    // The caller of PrepareScript()
+    // - Force-defers such scripts if the caller supports force-defer
+    //   (i.e., HTMLParserScriptRunner); or
+    // - Ignores the |force_deferred_| flag and handles such scripts as
+    //   parser-blocking scripts (e.g., XMLParserScriptRunner).
+    force_deferred_ = true;
+    will_be_parser_executed_ = true;
+
+    return true;
+  }
+
   // <spec step="26.B">If the script's type is "classic", and the element has a
   // src attribute, and the element has been flagged as "parser-inserted", and
   // the element does not have an async attribute ...</spec>
@@ -792,6 +812,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // and the element doesn't have a src attribute.
   DCHECK_EQ(GetScriptType(), mojom::ScriptType::kClassic);
   DCHECK(!is_external_script_);
+
+  // Check for inline script that should be force deferred.
+  if (context_document->GetFrame()->ShouldForceDeferScript() &&
+      context_document->IsHTMLDocument() && parser_inserted_) {
+    force_deferred_ = true;
+    will_be_parser_executed_ = true;
+    return true;
+  }
 
   // <spec step="26.E">If the element does not have a src attribute, and the
   // element has been flagged as "parser-inserted", and either the parser that

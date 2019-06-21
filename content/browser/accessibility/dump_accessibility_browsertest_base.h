@@ -71,6 +71,26 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   // and return it as a string.
   base::string16 DumpUnfilteredAccessibilityTreeAsString();
 
+  // Returns a path to an expectation file for the current platform. If no
+  // suitable expectation file can be found, logs an error message and returns
+  // nullopt.
+  base::Optional<base::FilePath> GetExpectationFilePath(
+      const base::FilePath& test_file_path);
+
+  // Loads the given expectation file. Returns nullopt if the file contains a
+  // skip marker.
+  base::Optional<std::vector<std::string>> LoadExpectationFile(
+      const base::FilePath& expected_file);
+
+  // Compares the given actual dump against the given expectation and generates
+  // a new expectation file if switches::kGenerateAccessibilityTestExpectations
+  // has been set. Returns true if the result matches the expectation.
+  bool ValidateAgainstExpectation(
+      const base::FilePath& test_file_path,
+      const base::FilePath& expected_file,
+      const std::vector<std::string>& actual_lines,
+      const std::vector<std::string>& expected_lines);
+
   // Utility helper that does a comment-aware equality check.
   // Returns array of lines from expected file which are different.
   std::vector<int> DiffLines(const std::vector<std::string>& expected_lines,

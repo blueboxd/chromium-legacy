@@ -2175,8 +2175,12 @@ class TestOverlayProcessor : public OverlayProcessor {
     }
   };
 
-  explicit TestOverlayProcessor(ContextProvider* context_provider)
-      : OverlayProcessor(context_provider) {}
+  explicit TestOverlayProcessor(
+      ContextProvider* context_provider,
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+      : OverlayProcessor(context_provider) {
+    SetOverlayCandidateValidator(std::move(overlay_validator));
+  }
   ~TestOverlayProcessor() override = default;
 
   const Validator* GetTestValidator() const {
@@ -2245,8 +2249,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.SetVisible(true);
 
   TestOverlayProcessor* processor = new TestOverlayProcessor(
-      output_surface->context_provider());
-  processor->SetOverlayCandidateValidator(
+      output_surface->context_provider(),
       std::make_unique<TestOverlayProcessor::Validator>());
   renderer.SetOverlayProcessor(processor);
   const TestOverlayProcessor::Validator* validator =
@@ -2843,9 +2846,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  TestOverlayProcessor* processor =
-      new TestOverlayProcessor(output_surface->context_provider());
-  processor->SetOverlayCandidateValidator(std::make_unique<DCLayerValidator>());
+  TestOverlayProcessor* processor = new TestOverlayProcessor(
+      output_surface->context_provider(), std::make_unique<DCLayerValidator>());
   processor->SetDCHasHwOverlaySupportForTesting();
   renderer.SetOverlayProcessor(processor);
 
@@ -3146,9 +3148,8 @@ class CALayerGLRendererTest : public GLRendererTest {
     // quads can be turned into CALayer overlays, then all damage is removed and
     // we can skip the root RenderPass, swapping empty.
     TestOverlayProcessor* processor =
-        new TestOverlayProcessor(output_surface_->context_provider());
-    processor->SetOverlayCandidateValidator(
-        std::make_unique<CALayerValidator>());
+        new TestOverlayProcessor(output_surface_->context_provider(),
+                                 std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 

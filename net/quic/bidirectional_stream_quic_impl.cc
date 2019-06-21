@@ -180,7 +180,7 @@ void BidirectionalStreamQuicImpl::SendvData(
   }
 
   std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher> bundler(
-      session_->CreatePacketBundler(quic::QuicConnection::SEND_ACK_IF_PENDING));
+      session_->CreatePacketBundler());
   if (!has_sent_headers_) {
     DCHECK(!send_request_headers_automatically_);
     int rv = WriteHeaders();

@@ -226,8 +226,10 @@ interface TracingSessionHost {
   ReadBuffers(handle<data_pipe_producer> stream) => ();
 
   // Request current trace buffer usage of the active session. Will be returned
-  // as percentage value between 0.0f and 1.0f.
-  RequestBufferUsage() => (bool success, float percent_full);
+  // as percentage value between 0.0f and 1.0f. |data_loss| indicates whether
+  // any trace data is known to have been lost, e.g. because the ring buffer
+  // wrapped and data were overridden.
+  RequestBufferUsage() => (bool success, float percent_full, bool data_loss);
 
   // Disables tracing and converts the collected trace data converted into the
   // legacy JSON format before returning it via the data pipe. If

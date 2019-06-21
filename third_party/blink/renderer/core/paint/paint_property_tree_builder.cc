@@ -1240,8 +1240,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
   }
 }
 
-static FloatRoundedRect ToClipRect(const PhysicalRect& rect) {
-  return FloatRoundedRect(FloatRect(PixelSnappedIntRect(rect)));
+static FloatRoundedRect ToSnappedClipRect(const PhysicalRect& rect) {
+  return FloatRoundedRect(PixelSnappedIntRect(rect));
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
@@ -1249,10 +1249,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateFragmentClip() {
 
   if (NeedsPaintPropertyUpdate()) {
     if (context_.fragment_clip) {
+      const auto& clip_rect = ToSnappedClipRect(*context_.fragment_clip);
       OnUpdateClip(properties_->UpdateFragmentClip(
           *context_.current.clip,
-          ClipPaintPropertyNode::State{context_.current.transform,
-                                       ToClipRect(*context_.fragment_clip)}));
+          ClipPaintPropertyNode::State{context_.current.transform, clip_rect}));
     } else {
       OnClearClip(properties_->ClearFragmentClip());
     }
@@ -1280,11 +1280,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateCssClip() {
       // object must be a container for absolute position descendants, and will
       // copy from in-flow context later at updateOutOfFlowContext() step.
       DCHECK(object_.CanContainAbsolutePositionObjects());
+      const auto& clip_rect = ToSnappedClipRect(
+          ToLayoutBox(object_).ClipRect(context_.current.paint_offset));
       OnUpdateClip(properties_->UpdateCssClip(
           *context_.current.clip,
-          ClipPaintPropertyNode::State{context_.current.transform,
-                                       ToClipRect(ToLayoutBox(object_).ClipRect(
-                                           context_.current.paint_offset))}));
+          ClipPaintPropertyNode::State{context_.current.transform, clip_rect}));
     } else {
       OnClearClip(properties_->ClearCssClip());
     }
@@ -1311,8 +1311,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip(
     } else {
       ClipPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
-      state.clip_rect =
-          FloatRoundedRect(FloatRect(*fragment_data_.ClipPathBoundingBox()));
+      state.clip_rect = FloatRoundedRect(*fragment_data_.ClipPathBoundingBox());
       state.clip_path = fragment_data_.ClipPathPath();
       OnUpdateClip(properties_->UpdateClipPathClip(*context_.current.clip,
                                                    std::move(state)));
@@ -1470,12 +1469,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowControlsClip() {
   if (NeedsOverflowControlsClip()) {
     // Clip overflow controls to the border box rect. Not wrapped with
     // OnUpdateClip() because this clip doesn't affect descendants.
+    const auto& clip_rect = ToSnappedClipRect(PhysicalRect(
+        context_.current.paint_offset, ToLayoutBox(object_).Size()));
     properties_->UpdateOverflowControlsClip(
         *context_.current.clip,
-        ClipPaintPropertyNode::State{
-            context_.current.transform,
-            ToClipRect(PhysicalRect(context_.current.paint_offset,
-                                    ToLayoutBox(object_).Size()))});
+        ClipPaintPropertyNode::State{context_.current.transform, clip_rect});
   } else {
     properties_->ClearOverflowControlsClip();
   }
@@ -1590,12 +1588,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
           state.clip_rect.SetRect(adjusted_rect);
         }
       } else if (object_.IsBox()) {
-        state.clip_rect = ToClipRect(ToLayoutBox(object_).OverflowClipRect(
-            context_.current.paint_offset));
-        state.clip_rect_excluding_overlay_scrollbars =
-            ToClipRect(ToLayoutBox(object_).OverflowClipRect(
+        state.clip_rect =
+            ToSnappedClipRect(ToLayoutBox(object_).OverflowClipRect(
+                context_.current.paint_offset));
+        state.clip_rect_excluding_overlay_scrollbars = FloatClipRect(
+            FloatRect(PixelSnappedIntRect(ToLayoutBox(object_).OverflowClipRect(
                 context_.current.paint_offset,
-                kExcludeOverlayScrollbarSizeForHitTesting));
+                kExcludeOverlayScrollbarSizeForHitTesting))));
       } else {
         DCHECK(object_.IsSVGViewportContainer());
         const auto& viewport_container = ToLayoutSVGViewportContainer(object_);
@@ -2994,10 +2993,10 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
         old_fragment_clip = properties->FragmentClip();
       const base::Optional<PhysicalRect>& new_fragment_clip =
           new_fragment_contexts.back().fragment_clip;
-      fragments_changed =
-          !!old_fragment_clip != !!new_fragment_clip ||
-          (old_fragment_clip && new_fragment_clip &&
-           old_fragment_clip->ClipRect() != ToClipRect(*new_fragment_clip));
+      fragments_changed = !!old_fragment_clip != !!new_fragment_clip ||
+                          (old_fragment_clip && new_fragment_clip &&
+                           old_fragment_clip->ClipRect() !=
+                               ToSnappedClipRect(*new_fragment_clip));
     }
 
     InitFragmentPaintProperties(

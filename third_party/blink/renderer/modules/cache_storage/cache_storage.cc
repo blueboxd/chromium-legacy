@@ -142,7 +142,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
-          TimeTicks::Now(), trace_id));
+          base::TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -194,7 +194,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
+          WrapPersistent(resolver), base::TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -248,7 +248,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
+          WrapPersistent(resolver), base::TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -288,7 +288,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
               return;
             resolver->Resolve(keys);
           },
-          WrapPersistent(resolver), TimeTicks::Now(), trace_id));
+          WrapPersistent(resolver), base::TimeTicks::Now(), trace_id));
 
   return promise;
 }
@@ -385,8 +385,8 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
-          trace_id));
+          WrapPersistent(resolver), base::TimeTicks::Now(),
+          WrapPersistent(options), trace_id));
 
   return promise;
 }

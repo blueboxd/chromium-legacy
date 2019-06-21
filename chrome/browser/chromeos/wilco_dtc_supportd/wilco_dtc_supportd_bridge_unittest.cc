@@ -14,6 +14,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,6 +25,8 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::StrictMock;
 
 namespace chromeos {
 
@@ -146,6 +150,18 @@ class FakeWilcoDtcSupportdBridgeDelegate final
       mojo_wilco_dtc_supportd_service_factory_;
 };
 
+class MockWilcoDtcSupportdNotificationController
+    : public WilcoDtcSupportdNotificationController {
+ public:
+  explicit MockWilcoDtcSupportdNotificationController(
+      ProfileManager* profile_manager)
+      : WilcoDtcSupportdNotificationController(profile_manager) {}
+  MOCK_CONST_METHOD0(ShowBatteryAuthNotification, std::string());
+  MOCK_CONST_METHOD0(ShowNonWilcoChargerNotification, std::string());
+  MOCK_CONST_METHOD0(ShowIncompatibleDockNotification, std::string());
+  MOCK_CONST_METHOD0(ShowDockErrorNotification, std::string());
+};
+
 // Tests for the WilcoDtcSupportdBridge class.
 class WilcoDtcSupportdBridgeTest : public testing::Test {
  protected:
@@ -153,16 +169,34 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
     DBusThreadManager::Initialize();
     CHECK(DBusThreadManager::Get()->IsUsingFakes());
 
+    auto profile_manager = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    CHECK(profile_manager->SetUp());
+    auto notification_controller = std::make_unique<
+        StrictMock<MockWilcoDtcSupportdNotificationController>>(
+        profile_manager->profile_manager());
+
+    // Hold a reference to MockWilcoDtcSupportdNotificationController to set
+    // expectations on tests before transferring ownership to
+    // WilcoDtcSupportdBridge.
+    notification_controller_ = notification_controller.get();
+
     wilco_dtc_supportd_bridge_ = std::make_unique<WilcoDtcSupportdBridge>(
         std::make_unique<FakeWilcoDtcSupportdBridgeDelegate>(
             &mojo_wilco_dtc_supportd_service_factory_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+            &test_url_loader_factory_),
+        std::move(notification_controller));
   }
 
   ~WilcoDtcSupportdBridgeTest() override {
     wilco_dtc_supportd_bridge_.reset();
     DBusThreadManager::Shutdown();
+  }
+
+  StrictMock<MockWilcoDtcSupportdNotificationController>*
+  notification_controller() {
+    return notification_controller_;
   }
 
   WilcoDtcSupportdBridge* wilco_dtc_supportd_bridge() {
@@ -209,6 +243,9 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
   mojo::Binding<wilco_dtc_supportd::mojom::WilcoDtcSupportdService>
       mojo_wilco_dtc_supportd_service_binding_{
           &mojo_wilco_dtc_supportd_service_};
+
+  StrictMock<MockWilcoDtcSupportdNotificationController>*
+      notification_controller_;
 
   std::unique_ptr<WilcoDtcSupportdBridge> wilco_dtc_supportd_bridge_;
 
@@ -409,6 +446,25 @@ TEST_F(WilcoDtcSupportdBridgeTest, RetryCounterReset) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(
       wilco_dtc_supportd_bridge()->wilco_dtc_supportd_service_mojo_proxy());
+}
+
+// Test that the bridge calls the right method on the notification controller.
+TEST_F(WilcoDtcSupportdBridgeTest, HandleEvent) {
+  EXPECT_CALL(*notification_controller(), ShowBatteryAuthNotification());
+  wilco_dtc_supportd_bridge()->HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kBatteryAuth);
+
+  EXPECT_CALL(*notification_controller(), ShowIncompatibleDockNotification());
+  wilco_dtc_supportd_bridge()->HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kIncompatibleDock);
+
+  EXPECT_CALL(*notification_controller(), ShowNonWilcoChargerNotification());
+  wilco_dtc_supportd_bridge()->HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kNonWilcoCharger);
+
+  EXPECT_CALL(*notification_controller(), ShowDockErrorNotification());
+  wilco_dtc_supportd_bridge()->HandleEvent(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent::kDockError);
 }
 
 }  // namespace chromeos

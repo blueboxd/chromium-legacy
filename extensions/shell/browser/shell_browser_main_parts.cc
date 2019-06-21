@@ -9,6 +9,7 @@
 #include "apps/browser_context_keyed_service_factories.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -21,9 +22,9 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
@@ -197,8 +198,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Initialize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get()));
+      content::GetSystemConnector(),
+      base::MakeRefCounted<chromeos::AudioDevicesPrefHandlerImpl>(
+          local_state_.get()));
   audio_controller_.reset(new ShellAudioController());
 #endif
 
@@ -214,9 +216,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
   storage_monitor::StorageMonitor::Create(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+      content::GetSystemConnector()->Clone());
 
   desktop_controller_.reset(
       browser_main_delegate_->CreateDesktopController(browser_context_.get()));

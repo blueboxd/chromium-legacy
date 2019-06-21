@@ -488,6 +488,7 @@ CrElementsButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'cr_button_tests.js',
   ]),
 };

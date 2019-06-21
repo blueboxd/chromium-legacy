@@ -393,7 +393,6 @@ class ShelfViewTest : public AshTestBase {
   // since the app list button is not a ShelfAppButton.
   ShelfAppButton* SimulateButtonPressed(ShelfView::Pointer pointer,
                                         int button_index) {
-    EXPECT_NE(TYPE_APP_LIST_DEPRECATED, model_->items()[button_index].type);
     ShelfAppButton* button = test_api_->GetButton(button_index);
     EXPECT_EQ(button, SimulateViewPressed(pointer, button_index));
     return button;
@@ -512,10 +511,9 @@ class ShelfViewTest : public AshTestBase {
     // Add 5 app shelf buttons for testing.
     for (int i = 0; i < 5; ++i) {
       ShelfID id = AddAppShortcut();
-      // The back button is located at index 0, the app icon is located at
-      // index 1, and the browser shortcut is located at index 2. So we should
-      // start to add app shortcuts at index 3.
-      id_map->insert(id_map->begin() + i + 3,
+      // The browser shortcut is located at index 0. So we should start to add
+      // app shortcuts at index 1.
+      id_map->insert(id_map->begin() + i + 1,
                      std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
@@ -745,20 +743,12 @@ TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_PINNED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST_DEPRECATED));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_PINNED_APP));
   EXPECT_TRUE(test_api_->SameDragType(TYPE_PINNED_APP, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(
-      test_api_->SameDragType(TYPE_PINNED_APP, TYPE_APP_LIST_DEPRECATED));
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(
-      test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST_DEPRECATED));
-
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_LIST_DEPRECATED,
-                                      TYPE_APP_LIST_DEPRECATED));
 }
 
 // Adds platform app button until overflow and verifies that the last added
@@ -1017,34 +1007,34 @@ TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
   SetupForDragTest(&id_map);
 
   // Dragging browser shortcut at index 1.
-  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
-  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
-  std::rotate(id_map.begin() + 2, id_map.begin() + 3, id_map.begin() + 5);
+  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
+  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 0, 2, false);
+  std::rotate(id_map.begin(), id_map.begin() + 1, id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
-  EXPECT_TRUE(model_->items()[4].type == TYPE_BROWSER_SHORTCUT);
+  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
 
   // Dragging changes model order.
-  dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
-  std::rotate(id_map.begin() + 2, id_map.begin() + 3, id_map.begin() + 5);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 0, 2, false);
+  std::rotate(id_map.begin(), id_map.begin() + 1, id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, true);
-  std::rotate(id_map.begin() + 2, id_map.begin() + 4, id_map.begin() + 5);
+  std::rotate(id_map.begin(), id_map.begin() + 2, id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
-  model_->RemoveItemAt(2);
-  id_map.erase(id_map.begin() + 2);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 0, 2, false);
+  model_->RemoveItemAt(0);
+  id_map.erase(id_map.begin());
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
 
   // Adding a shelf item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 0, 2, false);
   ShelfID new_id = AddAppShortcut();
-  id_map.insert(id_map.begin() + 7,
+  id_map.insert(id_map.begin() + 5,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
@@ -1088,77 +1078,35 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 }
 
-// Ensure the app list button cannot be dragged and other items cannot be
-// dragged in front of the back button or app list button.
-TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
-  // The expected id order is initialized as: 1, 2, 3, 4, 5, 6, 7
-  std::vector<std::pair<ShelfID, views::View*>> id_map;
-  SetupForDragTest(&id_map);
-
-  // Ensure that the back button cannot be dragged.
-  // The expected id order is unchanged: 1, 2, 3, 4, 5, 6, 7
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 1, shelf_view_, id_map));
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 2, shelf_view_, id_map));
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 5, shelf_view_, id_map));
-
-  // Ensure that the app list button cannot be dragged.
-  // The expected id order is unchanged: 1, 2, 3, 4, 5, 6, 7
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(1, 1, shelf_view_, id_map));
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(1, 2, shelf_view_, id_map));
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(1, 5, shelf_view_, id_map));
-
-  // Ensure that items cannot be dragged in front of the back button.
-  // Attempting to do so will order buttons immediately after the app list.
-  // Dragging the third button in front should no-op: 1, 2, 3, 4, 5, 6, 7
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(2, 0, shelf_view_, id_map));
-  // Dragging the fourth button in front should yield: 1, 2, 4, 3, 5, 6, 7
-  std::rotate(id_map.begin() + 2, id_map.begin() + 3, id_map.begin() + 4);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(3, 0, shelf_view_, id_map));
-  // Dragging the sixth button in front should yield: 1, 2, 6, 4, 3, 5, 7
-  std::rotate(id_map.begin() + 2, id_map.begin() + 5, id_map.begin() + 6);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(5, 0, shelf_view_, id_map));
-
-  // Ensure that items cannot be dragged in front of the app list button.
-  // Attempting to do so will order buttons immediately after the app list.
-  // Dragging the third button in front should no-op: 1, 2, 6, 4, 3, 5, 7
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(2, 1, shelf_view_, id_map));
-  // Dragging the fourth button in front should yield: 1, 2, 4, 6, 3, 5, 7
-  std::rotate(id_map.begin() + 2, id_map.begin() + 3, id_map.begin() + 4);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(3, 1, shelf_view_, id_map));
-  // Dragging the sixth button in front should yield: 1, 2, 5, 4, 6, 3, 7
-  std::rotate(id_map.begin() + 2, id_map.begin() + 5, id_map.begin() + 6);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(5, 1, shelf_view_, id_map));
-}
-
 // Ensure that clicking on one item and then dragging another works as expected.
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
 
-  // A click on the item at index 2 is simulated.
-  SimulateClick(3);
+  // A click on the item at index 1 is simulated.
+  SimulateClick(1);
 
-  // Dragging the browser item at index 1 should change the model order.
-  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
-  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 2, 4, false);
-  std::rotate(id_map.begin() + 2, id_map.begin() + 3, id_map.begin() + 5);
+  // Dragging the browser item at index 0 should change the model order.
+  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
+  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 0, 2, false);
+  std::rotate(id_map.begin(), id_map.begin() + 1, id_map.begin() + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
-  EXPECT_TRUE(model_->items()[4].type == TYPE_BROWSER_SHORTCUT);
+  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
 }
 
 // Tests that double-clicking an item does not activate it twice.
 TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
   // Watch for selection of the browser shortcut.
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
-  model_->SetShelfItemDelegate(model_->items()[2].id,
+  model_->SetShelfItemDelegate(model_->items()[0].id,
                                base::WrapUnique(selection_tracker));
 
   // A single click selects the item, but a double-click does not.
   EXPECT_EQ(0u, selection_tracker->item_selected_count());
-  SimulateClick(2);
+  SimulateClick(0);
   EXPECT_EQ(1u, selection_tracker->item_selected_count());
-  SimulateDoubleClick(2);
+  SimulateDoubleClick(0);
   EXPECT_EQ(1u, selection_tracker->item_selected_count());
 }
 
@@ -1821,8 +1769,9 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
 
+  AddAppShortcut();
   ShelfViewTestAPI test_api_for_secondary_shelf_view(shelf_view_for_secondary);
-  ShelfAppButton* button = test_api_for_secondary_shelf_view.GetButton(2);
+  ShelfAppButton* button = test_api_for_secondary_shelf_view.GetButton(0);
 
   // Fetch the start point of dragging.
   gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
@@ -1931,10 +1880,10 @@ TEST_F(ShelfViewTest,
 
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      model_->items()[2].id,
+      model_->items()[0].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
-  SimulateClick(2);
+  SimulateClick(0);
   EXPECT_EQ(1,
             user_action_tester.GetActionCount("Launcher_ButtonPressed_Mouse"));
 }
@@ -1947,10 +1896,10 @@ TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   selection_tracker->set_item_selected_action(SHELF_ACTION_NEW_WINDOW_CREATED);
   model_->SetShelfItemDelegate(
-      model_->items()[2].id,
+      model_->items()[0].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
-  SimulateClick(2);
+  SimulateClick(0);
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
 }
 
@@ -1962,14 +1911,14 @@ TEST_F(ShelfViewTest,
 
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
-      model_->items()[2].id,
+      model_->items()[0].id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
   selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_MINIMIZED);
-  SimulateClick(2);
+  SimulateClick(0);
 
   selection_tracker->set_item_selected_action(SHELF_ACTION_WINDOW_ACTIVATED);
-  SimulateClick(2);
+  SimulateClick(0);
 
   histogram_tester.ExpectTotalCount(
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName, 1);
@@ -2318,7 +2267,7 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
 
   // At the start, we have exactly one app icon for the browser. That should
   // be centered on the screen.
-  const ShelfAppButton* button1 = GetButtonByID(model_->items()[2].id);
+  const ShelfAppButton* button1 = GetButtonByID(model_->items()[0].id);
   ExpectWithinOnePixel(screen_center,
                        button1->GetBoundsInScreen().CenterPoint().x());
   // Also check that the distance between the icon edge and the screen edge is
@@ -2329,7 +2278,7 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
   const int apps_that_can_easily_fit_at_center_of_screen = 3;
   std::vector<ShelfAppButton*> app_buttons;
   // Start with just the browser app button.
-  app_buttons.push_back(GetButtonByID(model_->items()[2].id));
+  app_buttons.push_back(GetButtonByID(model_->items()[0].id));
   int n_buttons = 1;
 
   // Now repeat the same process by adding apps until they can't fit at the
@@ -2370,22 +2319,22 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
 }
 
 TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
-  // At the start, the only things visible on the shelf are the app list button
-  // (index 1) and the browser app button (index 2).
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
-  // By enabling tablet mode, the back button (index 0) should become visible.
+  // At the start, the only visible app on the shelf is the browser app button
+  // (index 0).
+  EXPECT_EQ(0, shelf_view_->first_visible_index());
+  EXPECT_EQ(0, shelf_view_->last_visible_index());
+  // By enabling tablet mode, the back button (index 0) should become visible,
+  // but that does not change the first and last visible indices.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(0, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
-  // And things should return back to the previous state once tablet mode is off
-  // again.
+  EXPECT_EQ(0, shelf_view_->last_visible_index());
+  // Turn tablet mode off again.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
+  EXPECT_EQ(0, shelf_view_->first_visible_index());
+  EXPECT_EQ(0, shelf_view_->last_visible_index());
   // Now let's add some apps until the overflow button shows up, each time
   // checking the first and last visible indices are what we expect.
-  int last_visible_index = 2;
+  int last_visible_index = 0;
   int last_visible_index_before_overflow;
   ShelfID last_added_item_id;
   while (true) {
@@ -2395,7 +2344,7 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
       break;
     }
     last_visible_index++;
-    EXPECT_EQ(1, shelf_view_->first_visible_index());
+    EXPECT_EQ(0, shelf_view_->first_visible_index());
     EXPECT_EQ(last_visible_index, shelf_view_->last_visible_index());
   }
 
@@ -2409,7 +2358,7 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
   // Now remove the last item we just added. That should get rid of the
   // overflow button, and get back to the previous state.
   RemoveByID(last_added_item_id);
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
+  EXPECT_EQ(0, shelf_view_->first_visible_index());
   EXPECT_EQ(last_visible_index_before_overflow,
             shelf_view_->last_visible_index());
 
@@ -2738,7 +2687,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   }
 
   void InitBrowserButtonInkDrop() {
-    browser_button_ = test_api_->GetButton(2);
+    browser_button_ = test_api_->GetButton(0);
 
     auto browser_button_ink_drop =
         std::make_unique<InkDropSpy>(std::make_unique<views::InkDropImpl>(
@@ -3099,7 +3048,7 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
   InitBrowserButtonInkDrop();
 
   // Set a delegate for the shelf item that returns an app list menu.
-  model_->SetShelfItemDelegate(model_->items()[2].id,
+  model_->SetShelfItemDelegate(model_->items()[0].id,
                                std::make_unique<ListMenuShelfItemDelegate>());
 
   views::Button* button = browser_button_;
@@ -3653,27 +3602,28 @@ class ShelfViewFocusTest : public ShelfViewTest {
 TEST_F(ShelfViewFocusTest, Basic) {
   EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
 
-  // There are five buttons. The back button and launcher are always there, the
-  // browser shortcut is added in ShelfViewTest and the two test apps added in
-  // ShelfViewFocusTest.
-  EXPECT_EQ(5, test_api_->GetButtonCount());
+  // There are five buttons, including 3 app buttons. The back button and
+  // launcher are always there, the browser shortcut is added in
+  // ShelfViewTest and the two test apps added in ShelfViewFocusTest.
+  EXPECT_EQ(3, test_api_->GetButtonCount());
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
 
-  // The item at index 1 instead of index 0 is focused initially because index 0
-  // is the back button which is only visible in tablet mode.
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  // The home button is focused initially because the back button is only
+  // visible in tablet mode.
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
 }
 
 // Tests that the expected views have focus when cycling through shelf items
 // with tab.
 TEST_F(ShelfViewFocusTest, ForwardCycling) {
-  // Pressing tab once should advance focus to the next element.
+  // Pressing tab once should advance focus to the next element after the
+  // home button, which is the first app.
   DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
+  EXPECT_TRUE(test_api_->GetViewAt(0)->HasFocus());
 
   DoTab();
   DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
 }
 
 // Tests that the expected views have focus when cycling backwards through shelf
@@ -3681,14 +3631,15 @@ TEST_F(ShelfViewFocusTest, ForwardCycling) {
 TEST_F(ShelfViewFocusTest, BackwardCycling) {
   // The first element is currently focused. Let's advance to the last element
   // first.
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
   DoTab();
   DoTab();
   DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
 
   // Pressing shift tab once should advance focus to the previous element.
   DoShiftTab();
-  EXPECT_TRUE(test_api_->GetViewAt(3)->HasFocus());
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
 
 // Verify that the overflow bubble does not activate when it is opened.
@@ -3703,15 +3654,16 @@ TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
 
 // Verifies that focus moves as expected between the shelf and the status area.
 TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
-  // The first element of the shelf is focused at start.
+  // The first element of the shelf (the home button) is focused at start.
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
 
   // Focus the next few elements.
   DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(0)->HasFocus());
+  DoTab();
+  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  DoTab();
   EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
-  DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(3)->HasFocus());
-  DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
 
   // This is the last element. Tabbing once more should go into the status
   // area.
@@ -3721,7 +3673,7 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
 
   // Shift-tab: we should be back at the last element in the shelf.
   DoShiftTab();
-  EXPECT_TRUE(test_api_->GetViewAt(4)->HasFocus());
+  EXPECT_TRUE(test_api_->GetViewAt(2)->HasFocus());
   ExpectNotFocused(status_area_);
 
   // Go into the status area again.
@@ -3732,7 +3684,7 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   // And keep going forward, now we should be cycling back to the first shelf
   // element.
   DoTab();
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
   ExpectNotFocused(status_area_);
 }
 
@@ -3783,14 +3735,14 @@ TEST_F(ShelfViewOverflowFocusTest, Basic) {
 
   EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
 }
 
 TEST_F(ShelfViewOverflowFocusTest, OpenOverflow) {
   OpenOverflow();
   ASSERT_TRUE(overflow_shelf_test_api_);
   EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
 }
 
 // Tests that when cycling through the items with tab, the items in the overflow
@@ -3897,7 +3849,7 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   // Focus the shelf again.
   DoTab();
   ExpectFocused(shelf_view_);
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
   ExpectNotFocused(status_area_);
 
   // Now advance to the last item on the main shelf.
@@ -3935,7 +3887,7 @@ TEST_F(ShelfViewOverflowFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   while (status_area_->GetWidget()->IsActive())
     DoTab();
   // This should have brought focus to the first element on the shelf.
-  EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->HasFocus());
 }
 
 class KioskNextShelfViewTest : public ShelfViewTest {
@@ -3993,7 +3945,7 @@ TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
   EXPECT_TRUE(shelf_view_->GetBackButton()->GetVisible());
 
   ASSERT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
-  EXPECT_EQ(1, shelf_view_->last_visible_index());
+  EXPECT_EQ(-1, shelf_view_->last_visible_index());
 }
 
 // Tests that control buttons (back/home) are positioned correctly in Kiosk Next

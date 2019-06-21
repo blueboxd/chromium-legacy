@@ -94,7 +94,7 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
     // This method is called on the same thread as constructor (the UI thread).
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
     scw.Reset();
 
     if (!decoded_image.empty() && !decoded_image.isNull())

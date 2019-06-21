@@ -178,7 +178,7 @@ void FetchEvent::OnNavigationPreloadError(
 
 void FetchEvent::OnNavigationPreloadComplete(
     WorkerGlobalScope* worker_global_scope,
-    TimeTicks completion_time,
+    base::TimeTicks completion_time,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {

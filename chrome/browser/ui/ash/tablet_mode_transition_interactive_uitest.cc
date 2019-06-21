@@ -73,6 +73,8 @@ class TabletModeTransitionTest : public UIPerformanceTest {
     auto* cmd = base::CommandLine::ForCurrentProcess();
     if (cmd->HasSwitch(wm::switches::kWindowAnimationsDisabled))
       cmd->RemoveSwitch(wm::switches::kWindowAnimationsDisabled);
+
+    ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(true);
   }
 
   std::vector<std::string> GetUMAHistogramNames() const override {

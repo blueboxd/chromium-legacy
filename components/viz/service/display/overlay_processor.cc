@@ -98,6 +98,19 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
 
+std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
+    const ContextProvider* context_provider,
+    gpu::SurfaceHandle surface_handle,
+    const RendererSettings& renderer_settings) {
+  std::unique_ptr<OverlayProcessor> processor(
+      new OverlayProcessor(context_provider));
+
+  processor->SetOverlayCandidateValidator(OverlayCandidateValidator::Create(
+      surface_handle, context_provider, renderer_settings));
+
+  return processor;
+}
+
 OverlayProcessor::OverlayProcessor(const ContextProvider* context_provider)
     : dc_processor_(
           std::make_unique<DCLayerOverlayProcessor>(context_provider)) {}

@@ -251,8 +251,7 @@ SplitViewDivider::~SplitViewDivider() {
   divider_widget_->Close();
   split_view_window_targeter_.reset();
   for (auto* iter : observed_windows_)
-    iter->RemoveObserver(this);
-  observed_windows_.clear();
+    RemoveObservedWindow(iter);
 }
 
 // static

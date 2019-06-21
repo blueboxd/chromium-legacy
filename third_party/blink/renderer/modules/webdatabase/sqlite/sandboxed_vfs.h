@@ -61,7 +61,7 @@ class SandboxedVfs {
   void RegisterVfs();
 
   sqlite3_vfs sandboxed_vfs_;
-  const WTF::Time sqlite_epoch_;
+  const base::Time sqlite_epoch_;
   Platform* const platform_;
   base::File::Error last_error_;
 };

@@ -14,6 +14,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -185,11 +186,9 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   // Wait for shutdown signal
   shutdown_signal_.Wait();
 
-  // Due to a bug in Windows, events are raised exactly twice for any in-proc
-  // off-thread event listeners. (The bug has been acknowledged by the Windows
-  // team, but it's a lower priority since the scenario is rare outside of
-  // testing.) We filter out the duplicate events here, and forward the
-  // remaining events to our owner.
+  // Due to a bug in Windows (fixed in Windows 10 19H1), events are raised
+  // exactly twice for any in-proc off-thread event listeners. We filter out the
+  // duplicate events here, and forward the remaining events to our owner.
   {
     base::AutoLock lock{on_event_lock_};
     if (event_logs_.size() == 1) {
@@ -264,9 +263,10 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
 
 void AccessibilityEventRecorderUia::Thread::SendShutdownSignal() {
   // We expect to see the shutdown sentinel exactly twice (due to the Windows
-  // bug detailed in |ThreadMain|), so don't actually shut down the thread until
-  // the second call.
-  if (shutdown_sentinel_received_)
+  // bug detailed in |ThreadMain| and fixed in 19H1), so don't actually shut
+  // down the thread until the second call.
+  if (shutdown_sentinel_received_ ||
+      base::win::GetVersion() >= base::win::Version::WIN10_19H1)
     shutdown_signal_.Signal();
   else
     shutdown_sentinel_received_ = true;

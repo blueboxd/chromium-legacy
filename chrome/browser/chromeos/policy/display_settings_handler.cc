@@ -15,15 +15,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace policy {
 
 DisplaySettingsHandler::DisplaySettingsHandler() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &cros_display_config_);
 }
 
 DisplaySettingsHandler::~DisplaySettingsHandler() = default;

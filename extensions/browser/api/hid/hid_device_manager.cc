@@ -18,7 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -286,9 +286,8 @@ void HidDeviceManager::LazyInitialize() {
     device::mojom::HidManagerRequest request = mojo::MakeRequest(&hid_manager_);
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(content::ServiceManagerConnection::GetForProcess());
-    auto* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    auto* connector = content::GetSystemConnector();
+    DCHECK(connector);
     connector->BindInterface(device::mojom::kServiceName, std::move(request));
   }
   // Enumerate HID devices and set client.

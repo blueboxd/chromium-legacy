@@ -81,12 +81,6 @@ static NSString* const kGoogleTitle = @"Google";
 const char kOtherUserUrl[] = "http://other.com";
 const char kOtherRedirectUrl[] = "http://other.fr/";
 NSString* const kOtherTitle = @"Other";
-const char kContentDispositionWithFilename[] =
-    "attachment; filename=\"suggested_filename.pdf\"";
-const char kContentDispositionWithoutFilename[] =
-    "attachment; parameter=parameter_value";
-const char kInvalidFilenameUrl[] = "http://www.hostname.com/";
-const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 }  // namespace
 
 @interface ArrayTabModel : TabModel {
@@ -376,47 +370,6 @@ TEST_P(TabTest, DISABLED_NewTabInMiddleOfNavigation) {
   EXPECT_EQ(2U, results.size());
   CheckHistoryResult(results[0], GURL(kOtherRedirectUrl), kOtherTitle);
   CheckHistoryResult(results[1], GURL(kGoogleRedirectUrl), kGoogleTitle);
-}
-
-TEST_P(TabTest, GetSuggestedFilenameFromContentDisposition) {
-  // If possible, the filename should be generated from the content-disposition
-  // header.
-  GURL url(kValidFilenameUrl);
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders("HTTP 1.1 200 OK");
-  headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
-  headers->AddHeader(base::StringPrintf("Content-Disposition: %s",
-                                        kContentDispositionWithFilename));
-  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
-  BrowseTo(url, url, [NSString string]);
-  EXPECT_NSEQ(@"suggested_filename.pdf",
-              [[tab_ openInController] suggestedFilename]);
-}
-
-TEST_P(TabTest, GetSuggestedFilenameFromURL) {
-  // If the content-disposition header does not specify a filename, this should
-  // be extracted from the last component of the url.
-  GURL url(kValidFilenameUrl);
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders("HTTP 1.1 200 OK");
-  headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
-  headers->AddHeader(base::StringPrintf("Content-Disposition: %s",
-                                        kContentDispositionWithoutFilename));
-  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
-  BrowseTo(url, url, [NSString string]);
-  EXPECT_NSEQ(@"filename.pdf", [[tab_ openInController] suggestedFilename]);
-}
-
-TEST_P(TabTest, GetSuggestedFilenameFromDefaultName) {
-  // If the filename cannot be extracted from the content disposition or from
-  // the url, the default filename "Document.pdf" should be used.
-  GURL url(kInvalidFilenameUrl);
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      new net::HttpResponseHeaders("HTTP 1.1 200 OK");
-  headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
-  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
-  BrowseTo(url, url, [NSString string]);
-  EXPECT_NSEQ(@"Document.pdf", [[tab_ openInController] suggestedFilename]);
 }
 
 TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {

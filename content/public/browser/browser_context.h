@@ -81,6 +81,7 @@ class BrowsingDataRemoverDelegate;
 class DownloadManager;
 class ClientHintsControllerDelegate;
 class DownloadManagerDelegate;
+class NativeFileSystemPermissionContext;
 class PermissionController;
 class PermissionControllerDelegate;
 class PushMessagingService;
@@ -355,6 +356,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the SmsService associated with this context if any,
   // nullptr otherwise.
   virtual SmsService* GetSmsService();
+
+  // Returns the NativeFileSystemPermissionContext associated with this context
+  // if any, nullptr otherwise.
+  virtual NativeFileSystemPermissionContext*
+  GetNativeFileSystemPermissionContext();
 
  private:
   const std::string unique_id_;

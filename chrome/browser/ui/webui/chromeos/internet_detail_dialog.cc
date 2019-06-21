@@ -16,9 +16,11 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -133,7 +135,7 @@ std::string InternetDetailDialog::GetDialogArgs() const {
 // InternetDetailDialogUI
 
 InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui) {
+    : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetDetailDialogHost);
   source->AddBoolean("showTechnologyBadge",
@@ -150,8 +152,20 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
                           IDR_INTERNET_DETAIL_DIALOG_JS);
 #endif
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
+  AddHandlerToRegistry(base::BindRepeating(
+      &InternetDetailDialogUI::BindCrosNetworkConfig, base::Unretained(this)));
 }
 
 InternetDetailDialogUI::~InternetDetailDialogUI() {}
+
+void InternetDetailDialogUI::BindCrosNetworkConfig(
+    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
+  content::BrowserContext::GetConnectorFor(
+      web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindInterface(chromeos::network_config::mojom::kServiceName,
+                      std::move(request));
+}
 
 }  // namespace chromeos

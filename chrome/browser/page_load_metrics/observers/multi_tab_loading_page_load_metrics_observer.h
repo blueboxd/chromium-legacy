@@ -18,7 +18,6 @@ namespace internal {
 extern const char kHistogramPrefixMultiTabLoading[];
 extern const char kHistogramPrefixMultiTabLoading2OrMore[];
 extern const char kHistogramPrefixMultiTabLoading5OrMore[];
-extern const char kHistogramMultiTabLoadingNumTabsWithInflightLoad[];
 
 }  // namespace internal
 
@@ -35,9 +34,6 @@ class MultiTabLoadingPageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
-  page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnCommit(
-      content::NavigationHandle* navigation_handle,
-      ukm::SourceId source_id) override;
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;

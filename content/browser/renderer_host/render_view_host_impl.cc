@@ -556,6 +556,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);
 
+  if (delegate_ && delegate_->IsSpatialNavigationDisabled())
+    prefs.spatial_navigation_enabled = false;
+
   prefs.disable_reading_from_canvas = command_line.HasSwitch(
       switches::kDisableReadingFromCanvas);
 

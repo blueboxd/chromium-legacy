@@ -134,6 +134,16 @@ void ArcSystemModel::Trim(uint64_t trim_timestamp) {
   memory_events_ = std::move(trimmed_memory_events);
 }
 
+void ArcSystemModel::CloseRangeForValueEvents(uint64_t max_timestamp) {
+  std::map<ArcValueEvent::Type, std::pair<uint64_t, int>> last_timestamps;
+  for (const auto& it : memory_events_)
+    last_timestamps[it.type] = {it.timestamp, it.value};
+  for (const auto& it : last_timestamps) {
+    if (it.second.first < max_timestamp)
+      memory_events_.emplace_back(max_timestamp, it.first, it.second.second);
+  }
+}
+
 void ArcSystemModel::CopyFrom(const ArcSystemModel& other) {
   thread_map_ = other.thread_map_;
   all_cpu_events_ = other.all_cpu_events_;

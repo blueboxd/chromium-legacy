@@ -20,16 +20,15 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
-#include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
@@ -131,15 +130,13 @@ class NavigationURLLoaderImplTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
-    // Because the network service is enabled we need a ServiceManagerConnection
-    // or BrowserContext::GetDefaultStoragePartition will segfault when
+    // Because the network service is enabled we need a system Connector or
+    // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
     // GetNetworkService.
-    service_manager::mojom::ServicePtr service;
-    ServiceManagerConnection::SetForProcess(
-        std::make_unique<ServiceManagerConnectionImpl>(
-            mojo::MakeRequest(&service),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+    service_manager::mojom::ConnectorRequest connector_request;
+    SetSystemConnectorForTesting(
+        service_manager::Connector::Create(&connector_request));
 
     browser_context_.reset(new TestBrowserContext);
     http_test_server_.AddDefaultHandlers(
@@ -151,11 +148,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
   ~NavigationURLLoaderImplTest() override {
-    // The context needs to be deleted before ServiceManagerConnection is
-    // destroyed, so the storage partition in the context does not try to
-    // reconnect to the network service after ServiceManagerConnection is dead.
     browser_context_.reset();
-    ServiceManagerConnection::DestroyForProcess();
+    SetSystemConnectorForTesting(nullptr);
   }
 
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(

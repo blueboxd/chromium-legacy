@@ -23,7 +23,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
-#include "net/disk_cache/disk_cache.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -44,6 +43,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/test/async_file_test_helper.h"
+#include "storage/browser/test/fake_blob_data_handle.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,10 +63,8 @@ const char kTestFileData1[] = "0123456789";
 const char kTestFileData2[] = "This is sample file.";
 const char kTestFileSystemFileData1[] = "abcdefghijklmnop";
 const char kTestFileSystemFileData2[] = "File system file test data.";
-const char kTestDiskCacheKey1[] = "key1";
-const char kTestDiskCacheKey2[] = "key2";
-const char kTestDiskCacheData1[] = "disk cache test data1.";
-const char kTestDiskCacheData2[] = "disk cache test data2.";
+const char kTestDataHandleData1[] = "data handle test data1.";
+const char kTestDataHandleData2[] = "data handle test data2.";
 const char kTestDiskCacheSideData[] = "test side data";
 const char kTestContentType[] = "foo/bar";
 const char kTestContentDisposition[] = "attachment; filename=foo.txt";
@@ -74,61 +72,6 @@ const char kTestContentDisposition[] = "attachment; filename=foo.txt";
 const char kFileSystemURLOrigin[] = "http://remote";
 const storage::FileSystemType kFileSystemType =
     storage::kFileSystemTypeTemporary;
-
-const int kTestDiskCacheStreamIndex = 0;
-const int kTestDiskCacheSideStreamIndex = 1;
-
-// Our disk cache tests don't need a real data handle since the tests themselves
-// scope the disk cache and entries.
-class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
- private:
-  ~EmptyDataHandle() override {}
-};
-
-std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
-  std::unique_ptr<disk_cache::Backend> cache;
-  net::TestCompletionCallback callback;
-  int rv = disk_cache::CreateCacheBackend(
-      net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(), 0, false,
-      nullptr, &cache, callback.callback());
-  EXPECT_EQ(net::OK, callback.GetResult(rv));
-
-  return cache;
-}
-
-disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
-                                                const char* key,
-                                                const std::string& data) {
-  disk_cache::Entry* temp_entry = nullptr;
-  net::TestCompletionCallback callback;
-  int rv =
-      cache->CreateEntry(key, net::HIGHEST, &temp_entry, callback.callback());
-  if (callback.GetResult(rv) != net::OK)
-    return nullptr;
-  disk_cache::ScopedEntryPtr entry(temp_entry);
-
-  scoped_refptr<net::StringIOBuffer> iobuffer =
-      base::MakeRefCounted<net::StringIOBuffer>(data);
-  rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
-                        iobuffer->size(), callback.callback(), false);
-  EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
-  return entry;
-}
-
-disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
-    disk_cache::Backend* cache,
-    const char* key,
-    const std::string& data,
-    const std::string& side_data) {
-  disk_cache::ScopedEntryPtr entry = CreateDiskCacheEntry(cache, key, data);
-  scoped_refptr<net::StringIOBuffer> iobuffer =
-      base::MakeRefCounted<net::StringIOBuffer>(side_data);
-  net::TestCompletionCallback callback;
-  int rv = entry->WriteData(kTestDiskCacheSideStreamIndex, 0, iobuffer.get(),
-                            iobuffer->size(), callback.callback(), false);
-  EXPECT_EQ(static_cast<int>(side_data.size()), callback.GetResult(rv));
-  return entry;
-}
 
 enum class RequestTestType {
   kNetRequest,
@@ -183,10 +126,6 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
-
-    disk_cache_backend_ = CreateInMemoryDiskCache();
-    disk_cache_entry_ = CreateDiskCacheEntry(
-        disk_cache_backend_.get(), kTestDiskCacheKey1, kTestDiskCacheData1);
 
     url_request_job_factory_.SetProtocolHandler(
         "blob", std::make_unique<MockProtocolHandler>(this));
@@ -357,10 +296,10 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
     blob_data_->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
     *expected_result += std::string(kTestFileData1 + 2, 3);
 
-    blob_data_->AppendDiskCacheEntry(new EmptyDataHandle(),
-                                     disk_cache_entry_.get(),
-                                     kTestDiskCacheStreamIndex);
-    *expected_result += std::string(kTestDiskCacheData1);
+    blob_data_->AppendReadableDataHandle(
+        base::MakeRefCounted<storage::FakeBlobDataHandle>(kTestDataHandleData1,
+                                                          ""));
+    *expected_result += std::string(kTestDataHandleData1);
 
     blob_data_->AppendFileSystemFile(temp_file_system_file1_, 3, 4,
                                      temp_file_system_file_modification_time1_,
@@ -416,9 +355,6 @@ class BlobURLRequestJobTest : public testing::TestWithParam<RequestTestType> {
   GURL temp_file_system_file2_;
   base::Time temp_file_system_file_modification_time1_;
   base::Time temp_file_system_file_modification_time2_;
-
-  std::unique_ptr<disk_cache::Backend> disk_cache_backend_;
-  disk_cache::ScopedEntryPtr disk_cache_entry_;
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
@@ -549,12 +485,12 @@ TEST_P(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   TestSuccessNonrangeRequest(result, 4);
 }
 
-TEST_P(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
-  blob_data_->AppendDiskCacheEntry(new EmptyDataHandle(),
-                                   disk_cache_entry_.get(),
-                                   kTestDiskCacheStreamIndex);
-  TestSuccessNonrangeRequest(kTestDiskCacheData1,
-                             base::size(kTestDiskCacheData1) - 1);
+TEST_P(BlobURLRequestJobTest, TestGetSimpleDataHandleRequest) {
+  blob_data_->AppendReadableDataHandle(
+      base::MakeRefCounted<storage::FakeBlobDataHandle>(kTestDataHandleData1,
+                                                        ""));
+  TestSuccessNonrangeRequest(kTestDataHandleData1,
+                             base::size(kTestDataHandleData1) - 1);
 }
 
 TEST_P(BlobURLRequestJobTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
@@ -648,34 +584,26 @@ TEST_P(BlobURLRequestJobTest, TestExtraHeaders) {
 }
 
 TEST_P(BlobURLRequestJobTest, TestSideData) {
-  disk_cache::ScopedEntryPtr disk_cache_entry_with_side_data =
-      CreateDiskCacheEntryWithSideData(disk_cache_backend_.get(),
-                                       kTestDiskCacheKey2, kTestDiskCacheData2,
-                                       kTestDiskCacheSideData);
-  blob_data_->AppendDiskCacheEntryWithSideData(
-      new EmptyDataHandle(), disk_cache_entry_with_side_data.get(),
-      kTestDiskCacheStreamIndex, kTestDiskCacheSideStreamIndex);
+  blob_data_->AppendReadableDataHandle(
+      base::MakeRefCounted<storage::FakeBlobDataHandle>(
+          kTestDataHandleData2, kTestDiskCacheSideData));
   expected_status_code_ = 200;
-  expected_response_ = kTestDiskCacheData2;
+  expected_response_ = kTestDataHandleData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(base::size(kTestDiskCacheData2) - 1),
+  EXPECT_EQ(static_cast<int>(base::size(kTestDataHandleData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_EQ(std::string(kTestDiskCacheSideData), response_metadata_);
 }
 
 TEST_P(BlobURLRequestJobTest, TestZeroSizeSideData) {
-  disk_cache::ScopedEntryPtr disk_cache_entry_with_side_data =
-      CreateDiskCacheEntryWithSideData(disk_cache_backend_.get(),
-                                       kTestDiskCacheKey2, kTestDiskCacheData2,
-                                       "");
-  blob_data_->AppendDiskCacheEntryWithSideData(
-      new EmptyDataHandle(), disk_cache_entry_with_side_data.get(),
-      kTestDiskCacheStreamIndex, kTestDiskCacheSideStreamIndex);
+  blob_data_->AppendReadableDataHandle(
+      base::MakeRefCounted<storage::FakeBlobDataHandle>(kTestDataHandleData2,
+                                                        ""));
   expected_status_code_ = 200;
-  expected_response_ = kTestDiskCacheData2;
+  expected_response_ = kTestDataHandleData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(base::size(kTestDiskCacheData2) - 1),
+  EXPECT_EQ(static_cast<int>(base::size(kTestDataHandleData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_TRUE(response_metadata_.empty());

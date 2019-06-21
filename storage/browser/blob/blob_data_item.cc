@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "net/base/net_errors.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
@@ -19,9 +20,35 @@ const base::FilePath::CharType kFutureFileName[] =
     FILE_PATH_LITERAL("_future_name_");
 }
 
-bool BlobDataItem::DataHandle::IsValid() {
-  return true;
+uint64_t BlobDataItem::DataHandle::GetSize() const {
+  return 0;
 }
+
+int BlobDataItem::DataHandle::Read(scoped_refptr<net::IOBuffer> dst_buffer,
+                                   uint64_t src_offset,
+                                   int bytes_to_read,
+                                   base::OnceCallback<void(int)> callback) {
+  return net::ERR_FILE_NOT_FOUND;
+}
+
+uint64_t BlobDataItem::DataHandle::GetSideDataSize() const {
+  return 0;
+}
+
+int BlobDataItem::DataHandle::ReadSideData(
+    scoped_refptr<net::IOBuffer> dst_buffer,
+    base::OnceCallback<void(int)> callback) {
+  return net::ERR_FILE_NOT_FOUND;
+}
+
+void BlobDataItem::DataHandle::PrintTo(::std::ostream* os) const {
+  *os << "<unknown>";
+}
+
+const char* BlobDataItem::DataHandle::BytesReadHistogramLabel() const {
+  return nullptr;
+}
+
 BlobDataItem::DataHandle::~DataHandle() = default;
 
 // static
@@ -91,19 +118,15 @@ scoped_refptr<BlobDataItem> BlobDataItem::CreateFileFilesystem(
 }
 
 // static
-scoped_refptr<BlobDataItem> BlobDataItem::CreateDiskCacheEntry(
-    uint64_t offset,
-    uint64_t length,
+scoped_refptr<BlobDataItem> BlobDataItem::CreateReadableDataHandle(
     scoped_refptr<DataHandle> data_handle,
-    disk_cache::Entry* entry,
-    int disk_cache_stream_index,
-    int disk_cache_side_stream_index) {
+    uint64_t offset,
+    uint64_t length) {
+  DCHECK_LE(offset, data_handle->GetSize());
+  DCHECK_LE(length, (data_handle->GetSize() - offset));
   auto item = base::WrapRefCounted(
-      new BlobDataItem(Type::kDiskCacheEntry, offset, length));
+      new BlobDataItem(Type::kReadableDataHandle, offset, length));
   item->data_handle_ = std::move(data_handle);
-  item->disk_cache_entry_ = entry;
-  item->disk_cache_stream_index_ = disk_cache_stream_index;
-  item->disk_cache_side_stream_index_ = disk_cache_side_stream_index;
   return item;
 }
 
@@ -195,11 +218,10 @@ void PrintTo(const BlobDataItem& x, ::std::ostream* os) {
     case BlobDataItem::Type::kFileFilesystem:
       *os << "kFileFilesystem, url: " << x.filesystem_url();
       break;
-    case BlobDataItem::Type::kDiskCacheEntry:
-      *os << "kDiskCacheEntry"
-          << ", disk_cache_entry_ptr: " << x.disk_cache_entry_
-          << ", disk_cache_stream_index_: " << x.disk_cache_stream_index_
-          << "}";
+    case BlobDataItem::Type::kReadableDataHandle:
+      *os << "kReadableDataHandle"
+          << ", data_handle_: ";
+      x.data_handle()->PrintTo(os);
       break;
   }
   *os << ", length: " << x.length() << ", offset: " << x.offset()
@@ -221,11 +243,8 @@ bool operator==(const BlobDataItem& a, const BlobDataItem& b) {
              a.expected_modification_time() == b.expected_modification_time();
     case BlobDataItem::Type::kFileFilesystem:
       return a.filesystem_url() == b.filesystem_url();
-    case BlobDataItem::Type::kDiskCacheEntry:
-      return a.disk_cache_entry() == b.disk_cache_entry() &&
-             a.disk_cache_stream_index() == b.disk_cache_stream_index() &&
-             a.disk_cache_side_stream_index() ==
-                 b.disk_cache_side_stream_index();
+    case BlobDataItem::Type::kReadableDataHandle:
+      return a.data_handle() == b.data_handle();
   }
   NOTREACHED();
   return false;

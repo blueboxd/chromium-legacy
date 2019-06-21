@@ -1133,10 +1133,6 @@ public class TabPersistentStore extends TabPersister {
 
         if (forMerge) {
             logExecutionTime("ReadMergedStateTime", time);
-            int tabCount = count + ((incognitoCount > 0) ? incognitoCount : 0);
-            RecordHistogram.recordLinearCountHistogram(
-                    "Android.TabPersistentStore.MergeStateTabCount",
-                    tabCount, 1, 200, 200);
         }
 
         logExecutionTime("ReadSavedStateTime", time);
@@ -1277,13 +1273,6 @@ public class TabPersistentStore extends TabPersister {
             // TabPersistentStore and delete the metadata file for the other instance, then notify
             // observers.
             if (mPersistencePolicy.isMergeInProgress()) {
-                if (mMergeTabCount != 0) {
-                    long timePerTab = (SystemClock.uptimeMillis() - mRestoreMergedTabsStartTime)
-                            / mMergeTabCount;
-                    RecordHistogram.recordTimesHistogram(
-                            "Android.TabPersistentStore.MergeStateTimePerTab", timePerTab);
-                }
-
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                     @Override
                     public void run() {
@@ -1442,11 +1431,6 @@ public class TabPersistentStore extends TabPersister {
                 if (!stateFile.exists()) {
                     Log.i(TAG, "State file does not exist.");
                     return null;
-                }
-                if (LibraryLoader.getInstance().isInitialized()) {
-                    RecordHistogram.recordCountHistogram(
-                            "Android.TabPersistentStore.MergeStateMetadataFileSize",
-                            (int) stateFile.length());
                 }
                 FileInputStream stream = null;
                 byte[] data;

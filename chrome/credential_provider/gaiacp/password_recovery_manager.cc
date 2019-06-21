@@ -17,6 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -44,16 +45,13 @@ constexpr char kUserPasswordLsaStoreEncryptedPasswordKey[] =
     "encrypted_password";
 
 // Constants used for contacting the password escrow service.
-const char kEscrowServiceGenerateKeyPairPath[] = "/v1/generateKeyPair";
-const char kGenerateKeyPairRequestDeviceIdParameterName[] = "device_id";
-const char kGenerateKeyPairResponsePublicKeyParameterName[] =
-    "base64_public_key";
-const char kGenerateKeyPairResponseResourceIdParameterName[] = "resource_id";
+const char kEscrowServiceGenerateKeyPairPath[] = "/v1/generatekeypair";
+const char kGenerateKeyPairRequestDeviceIdParameterName[] = "deviceId";
+const char kGenerateKeyPairResponsePublicKeyParameterName[] = "base64PublicKey";
+const char kGenerateKeyPairResponseResourceIdParameterName[] = "resourceId";
 
-const char kEscrowServiceGetPrivateKeyPath[] = "/v1/getPrivateKey";
-const char kGetPrivateKeyRequestResourceIdParameterName[] = "resource_id";
-const char kGetPrivateKeyResponsePrivateKeyParameterName[] =
-    "base64_private_key";
+const char kEscrowServiceGetPrivateKeyPath[] = "/v1/getprivatekey";
+const char kGetPrivateKeyResponsePrivateKeyParameterName[] = "base64PrivateKey";
 
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #if defined(GOOGLE_CHROME_BUILD)
@@ -132,7 +130,6 @@ class EscrowServiceRequest {
     result = base::JSONReader::Read(
         base::StringPiece(response_.data(), response_.size()),
         base::JSON_ALLOW_TRAILING_COMMAS);
-
     if (!result || !result->is_dict()) {
       LOGFN(ERROR) << "Failed to read json result from server response";
       result.reset();
@@ -236,21 +233,25 @@ HRESULT BuildRequestAndFetchResultFromEscrowService(
   for (auto& header : headers)
     url_fetcher->SetRequestHeader(header.first.c_str(), header.second.c_str());
 
-  base::Value request_dict(base::Value::Type::DICTIONARY);
+  HRESULT hr = S_OK;
 
-  for (auto& parameter : parameters)
-    request_dict.SetStringKey(parameter.first, parameter.second);
+  if (!parameters.empty()) {
+    base::Value request_dict(base::Value::Type::DICTIONARY);
 
-  std::string json;
-  if (!base::JSONWriter::Write(request_dict, &json)) {
-    LOGFN(ERROR) << "base::JSONWriter::Write failed";
-    return E_FAIL;
-  }
+    for (auto& parameter : parameters)
+      request_dict.SetStringKey(parameter.first, parameter.second);
 
-  HRESULT hr = url_fetcher->SetRequestBody(json.c_str());
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
-    return E_FAIL;
+    std::string json;
+    if (!base::JSONWriter::Write(request_dict, &json)) {
+      LOGFN(ERROR) << "base::JSONWriter::Write failed";
+      return E_FAIL;
+    }
+
+    hr = url_fetcher->SetRequestBody(json.c_str());
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
+      return E_FAIL;
+    }
   }
 
   base::Optional<base::Value> request_result =
@@ -366,9 +367,9 @@ HRESULT DecryptUserPasswordUsingEscrowService(
 
   // Fetch the results and extract the |private_key| to be used for decryption.
   HRESULT hr = BuildRequestAndFetchResultFromEscrowService(
-      PasswordRecoveryManager::Get()->GetEscrowServiceGetPrivateKeyUrl(),
-      {MakeAuthorizationHeader(access_token)},
-      {{kGetPrivateKeyRequestResourceIdParameterName, *resource_id}},
+      PasswordRecoveryManager::Get()->GetEscrowServiceGetPrivateKeyUrl(
+          *resource_id),
+      {MakeAuthorizationHeader(access_token)}, {},
       {
           {kGetPrivateKeyResponsePrivateKeyParameterName, &private_key},
       },
@@ -580,7 +581,8 @@ GURL PasswordRecoveryManager::GetEscrowServiceGenerateKeyPairUrl() {
   return escrow_service_server.Resolve(kEscrowServiceGenerateKeyPairPath);
 }
 
-GURL PasswordRecoveryManager::GetEscrowServiceGetPrivateKeyUrl() {
+GURL PasswordRecoveryManager::GetEscrowServiceGetPrivateKeyUrl(
+    const std::string& resource_id) {
   if (!MdmPasswordRecoveryEnabled())
     return GURL();
 
@@ -591,7 +593,8 @@ GURL PasswordRecoveryManager::GetEscrowServiceGetPrivateKeyUrl() {
     return GURL();
   }
 
-  return escrow_service_server.Resolve(kEscrowServiceGetPrivateKeyPath);
+  return escrow_service_server.Resolve(
+      base::StrCat({kEscrowServiceGetPrivateKeyPath, "/", resource_id}));
 }
 
 std::string PasswordRecoveryManager::MakeGenerateKeyPairResponseForTesting(

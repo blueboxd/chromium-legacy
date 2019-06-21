@@ -71,29 +71,18 @@ Shelf* Shelf::ForWindow(aura::Window* window) {
 
 // static
 void Shelf::LaunchShelfItem(int item_index) {
-  const ShelfModel* shelf_model = ShelfModel::Get();
-  const ShelfItems& items = shelf_model->items();
-  int item_count = shelf_model->item_count();
-  int indexes_left = item_index >= 0 ? item_index : item_count;
-  int found_index = -1;
+  const int item_count = ShelfModel::Get()->item_count();
 
-  // Iterating until we have hit the index we are interested in which
-  // is true once indexes_left becomes negative.
-  for (int i = 0; i < item_count && indexes_left >= 0; i++) {
-    if (items[i].type != TYPE_APP_LIST_DEPRECATED &&
-        items[i].type != TYPE_BACK_BUTTON_DEPRECATED) {
-      found_index = i;
-      indexes_left--;
-    }
-  }
+  // A negative argument will launch the last app. A positive argument will
+  // launch the app at the corresponding index, unless it's higher than the
+  // total number of apps, in which case we do nothing.
+  if (item_index >= item_count)
+    return;
 
-  // There are two ways how found_index can be valid: a.) the nth item was
-  // found (which is true when indexes_left is -1) or b.) the last item was
-  // requested (which is true when index was passed in as a negative number).
-  if (found_index >= 0 && (indexes_left == -1 || item_index < 0)) {
-    // Then set this one as active (or advance to the next item of its kind).
-    ActivateShelfItem(found_index);
-  }
+  const int found_index = item_index >= 0 ? item_index : item_count - 1;
+
+  // Set this one as active (or advance to the next item of its kind).
+  ActivateShelfItem(found_index);
 }
 
 // static

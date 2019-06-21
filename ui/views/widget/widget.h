@@ -294,7 +294,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     std::string wm_class_class;
 
     // If true then the widget uses software compositing. Defaults to false.
-    // Only used on Windows.
     bool force_software_compositing;
 
     // Used if widget is not activatable to do determine if mouse events should

@@ -219,6 +219,7 @@ static_library("arc_base") {
     "//components/prefs",
     "//components/user_manager",
     "//components/version_info",
+    "//content/public/browser",
     "//content/public/common",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",

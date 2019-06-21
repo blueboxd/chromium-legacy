@@ -241,6 +241,22 @@ class FileManagerUI {
         queryRequiredElement('#progress-center', this.element));
 
     /**
+     * Activity complete feedback panel.
+     * @type {!HTMLElement}
+     * @const
+     */
+    this.activityCompletePanel =
+        queryRequiredElement('#completed-panel', this.element);
+
+    /**
+     * Activity feedback panel.
+     * @type {!HTMLElement}
+     * @const
+     */
+    this.activityProgressPanel =
+        queryRequiredElement('#progress-panel', this.element);
+
+    /**
      * List container.
      * @type {ListContainer}
      */

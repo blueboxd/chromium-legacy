@@ -58,10 +58,10 @@ TEST_F(SequencedTaskRunnerHandleTest, FromTaskEnvironment) {
 }
 
 TEST_F(SequencedTaskRunnerHandleTest, FromThreadPoolSequencedTask) {
-  base::CreateSequencedTaskRunnerWithTraits({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SequencedTaskRunnerHandleTest::VerifyCurrentSequencedTaskRunner));
+  base::CreateSequencedTaskRunner({ThreadPool()})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&SequencedTaskRunnerHandleTest::
+                                    VerifyCurrentSequencedTaskRunner));
   scoped_task_environment_.RunUntilIdle();
 }
 

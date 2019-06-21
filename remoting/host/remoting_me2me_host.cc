@@ -910,13 +910,11 @@ void HostProcess::StartOnUiThread() {
   if (enable_window_capture_) {
     desktop_environment_factory = new SingleWindowDesktopEnvironmentFactory(
         context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner(),
-        context_->system_input_injector_factory(), window_id_);
+        context_->input_task_runner(), context_->ui_task_runner(), window_id_);
   } else {
     desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
         context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner(),
-        context_->system_input_injector_factory());
+        context_->input_task_runner(), context_->ui_task_runner());
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 

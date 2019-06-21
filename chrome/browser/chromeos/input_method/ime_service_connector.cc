@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 
 namespace chromeos {
 namespace input_method {
@@ -56,8 +56,7 @@ void ImeServiceConnector::DownloadImeFileTo(
 
 void ImeServiceConnector::SetupImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  auto* connector = content::GetSystemConnector();
   auto per_id_filter = service_manager::ServiceFilter::ByNameWithId(
       chromeos::ime::mojom::kServiceName, instance_id_);
 

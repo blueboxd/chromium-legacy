@@ -688,6 +688,13 @@ void WebContentsAndroid::SetOverscrollRefreshHandler(
           overscroll_refresh_handler));
 }
 
+void WebContentsAndroid::SetSpatialNavigationDisabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    bool disabled) {
+  web_contents_->SetSpatialNavigationDisabled(disabled);
+}
+
 void WebContentsAndroid::WriteContentBitmapToDisk(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

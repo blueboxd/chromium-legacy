@@ -123,7 +123,7 @@ PreviewsPageLoadMetricsObserver::OnCommit(
     return STOP_OBSERVING;
 
   previews_type_ = previews::GetMainFramePreviewsType(
-      previews_user_data->committed_previews_state());
+      previews_user_data->PreHoldbackCommittedPreviewsState());
   if (previews_type_ != previews::PreviewsType::NOSCRIPT &&
       previews_type_ != previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     return STOP_OBSERVING;

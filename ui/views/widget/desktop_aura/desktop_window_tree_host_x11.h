@@ -91,6 +91,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
+  // This must be called before the window is created, because the visual cannot
+  // be changed after.
+  void SetVisualId(VisualID visual_id);
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -471,6 +475,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool pending_counter_value_is_extended_ = false;
   bool configure_counter_value_is_extended_ = false;
   std::unique_ptr<CompositorObserver> compositor_observer_;
+
+  VisualID visual_id_ = 0;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};

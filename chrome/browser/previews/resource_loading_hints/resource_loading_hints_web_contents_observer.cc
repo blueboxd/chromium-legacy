@@ -53,15 +53,8 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
       ui_tab_helper->GetPreviewsUserData(navigation_handle);
 
   if (!previews_user_data ||
-      previews_user_data->committed_previews_type() !=
+      previews_user_data->CommittedPreviewsType() !=
           previews::PreviewsType::RESOURCE_LOADING_HINTS) {
-    return;
-  }
-  // The committed previews type can sometimes not be cleared out if there were
-  // no pre-commit previews allowed, so make sure we are not in the coin flip
-  // holdback before proceeding with sending resource loading hints.
-  if (previews_user_data->coin_flip_holdback_result() ==
-      previews::CoinFlipHoldbackResult::kHoldback) {
     return;
   }
 

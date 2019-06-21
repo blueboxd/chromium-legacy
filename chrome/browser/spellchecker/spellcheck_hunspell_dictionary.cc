@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,27 +128,31 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
         FROM_HERE,
         base::BindOnce(&CloseDictionary, std::move(dictionary_file_.file)));
   }
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  // Disable the language from platform spellchecker.
+  if (spellcheck::UseBrowserSpellChecker())
+    spellcheck_platform::DisableLanguage(language_);
+#endif
 }
 
 void SpellcheckHunspellDictionary::Load() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  if (spellcheck_platform::SpellCheckerAvailable() &&
-      spellcheck_platform::PlatformSupportsLanguage(language_)) {
-    use_browser_spellchecker_ = true;
-    spellcheck_platform::SetLanguage(language_);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SpellcheckHunspellDictionary::InformListenersOfInitialization,
-            weak_ptr_factory_.GetWeakPtr()));
+  if (spellcheck::UseBrowserSpellChecker()) {
+    if (spellcheck_platform::SpellCheckerAvailable() &&
+        spellcheck_platform::PlatformSupportsLanguage(language_)) {
+      spellcheck_platform::SetLanguage(
+          language_, base::BindOnce(&SpellcheckHunspellDictionary::
+                                        SpellCheckPlatformSetLanguageCompleted,
+                                    base::Unretained(this)));
+    }
     return;
   }
 #endif  // USE_BROWSER_SPELLCHECKER
 
-// Mac falls back on hunspell if its platform spellchecker isn't available.
-// However, Android does not support hunspell.
+// Android does not support hunspell.
 #if !defined(OS_ANDROID)
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
@@ -441,3 +446,20 @@ void SpellcheckHunspellDictionary::InformListenersOfDownloadFailure() {
   for (Observer& observer : observers_)
     observer.OnHunspellDictionaryDownloadFailure(language_);
 }
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+void SpellcheckHunspellDictionary::SpellCheckPlatformSetLanguageCompleted(
+    bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!result)
+    return;
+
+  use_browser_spellchecker_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SpellcheckHunspellDictionary::InformListenersOfInitialization,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+#endif

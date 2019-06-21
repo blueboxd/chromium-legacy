@@ -10,7 +10,11 @@
 Polymer({
   is: 'internet-detail-dialog',
 
-  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+    I18nBehavior,
+  ],
 
   properties: {
     /** The network GUID to display details for. */
@@ -45,13 +49,6 @@ Polymer({
   },
 
   /**
-   * Listener function for chrome.networkingPrivate.onNetworksChanged event.
-   * @type {?function(!Array<string>)}
-   * @private
-   */
-  networksChangedListener_: null,
-
-  /**
    * Set to true to once the initial properties have been received. This
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
@@ -80,12 +77,6 @@ Polymer({
       this.close_();
     }
 
-    if (!this.networksChangedListener_) {
-      this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-      this.networkingPrivate.onNetworksChanged.addListener(
-          this.networksChangedListener_);
-    }
-
     // Set basic networkProperties until they are loaded.
     this.networkProperties = {
       GUID: this.guid,
@@ -97,28 +88,25 @@ Polymer({
     this.getNetworkDetails_();
   },
 
-  /** @override */
-  detached: function() {
-    if (this.networksChangedListener_) {
-      this.networkingPrivate.onNetworksChanged.removeListener(
-          this.networksChangedListener_);
-      this.networksChangedListener_ = null;
-    }
-  },
-
   /** @private */
   close_: function() {
     chrome.send('dialogClose');
   },
 
   /**
-   * networkingPrivate.onNetworksChanged event callback.
-   * @param {!Array<string>} networkIds The list of changed network GUIDs.
-   * @private
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
-  onNetworksChangedEvent_: function(networkIds) {
-    if (networkIds.includes(this.guid))
+  onActiveNetworksChanged: function(networks) {
+    if (!this.guid || !this.networkProperties) {
+      return;
+    }
+    // If the network was or is active, request an update.
+    if (this.networkProperties.ConnectionState !=
+            CrOnc.ConnectionState.NOT_CONNECTED ||
+        networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
+    }
   },
 
   /**

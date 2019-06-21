@@ -8,7 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -49,7 +49,7 @@ using chrome_test_util::SettingsMenuBackButton;
       selectElementWithMatcher:grey_accessibilityID(
                                    @"translate_settings_view_controller")]
       assertWithMatcher:grey_notNil()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Close settings.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]

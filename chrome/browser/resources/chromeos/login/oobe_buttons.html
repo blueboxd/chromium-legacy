@@ -4,12 +4,10 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <iron-iconset-svg name="oobe-buttons-20" size="20">
@@ -56,17 +54,17 @@
   <template>
     <style include="iron-flex iron-flex-alignment iron-positioning"></style>
     <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
-    <style include="paper-button-style cr-icons cr-shared-style"></style>
+    <style include="cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_fonts.css">
     <link rel="stylesheet" href="oobe_text_buttons.css">
-    <paper-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
+    <cr-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
         inverse$="[[inverse]]" aria-label$="[[labelForAria]]"
         border$="[[border]]" android$="[[android]]">
       <div id="container"
           class="flex layout horizontal center center-justified self-stretch">
         <slot></slot>
       </div>
-    </paper-button>
+    </cr-button>
   </template>
 </dom-module>
 
@@ -116,11 +114,11 @@
   <template>
     <style include="iron-flex iron-flex-alignment iron-positioning"></style>
     <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
-    <style include="paper-button-style cr-icons cr-shared-style"></style>
+    <style include="cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_fonts.css">
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_next_button.css">
-    <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]"
+    <cr-button id="button" on-tap="onClick_" disabled="[[disabled]]"
         class="action-button">
       <div class="flex horizontal layout start center">
         <slot>
@@ -131,7 +129,7 @@
             icon2x="oobe-buttons-40:arrow-forward">
         </hd-iron-icon>
       </div>
-    </paper-button>
+    </cr-button>
   </template>
 </dom-module>
 
@@ -153,11 +151,11 @@
   <template>
     <style include="iron-flex iron-flex-alignment iron-positioning"></style>
     <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
-    <style include="paper-button-style cr-icons cr-shared-style"></style>
+    <style include="cr-icons cr-shared-style"></style>
     <link rel="stylesheet" href="oobe_fonts.css">
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
-    <paper-button id="button" aria-label$="[[labelForAria]]">
+    <cr-button id="button" aria-label$="[[labelForAria]]">
       <div id="container" class="flex vertical layout center self-stretch">
         <div class="flex layout horizontal center self-stretch center-justified">
           <hd-iron-icon id="icon" icon1x="[[icon1x]]" icon2x="[[icon2x]]"
@@ -166,6 +164,6 @@
           <slot></slot>
         </div>
       </div>
-    </paper-button>
+    </cr-button>
   </template>
 </dom-module>

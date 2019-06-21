@@ -20,7 +20,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -220,6 +220,13 @@ CrosUsbDetector::CrosUsbDetector()
   adb_device_filter_->subclass_code = kAdbSubclass;
   adb_device_filter_->has_protocol_code = true;
   adb_device_filter_->protocol_code = kAdbProtocol;
+
+  const int kFastbootProtocol = 0x3;
+  fastboot_device_filter_ = UsbFilterByClassCode(USB_CLASS_VENDOR_SPEC);
+  fastboot_device_filter_->has_subclass_code = true;
+  fastboot_device_filter_->subclass_code = kAdbSubclass;
+  fastboot_device_filter_->has_protocol_code = true;
+  fastboot_device_filter_->protocol_code = kFastbootProtocol;
 }
 
 CrosUsbDetector::~CrosUsbDetector() {
@@ -256,10 +263,7 @@ std::vector<SharedUsbDeviceInfo> CrosUsbDetector::GetSharedUsbDevices() {
 void CrosUsbDetector::ConnectToDeviceManager() {
   // Tests may set a fake manager.
   if (!device_manager_) {
-    // Request UsbDeviceManagerPtr from DeviceService.
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    DCHECK(connection);
-    connection->GetConnector()->BindInterface(
+    content::GetSystemConnector()->BindInterface(
         device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
   }
   DCHECK(device_manager_);
@@ -282,7 +286,8 @@ bool CrosUsbDetector::ShouldShowNotification(
   if (!crostini::IsCrostiniEnabled(profile())) {
     return false;
   }
-  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
+      device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
     return true;
   }
   return !device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
@@ -291,7 +296,8 @@ bool CrosUsbDetector::ShouldShowNotification(
 
 bool CrosUsbDetector::IsDeviceSharable(
     const device::mojom::UsbDeviceInfo& device_info) {
-  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
+      device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
     return true;
   }
   return base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported) &&

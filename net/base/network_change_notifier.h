@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -595,7 +596,7 @@ class NET_EXPORT NetworkChangeNotifier {
       network_observer_list_;
 
   // The current network state. Hosts DnsConfig, exposed via GetDnsConfig.
-  std::unique_ptr<NetworkState> network_state_;
+  scoped_refptr<NetworkState> network_state_;
 
   // Computes NetworkChange signal from IPAddress and ConnectionType signals.
   std::unique_ptr<NetworkChangeCalculator> network_change_calculator_;

@@ -17,7 +17,6 @@
 
 namespace service_manager {
 
-// See //services/service_manager/README.md#onbindinterface for details on this.
 template <typename... BinderArgs>
 class BinderRegistryWithArgs {
  public:
@@ -139,7 +138,6 @@ class BinderRegistryWithArgs {
   DISALLOW_COPY_AND_ASSIGN(BinderRegistryWithArgs);
 };
 
-// See //services/service_manager/README.md#onbindinterface for details on this.
 using BinderRegistry = BinderRegistryWithArgs<>;
 
 }  // namespace service_manager

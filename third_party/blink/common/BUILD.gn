@@ -33,6 +33,7 @@ jumbo_source_set("common") {
     "feature_policy/feature_policy.cc",
     "feature_policy/policy_value.cc",
     "features.cc",
+    "fetch/fetch_api_request_body_mojom_traits.cc",
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",

@@ -42,10 +42,13 @@ class NativeProcessLauncher {
 
   // Creates default launcher for the current OS. |native_view| refers to the
   // window that contains calling page. Can be nullptr, e.g. for background
-  // pages.
+  // pages. If |profile_directory| is non-empty and the host supports
+  // native-initiated connections, additional reconnect args will be passed to
+  // the host.
   static std::unique_ptr<NativeProcessLauncher> CreateDefault(
       bool allow_user_level_hosts,
-      gfx::NativeView native_view);
+      gfx::NativeView native_view,
+      const base::FilePath& profile_directory);
 
   NativeProcessLauncher() {}
   virtual ~NativeProcessLauncher() {}

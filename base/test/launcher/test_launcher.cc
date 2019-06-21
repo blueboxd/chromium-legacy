@@ -751,8 +751,9 @@ void TestLauncher::LaunchChildGTestProcess(
   CommandLine new_command_line(
       PrepareCommandLineForGTest(command_line, wrapper));
 
-  PostTaskWithTraits(
-      FROM_HERE, {MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
+  PostTask(
+      FROM_HERE,
+      {ThreadPool(), MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
       BindOnce(&DoLaunchChildTestProcess, new_command_line, timeout, options,
                redirect_stdio_, RetainedRef(ThreadTaskRunnerHandle::Get()),
                std::move(observer)));

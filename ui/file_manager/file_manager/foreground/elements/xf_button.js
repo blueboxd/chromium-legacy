@@ -11,9 +11,8 @@ class PanelButton extends HTMLElement {
   }
 
   /**
-   * Creates an instance of Panelitem, attaching the template clone.
+   * Creates a PanelButton.
    * @private
-   * @return {PanelButton} Custom element instance.
    */
   static createElement_() {
     const template = document.createElement('template');

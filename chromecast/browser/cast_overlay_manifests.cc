@@ -39,10 +39,6 @@ const service_manager::Manifest& GetCastContentBrowserOverlayManifest() {
 #if !defined(OS_FUCHSIA)
         .RequireCapability("heap_profiling", "heap_profiler")
         .RequireCapability("heap_profiling", "profiling")
-        .RequireCapability("content_system", "profiling_client")
-        .ExposeCapability("profiling_client",
-                          service_manager::Manifest::InterfaceList<
-                              heap_profiling::mojom::ProfilingClient>())
 #endif  // !defined(OS_FUCHSIA)
         .ExposeCapability("renderer",
                           service_manager::Manifest::InterfaceList<

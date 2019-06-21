@@ -68,8 +68,10 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
     const InterpolableList* list =
         ToInterpolableList(&typed_value->GetInterpolableValue());
-    EXPECT_FLOAT_EQ(expected_value,
-                    ToInterpolableNumber(list->Get(0))->Value());
+    // Lengths are computed in logical units, which are quantized to 64ths of
+    // a pixel.
+    EXPECT_NEAR(expected_value, ToInterpolableNumber(list->Get(0))->Value(),
+                /*abs_error=*/0.02);
   }
 
   void ExpectNonInterpolableValue(const String& expected_value,
@@ -204,10 +206,11 @@ TEST_F(AnimationKeyframeEffectModel, CompositeEaseIn) {
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   HeapVector<Member<Interpolation>> values;
+  // CubicBezier(0.42, 0, 1, 1)(0.6) = 0.4291197695757142.
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectLengthValue(3.8579516, values.at(0));
+  ExpectLengthValue(3.85824, values.at(0));
   effect->Sample(0, 0.6, kDuration * 100, values);
-  ExpectLengthValue(3.8582394, values.at(0));
+  ExpectLengthValue(3.85824, values.at(0));
 }
 
 TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
@@ -216,12 +219,13 @@ TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Create(0.42, 0, 0.58, 1));
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
+  // CubicBezier(0.42, 0, 0.58, 1)(0.6) = 0.6681161300485039.
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   HeapVector<Member<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectLengthValue(4.3363357, values.at(0));
+  ExpectLengthValue(4.336232, values.at(0));
   effect->Sample(0, 0.6, kDuration * 1000, values);
-  ExpectLengthValue(4.3362322, values.at(0));
+  ExpectLengthValue(4.336232, values.at(0));
 }
 
 TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {

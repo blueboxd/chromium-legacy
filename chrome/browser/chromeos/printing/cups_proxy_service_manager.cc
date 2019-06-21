@@ -6,7 +6,7 @@
 
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -29,7 +29,7 @@ void CupsProxyServiceManager::OnDaemonAvailable(bool daemon_available) {
   // Note: The service does not support BindInterface calls, so we
   // intentionally leave out a connection_error_handler, since it would
   // called immediately.
-  content::ServiceManagerConnection::GetForProcess()->GetConnector()->Connect(
+  content::GetSystemConnector()->Connect(
       printing::mojom::kCupsProxyServiceName,
       service_handle_.BindNewPipeAndPassReceiver());
 }

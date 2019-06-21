@@ -554,7 +554,12 @@ void NGInlineItemsBuilderTemplate<
           // removed entirely. However, when the first collapsible space is
           // 'nowrap', and the following collapsed space is 'wrap', the
           // collapsed space needs to create a break opportunity.
-          AppendGeneratedBreakOpportunity(layout_object);
+          // Note that we don't need to generate a break opportunity right
+          // after a forced break.
+          if (item->Type() != NGInlineItem::kControl ||
+              text_[item->StartOffset()] != kNewlineCharacter) {
+            AppendGeneratedBreakOpportunity(layout_object);
+          }
         }
       }
     } else {

@@ -534,7 +534,7 @@ void RTCDataChannel::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
 
   if (!scheduled_event_timer_.IsActive())
-    scheduled_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    scheduled_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void RTCDataChannel::ScheduledEventTimerFired(TimerBase*) {

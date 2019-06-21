@@ -89,7 +89,7 @@ namespace ash {
 namespace {
 
 void PressAppListButton() {
-  ash::Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
       display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       app_list::AppListShowSource::kShelfButton, base::TimeTicks());
 }
@@ -105,6 +105,15 @@ ShelfWidget* GetShelfWidget() {
 
 ShelfLayoutManager* GetShelfLayoutManager() {
   return AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+}
+
+gfx::Rect GetScreenAvailableBounds() {
+  const WorkAreaInsets* const work_area =
+      WorkAreaInsets::ForWindow(GetShelfWidget()->GetNativeWindow());
+  gfx::Rect available_bounds = screen_util::GetDisplayBoundsWithShelf(
+      GetShelfWidget()->GetNativeWindow());
+  available_bounds.Inset(work_area->GetAccessibilityInsets());
+  return available_bounds;
 }
 
 // Class which waits till the shelf finishes animating to the target size and
@@ -2643,17 +2652,11 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
 // Tests that the auto-hide shelf has expected behavior when pressing the
 // AppList button while the shelf is being dragged by gesture (see
 // https://crbug.com/953877).
-TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenShelfBeingDragged) {
+TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
   // Create a widget to hide the shelf in auto-hide mode.
   CreateTestWidget();
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
-
-  const WorkAreaInsets* const work_area =
-      WorkAreaInsets::ForWindow(GetShelfWidget()->GetNativeWindow());
-  gfx::Rect available_bounds = screen_util::GetDisplayBoundsWithShelf(
-      GetShelfWidget()->GetNativeWindow());
-  available_bounds.Inset(work_area->GetAccessibilityInsets());
 
   // Emulate to drag the shelf to show it.
   gfx::Point gesture_location = display::Screen::GetScreen()
@@ -2705,13 +2708,61 @@ TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenShelfBeingDragged) {
   // (1) Shelf is hidden
   // (2) Shelf has correct bounds in screen coordinate.
   PressAppListButton();
-  EXPECT_EQ(available_bounds.bottom_left() +
+  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
                 gfx::Point(0, -kHiddenShelfInScreenPortion).OffsetFromOrigin(),
             GetPrimaryShelf()
                 ->GetShelfViewForTesting()
                 ->GetBoundsInScreen()
                 .origin());
   EXPECT_FALSE(GetPrimaryShelf()->IsVisible());
+}
+
+// Tests that the shelf has expected bounds when dragging the shelf by gesture
+// and pressing the AppList button by mouse during drag (see
+// https://crbug.com/968768).
+TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
+  // Drag the shelf upward. Notice that in order to drag shelf instead of
+  // AppList from shelf, we need to drag the shelf downward a little bit then
+  // upward. Because the bug is related with RootView, the event should be sent
+  // through the shelf widget.
+  gfx::Point gesture_location =
+      GetPrimaryShelf()->GetShelfViewForTesting()->bounds().CenterPoint();
+  int delta_y = 1;
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  ui::GestureEvent start_event = ui::GestureEvent(
+      gesture_location.x(), gesture_location.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, delta_y));
+  GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&start_event);
+  delta_y = -5;
+  timestamp += base::TimeDelta::FromMilliseconds(200);
+  ui::GestureEvent update_event = ui::GestureEvent(
+      gesture_location.x(), gesture_location.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, delta_y));
+  GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&update_event);
+
+  // Press the AppList button by mouse.
+  views::View* app_list_button =
+      GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
+  GetEventGenerator()->MoveMouseTo(
+      app_list_button->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  // End the gesture event.
+  delta_y -= 1;
+  gesture_location.Offset(0, delta_y);
+  timestamp += base::TimeDelta::FromMilliseconds(200);
+  ui::GestureEvent scroll_end_event = ui::GestureEvent(
+      gesture_location.x(), gesture_location.y(), ui::EF_NONE, timestamp,
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+  GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&scroll_end_event);
+
+  // Verify that the shelf has expected bounds.
+  EXPECT_EQ(GetScreenAvailableBounds().bottom_left() +
+                gfx::Point(0, -kShelfSize).OffsetFromOrigin(),
+            GetPrimaryShelf()
+                ->GetShelfViewForTesting()
+                ->GetBoundsInScreen()
+                .origin());
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.

@@ -34,7 +34,7 @@ class VIEWS_EXPORT StatusIconLinux {
     virtual ui::MenuModel* GetMenuModel() const = 0;
 
     // This should be called at most once by the implementation.
-    virtual void OnImplInitialized(bool success) = 0;
+    virtual void OnImplInitializationFailed() = 0;
 
    protected:
     virtual ~Delegate();
@@ -43,7 +43,7 @@ class VIEWS_EXPORT StatusIconLinux {
   StatusIconLinux();
   virtual ~StatusIconLinux();
 
-  virtual void SetImage(const gfx::ImageSkia& image) = 0;
+  virtual void SetIcon(const gfx::ImageSkia& image) = 0;
   virtual void SetToolTip(const base::string16& tool_tip) = 0;
 
   // Invoked after a call to SetContextMenu() to let the platform-specific
@@ -56,8 +56,11 @@ class VIEWS_EXPORT StatusIconLinux {
   // need to manually refresh it when the menu model changes.
   virtual void RefreshPlatformContextMenu();
 
+  virtual void OnSetDelegate();
+
+  void SetDelegate(Delegate* delegate);
+
   Delegate* delegate() { return delegate_; }
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  protected:
   Delegate* delegate_ = nullptr;

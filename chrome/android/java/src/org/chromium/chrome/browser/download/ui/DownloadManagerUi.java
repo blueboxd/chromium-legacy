@@ -388,7 +388,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             mToolbar.showSearchView();
             return true;
         } else if (item.getItemId() == R.id.settings_menu_id) {
-            PreferencesLauncher.launchSettingsPage(mActivity, DownloadPreferences.class);
+            PreferencesLauncher.launchSettingsPageCompat(mActivity, DownloadPreferences.class);
             return true;
         }
         return false;

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -43,6 +44,10 @@ class AudioFocusManagerTest
   AudioFocusManagerTest() = default;
 
   void SetUp() override {
+    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
+    power_source_ = power_source.get();
+    base::PowerMonitor::Initialize(std::move(power_source));
+
     // Create an instance of the MediaSessionService.
     service_ = std::make_unique<MediaSessionService>(
         connector_factory_.RegisterInstance(mojom::kServiceName));
@@ -58,6 +63,9 @@ class AudioFocusManagerTest
   void TearDown() override {
     // Run pending tasks.
     base::RunLoop().RunUntilIdle();
+
+    service_.reset();
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   AudioFocusManager::RequestId GetAudioFocusedSession() {
@@ -200,6 +208,8 @@ class AudioFocusManagerTest
     return GetParam() != mojom::EnforcementMode::kSingleSession;
   }
 
+  base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
+
  private:
   int GetCountForType(mojom::AudioFocusType type) {
     const auto audio_focus_requests = GetRequests();
@@ -248,6 +258,8 @@ class AudioFocusManagerTest
 
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
+
+  base::PowerMonitorTestSource* power_source_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
@@ -1481,6 +1493,31 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_NotTopMost) {
     EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session_1)));
   }
+}
+
+TEST_P(AudioFocusManagerTest, SuspendAllSessionOnPowerSuspend) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  test::MockMediaSessionMojoObserver observer_1(media_session_1);
+  test::MockMediaSessionMojoObserver observer_2(media_session_2);
+
+  GetTestPowerSource().GenerateSuspendEvent();
+
+  observer_1.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+  observer_2.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
 }
 
 }  // namespace media_session

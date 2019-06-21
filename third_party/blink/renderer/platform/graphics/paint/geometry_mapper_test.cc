@@ -344,7 +344,7 @@ TEST_P(GeometryMapperTest, SimpleClipOverlayScrollbars) {
   clip_state.local_transform_space = &t0();
   clip_state.clip_rect = FloatRoundedRect(10, 10, 50, 50);
   clip_state.clip_rect_excluding_overlay_scrollbars =
-      FloatRoundedRect(10, 10, 45, 43);
+      FloatClipRect(FloatRect(10, 10, 45, 43));
   auto clip = ClipPaintPropertyNode::Create(c0(), std::move(clip_state));
   local_state.SetClip(*clip);
 

@@ -49,6 +49,8 @@ NSString* const kMemoryWarningInProgress = @"memory_warning_in_progress";
 NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
+NSString* const kBVCPresentingActiveViewController =
+    @"bvc_presenting_active_vc";
 
 // Multiple state information are combined into one CrachReportMultiParameter
 // to save limited and finite number of ReportParameters.
@@ -337,6 +339,20 @@ void SetDestroyingAndRebuildingIncognitoBrowserState(bool in_progress) {
     [[CrashReportUserApplicationState sharedInstance]
         removeValue:kDestroyingAndRebuildingIncognitoBrowserState];
   }
+}
+
+void SetBVCPresentingActiveViewController(NSString* active_view_controller,
+                                          NSString* presenting_view_controller,
+                                          NSString* parent_view_controller) {
+  NSString* formatted_value = [NSString
+      stringWithFormat:@"{activeVC:%@, presentingVC:%@, parentVC:%@}",
+                       active_view_controller, presenting_view_controller,
+                       parent_view_controller];
+  AddReportParameter(kBVCPresentingActiveViewController, formatted_value, true);
+}
+
+void RemoveBVCPresentingActiveViewController() {
+  RemoveReportParameter(kBVCPresentingActiveViewController);
 }
 
 void MediaStreamPlaybackDidStart() {

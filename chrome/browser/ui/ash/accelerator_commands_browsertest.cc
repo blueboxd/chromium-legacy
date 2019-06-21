@@ -25,7 +25,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -48,9 +47,7 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
 };
 
 bool IsInImmersive(aura::Window* window) {
-  aura::Window* toplevel =
-      features::IsUsingWindowService() ? window->GetRootWindow() : window;
-  return toplevel->GetProperty(ash::kImmersiveIsActive);
+  return window->GetProperty(ash::kImmersiveIsActive);
 }
 
 }  // namespace
@@ -107,10 +104,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   // 2) ash::ShellTestApi().ToggleFullscreen() should have no effect on windows
   // which cannot be maximized.
-  aura::Window* toplevel =
-      features::IsUsingWindowService() ? window->GetRootWindow() : window;
-  toplevel->SetProperty(aura::client::kResizeBehaviorKey,
-                        aura::client::kResizeBehaviorNone);
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorNone);
   ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(widget));
 

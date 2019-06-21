@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +16,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/wilco_dtc_supportd_client.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
@@ -29,6 +32,8 @@
 namespace chromeos {
 
 namespace {
+
+using wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent;
 
 // Interval used between successive connection attempts to the
 // wilco_dtc_supportd. This is a safety measure for avoiding busy loops when the
@@ -110,14 +115,19 @@ WilcoDtcSupportdBridge::WilcoDtcSupportdBridge(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : WilcoDtcSupportdBridge(
           std::make_unique<WilcoDtcSupportdBridgeDelegateImpl>(),
-          std::move(url_loader_factory)) {}
+          std::move(url_loader_factory),
+          std::make_unique<WilcoDtcSupportdNotificationController>()) {}
 
 WilcoDtcSupportdBridge::WilcoDtcSupportdBridge(
     std::unique_ptr<Delegate> delegate,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<WilcoDtcSupportdNotificationController>
+        notification_controller)
     : delegate_(std::move(delegate)),
-      web_request_service_(std::move(url_loader_factory)) {
+      web_request_service_(std::move(url_loader_factory)),
+      notification_controller_(std::move(notification_controller)) {
   DCHECK(delegate_);
+  DCHECK(notification_controller_);
   DCHECK(!g_wilco_dtc_supportd_bridge_instance);
   g_wilco_dtc_supportd_bridge_instance = this;
   WaitForDBusService();
@@ -309,6 +319,24 @@ void WilcoDtcSupportdBridge::GetConfigurationData(
     GetConfigurationDataCallback callback) {
   std::move(callback).Run(configuration_data_ ? *configuration_data_
                                               : std::string());
+}
+
+void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
+  switch (event) {
+    case WilcoDtcSupportdEvent::kBatteryAuth:
+      notification_controller_->ShowBatteryAuthNotification();
+      return;
+    case WilcoDtcSupportdEvent::kNonWilcoCharger:
+      notification_controller_->ShowNonWilcoChargerNotification();
+      return;
+    case WilcoDtcSupportdEvent::kIncompatibleDock:
+      notification_controller_->ShowIncompatibleDockNotification();
+      return;
+    case WilcoDtcSupportdEvent::kDockError:
+      notification_controller_->ShowDockErrorNotification();
+      return;
+  }
+  LOG(ERROR) << "Unrecognized event " << event << " event";
 }
 
 void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(

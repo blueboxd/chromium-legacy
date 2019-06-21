@@ -85,11 +85,11 @@ int DesktopProcessMain() {
 
   desktop_environment_factory.reset(new SessionDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,
-      ui_task_runner, nullptr, inject_sas_closure, lock_workstation_closure));
+      ui_task_runner, inject_sas_closure, lock_workstation_closure));
 #else  // !defined(OS_WIN)
   desktop_environment_factory.reset(new Me2MeDesktopEnvironmentFactory(
       ui_task_runner, video_capture_task_runner, input_task_runner,
-      ui_task_runner, nullptr));
+      ui_task_runner));
 #endif  // !defined(OS_WIN)
 
   if (!desktop_process.Start(std::move(desktop_environment_factory)))

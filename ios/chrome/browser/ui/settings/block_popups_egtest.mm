@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -104,7 +103,7 @@ class ScopedBlockPopupsException {
       selectElementWithMatcher:grey_accessibilityID(
                                    @"block_popups_settings_view_controller")]
       assertWithMatcher:grey_notNil()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Close the settings menu.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]

@@ -14,7 +14,6 @@
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
@@ -28,6 +27,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)

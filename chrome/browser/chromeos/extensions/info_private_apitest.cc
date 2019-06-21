@@ -21,7 +21,6 @@
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -191,9 +190,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
   test_api.SetTouchscreenDevices({touchscreen});
 
   ui::test::EventGenerator generator(
-      features::IsUsingWindowService()
-          ? nullptr
-          : browser()->window()->GetNativeWindow()->GetRootWindow());
+      browser()->window()->GetNativeWindow()->GetRootWindow());
   generator.EnterPenPointerMode();
   generator.PressTouch();
   generator.ReleaseTouch();

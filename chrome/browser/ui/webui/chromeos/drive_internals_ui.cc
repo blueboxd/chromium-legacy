@@ -53,11 +53,11 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "content/public/common/service_manager_connection.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -997,8 +997,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     (new ZipFileCreator(
          base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
          logs_directory_, files, zip_path_))
-        ->Start(
-            content::ServiceManagerConnection::GetForProcess()->GetConnector());
+        ->Start(content::GetSystemConnector());
   }
 
   static std::vector<base::FilePath> EnumerateLogFiles(

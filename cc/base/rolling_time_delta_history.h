@@ -28,6 +28,7 @@ class CC_BASE_EXPORT RollingTimeDeltaHistory {
   RollingTimeDeltaHistory& operator=(const RollingTimeDeltaHistory&) = delete;
 
   void InsertSample(base::TimeDelta time);
+  void RemoveOldestSample();
   size_t sample_count() const { return sample_set_.size(); }
 
   void Clear();

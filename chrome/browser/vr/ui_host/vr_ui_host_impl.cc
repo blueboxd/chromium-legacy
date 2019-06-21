@@ -23,7 +23,7 @@
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -138,9 +138,8 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
     runtime->AddObserver(this);
   }
 
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &geolocation_config_);
 }
 
 VRUiHostImpl::~VRUiHostImpl() {

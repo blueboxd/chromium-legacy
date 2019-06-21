@@ -39,8 +39,8 @@
 #include "chrome/common/web_application_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
 #include "extensions/browser/disable_reason.h"
@@ -288,8 +288,7 @@ void ChromeManagementAPIDelegate::
         extensions::ManagementGetPermissionWarningsByManifestFunction* function,
         const std::string& manifest_str) const {
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      manifest_str,
+      content::GetSystemConnector(), manifest_str,
       base::BindOnce(
           &extensions::ManagementGetPermissionWarningsByManifestFunction::
               OnParseSuccess,

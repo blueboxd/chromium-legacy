@@ -616,7 +616,7 @@ cr.define('interventions_internals', () => {
   }
 
   /**
-   * Retrieves the statuses of previews (i.e. Offline, LoFi, AMP Redirection),
+   * Retrieves the statuses of previews (i.e. Offline, Lite Pages, etc),
    * and posts them on chrome://intervention-internals.
    */
   function getPreviewsEnabled() {

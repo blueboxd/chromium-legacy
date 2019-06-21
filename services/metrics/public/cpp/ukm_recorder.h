@@ -19,10 +19,6 @@
 
 class PermissionUmaUtil;
 
-namespace autofill {
-class TestAutofillClient;
-}  // namespace autofill
-
 namespace blink {
 class Document;
 }  // namespace blink
@@ -75,7 +71,6 @@ class METRICS_EXPORT UkmRecorder {
   friend DelegatingUkmRecorder;
   friend TestRecordingHelper;
   friend UkmBackgroundRecorderService;
-  friend autofill::TestAutofillClient;
   friend blink::Document;
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;

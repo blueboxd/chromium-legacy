@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_service_manager_listener.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -60,8 +60,7 @@ class SafeXmlParserTest : public InProcessBrowserTest {
     }
 
     data_decoder::ParseXml(
-        content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-        xml.as_string(),
+        content::GetSystemConnector(), xml.as_string(),
         base::BindOnce(&SafeXmlParserTest::XmlParsingDone,
                        base::Unretained(this), run_loop.QuitClosure(),
                        std::move(expected_value)),

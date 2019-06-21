@@ -196,14 +196,12 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
     LOG(ERROR) << "Failed to get system salt.";
     FlushTokenSaveCallbacks(false);
     state_ = STATE_NO_TOKEN;
-    FireRefreshTokensLoaded();
     return;
   }
 
   // If the token has been set meanwhile, write it to |local_state_|.
   if (!refresh_token_.empty()) {
     EncryptAndSaveToken();
-    FireRefreshTokensLoaded();
     return;
   }
 
@@ -216,7 +214,6 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
     if (refresh_token_.empty()) {
       LOG(ERROR) << "Failed to decrypt refresh token.";
       state_ = STATE_NO_TOKEN;
-      FireRefreshTokensLoaded();
       return;
     }
   }
@@ -231,7 +228,6 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
   if (!GetRobotAccountId().empty()) {
     FireRefreshTokenAvailable(GetRobotAccountId());
   }
-  FireRefreshTokensLoaded();
 }
 
 void DeviceOAuth2TokenServiceDelegate::CheckRobotAccountId(
@@ -324,9 +320,20 @@ void DeviceOAuth2TokenServiceDelegate::RequestValidation() {
   validation_requested_ = true;
 }
 
-void DeviceOAuth2TokenServiceDelegate::SetValidationStatusDelegate(
+void DeviceOAuth2TokenServiceDelegate::InitializeWithValidationStatusDelegate(
     ValidationStatusDelegate* delegate) {
   validation_status_delegate_ = delegate;
+
+  // Now that |delegate| (i.e., DeviceOAuth2TokenService) has been initialized
+  // and is listening to this object as an observer, fire the notification that
+  // refresh tokens were loaded; otherwise,
+  // OAuth2TokenService::{GetAccounts(), RefreshTokenIsAvailable()} will short-
+  // circuit out to match O2TS semantics.
+  FireRefreshTokensLoaded();
+}
+
+void DeviceOAuth2TokenServiceDelegate::ClearValidationStatusDelegate() {
+  validation_status_delegate_ = nullptr;
 }
 
 void DeviceOAuth2TokenServiceDelegate::ReportServiceError(

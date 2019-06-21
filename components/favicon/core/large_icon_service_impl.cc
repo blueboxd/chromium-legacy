@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -34,16 +33,17 @@
 #include "url/url_canon.h"
 
 namespace favicon {
-namespace {
-
-using favicon_base::GoogleFaviconServerRequestStatus;
-
-const char kImageFetcherUmaClient[] = "LargeIconService";
 
 // This feature is only used for accessing field trial parameters, not for
 // switching on/off the code.
 const base::Feature kLargeIconServiceFetchingFeature{
     "LargeIconServiceFetching", base::FEATURE_ENABLED_BY_DEFAULT};
+
+namespace {
+
+using favicon_base::GoogleFaviconServerRequestStatus;
+
+const char kImageFetcherUmaClient[] = "LargeIconService";
 
 const char kGoogleServerV2RequestFormat[] =
     "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2&%s"

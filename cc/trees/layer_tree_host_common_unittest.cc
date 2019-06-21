@@ -11677,5 +11677,229 @@ TEST_F(LayerTreeHostCommonTest,
                   kRoundedCorner4Radius * kDeviceScale);
 }
 
+TEST_F(LayerTreeHostCommonTest, CustomLayerClipBounds) {
+  // The custom clip API should have the same effect as if an intermediate
+  // clip layer has been added to the layer tree. To check this the test creates
+  // 2 subtree for a root layer. One of the subtree uses the clip API to clip
+  // its subtree while the other uses an intermediate layer. The resulting clip
+  // in draw properties are expected to be the same.
+  // -Root
+  //   - Parent [Clip set to |kClipBounds| using API]
+  //     - Child
+  //   - Clip Layer [Masks to bounds = true] [Layer bounds set to |kClipBounds|]
+  //     - Expected Parent
+  //       - Expected Child
+  constexpr float kDeviceScale = 1.f;
+
+  const gfx::Rect kRootLayerBounds(0, 0, 100, 100);
+  const gfx::Rect kParentLayerBounds(0, 0, 50, 100);
+  const gfx::Rect kChildLayerBounds(20, 20, 30, 60);
+
+  constexpr gfx::Rect kClipBounds(10, 10, 50, 50);
+
+  // The position of |Expected Parent| on screen should be same as |Parent|.
+  const gfx::Rect kExpectedParentLayerBounds(
+      gfx::Point(0, 0) - kClipBounds.OffsetFromOrigin(), gfx::Size(50, 100));
+
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+
+  scoped_refptr<Layer> clip_layer = Layer::Create();
+  scoped_refptr<Layer> expected_parent = Layer::Create();
+  scoped_refptr<Layer> expected_child = Layer::Create();
+
+  root->AddChild(parent);
+  parent->AddChild(child);
+
+  root->AddChild(clip_layer);
+  clip_layer->AddChild(expected_parent);
+  expected_parent->AddChild(expected_child);
+
+  host()->SetRootLayer(root);
+
+  root->SetIsDrawable(true);
+  parent->SetIsDrawable(true);
+  child->SetIsDrawable(true);
+  expected_parent->SetIsDrawable(true);
+  expected_child->SetIsDrawable(true);
+
+  // Set layer positions.
+  root->SetPosition(gfx::PointF(kRootLayerBounds.origin()));
+  parent->SetPosition(gfx::PointF(kParentLayerBounds.origin()));
+  child->SetPosition(gfx::PointF(kChildLayerBounds.origin()));
+
+  clip_layer->SetPosition(gfx::PointF(kClipBounds.origin()));
+  expected_parent->SetPosition(
+      gfx::PointF(kExpectedParentLayerBounds.origin()));
+  expected_child->SetPosition(gfx::PointF(kChildLayerBounds.origin()));
+
+  root->SetBounds(kRootLayerBounds.size());
+  parent->SetBounds(kParentLayerBounds.size());
+  child->SetBounds(kChildLayerBounds.size());
+
+  clip_layer->SetBounds(kClipBounds.size());
+  expected_parent->SetBounds(kExpectedParentLayerBounds.size());
+  expected_child->SetBounds(kChildLayerBounds.size());
+
+  parent->SetClipRect(kClipBounds);
+  clip_layer->SetMasksToBounds(true);
+
+  ExecuteCalculateDrawProperties(root.get(), kDeviceScale);
+
+  const ClipTree& clip_tree =
+      root->layer_tree_host()->property_trees()->clip_tree;
+
+  const ClipNode* parent_clip_node = clip_tree.Node(parent->clip_tree_index());
+  EXPECT_EQ(parent_clip_node->clip, gfx::RectF(kClipBounds));
+  EXPECT_TRUE(!parent->clip_rect().IsEmpty());
+
+  const ClipNode* child_clip_node = clip_tree.Node(child->clip_tree_index());
+  EXPECT_EQ(child_clip_node->clip, gfx::RectF(kClipBounds));
+
+  host()->host_impl()->CreatePendingTree();
+  host()->CommitAndCreatePendingTree();
+  // TODO(https://crbug.com/939968) This call should be handled by
+  // FakeLayerTreeHost instead of manually pushing the properties from the
+  // layer tree host to the pending tree.
+  root->layer_tree_host()->PushLayerTreePropertiesTo(host()->pending_tree());
+  host()->host_impl()->ActivateSyncTree();
+  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+
+  // Get the layer impl for each Layer.
+  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
+  LayerImpl* parent_impl = layer_tree_impl->LayerById(parent->id());
+  LayerImpl* child_impl = layer_tree_impl->LayerById(child->id());
+  LayerImpl* expected_parent_impl =
+      layer_tree_impl->LayerById(expected_parent->id());
+  LayerImpl* expected_child_impl =
+      layer_tree_impl->LayerById(expected_child->id());
+
+  ExecuteCalculateDrawProperties(root_impl, kDeviceScale);
+
+  EXPECT_TRUE(parent_impl->is_clipped());
+  EXPECT_TRUE(child_impl->is_clipped());
+  ASSERT_TRUE(expected_parent_impl->is_clipped());
+  ASSERT_TRUE(expected_child_impl->is_clipped());
+
+  EXPECT_EQ(parent_impl->clip_rect(), expected_parent_impl->clip_rect());
+  EXPECT_EQ(child_impl->clip_rect(), expected_child_impl->clip_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, CustomLayerClipBoundsWithMaskToBounds) {
+  // The custom clip API should have the same effect as if an intermediate
+  // clip layer has been added to the layer tree. To check this the test creates
+  // 2 subtree for a root layer. One of the subtree uses the clip API to clip
+  // its subtree while the other uses an intermediate layer. The resulting clip
+  // in draw properties are expected to be the same. In this test, the subtree
+  // roots also have their masks to bounds property set.
+  // -Root
+  //   - Parent [Clip set to |kClipBounds| using API]
+  //     - Child
+  //   - Clip Layer [Masks to bounds = true] [Layer bounds set to |kClipBounds|]
+  //     - Expected Parent [Masks to bounds = true]
+  //       - Expected Child
+  constexpr float kDeviceScale = 1.f;
+
+  const gfx::Rect kRootLayerBounds(0, 0, 100, 100);
+  const gfx::Rect kParentLayerBounds(0, 0, 50, 100);
+  const gfx::Rect kChildLayerBounds(20, 20, 30, 60);
+
+  constexpr gfx::Rect kClipBounds(10, 10, 50, 50);
+
+  // The position of |Expected Parent| on screen should be same as |Parent|.
+  const gfx::Rect kExpectedParentLayerBounds(
+      gfx::Point(0, 0) - kClipBounds.OffsetFromOrigin(), gfx::Size(50, 100));
+
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+
+  scoped_refptr<Layer> clip_layer = Layer::Create();
+  scoped_refptr<Layer> expected_parent = Layer::Create();
+  scoped_refptr<Layer> expected_child = Layer::Create();
+
+  root->AddChild(parent);
+  parent->AddChild(child);
+
+  root->AddChild(clip_layer);
+  clip_layer->AddChild(expected_parent);
+  expected_parent->AddChild(expected_child);
+
+  host()->SetRootLayer(root);
+
+  root->SetIsDrawable(true);
+  parent->SetIsDrawable(true);
+  child->SetIsDrawable(true);
+  expected_parent->SetIsDrawable(true);
+  expected_child->SetIsDrawable(true);
+
+  // Set layer positions.
+  root->SetPosition(gfx::PointF(kRootLayerBounds.origin()));
+  parent->SetPosition(gfx::PointF(kParentLayerBounds.origin()));
+  child->SetPosition(gfx::PointF(kChildLayerBounds.origin()));
+
+  clip_layer->SetPosition(gfx::PointF(kClipBounds.origin()));
+  expected_parent->SetPosition(
+      gfx::PointF(kExpectedParentLayerBounds.origin()));
+  expected_child->SetPosition(gfx::PointF(kChildLayerBounds.origin()));
+
+  root->SetBounds(kRootLayerBounds.size());
+  parent->SetBounds(kParentLayerBounds.size());
+  child->SetBounds(kChildLayerBounds.size());
+
+  clip_layer->SetBounds(kClipBounds.size());
+  expected_parent->SetBounds(kExpectedParentLayerBounds.size());
+  expected_child->SetBounds(kChildLayerBounds.size());
+
+  parent->SetClipRect(kClipBounds);
+  parent->SetMasksToBounds(true);
+
+  clip_layer->SetMasksToBounds(true);
+  expected_parent->SetMasksToBounds(true);
+
+  ExecuteCalculateDrawProperties(root.get(), kDeviceScale);
+
+  const ClipTree& clip_tree =
+      root->layer_tree_host()->property_trees()->clip_tree;
+
+  const ClipNode* parent_clip_node = clip_tree.Node(parent->clip_tree_index());
+  const gfx::RectF expected_clip_bounds = gfx::IntersectRects(
+      gfx::RectF(kClipBounds), gfx::RectF(kParentLayerBounds));
+  EXPECT_EQ(parent_clip_node->clip, expected_clip_bounds);
+  EXPECT_TRUE(!parent->clip_rect().IsEmpty());
+
+  const ClipNode* child_clip_node = clip_tree.Node(child->clip_tree_index());
+  EXPECT_EQ(child_clip_node->clip, expected_clip_bounds);
+
+  host()->host_impl()->CreatePendingTree();
+  host()->CommitAndCreatePendingTree();
+  // TODO(https://crbug.com/939968) This call should be handled by
+  // FakeLayerTreeHost instead of manually pushing the properties from the
+  // layer tree host to the pending tree.
+  root->layer_tree_host()->PushLayerTreePropertiesTo(host()->pending_tree());
+  host()->host_impl()->ActivateSyncTree();
+  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+
+  // Get the layer impl for each Layer.
+  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
+  LayerImpl* parent_impl = layer_tree_impl->LayerById(parent->id());
+  LayerImpl* child_impl = layer_tree_impl->LayerById(child->id());
+  LayerImpl* expected_parent_impl =
+      layer_tree_impl->LayerById(expected_parent->id());
+  LayerImpl* expected_child_impl =
+      layer_tree_impl->LayerById(expected_child->id());
+
+  ExecuteCalculateDrawProperties(root_impl, kDeviceScale);
+
+  EXPECT_TRUE(parent_impl->is_clipped());
+  EXPECT_TRUE(child_impl->is_clipped());
+  ASSERT_TRUE(expected_parent_impl->is_clipped());
+  ASSERT_TRUE(expected_child_impl->is_clipped());
+
+  EXPECT_EQ(parent_impl->clip_rect(), expected_parent_impl->clip_rect());
+  EXPECT_EQ(child_impl->clip_rect(), expected_child_impl->clip_rect());
+}
+
 }  // namespace
 }  // namespace cc

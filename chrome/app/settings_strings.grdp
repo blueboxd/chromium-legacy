@@ -2063,6 +2063,8 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
       Port
     </message>
+
+    <!-- Settings > Internet > SIM lock/unlock dialog -->
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for buton to change the PIN.">
       Change PIN
     </message>
@@ -2111,6 +2113,22 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
       Enter PIN Unlock Key
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered.">
+      Incorrect PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered.">
+      Incorrect PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered.">
+      Invalid PIN. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered.">
+      Invalid PUK. Retries left: <ph name="RETRIES">$1<ex>3</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
+      PIN values do not match.
+    </message>
+
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
       Prefer this network
     </message>
@@ -4697,8 +4715,14 @@
     <message name="IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL" desc="Label for the checkbox that forces Chrome to render via hardware acceleration (GPU) when available.">
       Use hardware acceleration when available
     </message>
-    <message name="IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_LABEL" desc="Label for the control that opens a user's network proxy settings.">
-      Open proxy settings
+    <message name="IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_LABEL" desc="Label for the control that opens the system network proxy settings. These settings apply to the entire computer.">
+      Open your computer's proxy settings
+    </message>
+    <message name="IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_EXTENSION_LABEL" desc="Non-interactive label that describes when Chrome's proxy settings are overwritten by an extension. This is used in place of IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_LABEL above.">
+      <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is using proxy settings from an extension
+    </message>
+    <message name="IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_POLICY_LABEL" desc="Non-interactive label that describes when Chrome's proxy settings are overwritten by policy. This is used in place of IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_LABEL above.">
+      <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is using proxy settings from your administrator
     </message>
   </if>
 

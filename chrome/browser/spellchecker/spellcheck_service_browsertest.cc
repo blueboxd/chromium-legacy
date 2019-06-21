@@ -443,13 +443,13 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, NotifyChecked) {
   tester.ExpectTotalCount(kMisspellRatio, 1);
 }
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 // When the renderer requests the spelling service for correcting text, the
 // render process host should call the remote spelling service.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, CallSpellingService) {
   CallSpellingService();
 }
-#endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 // Tests that we can delete a corrupted BDICT file used by hunspell. We do not
 // run this test on Mac because Mac does not use hunspell by default.

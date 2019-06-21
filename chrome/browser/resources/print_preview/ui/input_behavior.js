@@ -52,7 +52,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onKeyDown_: function(event) {
-      if (event.code != 'Enter') {
+      if (event.code != 'Enter' && event.code != 'Tab') {
         return;
       }
 

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/refresh_throttler.h"
@@ -19,7 +20,6 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_params_manager.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -315,10 +315,10 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
                 /*has_outstanding_request*/ false));
 
   // By changing the foregrounded threshold, staleness calculation changes.
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"foregrounded_hours_active_ntp_user", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"foregrounded_hours_active_ntp_user", "7.5"}});
 
   ResetRefreshState(Time());
   EXPECT_EQ(kRequestWithContent,
@@ -338,10 +338,10 @@ TEST_F(FeedSchedulerHostTest, ShouldSessionRequestDataDivergentTimes) {
 }
 
 TEST_F(FeedSchedulerHostTest, NtpShownActiveNtpUser) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"ntp_shown_hours_active_ntp_user", "2.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"ntp_shown_hours_active_ntp_user", "2.5"}});
 
   EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
@@ -359,10 +359,10 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveNtpUser) {
 }
 
 TEST_F(FeedSchedulerHostTest, NtpShownRareNtpUser) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"ntp_shown_hours_rare_ntp_user", "1.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"ntp_shown_hours_rare_ntp_user", "1.5"}});
 
   ClassifyAsRareNtpUser();
 
@@ -402,10 +402,10 @@ TEST_F(FeedSchedulerHostTest, NtpShownActiveSuggestionsConsumer) {
                     TimeDelta::FromMinutes(61),
                 /*has_outstanding_request*/ false));
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"ntp_shown_hours_active_suggestions_consumer", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"ntp_shown_hours_active_suggestions_consumer", "7.5"}});
 
   EXPECT_EQ(kNoRequestWithContent,
             ShouldSessionRequestData(
@@ -453,10 +453,10 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveNtpUser) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"foregrounded_hours_active_ntp_user", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"foregrounded_hours_active_ntp_user", "7.5"}});
 
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
@@ -484,10 +484,10 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedRareNtpUser) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"foregrounded_hours_rare_ntp_user", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"foregrounded_hours_rare_ntp_user", "7.5"}});
 
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
@@ -515,10 +515,10 @@ TEST_F(FeedSchedulerHostTest, OnForegroundedActiveSuggestionsConsumer) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"foregrounded_hours_active_suggestions_consumer", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"foregrounded_hours_active_suggestions_consumer", "7.5"}});
 
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnForegrounded();
@@ -567,10 +567,10 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveNtpUser) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"fixed_timer_hours_active_ntp_user", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"fixed_timer_hours_active_ntp_user", "7.5"}});
 
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
@@ -598,11 +598,10 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveRareNtpUser) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"fixed_timer_hours_rare_ntp_user", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
-
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"fixed_timer_hours_rare_ntp_user", "7.5"}});
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
   EXPECT_EQ(2, refresh_call_count());
@@ -636,10 +635,10 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveSuggestionsConsumer) {
   EXPECT_EQ(2, refresh_call_count());
   scheduler()->OnReceiveNewContent(test_clock()->Now());
 
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"fixed_timer_hours_active_suggestions_consumer", "7.5"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"fixed_timer_hours_active_suggestions_consumer", "7.5"}});
 
   test_clock()->Advance(TimeDelta::FromHours(7));
   scheduler()->OnFixedTimer(base::OnceClosure());
@@ -737,10 +736,10 @@ TEST_F(FeedSchedulerHostTest, EulaNotAccepted) {
 }
 
 TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kDisableTriggerTypes.name, "foregrounded"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{kDisableTriggerTypes.name, "foregrounded"}});
   NewScheduler();
 
   scheduler()->OnForegrounded();
@@ -756,10 +755,10 @@ TEST_F(FeedSchedulerHostTest, DisableOneTrigger) {
 }
 
 TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kDisableTriggerTypes.name, "ntp_shown,foregrounded,fixed_timer"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{kDisableTriggerTypes.name, "ntp_shown,foregrounded,fixed_timer"}});
   NewScheduler();
 
   scheduler()->OnForegrounded();
@@ -775,11 +774,10 @@ TEST_F(FeedSchedulerHostTest, DisableAllTriggers) {
 }
 
 TEST_F(FeedSchedulerHostTest, DisableBogusTriggers) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kDisableTriggerTypes.name, "foo,123,#$*,,"}},
-      {kInterestFeedContentSuggestions.name});
-
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{kDisableTriggerTypes.name, "foo,123,#$*,,"}});
   NewScheduler();
 
   scheduler()->OnForegrounded();
@@ -828,10 +826,10 @@ TEST_F(FeedSchedulerHostTest, OnArticlesCleared) {
 }
 
 TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{kSuppressRefreshDurationMinutes.name, "100"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{kSuppressRefreshDurationMinutes.name, "100"}});
   EXPECT_FALSE(scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true));
 
   test_clock()->Advance(TimeDelta::FromMinutes(99));
@@ -990,10 +988,10 @@ TEST_F(FeedSchedulerHostTest, TimeUntilFirstMetrics) {
 }
 
 TEST_F(FeedSchedulerHostTest, RefreshThrottler) {
-  variations::testing::VariationParamsManager variation_params(
-      kInterestFeedContentSuggestions.name,
-      {{"quota_SuggestionFetcherActiveNTPUser", "3"}},
-      {kInterestFeedContentSuggestions.name});
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{"quota_SuggestionFetcherActiveNTPUser", "3"}});
   NewScheduler();
 
   for (int i = 0; i < 5; i++) {

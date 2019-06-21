@@ -21,6 +21,8 @@
 
 namespace content {
 FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest, ResponseBlocking);
+FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest,
+                     CORBProtectionLogging);
 }  // namespace content
 
 namespace network {
@@ -71,6 +73,35 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   // and deciding whether CORB should block the response.
   class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
    public:
+    // Categorizes the resource MIME type for CORB protection logging.
+    enum MimeTypeBucket {
+      // MIME types we expect CORB to protect (HTML, JSON etc.).
+      kProtected = 0,
+      // MIME types we expect CORB to allow through (js, images).
+      kPublic,
+      // Other MIME types.
+      kOther,
+    };
+    // Enum for CORB protection logging. Records if CORB would block a request
+    // if it was made cross-origin. This enum backs a histogram, so do not
+    // change the order of entries or remove entries. When adding new entries
+    // update |kMaxValue| and enums.xml (see the CrossOriginProtectionDecision
+    // enum).
+    enum class CrossOriginProtectionDecision {
+      // Logged if the request would be allowed without sniffing.
+      kAllow = 0,
+      // Logged if the request would be blocked without sniffing.
+      kBlock = 1,
+      // Logged if the request needed more sniffing for a decision.
+      kNeedToSniffMore = 2,
+      // Logged if the request would be allowed after sniffing.
+      kAllowedAfterSniffing = 3,
+      // Logged if the request would be blocked after sniffing.
+      kBlockedAfterSniffing = 4,
+
+      kMaxValue = kBlockedAfterSniffing,
+    };
+
     // Creates a ResponseAnalyzer for the request (|request_url| and
     // |request_initiator|), |response| pair.  The ResponseAnalyzer will decide
     // whether |response| needs to be blocked.
@@ -130,6 +161,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     void LogBlockedResponse();
 
    private:
+    FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest,
+                             SeemsSensitiveFromCORSHeuristic);
+    FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest,
+                             SeemsSensitiveFromCacheHeuristic);
+    FRIEND_TEST_ALL_PREFIXES(CrossOriginReadBlockingTest,
+                             SeemsSensitiveWithBothHeuristics);
+    FRIEND_TEST_ALL_PREFIXES(content::CrossSiteDocumentResourceHandlerTest,
+                             CORBProtectionLogging);
+
     // Three conclusions are possible from looking at the headers:
     //   - Allow: response doesn't need to be blocked (e.g. if it is same-origin
     //     or has been allowed via CORS headers)
@@ -140,15 +180,41 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
       kBlock,
       kNeedToSniffMore,
     };
-    BlockingDecision ShouldBlockBasedOnHeaders(
+    // Static because this method is called both during the actual decision, and
+    // for the CORB protection logging decision.
+    static BlockingDecision ShouldBlockBasedOnHeaders(
         mojom::RequestMode request_mode,
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
+        const ResourceResponseInfo& response,
+        const base::Optional<url::Origin>& request_initiator_site_lock,
+        MimeType canonical_mime_type);
+
+    // Checks if the response seems sensitive for CORB protection logging.
+    // Returns true if the Access-Control-Allow-Origin header has a value other
+    // than *.
+    static bool SeemsSensitiveFromCORSHeuristic(
+        const ResourceResponseInfo& response);
+
+    // Checks if the response seems sensitive for CORB protection logging.
+    // Returns true if the response has Vary: Origin and Cache-Control: Private
+    // headers.
+    static bool SeemsSensitiveFromCacheHeuristic(
+        const ResourceResponseInfo& response);
+
+    // Determines the MIME type bucket for CORB protection logging.
+    static MimeTypeBucket GetMimeTypeBucket(
         const ResourceResponseInfo& response);
 
     // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
     void CreateSniffers();
+
+    // Reports potentially sensitive responses and whether CORB would have
+    // protected them, were they made cross origin.
+    static void LogSensitiveResponseProtection(
+        const ResourceResponseInfo& response,
+        BlockingDecision would_protect_based_on_headers);
 
     // Outcome of ShouldBlockBasedOnHeaders recorded inside the Create method.
     BlockingDecision should_block_based_on_headers_;

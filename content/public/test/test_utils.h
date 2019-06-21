@@ -32,7 +32,6 @@
 namespace base {
 class CommandLine;
 class Value;
-struct Feature;
 }  // namespace base
 
 // A collection of functions designed for use with unit and browser tests.
@@ -111,19 +110,6 @@ GURL GetWebUIURL(const std::string& host);
 
 // Returns a string constructed from the WebUI scheme and the given host.
 std::string GetWebUIURLString(const std::string& host);
-
-// Appends command line switches to |command_line| to enable the |feature| and
-// to set field trial params associated with the feature as specified by
-// |param_name| and |param_value|.
-//
-// Note that a dummy trial and trial group will be registered behind the scenes.
-// See also variations::testing::VariationsParamsManager class.
-// This method is deprecated because we want to unify the FeatureList change to
-// ScopedFeatureList. See crbug.com/713390
-void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
-                                      const std::string& param_name,
-                                      const std::string& param_value,
-                                      base::CommandLine* command_line);
 
 // Creates a WebContents and attaches it as an inner WebContents, replacing
 // |rfh| in the frame tree. |rfh| should not be a main frame (in a browser test,

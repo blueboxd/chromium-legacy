@@ -25,9 +25,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "device/base/features.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -195,10 +195,8 @@ void WebUsbDetector::Initialize() {
   // Tests may set a fake manager.
   if (!device_manager_) {
     // Request UsbDeviceManagerPtr from DeviceService.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(device::mojom::kServiceName,
-                        mojo::MakeRequest(&device_manager_));
+    content::GetSystemConnector()->BindInterface(
+        device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
   }
   DCHECK(device_manager_);
   device_manager_.set_connection_error_handler(base::BindOnce(

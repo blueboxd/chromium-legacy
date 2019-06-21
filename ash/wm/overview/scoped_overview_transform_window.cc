@@ -176,6 +176,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
+      original_clip_rect_(window_->layer()->clip_rect()),
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);
 
@@ -211,6 +212,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
+  window_->layer()->SetClipRect(original_clip_rect_);
 }
 
 // static
@@ -463,6 +465,12 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
                                           : 0.0f);
     layer->SetRoundedCornerRadius(radii);
     layer->SetIsFastRoundedCorner(true);
+    int top_inset = GetTopInset();
+    if (top_inset > 0) {
+      gfx::Rect clip_rect(window_->bounds().size());
+      clip_rect.Inset(0, top_inset, 0, 0);
+      layer->SetClipRect(clip_rect);
+    }
     return;
   }
 

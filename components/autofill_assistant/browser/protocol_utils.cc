@@ -87,8 +87,12 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.path = script_proto.path();
 
   const auto& presentation = script_proto.presentation();
-  script->handle.autostart = presentation.autostart();
   script->handle.interrupt = presentation.interrupt();
+  if (presentation.interrupt()) {
+    script->handle.interrupt = true;
+  } else {
+    script->handle.autostart = presentation.autostart();
+  }
   script->handle.initial_prompt = presentation.initial_prompt();
 
   if (presentation.has_chip()) {

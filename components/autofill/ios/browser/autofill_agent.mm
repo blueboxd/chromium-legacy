@@ -229,8 +229,8 @@ autofillManagerFromWebState:(web::WebState*)webState
   // Exactly one form should be extracted.
   DCHECK_EQ(1U, forms.size());
   autofill::FormData form = forms[0];
-  autofillManager->OnFormSubmitted(form, false,
-                                   autofill::SubmissionSource::FORM_SUBMISSION);
+  autofillManager->OnFormSubmitted(
+      form, false, autofill::mojom::SubmissionSource::FORM_SUBMISSION);
   autofill::KeyboardAccessoryMetricsLogger::OnFormSubmitted();
 }
 

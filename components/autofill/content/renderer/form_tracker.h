@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "components/autofill/core/common/submission_source.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/web/web_input_element.h"
 
@@ -54,7 +54,7 @@ class FormTracker : public content::RenderFrameObserver {
     // OnProvisionallySaveForm() is submitted from the |source|, the tracker
     // infers submission from the disappearance of form or element, observer
     // might not need to check it again.
-    virtual void OnInferredFormSubmission(SubmissionSource source) = 0;
+    virtual void OnInferredFormSubmission(mojom::SubmissionSource source) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -104,8 +104,8 @@ class FormTracker : public content::RenderFrameObserver {
                                 Observer::ElementChangeSource change_source);
   void FireProbablyFormSubmitted();
   void FireFormSubmitted(const blink::WebFormElement& form);
-  void FireInferredFormSubmission(SubmissionSource source);
-  void FireSubmissionIfFormDisappear(SubmissionSource source);
+  void FireInferredFormSubmission(mojom::SubmissionSource source);
+  void FireSubmissionIfFormDisappear(mojom::SubmissionSource source);
   bool CanInferFormSubmitted();
   void TrackElement();
 

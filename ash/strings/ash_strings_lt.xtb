@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Perjungti tinklo ryšį. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Slinkti dešinėn</translation>
 <translation id="1812997170047690955">Kas mano ekrane?</translation>
+<translation id="1820355135508821526">Funkcija „<ph name="FEATURE_NAME" />“ išjungta vadovaujantis šiam įrenginiui taikoma politika. Paprašykite administratoriaus atlikti pakeitimus.</translation>
 <translation id="1823873187264960516">Eternetas: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Padėjėjas (įkeliama...)</translation>
 <translation id="1850504506766569011">„Wi-Fi“ ryšys išjungtas.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="2597972630681408282">Nakties šviesa: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kortelė užrakinta</translation>
+<translation id="2651765386227849097">„Google Assistant“ išjungtas šiame įrenginyje.</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2658778018866295321">Spustelėti ir vilkti</translation>
 <translation id="2700493154570097719">Klaviatūros nustatymas</translation>
@@ -262,6 +264,7 @@
 <translation id="4895488851634969361">Akumuliatorius visiškai įkrautas.</translation>
 <translation id="490375751687810070">Vertikaliai</translation>
 <translation id="4905614135390995787">Spartusis klavišas, kurį naudojant perjungiamas didelio kontrasto režimas, pakeistas. Naudokite <ph name="NEW_SHORTCUT" /> vietoj <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Akumuliatoriaus įkrovos lygis: <ph name="BATTERY_PERCENTAGE" /> proc.</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="4924411785043111640">Paleisti ir nustatyti iš naujo</translation>
@@ -299,6 +302,7 @@
 <translation id="5648021990716966815">Mikrofono jungtis</translation>
 <translation id="5669267381087807207">Aktyvinama</translation>
 <translation id="5673434351075758678">Po nustatymų sinchronizavimo kalba pakeista iš „<ph name="FROM_LOCALE" />“ į „<ph name="TO_LOCALE" />“.</translation>
+<translation id="5682642926269496722">„Google Assistant“ nepasiekiamas dabartinėje naudotojo paskyroje.</translation>
 <translation id="5691772641933328258">Kontrolinis kodas neatpažintas</translation>
 <translation id="5710450975648804523">Netrukdymo režimas įjungtas</translation>
 <translation id="574392208103952083">Vidutinis</translation>
@@ -332,6 +336,7 @@
 <translation id="6064337552080329342">Deja, slaptažodžio patvirtinti nepavyko. Bandykite dar kartą.</translation>
 <translation id="607652042414456612">Jūsų kompiuterį galima aptikti netoliese esančiais „Bluetooth“ įrenginiais ir jis rodomas kaip „<ph name="NAME" />“ su adresu <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">„Google Assistant“ nepasiekiamas svečio sesijoje.</translation>
 <translation id="615957422585914272">Rodyti ekrano klaviatūrą</translation>
 <translation id="6164005077879661055">Visi failai ir su prižiūrimu naudotoju susiję duomenys bus ištrinti visam laikui, kai bus pašalintas šis prižiūrimas naudotojas. Valdytojas vis tiek gali peržiūrėti šio prižiūrimo naudotojo aplankytas svetaines ir nustatymus adresu <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
@@ -373,6 +378,7 @@
 <translation id="6713285437468012787">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ susietas ir dabar pasiekiamas visiems naudotojams. Nustatymuose galite pašalinti šį susiejimą.</translation>
 <translation id="6715542151869432661">Nerasta jokių mobiliųjų įrenginių.</translation>
 <translation id="6723839937902243910">Maitinimas</translation>
+<translation id="6727969043791803658">Prisijungta, akumuliatoriaus įkrovos lygis: <ph name="BATTERY_PERCENTAGE" /> proc.</translation>
 <translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
 <translation id="6790428901817661496">Žaisti</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>

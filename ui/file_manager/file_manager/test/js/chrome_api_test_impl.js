@@ -185,9 +185,13 @@ HTMLElement.prototype.request = {
 // cws_widget_container.js also calls WebView.stop.
 HTMLElement.prototype.stop = () => {};
 
-// domAutomationController is provided in tests, but is
-// useful for debugging tests in browser.
-class ConsoleDomAutomationController extends DomAutomationController {
+/**
+ * domAutomationController is provided in tests, but is useful for debugging
+ * tests in a browser.  We use jsdoc extends rather than 'class ... extends ...'
+ * since DomAutomationController does not exist at runtime in a browser.
+ * @extends {DomAutomationController}
+ */
+class ConsoleDomAutomationController {
   send(json) {
     console.debug('domAutomationController.send', json);
   }

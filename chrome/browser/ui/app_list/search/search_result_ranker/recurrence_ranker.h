@@ -42,7 +42,6 @@ class RecurrenceRanker {
 
   // Rename a target, while keeping learned information on it. This may save to
   // disk, but is not guaranteed to.
-  // TODO(921444): Provide a mechanism to force save to disk.
   void RenameTarget(const std::string& target, const std::string& new_target);
   void RenameCondition(const std::string& condition,
                        const std::string& new_condition);
@@ -51,7 +50,6 @@ class RecurrenceRanker {
   // guaranteed to. If the intention of this removal is to removal all knowledge
   // of, for example, a sensitive target, then a ForceSaveToDisk call should be
   // made after removal.
-  // TODO(921444): Provide a mechanism to force save to disk.
   void RemoveTarget(const std::string& target);
   void RemoveCondition(const std::string& condition);
 
@@ -78,6 +76,12 @@ class RecurrenceRanker {
   // TODO(921444): Create a system for cleaning up internal predictor state that
   // is stored indepent of the target/condition frecency stores.
 
+  // Force saving all model state to disk. If the user is an ephemeral user,
+  // this does nothing. This is not necessary in normal operation, as the ranker
+  // automatically saves at regular intervals. Example use: syncing to disk
+  // after a target or condition is deleted.
+  void SaveToDisk();
+
   const char* GetPredictorNameForTesting() const;
 
  private:
@@ -97,8 +101,6 @@ class RecurrenceRanker {
   void MaybeSave();
   void ToProto(RecurrenceRankerProto* proto);
   void FromProto(const RecurrenceRankerProto& proto);
-
-  void ForceSaveOnNextUpdateForTesting();
 
   // Internal predictor that drives ranking.
   std::unique_ptr<RecurrencePredictor> predictor_;

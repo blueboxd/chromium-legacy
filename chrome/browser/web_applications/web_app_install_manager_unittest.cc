@@ -37,7 +37,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    registrar_ = std::make_unique<TestAppRegistrar>(profile());
+    registrar_ = std::make_unique<TestAppRegistrar>();
 
     install_finalizer_ = std::make_unique<TestInstallFinalizer>();
 

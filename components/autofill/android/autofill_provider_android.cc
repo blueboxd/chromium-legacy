@@ -28,6 +28,8 @@ using gfx::RectF;
 
 namespace autofill {
 
+using mojom::SubmissionSource;
+
 AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
     content::WebContents* web_contents)

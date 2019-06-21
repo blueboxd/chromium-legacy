@@ -55,7 +55,7 @@ AutofillHandler::~AutofillHandler() = default;
 
 void AutofillHandler::OnFormSubmitted(const FormData& form,
                                       bool known_success,
-                                      SubmissionSource source) {
+                                      mojom::SubmissionSource source) {
   if (IsValidFormData(form))
     OnFormSubmittedImpl(form, known_success, source);
 }

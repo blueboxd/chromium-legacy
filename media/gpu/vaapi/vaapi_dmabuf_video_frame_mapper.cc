@@ -57,9 +57,19 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
                va_image->image()->offsets[i];
   }
 
+  // The size of each plane is not given by VAImage. We compute the size to be
+  // mapped from offset and the entire buffer size (data_size).
+  for (size_t i = 0; i < num_planes; i++) {
+    if (i < num_planes - 1) {
+      planes[i].size = planes[i + 1].offset - planes[i].offset;
+    } else {
+      planes[i].size = va_image->image()->data_size - planes[i].offset;
+    }
+  }
+
   auto mapped_layout = VideoFrameLayout::CreateWithPlanes(
       format, gfx::Size(va_image->image()->width, va_image->image()->height),
-      std::move(planes), {va_image->image()->data_size});
+      std::move(planes));
   if (!mapped_layout) {
     VLOGF(1) << "Failed to create VideoFrameLayout for VAImage";
     return nullptr;

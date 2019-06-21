@@ -90,19 +90,18 @@ scoped_refptr<media::VideoFrame> GetVideoFrameFromGpuMemoryBuffer(
 
   size_t num_planes = media::VideoFrame::NumPlanes(format);
   std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
-  std::vector<size_t> buffer_sizes(num_planes);
   std::vector<base::ScopedFD> fds(num_planes);
   for (size_t i = 0; i < num_planes; i++) {
     auto& plane = buffer_handle.planes[i];
     fds[i] = std::move(plane.fd);
     planes[i].stride = plane.stride;
     planes[i].offset = plane.offset;
-    buffer_sizes[i] = plane.size;
+    planes[i].size = plane.size;
   }
 
   gfx::Rect visible_rect(size);
-  auto layout = media::VideoFrameLayout::CreateWithPlanes(
-      format, size, std::move(planes), std::move(buffer_sizes));
+  auto layout = media::VideoFrameLayout::CreateWithPlanes(format, size,
+                                                          std::move(planes));
   return media::VideoFrame::WrapExternalDmabufs(
       *layout, visible_rect, size, std::move(fds), base::TimeDelta());
 }

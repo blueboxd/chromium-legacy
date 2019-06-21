@@ -192,12 +192,14 @@ def main():
     shutil.rmtree(LLVM_BOOTSTRAP_INSTALL_DIR, ignore_errors=True)
     shutil.rmtree(LLVM_BUILD_DIR, ignore_errors=True)
 
-    opt_flags = []
-    if sys.platform.startswith('linux'):
-      opt_flags += ['--lto-lld']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
                  '--bootstrap', '--disable-asserts',
-                 '--run-tests'] + opt_flags
+                 '--run-tests']
+    if sys.platform != 'win32':
+      # TODO(hans): Use --pgo for the Windows package too.
+      build_cmd.append('--pgo')
+    if sys.platform.startswith('linux'):
+      build_cmd.append('--lto-lld')
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()

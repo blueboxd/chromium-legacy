@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">సైన్ ఇన్ ఎర్రర్</translation>
 <translation id="1887597546629269384">మళ్లీ ఒక్కసారి "Hey Google" అని చెప్పండి</translation>
 <translation id="1887850431809612466">హార్డ్‌వేర్ పునర్విమర్శ</translation>
-<translation id="1889984860246851556">ప్రాక్సీ సెట్టింగ్‌లను తెరవండి</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">పూర్తి స్క్రీన్‌ని తెరువు</translation>
 <translation id="189358972401248634">ఇతర భాషలు</translation>
@@ -1315,7 +1314,6 @@
 <translation id="2972581237482394796">&amp;పునరావృతం</translation>
 <translation id="2973324205039581528">సైట్‌ను మ్యూట్ చేయండి</translation>
 <translation id="2977480621796371840">గుంపు నుండి తీసివేయి</translation>
-<translation id="2979128960948974571">దీనికి కొద్ది నిమిషాల సమయం పట్టవచ్చు.</translation>
 <translation id="2979639724566107830">కొత్త విండోలో తెరువు</translation>
 <translation id="2981113813906970160">పెద్ద మౌస్ కర్సర్‌ను చూపు</translation>
 <translation id="2982970937345031">అనామకంగా నివేదించు</translation>
@@ -1534,7 +1532,6 @@
 <translation id="3319048459796106952">కొత్త &amp;అజ్ఞాత విండో</translation>
 <translation id="3323521181261657960">బోనస్! మీరు మరింత స్క్రీన్ వినియోగ సమయం పొందారు</translation>
 <translation id="3325910708063135066">Mac సిస్టమ్ ప్రాధాన్యతలలో కెమెరా మరియు మైక్రోఫోన్ ఆపివేయబడతాయి</translation>
-<translation id="3330615614570718993">ఈ పరికరంలో ప్లగ్ఇన్ VMను ప్రారంభించడానికి, దయచేసి మీ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">యాప్‌ సమాచారం</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - చిత్రంలో చిత్రం మోడ్‌లో వీడియో ప్లే అవుతోంది</translation>
@@ -1626,7 +1623,6 @@
 <translation id="346431825526753">ఇది <ph name="CUSTODIAN_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా.</translation>
 <translation id="3468275649641751422">వీడియో లేదా ఆడియో ఫైల్‌ను ప్రసారం చేయండి</translation>
 <translation id="3468999815377931311">Android ఫోన్</translation>
-<translation id="3470248707805984963">ఒక ఎర్రర్ ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3470442499439619530">ఈ వినియోగదారును తీసివేయి</translation>
 <translation id="3473479545200714844">స్క్రీన్ మాగ్నిఫైయర్</translation>
 <translation id="3475843873335999118">క్షమించండి, మీ వేలిముద్ర ఇప్పటికీ గుర్తించబడలేదు. దయచేసి మీ పాస్‌వర్డ్‌ను నమోదు చేయండి.</translation>
@@ -1739,7 +1735,6 @@
 <translation id="3629631988386925734">Smart Lockను ప్రారంభించడానికి మీ పాస్‌వర్డ్‌‌ను నమోదు చేయండి. తదుపరిసారి, మీ ఫోన్ మీ <ph name="DEVICE_TYPE" />‌ను అన్‌లాక్ చేస్తుంది. సెట్టింగ్‌లలో మీరు Smart Lockను ఆఫ్ చేయవచ్చు.</translation>
 <translation id="3630132874740063857">మీ ఫోన్</translation>
 <translation id="3630995161997703415">ఈ సైట్‌ను ఏ సమయంలో అయినా ఉపయోగించడం కోసం దీనిని మీ 'అర'కు జోడించండి</translation>
-<translation id="3635256809897331115">ప్లగ్ఇన్ VMను ఉపయోగించడానికి, ప్రారంభించు ఎంపికను క్లిక్ చేయండి లేదా నొక్కండి. భవిష్యత్తులో, మీరు లాంచర్‌లోని చిహ్నాన్ని ఎంచుకోవడం ద్వారా ప్లగ్ఇన్ VMను ప్రారంభించవచ్చు.</translation>
 <translation id="3636096452488277381">హాయ్, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="3637682276779847508">మీరు సరైన PIN అన్‌లాక్ కీని నమోదు చేయకపోతే, మీ SIM కార్డ్ శాశ్వతంగా నిలిపివేయబడుతుంది.</translation>
@@ -1954,7 +1949,6 @@
 <translation id="3916445069167113093">ఈ రకం ఫైల్‌ మీ కంప్యూటర్‌కు హాని చేయవచ్చు. అయినా సరే <ph name="FILE_NAME" />ని ఉంచాలని అనుకుంటున్నారా?</translation>
 <translation id="3918972485393593704">Googleకు వివరాలను నివేదించండి</translation>
 <translation id="3919145445993746351">మీ అన్ని కంప్యూటర్‌లలో మీ ఎక్స్‌టెన్షన్‌లను పొందడానికి, సింక్‌ను ఆన్ చేయండి</translation>
-<translation id="391999873395511996">వర్చువల్ మెషిన్ డౌన్‌లోడ్ అవుతోంది.</translation>
 <translation id="3920504717067627103">సర్టిఫికెట్ విధానాలు</translation>
 <translation id="392089482157167418">ChromeVox (చదవబడే అభిప్రాయం)ను ప్రారంభించు</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2911,7 +2905,6 @@
 <translation id="5449551289610225147">పాస్‌వర్డ్ చెల్లదు</translation>
 <translation id="5449588825071916739">అన్ని ట్యాబ్‌లను బుక్‌మార్క్ చేయి</translation>
 <translation id="5449716055534515760">&amp;విండో మూసివెయ్యి</translation>
-<translation id="5453630479789469584">ప్లగ్ఇన్ VMను సెటప్ చేయలేకపోయింది</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" />తో</translation>
 <translation id="545426320101607695">అనువదించాల్సిన భాష</translation>
 <translation id="5457113250005438886">చెల్లదు</translation>
@@ -4828,7 +4821,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> స్థానికంగా నిల్వ చేసిన డేటా</translation>
 <translation id="833986336429795709">ఈ లింక్‌ను తెరవడానికి, ఒక యాప్‌ను ఎంచుకోండి</translation>
 <translation id="8342861492835240085">సేకరణను ఎంచుకోండి</translation>
-<translation id="8343187330304787218">మీ <ph name="DEVICE_TYPE" />లో ప్లగ్ఇన్ VM అమలు చేయడానికి సెట్టింగ్‌లను నిర్వహించండి</translation>
 <translation id="8343956361364550006">ఉత్తమ శ్రేణి వీడియో లేదా యానిమేషన్ కోసం అధిక బ్యాండ్‌విడ్త్‌ను ఉపయోగించండి.
 నెమ్మది కనెక్షన్‌లు గల ఇతర వ్యక్తులు మీ కంటెంట్‌ను చూడలేకపోవచ్చు.</translation>
 <translation id="8351419472474436977">ఈ ఎక్సటెన్షన్ మీ ప్రాక్సీ సెట్టింగ్‌లను దాని నియంత్రణలోకి తీసుకుంది, అది మీరు ఆన్‌లైన్‌లో ఏదైనా చేస్తుంటే దాన్ని మార్చడం, అంతరాయం కలిగించడం లేదా రహస్యంగా గమనించడం వంటివి చేయగలదని దీనర్థం. ఈ మార్పు ఎందుకు సంభవించిందో మీకు ఖచ్చితంగా తెలియలేదంటే బహుశా మీరు దాన్ని కోరుకొని ఉండకపోవచ్చు.</translation>

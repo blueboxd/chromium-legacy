@@ -106,7 +106,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;
-  void OnInferredFormSubmission(SubmissionSource source) override;
+  void OnInferredFormSubmission(mojom::SubmissionSource source) override;
 
   void AddFormObserver(Observer* observer);
   void RemoveFormObserver(Observer* observer);
@@ -171,10 +171,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Fires Mojo messages for a given form submission.
   void FireHostSubmitEvents(const blink::WebFormElement& form,
                             bool known_success,
-                            SubmissionSource source);
+                            mojom::SubmissionSource source);
   void FireHostSubmitEvents(const FormData& form_data,
                             bool known_success,
-                            SubmissionSource source);
+                            mojom::SubmissionSource source);
 
   // Shuts the AutofillAgent down on RenderFrame deletion. Safe to call multiple
   // times.

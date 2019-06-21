@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/submission_source.h"
 
 namespace autofill {
 

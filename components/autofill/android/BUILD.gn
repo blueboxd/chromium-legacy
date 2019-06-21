@@ -97,15 +97,10 @@ android_library("autofill_java") {
   srcjar_deps = [ ":autofill_core_browser_java_enums" ]
 }
 
-java_cpp_enum("autofill_core_common_java_enums") {
-  sources = [
-    "../core/common/submission_source.h",
-  ]
-}
-
 android_library("provider_java") {
   deps = [
     "//base:base_java",
+    "//components/autofill/core/common/mojom:mojo_types_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
@@ -114,7 +109,6 @@ android_library("provider_java") {
     "java/src/org/chromium/components/autofill/FormData.java",
     "java/src/org/chromium/components/autofill/FormFieldData.java",
   ]
-  srcjar_deps = [ ":autofill_core_common_java_enums" ]
 }
 
 generate_jni("jni_headers") {

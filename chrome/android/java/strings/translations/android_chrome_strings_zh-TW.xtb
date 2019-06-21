@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">搜尋及探索</translation>
 <translation id="1264974993859112054">運動資訊</translation>
 <translation id="1272079795634619415">停止</translation>
-<translation id="1272444412400969138">要共用分頁的裝置挑選器。</translation>
 <translation id="1283039547216852943">輕觸即可展開</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1291207594882862231">清除歷史記錄、Cookie、網站資料、快取…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">允許特定網站的 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小時}other{# 小時}}</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
-<translation id="4044912625106523635">要共用分頁的裝置挑選器已開啟，顯示於整個畫面。</translation>
 <translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4048707525896921369">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送給 Google 搜尋，並傳回定義、圖片、搜尋結果和其他詳細資料。
 
@@ -747,7 +745,6 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="641643625718530986">列印…</translation>
 <translation id="6416782512398055893">已下載 <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">要共用分頁的裝置挑選器已關閉。</translation>
 <translation id="6427112570124116297">翻譯網頁</translation>
 <translation id="6433501201775827830">選擇搜尋引擎</translation>
 <translation id="6437478888915024427">頁面資訊</translation>
@@ -787,7 +784,6 @@
 <translation id="666268767214822976">啟用預測查詢字串服務，讓您在網址列中輸入查詢內容時，能夠即時看到相關查詢和熱門網站</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>
-<translation id="6672986458216094438">要共用分頁的裝置挑選器已開啟，顯示在畫面下半部。</translation>
 <translation id="6697492270171225480">找不到網頁時顯示類似的網頁建議</translation>
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6698801883190606802">管理同步資料</translation>

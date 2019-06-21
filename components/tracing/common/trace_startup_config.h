@@ -84,7 +84,13 @@ namespace tracing {
 // TracingControllerAndroid::GenerateTracingFilePath.
 class TRACING_EXPORT TraceStartupConfig {
  public:
-  enum class SessionOwner { kTracingController, kDevToolsTracingHandler };
+  enum class SessionOwner {
+    kTracingController,
+    kDevToolsTracingHandler,
+    // The background tracing config set in application preferences on the
+    // previous session, for current session.
+    kBackgroundTracing
+  };
 
   static TraceStartupConfig* GetInstance();
 
@@ -115,10 +121,6 @@ class TRACING_EXPORT TraceStartupConfig {
   bool ShouldTraceToResultFile() const;
   base::FilePath GetResultFile() const;
   void OnTraceToResultFileFinished();
-
-  // Get the background tracing config set in application preferences on the
-  // previous session, for current session.
-  bool GetBackgroundStartupTracingEnabled() const;
 
   // Set the background tracing config in preferences for the next session.
   void SetBackgroundStartupTracingEnabled(bool enabled);
@@ -155,7 +157,7 @@ class TRACING_EXPORT TraceStartupConfig {
   bool ParseTraceConfigFileContent(const std::string& content);
 
   bool is_enabled_ = false;
-  bool is_enabled_from_background_tracing_ = false;
+  bool enable_background_tracing_for_testing_ = false;
   base::trace_event::TraceConfig trace_config_;
   int startup_duration_ = 0;
   bool should_trace_to_result_file_ = false;

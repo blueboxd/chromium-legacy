@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -640,12 +641,35 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   return WebInputEventResult::kNotHandled;
 }
 
+// This method is used as a ScrollCallback which requires a void return. Since
+// this call to HandleGestureScrollEnd is async, we can just ignore the return
+// value.
+void ScrollManager::HandleDeferredGestureScrollEnd(
+    const WebGestureEvent& gesture_event) {
+  HandleGestureScrollEnd(gesture_event);
+}
+
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
   Node* node = scroll_gesture_handling_node_;
 
   if (node && node->GetLayoutObject()) {
+    // If the GSE is for a scrollable area that has an in-progress animation,
+    // defer the handling of the gesture event until the scroll animation is
+    // complete. This will allow things like scroll snapping to be deferred so
+    // that users can see the result of their scroll before the snap is applied.
+    LayoutBox* layout_box = node->GetLayoutBox();
+    ScrollableArea* scrollable_area =
+        layout_box ? layout_box->GetScrollableArea() : nullptr;
+    if (scrollable_area && scrollable_area->ExistingScrollAnimator() &&
+        scrollable_area->ExistingScrollAnimator()->HasRunningAnimation()) {
+      scrollable_area->RegisterScrollCompleteCallback(
+          WTF::Bind(&ScrollManager::HandleDeferredGestureScrollEnd,
+                    WrapWeakPersistent(this), gesture_event));
+      return WebInputEventResult::kNotHandled;
+    }
+
     PassScrollGestureEvent(gesture_event, node->GetLayoutObject());
     if (current_scroll_chain_.empty()) {
       ClearGestureScrollState();

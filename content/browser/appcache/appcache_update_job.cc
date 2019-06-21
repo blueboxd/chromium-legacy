@@ -223,8 +223,7 @@ AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
 
 AppCacheUpdateJob::UrlToFetch::UrlToFetch(const UrlToFetch& other) = default;
 
-AppCacheUpdateJob::UrlToFetch::~UrlToFetch() {
-}
+AppCacheUpdateJob::UrlToFetch::~UrlToFetch() = default;
 
 AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
                                      AppCacheGroup* group)
@@ -267,20 +266,24 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
   DCHECK_EQ(group_->update_job(), this);
   DCHECK(!group_->is_obsolete());
 
+  if (IsTerminating()) {
+    // This update is wrapping up. Kick off another update after this one
+    // finishes. IsTerminating() cannot be true the first time StartUpdate() is
+    // called for a job.
+    group_->QueueUpdate(host, new_master_resource);
+    return;
+  }
+
   bool is_new_pending_master_entry = false;
   if (!new_master_resource.is_empty()) {
+    // A newly loaded HTML page points to this job's manifest. Add the page to
+    // the cache as a master entry, if it wasn't already added.
     DCHECK_EQ(new_master_resource, host->pending_master_entry_url());
     DCHECK(!new_master_resource.has_ref());
     DCHECK_EQ(new_master_resource.GetOrigin(), manifest_url_.GetOrigin());
 
     if (base::Contains(failed_master_entries_, new_master_resource))
       return;
-
-    // Cannot add more to this update if already terminating.
-    if (IsTerminating()) {
-      group_->QueueUpdate(host, new_master_resource);
-      return;
-    }
 
     auto emplace_result = pending_master_entries_.emplace(
         new_master_resource, std::vector<AppCacheHost*>());
@@ -313,7 +316,8 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
   MadeProgress();
   group_->SetUpdateAppCacheStatus(AppCacheGroup::CHECKING);
   if (group_->HasCache()) {
-    base::TimeDelta kFullUpdateInterval = base::TimeDelta::FromHours(24);
+    constexpr base::TimeDelta kFullUpdateInterval =
+        base::TimeDelta::FromHours(24);
     update_type_ = UPGRADE_ATTEMPT;
     base::TimeDelta time_since_last_check =
         base::Time::Now() - group_->last_full_update_check_time();
@@ -432,40 +436,46 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
   std::unique_ptr<URLFetcher> manifest_fetcher = std::move(manifest_fetcher_);
 
   UpdateURLLoaderRequest* request = manifest_fetcher->request();
-  int response_code = -1;
-  bool is_valid_response_code = false;
-  if (net_error == net::OK) {
-    response_code = request->GetResponseCode();
-    is_valid_response_code = (response_code / 100 == 2);
+  int response_code = (net_error == net::OK) ? request->GetResponseCode() : -1;
 
+  if (net_error == net::OK) {
     std::string mime_type = request->GetMimeType();
     manifest_has_valid_mime_type_ = (mime_type == "text/cache-manifest");
   }
 
-  if (is_valid_response_code) {
+  if (response_code >= 200 && response_code < 300) {
     manifest_data_ = manifest_fetcher->manifest_data();
     manifest_response_info_ =
         std::make_unique<net::HttpResponseInfo>(request->GetResponseInfo());
-    if (update_type_ == UPGRADE_ATTEMPT)
+
+    if (update_type_ == UPGRADE_ATTEMPT) {
       CheckIfManifestChanged();  // continues asynchronously
-    else
-      ContinueHandleManifestFetchCompleted(true);
-  } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
-    ContinueHandleManifestFetchCompleted(false);
-  } else if ((response_code == 404 || response_code == 410) &&
-             update_type_ == UPGRADE_ATTEMPT) {
-    storage_->MakeGroupObsolete(group_, this, response_code);  // async
-  } else {
-    const char kFormatString[] = "Manifest fetch failed (%d) %s";
-    std::string message =
-        FormatUrlErrorMessage(kFormatString, manifest_url_,
-                              manifest_fetcher->result(), response_code);
-    HandleCacheFailure(
-        blink::mojom::AppCacheErrorDetails(
-            message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-            manifest_url_, response_code, false /*is_cross_origin*/),
-        manifest_fetcher->result(), GURL());
+      return;
+    }
+
+    ContinueHandleManifestFetchCompleted(/*changed=*/true);
+    return;
   }
+
+  if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
+    ContinueHandleManifestFetchCompleted(/*changed=*/false);
+    return;
+  }
+
+  if ((response_code == 404 || response_code == 410) &&
+      update_type_ == UPGRADE_ATTEMPT) {
+    storage_->MakeGroupObsolete(group_, this, response_code);  // async
+    return;
+  }
+
+  const char kFormatString[] = "Manifest fetch failed (%d) %s";
+  std::string message = FormatUrlErrorMessage(
+      kFormatString, manifest_url_, manifest_fetcher->result(), response_code);
+  HandleCacheFailure(
+      blink::mojom::AppCacheErrorDetails(
+          message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+          manifest_url_, response_code, false /*is_cross_origin*/),
+      manifest_fetcher->result(), GURL());
 }
 
 void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
@@ -785,9 +795,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
   DCHECK_EQ(manifest_fetcher_.get(), url_fetcher);
   std::unique_ptr<URLFetcher> manifest_fetcher = std::move(manifest_fetcher_);
 
-  int response_code = net_error == net::OK
-                          ? manifest_fetcher->request()->GetResponseCode()
-                          : -1;
+  UpdateURLLoaderRequest* request = manifest_fetcher->request();
+  int response_code = (net_error == net::OK) ? request->GetResponseCode() : -1;
+
   if (response_code == 304 ||
       manifest_data_ == manifest_fetcher->manifest_data()) {
     // Only need to store response in storage if manifest is not already
@@ -795,49 +805,50 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
     AppCacheEntry* entry = nullptr;
     if (inprogress_cache_)
       entry = inprogress_cache_->GetEntry(manifest_url_);
+
     if (entry) {
       entry->add_types(AppCacheEntry::MANIFEST);
       StoreGroupAndCache();
-    } else {
-      manifest_response_writer_ = CreateResponseWriter();
-      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-          base::MakeRefCounted<HttpResponseInfoIOBuffer>(
-              std::move(manifest_response_info_));
-      manifest_response_writer_->WriteInfo(
-          io_buffer.get(),
-          base::BindOnce(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
-                         base::Unretained(this)));
+      return;
     }
-  } else {
-    VLOG(1) << "Request error: " << net_error
-            << " response code: " << response_code;
-    ScheduleUpdateRetry(kRerunDelayMs);
-    if (response_code == 200) {
-      HandleCacheFailure(
-          blink::mojom::AppCacheErrorDetails(
-              "Manifest changed during update",
-              blink::mojom::AppCacheErrorReason::APPCACHE_CHANGED_ERROR, GURL(),
-              0, false /*is_cross_origin*/),
-          MANIFEST_ERROR, GURL());
-    } else {
-      const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
-      std::string message =
-          FormatUrlErrorMessage(kFormatString, manifest_url_,
-                                manifest_fetcher->result(), response_code);
-      ResultType result = manifest_fetcher->result();
-      if (result == UPDATE_OK) {
-        // URLFetcher considers any 2xx response a success, however in this
-        // particular case we want to treat any non 200 responses as failures.
-        result = SERVER_ERROR;
-      }
-      HandleCacheFailure(
-          blink::mojom::AppCacheErrorDetails(
-              message,
-              blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-              GURL(), response_code, false /*is_cross_origin*/),
-          result, GURL());
-    }
+
+    manifest_response_writer_ = CreateResponseWriter();
+    auto io_buffer = base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+        std::move(manifest_response_info_));
+    manifest_response_writer_->WriteInfo(
+        io_buffer.get(),
+        base::BindOnce(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
+                       base::Unretained(this)));
+    return;
   }
+
+  VLOG(1) << "Request error: " << net_error
+          << " response code: " << response_code;
+  ScheduleUpdateRetry(kRerunDelayMs);
+  if (response_code == 200) {
+    HandleCacheFailure(
+        blink::mojom::AppCacheErrorDetails(
+            "Manifest changed during update",
+            blink::mojom::AppCacheErrorReason::APPCACHE_CHANGED_ERROR, GURL(),
+            0, false /*is_cross_origin*/),
+        MANIFEST_ERROR, GURL());
+    return;
+  }
+
+  const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
+  std::string message = FormatUrlErrorMessage(
+      kFormatString, manifest_url_, manifest_fetcher->result(), response_code);
+  ResultType result = manifest_fetcher->result();
+  if (result == UPDATE_OK) {
+    // URLFetcher considers any 2xx response a success, however in this
+    // particular case we want to treat any non 200 responses as failures.
+    result = SERVER_ERROR;
+  }
+  HandleCacheFailure(
+      blink::mojom::AppCacheErrorDetails(
+          message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+          GURL(), response_code, false /*is_cross_origin*/),
+      result, GURL());
 }
 
 void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {

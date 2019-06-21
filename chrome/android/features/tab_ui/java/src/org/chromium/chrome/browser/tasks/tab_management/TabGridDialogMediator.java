@@ -88,8 +88,8 @@ public class TabGridDialogMediator {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
-                updateDialog();
-                updateGridTabSwitcher();
+                mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+                mDialogResetHandler.resetWithListOfTabs(null);
             }
 
             @Override
@@ -103,7 +103,7 @@ public class TabGridDialogMediator {
                 if (type == TabSelectionType.FROM_USER) {
                     // Cancel the zooming into tab grid card animation.
                     mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
-                    mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+                    mDialogResetHandler.resetWithListOfTabs(null);
                 }
             }
 
@@ -190,7 +190,7 @@ public class TabGridDialogMediator {
         ScrimView.ScrimObserver scrimObserver = new ScrimView.ScrimObserver() {
             @Override
             public void onScrimClick() {
-                mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+                mDialogResetHandler.resetWithListOfTabs(null);
             }
             @Override
             public void onScrimVisibilityChanged(boolean visible) {}
@@ -200,14 +200,14 @@ public class TabGridDialogMediator {
 
     private View.OnClickListener getCollapseButtonClickListener() {
         return view -> {
-            mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+            mDialogResetHandler.resetWithListOfTabs(null);
         };
     }
 
     private View.OnClickListener getAddButtonClickListener() {
         return view -> {
             mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
-            mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
+            mDialogResetHandler.resetWithListOfTabs(null);
             Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
             List<Tab> relatedTabs = getRelatedTabs(currentTab.getId());
 

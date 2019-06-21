@@ -32,7 +32,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/autofill/core/common/submission_source.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"

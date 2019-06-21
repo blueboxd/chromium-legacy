@@ -99,8 +99,9 @@ class CompositorAnimationTimeline;
 
 class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
  public:
+  using TimeFunction = double (*)();
   explicit ScrollAnimator(ScrollableArea*,
-                          WTF::TimeFunction = WTF::CurrentTimeTicksInSeconds);
+                          TimeFunction = WTF::CurrentTimeTicksInSeconds);
   ~ScrollAnimator() override;
 
   bool HasRunningAnimation() const override;
@@ -140,7 +141,7 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 
   std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
   double start_time_;
-  WTF::TimeFunction time_function_;
+  TimeFunction time_function_;
 
  private:
   // Returns true if the animation was scheduled successfully. If animation

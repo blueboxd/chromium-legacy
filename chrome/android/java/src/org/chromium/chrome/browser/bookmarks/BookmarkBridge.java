@@ -472,6 +472,7 @@ public class BookmarkBridge {
      * @return Child IDs of the given folder, with the specified type.
      */
     public List<BookmarkId> getChildIDs(BookmarkId id, boolean getFolders, boolean getBookmarks) {
+        // TODO(crbug.com/160194): Remove boolean parameters after bookmark reordering launches.
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
         nativeGetChildIDs(mNativeBookmarkBridge,

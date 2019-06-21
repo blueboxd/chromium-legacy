@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">로그인 오류</translation>
 <translation id="1887597546629269384">"Hey Google"이라고 다시 말하세요.</translation>
 <translation id="1887850431809612466">하드웨어 버전</translation>
-<translation id="1889984860246851556">프록시 설정 열기</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">전체화면 열기</translation>
 <translation id="189358972401248634">다른 언어</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="2973324205039581528">사이트 음소거</translation>
 <translation id="2977480621796371840">그룹에서 삭제</translation>
-<translation id="2979128960948974571">이 작업은 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="2979639724566107830">새 창에서 열기</translation>
 <translation id="2981113813906970160">큰 마우스 커서 표시</translation>
 <translation id="2982970937345031">익명으로 신고하기</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">새 시크릿 창(&amp;I)</translation>
 <translation id="3323521181261657960">보너스 기기 사용 시간이 추가되었습니다</translation>
 <translation id="3325910708063135066">Mac 시스템 환경설정에서 카메라와 마이크가 사용 중지되었습니다</translation>
-<translation id="3330615614570718993">이 기기에서 플러그인 VM을 사용하려면 관리자에게 문의하세요.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">앱 정보</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - PIP 모드로 동영상 재생 중</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753"><ph name="CUSTODIAN_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
 <translation id="3468275649641751422">동영상 또는 오디오 파일 스트림</translation>
 <translation id="3468999815377931311">Android 휴대전화</translation>
-<translation id="3470248707805984963">오류가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="3470442499439619530">이 사용자 삭제</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
 <translation id="3475843873335999118">죄송합니다. 지문이 인식되지 않았습니다. 비밀번호를 입력하세요.</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">비밀번호를 입력하여 Smart Lock을 사용 설정하세요. 다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 있습니다.</translation>
 <translation id="3630132874740063857">휴대전화</translation>
 <translation id="3630995161997703415">이 사이트를 언제든지 사용할 수 있도록 실행기에 추가합니다</translation>
-<translation id="3635256809897331115">플러그인 VM을 사용하려면 실행을 클릭하거나 탭하세요. 다음에는 런처에 있는 아이콘을 선택하면 플러그인 VM을 시작할 수 있습니다.</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />님, 반갑습니다.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> 남음</translation>
 <translation id="3637682276779847508">정확한 PIN 잠금 해제 키를 입력하지 않으면 SIM 카드가 영구적으로 사용 중지됩니다.</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">이 형식의 파일은 컴퓨터를 손상시킬 수 있습니다. 그래도 <ph name="FILE_NAME" />을(를) 다운로드하시겠습니까?</translation>
 <translation id="3918972485393593704">Google에 세부정보 신고</translation>
 <translation id="3919145445993746351">어느 컴퓨터에서나 내 확장 프로그램을 사용하려면 동기화를 사용 설정하세요.</translation>
-<translation id="391999873395511996">가상 머신을 다운로드하고 있습니다.</translation>
 <translation id="3920504717067627103">인증서 정책</translation>
 <translation id="392089482157167418">ChromeVox(음성 피드백) 사용</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2910,7 +2904,6 @@
 <translation id="5449551289610225147">비밀번호가 잘못되었습니다.</translation>
 <translation id="5449588825071916739">모든 탭 북마크</translation>
 <translation id="5449716055534515760">창 닫기(&amp;D)</translation>
-<translation id="5453630479789469584">플러그인 VM을 설정할 수 없음</translation>
 <translation id="5454166040603940656">제공업체: <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">번역 타겟 언어</translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
@@ -4831,7 +4824,6 @@
 <translation id="8339059274628563283"><ph name="SITE" />에 로컬 저장된 데이터</translation>
 <translation id="833986336429795709">이 링크를 열려면 앱을 선택하세요.</translation>
 <translation id="8342861492835240085">컬렉션 선택</translation>
-<translation id="8343187330304787218"><ph name="DEVICE_TYPE" />에서 플러그인 VM을 실행하기 위한 설정을 관리합니다.</translation>
 <translation id="8343956361364550006">최고의 동영상 또는 애니메이션 품질을 위해 높은 대역폭을 사용합니다. 인터넷 연결 속도가 느린 사용자는 콘텐츠를 보지 못할 수 있습니다.</translation>
 <translation id="8351419472474436977">이 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경 및 중단하고 엿볼 수 있게 되었음을 의미합니다. 이와 같이 변경된 이유가 확실하지 않다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
 <translation id="835238322900896202">제거 중 오류가 발생했습니다. 터미널을 통해 제거해 주세요.</translation>

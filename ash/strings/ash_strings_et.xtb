@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Lülitab võrguühenduse sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Keri paremale</translation>
 <translation id="1812997170047690955">Mis on minu ekraanil?</translation>
+<translation id="1820355135508821526">Funktsioon <ph name="FEATURE_NAME" /> on seadmele rakendatud reegliga keelatud. Muudatuste taotlemiseks rääkige administraatoriga.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laadimine …)</translation>
 <translation id="1850504506766569011">WiFi on välja lülitatud.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Taaskäivitage värskendamiseks</translation>
 <translation id="2597972630681408282">Öövalgus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kaart on lukustatud</translation>
+<translation id="2651765386227849097">Google'i assistent on selles seadmes keelatud.</translation>
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2658778018866295321">Klõpsamine ja lohistamine</translation>
 <translation id="2700493154570097719">Valige klaviatuur</translation>
@@ -262,6 +264,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
 <translation id="490375751687810070">Vertikaalne</translation>
 <translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="4917385247580444890">Tugev</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="4924411785043111640">Taaskäivita ja lähtesta</translation>
@@ -299,6 +302,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5648021990716966815">Mikrofoni pistikupesa</translation>
 <translation id="5669267381087807207">Aktiveerimine</translation>
 <translation id="5673434351075758678">Pärast seadete sünkroonimist lokaadist „<ph name="FROM_LOCALE" />” lokaati „<ph name="TO_LOCALE" />”.</translation>
+<translation id="5682642926269496722">Google'i assistent pole praeguse kasutajakonto jaoks saadaval.</translation>
 <translation id="5691772641933328258">Sõrmejälge ei tuntud ära</translation>
 <translation id="5710450975648804523">Režiim Mitte segada on sees</translation>
 <translation id="574392208103952083">Keskmine</translation>
@@ -332,6 +336,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6064337552080329342">Kahjuks ei õnnestunud teie parooli kinnitada. Proovige uuesti.</translation>
 <translation id="607652042414456612">Lähedal olevad Bluetoothi seadmed saavad teie arvuti tuvastada ja see kuvatakse nimega „<ph name="NAME" />” ja aadressiga <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Laadimine: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google'i assistent ei ole külastajaseansis saadaval.</translation>
 <translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
 <translation id="6164005077879661055">Kõik jälgitava kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui jälgitav kasutaja eemaldatakse. Selle jälgitava kasutaja külastatud veebisaite ja seadeid näeb haldur endiselt aadressil <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Lisateave</translation>
@@ -373,6 +378,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6715542151869432661">Mobiilseadmeid ei leitud.</translation>
 <translation id="6723839937902243910">Toide</translation>
+<translation id="6727969043791803658">Ühendatud, <ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
 <translation id="6790428901817661496">Esita</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>

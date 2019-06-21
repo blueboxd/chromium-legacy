@@ -121,13 +121,19 @@ class BaseJUnit4TestRule implements TestRule {
             if (file.getName().equals("shared_prefs")) {
                 continue;
             }
-            if (!FileUtils.recursivelyDeleteFile(file)) {
+            if (file.isDirectory()
+                    && (file.getName().startsWith("app_") || file.getName().equals("cache"))) {
+                // Directories are lazily created by PathUtils only once, and so can be cleared but
+                // not removed.
+                for (File subFile : file.listFiles()) {
+                    if (!FileUtils.recursivelyDeleteFile(subFile)) {
+                        throw new RuntimeException(
+                                "Could not delete file: " + subFile.getAbsolutePath());
+                    }
+                }
+            } else if (!FileUtils.recursivelyDeleteFile(file)) {
                 throw new RuntimeException("Could not delete file: " + file.getAbsolutePath());
             }
         }
-        // We have to make sure the cache directory still exists, as the framework
-        // will try to create it otherwise and will fail for sandbox processes with
-        // a NullPointerException.
-        new File(dataDir, "cache").mkdir();
     }
 }

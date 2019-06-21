@@ -599,7 +599,6 @@
 <translation id="1887442540531652736">साइन इन एरर</translation>
 <translation id="1887597546629269384">पुन्हा "Hey Google" म्हणा</translation>
 <translation id="1887850431809612466">हार्डवेअर पुनरावृत्ती</translation>
-<translation id="1889984860246851556">प्रॉक्सी सेटिंग्ज उघडा</translation>
 <translation id="1890674179660343635">&lt;span&gt;आयडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">फुल स्क्रीन उघडा</translation>
 <translation id="189358972401248634">इतर भाषा</translation>
@@ -1315,7 +1314,6 @@
 <translation id="2972581237482394796">&amp;पुन्हा करा</translation>
 <translation id="2973324205039581528">साइट म्यूट करा</translation>
 <translation id="2977480621796371840">गटामधून काढून टाका</translation>
-<translation id="2979128960948974571">यास काही मिनिटे लागू शकतात.</translation>
 <translation id="2979639724566107830">नवीन विंडोमध्ये उघडा</translation>
 <translation id="2981113813906970160">मोठा माउस कर्सर दर्शवा</translation>
 <translation id="2982970937345031">अज्ञातरित्या तक्रार करा</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">नवीन &amp;गुप्त विंडो</translation>
 <translation id="3323521181261657960">बोनस! तुम्हाला आणखी स्क्रीन वेळ मिळाला</translation>
 <translation id="3325910708063135066">Mac सिस्टम प्राधान्ये मधील कॅमेरा आणि मायक्रोफोन बंद आहे</translation>
-<translation id="3330615614570718993">या डिव्हाइसवर प्लग-इन VM सुरू करण्यासाठी कृपया तुमच्या ॲडमिनशी संपर्क साधा.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">ॲप माहिती</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - चित्रात-चित्र मोडमध्ये व्हिडिओ प्ले करत आहे</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">हे मुलांसाठी असलेले खाते <ph name="CUSTODIAN_EMAIL" /> द्वारे व्‍यवस्‍थापित केले.</translation>
 <translation id="3468275649641751422">व्हिडिओ किंवा ऑडिओ फाइल स्ट्रीम करा</translation>
 <translation id="3468999815377931311">Android फोन</translation>
-<translation id="3470248707805984963">एरर आली. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3470442499439619530">हा वापरकर्ता काढून टाका</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="3475843873335999118">सॉरी, तुमचे फिंगरप्रिंट अद्याप ओळखले नाही. कृपया तुमचा पासवर्ड एंटर करा.</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">Smart Lock सुरू करण्यासाठी तुमचा पासवर्ड एंटर करा. पुढील वेळेस तुमचा फोन तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करेल. तुम्ही सेटिंग्जमध्ये Smart Lock बंद करू शकता.</translation>
 <translation id="3630132874740063857">तुमचा फोन</translation>
 <translation id="3630995161997703415">कधीही वापरण्‍यासाठी ही साइट तुमच्या शेल्‍फवर जोडा</translation>
-<translation id="3635256809897331115">प्लग-इन VM वापरण्यासाठी लाँच करा वर क्लिक किंवा टॅप करा. भविष्यात, तुम्ही लाँचरमध्ये आयकन निवडून प्लग-इन VM सुरू करू शकता.</translation>
 <translation id="3636096452488277381">कसे आहात, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> शिल्लक</translation>
 <translation id="3637682276779847508">तुम्ही योग्य पिन अनलॉक की एंटर न केल्यास तुमचे सिम कार्ड कायमचे अक्षम केले जाईल.</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">या प्रकारची फाइल तुमच्या कॉंप्युटरला हानी पोहचवू शकते. तुम्ही तरीसुद्धा <ph name="FILE_NAME" /> ठेवू इच्छिता?</translation>
 <translation id="3918972485393593704">Googleला तपशील द्या</translation>
 <translation id="3919145445993746351">तुमच्या सर्व कॉंप्युटरवर एक्स्टेंशन मिळवण्यासाठी, सिंक सुरू करा</translation>
-<translation id="391999873395511996">व्हर्च्युअल मशीन डाउनलोड करत आहे.</translation>
 <translation id="3920504717067627103">सर्टिफिकेट धोरणे</translation>
 <translation id="392089482157167418">ChromeVox (वाचिक फीडबॅक) सुरू करा</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2911,7 +2905,6 @@
 <translation id="5449551289610225147">चुकीचा पासवर्ड</translation>
 <translation id="5449588825071916739">सर्व टॅब बुकमार्क करा</translation>
 <translation id="5449716055534515760">विं&amp;डो बंद करा</translation>
-<translation id="5453630479789469584">प्लग-इन VM सेट करता आले नाही</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> सह</translation>
 <translation id="545426320101607695">यामध्ये भाषांतर करण्यासाठीची भाषा</translation>
 <translation id="5457113250005438886">चुकीचा</translation>
@@ -4831,7 +4824,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> स्थानिकरित्या संचयित केलेला डेटा</translation>
 <translation id="833986336429795709">ही लिंक उघडण्यासाठी, अॅप निवडा</translation>
 <translation id="8342861492835240085">संकलन निवडा</translation>
-<translation id="8343187330304787218">तुमच्या <ph name="DEVICE_TYPE" /> वरील रन होत असलेल्या VM प्लग-इन साठीच्या सेटिंग्ज व्यवस्थापित करा</translation>
 <translation id="8343956361364550006">सर्वोत्तम व्हिडिओ किंवा अॅनिमेशनसाठी उच्च बँडविड्थ वापरा. मंद कनेक्शन असलेल्या इतर लोकांना कदाचित तुमचा आशय दिसणार नाही.</translation>
 <translation id="8351419472474436977">या एक्स्टेंशनने तुमच्या प्रॉक्सी सेटिंग्जचे नियंत्रण घेतले आहे, याचा अर्थ ही बदलू शकते, खंडित होवू शकते किंवा तुम्ही ऑनलाइन करता ती कोणतीही गोष्ट चोरून एकू शकतो. हा बदल का झाला, याबद्दल तुम्ही निश्चित नसल्यास, तुम्हाला कदाचित ते नको आहे.</translation>
 <translation id="835238322900896202">अनइंस्टॉलेशन करताना एरर आली. कृपया टर्मिनलमधून अनइंस्टॉल करा.</translation>

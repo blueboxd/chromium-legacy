@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Cerca ed esplora</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Interrompi</translation>
-<translation id="1272444412400969138">Selettore dispositivo con cui condividere una scheda.</translation>
 <translation id="1283039547216852943">Tocca per espandere</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Strumenti per sviluppatori</translation>
 <translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="169515064810179024">Impedisci ai siti di accedere ai sensori di movimento</translation>
+<translation id="1697480839793160072">Telefoni</translation>
+<translation id="1698058317516161971">Email</translation>
 <translation id="1717218214683051432">Sensori di movimento</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Aggiornato <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Consenti i cookie per un sito specifico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ora}other{# ore}}</translation>
 <translation id="4042870126885713738">Mostra suggerimenti quando un indirizzo web non viene trovato o non è possibile stabilire una connessione</translation>
-<translation id="4044912625106523635">Il selettore dispositivo con cui condividere una scheda è aperto a schermo intero.</translation>
 <translation id="4046123991198612571">Traccia successiva</translation>
 <translation id="4048707525896921369">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzione Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
 
@@ -747,7 +747,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6406506848690869874">Sincronizzazione</translation>
 <translation id="641643625718530986">Stampa…</translation>
 <translation id="6416782512398055893">Sono stati scaricati <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Il selettore dispositivo con cui condividere una scheda è chiuso.</translation>
 <translation id="6427112570124116297">Traduci il Web</translation>
 <translation id="6433501201775827830">Scegli il motore di ricerca</translation>
 <translation id="6437478888915024427">Informazioni sulla pagina</translation>
@@ -787,7 +786,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="666268767214822976">Utilizza un servizio di previsione per visualizzare query correlate e siti web popolari durante la digitazione nella barra degli indirizzi</translation>
 <translation id="666731172850799929">Apri in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informativa sulla privacy di Chrome</translation>
-<translation id="6672986458216094438">Il selettore dispositivo con cui condividere una scheda è aperto nella parte inferiore dello schermo.</translation>
 <translation id="6697492270171225480">Mostra suggerimenti per pagine simili quando una pagina non viene trovata</translation>
 <translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>

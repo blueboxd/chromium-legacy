@@ -136,7 +136,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;
-  void OnInferredFormSubmission(SubmissionSource source) override;
+  void OnInferredFormSubmission(mojom::SubmissionSource source) override;
 
   // WebLocalFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not

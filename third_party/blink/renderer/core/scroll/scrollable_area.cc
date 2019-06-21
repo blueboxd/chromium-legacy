@@ -94,7 +94,9 @@ ScrollableArea::ScrollableArea()
       needs_show_scrollbar_layers_(false),
       uses_composited_scrolling_(false) {}
 
-ScrollableArea::~ScrollableArea() = default;
+ScrollableArea::~ScrollableArea() {
+  RunScrollCompleteCallbacks();
+}
 
 void ScrollableArea::ClearScrollableArea() {
 #if defined(OS_MACOSX)
@@ -161,7 +163,11 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
   TRACE_EVENT2("input", "ScrollableArea::UserScroll", "x", delta.Width(), "y",
                delta.Height());
 
-  base::ScopedClosureRunner run_on_return(std::move(on_finish));
+  if (on_finish)
+    RegisterScrollCompleteCallback(std::move(on_finish));
+
+  base::ScopedClosureRunner run_on_return(WTF::Bind(
+      &ScrollableArea::RunScrollCompleteCallbacks, WrapWeakPersistent(this)));
 
   float step_x = ScrollStep(granularity, kHorizontalScrollbar);
   float step_y = ScrollStep(granularity, kVerticalScrollbar);
@@ -198,7 +204,12 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
                                      ScrollBehavior behavior,
                                      ScrollCallback on_finish) {
-  base::ScopedClosureRunner run_on_return(std::move(on_finish));
+  if (on_finish)
+    RegisterScrollCompleteCallback(std::move(on_finish));
+
+  base::ScopedClosureRunner run_on_return(WTF::Bind(
+      &ScrollableArea::RunScrollCompleteCallbacks, WrapWeakPersistent(this)));
+
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
     if (sequencer->FilterNewScrollOrAbortCurrent(scroll_type)) {
       return;
@@ -284,7 +295,7 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
 
   ScrollCallback callback = std::move(on_finish);
   if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
-    callback = ScrollCallback(base::BindOnce(
+    callback = ScrollCallback(WTF::Bind(
         [](ScrollCallback original_callback,
            WeakPersistent<ScrollableArea> area) {
           if (area)
@@ -408,6 +419,17 @@ bool ScrollableArea::ScrollBehaviorFromString(const String& behavior_string,
 // NOTE: Only called from Internals for testing.
 void ScrollableArea::UpdateScrollOffsetFromInternals(const IntSize& offset) {
   ScrollOffsetChanged(ScrollOffset(offset), kProgrammaticScroll);
+}
+
+void ScrollableArea::RegisterScrollCompleteCallback(ScrollCallback callback) {
+  pending_scroll_complete_callbacks_.push_back(std::move(callback));
+}
+
+void ScrollableArea::RunScrollCompleteCallbacks() {
+  Vector<ScrollCallback> callbacks(
+      std::move(pending_scroll_complete_callbacks_));
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 }
 
 void ScrollableArea::ContentAreaWillPaint() const {

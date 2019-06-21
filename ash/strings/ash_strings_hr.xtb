@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Prebacivanje mrežne veze. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Pomicanje udesno</translation>
 <translation id="1812997170047690955">Što je na mojem zaslonu?</translation>
+<translation id="1820355135508821526">Značajka <ph name="FEATURE_NAME" /> onemogućena je pravilom koje se primjenjuje na uređaj. Obratite se administratoru i zatražite promjenu.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (učitavanje...)</translation>
 <translation id="1850504506766569011">Wi-Fi je isključen.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Ponovo pokrenite da biste ažurirali</translation>
 <translation id="2597972630681408282">Noćno svjetlo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
+<translation id="2651765386227849097">Google asistent onemogućen je na ovom uređaju</translation>
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2658778018866295321">Klikanje i povlačenje</translation>
 <translation id="2700493154570097719">Postavite tipkovnicu</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Baterija je puna.</translation>
 <translation id="490375751687810070">Okomito</translation>
 <translation id="4905614135390995787">Promijenio se prečac za uključivanje i isključivanje načina visokog kontrasta. Upotrebljavajte <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% baterije</translation>
 <translation id="4917385247580444890">Jak</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="4924411785043111640">Ponovo pokreni i vrati na prethodno</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Utičnica mikrofona</translation>
 <translation id="5669267381087807207">Aktivacija</translation>
 <translation id="5673434351075758678">"<ph name="FROM_LOCALE" />" je promijenjen u "<ph name="TO_LOCALE" />" nakon sinkronizacije postavki.</translation>
+<translation id="5682642926269496722">Google asistent nije dostupan za trenutačni korisnički račun.</translation>
 <translation id="5691772641933328258">Otisak prsta nije prepoznat</translation>
 <translation id="5710450975648804523">Način Ne uznemiravaj uključen</translation>
 <translation id="574392208103952083">Srednje</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Nije bilo moguće potvrditi zaporku. Pokušajte ponovo.</translation>
 <translation id="607652042414456612">Vaše računalo mogu otkriti Bluetooth uređaji u blizini i prikazivat će se kao "<ph name="NAME" />" s adresom <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Puni se putem: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google asistent nije dostupan u gostujućoj sesiji.</translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
 <translation id="6164005077879661055">Sve datoteke i lokalni podaci povezani sa zaštićenim korisnikom trajno će se izbrisati kada se taj korisnik ukloni. Web-lokacije koje je taj korisnik posjetio i njegove postavke mogu i dalje biti vidljive upravitelju na adresi <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth uređaj "<ph name="DEVICE_NAME" />" sada je uparen i dostupan svim korisnicima. To uparivanje možete ukloniti u Postavkama.</translation>
 <translation id="6715542151869432661">Nije pronađen nijedan mobilni uređaj.</translation>
 <translation id="6723839937902243910">Napajanje</translation>
+<translation id="6727969043791803658">Povezano, baterija <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>

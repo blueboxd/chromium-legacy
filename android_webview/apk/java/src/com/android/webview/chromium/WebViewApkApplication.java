@@ -7,7 +7,9 @@ package com.android.webview.chromium;
 import android.app.Application;
 import android.content.Context;
 
+import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
@@ -15,7 +17,9 @@ import org.chromium.components.embedder_support.application.FontPreloadingWorkar
 /**
  * Application subclass for SystemWebView and Trichrome.
  *
- * Application subclass is only used in renderer processes and in the WebView APK's own services.
+ * Application subclass is used by renderer processes, services, and content providers that run
+ * under the WebView APK's package.
+ *
  * None of this code runs in an application which simply uses WebView.
  */
 @JNINamespace("android_webview")
@@ -26,12 +30,19 @@ public class WebViewApkApplication extends Application {
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
+        PathUtils.setPrivateDataDirectorySuffix("webview");
+        initCommandLine();
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
+    }
+
+    // Overridden by webview shell to point to a different flags file.
+    protected void initCommandLine() {
+        CommandLineUtil.initCommandLine();
     }
 
     /**

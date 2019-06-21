@@ -9,7 +9,6 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -20,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.VariationsUtils;
-import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
@@ -108,10 +106,6 @@ public class VariationsSeedLoaderTest {
     @Before
     public void setUp() throws IOException {
         mMainHandler = new Handler(Looper.getMainLooper());
-        ContextUtils.initApplicationContextForTests(
-                InstrumentationRegistry.getInstrumentation()
-                        .getTargetContext().getApplicationContext());
-        ServiceInit.setPrivateDataDirectorySuffix();
         RecordHistogram.setDisabledForTests(true);
         VariationsTestUtils.deleteSeeds();
     }

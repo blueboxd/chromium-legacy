@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">البحث والاستكشاف</translation>
 <translation id="1264974993859112054">رياضة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
-<translation id="1272444412400969138">منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">أدوات مطوّري البرامج</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="169515064810179024">حظر مواقع الويب من الوصول إلى مستشعرات الحركة</translation>
+<translation id="1697480839793160072">الهواتف</translation>
+<translation id="1698058317516161971">الرسائل الإلكترونية</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
@@ -358,7 +359,7 @@
 <translation id="363596933471559332">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="3658159451045945436">تؤدي إعادة الضبط إلى محو سِجلّ البيانات المحفوظة، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
-<translation id="3663367437272849150">دمج <ph name="NUM_SELECTED" /> من علامات التبويب.</translation>
+<translation id="3663367437272849150">دمج <ph name="NUM_SELECTED" /> علامة تبويب</translation>
 <translation id="3672452749423051839">اقتراحات عن الأخطاء في التنقل</translation>
 <translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع مساحة التخزين.</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">السماح لموقع ويب معيّن بتشغيل ملفات تعريف الارتباط</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{ساعة واحدة (#)}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
 <translation id="4042870126885713738">يتم عرض اقتراحات عند تعذّر فتح عنوان ويب أو تعذّر الاتصال بالإنترنت.</translation>
-<translation id="4044912625106523635">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بارتفاع كامل.</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4048707525896921369">‏يمكنك معرفة معلومات عن مواضيع على المواقع الإلكترونية بدون مغادرة الصفحة. تُرسل ميزة "البحث بالنقر" الكلمة والسياق المحيط بها إلى "بحث Google" للحصول على تعريفات وصور ونتائج بحث وتفاصيل أخرى ذات الصلة بها.
 
@@ -633,7 +633,7 @@
 <translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
 <translation id="55737423895878184">مسموح بالإشعارات وتحديد الموقع الجغرافي</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
-<translation id="5580090775658607195">تم دمج <ph name="TAB_COUNT" /> من علامات التبويب</translation>
+<translation id="5580090775658607195">تم دمج <ph name="TAB_COUNT" /> علامة تبويب.</translation>
 <translation id="5581519193887989363">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
@@ -747,7 +747,6 @@
 <translation id="6406506848690869874">المزامنة</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6416782512398055893">تم التنزيل بحجم <ph name="MBS" /> ميغابايت</translation>
-<translation id="6418750371676080905">تم إغلاق منتقي جهاز لمشاركة علامة تبويب معه.</translation>
 <translation id="6427112570124116297">ترجمة موقع الويب</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>
 <translation id="6437478888915024427">معلومات الصفحة</translation>
@@ -787,7 +786,6 @@
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقّعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين.</translation>
 <translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
-<translation id="6672986458216094438">يتم فتح منتقي الأجهزة لمشاركة علامة تبويب معه بنصف ارتفاع.</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
@@ -856,7 +854,7 @@
 <translation id="7141896414559753902">منع مواقع الويب من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />تحميل الصفحة الأصلية<ph name="END_LINK" /> من <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">آخر 24 ساعة</translation>
-<translation id="7161892015146974550">يمكنك اختيار علامة التبويب <ph name="TAB_TITLE" />.</translation>
+<translation id="7161892015146974550">اختيار علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="7177466738963138057">يمكنك تغيير ذلك لاحقًا من "الإعدادات"</translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
@@ -1026,7 +1024,7 @@
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="8364299278605033898">عرض مواقع الويب الشائعة</translation>
-<translation id="8364603787714420828">يمكنك إلغاء اختيار علامة التبويب <ph name="TAB_TITLE" />.</translation>
+<translation id="8364603787714420828">إلغاء اختيار علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="8372893542064058268">السماح لموقع ويب معيّن بتشغيل "المزامنة في الخلفية"</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8378714024927312812">بإدارة مؤسستك</translation>

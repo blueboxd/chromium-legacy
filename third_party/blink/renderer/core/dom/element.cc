@@ -2266,6 +2266,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
         children_context.previous_in_flow = nullptr;
         children_context.parent = layout_object;
         children_context.next_sibling = nullptr;
+        children_context.next_sibling_valid = true;
       } else if (style->Display() != EDisplay::kContents) {
         // The layout object creation was suppressed for other reasons than
         // being display:none or display:contents (E.g.
@@ -2684,7 +2685,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
-    InitAttachContextParentAndSibling(reattach_context, *this);
+    reattach_context.parent =
+        LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
     if (reattach_context.parent && reattach_context.parent->ForceLegacyLayout())
       reattach_context.force_legacy_layout = true;
     ReattachLayoutTree(reattach_context);

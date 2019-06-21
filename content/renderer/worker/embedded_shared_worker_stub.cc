@@ -141,10 +141,6 @@ void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
   host_->OnReadyForInspection();
 }
 
-void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
-  host_->OnScriptLoaded();
-}
-
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
   host_->OnScriptLoadFailed();
   pending_channels_.clear();

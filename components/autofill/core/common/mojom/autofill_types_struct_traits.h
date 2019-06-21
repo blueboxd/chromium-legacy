@@ -22,7 +22,6 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/autofill/core/common/submission_source.h"
 #include "mojo/public/cpp/base/text_direction_mojom_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -37,23 +36,6 @@ struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
       autofill::PasswordFormFieldPredictionType input);
   static bool FromMojom(autofill::mojom::PasswordFormFieldPredictionType input,
                         autofill::PasswordFormFieldPredictionType* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::SubmissionSource,
-                  autofill::SubmissionSource> {
-  static autofill::mojom::SubmissionSource ToMojom(
-      autofill::SubmissionSource input);
-  static bool FromMojom(autofill::mojom::SubmissionSource input,
-                        autofill::SubmissionSource* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType> {
-  static autofill::mojom::ButtonTitleType ToMojom(
-      autofill::ButtonTitleType input);
-  static bool FromMojom(autofill::mojom::ButtonTitleType input,
-                        autofill::ButtonTitleType* output);
 };
 
 template <>
@@ -188,7 +170,7 @@ struct StructTraits<autofill::mojom::ButtonTitleInfoDataView,
     return r.first;
   }
 
-  static const autofill::ButtonTitleType& type(
+  static autofill::mojom::ButtonTitleType type(
       const autofill::ButtonTitleInfo& r) {
     return r.second;
   }

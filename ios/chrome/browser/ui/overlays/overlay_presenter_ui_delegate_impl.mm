@@ -115,8 +115,19 @@ void OverlayPresenterUIDelegateImpl::CancelOverlayUI(
   // be deleted immediately.
   OverlayRequestUIState* state = GetRequestUIState(request);
   DCHECK(state);
-  if (!state->has_callback() || !coordinator_) {
+  if (!state->has_callback()) {
     states_.erase(request);
+    return;
+  }
+
+  // If the current request is being cancelled (e.g. for WebState closures) when
+  // there is no coordinator, simulate a dismissal and reset the current
+  // request.
+  if (!coordinator_) {
+    DCHECK_EQ(request_, request);
+    state->set_dismissal_reason(OverlayDismissalReason::kCancellation);
+    state->OverlayUIWasDismissed();
+    SetRequest(nullptr);
     return;
   }
 

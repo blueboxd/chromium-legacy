@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">Sisäänkirjautumisvirhe</translation>
 <translation id="1887597546629269384">Sano taas Hei Google</translation>
 <translation id="1887850431809612466">Laitteistoversio</translation>
-<translation id="1889984860246851556">Avaa välityspalvelinasetukset</translation>
 <translation id="1890674179660343635">&lt;span&gt;Tunnus:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Avaa koko näytössä</translation>
 <translation id="189358972401248634">Muut kielet</translation>
@@ -1111,7 +1110,7 @@
 <translation id="2663302507110284145">Kieli</translation>
 <translation id="2665394472441560184">Lisää uusi sana</translation>
 <translation id="2665717534925640469">Tämä sivu on nyt koko ruudun kokoinen ja on poistanut hiiren osoittimen käytöstä.</translation>
-<translation id="2665919335226618153">Voi räkä! Alustuksen aikana tapahtui virhe.</translation>
+<translation id="2665919335226618153">Harmin paikka! Alustuksen aikana tapahtui virhe.</translation>
 <translation id="2666990579225592931">Avaa vierasikkuna</translation>
 <translation id="2667463864537187133">Hallitse oikeinkirjoituksen tarkistusta</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> jakaa Chrome-välilehden.</translation>
@@ -1317,7 +1316,6 @@
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
 <translation id="2973324205039581528">Mykistä sivusto</translation>
 <translation id="2977480621796371840">Poista ryhmästä</translation>
-<translation id="2979128960948974571">Tämä voi kestää useita minuutteja.</translation>
 <translation id="2979639724566107830">Avaa uudessa ikkunassa</translation>
 <translation id="2981113813906970160">Näytä suuri hiiren osoitin</translation>
 <translation id="2982970937345031">Tee nimetön ilmoitus</translation>
@@ -1536,7 +1534,6 @@
 <translation id="3319048459796106952">Uusi &amp;incognito-ikkuna</translation>
 <translation id="3323521181261657960">Bonus! Sait lisää käyttöaikaa</translation>
 <translation id="3325910708063135066">Kamera ja mikrofoni on poistettu käytöstä Macin järjestelmäasetuksista</translation>
-<translation id="3330615614570718993">Ota yhteyttä järjestelmänvalvojaan aktivoidaksesi Plugin VM:n tällä laitteella.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Sovelluksen tiedot</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – Video toistetaan kuva kuvassa ‑tilassa</translation>
@@ -1628,7 +1625,6 @@
 <translation id="346431825526753">Tämä on lapsen tili, jota hallinnoi <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">Suoratoista video- tai äänitiedosto</translation>
 <translation id="3468999815377931311">Android-puhelin</translation>
-<translation id="3470248707805984963">Tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="3470442499439619530">Poista tämä käyttäjä</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3475843873335999118">Sormenjälkeäsi ei tunnistettu vieläkään. Anna salasana.</translation>
@@ -1741,7 +1737,6 @@
 <translation id="3629631988386925734">Ota Smart Lock käyttöön kirjoittamalla salasanasi. Seuraavalla kerralla <ph name="DEVICE_TYPE" /> voidaan avata puhelimellasi. Voit poistaa Smart Lockin käytöstä asetuksissa.</translation>
 <translation id="3630132874740063857">Oma puhelin</translation>
 <translation id="3630995161997703415">Lisää tämä sivusto hyllyysi, niin voit käyttää sitä milloin tahansa.</translation>
-<translation id="3635256809897331115">Valitse Käynnistä käyttääksesi Plugin VM:ää. Jatkossa voit käynnistää Plugin VM:n käynnistysohjelman kuvakkeella.</translation>
 <translation id="3636096452488277381">Heipä hei, <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" /> % – <ph name="TIME" /> jäljellä</translation>
 <translation id="3637682276779847508">SIM-korttisi poistetaan käytöstä pysyvästi, jos et anna oikeaa PUK-koodia.</translation>
@@ -1956,7 +1951,6 @@
 <translation id="3916445069167113093">Tämäntyyppinen tiedosto voi vahingoittaa tietokonettasi. Haluatko säilyttää tiedoston <ph name="FILE_NAME" />?</translation>
 <translation id="3918972485393593704">Raportoi tiedot Googlelle</translation>
 <translation id="3919145445993746351">Ota synkronointi käyttöön, niin voit käyttää laajennuksia kaikilla tietokoneilla</translation>
-<translation id="391999873395511996">Ladataan virtuaalikonetta.</translation>
 <translation id="3920504717067627103">Varmennekäytännöt</translation>
 <translation id="392089482157167418">Ota ChromeVox käyttöön (äänipalaute)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2910,7 +2904,6 @@
 <translation id="5449551289610225147">Virheellinen salasana</translation>
 <translation id="5449588825071916739">Lisää kaikki välilehdet kirjanmerkkeihin</translation>
 <translation id="5449716055534515760">&amp;Sulje ikkuna</translation>
-<translation id="5453630479789469584">Plugin VM ‑määritys epäonnistui</translation>
 <translation id="5454166040603940656">palvelulla <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">Kieli, johon käännetään</translation>
 <translation id="5457113250005438886">Virheellinen</translation>
@@ -3090,7 +3083,7 @@
 <translation id="5719603411793408026">Oletushakukoneet</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
 <translation id="572155275267014074">Android-asetukset</translation>
-<translation id="5722930212736070253">Voi räkä! Zip Archiver havaitsi virheen.</translation>
+<translation id="5722930212736070253">Harmin paikka! Zip Archiver havaitsi virheen.</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
 <translation id="5723508132121499792">Ei käynnissä olevia taustasovelluksia</translation>
 <translation id="5727728807527375859">Laajennukset, sovellukset ja teemat saattavat vahingoittaa tietokonettasi. Haluatko varmasti jatkaa?</translation>
@@ -4832,7 +4825,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8339059274628563283">Sivuston <ph name="SITE" /> paikallisesti tallennetut tiedot</translation>
 <translation id="833986336429795709">Valitse sovellus tämän linkin avaamista varten</translation>
 <translation id="8342861492835240085">Valitse kokoelma</translation>
-<translation id="8343187330304787218">Määritä Plugin VM:n käyttöasetukset (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="8343956361364550006">Videon tai animaation kuvanlaatu on paras silloin, kun käytät nopeaa yhteyttä. Jos muiden käyttäjien yhteys on hidas, he eivät välttämättä näe lähettämääsi sisältöä.</translation>
 <translation id="8351419472474436977">Välityspalvelimesi asetuksia hallinnoi tällä hetkellä tämä laajennus, joka voi muokata, haitata tai salakuunnella kaikkia verkkotoimiasi. Jos et tiedä, miksi tämä muutos tehtiin, et luultavasti halua käyttää sitä.</translation>
 <translation id="835238322900896202">Poiston aikana tapahtui virhe. Poista sovellus käyttämällä terminaalia.</translation>

@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -30,7 +31,6 @@ namespace autofill {
 
 class AutofillField;
 class CreditCard;
-enum class SubmissionSource;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
@@ -1243,11 +1243,12 @@ class AutofillMetrics {
   // Returns the UMA metric used to track whether or not an upload was sent
   // after being triggered by |submission_source|. This is exposed for testing.
   static const char* SubmissionSourceToUploadEventMetric(
-      SubmissionSource submission_source);
+      mojom::SubmissionSource submission_source);
 
   // Logs whether or not an upload |was_sent| after being triggered by a
   // |submission_source| event.
-  static void LogUploadEvent(SubmissionSource submission_source, bool was_sent);
+  static void LogUploadEvent(mojom::SubmissionSource submission_source,
+                             bool was_sent);
 
   // Logs the card upload decisions ukm for the specified |url|.
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.

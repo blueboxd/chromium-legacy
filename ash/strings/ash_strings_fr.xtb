@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Activer/Désactiver la connexion réseau. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Vers la droite</translation>
 <translation id="1812997170047690955">Éléments affichés à l'écran</translation>
+<translation id="1820355135508821526">La fonctionnalité <ph name="FEATURE_NAME" /> a été désactivée par une règle appliquée à cet appareil. Veuillez contacter votre administrateur pour effectuer des modifications.</translation>
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (chargement…)</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Redémarrer pour mettre à jour</translation>
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
+<translation id="2651765386227849097">L'Assistant Google est désactivé sur cet appareil.</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2658778018866295321">Cliquer et faire glisser</translation>
 <translation id="2700493154570097719">Définir votre clavier</translation>
@@ -262,6 +264,7 @@
 <translation id="4895488851634969361">La batterie est pleine.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
+<translation id="490788395437447240">Niveau de la batterie : <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
@@ -299,6 +302,7 @@
 <translation id="5648021990716966815">Connecteur micro</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
+<translation id="5682642926269496722">L'Assistant Google n'est pas disponible pour le compte utilisateur actuel.</translation>
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="574392208103952083">Moyenne</translation>
@@ -332,6 +336,7 @@
 <translation id="6064337552080329342">Mot de passe incorrect. Veuillez réessayer.</translation>
 <translation id="607652042414456612">Votre ordinateur est visible par les appareils Bluetooth situés à proximité sous le nom "<ph name="NAME" />", associé à l'adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> en charge</translation>
+<translation id="612734058257491180">L'Assistant Google n'est pas disponible dans une session Invité.</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6164005077879661055">Tous les fichiers et les données locales associés à l'utilisateur supervisé seront définitivement supprimés en même temps que cet utilisateur. Le gestionnaire peut toujours accéder aux sites Web consultés par l'utilisateur supervisé et aux paramètres de celui-ci à l'adresse <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
@@ -373,6 +378,7 @@
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="6723839937902243910">Alimentation</translation>
+<translation id="6727969043791803658">Connecté, batterie à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>

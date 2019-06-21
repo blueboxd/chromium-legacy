@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
-#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -86,9 +85,9 @@ bool PictureSnapshot::IsEmpty() const {
   return picture_->cullRect().isEmpty();
 }
 
-Vector<char> PictureSnapshot::Replay(unsigned from_step,
-                                     unsigned to_step,
-                                     double scale) const {
+Vector<uint8_t> PictureSnapshot::Replay(unsigned from_step,
+                                        unsigned to_step,
+                                        double scale) const {
   const SkIRect bounds = picture_->cullRect().roundOut();
   int width = ceil(scale * bounds.width());
   int height = ceil(scale * bounds.height());
@@ -111,8 +110,7 @@ Vector<char> PictureSnapshot::Replay(unsigned from_step,
     canvas.ResetStepCount();
     picture_->playback(&canvas, &canvas);
   }
-  Vector<char> base64_data;
-  Vector<char> encoded_image;
+  Vector<uint8_t> encoded_image;
 
   SkPixmap src;
   bool peekResult = bitmap.peekPixels(&src);
@@ -121,14 +119,10 @@ Vector<char> PictureSnapshot::Replay(unsigned from_step,
   SkPngEncoder::Options options;
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
-  if (!ImageEncoder::Encode(
-          reinterpret_cast<Vector<unsigned char>*>(&encoded_image), src,
-          options)) {
-    return Vector<char>();
-  }
+  if (!ImageEncoder::Encode(&encoded_image, src, options))
+    return Vector<uint8_t>();
 
-  Base64Encode(encoded_image, base64_data);
-  return base64_data;
+  return encoded_image;
 }
 
 Vector<Vector<base::TimeDelta>> PictureSnapshot::Profile(

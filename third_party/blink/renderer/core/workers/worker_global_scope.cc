@@ -538,9 +538,9 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
 }
 
 void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
-  GetAgent()->event_loop()->EnqueueMicrotask(WTF::Bind(
-      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
-      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
+  GetAgent()->event_loop()->EnqueueMicrotask(
+      WTF::Bind(&V8VoidFunction::InvokeAndReportException,
+                WrapPersistent(callback), nullptr));
 }
 
 int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,

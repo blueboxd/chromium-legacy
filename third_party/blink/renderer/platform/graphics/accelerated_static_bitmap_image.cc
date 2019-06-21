@@ -52,6 +52,7 @@ scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
+    GLuint shared_image_texture_id,
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
@@ -59,8 +60,8 @@ AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     bool is_origin_top_left,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
-      mailbox, sync_token, sk_image_info, texture_target,
-      std::move(context_provider_wrapper), context_thread_id,
+      mailbox, sync_token, shared_image_texture_id, sk_image_info,
+      texture_target, std::move(context_provider_wrapper), context_thread_id,
       is_origin_top_left, std::move(release_callback)));
 }
 
@@ -91,6 +92,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
+    GLuint shared_image_texture_id,
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
@@ -104,6 +106,10 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
   mailbox_texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, std::move(context_provider_wrapper), mailbox_ref_,
       context_thread_id, sk_image_info, texture_target, is_origin_top_left);
+  if (shared_image_texture_id) {
+    skia_texture_holder_ = std::make_unique<SkiaTextureHolder>(
+        mailbox_texture_holder_.get(), shared_image_texture_id);
+  }
 }
 
 namespace {
@@ -307,7 +313,7 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
 
   DCHECK(mailbox_texture_holder_);
   skia_texture_holder_ =
-      std::make_unique<SkiaTextureHolder>(mailbox_texture_holder_.get());
+      std::make_unique<SkiaTextureHolder>(mailbox_texture_holder_.get(), 0u);
 }
 
 void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,

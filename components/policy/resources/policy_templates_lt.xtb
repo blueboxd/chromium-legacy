@@ -2551,6 +2551,10 @@
       Atminkite, kad tai nerekomenduojama, nes taip gali būti apeinamas plėtinys „nameConstraints“, apribojantis prieglobos serverių pavadinimus, kuriems gali būti skirtas atitinkamas sertifikatas.
 
       Jei ši politika nenustatyta arba nustatyta į „False“, serverio sertifikatai be plėtinio „subjectAlternativeName“, kuriuose yra DNS pavadinimas arba IP adresas, nebus laikomi patikimais.</translation>
+<translation id="5578571772998293651">Leidžiami naudotojų atsiliepimai.
+        Jei politika nustatyta kaip „Netiesa“, naudotojai negali siųsti atsiliepimų „Google“.
+
+        Jei politika nenustatyta arba nustatyta kaip „Tiesa“, naudotojai gali siųsti atsiliepimus „Google“ naudodami meniu -&gt; „Pagalba“ -&gt; „Pranešti apie problemą“ arba klavišų derinį.</translation>
 <translation id="5581292529942108810">Konfigūruojama su „Chrome“ ataskaitų teikimo plėtiniu susijusi politika.
 
       Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
@@ -3949,6 +3953,7 @@
       Jei ši politika nenustatoma, nebus jokių politikos „URLBlacklist“ juodojo sąrašo išimčių.</translation>
 <translation id="8176035528522326671">Leisti įmonei būti tik pirminiu kelių profilių naudotoju (numatytoji elgsena įmonių valdomiems naudotojams)</translation>
 <translation id="8183108371184777472">Uždrausti paleisti naršyklės langą</translation>
+<translation id="8186911565834244165">Naudotojų atsiliepimų leidimas</translation>
 <translation id="8214600119442850823">Konfigūruoja slaptažodžių tvarkytuvę.</translation>
 <translation id="8217516105848565518">Ši politika nebenaudojama. Vietoje jos naudokite „RemoteAccessHostDomainList“.</translation>
 <translation id="8244171102276095471">RC4 šifruotųjų programų komplektų įgalinimas TLS</translation>
@@ -4391,6 +4396,12 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
           Pagal politiką užregistruotos protokolo doroklės sujungiamos su naudotojo užregistruotomis doroklėmis ir jas abi galima naudoti. Naudotojas gali nepaisyti pagal politiką įdiegtų protokolo doroklių įdiegdamas naują numatytąją doroklę, bet jis negali pašalinti pagal politiką užregistruotos protokolo doroklės.</translation>
+<translation id="91196902572559194">Pagal šią politiką „Google Assistant“ suteikiamas leidimas klausyti suaktyvinimo balsu frazės.
+
+      Jei politika įgalinta, „Google Assistant“ klauso suaktyvinimo balsu frazės.
+      Jei politika išjungta, „Google Assistant“ neklauso suaktyvinimo balsu frazės.
+      Jei politika nenustatyta, naudotojai gali nuspręsti, ar leisti „Google Assistant“ klausyti suaktyvinimo balsu frazės.
+      </translation>
 <translation id="9123211093995421438">Nurodomas minimalus „<ph name="PRODUCT_OS_NAME" />“ ankstesnių versijų, kurias bet kada turėtų būti leidžiama grąžinti, skaičius, pradedant nuo stabilios versijos.
 
       Numatytasis nustatymas klientų užregistruotiems įrenginiams yra 0, įmonių užregistruotiems įrenginiams – 8 (maždaug 1 metai).

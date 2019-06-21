@@ -87,18 +87,16 @@ ScriptPromise NotificationManager::RequestPermission(
   permission_service_->RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      WTF::Bind(
-          &NotificationManager::OnPermissionRequestComplete,
-          WrapPersistent(this), WrapPersistent(resolver),
-          WrapPersistent(ToV8PersistentCallbackFunction(deprecated_callback))));
+      WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
+                WrapPersistent(this), WrapPersistent(resolver),
+                WrapPersistent(deprecated_callback)));
 
   return promise;
 }
 
 void NotificationManager::OnPermissionRequestComplete(
     ScriptPromiseResolver* resolver,
-    V8PersistentCallbackFunction<V8NotificationPermissionCallback>*
-        deprecated_callback,
+    V8NotificationPermissionCallback* deprecated_callback,
     mojom::blink::PermissionStatus status) {
   String status_string = Notification::PermissionString(status);
   if (deprecated_callback)

@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Maghanap at mag-explore</translation>
 <translation id="1264974993859112054">Pampalakasan</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1272444412400969138">Picker ng device sa pagbabahagi ng tab.</translation>
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">Payagan ang cookies para sa isang partikular na site.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# oras}one{# oras}other{# na oras}}</translation>
 <translation id="4042870126885713738">Magpakita ng mga suhestyon kapag hindi ma-resolve ang isang website o kung hindi makakonekta</translation>
-<translation id="4044912625106523635">Nakabukas ang picker ng device sa pagbabahagi ng tab nang buo ang taas.</translation>
 <translation id="4046123991198612571">Susunod na track</translation>
 <translation id="4048707525896921369">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page. Ipinapadala sa Google Search ng I-tap para Maghanap ang salita at ang konteksto nito, na nagbibigay ng mga kahulugan, larawan, resulta ng paghahanap, at iba pang detalye.
 
@@ -633,7 +631,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="557283862590186398">Kailangan ng Chrome ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
 <translation id="55737423895878184">Pinapayagan ang lokasyon at mga notification</translation>
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
-<translation id="5580090775658607195">Ipinangkat ang <ph name="TAB_COUNT" /> tab</translation>
+<translation id="5580090775658607195">Naigrupo ang <ph name="TAB_COUNT" /> tab</translation>
 <translation id="5581519193887989363">Mapipili mo kung ano ang isi-sync anumang oras sa <ph name="BEGIN_LINK1" />mga setting<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5596627076506792578">Higit pang opsyon</translation>
@@ -747,7 +745,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6406506848690869874">Pag-sync</translation>
 <translation id="641643625718530986">I-print…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ang na-download</translation>
-<translation id="6418750371676080905">Nakasara ang picker ng device sa pagbabahagi ng tab.</translation>
 <translation id="6427112570124116297">I-translate ang Web</translation>
 <translation id="6433501201775827830">Pumili ng iyong search engine</translation>
 <translation id="6437478888915024427">Impormasyon ng page</translation>
@@ -787,7 +784,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="666268767214822976">Gumamit ng serbisyo sa paghula para magpakita ng mga nauugnay na query at sikat na website habang nagta-type ka sa address bar</translation>
 <translation id="666731172850799929">Buksan sa <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notification ng Privacy ng Chrome</translation>
-<translation id="6672986458216094438">Nakabukas ang picker ng device sa pagbabahagi ng tab nang kalahati ang taas.</translation>
 <translation id="6697492270171225480">Magpakita ng mga mungkahi para sa mga katulad na page kapag hindi mahanap ang isang page</translation>
 <translation id="6697947395630195233">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito.</translation>
 <translation id="6698801883190606802">Pamahalaan ang na-sync na data</translation>
@@ -889,7 +885,7 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7403691278183511381">Unang Karanasan sa Pagtakbo ng Chrome</translation>
 <translation id="741204030948306876">Oo, sali ako</translation>
 <translation id="7413229368719586778">Petsa ng pagsisimula <ph name="DATE" /></translation>
-<translation id="7418565925463285788">Pagpangkatin ang mga tab...</translation>
+<translation id="7418565925463285788">Igrupo ang mga tab...</translation>
 <translation id="7423098979219808738">Magtanong muna</translation>
 <translation id="7423538860840206698">Na-block sa pag-read ng clipboard</translation>
 <translation id="7431991332293347422">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap at higit pa</translation>

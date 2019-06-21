@@ -23,11 +23,12 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/submission_source.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
+
+using mojom::SubmissionSource;
 
 namespace {
 

@@ -49,14 +49,17 @@ public interface SigninManagerDelegate {
             long nativeSigninManagerAndroid, String email, final Callback<Boolean> callback);
 
     /**
-     * Interact with the UserPolicySigninService to retrieve the user policy.
+     * Interact with the UserPolicySigninService to retrieve the user policy if necessary.
      * @param signinManager a reference on SigninManager used for the native calls
      * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
      *                                   calls
-     * @param username (email) of the user signing in.
+     * @param username (email) of the account signing in.
+     * @param callback The callback called once the policy is retrieved and applied. This is always
+     *                 called, even if the user is not managed and no policy was retrieved or
+     *                 applied.
      */
-    public void fetchAndApplyCloudPolicy(
-            @JCaller SigninManager signinManager, long nativeSigninManagerAndroid, String username);
+    public void fetchAndApplyCloudPolicy(@JCaller SigninManager signinManager,
+            long nativeSigninManagerAndroid, String username, Runnable callback);
 
     /**
      * Perform the required cloud policy cleanup when a signin is aborted.

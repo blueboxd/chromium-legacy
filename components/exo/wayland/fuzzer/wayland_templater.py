@@ -98,6 +98,8 @@ def GetMessage(message, context):
       'args': [GetArg(a) for a in message.findall('arg')],
       'is_constructor':
           wlu.IsConstructor(message),
+      'is_destructor':
+          wlu.IsDestructor(message),
       'constructed':
           constructed,
       'constructed_has_listener':

@@ -204,11 +204,6 @@ quic::QuicConfig InitializeQuicConfig(
   return config;
 }
 
-bssl::UniquePtr<SSL_CTX> QuicStreamFactoryCreateSslCtx() {
-  crypto::EnsureOpenSSLInit();
-  return quic::TlsClientHandshaker::CreateSslCtx();
-}
-
 // An implementation of quic::QuicCryptoClientConfig::ServerIdFilter that wraps
 // an |origin_filter|.
 class ServerIdOriginFilter
@@ -1102,8 +1097,7 @@ QuicStreamFactory::QuicStreamFactory(
           std::make_unique<ProofVerifierChromium>(cert_verifier,
                                                   ct_policy_enforcer,
                                                   transport_security_state,
-                                                  cert_transparency_verifier),
-          QuicStreamFactoryCreateSslCtx()),
+                                                  cert_transparency_verifier)),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),

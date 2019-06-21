@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Slå netværksforbindelse til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rul til højre</translation>
 <translation id="1812997170047690955">Hvad vises der på min skærm?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> er blevet deaktiveret af en politik, der gælder for denne enhed. Kontakt din administrator for at anmode om ændringer.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (indlæser...)</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Genstart for at opdatere</translation>
 <translation id="2597972630681408282">Nattelys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
+<translation id="2651765386227849097">Google Assistent er deaktiveret på denne enhed.</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2658778018866295321">Klik og træk</translation>
 <translation id="2700493154570097719">Angiv dit tastatur</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="490375751687810070">Lodret</translation>
 <translation id="4905614135390995787">Genvejen til at aktivere eller deaktivere tilstanden Høj kontrast er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4924411785043111640">Genstart og nulstil</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="5682642926269496722">Google Assistent er ikke tilgængelig for den aktuelle brugerkonto.</translation>
 <translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
 <translation id="5710450975648804523">Forstyr ikke er aktiveret.</translation>
 <translation id="574392208103952083">Mellem</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som "<ph name="NAME" />" med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Oplader <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google Assistent er ikke tilgængelig i en gæstesession.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6164005077879661055">Alle filer og lokale data, der er knyttet til den administrerede bruger, 
 slettes permanent, når den administrerede bruger fjernes. Besøgte websites og indstillinger for denne administrerede bruger er muligvis stadig synlige for administratoren på <ph name="MANAGEMENT_URL" />.</translation>
@@ -373,6 +378,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6713285437468012787">Bluetooth-enheden "<ph name="DEVICE_NAME" />" er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
 <translation id="6715542151869432661">Der blev ikke fundet nogen mobilenheder.</translation>
 <translation id="6723839937902243910">Strøm</translation>
+<translation id="6727969043791803658">Tilsluttet, <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
 <translation id="6790428901817661496">Afspil</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>

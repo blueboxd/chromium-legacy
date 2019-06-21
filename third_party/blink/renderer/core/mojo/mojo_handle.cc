@@ -53,10 +53,17 @@ MojoWatcher* MojoHandle::watch(ScriptState* script_state,
 MojoResult MojoHandle::writeMessage(
     ArrayBufferOrArrayBufferView& buffer,
     const HeapVector<Member<MojoHandle>>& handles) {
-  Vector<mojo::ScopedHandle, kHandleVectorInlineCapacity> scoped_handles(
-      handles.size());
-  std::transform(handles.begin(), handles.end(), scoped_handles.begin(),
-                 [](MojoHandle* handle) { return std::move(handle->handle_); });
+  Vector<mojo::ScopedHandle, kHandleVectorInlineCapacity> scoped_handles;
+  scoped_handles.ReserveCapacity(handles.size());
+  bool has_invalid_handles = false;
+  for (auto& handle : handles) {
+    if (!handle->handle_.is_valid())
+      has_invalid_handles = true;
+    else
+      scoped_handles.emplace_back(std::move(handle->handle_));
+  }
+  if (has_invalid_handles)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   const void* bytes = nullptr;
   size_t num_bytes = 0;

@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Suchen und entdecken</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stopp</translation>
-<translation id="1272444412400969138">Geräteauswahl zum Teilen eines Tabs.</translation>
 <translation id="1283039547216852943">Zum Maximieren tippen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="1291207594882862231">Verlauf, Cookies, Websitedaten, Cache leeren…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Entwicklertools</translation>
 <translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="169515064810179024">Zugriff auf Bewegungssensoren für Websites blockieren</translation>
+<translation id="1697480839793160072">Telefone</translation>
+<translation id="1698058317516161971">E-Mails</translation>
 <translation id="1717218214683051432">Bewegungssensoren</translation>
 <translation id="1718835860248848330">Letzte Stunde</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – <ph name="TIME_SINCE_UPDATE" /> aktualisiert</translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
-<translation id="4044912625106523635">Geräteauswahl zum Teilen eines Tabs, der ganz geöffnet ist.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4048707525896921369">Erfahren Sie mehr zu Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" wird ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
 
@@ -747,7 +747,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6406506848690869874">Synchronisierung</translation>
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB heruntergeladen</translation>
-<translation id="6418750371676080905">Geräteauswahl zum Teilen eines Tabs, der geschlossen ist.</translation>
 <translation id="6427112570124116297">Das Web übersetzen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>
 <translation id="6437478888915024427">Seiteninfo</translation>
@@ -787,7 +786,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion ähnliche Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
-<translation id="6672986458216094438">Geräteauswahl zum Teilen eines Tabs, der halb geöffnet ist.</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>

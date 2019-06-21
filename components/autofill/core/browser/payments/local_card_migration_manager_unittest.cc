@@ -120,8 +120,8 @@ class LocalCardMigrationManagerTest : public testing::Test {
   }
 
   void FormSubmitted(const FormData& form) {
-    autofill_manager_->OnFormSubmitted(form, false,
-                                       SubmissionSource::FORM_SUBMISSION);
+    autofill_manager_->OnFormSubmitted(
+        form, false, mojom::SubmissionSource::FORM_SUBMISSION);
   }
 
   void EditCreditCardFrom(FormData& credit_card_form,

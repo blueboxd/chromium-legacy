@@ -45,6 +45,9 @@ gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
 
 // Generic resource interface, used for locking (RAII) and recycling pixel
 // buffers of any type.
+// Note that this object may be accessed across multiple threads but not
+// concurrently. The caller is responsible to call Transfer on the object before
+// using it on a different thread.
 class PLATFORM_EXPORT CanvasResource
     : public WTF::ThreadSafeRefCounted<CanvasResource> {
  public:
@@ -333,15 +336,35 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     return nullptr;
   }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
-  GLuint GetTextureIdForBackendTexture() const { return texture_id_; }
+  GLuint GetTextureIdForBackendTexture() const {
+    return owning_thread_data().texture_id;
+  }
   void WillDraw();
   bool is_cross_thread() const {
     return Thread::Current()->ThreadId() != owning_thread_id_;
   }
+  bool has_read_access() const {
+    return owning_thread_data().bitmap_image_read_refs > 0u;
+  }
 
  private:
+  // These members are either only accessed on the owning thread, or are only
+  // updated on the owning thread and then are read on a different thread.
+  // We ensure to correctly update their state in Transfer, which is called
+  // before a resource is used on a different thread.
+  struct OwningThreadData {
+    bool mailbox_needs_new_sync_token = true;
+    gpu::Mailbox shared_image_mailbox;
+    gpu::SyncToken sync_token;
+    bool needs_gl_filter_reset = true;
+    size_t bitmap_image_read_refs = 0u;
+    GLuint texture_id = 0u;
+    MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
+  };
+
   static void OnBitmapImageDestroyed(
       scoped_refptr<CanvasResourceSharedImage> resource,
+      bool has_read_ref_on_texture,
       const gpu::SyncToken& sync_token,
       bool is_lost);
 
@@ -364,21 +387,43 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             bool is_origin_top_left);
   void SetGLFilterIfNeeded();
 
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  gpu::Mailbox shared_image_mailbox_;
-  bool mailbox_needs_new_sync_token_ = true;
-  gpu::SyncToken sync_token_;
-  MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
-  GLuint texture_id_ = 0u;
-  bool is_overlay_candidate_ = false;
-  IntSize size_;
-  bool needs_gl_filter_reset_ = true;
-  bool is_origin_clean_ = true;
-  GLenum texture_target_ = GL_TEXTURE_2D;
-  bool is_origin_top_left_ = false;
+  OwningThreadData& owning_thread_data() {
+    DCHECK_EQ(Thread::Current()->ThreadId(), owning_thread_id_);
+    return owning_thread_data_;
+  }
+  const OwningThreadData& owning_thread_data() const {
+    DCHECK_EQ(Thread::Current()->ThreadId(), owning_thread_id_);
+    return owning_thread_data_;
+  }
 
+  // Can be read on any thread but updated only on the owning thread.
+  const gpu::Mailbox& mailbox() const {
+    return owning_thread_data_.shared_image_mailbox;
+  }
+  bool mailbox_needs_new_sync_token() const {
+    return owning_thread_data_.mailbox_needs_new_sync_token;
+  }
+  const gpu::SyncToken& sync_token() const {
+    return owning_thread_data_.sync_token;
+  }
+
+  // This should only be de-referenced on the owning thread but may be copied
+  // on a different thread.
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+
+  // This can be accessed on any thread, irrespective of whether there are
+  // active readers or not.
+  bool is_origin_clean_ = true;
+
+  // Accessed on any thread.
+  const bool is_overlay_candidate_;
+  const IntSize size_;
+  const bool is_origin_top_left_;
+  const GLenum texture_target_;
   const PlatformThreadId owning_thread_id_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
+
+  OwningThreadData owning_thread_data_;
 };
 
 // Resource type for a given opaque external resource described on construction

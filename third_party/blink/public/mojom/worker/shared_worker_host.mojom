@@ -21,9 +21,6 @@ interface SharedWorkerHost {
   // Indicates that the shared worker is ready for inspection.
   OnReadyForInspection();
 
-  // Indicates that the script successfully loaded.
-  OnScriptLoaded();
-
   // Indicates that the script failed to load.
   OnScriptLoadFailed();
 

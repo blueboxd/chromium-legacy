@@ -189,7 +189,7 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
 
 void ContentAutofillDriver::FormSubmitted(const FormData& form,
                                           bool known_success,
-                                          SubmissionSource source) {
+                                          mojom::SubmissionSource source) {
   autofill_handler_->OnFormSubmitted(form, known_success, source);
 }
 

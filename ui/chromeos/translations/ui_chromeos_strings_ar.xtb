@@ -628,6 +628,7 @@
 <translation id="8160015581537295331">لوحة المفاتيح الأسبانية</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">طراز الجهاز</translation>
+<translation id="8208580316430297579">عمل فني</translation>
 <translation id="8223479393428528563">لحفظ هذه الملفات بلا اتصال، عليك العودة للاتصال انقر بزر الماوس الأيمن على الملفات، وحدد خيار <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">إلغاء</translation>
 <translation id="8261506727792406068">حذف</translation>
@@ -706,7 +707,7 @@
 <translation id="942954117721265519">لا تتوفر أي صور في هذا الدليل.</translation>
 <translation id="943972244133411984">تم التعديل بواسطة</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
-<translation id="947144732524271678">تم اختيار مجموعة من <ph name="ENTRY_COUNT" /> من الإدخالات من <ph name="FROM_ENTRY_NAME" /> إلى <ph name="TO_ENTRY_NAME" />.</translation>
+<translation id="947144732524271678">تم اختيار مجموعة من <ph name="ENTRY_COUNT" /> إدخال من <ph name="FROM_ENTRY_NAME" /> إلى <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
 <translation id="988685240266037636">يتوفَّر ملف باسم "<ph name="FILE_NAME" />" مسبقًا. هل تريد استبداله؟</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> ميغابايت</translation>

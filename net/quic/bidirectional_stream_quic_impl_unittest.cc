@@ -414,8 +414,8 @@ class BidirectionalStreamQuicImplTest
   BidirectionalStreamQuicImplTest()
       : version_(std::get<0>(GetParam())),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
-        crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
-                       quic::TlsClientHandshaker::CreateSslCtx()),
+        crypto_config_(
+            quic::test::crypto_test_utils::ProofVerifierForTesting()),
         read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
         connection_id_(quic::test::TestConnectionId(2)),
         stream_id_(GetNthClientInitiatedBidirectionalStreamId(0)),

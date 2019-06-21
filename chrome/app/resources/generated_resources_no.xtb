@@ -597,7 +597,6 @@
 <translation id="1887442540531652736">Påloggingsfeil</translation>
 <translation id="1887597546629269384">Si «Hey Google» igjen</translation>
 <translation id="1887850431809612466">Maskinvareversjon</translation>
-<translation id="1889984860246851556">Åpne innstillingene for proxy-tjener</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Åpne fullskjerm</translation>
 <translation id="189358972401248634">Andre språk</translation>
@@ -1312,7 +1311,6 @@
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2973324205039581528">Kutt lyden for nettsted</translation>
 <translation id="2977480621796371840">Fjern fra gruppen</translation>
-<translation id="2979128960948974571">Dette kan ta flere minutter.</translation>
 <translation id="2979639724566107830">Åpne i nytt vindu</translation>
 <translation id="2981113813906970160">Vis stor musepeker</translation>
 <translation id="2982970937345031">Rapporér anonymt</translation>
@@ -1530,7 +1528,6 @@
 <translation id="3319048459796106952">Nytt &amp;inkognitovindu</translation>
 <translation id="3323521181261657960">Bonus! Du har fått mer skjermtid</translation>
 <translation id="3325910708063135066">Kameraet og mikrofonen er slått av i Mac-systemvalgene</translation>
-<translation id="3330615614570718993">Kontakt administrator for å slå på VM for programtillegg på denne enheten.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Appinformasjon</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – videoen spilles av i bilde-i-bilde-modus</translation>
@@ -1622,7 +1619,6 @@
 <translation id="346431825526753">Dette er en konto for barn, som administreres av <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">Strøm video- eller lydfiler</translation>
 <translation id="3468999815377931311">Android-telefon</translation>
-<translation id="3470248707805984963">Det har oppstått en feil. Prøv på nytt.</translation>
 <translation id="3470442499439619530">Fjern denne brukeren</translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="3475843873335999118">Fingeravtrykket ditt ble fortsatt ikke gjenkjent. Skriv inn passordet ditt.</translation>
@@ -1735,7 +1731,6 @@
 <translation id="3629631988386925734">Skriv inn passordet ditt for å slå på Smart Lock. Neste gang låser telefonen opp <ph name="DEVICE_TYPE" />-enheten din. Du kan slå av Smart Lock i innstillingene.</translation>
 <translation id="3630132874740063857">Telefonen din</translation>
 <translation id="3630995161997703415">Legg til dette nettstedet på hyllen din, slik at det kan brukes når som helst</translation>
-<translation id="3635256809897331115">Klikk eller trykk på Start for å bruke VM for programtillegg. Senere kan du starte VM for programtillegg ved å velge ikonet i appoversikten.</translation>
 <translation id="3636096452488277381">Heisann, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" /> % – <ph name="TIME" /> til batteriet er tomt</translation>
 <translation id="3637682276779847508">SIM-kortet ditt blir deaktivert permanent hvis du ikke angir riktig PUK-kode.</translation>
@@ -1950,7 +1945,6 @@
 <translation id="3916445069167113093">Denne filtypen kan skade datamaskinen. Ønsker du å beholde <ph name="FILE_NAME" /> likevel?</translation>
 <translation id="3918972485393593704">Rapportér detaljer til Google</translation>
 <translation id="3919145445993746351">For å få utvidelsene dine på alle datamaskinene dine, slå på synkronisering</translation>
-<translation id="391999873395511996">Laster ned den virtuelle maskinen</translation>
 <translation id="3920504717067627103">Administratorinnstillinger for sertifikater</translation>
 <translation id="392089482157167418">Slå på ChromeVox (taletilbakemelding)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2905,7 +2899,6 @@
 <translation id="5449551289610225147">Ugyldig passord</translation>
 <translation id="5449588825071916739">Angi bokmerker for alle faner</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
-<translation id="5453630479789469584">Kunne ikke sette opp VM for programtillegg</translation>
 <translation id="5454166040603940656">med <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">Språket du vil oversette til</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
@@ -4824,7 +4817,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8339059274628563283">Data lagret lokalt på <ph name="SITE" /></translation>
 <translation id="833986336429795709">For å åpne denne linken, velg en app</translation>
 <translation id="8342861492835240085">Velg en samling</translation>
-<translation id="8343187330304787218">Administrer innstillinger for kjøring av VM for programtillegg på <ph name="DEVICE_TYPE" /></translation>
 <translation id="8343956361364550006">Bruk høy båndbredde for å få best mulig video eller animasjon. Det kan hende folk med treg tilkobling ikke kan se innholdet ditt.</translation>
 <translation id="8351419472474436977">Denne utvidelsen har tatt kontrollen over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>
 <translation id="835238322900896202">Det oppsto en feil ved avinstalleringen. Du må avinstallere via terminalen.</translation>

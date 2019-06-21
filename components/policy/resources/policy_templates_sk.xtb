@@ -2510,6 +2510,10 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Upozorňujeme, že toto nastavenie sa neodporúča, pretože môže dôjsť k obchádzaniu rozšírenia nameConstraints obmedzujúceho názvy hostiteľa, pre ktoré je možné autorizovať daný certifikát.
 
       Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, certifikáty servera bez rozšírenia subjectAlternativeName, ktoré obsahujú názov DNS alebo adresu IP, nebudú považované za dôveryhodné.</translation>
+<translation id="5578571772998293651">Povoľte spätnú väzbu od používateľov.
+        Ak pravidlo nastavíte na hodnotu false, používatelia nemôžu odosielať spätnú väzbu do Googlu.
+
+        Ak ho nenastavíte alebo nastavíte na hodnotu true, používatelia môžu odoslať spätnú väzbu Googlu v časti ponuka -&gt;Pomocník-&gt;Nahlásiť problém alebo kombináciou klávesov.</translation>
 <translation id="5581292529942108810">Umožňuje konfigurovať pravidlá súvisiace s rozšírením na nahlasovanie údajov o Chrome.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3895,6 +3899,7 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
       Ak toto pravidlo ponecháte nenastavené, nebudú k dispozícii žiadne výnimky pre zoznam zakázaných adries uvedený v rámci pravidla URLBlacklist.</translation>
 <translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
 <translation id="8183108371184777472">Potláča otváranie okna prehliadača</translation>
+<translation id="8186911565834244165">Povoliť spätnú väzbu od používateľov</translation>
 <translation id="8214600119442850823">Umožňuje konfiguráciu správcu hesiel.</translation>
 <translation id="8217516105848565518">Podpora tohto pravidla bola ukončená. Použite namiesto neho pravidlo RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Povoliť šifrovacie súpravy RC4 v protokole TLS</translation>
@@ -4320,6 +4325,12 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
           Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
+<translation id="91196902572559194">Toto pravidlo povoľuje Asistentovi Google počúvať frázy aktivácie hlasom.
+
+      Ak ho povolíte, Asistent Google bude počúvať frázy aktivácie hlasom.
+      Ak ho zakážete, Asistent Google nebude počúvať frázy aktivácie hlasom.
+      Ak toto pravidlo nenastavíte, používatelia si môžu vybrať, či povolia Asistentovi počúvať frázy aktivácie hlasom.
+      </translation>
 <translation id="9123211093995421438">Umožňuje stanoviť minimálny počet míľnikov, od ktorého sa má kedykoľvek spustiť vrátenie systému <ph name="PRODUCT_OS_NAME" /> na stabilnú verziu.
 
       Pre spotrebiteľa je predvolená hodnota 0, pre podnikové registrované zariadenia je to 4 (približne polrok).

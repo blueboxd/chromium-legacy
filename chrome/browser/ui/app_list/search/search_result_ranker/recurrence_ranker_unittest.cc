@@ -289,8 +289,8 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
   ranker->Record("A");
   ranker->Record("B");
   ranker->Record("B");
-  ranker->ForceSaveOnNextUpdateForTesting();
   ranker->Record("C");
+  ranker->SaveToDisk();
   Wait();
 
   // Check the ranker file is created.
@@ -313,8 +313,8 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   auto ranker = MakeSimpleRanker();
 
   // Make the first ranker do a save.
-  ranker->ForceSaveOnNextUpdateForTesting();
   ranker->Record("A");
+  ranker->SaveToDisk();
   Wait();
 
   // Construct a second ranker with a slightly different config.

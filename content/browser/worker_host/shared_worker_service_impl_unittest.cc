@@ -239,7 +239,6 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
   // Simulate events the shared worker would send.
   worker_host->OnReadyForInspection();
-  worker_host->OnScriptLoaded();
   worker_host->OnConnected(connection_request_id);
 
   base::RunLoop().RunUntilIdle();
@@ -318,7 +317,6 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   // Simulate events the shared worker would send.
   worker_host->OnReadyForInspection();
-  worker_host->OnScriptLoaded();
   worker_host->OnConnected(connection_request_id0);
 
   base::RunLoop().RunUntilIdle();

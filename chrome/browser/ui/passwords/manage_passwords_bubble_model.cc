@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -83,16 +82,7 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
     dismissal_reason_ = reason;
   }
 
-  void set_sign_in_promo_dismissal_reason(
-      password_manager::metrics_util::SyncSignInUserAction reason) {
-    sign_in_promo_dismissal_reason_ = reason;
-  }
-
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
-
-  void set_sign_in_promo_shown_count(int count) {
-    sign_in_promo_shown_count = count;
-  }
 
  private:
   // The way the bubble appeared.
@@ -102,18 +92,11 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
   // Dismissal reason for a password bubble.
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
 
-  // Dismissal reason for the Chrome Sign in bubble.
-  password_manager::metrics_util::SyncSignInUserAction
-      sign_in_promo_dismissal_reason_;
-
   // Current statistics for the save password bubble;
   password_manager::InteractionsStats interaction_stats_;
 
   // Used to retrieve the current time, in base::Time units.
   base::Clock* clock_;
-
-  // Number of times the sign-in promo was shown to the user.
-  int sign_in_promo_shown_count;
 
   DISALLOW_COPY_AND_ASSIGN(InteractionKeeper);
 };
@@ -123,10 +106,8 @@ ManagePasswordsBubbleModel::InteractionKeeper::InteractionKeeper(
     password_manager::metrics_util::UIDisplayDisposition display_disposition)
     : display_disposition_(display_disposition),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION),
-      sign_in_promo_dismissal_reason_(metrics_util::CHROME_SIGNIN_DISMISSED),
       interaction_stats_(std::move(stats)),
-      clock_(base::DefaultClock::GetInstance()),
-      sign_in_promo_shown_count(0) {}
+      clock_(base::DefaultClock::GetInstance()) {}
 
 void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
     const ManagePasswordsBubbleModel* model) {
@@ -151,27 +132,7 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
   }
 
   // Log UMA histograms.
-  if (model->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    metrics_util::LogSyncSigninPromoUserAction(sign_in_promo_dismissal_reason_);
-    switch (sign_in_promo_dismissal_reason_) {
-      case password_manager::metrics_util::CHROME_SIGNIN_OK:
-        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilSignIn",
-                                 sign_in_promo_shown_count);
-        break;
-      case password_manager::metrics_util::CHROME_SIGNIN_CANCEL:
-        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilNoThanks",
-                                 sign_in_promo_shown_count);
-        break;
-      case password_manager::metrics_util::CHROME_SIGNIN_DISMISSED:
-        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoDismissalCount",
-                                 sign_in_promo_shown_count);
-        break;
-      case password_manager::metrics_util::CHROME_SIGNIN_ACTION_COUNT:
-        NOTREACHED();
-        break;
-    }
-  } else if (model->state() ==
-             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+  if (model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     metrics_util::LogUpdateUIDismissalReason(dismissal_reason_);
   } else if (model->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     metrics_util::LogSaveUIDismissalReason(dismissal_reason_);
@@ -418,8 +379,6 @@ void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
     bool is_default_promo_account) {
   // Enabling sync for an existing account and starting a new sign-in are
   // triggered by the user interacting with the sign-in promo.
-  interaction_keeper_->set_sign_in_promo_dismissal_reason(
-      metrics_util::CHROME_SIGNIN_OK);
   GetProfile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
   if (delegate_)
@@ -427,8 +386,6 @@ void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
 }
 
 void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
-  interaction_keeper_->set_sign_in_promo_dismissal_reason(
-      metrics_util::CHROME_SIGNIN_CANCEL);
   GetProfile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
 }
@@ -483,7 +440,6 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
     show_count++;
     prefs->SetInteger(password_manager::prefs::kNumberSignInPasswordPromoShown,
                       show_count);
-    interaction_keeper_->set_sign_in_promo_shown_count(show_count);
     return true;
   }
   return false;

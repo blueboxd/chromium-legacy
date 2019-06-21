@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Netzwerkverbindung aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Nach rechts scrollen</translation>
 <translation id="1812997170047690955">Was wird auf meinem Bildschirm angezeigt?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> wurde durch eine Richtlinie deaktiviert, die auf dieses Gerät angewendet wird. Bitten Sie Ihren Administrator, die erforderlichen Änderungen vorzunehmen.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Zum Aktualisieren neu starten</translation>
 <translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
+<translation id="2651765386227849097">Google Assistant ist auf diesem Gerät deaktiviert.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2658778018866295321">Klicken und ziehen</translation>
 <translation id="2700493154570097719">Tastatur einrichten</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Akku: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4924411785043111640">Neu starten und zurücksetzen</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Mikrofonanschluss</translation>
 <translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="5673434351075758678">Nach der Synchronisierung der Einstellungen von "<ph name="FROM_LOCALE" />" zu "<ph name="TO_LOCALE" />" geändert.</translation>
+<translation id="5682642926269496722">Google Assistant steht für das aktuelle Nutzerkonto nicht zur Verfügung.</translation>
 <translation id="5691772641933328258">Fingerabdruck nicht erkannt</translation>
 <translation id="5710450975648804523">"Bitte nicht stören" ist aktiviert</translation>
 <translation id="574392208103952083">Mittel</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Ihr Passwort konnte nicht bestätigt werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als "<ph name="NAME" />" mit der Adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wird aufgeladen</translation>
+<translation id="612734058257491180">In Gastsitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
 <translation id="6715542151869432661">Keine Mobilgeräte gefunden.</translation>
 <translation id="6723839937902243910">Akkuleistung</translation>
+<translation id="6727969043791803658">Verbunden, Akkustand bei <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>

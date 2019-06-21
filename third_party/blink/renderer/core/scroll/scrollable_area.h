@@ -114,6 +114,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
 
+  // Register a callback that will be invoked when the next scroll completes -
+  // this includes the scroll animation time.
+  void RegisterScrollCompleteCallback(ScrollCallback callback);
+  void RunScrollCompleteCallbacks();
+
   void ContentAreaWillPaint() const;
   void MouseEnteredContentArea() const;
   void MouseExitedContentArea() const;
@@ -486,6 +491,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   std::unique_ptr<TaskRunnerTimer<ScrollableArea>>
       fade_overlay_scrollbars_timer_;
+
+  Vector<ScrollCallback> pending_scroll_complete_callbacks_;
 
   unsigned scrollbar_overlay_color_theme_ : 2;
 

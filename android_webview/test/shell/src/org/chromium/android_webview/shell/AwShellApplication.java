@@ -4,17 +4,16 @@
 
 package org.chromium.android_webview.shell;
 
-import android.app.Application;
+import com.android.webview.chromium.WebViewApkApplication;
 
 import org.chromium.base.CommandLine;
 
 /**
  * The android_webview shell Application subclass.
  */
-public class AwShellApplication extends Application {
-    public void initCommandLine() {
-        if (!CommandLine.isInitialized()) {
-            CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
-        }
+public class AwShellApplication extends WebViewApkApplication {
+    @Override
+    protected void initCommandLine() {
+        CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
     }
 }

@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Paieška ir naršymas</translation>
 <translation id="1264974993859112054">Sportas</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
-<translation id="1272444412400969138">Įrenginių rinkiklis, su kuriuo bendrinti skirtuką.</translation>
 <translation id="1283039547216852943">Palieskite ir išskleiskite</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="1291207594882862231">Išvalykite istoriją, slapukus, svetainės duomenis, talpyklą…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Kūrėjo įrankiai</translation>
 <translation id="1692118695553449118">Sinchronizavimas įjungtas</translation>
 <translation id="169515064810179024">Svetainės užblokuotos, kad nepasiektų judesio jutiklių</translation>
+<translation id="1697480839793160072">Telefonai</translation>
+<translation id="1698058317516161971">El. laiškai</translation>
 <translation id="1717218214683051432">Judesių jutikliai</translation>
 <translation id="1718835860248848330">Paskutinė valanda</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atnaujinta <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Leisti konkrečios svetainės slapukus.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# val.}one{# val.}few{# val.}many{# val.}other{# val.}}</translation>
 <translation id="4042870126885713738">Rodyti pasiūlymus, kai žiniatinklio adresas nepasiekiamas arba nepavyksta užmegzti ryšio</translation>
-<translation id="4044912625106523635">Atidarytas viso aukščio įrenginių rinkiklis, su kuriuo bendrinti skirtuką.</translation>
 <translation id="4046123991198612571">Kitas takelis</translation>
 <translation id="4048707525896921369">Sužinokite apie temas svetainėse neišėję iš puslapio. Naudojant Paiešką palietus siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų, paieškos rezultatų ir kitos išsamios informacijos.
 
@@ -747,7 +747,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6406506848690869874">Sinchronizavimas</translation>
 <translation id="641643625718530986">Spausdinti…</translation>
 <translation id="6416782512398055893">Atsisiųsta <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Įrenginių rinkiklis, su kuriuo bendrinti skirtuką, uždarytas.</translation>
 <translation id="6427112570124116297">Žiniatinklio vertimas</translation>
 <translation id="6433501201775827830">Paieškos variklio pasirinkimas</translation>
 <translation id="6437478888915024427">Puslapio informacija</translation>
@@ -787,7 +786,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="666268767214822976">Naudoti numatymo paslaugą, kad adreso juostoje įvedant tekstą būtų rodomos susijusios užklausos ir populiarios svetainės</translation>
 <translation id="666731172850799929">Atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="666981079809192359">„Chrome“ privatumo pranešimas</translation>
-<translation id="6672986458216094438">Atidarytas pusės aukščio įrenginių rinkiklis, su kuriuo bendrinti skirtuką.</translation>
 <translation id="6697492270171225480">Rodyti panašių puslapių pasiūlymus, kai nepavyksta rasti puslapio</translation>
 <translation id="6697947395630195233">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų vietovės informaciją ir bendrinti ją su šia svetaine.</translation>
 <translation id="6698801883190606802">Tvarkykite sinchronizuotus duomenis</translation>

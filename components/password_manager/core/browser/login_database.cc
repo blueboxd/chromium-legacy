@@ -718,8 +718,6 @@ bool LoginDatabase::Init() {
     meta_table_.SetVersionNumber(kCurrentVersionNumber);
   } else {
     LogDatabaseInitError(MIGRATION_ERROR);
-    base::UmaHistogramSparse("PasswordManager.LoginDatabaseFailedVersion",
-                             meta_table_.GetVersionNumber());
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;

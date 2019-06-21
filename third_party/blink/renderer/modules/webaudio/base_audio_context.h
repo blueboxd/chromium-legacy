@@ -170,11 +170,10 @@ class MODULES_EXPORT BaseAudioContext
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
-  void HandleDecodeAudioData(
-      AudioBuffer*,
-      ScriptPromiseResolver*,
-      V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
-      V8PersistentCallbackFunction<V8DecodeErrorCallback>*);
+  void HandleDecodeAudioData(AudioBuffer*,
+                             ScriptPromiseResolver*,
+                             V8DecodeSuccessCallback*,
+                             V8DecodeErrorCallback*);
 
   AudioListener* listener() { return listener_; }
 

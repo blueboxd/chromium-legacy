@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -52,6 +53,7 @@ class BookmarkItemsAdapter
     private final List<Integer> mPromoHeaderSection = new ArrayList<>();
     private final List<BookmarkId> mFolderSection = new ArrayList<>();
     private final List<BookmarkId> mBookmarkSection = new ArrayList<>();
+    private final List<BookmarkId> mBlendedSection = new ArrayList<>();
 
     private final List<BookmarkId> mTopLevelFolders = new ArrayList<>();
 
@@ -60,6 +62,9 @@ class BookmarkItemsAdapter
     private BookmarkPromoHeader mPromoHeaderManager;
     private String mSearchText;
     private BookmarkId mCurrentFolder;
+
+    // TODO(crbug.com/160194): Remove after bookmark reordering launches.
+    private boolean mReorderBookmarksEnabled;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -106,8 +111,13 @@ class BookmarkItemsAdapter
 
         mSections = new ArrayList<>();
         mSections.add(mPromoHeaderSection);
-        mSections.add(mFolderSection);
-        mSections.add(mBookmarkSection);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS)) {
+            mReorderBookmarksEnabled = true;
+            mSections.add(mBlendedSection);
+        } else {
+            mSections.add(mFolderSection);
+            mSections.add(mBookmarkSection);
+        }
     }
 
     BookmarkId getItem(int position) {
@@ -157,9 +167,13 @@ class BookmarkItemsAdapter
 
     /**
      * Set folders and bookmarks to show.
+     *
      * @param folders This can be null if there is no folders to show.
+     * @param bookmarks The list of bookmarks to show.
      */
     private void setBookmarks(List<BookmarkId> folders, List<BookmarkId> bookmarks) {
+        assert !mReorderBookmarksEnabled;
+
         if (folders == null) folders = new ArrayList<BookmarkId>();
 
         mFolderSection.clear();
@@ -170,9 +184,27 @@ class BookmarkItemsAdapter
         updateHeaderAndNotify();
     }
 
+    /**
+     * Set folders and bookmarks to show. Folders and bookmarks will be shown in a single section.
+     *
+     * @param bookmarks A list of folders and bookmarks to show.
+     */
+    private void setBookmarks(List<BookmarkId> bookmarks) {
+        assert mReorderBookmarksEnabled;
+
+        mBlendedSection.clear();
+        mBlendedSection.addAll(bookmarks);
+
+        updateHeaderAndNotify();
+    }
+
     private void removeItem(int position) {
         List<?> section = getSection(position);
-        assert section == mFolderSection || section == mBookmarkSection;
+        if (mReorderBookmarksEnabled) {
+            assert section == mBlendedSection;
+        } else {
+            assert section == mFolderSection || section == mBookmarkSection;
+        }
         section.remove(toSectionPosition(position));
         notifyItemRemoved(position);
     }
@@ -195,10 +227,23 @@ class BookmarkItemsAdapter
         if (section == mPromoHeaderSection) {
             assert section.size() == 1 : "Only one element is supported in promo header section!";
             return mPromoHeaderSection.get(0);
-        } else if (section == mFolderSection) {
-            return ViewType.FOLDER;
-        } else if (section == mBookmarkSection) {
-            return ViewType.BOOKMARK;
+        }
+
+        if (mReorderBookmarksEnabled) {
+            // Fail fast. Make sure that we're looking at the blended section before returning.
+            if (section == mBlendedSection) {
+                if (mDelegate.getModel().getBookmarkById(getItem(position)).isFolder()) {
+                    return ViewType.FOLDER;
+                } else {
+                    return ViewType.BOOKMARK;
+                }
+            }
+        } else {
+            if (section == mFolderSection) {
+                return ViewType.FOLDER;
+            } else if (section == mBookmarkSection) {
+                return ViewType.BOOKMARK;
+            }
         }
 
         assert false : "Invalid position requested";
@@ -310,11 +355,21 @@ class BookmarkItemsAdapter
         mSearchText = EMPTY_QUERY;
         mCurrentFolder = folder;
 
-        if (folder.equals(mDelegate.getModel().getRootFolderId())) {
-            setBookmarks(mTopLevelFolders, new ArrayList<BookmarkId>());
+        if (mReorderBookmarksEnabled) {
+            if (folder.equals(mDelegate.getModel().getRootFolderId())) {
+                setBookmarks(mTopLevelFolders);
+            } else {
+                // Get both folders and bookmarks (together).
+                setBookmarks(mDelegate.getModel().getChildIDs(folder, true, true));
+            }
         } else {
-            setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
-                    mDelegate.getModel().getChildIDs(folder, false, true));
+            if (folder.equals(mDelegate.getModel().getRootFolderId())) {
+                setBookmarks(mTopLevelFolders, new ArrayList<BookmarkId>());
+            } else {
+                // Get folders and bookmarks separately.
+                setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
+                        mDelegate.getModel().getChildIDs(folder, false, true));
+            }
         }
     }
 
@@ -342,7 +397,12 @@ class BookmarkItemsAdapter
         mSearchText = query.toString().trim();
         List<BookmarkId> results =
                 mDelegate.getModel().searchBookmarks(mSearchText, MAXIMUM_NUMBER_OF_SEARCH_RESULTS);
-        setBookmarks(null, results);
+
+        if (mReorderBookmarksEnabled) {
+            setBookmarks(results);
+        } else {
+            setBookmarks(null, results);
+        }
     }
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {

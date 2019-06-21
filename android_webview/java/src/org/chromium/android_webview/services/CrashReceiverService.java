@@ -35,13 +35,6 @@ public class CrashReceiverService extends Service {
     private final Object mCopyingLock = new Object();
     private boolean mIsCopying;
 
-    @Override
-    @SuppressWarnings("NoContextGetApplicationContext")
-    public void onCreate() {
-        super.onCreate();
-        ServiceInit.init(getApplicationContext());
-    }
-
     private final ICrashReceiverService.Stub mBinder = new ICrashReceiverService.Stub() {
         @Override
         public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors, List crashInfo) {

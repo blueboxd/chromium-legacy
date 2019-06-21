@@ -15,14 +15,7 @@ import org.chromium.ui.base.ViewAndroidDelegate;
  * Implementation of the abstract class {@link ViewAndroidDelegate} for Chrome.
  */
 class TabViewAndroidDelegate extends ViewAndroidDelegate {
-    /** Used for logging. */
-    private static final String TAG = "TabVAD";
-
     private final Tab mTab;
-
-    private int mPreviousTopControlsOffset;
-    private int mPreviousBottomControlsOffset;
-    private int mPreviousTopContentOffset;
 
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
         super(containerView);
@@ -35,18 +28,13 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     }
 
     @Override
-    public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
-        mPreviousTopControlsOffset = topControlsOffsetY;
-        mPreviousTopContentOffset = topContentOffsetY;
-        TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                topControlsOffsetY, mPreviousBottomControlsOffset, topContentOffsetY);
+    public void onTopControlsChanged(int topControlsOffsetY, int contentOffsetY) {
+        TabBrowserControlsState.get(mTab).setTopOffset(topControlsOffsetY, contentOffsetY);
     }
 
     @Override
     public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {
-        mPreviousBottomControlsOffset = bottomControlsOffsetY;
-        TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                mPreviousTopControlsOffset, bottomControlsOffsetY, mPreviousTopContentOffset);
+        TabBrowserControlsState.get(mTab).setBottomOffset(bottomControlsOffsetY);
     }
 
     @Override

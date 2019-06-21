@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Vyhledávání a prozkoumávání</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zastavit</translation>
-<translation id="1272444412400969138">Výběr zařízení, se kterým se má sdílet karta.</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Nástroje pro vývojáře</translation>
 <translation id="1692118695553449118">Synchronizace je zapnuta</translation>
 <translation id="169515064810179024">Blokovat webům přístup k senzorům pohybu</translation>
+<translation id="1697480839793160072">Telefony</translation>
+<translation id="1698058317516161971">E‑maily</translation>
 <translation id="1717218214683051432">Pohybová čidla</translation>
 <translation id="1718835860248848330">Poslední hodina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – aktualizováno <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Povolit soubory cookie pro konkrétní web.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}few{# h}many{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Zobrazovat návrhy, pokud nelze vyhledat webovou adresu nebo navázat připojení.</translation>
-<translation id="4044912625106523635">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je otevřená na plnou výšku.</translation>
 <translation id="4046123991198612571">Další skladba</translation>
 <translation id="4048707525896921369">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit. Funkce Vyhledání klepnutím odešle slovo a okolní kontext do Vyhledávání Google, které vrátí definice, obrázky, výsledky vyhledávání a další podrobnosti.
 
@@ -747,7 +747,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6406506848690869874">Synchronizace</translation>
 <translation id="641643625718530986">Tisk…</translation>
 <translation id="6416782512398055893">Staženo: <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je zavřená.</translation>
 <translation id="6427112570124116297">Přeložte si web</translation>
 <translation id="6433501201775827830">Vyberte vyhledávač</translation>
 <translation id="6437478888915024427">Informace o stránce</translation>
@@ -787,7 +786,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="666268767214822976">Používat službu předpovídání k zobrazení souvisejících dotazů a oblíbených webových stránek.</translation>
 <translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
-<translation id="6672986458216094438">Tabulka pro výběr zařízení, se kterým se má sdílet karta, je otevřená na poloviční výšku.</translation>
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
 <translation id="6697947395630195233">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem.</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>

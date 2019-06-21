@@ -27,31 +27,6 @@
 namespace password_manager {
 namespace {
 
-// Send a UMA histogram about if |local_results| has empty or duplicate
-// usernames.
-void ReportAccountChooserUsabilityMetrics(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
-    bool had_duplicates,
-    bool had_empty_username) {
-  metrics_util::AccountChooserUsabilityMetric metric;
-  if (had_empty_username && had_duplicates)
-    metric = metrics_util::ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES;
-  else if (had_empty_username)
-    metric = metrics_util::ACCOUNT_CHOOSER_EMPTY_USERNAME;
-  else if (had_duplicates)
-    metric = metrics_util::ACCOUNT_CHOOSER_DUPLICATES;
-  else
-    metric = metrics_util::ACCOUNT_CHOOSER_LOOKS_OK;
-
-  int count_empty_icons =
-      std::count_if(forms.begin(), forms.end(),
-                    [](const std::unique_ptr<autofill::PasswordForm>& form) {
-                      return !form->icon_url.is_valid();
-                    });
-  metrics_util::LogAccountChooserUsability(metric, count_empty_icons,
-                                           forms.size());
-}
-
 // Returns true iff |form1| is better suitable for showing in the account
 // chooser than |form2|. Inspired by PasswordFormManager::ScoreResult.
 bool IsBetterMatch(const autofill::PasswordForm& form1,
@@ -94,20 +69,14 @@ void FilterDuplicates(
 // Sift |forms| for the account chooser so it doesn't have empty usernames or
 // duplicates.
 void FilterDuplicatesAndEmptyUsername(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
-    bool* has_empty_username,
-    bool* has_duplicates) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   // Remove empty usernames from the list.
-  size_t size_before = forms->size();
   base::EraseIf(*forms,
                 [](const std::unique_ptr<autofill::PasswordForm>& form) {
                   return form->username_value.empty();
                 });
-  *has_empty_username = (size_before != forms->size());
 
-  size_before = forms->size();
   FilterDuplicates(forms);
-  *has_duplicates = (size_before != forms->size());
 }
 
 }  // namespace
@@ -187,10 +156,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     }
   }
 
-  bool has_empty_username = false;
-  bool has_duplicates = false;
-  FilterDuplicatesAndEmptyUsername(&local_results, &has_empty_username,
-                                   &has_duplicates);
+  FilterDuplicatesAndEmptyUsername(&local_results);
 
   // We only perform zero-click sign-in when it is not forbidden via the
   // mediation requirement and the result is completely unambigious.
@@ -247,8 +213,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
   // should list the PSL matches.
   if (local_results.empty()) {
     local_results = std::move(psl_results);
-    FilterDuplicatesAndEmptyUsername(&local_results, &has_empty_username,
-                                     &has_duplicates);
+    FilterDuplicatesAndEmptyUsername(&local_results);
   }
 
   if (local_results.empty()) {
@@ -258,8 +223,6 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     return;
   }
 
-  ReportAccountChooserUsabilityMetrics(local_results, has_duplicates,
-                                       has_empty_username);
   if (!delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), origin_,
           base::Bind(

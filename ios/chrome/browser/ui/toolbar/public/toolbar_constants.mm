@@ -24,7 +24,7 @@ const CGFloat kToolbarSeparatorHeight = 0.1f;
 
 const CGFloat kAdaptiveToolbarButtonHeight = 44.0f;
 const CGFloat kAdaptiveToolbarButtonWidth = 44.0f;
-const CGFloat kOmniboxButtonWidth = 70.0f;
+const CGFloat kSearchButtonWidth = 70.0f;
 const CGFloat kCancelButtonHorizontalInset = 8;
 const CGFloat kToolbarDimmedButtonAlpha = 0.5;
 
@@ -59,8 +59,8 @@ NSString* const kToolbarStackButtonIdentifier =
     @"kToolbarStackButtonIdentifier";
 NSString* const kToolbarShareButtonIdentifier =
     @"kToolbarShareButtonIdentifier";
-NSString* const kToolbarOmniboxButtonIdentifier =
-    @"kToolbarOmniboxButtonIdentifier";
+NSString* const kToolbarSearchButtonIdentifier =
+    @"kToolbarSearchButtonIdentifier";
 NSString* const kToolbarCancelOmniboxEditButtonIdentifier =
     @"kToolbarCancelOmniboxEditButtonIdentifier";
 

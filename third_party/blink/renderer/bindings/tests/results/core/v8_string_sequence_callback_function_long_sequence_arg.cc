@@ -125,9 +125,4 @@ v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invok
   }
 }
 
-v8::Maybe<Vector<String>> V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceArg>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<int32_t>& arg) {
-  return Proxy()->Invoke(
-      callback_this_value, arg);
-}
-
 }  // namespace blink

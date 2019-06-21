@@ -1139,7 +1139,7 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
-  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHost>(this);
+  application_cache_host_ = ApplicationCacheHost::Create(this);
 
   if (url_.IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {

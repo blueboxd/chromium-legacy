@@ -49,7 +49,7 @@ const CGFloat kToolsMenuOffset = -7;
 // Button to display the tab grid, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarTabGridButton* tabGridButton;
 // Button to focus the omnibox, redefined as readwrite.
-@property(nonatomic, strong, readwrite) ToolbarButton* omniboxButton;
+@property(nonatomic, strong, readwrite) ToolbarButton* searchButton;
 
 @end
 
@@ -61,7 +61,7 @@ const CGFloat kToolsMenuOffset = -7;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
 @synthesize toolsMenuButton = _toolsMenuButton;
-@synthesize omniboxButton = _omniboxButton;
+@synthesize searchButton = _searchButton;
 @synthesize tabGridButton = _tabGridButton;
 @synthesize blur = _blur;
 
@@ -133,7 +133,7 @@ const CGFloat kToolsMenuOffset = -7;
 
   self.backButton = [self.buttonFactory backButton];
   self.forwardButton = [self.buttonFactory forwardButton];
-  self.omniboxButton = [self.buttonFactory omniboxButton];
+  self.searchButton = [self.buttonFactory searchButton];
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
@@ -144,7 +144,7 @@ const CGFloat kToolsMenuOffset = -7;
       CGAffineTransformMakeTranslation(textDirection * kToolsMenuOffset, 0);
 
   self.allButtons = @[
-    self.backButton, self.forwardButton, self.omniboxButton, self.tabGridButton,
+    self.backButton, self.forwardButton, self.searchButton, self.tabGridButton,
     self.toolsMenuButton
   ];
 

@@ -93,6 +93,7 @@ extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhotoPickerVideoSupport;
 extern const base::Feature kProgressBarThrottleFeature;
 extern const base::Feature kReachedCodeProfiler;
+extern const base::Feature kReorderBookmarks;
 extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kRevampedContextMenu;
 extern const base::Feature kSearchEnginePromoExistingDevice;

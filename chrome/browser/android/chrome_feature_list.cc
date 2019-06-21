@@ -156,6 +156,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kProgressBarThrottleFeature,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
+    &kReorderBookmarks,
     &kRevampedContextMenu,
     &kSearchReadyOmniboxFeature,
     &kSearchEnginePromoExistingDevice,
@@ -488,6 +489,9 @@ const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kReorderBookmarks{"ReorderBookmarks",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRevampedContextMenu{"RevampedContextMenu",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

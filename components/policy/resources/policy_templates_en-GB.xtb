@@ -2540,6 +2540,10 @@
       Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorised for.
 
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
+<translation id="5578571772998293651">Allow user feedback.
+        If the policy is set to false, users cannot send feedback to Google.
+
+        If the policy is unset or set to true, users can send feedback to Google via Menu-&gt;Help-&gt;Report an Issue or key combination.</translation>
 <translation id="5581292529942108810">Configure Chrome Reporting Extension related policies.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3930,6 +3934,7 @@
       If this policy is not set there will be no exceptions to the blacklist from the 'URLBlacklist' policy.</translation>
 <translation id="8176035528522326671">Allow enterprise user to be primary multi-profile user only (Default behaviour for enterprise-managed users)</translation>
 <translation id="8183108371184777472">Suppress launching of browser window</translation>
+<translation id="8186911565834244165">Allow user feedback</translation>
 <translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8217516105848565518">This policy is deprecated. Please use RemoteAccessHostDomainList instead.</translation>
 <translation id="8244171102276095471">Enable RC4 cipher suites in TLS</translation>
@@ -4372,6 +4377,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>
+<translation id="91196902572559194">This policy gives Google Assistant permission to listen for the voice activation phrase.
+
+      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
+      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, users can decide whether to allow Google Assistant to listen for the voice activation phrase.
+      </translation>
 <translation id="9123211093995421438">Specifies the minimum number of <ph name="PRODUCT_OS_NAME" /> milestones roll back should be allowed starting from the stable version at any time.
 
       Default is zero for consumer, four (approx. half a year) for enterprise-enrolled devices.

@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Esportes</translation>
 <translation id="1272079795634619415">Parar</translation>
-<translation id="1272444412400969138">Seletor de dispositivo com o qual compartilhar uma guia.</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Ferramentas do desenvolvedor</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que sites acessem os sensores de movimento</translation>
+<translation id="1697480839793160072">Telefones</translation>
+<translation id="1698058317516161971">E-mails</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — Última atualização: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Permita cookies para um site específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Mostra sugestões quando houver falha em um endereço da Web ou uma conexão não puder ser estabelecida</translation>
-<translation id="4044912625106523635">O seletor de dispositivo com o qual compartilhar uma guia é aberto com a altura máxima.</translation>
 <translation id="4046123991198612571">Próxima faixa</translation>
 <translation id="4048707525896921369">Saiba mais sobre um determinado assunto de um site sem sair da página. Com o recurso "Tocar para pesquisar", você toca na palavra e o contexto relacionado é enviado para a Pesquisa Google, que então mostra definições, imagens, resultados da pesquisa e outros detalhes relacionados para você.
 
@@ -748,7 +748,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6406506848690869874">Sincronizar</translation>
 <translation id="641643625718530986">Imprimir...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s) por download</translation>
-<translation id="6418750371676080905">O seletor de dispositivo com o qual compartilhar uma guia está fechado.</translation>
 <translation id="6427112570124116297">Traduzir página da Web</translation>
 <translation id="6433501201775827830">Escolha seu mecanismo de pesquisa</translation>
 <translation id="6437478888915024427">Informações sobre a página</translation>
@@ -788,7 +787,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="666268767214822976">Prevê as palavras da consulta à medida que você digita</translation>
 <translation id="666731172850799929">Abrir no <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
-<translation id="6672986458216094438">O seletor de dispositivo com o qual compartilhar uma guia é aberto com metade da altura.</translation>
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes quando uma página não for encontrada</translation>
 <translation id="6697947395630195233">O Chrome precisa acessar sua localização para compartilhá-la com este site.</translation>
 <translation id="6698801883190606802">Gerenciar dados sincronizados</translation>

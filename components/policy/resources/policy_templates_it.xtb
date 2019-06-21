@@ -434,7 +434,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
       </translation>
 <translation id="1767673020408652620">Attiva consigli di app a stato nullo della casella di ricerca</translation>
 <translation id="17719159826324007">
-      Se è impostato su ArcSession, questa norma forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
+      Se è impostato su ArcSession, questo criterio forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
       Se è impostato su Sempre, forza il riavvio del dispositivo a ogni uscita dell'utente.
       Se non è impostato, non sortisce alcun effetto e non viene forzato alcun riavvio all'uscita dell'utente. Lo stesso accade se è impostato su Mai.
       Questo criterio ha effetti solo per gli utenti non affiliati.
@@ -2436,6 +2436,10 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Tieni presente che è sconsigliato farlo, perché potrebbe essere consentita l'elusione dell'estensione nameConstraints, che limita i nomi host per cui può essere autorizzato un determinato certificato.
 
       Se questa norma non viene impostata, o viene impostata su false, i certificati server privi di estensione subjectAlternativeName e contenenti un nome DNS o un indirizzo IP non verranno considerati attendibili.</translation>
+<translation id="5578571772998293651">Consenti il feedback degli utenti.
+        Se il criterio viene impostato su false, gli utenti non possono inviare feedback a Google.
+
+        Se il criterio non viene impostato o viene impostato su true, gli utenti possono inviare feedback a Google dal percorso Menu -&gt; Guida -&gt; Segnala un problema o tramite una combinazione di tasti.</translation>
 <translation id="5581292529942108810">Consente di configurare le norme relative all'estensione Chrome Reporting Extension.
 
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3779,6 +3783,7 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
       Se questa norma non viene impostata, non ci saranno eccezioni alla blacklist dalla norma "URLBlacklist".</translation>
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
 <translation id="8183108371184777472">Impedisci l'avvio della finestra del browser</translation>
+<translation id="8186911565834244165">Consenti il feedback degli utenti</translation>
 <translation id="8214600119442850823">Consente di configurare Gestione password.</translation>
 <translation id="8217516105848565518">Questa norma è obsoleta. Al suo posto utilizza RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Attiva i pacchetti di crittografia RC4 in TLS</translation>
@@ -4181,6 +4186,12 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 
           I gestori di protocolli registrati tramite la norma vengono uniti a quelli registrati dall'utente e possono essere utilizzati entrambi i tipi. L'utente può sostituire i gestori di protocolli installati tramite la norma installando un nuovo gestore predefinito, ma non può rimuovere un gestore di protocollo registrato tramite la norma.</translation>
+<translation id="91196902572559194">Questo criterio autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
+
+      Se il criterio viene attivato, l'Assistente Google ascolta la frase di attivazione vocale.
+      Se il criterio viene disattivato, l'Assistente Google non ascolta la frase di attivazione vocale.
+      Se il criterio non viene impostato, gli utenti possono decidere se consentire all'Assistente Google di ascoltare la frase di attivazione vocale.
+      </translation>
 <translation id="9123211093995421438">Consente di specificare il numero minimo di obiettivi di <ph name="PRODUCT_OS_NAME" /> consentiti per il rollback a partire dalla versione stabile in qualsiasi momento.
 
       L'impostazione predefinita è 0 per il consumatore, 4 (circa sei mesi) per i dispositivi aziendali registrati.

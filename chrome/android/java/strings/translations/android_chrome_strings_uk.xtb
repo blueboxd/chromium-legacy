@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1264974993859112054">Спорт</translation>
 <translation id="1272079795634619415">Зупинити</translation>
-<translation id="1272444412400969138">Засіб вибору пристрою, з яким потрібно поділитися вкладкою.</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Інструменти для розробників</translation>
 <translation id="1692118695553449118">Синхронізацію ввімкнено</translation>
 <translation id="169515064810179024">Заборонити сайтам доступ до датчиків руху</translation>
+<translation id="1697480839793160072">Номери телефону</translation>
+<translation id="1698058317516161971">Електронні адреси</translation>
 <translation id="1717218214683051432">Датчики руху</translation>
 <translation id="1718835860248848330">Остання година</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – оновлено <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Дозволити файли cookie для конкретного сайту.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# год}one{# год}few{# год}many{# год}other{# год}}</translation>
 <translation id="4042870126885713738">Показувати пропозиції, коли неможливо перейти за веб-адресою чи не вдається встановити з’єднання</translation>
-<translation id="4044912625106523635">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, відкрито на повну висоту.</translation>
 <translation id="4046123991198612571">Наступна композиція</translation>
 <translation id="4048707525896921369">Дізнавайтеся більше про певну тему, не залишаючи сторінку, яку переглядаєте. Просто торкніться певного слова, щоб надіслати його в Пошук Google разом із контекстом, і отримаєте визначення, зображення, результати пошуку й іншу інформацію.
 
@@ -747,7 +747,6 @@
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6416782512398055893">Завантажено <ph name="MBS" /> МБ</translation>
-<translation id="6418750371676080905">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, закрито.</translation>
 <translation id="6427112570124116297">Перекласти веб-сторінки</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>
 <translation id="6437478888915024427">Інформація про сторінку</translation>
@@ -787,7 +786,6 @@
 <translation id="666268767214822976">Показувати підказки зі схожими запитами та популярними веб-сайтами під час введення запиту в адресному рядку</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
-<translation id="6672986458216094438">Засіб вибору пристрою, з яким потрібно поділитися вкладкою, відкрито на половину висоти.</translation>
 <translation id="6697492270171225480">Показувати пропозиції схожих сторінок, коли не вдається знайти сторінку</translation>
 <translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
@@ -856,7 +854,7 @@
 <translation id="7141896414559753902">Блокувати спливаючі вікна та переадресацію на сайтах (рекомендовано)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Завантажити оригінальну сторінку<ph name="END_LINK" /> з домену <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Останні 24 години</translation>
-<translation id="7161892015146974550">Вибрати вкладку: <ph name="TAB_TITLE" /></translation>
+<translation id="7161892015146974550">Вибрати вкладку "<ph name="TAB_TITLE" />".</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -1026,7 +1024,7 @@
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8364299278605033898">Перегляньте популярні сайти</translation>
-<translation id="8364603787714420828">Скасувати вибір вкладки: <ph name="TAB_TITLE" />.</translation>
+<translation id="8364603787714420828">Скасувати вибір вкладки "<ph name="TAB_TITLE" />".</translation>
 <translation id="8372893542064058268">сайті.</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
 <translation id="8378714024927312812">Профілем керує ваша організація</translation>

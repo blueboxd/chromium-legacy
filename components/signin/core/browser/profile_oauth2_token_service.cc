@@ -80,6 +80,16 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
                                std::string());
 }
 
+void ProfileOAuth2TokenService::SetRefreshTokenAvailableFromSourceCallback(
+    RefreshTokenAvailableFromSourceCallback callback) {
+  on_refresh_token_available_callback_ = callback;
+}
+
+void ProfileOAuth2TokenService::SetRefreshTokenRevokedFromSourceCallback(
+    RefreshTokenRevokedFromSourceCallback callback) {
+  on_refresh_token_revoked_callback_ = callback;
+}
+
 void ProfileOAuth2TokenService::Shutdown() {
   CancelAllRequests();
   GetDelegate()->Shutdown();
@@ -156,10 +166,9 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
       is_valid, update_refresh_token_source_);
 
   std::string source_string = SourceToString(update_refresh_token_source_);
-  for (auto& diagnostic_observer : GetDiagnosticsObservers()) {
-    diagnostic_observer.OnRefreshTokenAvailableFromSource(account_id, is_valid,
-                                                          source_string);
-  }
+  if (on_refresh_token_available_callback_)
+    on_refresh_token_available_callback_.Run(account_id, is_valid,
+                                             source_string);
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
@@ -175,10 +184,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   signin_metrics::RecordRefreshTokenRevokedFromSource(
       update_refresh_token_source_);
   std::string source_string = SourceToString(update_refresh_token_source_);
-  for (auto& diagnostic_observer : GetDiagnosticsObservers()) {
-    diagnostic_observer.OnRefreshTokenRevokedFromSource(account_id,
-                                                        source_string);
-  }
+  if (on_refresh_token_revoked_callback_)
+    on_refresh_token_revoked_callback_.Run(account_id, source_string);
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {

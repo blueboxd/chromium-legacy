@@ -352,7 +352,7 @@ void Text::AttachLayoutTree(AttachContext& context) {
   CharacterData::AttachLayoutTree(context);
 }
 
-void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
+void Text::ReattachLayoutTreeIfNeeded(AttachContext& context) {
   bool layout_object_is_needed = false;
   ContainerNode* style_parent = LayoutTreeBuilderTraversal::Parent(*this);
   if (style_parent && context.parent) {
@@ -416,7 +416,7 @@ void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(parentNode());
 
   AttachContext context;
-  InitAttachContextParentAndSibling(context, *this);
+  context.parent = LayoutTreeBuilderTraversal::ParentLayoutObject(*this);
   ReattachLayoutTree(context);
   whitespace_attacher.DidReattachText(this);
   ClearNeedsReattachLayoutTree();

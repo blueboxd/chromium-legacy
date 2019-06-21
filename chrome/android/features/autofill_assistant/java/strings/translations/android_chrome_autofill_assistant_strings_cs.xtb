@@ -4,8 +4,10 @@
 <translation id="1135993792949700405">Osobní údaje, které jste vybrali, Chrome odešle webu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Otevřít externí odkaz?</translation>
 <translation id="1699570257714336246">Některé informace chybí</translation>
+<translation id="2203046366315513658">Snížit hodnotu</translation>
 <translation id="3604604794717279723">Přijímám</translation>
 <translation id="4437727785356380473">Asistent Google v Chromu byl zavřen.</translation>
+<translation id="4517854969512651305">Zvýšit hodnotu</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="5014174725590676422">Je zobrazena obrazovka prvního spuštění Asistenta Google v Chromu</translation>
 <translation id="5188078772080029703">Adresu URL a obsah webu a váš e-mail a typ platební karty uložený v Chromu odešle Chrome do Googlu. Tuto možnost můžete vypnout v nastavení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>

@@ -34,7 +34,7 @@ RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,
                                          V8RTCStatsCallback* callback,
                                          MediaStreamTrack* selector)
     : ContextLifecycleObserver(context),
-      success_callback_(ToV8PersistentCallbackFunction(callback)),
+      success_callback_(callback),
       component_(selector ? selector->Component() : nullptr),
       requester_(requester) {
   DCHECK(requester_);

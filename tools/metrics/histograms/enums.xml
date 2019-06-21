@@ -34747,6 +34747,7 @@ from previous Chrome versions.
   <int value="-119055644" label="GenericSensor:enabled"/>
   <int value="-116692797" label="HTTPAuthCommittedInterstitials:enabled"/>
   <int value="-115834377" label="EnableUnifiedMultiDeviceSetup:disabled"/>
+  <int value="-114807608" label="TerminalSystemApp:disabled"/>
   <int value="-114768488" label="ImmersiveFullscreen:enabled"/>
   <int value="-112459802" label="WebXrRenderPath:enabled"/>
   <int value="-112335255" label="FormControlsRefresh:enabled"/>
@@ -35077,6 +35078,7 @@ from previous Chrome versions.
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="378994579" label="Previews:enabled"/>
+  <int value="379190682" label="ReorderBookmarks:enabled"/>
   <int value="379326303" label="enable-add-to-shelf"/>
   <int value="379428799" label="security-chip-animation"/>
   <int value="380372760" label="V8Orinoco:disabled"/>
@@ -35227,6 +35229,7 @@ from previous Chrome versions.
   <int value="613629912" label="LookalikeUrlNavigationSuggestions:enabled"/>
   <int value="616660621" label="ImeInputLogicFst:disabled"/>
   <int value="620989380" label="ImeInputLogicFst:enabled"/>
+  <int value="621484660" label="ReorderBookmarks:disabled"/>
   <int value="623772100" label="EnableIncognitoWindowCounter:disabled"/>
   <int value="624317932" label="print-pdf-as-image"/>
   <int value="624368375" label="OmniboxEntitySuggestions:enabled"/>
@@ -35464,6 +35467,7 @@ from previous Chrome versions.
   <int value="982511393" label="NTPArticleSuggestions:disabled"/>
   <int value="983311394" label="tab-management-experiment-type"/>
   <int value="986796748" label="AccountConsistency:enabled"/>
+  <int value="987843084" label="TerminalSystemApp:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="989062160" label="ModuleScriptsImportMetaUrl:enabled"/>
   <int value="994317727"
@@ -45692,6 +45696,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordSuggestionType">
   <int value="0" label="Credential"/>
   <int value="1" label="Show All"/>
+  <int value="2" label="Generate password"/>
 </enum>
 
 <enum name="PasswordSyncState">
@@ -46964,6 +46969,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PpdSource">
+  <obsolete>
+    Deprecated Q2 2019
+  </obsolete>
   <int value="0" label="PPD provided by user"/>
   <int value="1" label="PPD downloaded from SCS"/>
 </enum>

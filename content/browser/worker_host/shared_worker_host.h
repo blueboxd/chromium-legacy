@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
@@ -165,7 +164,6 @@ class CONTENT_EXPORT SharedWorkerHost
   void OnConnected(int connection_request_id) override;
   void OnContextClosed() override;
   void OnReadyForInspection() override;
-  void OnScriptLoaded() override;
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
@@ -197,7 +195,6 @@ class CONTENT_EXPORT SharedWorkerHost
 
   const int process_id_;
   int next_connection_request_id_;
-  const base::TimeTicks creation_time_;
   std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
 
   // This is the set of features that this worker has used.

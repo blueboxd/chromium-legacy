@@ -72,7 +72,7 @@ web_app::InstallOptions GetQuxInstallOptions() {
 }
 
 std::string GenerateFakeAppId(const GURL& url) {
-  return std::string("fake_app_id_for:") + url.spec();
+  return web_app::TestInstallFinalizer::GetAppIdForUrl(url);
 }
 
 class TestBookmarkAppInstallationTaskFactory {
@@ -146,14 +146,14 @@ class TestBookmarkAppInstallationTaskFactory {
           factory_->GetNextInstallationTaskResult(install_options_.url);
       if (result_code == web_app::InstallResultCode::kSuccess) {
         app_id = GenerateFakeAppId(install_options_.url);
-        externally_installed_app_prefs_.Insert(install_options_.url,
-                                               app_id.value(),
+        registrar_->AddExternalApp(
+            *app_id, {install_options_.url, install_options_.install_source});
+        externally_installed_app_prefs_.Insert(install_options_.url, *app_id,
                                                install_options_.install_source);
         const bool is_placeholder =
             (url_loaded_result != web_app::WebAppUrlLoader::Result::kUrlLoaded);
         externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                          is_placeholder);
-        registrar_->AddAsInstalled(app_id.value());
       }
       std::move(callback).Run({result_code, app_id});
     }
@@ -184,7 +184,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    registrar_ = std::make_unique<web_app::TestAppRegistrar>(profile());
+    registrar_ = std::make_unique<web_app::TestAppRegistrar>();
     ui_delegate_ = std::make_unique<web_app::TestWebAppUiDelegate>();
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
     task_factory_ = std::make_unique<TestBookmarkAppInstallationTaskFactory>();
@@ -1018,8 +1018,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExtensionUninstalled) {
   }
 
   // Simulate the extension for the app getting uninstalled.
-  const std::string app_id = GenerateFakeAppId(kFooWebAppUrl);
-  registrar()->RemoveAsInstalled(app_id);
+  registrar()->RemoveExternalAppByInstallUrl(kFooWebAppUrl);
 
   // Try to install the app again.
   {
@@ -1058,8 +1057,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
   // Simulate external extension for the app getting uninstalled by the user.
   const std::string app_id = GenerateFakeAppId(kFooWebAppUrl);
-  registrar()->AddAsExternalAppUninstalledByUser(app_id);
-  registrar()->RemoveAsInstalled(app_id);
+  registrar()->SimulateExternalAppUninstalledByUser(app_id);
 
   // The extension was uninstalled by the user. Installing again should succeed
   // or fail depending on whether we set override_previous_user_uninstall. We
@@ -1096,7 +1094,9 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
-  registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kFooWebAppUrl),
+      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
@@ -1124,8 +1124,12 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Fails) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
-  registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
-  registrar()->AddAsInstalled(GenerateFakeAppId(kBarWebAppUrl));
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kFooWebAppUrl),
+      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kBarWebAppUrl),
+      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);

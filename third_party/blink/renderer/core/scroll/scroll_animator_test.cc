@@ -150,7 +150,7 @@ class MockScrollableAreaForAnimatorTest
 class TestScrollAnimator : public ScrollAnimator {
  public:
   TestScrollAnimator(ScrollableArea* scrollable_area,
-                     WTF::TimeFunction timing_function)
+                     TimeFunction timing_function)
       : ScrollAnimator(scrollable_area, timing_function) {}
   ~TestScrollAnimator() override = default;
 

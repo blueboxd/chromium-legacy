@@ -112,6 +112,10 @@ class CORE_EXPORT ScrollManager
   WebInputEventResult HandleGestureScrollUpdate(const WebGestureEvent&);
   WebInputEventResult HandleGestureScrollBegin(const WebGestureEvent&);
 
+  // Handling of GestureScrollEnd may be deferred if there's an outstanding
+  // scroll animation. This is the callback that invokes the deferred operation.
+  void HandleDeferredGestureScrollEnd(const WebGestureEvent& gesture_event);
+
   WebInputEventResult PassScrollGestureEvent(const WebGestureEvent&,
                                              LayoutObject*);
 

@@ -29,10 +29,6 @@ StoreMetricsReporter::StoreMetricsReporter(
         client->IsUnderAdvancedProtection());
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.ShouldShowAutoSignInFirstRunExperience",
-      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          prefs));
 }
 
 StoreMetricsReporter::~StoreMetricsReporter() = default;

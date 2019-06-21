@@ -56,7 +56,7 @@
 // Bookmark ToolbarButton.
 - (ToolbarButton*)bookmarkButton;
 // ToolbarButton to focus the omnibox.
-- (ToolbarButton*)omniboxButton;
+- (ToolbarButton*)searchButton;
 // Button to cancel the edit of the location bar.
 - (UIButton*)cancelButton;
 

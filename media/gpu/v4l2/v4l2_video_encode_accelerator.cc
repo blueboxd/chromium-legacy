@@ -203,15 +203,11 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
              << "by the HW. Will try to convert to "
              << device_input_layout_->format();
 
-    // It is necessary to set strides and buffers even with dummy values,
-    // because VideoFrameLayout::num_buffers() specifies v4l2 pix format
-    // associated with |config.input_format| is multi-planar.
-    auto input_layout = VideoFrameLayout::CreateWithStrides(
+    // TODO(hiroh): Decide the appropriate planar in some way.
+    auto input_layout = VideoFrameLayout::CreateMultiPlanar(
         config.input_format, visible_size_,
-        std::vector<int32_t>(
-            VideoFrameLayout::NumPlanes(config.input_format)) /* strides */,
-        std::vector<size_t>(
-            VideoFrameLayout::NumPlanes(config.input_format)) /* buffers */);
+        std::vector<VideoFrameLayout::Plane>(
+            VideoFrame::NumPlanes(config.input_format)));
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
       return false;
@@ -807,7 +803,8 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = input_memory_type_;
     dqbuf.m.planes = planes;
-    dqbuf.length = device_input_layout_->num_buffers();
+    dqbuf.length = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+        V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -925,16 +922,15 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
       frame->timestamp().InMicroseconds() -
       frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
   DCHECK_EQ(device_input_layout_->format(), frame->format());
-
-  for (size_t i = 0; i < device_input_layout_->num_buffers(); ++i) {
+  size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+      V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
+  for (size_t i = 0; i < num_planes; ++i) {
     // Single-buffer input format may have multiple color  planes, so bytesused
     // of the single buffer should be sum of each color planes' size.
-    if (device_input_layout_->num_buffers() == 1) {
+    if (num_planes == 1) {
       qbuf.m.planes[i].bytesused = VideoFrame::AllocationSize(
           frame->format(), device_input_layout_->coded_size());
     } else {
-      DCHECK_EQ(device_input_layout_->num_buffers(),
-                VideoFrame::NumPlanes(device_input_layout_->format()));
       qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
           VideoFrame::PlaneSize(frame->format(), i,
                                 device_input_layout_->coded_size())
@@ -944,7 +940,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
     switch (input_memory_type_) {
       case V4L2_MEMORY_USERPTR:
         // Use buffer_size VideoEncodeAccelerator HW requested by S_FMT.
-        qbuf.m.planes[i].length = device_input_layout_->buffer_sizes()[i];
+        qbuf.m.planes[i].length = device_input_layout_->planes()[i].size;
         qbuf.m.planes[i].m.userptr =
             reinterpret_cast<unsigned long>(frame->data(i));
         DCHECK(qbuf.m.planes[i].m.userptr);
@@ -953,7 +949,6 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
       case V4L2_MEMORY_DMABUF: {
         const auto& fds = frame->DmabufFds();
         const auto& planes = frame->layout().planes();
-        DCHECK_EQ(device_input_layout_->num_buffers(), planes.size());
         qbuf.m.planes[i].m.fd =
             (i < fds.size()) ? fds[i].get() : fds.back().get();
         // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf is
@@ -964,7 +959,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
         // Workaround: filling length should not be needed. This is a bug of
         // videobuf2 library.
-        qbuf.m.planes[i].length = device_input_layout_->buffer_sizes()[i] +
+        qbuf.m.planes[i].length = device_input_layout_->planes()[i].size +
                                   qbuf.m.planes[i].data_offset;
         DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
         break;
@@ -976,7 +971,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   }
 
   qbuf.memory = input_memory_type_;
-  qbuf.length = device_input_layout_->num_buffers();
+  qbuf.length = num_planes;
 
   DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);

@@ -394,9 +394,9 @@
       </translation>
 <translation id="1767673020408652620">Activa les recomanacions d'aplicacions quan el quadre de cerca no mostri cap resultat.</translation>
 <translation id="17719159826324007">
-      Si aquesta política s'estableix en "ArcSession", obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
-      Quan s'estableix en "Sempre", obliga el dispositiu a reiniciar-se cada vegada que l'usuari tanqui la sessió.
-      Si es deixa sense establir, no té cap efecte i no obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió. Funciona de la mateixa manera si s'estableix en "Mai".
+      Si aquesta política s'estableix en ArcSession, obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
+      Quan s'estableix en Sempre, obliga el dispositiu a reiniciar-se cada vegada que l'usuari tanqui la sessió.
+      Si es deixa sense establir, no té cap efecte i no obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió. Funciona de la mateixa manera si s'estableix en Mai.
       Aquesta política només té efecte per a usuaris no afiliats.
       </translation>
 <translation id="1781356041596378058">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "true", els usuaris no hi poden accedir. Si l'estableixes en "false" o la deixes sense establir, els usuaris hi poden accedir tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
@@ -2247,6 +2247,10 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Tingues en compte que aquesta opció no es recomana, ja que pot permetre l'omissió de l'extensió nameConstraints que restringeix els noms d'amfitrió per als quals pot estar autoritzat un certificat determinat.
 
       Si aquesta política no s'estableix o s'estableix en "false", no es confiarà en els certificats del servidor que no tinguin l'extensió subjectAlternativeName i que continguin el nom de DNS o l'adreça IP.</translation>
+<translation id="5578571772998293651">Permet els comentaris de l'usuari.
+        Si la política s'estableix en "false", els usuaris no podran enviar comentaris a Google.
+
+        Si la política no s'estableix o s'estableix en "true", els usuaris podran enviar comentaris a Google des de Menú-&gt;Ajuda-&gt;Informa d'un problema o mitjançant la combinació de tecles pertinent.</translation>
 <translation id="5581292529942108810">Configura les polítiques relacionades amb Chrome Reporting Extension.
 
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3480,6 +3484,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si no es defineix aquesta política, no es faran excepcions a la llista negra de la política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permet que un usuari d'empresa només sigui un usuari multiperfil principal (comportament predeterminat per a usuaris gestionats per l'empresa)</translation>
 <translation id="8183108371184777472">Impedeix que s'obri la finestra del navegador</translation>
+<translation id="8186911565834244165">Permet els comentaris de l'usuari</translation>
 <translation id="8214600119442850823">Configura el gestor de contrasenyes.</translation>
 <translation id="8244171102276095471">Activa els sistemes de xifratge RC4 de TLS</translation>
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
@@ -3854,6 +3859,12 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>
+<translation id="91196902572559194">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
+
+      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
+      Si la política es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
+      Si la política no s'estableix, els usuaris podran decidir si volen permetre que l'Assistent de Google escolti la frase d'activació per veu.
+      </translation>
 <translation id="9123211093995421438">Especifica el nombre mínim de fites del sistema operatiu <ph name="PRODUCT_OS_NAME" /> que es permeten per a la reversió feta a partir de la versió estable en qualsevol moment.
 
       El nombre predeterminat és 0 per a dispositius de particulars i 4 (aproximadament mig any) per a dispositius inscrits per empreses.

@@ -65,12 +65,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
-  std::vector<GURL> GetInstalledAppUrls(
-      web_app::InstallSource install_source) const override;
-  base::Optional<web_app::AppId> LookupAppId(const GURL& url) const override;
-  bool HasAppIdWithInstallSource(
-      const web_app::AppId& app_id,
-      web_app::InstallSource install_source) const override;
 
   void SetTaskFactoryForTesting(TaskFactory task_factory);
   void SetUrlLoaderForTesting(
@@ -98,7 +92,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
 
   Profile* profile_;
-  web_app::AppRegistrar* registrar_;
   web_app::InstallFinalizer* install_finalizer_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 

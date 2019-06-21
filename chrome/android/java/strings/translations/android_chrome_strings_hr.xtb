@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
-<translation id="1272444412400969138">Alat za odabir uređaja s kojim će se dijeliti kartica.</translation>
 <translation id="1283039547216852943">Dodirnite za proširivanje</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Alati za razvojne programere</translation>
 <translation id="1692118695553449118">Sinkronizacija je uključena</translation>
 <translation id="169515064810179024">Blokiranje pristupa senzorima kretanja za web-lokacije</translation>
+<translation id="1697480839793160072">Telefoni</translation>
+<translation id="1698058317516161971">E-poruke</translation>
 <translation id="1717218214683051432">Senzori kretanja</translation>
 <translation id="1718835860248848330">Zadnji sat</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – ažurirano <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Dopusti kolačiće za određenu web-lokaciju.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}few{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Prikaži prijedloge kada se ne razriješi web-adresa ili nije moguće uspostaviti vezu</translation>
-<translation id="4044912625106523635">Alat za odabir uređaja s kojim će se dijeliti kartica otvoren je u punoj visini.</translation>
 <translation id="4046123991198612571">Sljedeća pjesma</translation>
 <translation id="4048707525896921369">Saznajte više o temama na web-lokacijama izravno na stranici. Značajka Dodirnite za pretraživanje Google pretraživanju šalje riječ i njezin kontekst, a vraća definicije, slike, rezultate pretraživanja i druge pojedinosti.
 
@@ -747,7 +747,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6406506848690869874">Sinkronizacija</translation>
 <translation id="641643625718530986">Ispis…</translation>
 <translation id="6416782512398055893">Preuzeto <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Alat za odabir uređaja s kojim će se dijeliti kartica zatvoren je.</translation>
 <translation id="6427112570124116297">Prijevod weba</translation>
 <translation id="6433501201775827830">Odaberite tražilicu</translation>
 <translation id="6437478888915024427">Informacije o stranici</translation>
@@ -787,7 +786,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="666268767214822976">Upotrijebi uslugu predviđanja za prikaz srodnih upita i popularnih web-lokacija prilikom upisivanja u adresnu traku</translation>
 <translation id="666731172850799929">Otvori u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Obavijest o privatnosti za Chrome</translation>
-<translation id="6672986458216094438">Alat za odabir uređaja s kojim će se dijeliti kartica otvoren je na pola visine.</translation>
 <translation id="6697492270171225480">Prikaži prijedloge za slične stranice kada se stranica ne može pronaći</translation>
 <translation id="6697947395630195233">Chrome treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom.</translation>
 <translation id="6698801883190606802">Upravljanje sinkroniziranim podacima</translation>

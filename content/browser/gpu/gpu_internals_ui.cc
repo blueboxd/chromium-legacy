@@ -688,7 +688,6 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   for (const auto& workaround : GetDriverBugWorkarounds())
     workarounds->AppendString(workaround);
   feature_status->Set("workarounds", std::move(workarounds));
-  feature_status->Set("ANGLEFeatures", GetANGLEFeatures());
   gpu_info_val->Set("featureStatus", std::move(feature_status));
   if (!GpuDataManagerImpl::GetInstance()->IsGpuProcessUsingHardwareGpu()) {
     auto feature_status_for_hardware_gpu =
@@ -717,6 +716,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo());
   gpu_info_val->Set("displayInfo", getDisplayInfo());
   gpu_info_val->Set("videoAcceleratorsInfo", GetVideoAcceleratorsInfo());
+  gpu_info_val->Set("ANGLEFeatures", GetANGLEFeatures());
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunctionUnsafe("browserBridge.onGpuInfoUpdate",

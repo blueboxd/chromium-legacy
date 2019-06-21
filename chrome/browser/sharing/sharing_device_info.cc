@@ -15,6 +15,8 @@ SharingDeviceInfo::SharingDeviceInfo(const std::string& guid,
 
 SharingDeviceInfo::~SharingDeviceInfo() = default;
 
+SharingDeviceInfo::SharingDeviceInfo(SharingDeviceInfo&& other) = default;
+
 const std::string& SharingDeviceInfo::guid() const {
   return guid_;
 }

@@ -106,7 +106,7 @@ enum class PasswordSuggestionType {
   SHOW_ALL = 1,
   // "Suggest Password" is listed.
   SUGGESTED = 2,
-  COUNT
+  COUNT = 3,
 };
 
 // Password is considered not generated when user edits it below 4 characters.

@@ -2029,7 +2029,12 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
             suggestions[0].value);
 }
 
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_PhoneSubstring) {
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_PhoneSubstring_NoImprovedDisambiguation) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
@@ -2044,6 +2049,29 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_PhoneSubstring) {
   ASSERT_FALSE(suggestions.empty());
   EXPECT_EQ(base::ASCIIToUTF16("12345678910"), suggestions[0].value);
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_PhoneSubstring_ImprovedDisambiguation) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillUseImprovedLabelDisambiguation);
+
+  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  AddProfileToPersonalDataManager(profile);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(PHONE_HOME_WHOLE_NUMBER), base::ASCIIToUTF16("234"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_FALSE(suggestions.empty());
+  EXPECT_EQ(base::ASCIIToUTF16("(234) 567-8910"), suggestions[0].value);
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);

@@ -428,16 +428,15 @@ class FailingQuicCryptoConfigFactory final : public P2PQuicCryptoConfigFactory {
   std::unique_ptr<quic::QuicCryptoClientConfig> CreateClientCryptoConfig()
       override {
     return std::make_unique<quic::QuicCryptoClientConfig>(
-        std::make_unique<FailingProofVerifierStub>(),
-        quic::TlsClientHandshaker::CreateSslCtx());
+        std::make_unique<FailingProofVerifierStub>());
   }
 
   std::unique_ptr<quic::QuicCryptoServerConfig> CreateServerCryptoConfig()
       override {
     return std::make_unique<quic::QuicCryptoServerConfig>(
         quic::QuicCryptoServerConfig::TESTING, quic_random_,
-        std::make_unique<ProofSourceStub>(), quic::KeyExchangeSource::Default(),
-        quic::TlsServerHandshaker::CreateSslCtx());
+        std::make_unique<ProofSourceStub>(),
+        quic::KeyExchangeSource::Default());
   }
 
  private:

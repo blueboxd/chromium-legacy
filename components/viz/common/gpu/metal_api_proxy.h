@@ -21,6 +21,10 @@ API_AVAILABLE(macos(10.11))
 @interface MTLDeviceProxy : NSObject <MTLDevice> {
   base::scoped_nsprotocol<id<MTLDevice>> device_;
 
+  // The number of shaders created so far. Used to see if creation of an
+  // excessive number of shaders could be causing hangs.
+  uint64_t newLibraryCount_;
+
   // Weak pointer to the most vertexMain and fragmentMain MTLFunctions most
   // recently present in the result from a -newLibraryWithSource. Used for
   // comparison only in -newRenderPipelineStateWithDescriptor.

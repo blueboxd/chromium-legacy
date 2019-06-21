@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Iščite in raziskujte</translation>
 <translation id="1264974993859112054">Šport</translation>
 <translation id="1272079795634619415">Ustavi</translation>
-<translation id="1272444412400969138">Izbirnik naprave, s katero želite deliti zavihek.</translation>
 <translation id="1283039547216852943">Dotaknite se za razširitev</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Razvijalska orodja</translation>
 <translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="169515064810179024">Spletnim mestom prepreči dostop do tipal gibanja</translation>
+<translation id="1697480839793160072">Telefoni</translation>
+<translation id="1698058317516161971">E-poštni naslovi</translation>
 <translation id="1717218214683051432">Tipala gibanja</translation>
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Posodobljeno: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Omogočanje piškotkov za določeno spletno mesto.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}two{# h}few{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Pokaži predloge, ko spletnega naslova ni mogoče najti ali povezave ni mogoče vzpostaviti</translation>
-<translation id="4044912625106523635">Izbirnik naprave, s katero želite deliti zavihek, je odprt pri polni višini.</translation>
 <translation id="4046123991198612571">Naslednja skladba</translation>
 <translation id="4048707525896921369">Več informacij o temah na spletnih mestih, ne da bi zapustili stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
 
@@ -747,7 +747,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6406506848690869874">Sinhronizacija</translation>
 <translation id="641643625718530986">Tiskanje …</translation>
 <translation id="6416782512398055893">Preneseno <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Izbirnik naprave, s katero želite deliti zavihek, je zaprt.</translation>
 <translation id="6427112570124116297">Prevajanje spleta</translation>
 <translation id="6433501201775827830">Izbira iskalnika</translation>
 <translation id="6437478888915024427">Podatki o strani</translation>
@@ -787,7 +786,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="666268767214822976">Uporabite storitev predvidevanja za prikaz povezanih poizvedb in priljubljenih spletnih mest med vnašanjem v naslovno vrstico</translation>
 <translation id="666731172850799929">Odpri v: <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Obvestilo o zasebnosti za Chrome</translation>
-<translation id="6672986458216094438">Izbirnik naprave, s katero želite deliti zavihek, je odprt pri polovični višini.</translation>
 <translation id="6697492270171225480">Prikaz predlogov za podobne strani, ko strani ni mogoče najti</translation>
 <translation id="6697947395630195233">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom.</translation>
 <translation id="6698801883190606802">Upravljanje sinhroniziranih podatkov</translation>

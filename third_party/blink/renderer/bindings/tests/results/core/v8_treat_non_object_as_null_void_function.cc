@@ -120,14 +120,4 @@ void V8TreatNonObjectAsNullVoidFunction::InvokeAndReportException(bindings::V8Va
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
-  return Proxy()->Invoke(
-      callback_this_value);
-}
-
-void V8PersistentCallbackFunction<V8TreatNonObjectAsNullVoidFunction>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
-  Proxy()->InvokeAndReportException(
-      callback_this_value);
-}
-
 }  // namespace blink

@@ -1,0 +1,58 @@
+<!--
+  Test whether or not an iframe can load file subresources when:
+   - The main frame can load files.
+   - The iframe is sandboxed.
+   - The navigation is to about:srcdoc.
+
+  See https://crbug.com/977186
+-->
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<iframe sandbox="allow-scripts" name="theiframe" srcdoc="
+  <script src='./resources/script.js'
+          onload='parent.postMessage(&quot;loaded&quot;,&quot;*&quot;)'
+          onerror='parent.postMessage(&quot;error&quot;,&quot;*&quot;)'
+  ></script>
+"></iframe>
+
+<a target="theiframe" href="../resources/back.html"></a>
+
+<script>
+  let button = document.querySelector("a");
+  let iframe = document.querySelector("iframe");
+
+  let message = function() {
+    return new Promise(resolve =>
+      window.addEventListener('message', event => resolve(event.data))
+    );
+  };
+
+  async_test(async function(t) {
+    // 1. During the initial navigation to about:srcdoc. The file is
+    //    successfully loaded.
+    //    TODO(https://crbug.com/977186): This should probably be blocked.
+    assert_equals("loaded", await message());
+
+    // 2. Repeating the same navigation, by setting the srcdoc attribute.
+    //    TODO(https://crbug.com/977186): This should probably be blocked.
+    iframe.srcdoc = iframe.srcdoc
+    assert_equals("loaded", await message());
+
+    // 3. History navigation to about:srcdoc. This time, it fails, probably
+    //    because of https://crbug.com/949510.
+    //
+    //    button.click() navigates to back.html which will execute
+    //    history.back() and navigate back to the about:srcdoc page.
+    button.click();
+    assert_equals("error", await message());
+
+    // 4. Same as (2). This time its fails, because (3) removed the defaults
+    //    loaders.
+    iframe.srcdoc = iframe.srcdoc
+    assert_equals("error", await message());
+
+    t.done();
+  });
+</script>
+

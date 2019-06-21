@@ -30,6 +30,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -243,7 +244,8 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_username) {
+    const JavaParamRef<jstring>& j_username,
+    const base::android::JavaParamRef<jobject>& j_callback) {
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
   DCHECK(!username.empty());
@@ -256,25 +258,32 @@ void SigninManagerAndroid::FetchAndApplyCloudPolicy(
           ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
           .value();
 
+  auto callback =
+      base::BindOnce(base::android::RunRunnableAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback));
+
   RegisterPolicyWithAccount(
-      account, base::BindOnce(&SigninManagerAndroid::OnPolicyRegisterDone,
-                              weak_factory_.GetWeakPtr(), account));
+      account,
+      base::BindOnce(&SigninManagerAndroid::OnPolicyRegisterDone,
+                     weak_factory_.GetWeakPtr(), account, std::move(callback)));
 }
 
 void SigninManagerAndroid::OnPolicyRegisterDone(
     const CoreAccountInfo& account,
+    base::OnceClosure policy_callback,
     const base::Optional<ManagementCredentials>& credentials) {
   if (credentials) {
-    FetchPolicyBeforeSignIn(account, credentials.value());
+    FetchPolicyBeforeSignIn(account, std::move(policy_callback),
+                            credentials.value());
   } else {
     // User's account does not have a policy to fetch.
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
+    std::move(policy_callback).Run();
   }
 }
 
 void SigninManagerAndroid::FetchPolicyBeforeSignIn(
     const CoreAccountInfo& account,
+    base::OnceClosure policy_callback,
     const ManagementCredentials& credentials) {
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
@@ -284,13 +293,10 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
   service->FetchPolicyForSignedInUser(
       AccountIdFromAccountInfo(account), credentials.dm_token,
       credentials.client_id, url_loader_factory,
-      base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void SigninManagerAndroid::OnPolicyFetchDone(bool success) const {
-  Java_SigninManager_onPolicyFetchedBeforeSignIn(
-      base::android::AttachCurrentThread(), java_signin_manager_);
+      base::AdaptCallbackForRepeating(
+          base::BindOnce([](base::OnceClosure callback,
+                            bool success) { std::move(callback).Run(); },
+                         std::move(policy_callback))));
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(

@@ -78,20 +78,41 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // storing the results is relevant.
 
   enum UpdateType {
+    // Initial value. Changed by the first call to StartUpdate() on this job.
     UNKNOWN_TYPE,
-    UPGRADE_ATTEMPT,
+    // The AppCache store does not contain a cache for this job's manifest.
+    //
+    // All the resources listed in the manifest must be fetched directly from
+    // the network.
     CACHE_ATTEMPT,
+    // This job's manifest has a cache in the AppCache store.
+    //
+    // The manifest needs to be checked for changes. If the manifest changed,
+    // its resources must be updated. All resources can be fetched using
+    // conditional HTTP requests, based on the contents of the manifest's most
+    // recent cache in the store.
+    UPGRADE_ATTEMPT,
   };
 
   enum InternalUpdateState {
+    // Initial state. Fetch the AppCache manifest.
     FETCH_MANIFEST,
+    // This job is updating an existing cache and the manifest hasn't changed.
     NO_UPDATE,
+    // TODO(pwnall): Figure this out.
     DOWNLOADING,
 
     // Every state after this comment indicates the update is terminating.
+
+    // TODO(pwnall): Figure this out.
     REFETCH_MANIFEST,
+    // Used while HandleCacheFailure() is clearing the job's state.
+    //
+    // Failed jobs eventually transition into the COMPLETED state.
     CACHE_FAILURE,
+    // Terminal state if the job is canceled.
     CANCELLED,
+    // Terminal state if the job is not canceled. Indicates success or failure.
     COMPLETED,
   };
 

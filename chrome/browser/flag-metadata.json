@@ -2758,6 +2758,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-bookmark-reorder",
+    "owners": ["jhimawan@google.com", "twellington" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-virtual-desks",
     "owners": [ "afakhry" ],
     // This is a flag to enable or disable the Virtual Desks feature.
@@ -2853,6 +2858,11 @@
   {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "terminal-system-app",
+    "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/crostini/OWNERS" ],
     "expiry_milestone": 82
   },
   {

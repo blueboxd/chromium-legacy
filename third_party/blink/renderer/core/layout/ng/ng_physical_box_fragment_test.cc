@@ -148,4 +148,17 @@ TEST_F(NGPhysicalBoxFragmentTest,
   EXPECT_TRUE(fragment->IsBlockFormattingContextRoot());
 }
 
+TEST_F(NGPhysicalBoxFragmentTest, ReplacedBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <img id="target" style="display: block">
+  )HTML");
+  const NGPhysicalBoxFragment& body = GetBodyFragment();
+  const NGPhysicalFragment& fragment = *body.Children().front();
+  EXPECT_EQ(fragment.Type(), NGPhysicalFragment::kFragmentBox);
+  // |LayoutReplaced| sets |IsAtomicInlineLevel()| even when it is block-level.
+  // crbug.com/567964
+  EXPECT_FALSE(fragment.IsAtomicInline());
+  EXPECT_EQ(fragment.BoxType(), NGPhysicalFragment::kBlockFlowRoot);
+}
+
 }  // namespace blink

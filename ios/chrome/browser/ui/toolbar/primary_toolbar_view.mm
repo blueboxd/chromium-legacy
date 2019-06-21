@@ -467,7 +467,7 @@
 
 #pragma mark - AdaptiveToolbarView
 
-- (ToolbarButton*)omniboxButton {
+- (ToolbarButton*)searchButton {
   return nil;
 }
 

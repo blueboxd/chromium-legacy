@@ -73,6 +73,8 @@ enum class InstallSource {
   // Do not remove or re-order the names, only append to the end. Their
   // integer values are persisted in the preferences.
 
+  kInvalid = -1,
+
   kInternal = 0,
   // Installed by default on the system, such as "all such-and-such make and
   // model Chromebooks should have this app installed".

@@ -30,6 +30,8 @@ using blink::WebString;
 
 namespace autofill {
 
+using mojom::SubmissionSource;
+
 namespace {
 
 class FakeContentAutofillDriver : public mojom::AutofillDriver {

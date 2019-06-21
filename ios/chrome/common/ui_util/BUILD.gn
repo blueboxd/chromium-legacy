@@ -15,3 +15,11 @@ source_set("ui_util") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("semantic_colors") {
+  sources = [
+    "UIColor+cr_semantic_colors.h",
+    "UIColor+cr_semantic_colors.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

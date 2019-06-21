@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -122,7 +123,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   }
-  self.styler.cellBackgroundColor = [UIColor whiteColor];
+  self.styler.cellBackgroundColor =
+      UIColor.cr_secondarySystemGroupedBackgroundColor;
   self.styler.cellTitleColor = [UIColor blackColor];
   self.tableView.estimatedSectionHeaderHeight = kEstimatedHeaderFooterHeight;
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;

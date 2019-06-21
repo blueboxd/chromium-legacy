@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 
+#include <map>
+
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -15,6 +17,8 @@ class Profile;
 namespace web_app {
 
 class AppRegistrarObserver;
+
+enum class InstallSource;
 
 class AppRegistrar {
  public:
@@ -50,6 +54,24 @@ class AppRegistrar {
   // use HasScopeUrl() to know if the app has a scope before calling this
   // method.
   virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
+
+  // Returns the AppIds and URLs of apps externally installed from
+  // |install_source|.
+  virtual std::map<AppId, GURL> GetExternallyInstalledApps(
+      InstallSource install_source) const;
+
+  // Returns the app id for |install_url| if the AppRegistrar is aware of an
+  // externally installed app for it. Note that the |install_url| is the URL
+  // that the app was installed from, which may not necessarily match the app's
+  // current start URL.
+  virtual base::Optional<AppId> LookupExternalAppId(
+      const GURL& install_url) const;
+
+  // Returns whether the AppRegistrar has an externally installed app with
+  // |app_id| from |install_source|.
+  virtual bool HasExternalAppWithInstallSource(
+      const AppId& app_id,
+      web_app::InstallSource install_source) const;
 
   // Returns the app id for which the |url| is in scope of, empty if none.
   virtual AppId FindAppIdForUrl(const GURL& url) const = 0;

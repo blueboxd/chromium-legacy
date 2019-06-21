@@ -39,6 +39,11 @@ class Harness {
       {{interface.name}}_list_.push_back(new_obj);
     }
 
+    void remove_{{interface.name}}(uint32_t idx) {
+      if (idx < {{interface.name}}_list_.size())
+        {{interface.name}}_list_[idx] = nullptr;
+    }
+
     ::{{interface.name}}* get_{{interface.name}}(uint32_t idx) const {
       return idx < {{interface.name}}_list_.size()
         ? {{interface.name}}_list_[idx]

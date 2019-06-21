@@ -19,8 +19,6 @@
 
 namespace autofill {
 
-enum class SubmissionSource;
-
 // Pair of a value and the name of the element that contained this value.
 using ValueElementPair = std::pair<base::string16, base::string16>;
 

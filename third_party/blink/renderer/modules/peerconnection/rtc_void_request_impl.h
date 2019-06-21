@@ -71,14 +71,8 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   void Clear();
 
   base::Optional<RTCSetSessionDescriptionOperation> operation_;
-  // This request object is held by WebRTCPeerConnectionHandler, which doesn't
-  // support wrapper-tracing. Thus, this object holds the underlying callback
-  // functions as persistent handles. This is acceptable because the request
-  // object will be discarded in a limited time due to success, failure, or
-  // destruction of the execution context.
-  Member<V8PersistentCallbackFunction<V8VoidFunction>> success_callback_;
-  Member<V8PersistentCallbackFunction<V8RTCPeerConnectionErrorCallback>>
-      error_callback_;
+  Member<V8VoidFunction> success_callback_;
+  Member<V8RTCPeerConnectionErrorCallback> error_callback_;
 
   Member<RTCPeerConnection> requester_;
 };

@@ -38,12 +38,12 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void OnDownloadStarted() override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length,
-                                 int64_t download_bytes_per_sec) override;
+                                 base::TimeDelta elapsed_time) override;
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
   void OnDownloadFailed() override;
-  void OnImportProgressUpdated(uint64_t percent_completed,
-                               int64_t import_percent_per_sec) override;
+  void OnImportProgressUpdated(int percent_completed,
+                               base::TimeDelta elapsed_time) override;
   void OnImported() override;
   void OnImportCancelled() override;
   void OnImportFailed() override;
@@ -72,10 +72,10 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
  private:
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
-  // Returns empty string in case time left cannot be estimated.
-  base::string16 GetTimeLeftMessage(int64_t processed_bytes,
-                                    int64_t bytes_to_be_processed,
-                                    int64_t bytes_per_sec) const;
+  // Updates the progress bar and shows a time left message if available.
+  void UpdateOperationProgress(double units_processed,
+                               double total_units,
+                               base::TimeDelta elapsed_time) const;
   void SetBigMessageLabel();
   void SetMessageLabel();
   void SetBigImage();

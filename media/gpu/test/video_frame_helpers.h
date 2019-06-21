@@ -66,13 +66,11 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image);
 
 // Create a video frame layout for the specified |pixel_format| and
-// |coded_size|. If |single_buffer| is true, the created VideoFrameLayout
-// represents all the planes are stored in the same buffer. Otherwise, it
-// represents each plane is stored in separated planes.
+// |coded_size|. The created VideoFrameLayout represents all the planes are
+//  stored in a single physical buffer.
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
     VideoPixelFormat pixel_format,
-    const gfx::Size& size,
-    bool single_buffer);
+    const gfx::Size& size);
 
 }  // namespace test
 }  // namespace media

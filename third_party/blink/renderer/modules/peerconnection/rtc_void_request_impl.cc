@@ -44,8 +44,8 @@ RTCVoidRequestImpl::RTCVoidRequestImpl(
     V8RTCPeerConnectionErrorCallback* error_callback)
     : ContextLifecycleObserver(context),
       operation_(std::move(operation)),
-      success_callback_(ToV8PersistentCallbackFunction(success_callback)),
-      error_callback_(ToV8PersistentCallbackFunction(error_callback)),
+      success_callback_(success_callback),
+      error_callback_(error_callback),
       requester_(requester) {
   DCHECK(requester_);
 }

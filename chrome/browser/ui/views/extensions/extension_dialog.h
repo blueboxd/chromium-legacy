@@ -99,7 +99,9 @@ class ExtensionDialog : public views::DialogDelegate,
   void InitWindow(gfx::NativeWindow parent_window,
                   bool is_modal,
                   int width,
-                  int height);
+                  int height,
+                  int min_width,
+                  int min_height);
 
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(

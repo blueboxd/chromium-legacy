@@ -436,15 +436,6 @@ bool Scrollbar::HandleTapGesture() {
         // Taps perform a single scroll begin/update/end sequence of gesture
         // events. There's no autoscroll timer since long press is not treated
         // the same as holding a mouse down.
-        // TODO(dlibby): Injecting GSE immediately after GSU causes scroll snap
-        // to be applied immediately when the GSE is handled, which makes it
-        // look like an instant scroll to the snap position (and if this is the
-        // button part, most likely doesn't give the user any visual indication
-        // as button scrolls are small enough that they don't exceed thresholds
-        // needed to advance to the next snap point).
-        // The GSE should probably be queued up as a delayed task
-        // (proportional to the tap gesture timeout?). At that point we should
-        // also clear state related to pressed_part_, etc.
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollBegin);
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
         InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);

@@ -4,10 +4,16 @@
 
 #include "chrome/browser/sharing/sharing_service_factory.h"
 
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync_device_info/device_info_sync_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace {
@@ -29,13 +35,24 @@ SharingService* SharingServiceFactory::GetForBrowserContext(
 SharingServiceFactory::SharingServiceFactory()
     : BrowserContextKeyedServiceFactory(
           kServiceName,
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+}
 
 SharingServiceFactory::~SharingServiceFactory() = default;
 
 KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new SharingService();
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  syncer::DeviceInfoTracker* device_info_tracker =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetDeviceInfoTracker();
+
+  std::unique_ptr<SharingSyncPreference> sync_prefs =
+      std::make_unique<SharingSyncPreference>(profile->GetPrefs());
+
+  return new SharingService(std::move(sync_prefs), device_info_tracker);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(
@@ -44,5 +61,9 @@ content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(
 }
 
 bool SharingServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+  return true;
+}
+
+bool SharingServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

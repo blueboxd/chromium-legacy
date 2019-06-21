@@ -57,10 +57,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using SyncSigninState = autofill::AutofillSyncSigninState;
 using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
@@ -70,6 +66,13 @@ using ::testing::Matcher;
 using ::testing::UnorderedPointwise;
 
 namespace autofill {
+
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using mojom::SubmissionSource;
+using SyncSigninState = AutofillSyncSigninState;
+
 namespace {
 
 using UkmCardUploadDecisionType = ukm::builders::Autofill_CardUploadDecision;

@@ -219,6 +219,7 @@ WebappInstallSource ConvertOptionsToMetricsInstallSource(
       metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
       break;
     case InstallSource::kArc:
+    case InstallSource::kInvalid:
       NOTREACHED();
       break;
   }

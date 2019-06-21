@@ -25,17 +25,15 @@ MojoWatcher* MojoWatcher::Create(mojo::Handle handle,
   // Current clients expect to recieve the initial error returned by MojoWatch
   // via watch callback.
   //
-  // Note that the usage of wrapPersistent is intentional so that the intial
+  // Note that the usage of WrapPersistent is intentional so that the initial
   // error is guaranteed to be reported to the client in case where the given
   // handle is invalid and garbage collection happens before the callback
   // is scheduled.
   if (result != MOJO_RESULT_OK) {
     watcher->task_runner_->PostTask(
         FROM_HERE,
-        WTF::Bind(&V8PersistentCallbackFunction<
-                      V8MojoWatchCallback>::InvokeAndReportException,
-                  WrapPersistent(ToV8PersistentCallbackFunction(callback)),
-                  WrapPersistent(watcher), result));
+        WTF::Bind(&V8MojoWatchCallback::InvokeAndReportException,
+                  WrapPersistent(callback), WrapPersistent(watcher), result));
   }
   return watcher;
 }

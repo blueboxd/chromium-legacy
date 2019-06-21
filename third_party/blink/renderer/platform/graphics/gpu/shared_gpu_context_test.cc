@@ -53,10 +53,18 @@ class SharedGpuContextTestBase : public Test {
   GLES2InterfaceType gl_;
 };
 
-class SharedGpuContextTest
-    : public SharedGpuContextTestBase<FakeGLES2Interface> {};
+class TestGLES2Interface : public FakeGLES2Interface {
+ public:
+  GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte*) override {
+    return ++texture_id;
+  }
+  GLuint texture_id = 0u;
+};
 
-class MailboxMockGLES2Interface : public FakeGLES2Interface {
+class SharedGpuContextTest
+    : public SharedGpuContextTestBase<TestGLES2Interface> {};
+
+class MailboxMockGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, GLbyte*));
   MOCK_METHOD1(GenSyncTokenCHROMIUM, void(GLbyte*));

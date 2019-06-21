@@ -2538,6 +2538,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ņemiet vērā, ka tas nav ieteicams, jo var atļaut paplašinājuma nameConstraints ignorēšanu, kas ierobežo tos saimniekdatora nosaukumus, kuriem var autorizēt minēto sertifikātu.
 
       Ja šī politika nav iestatīta vai ir iestatīta vērtība “false”, servera sertifikāti, kam trūks paplašinājuma subjectAlternativeName, kurā ietverts DNS nosaukums vai IP adrese, nebūs uzticami.</translation>
+<translation id="5578571772998293651">Atļaut lietotāju atsauksmes.
+        Ja politikai ir iestatīta vērtība “False”, lietotāji nevar sūtīt atsauksmes uzņēmumam Google.
+
+        Ja politika nav iestatīta vai tai ir iestatīta vērtība “True”, lietotāji var sūtīt atsauksmes uzņēmumam Google, pārejot uz sadaļu Izvēlne &gt; Palīdzība &gt; Ziņot par problēmu vai izmantojot taustiņu kombināciju.</translation>
 <translation id="5581292529942108810">Ar pārlūkprogrammas Chrome pārskatu paplašinājumu saistītu politiku konfigurēšana.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3921,6 +3925,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta, netiek lietots neviens politikas URLBlacklist melnā saraksta izņēmums.</translation>
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
 <translation id="8183108371184777472">Novērst pārlūka loga atvēršanu</translation>
+<translation id="8186911565834244165">Atļaut lietotāju atsauksmes</translation>
 <translation id="8214600119442850823">Konfigurē paroļu pārvaldnieku.</translation>
 <translation id="8217516105848565518">Šī politika ir novecojusi. Tās vietā, lūdzu, izmantojiet RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Standartā TLS iespējot RC4 šifru komplektus</translation>
@@ -4348,6 +4353,12 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>
+<translation id="91196902572559194">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
+
+      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
+      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
+      Ja politika nav iestatīta, lietotāji var izlemt, vai ļaut Google asistentam klausīties balss aktivizēšanas frāzi.
+      </translation>
 <translation id="9123211093995421438">Norāda minimālo <ph name="PRODUCT_OS_NAME" /> versiju skaitu, cik atļauts atritināt no stabilās versijas.
 
       Noklusējuma iestatījums ir “0” patērētāju ierīcēm un “4” (aptuveni seši mēneši) uzņēmumu reģistrētām ierīcēm.

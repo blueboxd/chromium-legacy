@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Caută și explorează</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Oprește</translation>
-<translation id="1272444412400969138">Selector de dispozitive pe care să trimiți o filă.</translation>
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">Permite cookie-uri pentru un anumit site.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{O oră}few{# ore}other{# de ore}}</translation>
 <translation id="4042870126885713738">Afișează sugestii atunci când o adresă web nu se rezolvă sau nu poate fi stabilită o conexiune</translation>
-<translation id="4044912625106523635">Selectorul de dispozitive pe care să trimiți o filă este deschis la înălțimea completă.</translation>
 <translation id="4046123991198612571">Melodia următoare</translation>
 <translation id="4048707525896921369">Află despre subiectele de pe site-uri fără să părăsești pagina. Funcția Atinge pentru a căuta trimite un cuvânt și contextul aferent către Căutarea Google și returnează definiții, imagini, rezultate ale căutării și alte detalii.
 
@@ -747,7 +745,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6406506848690869874">Sincronizare</translation>
 <translation id="641643625718530986">Printați...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB descărcați</translation>
-<translation id="6418750371676080905">Selectorul de dispozitive pe care să trimiți o filă este închis.</translation>
 <translation id="6427112570124116297">Tradu pe web</translation>
 <translation id="6433501201775827830">Alege motorul de căutare</translation>
 <translation id="6437478888915024427">Informații despre pagină</translation>
@@ -787,7 +784,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="666268767214822976">Folosește un serviciu de predicții pentru a afișa interogări similare și site-uri populare în timp ce introduci text în bara de adrese.</translation>
 <translation id="666731172850799929">Deschide în <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notificare privind confidențialitatea Chrome</translation>
-<translation id="6672986458216094438">Selectorul de dispozitive pe care să trimiți o filă este deschis la jumătate din înălțime.</translation>
 <translation id="6697492270171225480">Afișează sugestii pentru pagini similare atunci când o pagină nu poate fi găsită</translation>
 <translation id="6697947395630195233">Chrome are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site.</translation>
 <translation id="6698801883190606802">Gestionează datele sincronizate</translation>

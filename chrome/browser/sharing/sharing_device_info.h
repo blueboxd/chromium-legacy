@@ -21,6 +21,7 @@ class SharingDeviceInfo {
                     base::Time last_online_timestamp,
                     int capabilities);
   ~SharingDeviceInfo();
+  SharingDeviceInfo(SharingDeviceInfo&& other);
 
   // Unique identifier for the device.
   const std::string& guid() const;

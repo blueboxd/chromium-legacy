@@ -282,6 +282,9 @@ class CORE_EXPORT DocumentLoader
 
   // The caller owns the |clock| which must outlive the DocumentLoader.
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+  void SetApplicationCacheHostForTesting(ApplicationCacheHost* host) {
+    application_cache_host_ = host;
+  }
 
   void SetLoadingJavaScriptUrl() { loading_url_as_javascript_ = true; }
 

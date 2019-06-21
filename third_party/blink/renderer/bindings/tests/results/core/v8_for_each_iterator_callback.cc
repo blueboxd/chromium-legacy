@@ -125,14 +125,4 @@ void V8ForEachIteratorCallback::InvokeAndReportException(bindings::V8ValueOrScri
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8ForEachIteratorCallback>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, ScriptValue value, ScriptValue key, ScriptValue obj) {
-  return Proxy()->Invoke(
-      callback_this_value, value, key, obj);
-}
-
-void V8PersistentCallbackFunction<V8ForEachIteratorCallback>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, ScriptValue value, ScriptValue key, ScriptValue obj) {
-  Proxy()->InvokeAndReportException(
-      callback_this_value, value, key, obj);
-}
-
 }  // namespace blink

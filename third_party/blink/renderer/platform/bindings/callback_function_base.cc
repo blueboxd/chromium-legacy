@@ -86,8 +86,4 @@ void CallbackFunctionBase::EvaluateAsPartOfCallback(
   std::move(closure).Run();
 }
 
-void V8PersistentCallbackFunctionBase::Trace(blink::Visitor* visitor) {
-  visitor->Trace(callback_function_);
-}
-
 }  // namespace blink

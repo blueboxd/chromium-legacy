@@ -1435,6 +1435,10 @@
     await remoteCall.waitForElement(
         appId, '#directory-tree-context-menu:not([hidden])');
 
+    // Wait for the menu item to get focus.
+    await remoteCall.waitForElement(
+        appId, '#directory-tree-context-menu cr-menu-item:focus');
+
     // Check currently focused element.
     const focusedElement =
         await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);

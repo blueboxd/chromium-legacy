@@ -37,12 +37,6 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
-int64_t GetSpeed(base::TimeTicks start_tick, int64_t units_processed) {
-  const base::TimeDelta diff = base::TimeTicks::Now() - start_tick;
-  const int64_t diff_ms = diff.InMilliseconds();
-  return diff_ms == 0 ? 0 : units_processed * 1000 / diff_ms;
-}
-
 }  // namespace
 
 namespace plugin_vm {
@@ -97,7 +91,7 @@ void PluginVmImageManager::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
   if (observer_) {
     observer_->OnDownloadProgressUpdated(
         bytes_downloaded, content_length,
-        GetSpeed(download_start_tick_, bytes_downloaded));
+        base::TimeTicks::Now() - download_start_tick_);
   }
 }
 
@@ -285,7 +279,7 @@ void PluginVmImageManager::OnDiskImageProgress(
     case vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS:
       if (observer_) {
         observer_->OnImportProgressUpdated(
-            percent_completed, GetSpeed(import_start_tick_, percent_completed));
+            percent_completed, base::TimeTicks::Now() - import_start_tick_);
       }
       return;
     default:

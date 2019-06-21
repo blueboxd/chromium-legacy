@@ -204,8 +204,7 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     VLOGF(1) << "Failed to negotiate input VideoFrameLayout";
     return nullptr;
   }
-  DCHECK_LE(negotiated_input_layout->num_buffers(),
-            static_cast<size_t>(VIDEO_MAX_PLANES));
+
   if (!gfx::Rect(negotiated_input_layout->coded_size())
            .Contains(gfx::Rect(input_config.visible_size))) {
     VLOGF(1) << "Negotiated input allocated size: "
@@ -229,8 +228,10 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   format.fmt.pix_mp.width = output_layout.coded_size().width();
   format.fmt.pix_mp.height = output_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat = output_format_fourcc;
-  for (size_t i = 0; i < output_layout.num_buffers(); ++i) {
-    format.fmt.pix_mp.plane_fmt[i].sizeimage = output_layout.buffer_sizes()[i];
+  format.fmt.pix_mp.num_planes =
+      V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc);
+  for (size_t i = 0; i < format.fmt.pix_mp.num_planes; ++i) {
+    format.fmt.pix_mp.plane_fmt[i].sizeimage = output_layout.planes()[i].size;
     format.fmt.pix_mp.plane_fmt[i].bytesperline =
         output_layout.planes()[i].stride;
   }
@@ -245,8 +246,6 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     VLOGF(1) << "Failed to negotiate output VideoFrameLayout";
     return nullptr;
   }
-  DCHECK_LE(negotiated_output_layout->num_buffers(),
-            static_cast<size_t>(VIDEO_MAX_PLANES));
   if (!gfx::Rect(negotiated_output_layout->coded_size())
            .Contains(gfx::Rect(output_layout.coded_size()))) {
     VLOGF(1) << "Negotiated output allocated size: "
@@ -773,7 +772,9 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DCHECK(buffer.IsValid());
 
   std::vector<void*> user_ptrs;
-  for (size_t i = 0; i < input_layout_.num_buffers(); ++i) {
+  size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
+      V4L2Device::VideoFrameLayoutToV4L2PixFmt(input_layout_));
+  for (size_t i = 0; i < num_planes; ++i) {
     int bytes_used = VideoFrame::PlaneSize(job_record->input_frame->format(), i,
                                            input_layout_.coded_size())
                          .GetArea();

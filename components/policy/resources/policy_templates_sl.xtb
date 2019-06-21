@@ -2553,6 +2553,10 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       To ni priporočljivo, saj morda omogoča zaobidenje razširitve nameConstraints, ki omejuje imena gostiteljev, za katera je lahko odobreno določeno potrdilo.
 
       Če ta pravilnik ni nastavljen ali je onemogočen, potrdila strežnika, ki jim manjka razširitev subjectAlternativeName, ki vsebuje ime DNS-ja ali naslov IP, ne bodo zaupanja vredna.</translation>
+<translation id="5578571772998293651">Omogočanje povratnih informacij uporabnikov.
+        Če je ta pravilnik onemogočen, uporabniki ne morejo pošiljati povratnih informacij Googlu.
+
+        Če pravilnik ni nastavljen ali je omogočen, lahko uporabniki pošiljajo povratne informacij Googlu v »Meni -&gt; Pomoč -&gt; Prijava težave« ali s kombinacijo tipk.</translation>
 <translation id="5581292529942108810">Konfiguriranje pravilnikov o razširitvi za poročanje za Chrome. 
 
       Ta pravilnik se uporablja samo, ko je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3952,6 +3956,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če tega pravilnika ne nastavite, v pravilniku ne bo izjem za seznam blokiranih v pravilniku »URLBlacklist«.</translation>
 <translation id="8176035528522326671">Dovoli poslovnemu uporabniku, da je samo primarni uporabnik z več profili (privzeti način delovanja za uporabnike, ki jih upravlja podjetje)</translation>
 <translation id="8183108371184777472">Onemogočanje odpiranja okna brskalnika</translation>
+<translation id="8186911565834244165">Omogočanje povratnih informacij uporabnikov</translation>
 <translation id="8214600119442850823">Konfigurira upravitelja gesel.</translation>
 <translation id="8217516105848565518">Ta pravilnik je zastarel. Uporabite pravilnik RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Omogočanje šifrirnih zbirk RC4 v protokolu TLS</translation>
@@ -4394,6 +4399,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9112897538922695510">Omogoča registracijo seznama rutin za obravnavo protokolov. Ta pravilnik je lahko samo priporočen. Lastnost |protocol| mora biti nastavljena na shemo, kot je »mailto«, in lastnost |url| mora biti nastavljena na vzorec URL aplikacije, ki obravnava shemo. Vzorec lahko vsebuje »%s«. Če ga, ta nadomesti obravnavani URL.
 
           Rutine za obravnavo protokola, registrirane s pravilnikom, so združene z rutinami, ki jih registrira uporabnik, oboje pa je na voljo za uporabo. Uporabnik lahko preglasi rutine za obravnavo protokola, nameščene s pravilnikom, tako da namesti novo privzeto rutino za obravnavo protokola, vendar ne more odstraniti rutine za obravnavo protokola, registrirane s pravilnikom.</translation>
+<translation id="91196902572559194">Ta pravilnik Pomočniku Google odobri dovoljenje za poslušanje, ali je izgovorjena besedna zveza za govorno aktiviranje.
+
+      Če je pravilnik omogočen, Pomočnik Google posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če je pravilnik onemogočen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če ta pravilnik ni nastavljen, se lahko uporabniki odločijo, ali bodo Pomočniku Google dovolili, da posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      </translation>
 <translation id="9123211093995421438">Določa najmanjše število dovoljenih mejnikov sistema <ph name="PRODUCT_OS_NAME" />, za katero je dovoljena povrnitev, z začetkom pri trenutno veljavni stabilni različici.
 
       Privzeta vrednost je 0 za naprave potrošnikov in 4 (približno pol leta) za včlanjene naprave v poslovnih okoljih.

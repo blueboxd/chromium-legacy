@@ -59,13 +59,12 @@ class MockObserver : public PluginVmImageManager::Observer {
   MOCK_METHOD3(OnDownloadProgressUpdated,
                void(uint64_t bytes_downloaded,
                     int64_t content_length,
-                    int64_t download_bytes_per_sec));
+                    base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDownloadCompleted, void());
   MOCK_METHOD0(OnDownloadCancelled, void());
   MOCK_METHOD0(OnDownloadFailed, void());
   MOCK_METHOD2(OnImportProgressUpdated,
-               void(uint64_t percent_completed,
-                    int64_t import_percent_per_second));
+               void(int percent_completed, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnImported, void());
   MOCK_METHOD0(OnImportCancelled, void());
   MOCK_METHOD0(OnImportFailed, void());

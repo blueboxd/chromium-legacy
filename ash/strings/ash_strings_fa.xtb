@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">تغییر وضعیت اتصال شبکه. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">پیمایش به راست</translation>
 <translation id="1812997170047690955">چه چیزی در صفحه‌نمایش من نشان داده می‌شود؟</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> با خط‌مشی اعمال‌شده برای این دستگاه غیرفعال شد. لطفاً برای درخواست تغییرات، باز سرپرستتان صحبت کنید.</translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">بازراه‌اندازی برای به‌روزرسانی</translation>
 <translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">سیم‌کارت قفل است</translation>
+<translation id="2651765386227849097">‏«دستیار Google» در این دستگاه غیرفعال شده است.</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2658778018866295321">کلیک کنید و بکشید</translation>
 <translation id="2700493154570097719">تنظیم صفحه‌کلید</translation>
@@ -262,6 +264,7 @@
 <translation id="4895488851634969361">باتری پر است.</translation>
 <translation id="490375751687810070">عمودی</translation>
 <translation id="4905614135390995787">میان‌بر روشن/خاموش کردن «حالت تضاد بالا» تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />٪ باتری</translation>
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
@@ -299,6 +302,7 @@
 <translation id="5648021990716966815">فیش میکروفون</translation>
 <translation id="5669267381087807207">فعالسازی</translation>
 <translation id="5673434351075758678">از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» بعد از همگام‌سازی تنظیمات.</translation>
+<translation id="5682642926269496722">‏«دستیار Google» برای حساب کاربری فعلی دردسترس نیست.</translation>
 <translation id="5691772641933328258">اثر انگشت تشخیص داده نشد</translation>
 <translation id="5710450975648804523">«مزاحم نشوید» روشن است</translation>
 <translation id="574392208103952083">متوسط</translation>
@@ -332,6 +336,7 @@
 <translation id="6064337552080329342">متأسفانه، گذرواژه شما تأیید نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
 <translation id="6106745654298855237">در حال شارژ کردن <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">‏«دستیار Google» در جلسه مهمان دردسترس نیست.</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
@@ -373,6 +378,7 @@
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="6715542151869432661">هیچ دستگاه همراهی پیدا نشد.</translation>
 <translation id="6723839937902243910">نیرو</translation>
+<translation id="6727969043791803658">متصل، <ph name="BATTERY_PERCENTAGE" />٪ باتری</translation>
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>

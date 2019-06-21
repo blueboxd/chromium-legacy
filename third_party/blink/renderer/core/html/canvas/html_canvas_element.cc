@@ -942,12 +942,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     // If the canvas element's bitmap has no pixels
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(
-            FROM_HERE,
-            WTF::Bind(&V8PersistentCallbackFunction<
-                          V8BlobCallback>::InvokeAndReportException,
-                      WrapPersistent(ToV8PersistentCallbackFunction(callback)),
-                      nullptr, nullptr));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                             WrapPersistent(callback), nullptr, nullptr));
     return;
   }
 
@@ -980,12 +977,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   } else {
     GetDocument()
         .GetTaskRunner(TaskType::kCanvasBlobSerialization)
-        ->PostTask(
-            FROM_HERE,
-            WTF::Bind(&V8PersistentCallbackFunction<
-                          V8BlobCallback>::InvokeAndReportException,
-                      WrapPersistent(ToV8PersistentCallbackFunction(callback)),
-                      nullptr, nullptr));
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&V8BlobCallback::InvokeAndReportException,
+                             WrapPersistent(callback), nullptr, nullptr));
   }
 }
 

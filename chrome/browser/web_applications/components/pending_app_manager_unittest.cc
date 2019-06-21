@@ -12,13 +12,17 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web_app {
 
 class PendingAppManagerTest : public testing::Test {
+ public:
+  PendingAppManagerTest() {}
+
  protected:
   void Sync(std::vector<GURL> urls) {
     pending_app_manager_.ResetCounts();
@@ -49,8 +53,13 @@ class PendingAppManagerTest : public testing::Test {
     EXPECT_EQ(deduped_uninstall_count,
               pending_app_manager_.deduped_uninstall_count());
 
-    std::vector<GURL> urls =
-        pending_app_manager_.GetInstalledAppUrls(InstallSource::kInternal);
+    std::map<AppId, GURL> apps =
+        pending_app_manager_.registrar()->GetExternallyInstalledApps(
+            InstallSource::kInternal);
+    std::vector<GURL> urls;
+    for (auto it : apps)
+      urls.push_back(it.second);
+
     std::sort(urls.begin(), urls.end());
     EXPECT_EQ(installed_app_urls, urls);
   }

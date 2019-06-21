@@ -54,10 +54,11 @@ LayoutMenuList::LayoutMenuList(Element* element)
 
 LayoutMenuList::~LayoutMenuList() = default;
 
-// FIXME: Instead of this hack we should add a ShadowRoot to <select> with no
-// insertion point to prevent children from rendering.
 bool LayoutMenuList::IsChildAllowed(LayoutObject* object,
                                     const ComputedStyle&) const {
+  // For a size=1 <select>, we only render the active option through the
+  // anonymous inner_block_ plus button_text_. We do not allow adding layout
+  // objects for options or optgroups.
   return object->IsAnonymous();
 }
 

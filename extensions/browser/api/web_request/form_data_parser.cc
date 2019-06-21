@@ -210,7 +210,7 @@ class FormDataParserMultipart : public FormDataParser {
 
   // Produces a regexp to match the string "--" + |literal|. The idea is to
   // represent "--" + |literal| as a "quoted pattern", a verbatim copy enclosed
-  // in "\\Q" and "\\E". The only catch is to watch out for occurences of "\\E"
+  // in "\\Q" and "\\E". The only catch is to watch out for occurrences of "\\E"
   // inside |literal|. Those must be excluded from the quote and the backslash
   // doubly escaped. For example, for literal == "abc\\Edef" the result is
   // "\\Q--abc\\E\\\\E\\Qdef\\E".

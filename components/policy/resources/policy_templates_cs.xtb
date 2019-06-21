@@ -2481,6 +2481,10 @@ Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit auto
       Zapnutí této možnost se nedoporučuje, protože může umožnit obejití rozšíření nameConstraints, jež omezuje názvy hostitelů, pro které může být certifikát autorizován.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, certifikáty serverů bez rozšíření subjectAlternativeName, které obsahují buď název DNS nebo IP adresu, nebudou považovány za důvěryhodné.</translation>
+<translation id="5578571772998293651">Povolit zpětnou vazbu od uživatelů.
+        Pokud je tato zásada nastavená na hodnotu false, uživatelé nemohou odesílat zpětnou vazbu do Googlu.
+
+        Pokud tato zásada není nastavená nebo je nastavená na hodnotu true, uživatelé mohou odesílat zpětnou vazbu do Googlu pomocí možností Nabídka -&gt; Nápověda -&gt; Nahlásit problém nebo pomocí klávesové kombinace.</translation>
 <translation id="5581292529942108810">Konfiguruje zásady související s rozšířením Chrome Reporting.
 
       Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3841,6 +3845,7 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
       Není-li zásada nastavena, nebudou ze zásady URLBlacklist učiněny žádné výjimky.</translation>
 <translation id="8176035528522326671">Povolit firemnímu uživateli být pouze primárním uživatelem s více profily (výchozí chování pro uživatele spravované firmou)</translation>
 <translation id="8183108371184777472">Potlačit spuštění okna prohlížeče</translation>
+<translation id="8186911565834244165">Povolit zpětnou vazbu od uživatelů</translation>
 <translation id="8214600119442850823">Konfiguruje správce hesel.</translation>
 <translation id="8217516105848565518">Podpora této zásady byla ukončena. Použijte namísto ní zásadu RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Povolit v TLS šifrovací sady RC4</translation>
@@ -4250,6 +4255,12 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9112897538922695510">Umožňuje zaregistrovat seznam obslužných nástrojů protokolů. Tato zásada může být pouze doporučena. Vlastnost |protocol| musí být nastavena na schéma jako „mailto“ a vlastnost |url| musí být nastavena na vzorec adresy URL aplikace, která schéma zpracovává. Vzorec může obsahovat specifikátor „%s“, který (bude-li zadán) bude nahrazen zpracovanou adresou URL.
 
           Obslužné nástroje protokolů zaregistrované pomocí této zásady budou sloučeny s obslužnými nástroji zaregistrovanými uživatelem a k dispozici budou všechny. Obslužné nástroje protokolů nainstalované zásadou může uživatel přepsat tím, že nainstaluje nový výchozí obslužný nástroj, avšak nemůže je odstranit.</translation>
+<translation id="91196902572559194">Tato zásada dává Asistentovi Google oprávnění naslouchat hlasové aktivační frázi.
+
+      Pokud je tato zásada zapnutá, Asistent Google bude naslouchat hlasové aktivační frázi.
+      Pokud je tato zásada vypnutá, Asistent Google hlasové aktivační frázi naslouchat nebude.
+      Pokud tato zásada není nastavená, uživatelé se mohou rozhodnout, zda Asistentovi Google naslouchání hlasové aktivační frázi povolí.
+      </translation>
 <translation id="9123211093995421438">Určuje minimální počet milníků systému <ph name="PRODUCT_OS_NAME" />, o které má být povoleno vrátit se ze stabilní verze kdykoliv zpět.
 
       Výchozí nastavení je u spotřebitelů 0 a u zaregistrovaných podnikových zařízení 4 (přibližně půl roku).

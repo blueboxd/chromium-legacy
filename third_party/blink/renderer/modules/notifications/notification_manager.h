@@ -95,8 +95,7 @@ class NotificationManager final
 
   void OnPermissionRequestComplete(
       ScriptPromiseResolver* resolver,
-      V8PersistentCallbackFunction<V8NotificationPermissionCallback>*
-          deprecated_callback,
+      V8NotificationPermissionCallback* deprecated_callback,
       mojom::blink::PermissionStatus status);
 
   void OnNotificationServiceConnectionError();

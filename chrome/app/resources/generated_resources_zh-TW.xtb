@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">登入錯誤</translation>
 <translation id="1887597546629269384">再說一次「Hey Google」</translation>
 <translation id="1887850431809612466">硬體版本</translation>
-<translation id="1889984860246851556">開啟 Proxy 設定</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">開啟全螢幕</translation>
 <translation id="189358972401248634">其他語言</translation>
@@ -1315,7 +1314,6 @@
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2973324205039581528">關閉網站音訊</translation>
 <translation id="2977480621796371840">從群組中移除</translation>
-<translation id="2979128960948974571">這可能需要幾分鐘的時間。</translation>
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981113813906970160">顯示大型滑鼠游標</translation>
 <translation id="2982970937345031">以匿名方式傳送意見</translation>
@@ -1534,7 +1532,6 @@
 <translation id="3319048459796106952">新增無痕式視窗(&amp;I)</translation>
 <translation id="3323521181261657960">恭喜！你的裝置使用時間增加了</translation>
 <translation id="3325910708063135066">已關閉 Mac 系統偏好設定中的攝影機和麥克風</translation>
-<translation id="3330615614570718993">如要在這個裝置上啟用 Plugin VM，請與你的管理員聯絡。</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">應用程式資訊</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - 正在使用子母畫面模式播放影片</translation>
@@ -1626,7 +1623,6 @@
 <translation id="346431825526753">這是由 <ph name="CUSTODIAN_EMAIL" /> 所管理的兒童專用帳戶。</translation>
 <translation id="3468275649641751422">串流播放影片或音訊檔案</translation>
 <translation id="3468999815377931311">Android 手機</translation>
-<translation id="3470248707805984963">發生錯誤，請再試一次。</translation>
 <translation id="3470442499439619530">移除這個使用者</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="3475843873335999118">很抱歉，系統仍然無法辨識你的指紋。請輸入你的密碼。</translation>
@@ -1739,7 +1735,6 @@
 <translation id="3629631988386925734">輸入密碼即可啟用 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" />.解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="3630132874740063857">你的電話號碼</translation>
 <translation id="3630995161997703415">請將這個網站加入檔案櫃，以便隨時使用</translation>
-<translation id="3635256809897331115">點選或輕觸 [啟動] 即可使用 Plugin VM。日後只要選取啟動器中的圖示即可啟動 Plugin VM。</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，你好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 還可以使用 <ph name="TIME" /></translation>
 <translation id="3637682276779847508">如果無法輸入正確的 PIN 解鎖金鑰，SIM 卡會遭到永久停用。</translation>
@@ -1954,7 +1949,6 @@
 <translation id="3916445069167113093">這種類型的檔案可能會損害你的電腦，你要保留 <ph name="FILE_NAME" /> 這個檔案嗎？</translation>
 <translation id="3918972485393593704">向 Google 回報詳細資料</translation>
 <translation id="3919145445993746351">如要在所有電腦上使用你的擴充功能，請開啟同步功能</translation>
-<translation id="391999873395511996">正在下載虛擬機器。</translation>
 <translation id="3920504717067627103">憑證原則</translation>
 <translation id="392089482157167418">啟用 ChromeVox (互動朗讀)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2910,7 +2904,6 @@
 <translation id="5449551289610225147">密碼無效</translation>
 <translation id="5449588825071916739">將所有分頁加入書籤</translation>
 <translation id="5449716055534515760">關閉視窗(&amp;D)</translation>
-<translation id="5453630479789469584">無法設定 Plugin VM</translation>
 <translation id="5454166040603940656">提供者：<ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">翻譯目標語言</translation>
 <translation id="5457113250005438886">無效</translation>
@@ -4829,7 +4822,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> 儲存在本機的資料</translation>
 <translation id="833986336429795709">請選擇要用來開啟這個連結的應用程式</translation>
 <translation id="8342861492835240085">選取集合</translation>
-<translation id="8343187330304787218">管理在 <ph name="DEVICE_TYPE" /> 上執行 Plugin VM 的設定</translation>
 <translation id="8343956361364550006">使用高頻寬即可享有最佳畫質和動畫效果。其他連線速度較慢的使用者可能無法看見你的內容。</translation>
 <translation id="8351419472474436977">你的 Proxy 設定已受到這個擴充功能控制，該擴充功能可變更、中斷、或監視你在網路上的行為。如果你不確定這項變更的發生原因，建議你停用該擴充功能。</translation>
 <translation id="835238322900896202">解除安裝時發生錯誤，請透過終端機解除安裝。</translation>

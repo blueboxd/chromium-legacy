@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">ข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="1887597546629269384">พูดว่า "Hey Google" อีกครั้ง</translation>
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
-<translation id="1889984860246851556">เปิดการตั้งค่าพร็อกซี</translation>
 <translation id="1890674179660343635">&lt;span&gt;รหัส: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">เปิดการแสดงแบบเต็มหน้าจอ</translation>
 <translation id="189358972401248634">ภาษาอื่นๆ</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
 <translation id="2973324205039581528">ปิดเสียงเว็บไซต์</translation>
 <translation id="2977480621796371840">นำออกจากกลุ่ม</translation>
-<translation id="2979128960948974571">อาจใช้เวลาหลายนาที</translation>
 <translation id="2979639724566107830">เปิดในหน้าต่างใหม่</translation>
 <translation id="2981113813906970160">แสดงเคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="2982970937345031">รายงานแบบไม่ระบุตัวตน</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">หน้าต่างใหม่และไม่ระบุตัวตน</translation>
 <translation id="3323521181261657960">โบนัส! คุณได้เวลาอยู่หน้าจอเพิ่มขึ้น</translation>
 <translation id="3325910708063135066">กล้องและไมโครโฟนปิดอยู่ในค่ากำหนดของระบบ Mac</translation>
-<translation id="3330615614570718993">โปรดติดต่อผู้ดูแลระบบเพื่อเปิดใช้ Plugin VM ในอุปกรณ์นี้</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">ข้อมูลแอป</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - วิดีโอกำลังเล่นในโหมดการแสดงภาพซ้อนภาพ</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">นี่เป็นบัญชีสำหรับเด็กที่จัดการโดย <ph name="CUSTODIAN_EMAIL" /></translation>
 <translation id="3468275649641751422">สตรีมวิดีโอหรือไฟล์เสียง</translation>
 <translation id="3468999815377931311">โทรศัพท์ Android</translation>
-<translation id="3470248707805984963">เกิดข้อผิดพลาด โปรดลองอีกครั้ง</translation>
 <translation id="3470442499439619530">ลบผู้ใช้รายนี้</translation>
 <translation id="3473479545200714844">แว่นขยายหน้าจอ</translation>
 <translation id="3475843873335999118">ขออภัย ระบบยังคงไม่รู้จักลายนิ้วมือของคุณ โปรดป้อนรหัสผ่าน</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">ป้อนรหัสผ่านเพื่อเปิดใช้ Smart Lock โทรศัพท์จะปลดล็อก <ph name="DEVICE_TYPE" /> ของคุณในครั้งถัดไป คุณปิด Smart Lock ได้ในการตั้งค่า</translation>
 <translation id="3630132874740063857">โทรศัพท์ของคุณ</translation>
 <translation id="3630995161997703415">เพิ่มเว็บไซต์นี้ลงในชั้นวางเพื่อใช้งานได้ทุกเมื่อ</translation>
-<translation id="3635256809897331115">คลิกหรือแตะ "เปิดใช้" เพื่อใช้ Plugin VM ในอนาคต คุณจะเริ่มต้น Plugin VM ได้โดยเลือกไอคอนใน Launcher</translation>
 <translation id="3636096452488277381">สวัสดี <ph name="USER_GIVEN_NAME" /></translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="3637682276779847508">ระบบจะปิดใช้ซิมการ์ดของคุณโดยถาวรหากคุณไม่สามารถป้อนคีย์ปลดล็อก PIN ที่ถูกต้อง</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">ไฟล์ประเภทนี้อาจเป็นอันตรายต่อคอมพิวเตอร์ของคุณ คุณต้องการเก็บ <ph name="FILE_NAME" /> ไว้หรือไม่</translation>
 <translation id="3918972485393593704">รายงานรายละเอียดให้ Google ทราบ</translation>
 <translation id="3919145445993746351">เปิดการซิงค์เพื่อรับส่วนขยายในคอมพิวเตอร์ทุกเครื่อง</translation>
-<translation id="391999873395511996">กำลังดาวน์โหลดเครื่องเสมือน</translation>
 <translation id="3920504717067627103">นโยบายใบรับรอง</translation>
 <translation id="392089482157167418">เปิดใช้ ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,7 +2906,6 @@
 <translation id="5449551289610225147">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="5449588825071916739">บุ๊กมาร์กแท็บทั้งหมด</translation>
 <translation id="5449716055534515760">ปิดหน้าต่&amp;าง</translation>
-<translation id="5453630479789469584">ตั้งค่า Plugin VM ไม่ได้</translation>
 <translation id="5454166040603940656">กับ <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">ภาษาปลายทาง</translation>
 <translation id="5457113250005438886">ไม่ถูกต้อง</translation>
@@ -4833,7 +4826,6 @@
 <translation id="8339059274628563283">ข้อมูล <ph name="SITE" /> ที่เก็บไว้ในเครื่อง</translation>
 <translation id="833986336429795709">เลือกแอปที่จะเปิดลิงก์นี้</translation>
 <translation id="8342861492835240085">เลือกคอลเล็กชัน</translation>
-<translation id="8343187330304787218">จัดการการตั้งค่าสำหรับเรียกใช้ Plugin VM ใน <ph name="DEVICE_TYPE" /></translation>
 <translation id="8343956361364550006">ใช้แบนด์วิดท์สูงเพื่อให้ได้วิดีโอหรือภาพเคลื่อนไหวที่ดีที่สุด ผู้ที่มีการเชื่อมต่อช้าอาจไม่เห็นเนื้อหาของคุณ</translation>
 <translation id="8351419472474436977">ส่วนขยายนี้ได้เข้าควบคุมการตั้งค่าพร็อกซีของคุณ ซึ่งหมายความว่าส่วนขยายดังกล่าวสามารถเปลี่ยนแปลง ทำลาย หรือดักฟังทุกอย่างที่คุณทำในระบบออนไลน์ได้ หากคุณไม่ทราบที่มาของการเปลี่ยนแปลงนี้ คุณอาจไม่ต้องการให้มีการเปลี่ยนแปลงดังกล่าวเกิดขึ้น</translation>
 <translation id="835238322900896202">เกิดข้อผิดพลาดระหว่างถอนการติดตั้ง โปรดถอนการติดตั้งผ่านเทอร์มินัล</translation>

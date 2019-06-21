@@ -29,7 +29,7 @@ struct InstallOptions {
 
   GURL url;
   LaunchContainer launch_container = LaunchContainer::kTab;
-  InstallSource install_source = InstallSource::kInternal;
+  InstallSource install_source = InstallSource::kInvalid;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
   // Menu on Linux and Windows. On Chrome OS, all installed apps show up in the

@@ -2451,6 +2451,10 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Isso não é recomendado, pois a extensão nameConstraints, que restringe os nomes de host para os quais um determinado certificado pode ser autorizado, pode ser ignorada.
 
       Se esta política não for definida ou for definida como false, os certificados de servidor sem a extensão subjectAlternativeName que contém um nome DNS ou endereço IP não serão confiáveis.</translation>
+<translation id="5578571772998293651">Permita o feedback do usuário.
+        Se a política for definida como falsa, os usuários não poderão enviar feedback para o Google.
+
+        Se a política não for definida ou for definida como verdadeira, os usuários poderão enviar feedback para o Google em "Menu" -&gt; "Ajuda" -&gt; "Informar um problema" ou usando uma combinação de teclas.</translation>
 <translation id="5581292529942108810">Configurar as políticas relacionadas à Chrome Reporting Extension.
 
       Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3803,6 +3807,7 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
       Se esta política não for definida, não haverá exceções para a lista de proibições na política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o usuário corporativo seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
 <translation id="8183108371184777472">Suprimir a inicialização da janela do navegador</translation>
+<translation id="8186911565834244165">Permitir feedback do usuário</translation>
 <translation id="8214600119442850823">Configura o gerenciador de senhas.</translation>
 <translation id="8217516105848565518">O uso desta política foi suspenso. Use RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Ativar pacotes de criptografia RC4 em TLS</translation>
@@ -4233,6 +4238,12 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>
+<translation id="91196902572559194">Esta política concede ao Google Assistente a permissão para ouvir a frase de ativação por voz.
+
+      Se a política for ativada, a frase de ativação por voz será ouvida pelo Google Assistente.
+      Se a política for desativada, a frase de ativação por voz não será ouvida pelo Google Assistente.
+      Se a política não for definida, os usuários poderão decidir se permitem que o Google Assistente ouça a frase de ativação por voz.
+      </translation>
 <translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> em que a reversão deve ser permitida a partir da versão estável a qualquer momento.
 
       O padrão é 0 para o consumidor, 4 (aproximadamente um semestre) para dispositivos inscritos na empresa.

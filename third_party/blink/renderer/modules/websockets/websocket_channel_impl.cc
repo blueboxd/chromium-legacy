@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -657,47 +658,76 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
 
   switch (type) {
     case WebSocketHandle::kMessageTypeText:
-      DCHECK(receiving_message_data_.IsEmpty());
+      DCHECK(!receiving_message_data_);
       receiving_message_type_is_text_ = true;
       break;
     case WebSocketHandle::kMessageTypeBinary:
-      DCHECK(receiving_message_data_.IsEmpty());
+      DCHECK(!receiving_message_data_);
       receiving_message_type_is_text_ = false;
       break;
     case WebSocketHandle::kMessageTypeContinuation:
-      DCHECK(!receiving_message_data_.IsEmpty());
+      DCHECK(receiving_message_data_);
       break;
   }
 
-  receiving_message_data_.Append(data, SafeCast<uint32_t>(size));
   received_data_size_for_flow_control_ += size;
   AddReceiveFlowControlIfNecessary();
-  if (!fin) {
+
+  const size_t message_size_so_far =
+      (receiving_message_data_ ? receiving_message_data_->size() : 0) + size;
+  if (message_size_so_far > std::numeric_limits<wtf_size_t>::max()) {
+    receiving_message_data_ = nullptr;
+    FailAsError("Message size is too large.");
     return;
+  }
+
+  if (!fin) {
+    if (!receiving_message_data_) {
+      receiving_message_data_ = SharedBuffer::Create();
+    }
+    receiving_message_data_->Append(data, size);
+    return;
+  }
+
+  const wtf_size_t message_size = static_cast<wtf_size_t>(message_size_so_far);
+  Vector<base::span<const char>> chunks;
+  if (receiving_message_data_) {
+    chunks.AppendRange(receiving_message_data_->begin(),
+                       receiving_message_data_->end());
+  }
+  if (size > 0) {
+    chunks.push_back(base::make_span(data, size));
   }
   auto opcode = receiving_message_type_is_text_
                     ? WebSocketOpCode::kOpCodeText
                     : WebSocketOpCode::kOpCodeBinary;
   probe::DidReceiveWebSocketMessage(execution_context_, identifier_, opcode,
-                                    false, receiving_message_data_.data(),
-                                    receiving_message_data_.size());
+                                    false, chunks);
+
   if (receiving_message_type_is_text_) {
-    String message = receiving_message_data_.IsEmpty()
-                         ? g_empty_string
-                         : String::FromUTF8(receiving_message_data_.data(),
-                                            receiving_message_data_.size());
-    receiving_message_data_.clear();
+    Vector<char> flatten;
+    base::span<const char> span;
+    if (chunks.size() > 1) {
+      flatten.ReserveCapacity(message_size);
+      for (const auto& chunk : chunks) {
+        flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
+      }
+      span = base::make_span(flatten.data(), flatten.size());
+    } else if (chunks.size() == 1) {
+      span = chunks[0];
+    }
+    String message = span.size() > 0
+                         ? String::FromUTF8(span.data(), span.size())
+                         : g_empty_string;
     if (message.IsNull()) {
       FailAsError("Could not decode a text frame as UTF-8.");
     } else {
       client_->DidReceiveTextMessage(message);
     }
   } else {
-    std::unique_ptr<Vector<char>> binary_data =
-        std::make_unique<Vector<char>>();
-    binary_data->swap(receiving_message_data_);
-    client_->DidReceiveBinaryMessage(std::move(binary_data));
+    client_->DidReceiveBinaryMessage(chunks);
   }
+  receiving_message_data_ = nullptr;
 }
 
 void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,

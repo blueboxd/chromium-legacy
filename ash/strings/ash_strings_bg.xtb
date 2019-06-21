@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Превключване на връзката с мрежа. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Превъртане надясно</translation>
 <translation id="1812997170047690955">Какво има на екрана ми?</translation>
+<translation id="1820355135508821526">Функцията „<ph name="FEATURE_NAME" />“ е деактивирана от правило, приложено на това устройство. Моля, обърнете се към администратора си, за да заявите промени.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Рестартирайте, за да актуализирате</translation>
 <translation id="2597972630681408282">Нощно осветление: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картата е заключена</translation>
+<translation id="2651765386227849097">Функцията Google Асистент е деактивирана на това устройство.</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2658778018866295321">Кликване и преместване с плъзгане</translation>
 <translation id="2700493154570097719">Задайте клавиатура</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Батерията е пълна.</translation>
 <translation id="490375751687810070">Вертикална ориентация</translation>
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% батерия</translation>
 <translation id="4917385247580444890">Силен</translation>
 <translation id="4918086044614829423">Приемам</translation>
 <translation id="4924411785043111640">Рестартиране и нулиране</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Жак за микрофон</translation>
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
+<translation id="5682642926269496722">Google Асистент не се поддържа за текущия профил на потребител.</translation>
 <translation id="5691772641933328258">Отпечатъкът не бе разпознат</translation>
 <translation id="5710450975648804523">Режимът „Не безпокойте“ е включен</translation>
 <translation id="574392208103952083">Среден</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">За съжаление, паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Зарежда се <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google Асистент не се поддържа по време на сесия като гост.</translation>
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6164005077879661055">Всички файлове и локални данни, свързани с контролирания потребител, ще бъдат изтрити за постоянно, щом той бъде премахнат. Посетените уебсайтове и настройките за него може все още да се виждат от мениджъра на адрес <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Научете повече</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6715542151869432661">Няма намерени мобилни устройства.</translation>
 <translation id="6723839937902243910">Захранване</translation>
+<translation id="6727969043791803658">Свързано, <ph name="BATTERY_PERCENTAGE" />% батерия</translation>
 <translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
 <translation id="6790428901817661496">Пускане</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>

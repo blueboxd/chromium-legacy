@@ -238,6 +238,12 @@ std::unique_ptr<WebUsbAllowDevicesForUrlsPolicyHandler> CreateHandler(
       chrome_schema);
 }
 
+std::unique_ptr<base::Value> ReadJson(base::StringPiece json) {
+  base::Optional<base::Value> value = base::JSONReader::Read(json);
+  EXPECT_TRUE(value);
+  return value ? base::Value::ToUniquePtrValue(std::move(*value)) : nullptr;
+}
+
 }  // namespace
 
 class WebUsbAllowDevicesForUrlsPolicyHandlerTest
@@ -273,8 +279,8 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, CheckPolicySettings) {
 
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
-             PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(kValidPolicy), nullptr);
+             PolicySource::POLICY_SOURCE_CLOUD, ReadJson(kValidPolicy),
+             nullptr);
   ASSERT_TRUE(errors.empty());
   EXPECT_TRUE(handler()->CheckPolicySettings(policy, &errors));
   EXPECT_TRUE(errors.empty());
@@ -285,20 +291,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidTopLevelEntry),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidTopLevelEntry), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[1]\": Missing or invalid required "
       "property: devices");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -306,20 +311,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMissingDevicesProperty),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMissingDevicesProperty), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0]\": Missing or invalid required "
       "property: devices");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -327,20 +331,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMissingUrlsProperty),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMissingUrlsProperty), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0]\": Missing or invalid required "
       "property: urls");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -348,18 +351,18 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyUnknownProperty), nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyUnknownProperty), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_TRUE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"(ROOT)\": Unknown property: serialNumber");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -367,20 +370,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMismatchedVendorIdType),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMismatchedVendorIdType), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": The "
       "vendor_id must be an unsigned short integer");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -388,20 +390,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMismatchedProductIdType),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMismatchedProductIdType), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": The "
       "product_id must be an unsigned short integer");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -409,20 +410,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyProductIdWithoutVendorId),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyProductIdWithoutVendorId), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": A vendor_id "
       "must also be specified");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -430,20 +430,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidRequestingUrl),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidRequestingUrl), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].urls.items[0]\": The urls item "
       "must contain valid URLs");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -451,20 +450,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   PolicyMap policy;
   PolicyErrorMap errors;
 
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidEmbeddingUrl),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidEmbeddingUrl), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].urls.items[0]\": The urls item "
       "must contain valid URLs");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -475,17 +473,16 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
              PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidUrlsEntry),
-             nullptr);
+             ReadJson(kInvalidPolicyInvalidUrlsEntry), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].urls.items[0]\": Each urls "
       "string entry must contain between 1 to 2 URLs");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -495,17 +492,17 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
-             PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(InvalidPolicyNoUrls), nullptr);
+             PolicySource::POLICY_SOURCE_CLOUD, ReadJson(InvalidPolicyNoUrls),
+             nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(1ul, errors.size());
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].urls.items[0]\": Each urls "
       "string entry must contain between 1 to 2 URLs");
-  EXPECT_EQ(errors.GetErrors(policy_name_), kExpected);
+  EXPECT_EQ(kExpected, errors.GetErrors(policy_name_));
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
@@ -514,8 +511,8 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   PolicyMap policy;
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
-             PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(kValidPolicy), nullptr);
+             PolicySource::POLICY_SOURCE_CLOUD, ReadJson(kValidPolicy),
+             nullptr);
   UpdateProviderPolicy(policy);
 
   const base::Value* pref_value = nullptr;
@@ -525,26 +522,26 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
 
   // Ensure that the kManagedWebUsbAllowDevicesForUrls pref is set correctly.
   const auto& list = pref_value->GetList();
-  ASSERT_EQ(list.size(), 2ul);
+  ASSERT_EQ(2ul, list.size());
 
   // Check the first item's devices list.
   const base::Value* devices = list[0].FindKey(kDevicesKey);
   ASSERT_TRUE(devices);
 
   const auto& first_devices_list = devices->GetList();
-  ASSERT_EQ(first_devices_list.size(), 2ul);
+  ASSERT_EQ(2ul, first_devices_list.size());
 
   const base::Value* vendor_id = first_devices_list[0].FindKey(kVendorIdKey);
   ASSERT_TRUE(vendor_id);
-  EXPECT_EQ(vendor_id->GetInt(), 1234);
+  EXPECT_EQ(1234, vendor_id->GetInt());
 
   const base::Value* product_id = first_devices_list[0].FindKey(kProductIdKey);
   ASSERT_TRUE(product_id);
-  EXPECT_EQ(product_id->GetInt(), 5678);
+  EXPECT_EQ(5678, product_id->GetInt());
 
   vendor_id = first_devices_list[1].FindKey(kVendorIdKey);
   ASSERT_TRUE(vendor_id);
-  EXPECT_EQ(vendor_id->GetInt(), 4321);
+  EXPECT_EQ(4321, vendor_id->GetInt());
 
   product_id = first_devices_list[1].FindKey(kProductIdKey);
   EXPECT_FALSE(product_id);
@@ -554,19 +551,19 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(urls);
 
   const auto& first_urls_list = urls->GetList();
-  ASSERT_EQ(first_urls_list.size(), 2ul);
+  ASSERT_EQ(2ul, first_urls_list.size());
   ASSERT_TRUE(first_urls_list[0].is_string());
   ASSERT_TRUE(first_urls_list[1].is_string());
-  EXPECT_EQ(first_urls_list[0].GetString(),
-            "https://google.com,https://google.com");
-  EXPECT_EQ(first_urls_list[1].GetString(), "https://www.youtube.com");
+  EXPECT_EQ("https://google.com,https://google.com",
+            first_urls_list[0].GetString());
+  EXPECT_EQ("https://www.youtube.com", first_urls_list[1].GetString());
 
   // Check the second item's devices list.
   devices = list[1].FindKey(kDevicesKey);
   ASSERT_TRUE(devices);
 
   const auto& second_devices_list = devices->GetList();
-  ASSERT_EQ(second_devices_list.size(), 1ul);
+  ASSERT_EQ(1ul, second_devices_list.size());
 
   vendor_id = second_devices_list[0].FindKey(kVendorIdKey);
   EXPECT_FALSE(vendor_id);
@@ -579,9 +576,9 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(urls);
 
   const auto& second_urls_list = urls->GetList();
-  ASSERT_EQ(second_urls_list.size(), 1ul);
+  ASSERT_EQ(1ul, second_urls_list.size());
   ASSERT_TRUE(second_urls_list[0].is_string());
-  EXPECT_EQ(second_urls_list[0].GetString(), "https://chromium.org,");
+  EXPECT_EQ("https://chromium.org,", second_urls_list[0].GetString());
 }
 
 TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -589,11 +586,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidTopLevelEntry),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidTopLevelEntry), nullptr);
   UpdateProviderPolicy(policy);
 
   const base::Value* pref_value = nullptr;
@@ -606,11 +602,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMissingDevicesProperty),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMissingDevicesProperty), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -622,11 +617,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMissingUrlsProperty),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMissingUrlsProperty), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -638,18 +632,17 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyUnknownProperty), nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyUnknownProperty), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_TRUE(store_->GetValue(pref_name_, &pref_value));
   EXPECT_TRUE(pref_value);
 
-  base::Optional<base::Value> expected_pref_value =
-      base::JSONReader::Read(kInvalidPolicyUnknownPropertyAfterCleanup);
-  ASSERT_TRUE(expected_pref_value);
+  std::unique_ptr<base::Value> expected_pref_value =
+      ReadJson(kInvalidPolicyUnknownPropertyAfterCleanup);
   EXPECT_EQ(*expected_pref_value, *pref_value);
 }
 
@@ -658,11 +651,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMismatchedVendorIdType),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMismatchedVendorIdType), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -674,11 +666,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyMismatchedProductIdType),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyMismatchedProductIdType), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -690,11 +681,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyProductIdWithoutVendorId),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyProductIdWithoutVendorId), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -706,11 +696,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidRequestingUrl),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidRequestingUrl), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -722,11 +711,10 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_FALSE(store_->GetValue(pref_name_, nullptr));
 
   PolicyMap policy;
-  policy.Set(
-      policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
-      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidEmbeddingUrl),
-      nullptr);
+  policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
+             PolicyScope::POLICY_SCOPE_MACHINE,
+             PolicySource::POLICY_SOURCE_CLOUD,
+             ReadJson(kInvalidPolicyInvalidEmbeddingUrl), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -741,8 +729,7 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
              PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(kInvalidPolicyInvalidUrlsEntry),
-             nullptr);
+             ReadJson(kInvalidPolicyInvalidUrlsEntry), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));
@@ -755,8 +742,8 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettingsNoUrls) {
   PolicyMap policy;
   policy.Set(policy_name_, PolicyLevel::POLICY_LEVEL_MANDATORY,
              PolicyScope::POLICY_SCOPE_MACHINE,
-             PolicySource::POLICY_SOURCE_CLOUD,
-             base::JSONReader::ReadDeprecated(InvalidPolicyNoUrls), nullptr);
+             PolicySource::POLICY_SOURCE_CLOUD, ReadJson(InvalidPolicyNoUrls),
+             nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(store_->GetValue(pref_name_, &pref_value));

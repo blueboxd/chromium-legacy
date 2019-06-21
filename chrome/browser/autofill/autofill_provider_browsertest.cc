@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/test_autofill_provider.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/submission_source.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -29,6 +29,9 @@ using ::testing::_;
 using ::testing::Invoke;
 
 namespace autofill {
+
+using mojom::SubmissionSource;
+
 namespace {
 
 class MockAutofillProvider : public TestAutofillProvider {

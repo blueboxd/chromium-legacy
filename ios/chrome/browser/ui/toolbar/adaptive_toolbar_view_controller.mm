@@ -91,14 +91,14 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   // Adds the layout guide to the buttons.
   self.view.toolsMenuButton.guideName = kToolsMenuGuide;
   self.view.tabGridButton.guideName = kTabSwitcherGuide;
-  self.view.omniboxButton.guideName = kSearchButtonGuide;
+  self.view.searchButton.guideName = kSearchButtonGuide;
   self.view.forwardButton.guideName = kForwardButtonGuide;
   self.view.backButton.guideName = kBackButtonGuide;
 
   // Add navigation popup menu triggers.
   [self addLongPressGestureToView:self.view.backButton];
   [self addLongPressGestureToView:self.view.forwardButton];
-  [self addLongPressGestureToView:self.view.omniboxButton];
+  [self addLongPressGestureToView:self.view.searchButton];
   [self addLongPressGestureToView:self.view.tabGridButton];
   [self addLongPressGestureToView:self.view.toolsMenuButton];
 
@@ -217,7 +217,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 }
 
 - (void)setSearchIcon:(UIImage*)searchIcon {
-  [self.view.omniboxButton setImage:searchIcon forState:UIControlStateNormal];
+  [self.view.searchButton setImage:searchIcon forState:UIControlStateNormal];
 }
 
 #pragma mark - NewTabPageControllerDelegate
@@ -249,7 +249,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
       selectedButton = self.view.backButton;
       break;
     case PopupMenuTypeSearch:
-      selectedButton = self.view.omniboxButton;
+      selectedButton = self.view.searchButton;
       break;
     case PopupMenuTypeTabGrid:
       selectedButton = self.view.tabGridButton;
@@ -272,7 +272,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 - (void)updateUIForMenuDismissed {
   self.view.backButton.spotlighted = NO;
   self.view.forwardButton.spotlighted = NO;
-  self.view.omniboxButton.spotlighted = NO;
+  self.view.searchButton.spotlighted = NO;
   self.view.tabGridButton.spotlighted = NO;
   self.view.toolsMenuButton.spotlighted = NO;
 
@@ -344,7 +344,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 - (void)addStandardActionsForAllButtons {
   for (ToolbarButton* button in self.view.allButtons) {
     if (button != self.view.toolsMenuButton &&
-        button != self.view.omniboxButton) {
+        button != self.view.searchButton) {
       [button addTarget:self.dispatcher
                     action:@selector(cancelOmniboxEdit)
           forControlEvents:UIControlEventTouchUpInside];
@@ -376,7 +376,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
     base::RecordAction(base::UserMetricsAction("MobileToolbarShowStackView"));
   } else if (sender == self.view.shareButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
-  } else if (sender == self.view.omniboxButton) {
+  } else if (sender == self.view.searchButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarOmniboxShortcut"));
   } else {
     NOTREACHED();
@@ -400,7 +400,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
       [self.dispatcher showNavigationHistoryBackPopupMenu];
     } else if (gesture.view == self.view.forwardButton) {
       [self.dispatcher showNavigationHistoryForwardPopupMenu];
-    } else if (gesture.view == self.view.omniboxButton) {
+    } else if (gesture.view == self.view.searchButton) {
       [self.dispatcher showSearchButtonPopup];
     } else if (gesture.view == self.view.tabGridButton) {
       [self.dispatcher showTabGridButtonPopup];

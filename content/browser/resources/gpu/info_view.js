@@ -123,13 +123,11 @@ cr.define('gpu', function() {
         if (gpuInfo.featureStatus) {
           this.appendFeatureInfo_(
               gpuInfo.featureStatus, featureStatusList, problemsDiv,
-              problemsList, workaroundsDiv, workaroundsList, ANGLEFeaturesDiv,
-              ANGLEFeaturesList);
+              problemsList, workaroundsDiv, workaroundsList);
         } else {
           featureStatusList.textContent = '';
           problemsList.hidden = true;
           workaroundsList.hidden = true;
-          ANGLEFeaturesList.hidden = true;
         }
 
         if (gpuInfo.featureStatusForHardwareGpu) {
@@ -186,6 +184,20 @@ cr.define('gpu', function() {
           this.setTable_('video-acceleration-info', []);
         }
 
+        if (gpuInfo.ANGLEFeatures) {
+          if (gpuInfo.ANGLEFeatures.length) {
+            ANGLEFeaturesDiv.hidden = false;
+            ANGLEFeaturesList.textContent = '';
+            for (i = 0; i < gpuInfo.ANGLEFeatures.length; i++) {
+              const ANGLEFeature = gpuInfo.ANGLEFeatures[i];
+              const ANGLEFeatureEl = this.createANGLEFeatureEl_(ANGLEFeature);
+              ANGLEFeaturesList.appendChild(ANGLEFeatureEl);
+            }
+          } else {
+            ANGLEFeaturesDiv.hidden = true;
+          }
+        }
+
         if (gpuInfo.diagnostics) {
           diagnosticsDiv.hidden = false;
           diagnosticsLoadingDiv.hidden = true;
@@ -214,7 +226,7 @@ cr.define('gpu', function() {
 
     appendFeatureInfo_: function(
         featureInfo, featureStatusList, problemsDiv, problemsList,
-        workaroundsDiv, workaroundsList, ANGLEFeaturesDiv, ANGLEFeaturesList) {
+        workaroundsDiv, workaroundsList) {
       // Feature map
       const featureLabelMap = {
         '2d_canvas': 'Canvas',
@@ -320,18 +332,6 @@ cr.define('gpu', function() {
         }
       } else {
         workaroundsDiv.hidden = true;
-      }
-
-      if (featureInfo.ANGLEFeatures.length) {
-        ANGLEFeaturesDiv.hidden = false;
-        ANGLEFeaturesList.textContent = '';
-        for (i = 0; i < featureInfo.ANGLEFeatures.length; i++) {
-          const ANGLEFeature = featureInfo.ANGLEFeatures[i];
-          const ANGLEFeatureEl = this.createANGLEFeatureEl_(ANGLEFeature);
-          ANGLEFeaturesList.appendChild(ANGLEFeatureEl);
-        }
-      } else {
-        ANGLEFeaturesDiv.hidden = true;
       }
     },
 

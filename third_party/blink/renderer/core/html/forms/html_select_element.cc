@@ -106,6 +106,9 @@ HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
 bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
+  // Even if options/optgroups are not rendered as children of LayoutMenuList,
+  // we still need to add them to the flat tree through slotting since we need
+  // their ComputedStyle for popup rendering.
   return node.HasTagName(kOptionTag) || node.HasTagName(kOptgroupTag) ||
          node.HasTagName(kHrTag);
 }

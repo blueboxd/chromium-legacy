@@ -267,13 +267,6 @@ crbug.com/853977 [ Linux ] virtual/blink-cors/http/tests/fetch/chromium/response
 crbug.com/853977 [ Linux ] virtual/blink-cors/http/tests/fetch/chromium/response-text-gc-crash.html [ Slow ]
 crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
 crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/response-array-buffer-gc-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/response-blob-gc-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/response-form-data-gc-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/response-json-gc-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streams-native/http/tests/fetch/chromium/response-text-gc-crash.html [ Slow ]
 
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
 
@@ -617,23 +610,6 @@ crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mouse
 crbug.com/914981 [ Mac ] fast/events/no-fake-mousemove.html [ Slow ]
 
 crbug.com/951895 [ Mac Debug ] transforms/2d/transform-2d.html [ Slow ]
-
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker/body-mixin-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker/body-mixin.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker/stream-reader-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker/stream-reader.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker/thorough/ [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/serviceworker-proxied/thorough/ [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/window/body-mixin-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/window/body-mixin.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/window/stream-reader-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/window/stream-reader.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/window/thorough/ [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/body-mixin-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/body-mixin.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/stream-reader-base-https-other-https.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/stream-reader.html [ Slow ]
-crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/thorough/ [ Slow ]
 
 crbug.com/962831 [ Release ] http/tests/devtools/network/preview-searchable.js [ Slow ]
 

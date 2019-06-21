@@ -18,6 +18,9 @@ namespace web_app {
 
 class TestInstallFinalizer final : public InstallFinalizer {
  public:
+  // Returns what would be the AppId if an app is installed with |url|.
+  static AppId GetAppIdForUrl(const GURL& url);
+
   TestInstallFinalizer();
   ~TestInstallFinalizer() override;
 

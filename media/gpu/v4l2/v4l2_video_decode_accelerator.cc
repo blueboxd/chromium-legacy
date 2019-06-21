@@ -2431,23 +2431,32 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
            : ImageProcessor::OutputMode::IMPORT);
   size_t num_planes =
       V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
-  // It is necessary to set strides and buffers even with dummy values,
-  // because VideoFrameLayout::num_buffers() specifies if
-  // |output_format_fourcc_| is single- or multi-planar.
-  auto input_layout = VideoFrameLayout::CreateWithStrides(
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-      coded_size_, std::vector<int32_t>(num_planes) /* strides */,
-      std::vector<size_t>(num_planes) /* buffers */);
+  base::Optional<VideoFrameLayout> input_layout;
+  if (num_planes == 1) {
+    input_layout = VideoFrameLayout::Create(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+        coded_size_);
+  } else {
+    input_layout = VideoFrameLayout::CreateMultiPlanar(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+        coded_size_, std::vector<VideoFrameLayout::Plane>(num_planes));
+  }
   if (!input_layout) {
     VLOGF(1) << "Invalid input layout";
     return false;
   }
 
+  base::Optional<VideoFrameLayout> output_layout;
   num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(egl_image_format_fourcc_);
-  auto output_layout = VideoFrameLayout::CreateWithStrides(
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
-      egl_image_size_, std::vector<int32_t>(num_planes) /* strides */,
-      std::vector<size_t>(num_planes) /* buffers */);
+  if (num_planes == 1) {
+    output_layout = VideoFrameLayout::Create(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
+        egl_image_size_);
+  } else {
+    output_layout = VideoFrameLayout::CreateMultiPlanar(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
+        egl_image_size_, std::vector<VideoFrameLayout::Plane>(num_planes));
+  }
   if (!output_layout) {
     VLOGF(1) << "Invalid output layout";
     return false;

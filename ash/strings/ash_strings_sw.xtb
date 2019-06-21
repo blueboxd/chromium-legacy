@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Washa au uzime muunganisho wa mtandao. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Sogeza kulia</translation>
 <translation id="1812997170047690955">Kuna nini kwenye skrini yangu?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> imezimwa na sera inayotumika kwenye kifaa hiki. Tafadhali wasiliana na msimamizi wako ili uombe mabadiliko.</translation>
 <translation id="1823873187264960516">Ethaneti: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Mratibu (inapakia...)</translation>
 <translation id="1850504506766569011">Wi-Fi imezimwa.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Zima kisha uwashe ili usasishe</translation>
 <translation id="2597972630681408282">Mwanga wa Usiku: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kadi imefungwa</translation>
+<translation id="2651765386227849097">Programu ya Mratibu wa Google imezimwa kwenye kifaa hiki.</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2658778018866295321">Bofya na uburute</translation>
 <translation id="2700493154570097719">Weka kibodi yako</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Betri imejaa.</translation>
 <translation id="490375751687810070">Wima</translation>
 <translation id="4905614135390995787">Njia ya mkato ya kugeuza Hali ya Utofautishaji wa Juu imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Kiasi cha chaji ni <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Thabiti</translation>
 <translation id="4918086044614829423">Kubali</translation>
 <translation id="4924411785043111640">Zima kisha uwashe na uweke upya</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Pini ya maikrofoni</translation>
 <translation id="5669267381087807207">Inaamilisha</translation>
 <translation id="5673434351075758678">Imebadalisha lugha kutoka "<ph name="FROM_LOCALE" />" kuwa "<ph name="TO_LOCALE" />" baada ya kusawazisha mipangilio yako.</translation>
+<translation id="5682642926269496722">Programu ya Mratibu wa Google haipatikani katika akaunti ya mtumiaji wa sasa.</translation>
 <translation id="5691772641933328258">Haikutambua alama ya kidole</translation>
 <translation id="5710450975648804523">Umewasha kipengele cha Usinisumbue</translation>
 <translation id="574392208103952083">Wastani</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Samahani, tumeshindwa kuthibitisha nenosiri lako. Tafadhali jaribu tena.</translation>
 <translation id="607652042414456612">Kompyuta yako inaweza kutambuliwa na vifaa vyenye Bluetooth vilivyo karibu na itaonekana kama  "<ph name="NAME" />" ikiwa na anwani ya <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Inachaji <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Programu ya Mratibu wa Google haipatikani katika kipindi cha mgeni.</translation>
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6164005077879661055">Faili zote na data ya ndani zinazohusishwa na mtumiaji anayesimamiwa zitafutwa kabisa mtumiaji huyu anayesimamiwa atakapoondolewa. Tovuti zilizotembelewa na mipangilio ya mtumiaji huyu anayesimamiwa inaweza bado kuonekana na msimamizi katika <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
 <translation id="6715542151869432661">Hakuna vifaa vya mkononi vilivyopatikana.</translation>
 <translation id="6723839937902243910">Nishati</translation>
+<translation id="6727969043791803658">Imeunganishwa, kiasi cha chaji ni <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Kipengele cha ufuatiliaji wa utendaji kimewashwa</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>

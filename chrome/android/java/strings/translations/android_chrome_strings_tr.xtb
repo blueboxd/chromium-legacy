@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Arama yapın ve keşfedin</translation>
 <translation id="1264974993859112054">Spor</translation>
 <translation id="1272079795634619415">Durdur</translation>
-<translation id="1272444412400969138">Sekmenin paylaşılacağı cihazı seçme aracı</translation>
 <translation id="1283039547216852943">Genişletmek için dokunun</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="1291207594882862231">Geçmişi, çerezleri, site verilerini, önbelleği temizleyin…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">Belirli bir site için çerezlere izin verin.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# sa.}other{# sa.}}</translation>
 <translation id="4042870126885713738">Bir web adresi çözümlenemezse veya bağlantı yapılamazsa öneriler göster</translation>
-<translation id="4044912625106523635">Sekme paylaşmak için cihaz seçici, tam yükseklikte açıldı.</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
 <translation id="4048707525896921369">Sayfadan ayrılmadan web siteleriyle ilgili konuları öğrenin. Dokun ve Ara özelliği seçilen kelimeyi, çevresindeki içerikle birlikte Google Arama'ya gönderir ve karşılığında ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntıları döndürür.
 
@@ -747,7 +745,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6406506848690869874">Senkronizasyon</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB indirildi</translation>
-<translation id="6418750371676080905">Sekme paylaşılacak cihazı seçme aracı kapalı.</translation>
 <translation id="6427112570124116297">Web'i çevir</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>
 <translation id="6437478888915024427">Sayfa bilgileri</translation>
@@ -787,7 +784,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="666268767214822976">Adres çubuğuna yazarken ilgili sorguları ve popüler siteleri göstermek için bir tahmin hizmeti kullan</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> uygulamasında aç</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
-<translation id="6672986458216094438">Sekme paylaşmak için cihaz seçici, yarım yükseklikte açıldı.</translation>
 <translation id="6697492270171225480">Bir sayfa bulunamadığında benzer sayfalar için önerileri göster</translation>
 <translation id="6697947395630195233">Konumunuzu bu siteyle paylaşabilmek için Chrome'un konum bilgilerinize erişmesi gerekiyor.</translation>
 <translation id="6698801883190606802">Senkronize edilen verileri yönet</translation>

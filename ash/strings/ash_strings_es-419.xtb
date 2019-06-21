@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Activar o desactivar la conexión de red: <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Desplazar hacia la derecha</translation>
 <translation id="1812997170047690955">¿Qué hay en mi pantalla?</translation>
+<translation id="1820355135508821526">Una política que se aplica en este dispositivo inhabilitó <ph name="FEATURE_NAME" />. Pídele al administrador que la modifique.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando…)</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Reiniciar para actualizar</translation>
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
+<translation id="2651765386227849097">El Asistente de Google está inhabilitado en este dispositivo.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Hacer clic y arrastrar</translation>
 <translation id="2700493154570097719">Establecer el teclado</translation>
@@ -262,6 +264,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4895488851634969361">La batería está completa.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Se cambió el acceso directo para activar o desactivar el Modo de contraste alto. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Batería: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4924411785043111640">Reiniciar y restablecer</translation>
@@ -299,6 +302,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5648021990716966815">Conector para micrófono</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración</translation>
+<translation id="5682642926269496722">El Asistente de Google no está disponible para la Cuenta de usuario actual.</translation>
 <translation id="5691772641933328258">No se reconoció la huella digital</translation>
 <translation id="5710450975648804523">"No interrumpir" activado</translation>
 <translation id="574392208103952083">Media</translation>
@@ -332,6 +336,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6064337552080329342">No es posible verificar tu contraseña. Vuelve a intentarlo.</translation>
 <translation id="607652042414456612">La computadora es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">El Asistente de Google no está disponible en las sesiones de invitado.</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Más información</translation>
@@ -373,6 +378,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6713285437468012787">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" se sincronizó y ahora está disponible para todos los usuarios. Puedes ir a Configuración para eliminar esta sincronización.</translation>
 <translation id="6715542151869432661">No se encontraron dispositivos móviles.</translation>
 <translation id="6723839937902243910">Alimentación</translation>
+<translation id="6727969043791803658">Conectado (batería: <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="6751826523481687655">Se activó el registro del rendimiento</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>

@@ -14,7 +14,6 @@ import android.os.ConditionVariable;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -45,9 +44,6 @@ public class VariationsSeedServerTest {
 
     @Before
     public void setUp() throws IOException {
-        ContextUtils.initApplicationContextForTests(
-                InstrumentationRegistry.getInstrumentation().getTargetContext()
-                        .getApplicationContext());
         mTempFile = File.createTempFile("test_variations_seed", null);
     }
 

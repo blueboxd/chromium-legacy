@@ -117,6 +117,23 @@ void OAuth2AccessTokenManager::ClearCacheForAccount(
   }
 }
 
+void OAuth2AccessTokenManager::CancelAllRequests() {
+  std::vector<OAuth2TokenService::Fetcher*> fetchers_to_cancel;
+  for (const auto& pending_fetcher : token_service_->pending_fetchers_)
+    fetchers_to_cancel.push_back(pending_fetcher.second.get());
+  token_service_->CancelFetchers(fetchers_to_cancel);
+}
+
+void OAuth2AccessTokenManager::CancelRequestsForAccount(
+    const CoreAccountId& account_id) {
+  std::vector<OAuth2TokenService::Fetcher*> fetchers_to_cancel;
+  for (const auto& pending_fetcher : token_service_->pending_fetchers_) {
+    if (pending_fetcher.first.account_id == account_id)
+      fetchers_to_cancel.push_back(pending_fetcher.second.get());
+  }
+  token_service_->CancelFetchers(fetchers_to_cancel);
+}
+
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2AccessTokenManager::StartRequestForClientWithContext(
     const CoreAccountId& account_id,
@@ -186,7 +203,7 @@ bool OAuth2AccessTokenManager::RemoveCachedTokenResponse(
     const OAuth2TokenService::RequestParameters& request_parameters,
     const std::string& token_to_remove) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OAuth2TokenService::OAuth2TokenService::TokenCache::iterator token_iterator =
+  OAuth2TokenService::TokenCache::iterator token_iterator =
       token_cache_.find(request_parameters);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {

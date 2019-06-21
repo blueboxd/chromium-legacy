@@ -77,7 +77,7 @@ class ContentAutofillDriver : public AutofillDriver,
                  base::TimeTicks timestamp) override;
   void FormSubmitted(const FormData& form,
                      bool known_success,
-                     SubmissionSource source) override;
+                     mojom::SubmissionSource source) override;
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box,

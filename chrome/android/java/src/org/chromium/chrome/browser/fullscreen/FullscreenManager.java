@@ -11,7 +11,6 @@ import android.view.Window;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 
 /**
@@ -137,7 +136,6 @@ public abstract class FullscreenManager {
         if (mTab == tab) return;
 
         mTab = tab;
-        if (mTab != null) TabBrowserControlsOffsetHelper.from(mTab).resetPositions();
     }
 
     /**

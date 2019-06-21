@@ -98,6 +98,8 @@ class GridTabSwitcherMediator
             };
 
     private final CompositorViewHolder mCompositorViewHolder;
+    private final TabSelectionEditorCoordinator
+            .TabSelectionEditorController mTabSelectionEditorController;
 
     /**
      * In cases where a didSelectTab was due to switching models with a toggle,
@@ -135,11 +137,15 @@ class GridTabSwitcherMediator
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
      * @param compositorViewHolder {@link CompositorViewHolder} to use.
+     * @param tabSelectionEditorController The controller that can control the visibility of the
+     *                                     TabSelectionEditor.
      */
     GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
             CompositorViewHolder compositorViewHolder,
-            TabGridDialogMediator.ResetHandler tabGridDialogResetHandler) {
+            TabGridDialogMediator.ResetHandler tabGridDialogResetHandler,
+            TabSelectionEditorCoordinator
+                    .TabSelectionEditorController tabSelectionEditorController) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -218,6 +224,7 @@ class GridTabSwitcherMediator
         mSoftClearTabListRunnable = mResetHandler::softCleanup;
         mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null, false);
         mHandler = new Handler();
+        mTabSelectionEditorController = tabSelectionEditorController;
     }
 
     private int getSoftCleanupDelay() {
@@ -389,6 +396,7 @@ class GridTabSwitcherMediator
     @Override
     public boolean onBackPressed() {
         if (!mContainerViewModel.get(IS_VISIBLE)) return false;
+        if (mTabSelectionEditorController.handleBackPressed()) return true;
 
         recordUserSwitchedTab(
                 mTabModelSelector.getCurrentTab(), mTabModelSelector.getCurrentTabId());

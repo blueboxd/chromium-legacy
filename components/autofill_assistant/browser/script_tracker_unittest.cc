@@ -174,19 +174,6 @@ TEST_F(ScriptTrackerTest, DoNotCheckInterruptWithNoName) {
   EXPECT_EQ("with name", runnable_scripts()[0].chip.text());
 }
 
-TEST_F(ScriptTrackerTest, ReportInterruptToAutostart) {
-
-  // The interrupt's preconditions are met and it will be reported as runnable
-  // for autostart.
-  auto* autostart = AddScript("", "path2", "exists");
-  autostart->mutable_presentation()->set_interrupt(true);
-  autostart->mutable_presentation()->set_autostart(true);
-  SetAndCheckScripts();
-
-  EXPECT_EQ(1, runnable_scripts_changed_);
-  ASSERT_THAT(runnable_scripts(), SizeIs(1));
-}
-
 TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
   SupportedScriptProto* a = AddScript();
   a->set_path("a");

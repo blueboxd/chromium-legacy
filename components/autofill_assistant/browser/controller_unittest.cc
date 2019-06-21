@@ -471,59 +471,6 @@ TEST_F(ControllerTest, Autostart) {
   Start("http://a.example.com/path");
 }
 
-TEST_F(ControllerTest, AutostartFirstInterrupt) {
-  SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable");
-
-  auto* interrupt1 =
-      AddRunnableScript(&script_response, "autostart interrupt 1");
-  interrupt1->mutable_presentation()->set_interrupt(true);
-  interrupt1->mutable_presentation()->set_priority(1);
-  interrupt1->mutable_presentation()->set_autostart(true);
-
-  auto* interrupt2 =
-      AddRunnableScript(&script_response, "autostart interrupt 2");
-  interrupt2->mutable_presentation()->set_interrupt(true);
-  interrupt2->mutable_presentation()->set_priority(2);
-  interrupt2->mutable_presentation()->set_autostart(true);
-
-  SetNextScriptResponse(script_response);
-
-  EXPECT_CALL(*mock_service_,
-              OnGetActions(StrEq("autostart interrupt 1"), _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(false, ""));
-  // The script fails, ending the flow. What matters is that the correct
-  // expectation is met.
-
-  Start("http://a.example.com/path");
-}
-
-TEST_F(ControllerTest, InterruptThenAutostart) {
-  SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "runnable");
-
-  auto* interrupt = AddRunnableScript(&script_response, "autostart interrupt");
-  interrupt->mutable_presentation()->set_interrupt(true);
-  interrupt->mutable_presentation()->set_autostart(true);
-  RunOnce(interrupt);
-
-  auto* autostart = AddRunnableScript(&script_response, "autostart");
-  autostart->mutable_presentation()->set_autostart(true);
-  RunOnce(autostart);
-
-  SetRepeatedScriptResponse(script_response);
-
-  {
-    testing::InSequence seq;
-    EXPECT_CALL(*mock_service_,
-                OnGetActions(StrEq("autostart interrupt"), _, _, _, _, _));
-    EXPECT_CALL(*mock_service_,
-                OnGetActions(StrEq("autostart"), _, _, _, _, _));
-  }
-
-  Start("http://a.example.com/path");
-}
-
 TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   SupportsScriptResponseProto script_response;
   auto* autostart = AddRunnableScript(&script_response, "runnable");

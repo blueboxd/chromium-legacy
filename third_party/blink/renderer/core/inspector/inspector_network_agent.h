@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
 
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -185,8 +186,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidReceiveWebSocketMessage(uint64_t identifier,
                                   int op_code,
                                   bool masked,
-                                  const char* payload,
-                                  size_t payload_length);
+                                  const Vector<base::span<const char>>& data);
   void DidSendWebSocketMessage(uint64_t identifier,
                                int op_code,
                                bool masked,

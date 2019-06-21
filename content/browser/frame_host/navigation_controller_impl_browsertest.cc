@@ -9843,8 +9843,17 @@ IN_PROC_BROWSER_TEST_F(
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+// Failing on Linux CFI. http://crbug.com/974319
+#if defined(OS_LINUX)
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#else
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#endif
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
   const GURL main_frame_url(embedded_test_server()->GetURL(
       "a.com",
       "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts,sandbox-allow-"
@@ -9861,19 +9870,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::string script =
       "var messageUnloadEventSent = false;"
       "window.addEventListener('beforeunload', function "
-      "onBeforeUnload(event) {"
-      "if(messageUnloadEventSent) {"
-      "return;"
-      "}"
-      "messageUnloadEventSent = true;"
-      "var iframe = document.getElementById('child-0');"
-      "iframe.contentWindow.postMessage('', '*');"
-      "});";
+      "   onBeforeUnload(event) {"
+      "       if(messageUnloadEventSent) {"
+      "         return;"
+      "       }"
+      "       messageUnloadEventSent = true;"
+      "       var iframe = document.getElementById('child-0');"
+      "       iframe.contentWindow.postMessage('', '*');"
+      "   }"
+      ");";
   EXPECT_TRUE(ExecJs(root, script));
 
   script =
       "window.addEventListener('message', function (event) {"
-      "parent.location.href = 'chrome-guest://1234';"
+      "  parent.location.href = 'chrome-guest://1234';"
       "});";
   EXPECT_TRUE(ExecJs(root->child_at(0), script));
 

@@ -323,7 +323,16 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     metrics_need_computation_ = false;
 
     SkFont font(typeface_, font_size_pixels_);
-    font.setEdging(SkFont::Edging::kAlias);
+    const FontRenderParams& params = GetFontRenderParams();
+    if (!params.antialiasing) {
+      font.setEdging(SkFont::Edging::kAlias);
+    } else if (params.subpixel_rendering ==
+               FontRenderParams::SUBPIXEL_RENDERING_NONE) {
+      font.setEdging(SkFont::Edging::kAntiAlias);
+    } else {
+      font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+    }
+
     font.setEmbolden(weight_ >= Font::Weight::BOLD && !typeface_->isBold());
     font.setSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
                       ? -SK_Scalar1 / 4

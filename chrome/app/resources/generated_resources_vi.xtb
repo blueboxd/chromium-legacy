@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">Lỗi đăng nhập</translation>
 <translation id="1887597546629269384">Nói lại "Ok Google"</translation>
 <translation id="1887850431809612466">Hiệu chỉnh phần cứng</translation>
-<translation id="1889984860246851556">Mở cài đặt proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Mở chế độ toàn màn hình</translation>
 <translation id="189358972401248634">Ngôn ngữ khác</translation>
@@ -953,7 +952,7 @@
 <translation id="2436707352762155834">Tối thiểu</translation>
 <translation id="2439545803278355377">Nhập mã PIN mới. Mã PIN phải dài ít nhất 4 ký tự và có thể bao gồm chữ cái, số và các ký tự khác.</translation>
 <translation id="2440604414813129000">Xem &amp;nguồn</translation>
-<translation id="2444119669991608829">Trang không có bản <ph name="LANGUAGE" />?</translation>
+<translation id="2444119669991608829">Trang không viết bằng <ph name="LANGUAGE" />?</translation>
 <translation id="2445081178310039857">Thư mục gốc của tiện ích là bắt buộc.</translation>
 <translation id="2445484935443597917">Tạo hồ sơ mới</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> muốn xác minh danh tính của bạn</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2973324205039581528">Tắt tiếng trang web</translation>
 <translation id="2977480621796371840">Xóa khỏi nhóm</translation>
-<translation id="2979128960948974571">Quá trình này có thể mất vài phút.</translation>
 <translation id="2979639724566107830">Mở trong cửa sổ mới</translation>
 <translation id="2981113813906970160">Hiển thị con trỏ chuột lớn</translation>
 <translation id="2982970937345031">Báo cáo ẩn danh</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">Cửa sổ ẩn &amp;danh mới</translation>
 <translation id="3323521181261657960">Phần thưởng! Bạn có thêm thời gian sử dụng thiết bị</translation>
 <translation id="3325910708063135066">Máy ảnh và micrô đã bị tắt trong System Preferences (Tùy chọn hệ thống) trên máy Mac</translation>
-<translation id="3330615614570718993">Vui lòng liên hệ với quản trị viên để bật Máy chủ ảo plugin trên thiết bị này.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Thông tin ứng dụng</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Đang phát video ở chế độ hình trong hình</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> quản lý.</translation>
 <translation id="3468275649641751422">Truyền trực tuyến tệp âm thanh hoặc video</translation>
 <translation id="3468999815377931311">Điện thoại Android</translation>
-<translation id="3470248707805984963">Đã xảy ra lỗi. Vui lòng thử lại.</translation>
 <translation id="3470442499439619530">Xóa người dùng này</translation>
 <translation id="3473479545200714844">Phóng to màn hình</translation>
 <translation id="3475843873335999118">Rất tiếc, vân tay của bạn vẫn chưa được nhận dạng. Vui lòng nhập mật khẩu của bạn.</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">Nhập mật khẩu để bật tính năng Smart Lock. Vào lần tới, điện thoại của bạn sẽ mở khóa <ph name="DEVICE_TYPE" />. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="3630132874740063857">Điện thoại</translation>
 <translation id="3630995161997703415">Thêm trang web này vào giá của bạn để sử dụng bất cứ lúc nào</translation>
-<translation id="3635256809897331115">Nhấp hoặc nhấn vào Chạy để sử dụng Máy chủ ảo plugin. Trong tương lai, bạn có thể khởi động Máy chủ ảo plugin bằng cách chọn biểu tượng trong Trình chạy.</translation>
 <translation id="3636096452488277381">Xin chào <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - còn lại <ph name="TIME" /></translation>
 <translation id="3637682276779847508">Thẻ SIM của bạn sẽ bị vô hiệu hóa vĩnh viễn nếu bạn không thể nhập Khóa mở khóa mã PIN chính xác.</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">Loại tệp này có thể gây hại cho máy tính của bạn. Bạn có muốn giữ tệp <ph name="FILE_NAME" /> không?</translation>
 <translation id="3918972485393593704">Báo cáo chi tiết cho Google</translation>
 <translation id="3919145445993746351">Để có các tiện ích trên tất cả các máy tính, hãy bật tính năng đồng bộ hóa</translation>
-<translation id="391999873395511996">Đang tải máy ảo xuống.</translation>
 <translation id="3920504717067627103">Chính sách Chứng chỉ</translation>
 <translation id="392089482157167418">Bật ChromeVox (phản hồi bằng giọng nói)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,7 +2906,6 @@
 <translation id="5449551289610225147">Mật khẩu không hợp lệ</translation>
 <translation id="5449588825071916739">Đánh dấu trang tất cả các tab</translation>
 <translation id="5449716055534515760">Đóng cửa &amp;sổ</translation>
-<translation id="5453630479789469584">Không thể thiết lập Máy chủ ảo plugin</translation>
 <translation id="5454166040603940656">với <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">Ngôn ngữ cần dịch sang</translation>
 <translation id="5457113250005438886">Không hợp lệ</translation>
@@ -3937,7 +3930,7 @@
 <translation id="7019805045859631636">Nhanh</translation>
 <translation id="7022562585984256452">Trang chủ của bạn đã được đặt.</translation>
 <translation id="7025190659207909717">Quản lý dịch vụ dữ liệu di động</translation>
-<translation id="7027891519253193555">Trang không có bản <ph name="LANGUAGE" />?</translation>
+<translation id="7027891519253193555">Trang không viết bằng <ph name="LANGUAGE" />?</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Đã kết nối với cổng nối tiếp</translation>
 <translation id="7031962166228839643">TPM đang được chuẩn bị, vui lòng đợi (việc này có thể mất vài phút)...</translation>
@@ -4833,7 +4826,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8339059274628563283"><ph name="SITE" /> đã lưu trữ dữ liệu cục bộ</translation>
 <translation id="833986336429795709">Để mở liên kết này, hãy chọn một ứng dụng</translation>
 <translation id="8342861492835240085">Chọn một bộ sưu tập</translation>
-<translation id="8343187330304787218">Quản lý các tùy chọn cài đặt để chạy Máy chủ ảo plugin trên <ph name="DEVICE_TYPE" /> của bạn</translation>
 <translation id="8343956361364550006">Sử dụng băng thông cao để có hoạt ảnh hoặc video tốt nhất. Những người có kết nối chậm có thể không thấy nội dung của bạn.</translation>
 <translation id="8351419472474436977">Tiện ích này đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="835238322900896202">Đã xảy ra lỗi trong khi gỡ cài đặt. Vui lòng gỡ cài đặt thông qua Thiết bị đầu cuối.</translation>

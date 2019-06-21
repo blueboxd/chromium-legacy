@@ -654,38 +654,25 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
 bool Controller::MaybeAutostartScript(
     const std::vector<ScriptHandle>& runnable_scripts) {
-  // We want to go through all runnable autostart interrupts first, one at a
-  // time. To do that, always run highest priority autostartable interrupt from
-  // runnable_script, which is ordered by priority.
-  for (const auto& script : runnable_scripts) {
-    if (script.autostart && script.interrupt) {
-      std::string script_path = script.path;
-      ExecuteScript(script_path, state_);
-      // making a copy of script.path is necessary, as ExecuteScript clears
-      // runnable_scripts, so script.path will not survive until the end of
-      // ExecuteScript.
-      return true;
-    }
-  }
-
   // Under specific conditions, we can directly run a non-interrupt script
   // without first displaying it. This is meant to work only at the very
-  // beginning, when no non-interrupt scripts have run, and only if there's
-  // exactly one autostartable script.
-  if (allow_autostart_) {
-    int autostart_count = 0;
-    std::string autostart_path;
-    for (const auto& script : runnable_scripts) {
-      if (script.autostart && !script.interrupt) {
-        autostart_count++;
-        autostart_path = script.path;
-      }
+  // beginning, when no scripts have run, and only if there's exactly one
+  // autostartable script.
+  if (!allow_autostart_)
+    return false;
+
+  int autostart_count = 0;
+  std::string autostart_path;
+  for (const auto& script : runnable_scripts) {
+    if (script.autostart) {
+      autostart_count++;
+      autostart_path = script.path;
     }
-    if (autostart_count == 1) {
-      DisableAutostart();
-      ExecuteScript(autostart_path, AutofillAssistantState::PROMPT);
-      return true;
-    }
+  }
+  if (autostart_count == 1) {
+    DisableAutostart();
+    ExecuteScript(autostart_path, AutofillAssistantState::PROMPT);
+    return true;
   }
   return false;
 }

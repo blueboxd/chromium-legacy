@@ -18,6 +18,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
+    ":files_format_dialog",
     ":files_icon_button",
     ":files_metadata_box",
     ":files_metadata_entry",
@@ -28,6 +29,16 @@ js_type_check("closure_compile_module") {
     ":files_toast",
     ":files_toggle_ripple",
     ":files_tooltip",
+  ]
+}
+
+js_library("files_format_dialog") {
+  deps = [
+    "../../common/js:util",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 

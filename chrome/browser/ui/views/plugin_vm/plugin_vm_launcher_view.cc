@@ -39,12 +39,11 @@ constexpr gfx::Insets kButtonRowInsets(0, 64, 32, 64);
 constexpr int kWindowWidth = 768;
 constexpr int kWindowHeight = 636;
 
-base::Optional<double> GetFractionComplete(int64_t bytes_processed,
-                                           int64_t bytes_to_be_processed) {
-  if (bytes_to_be_processed == -1 || bytes_to_be_processed == 0)
+base::Optional<double> GetFractionComplete(double units_processed,
+                                           double total_units) {
+  if (total_units <= 0)
     return base::nullopt;
-  double fraction_complete =
-      static_cast<double>(bytes_processed) / bytes_to_be_processed;
+  double fraction_complete = units_processed / total_units;
   if (fraction_complete < 0.0 || fraction_complete > 1.0)
     return base::nullopt;
   return base::make_optional(fraction_complete);
@@ -260,24 +259,13 @@ void PluginVmLauncherView::OnDownloadStarted() {
 void PluginVmLauncherView::OnDownloadProgressUpdated(
     uint64_t bytes_downloaded,
     int64_t content_length,
-    int64_t download_bytes_per_sec) {
+    base::TimeDelta elapsed_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(bytes_downloaded, content_length);
-  if (fraction_complete.has_value())
-    progress_bar_->SetValue(fraction_complete.value());
-  else
-    progress_bar_->SetValue(-1);
-
   download_progress_message_label_->SetText(
       GetDownloadProgressMessage(bytes_downloaded, content_length));
-
-  base::string16 time_left_message = GetTimeLeftMessage(
-      bytes_downloaded, content_length, download_bytes_per_sec);
-  time_left_message_label_->SetVisible(!time_left_message.empty());
-  time_left_message_label_->SetText(time_left_message);
+  UpdateOperationProgress(bytes_downloaded, content_length, elapsed_time);
 }
 
 void PluginVmLauncherView::OnDownloadCompleted() {
@@ -304,22 +292,12 @@ void PluginVmLauncherView::OnDownloadFailed() {
 }
 
 void PluginVmLauncherView::OnImportProgressUpdated(
-    uint64_t percent_completed,
-    int64_t import_percent_per_second) {
+    int percent_completed,
+    base::TimeDelta elapsed_time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::IMPORTING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(percent_completed, 100.0);
-  if (fraction_complete.has_value())
-    progress_bar_->SetValue(fraction_complete.value());
-  else
-    progress_bar_->SetValue(-1);
-
-  base::string16 time_left_message =
-      GetTimeLeftMessage(percent_completed, 100.0, import_percent_per_second);
-  time_left_message_label_->SetVisible(!time_left_message.empty());
-  time_left_message_label_->SetText(time_left_message);
+  UpdateOperationProgress(percent_completed, 100.0, elapsed_time);
 }
 
 void PluginVmLauncherView::OnImportCancelled() {
@@ -420,9 +398,8 @@ void PluginVmLauncherView::OnStateUpdated() {
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
 
-  const bool time_left_message_label_visible =
-      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
-  time_left_message_label_->SetVisible(time_left_message_label_visible);
+  // This will be shown once we receive download/import progress messages.
+  time_left_message_label_->SetVisible(false);
 
   const bool download_progress_message_label_visible =
       state_ == State::DOWNLOADING;
@@ -457,24 +434,32 @@ base::string16 PluginVmLauncherView::GetDownloadProgressMessage(
   }
 }
 
-base::string16 PluginVmLauncherView::GetTimeLeftMessage(
-    int64_t processed_bytes,
-    int64_t bytes_to_be_processed,
-    int64_t bytes_per_sec) const {
+void PluginVmLauncherView::UpdateOperationProgress(
+    double units_processed,
+    double total_units,
+    base::TimeDelta elapsed_time) const {
   DCHECK(state_ == State::DOWNLOADING || state_ == State::IMPORTING);
 
-  base::Optional<double> fraction_complete =
-      GetFractionComplete(processed_bytes, bytes_to_be_processed);
+  base::Optional<double> maybe_fraction_complete =
+      GetFractionComplete(units_processed, total_units);
 
-  if (!fraction_complete.has_value())
-    return base::string16();
-  if (bytes_per_sec == 0)
-    return base::string16();
+  if (!maybe_fraction_complete || units_processed == 0 ||
+      elapsed_time.is_zero()) {
+    progress_bar_->SetValue(-1);
+    time_left_message_label_->SetVisible(false);
+    return;
+  }
 
-  base::TimeDelta remaining = base::TimeDelta::FromSeconds(
-      (bytes_to_be_processed - processed_bytes) / bytes_per_sec);
-  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
-                                ui::TimeFormat::LENGTH_SHORT, remaining);
+  const double fraction_complete = *maybe_fraction_complete;
+  const double fraction_remaining = 1 - fraction_complete;
+
+  progress_bar_->SetValue(fraction_complete);
+  time_left_message_label_->SetVisible(true);
+  base::TimeDelta remaining =
+      fraction_remaining / fraction_complete * elapsed_time;
+  time_left_message_label_->SetText(
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                             ui::TimeFormat::LENGTH_SHORT, remaining));
 }
 
 void PluginVmLauncherView::SetBigMessageLabel() {

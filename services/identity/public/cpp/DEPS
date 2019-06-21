@@ -10,6 +10,7 @@ include_rules = [
   "+components/signin/core/browser/list_accounts_test_utils.h",
   "+components/signin/core/browser/oauth2_token_service_delegate_android.h",
   "+components/signin/core/browser/signin_buildflags.h",
+  "+components/signin/core/browser/signin_client.h",
   "+components/signin/core/browser/signin_metrics.h",
   "+components/signin/core/browser/signin_pref_names.h",
   "+components/signin/core/browser/signin_switches.h",

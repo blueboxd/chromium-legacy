@@ -136,8 +136,11 @@ class ArcInputMethodManagerService
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
   std::set<std::string> active_arc_ime_ids_;
+  std::set<std::string> ime_ids_allowed_in_clamshell_mode_;
   bool is_virtual_keyboard_shown_;
-  bool is_removing_imm_entry_;
+  // This flag is set to true while updating ARC IMEs entries in IMM to avoid
+  // exposing incomplete state.
+  bool is_updating_imm_entry_;
 
   // ArcInputMethodManager installs a proxy IME to redirect IME related events
   // from/to ARC IMEs in the container. The below two variables are for the

@@ -180,22 +180,22 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
 TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
   TestBubbleFrameView frame(this);
   EXPECT_EQ(nullptr, frame.footnote_container_);
-  View* footnote_dummy_view = new StaticSizedView(gfx::Size(200, 200));
-  frame.SetFootnoteView(footnote_dummy_view);
+  auto footnote = std::make_unique<StaticSizedView>(gfx::Size(200, 200));
+  View* footnote_dummy_view = footnote.get();
+  frame.SetFootnoteView(std::move(footnote));
   EXPECT_EQ(footnote_dummy_view->parent(), frame.footnote_container_);
-  View* container_view = footnote_dummy_view->parent();
-  delete footnote_dummy_view;
-  footnote_dummy_view = nullptr;
-  EXPECT_FALSE(container_view->GetVisible());
+  frame.SetFootnoteView(nullptr);
   EXPECT_EQ(nullptr, frame.footnote_container_);
 }
 
 TEST_F(BubbleFrameViewTest,
        FootnoteContainerViewShouldMatchVisibilityOfFirstChild) {
   TestBubbleFrameView frame(this);
-  View* footnote_dummy_view = new StaticSizedView(gfx::Size(200, 200));
-  footnote_dummy_view->SetVisible(false);
-  frame.SetFootnoteView(footnote_dummy_view);
+  std::unique_ptr<View> footnote =
+      std::make_unique<StaticSizedView>(gfx::Size(200, 200));
+  footnote->SetVisible(false);
+  View* footnote_dummy_view = footnote.get();
+  frame.SetFootnoteView(std::move(footnote));
   View* footnote_container_view = footnote_dummy_view->parent();
   EXPECT_FALSE(footnote_container_view->GetVisible());
   footnote_dummy_view->SetVisible(true);
@@ -807,19 +807,21 @@ TEST_F(BubbleFrameViewTest, GetPreferredSizeWithFootnote) {
 
   constexpr int kFootnoteHeight = 20;
   const gfx::Size no_footnote_size = frame.GetPreferredSize();
-  View* footnote = new StaticSizedView(gfx::Size(10, kFootnoteHeight));
+  std::unique_ptr<View> footnote =
+      std::make_unique<StaticSizedView>(gfx::Size(10, kFootnoteHeight));
   footnote->SetVisible(false);
-  frame.SetFootnoteView(footnote);
+  View* footnote_dummy_view = footnote.get();
+  frame.SetFootnoteView(std::move(footnote));
   EXPECT_EQ(no_footnote_size, frame.GetPreferredSize());  // No change.
 
-  footnote->SetVisible(true);
+  footnote_dummy_view->SetVisible(true);
   gfx::Size with_footnote_size = no_footnote_size;
   constexpr int kFootnoteTopBorderThickness = 1;
   with_footnote_size.Enlarge(0, kFootnoteHeight + kFootnoteTopBorderThickness +
                                     frame.content_margins().height());
   EXPECT_EQ(with_footnote_size, frame.GetPreferredSize());
 
-  footnote->SetVisible(false);
+  footnote_dummy_view->SetVisible(false);
   EXPECT_EQ(no_footnote_size, frame.GetPreferredSize());
 }
 

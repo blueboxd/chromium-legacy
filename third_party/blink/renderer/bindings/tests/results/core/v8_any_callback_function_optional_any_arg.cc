@@ -228,9 +228,4 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
   }
 }
 
-v8::Maybe<ScriptValue> V8PersistentCallbackFunction<V8AnyCallbackFunctionOptionalAnyArg>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, ScriptValue optionalAnyArg) {
-  return Proxy()->Invoke(
-      callback_this_value, optionalAnyArg);
-}
-
 }  // namespace blink

@@ -21,6 +21,7 @@
 #include "third_party/blink/public/web/web_select_element.h"
 
 using autofill::FormFieldData;
+using autofill::mojom::ButtonTitleType;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormControlElement;
@@ -292,17 +293,16 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
       autofill::form_util::InferButtonTitlesForTesting(form_target);
   autofill::ButtonTitleList expected = {
       {base::UTF8ToUTF16("Clear field"),
-       autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
+       ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
       {base::UTF8ToUTF16("Show password"),
-       autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
+       ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
       {base::UTF8ToUTF16("Sign Up"),
-       autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
+       ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
       {base::UTF8ToUTF16("Register"),
-       autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE},
-      {base::UTF8ToUTF16("Create account"),
-       autofill::ButtonTitleType::HYPERLINK},
-      {base::UTF8ToUTF16("Join"), autofill::ButtonTitleType::DIV},
-      {base::UTF8ToUTF16("Start"), autofill::ButtonTitleType::SPAN}};
+       ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE},
+      {base::UTF8ToUTF16("Create account"), ButtonTitleType::HYPERLINK},
+      {base::UTF8ToUTF16("Join"), ButtonTitleType::DIV},
+      {base::UTF8ToUTF16("Start"), ButtonTitleType::SPAN}};
   EXPECT_EQ(expected, actual);
 }
 
@@ -361,11 +361,11 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {
       autofill::form_util::InferButtonTitlesForTesting(body);
   autofill::ButtonTitleList expected = {
       {base::UTF8ToUTF16("Show password"),
-       autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
+       ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
       {base::UTF8ToUTF16("Sign Up"),
-       autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
+       ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE},
       {base::UTF8ToUTF16("Register"),
-       autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE}};
+       ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE}};
   EXPECT_EQ(expected, actual);
 }
 

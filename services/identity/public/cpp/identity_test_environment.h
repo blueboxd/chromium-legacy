@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"

@@ -26,7 +26,7 @@ SettingsUIBrowserTest.prototype = {
 // and several times that in a Debug build. See https://crbug.com/558434
 // and http://crbug.com/711256.
 
-GEN('#if !defined(NDEBUG) || defined(OS_MACOSX) || defined(OS_WINDOWS)');
+GEN('#if !defined(NDEBUG) || defined(OS_MACOSX)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');

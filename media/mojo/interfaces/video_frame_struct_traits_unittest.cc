@@ -102,10 +102,11 @@ TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
 TEST_F(VideoFrameStructTraitsTest, DmabufVideoFrame) {
   const size_t num_planes = media::VideoFrame::NumPlanes(PIXEL_FORMAT_NV12);
   std::vector<int> strides = {1280, 1280};
-  std::vector<size_t> buffer_sizes = {1280 * 720, 1280 * 720 / 2};
-  auto layout = media::VideoFrameLayout::CreateWithStrides(
-      PIXEL_FORMAT_NV12, gfx::Size(1280, 720), std::move(strides),
-      std::move(buffer_sizes));
+  std::vector<size_t> sizes = {1280 * 720, 1280 * 720 / 2};
+  auto layout = media::VideoFrameLayout::CreateWithPlanes(
+      PIXEL_FORMAT_NV12, gfx::Size(1280, 720),
+      {media::VideoFrameLayout::Plane(strides[0], 0, sizes[0]),
+       media::VideoFrameLayout::Plane(strides[1], 0, sizes[1])});
 
   // DMABUF needs device to create, use file fd instead.
   std::vector<int> fake_fds = {open("/dev/null", O_RDWR),

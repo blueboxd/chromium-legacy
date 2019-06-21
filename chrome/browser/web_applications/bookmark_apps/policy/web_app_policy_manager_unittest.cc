@@ -12,12 +12,12 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
-#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -181,21 +181,9 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     return provider;
   }
 
-  std::string GenerateFakeExtensionId(const GURL& url) {
-    return crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
-  }
-
   void SimulatePreviouslyInstalledApp(
       GURL url,
       InstallSource install_source) {
-    std::string id = GenerateFakeExtensionId(url);
-    extensions::ExtensionRegistry::Get(profile())->AddEnabled(
-        extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
-
-    ExternallyInstalledWebAppPrefs externally_installed_app_prefs(
-        profile()->GetPrefs());
-    externally_installed_app_prefs.Insert(url, id, install_source);
-
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
 
@@ -477,9 +465,12 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
             pending_app_manager()->uninstall_requests());
 
   // There should be exactly 1 app remaining.
-  EXPECT_EQ(1u, pending_app_manager()->installed_apps().size());
-  EXPECT_EQ(InstallSource::kExternalPolicy,
-            pending_app_manager()->installed_apps().at(kTabbedUrl));
+  std::map<AppId, GURL> apps =
+      pending_app_manager()->registrar()->GetExternallyInstalledApps(
+          InstallSource::kExternalPolicy);
+  EXPECT_EQ(1u, apps.size());
+  for (auto& it : apps)
+    EXPECT_EQ(it.second, kTabbedUrl);
 }
 
 }  // namespace web_app

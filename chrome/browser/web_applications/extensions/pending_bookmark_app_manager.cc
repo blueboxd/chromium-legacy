@@ -49,8 +49,8 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
     Profile* profile,
     web_app::AppRegistrar* registrar,
     web_app::InstallFinalizer* install_finalizer)
-    : profile_(profile),
-      registrar_(registrar),
+    : PendingAppManager(registrar),
+      profile_(profile),
       install_finalizer_(install_finalizer),
       externally_installed_app_prefs_(profile->GetPrefs()),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
@@ -69,7 +69,7 @@ void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
     return;
 
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
-      task_factory_.Run(profile_, registrar_, install_finalizer_,
+      task_factory_.Run(profile_, registrar(), install_finalizer_,
                         std::move(install_options)),
       std::move(callback)));
 
@@ -84,7 +84,7 @@ void PendingBookmarkAppManager::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
-        task_factory_.Run(profile_, registrar_, install_finalizer_,
+        task_factory_.Run(profile_, registrar(), install_finalizer_,
                           std::move(install_options)),
         callback));
   }
@@ -105,31 +105,6 @@ void PendingBookmarkAppManager::UninstallApps(
                     bool uninstalled) { callback.Run(app_url, uninstalled); },
                  callback, url));
   }
-}
-
-std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
-    web_app::InstallSource install_source) const {
-  std::vector<GURL> installed_apps;
-  for (const auto& id_and_url :
-       web_app::ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
-           profile_->GetPrefs(), install_source)) {
-    if (registrar_->IsInstalled(id_and_url.first))
-      installed_apps.push_back(id_and_url.second);
-  }
-
-  return installed_apps;
-}
-
-base::Optional<web_app::AppId> PendingBookmarkAppManager::LookupAppId(
-    const GURL& url) const {
-  return externally_installed_app_prefs_.LookupAppId(url);
-}
-
-bool PendingBookmarkAppManager::HasAppIdWithInstallSource(
-    const web_app::AppId& app_id,
-    web_app::InstallSource install_source) const {
-  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-      profile_->GetPrefs(), app_id, install_source);
 }
 
 void PendingBookmarkAppManager::SetTaskFactoryForTesting(
@@ -173,7 +148,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
       return;
     }
 
-    if (registrar_->IsInstalled(app_id.value())) {
+    if (registrar()->IsInstalled(app_id.value())) {
       if (install_options.wait_for_windows_closed &&
           GetUiDelegate().GetNumWindowsForApp(app_id.value()) != 0) {
         GetUiDelegate().NotifyOnAllAppWindowsClosed(
@@ -204,7 +179,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     // The app is not installed, but it might have been previously uninstalled
     // by the user. If that's the case, don't install it again unless
     // |override_previous_user_uninstall| is true.
-    if (registrar_->WasExternalAppUninstalledByUser(app_id.value()) &&
+    if (registrar()->WasExternalAppUninstalledByUser(app_id.value()) &&
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.url,

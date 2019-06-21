@@ -323,17 +323,17 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
                        .FindKey("fp")
                        ->GetString());
 
-#if (OS_WIN)
-    EXPECT_TRUE(request->FindKey("domainjoined"));
+#if defined(OS_WIN)
+  EXPECT_TRUE(request->FindKey("domainjoined"));
 #if defined(GOOGLE_CHROME_BUILD)
-    const auto* updater = request->FindKey("updater");
-    EXPECT_TRUE(updater);
-    EXPECT_EQ("Omaha", updater->FindKey("name")->GetString());
-    EXPECT_TRUE(updater->FindKey("autoupdatecheckenabled")->is_bool());
-    EXPECT_TRUE(updater->FindKey("ismachine")->is_bool());
-    EXPECT_TRUE(updater->FindKey("updatepolicy")->is_int());
+  const auto* updater = request->FindKey("updater");
+  EXPECT_TRUE(updater);
+  EXPECT_EQ("Omaha", updater->FindKey("name")->GetString());
+  EXPECT_TRUE(updater->FindKey("autoupdatecheckenabled")->is_bool());
+  EXPECT_TRUE(updater->FindKey("ismachine")->is_bool());
+  EXPECT_TRUE(updater->FindKey("updatepolicy")->is_int());
 #endif  // GOOGLE_CHROME_BUILD
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 
   // Sanity check the arguments of the callback after parsing.
   EXPECT_EQ(ErrorCategory::kNone, error_category_);

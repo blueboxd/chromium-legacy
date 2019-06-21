@@ -34,7 +34,8 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   void FetchAndApplyCloudPolicy(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& username);
+      const base::android::JavaParamRef<jstring>& username,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
   void AbortSignIn(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj);
@@ -115,12 +116,12 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   void OnPolicyRegisterDone(
       const CoreAccountInfo& account_id,
+      base::OnceClosure policy_callback,
       const base::Optional<ManagementCredentials>& credentials);
 
   void FetchPolicyBeforeSignIn(const CoreAccountInfo& account_id,
+                               base::OnceClosure policy_callback,
                                const ManagementCredentials& credentials);
-
-  void OnPolicyFetchDone(bool success) const;
 
   void OnBrowsingDataRemoverDone();
 

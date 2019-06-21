@@ -2095,12 +2095,12 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
     planes[i].stride = VideoFrame::RowBytes(i, test_stream_->pixel_format,
                                             input_coded_size_.width());
     planes[i].offset = offset;
+    planes[i].size = test_stream_->aligned_plane_size[i];
     offset += test_stream_->aligned_plane_size[i];
   }
 
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      test_stream_->pixel_format, input_coded_size_, std::move(planes),
-      {test_stream_->aligned_buffer_size});
+      test_stream_->pixel_format, input_coded_size_, std::move(planes));
   if (!layout) {
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
@@ -2674,12 +2674,11 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
     planes[i].stride =
         VideoFrame::RowBytes(i, pixel_format, input_coded_size.width());
     planes[i].offset = 0;
-    buffer_sizes[i] = plane_size;
+    planes[i].size = plane_size;
   }
 
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, input_coded_size, std::move(planes),
-      std::move(buffer_sizes));
+      pixel_format, input_coded_size, std::move(planes));
   ASSERT_TRUE(layout);
 
   scoped_refptr<VideoFrame> video_frame =

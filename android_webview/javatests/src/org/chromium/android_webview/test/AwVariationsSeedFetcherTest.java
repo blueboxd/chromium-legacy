@@ -23,13 +23,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.VariationsUtils;
 import org.chromium.android_webview.services.AwVariationsSeedFetcher;
-import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
-import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,7 +122,6 @@ public class AwVariationsSeedFetcherTest {
 
     @Before
     public void setUp() throws IOException {
-        ServiceInit.setPrivateDataDirectorySuffix();
         AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
         VariationsTestUtils.deleteSeeds();
     }

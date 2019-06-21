@@ -628,6 +628,7 @@
 <translation id="8160015581537295331">Klawiatura hiszpańska</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Model urządzenia</translation>
+<translation id="8208580316430297579">Dzieła sztuki</translation>
 <translation id="8223479393428528563">Aby zapisać te pliki i używać ich offline, przejdź do trybu online, kliknij pliki prawym przyciskiem myszy i wybierz opcję <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Przerwij</translation>
 <translation id="8261506727792406068">Usuń</translation>
@@ -706,7 +707,7 @@
 <translation id="942954117721265519">Brak zdjęć w tym katalogu.</translation>
 <translation id="943972244133411984">Zmodyfikowany przez:</translation>
 <translation id="945522503751344254">Wyślij zgłoszenie</translation>
-<translation id="947144732524271678">Zaznaczono zakres <ph name="ENTRY_COUNT" /> elementów. Pierwszy z nich to <ph name="FROM_ENTRY_NAME" />, a ostatni – <ph name="TO_ENTRY_NAME" />.</translation>
+<translation id="947144732524271678">Wybrano zakres <ph name="ENTRY_COUNT" /> elementów. Od: <ph name="FROM_ENTRY_NAME" /> do: <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Istnieje już plik „<ph name="FILE_NAME" />”. Czy chcesz go zastąpić?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

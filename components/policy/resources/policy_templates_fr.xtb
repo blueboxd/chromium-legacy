@@ -459,7 +459,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="17719159826324007">
       Lorsque l'option "ArcSession" est activée, cette règle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
       Si l'option "Always" est sélectionnée, la règle imposera un redémarrage de l'appareil à chaque déconnexion d'utilisateur.
-      Si aucun paramètre n'est défini, la règle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion d'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
+      Si aucun paramètre n'est défini, la règle est sans effet, et aucun redémarrage n'est imposé en cas de déconnexion de l'utilisateur. Il en va de même lorsqu'elle est définie sur "Never".
       Cette règle n'a d'incidence que sur les utilisateurs non affiliés.
       </translation>
 <translation id="1781356041596378058">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
@@ -2546,6 +2546,10 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Sachez que cette méthode n'est pas recommandée, car l'extension nameConstraints qui limite les noms d'hôtes pour lesquels un certificat donné peut être autorisé risque d'être ignorée.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les certificats de serveur qui ne comportent pas d'extension subjectAlternativeName contenant soit un nom DNS, soit une adresse IP, ne seront pas approuvés.</translation>
+<translation id="5578571772998293651">Autoriser les commentaires des utilisateurs.
+        Si la règle est définie sur "false", les utilisateurs ne peuvent pas envoyer de commentaires à Google.
+
+        Si la règle est définie sur "true" ou n'est pas configurée, les utilisateurs peuvent envoyer des commentaires à Google via Menu &gt; Aide &gt; Signaler un problème ou via un raccourci clavier.</translation>
 <translation id="5581292529942108810">Configurez les règles relatives à Chrome Reporting Extension.
 
       Ces règles ne sont effectives que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3941,6 +3945,7 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
       Si vous ne définissez pas cette règle, il n'y a pas d'exceptions à la liste noire définie par la règle "URLBlacklist".</translation>
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
 <translation id="8183108371184777472">Empêcher l'ouverture de la fenêtre du navigateur</translation>
+<translation id="8186911565834244165">Autoriser les commentaires des utilisateurs</translation>
 <translation id="8214600119442850823">Configure le gestionnaire de mot de passe.</translation>
 <translation id="8217516105848565518">Cette règle est obsolète. Veuillez utiliser RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Activer des suites de chiffrement RC4 dans TLS</translation>
@@ -4373,6 +4378,12 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>
+<translation id="91196902572559194">Cette règle autorise l'Assistant Google à écouter l'expression servant à activer les commandes vocales.
+
+      Si cette règle est activée, l'Assistant Google écoute l'expression d'activation des commandes vocales.
+      Si elle est désactivée, l'Assistant Google n'écoute pas cette expression.
+      Si cette règle n'est pas définie, les utilisateurs peuvent décider d'autoriser ou non l'Assistant Google à écouter l'expression d'activation des commandes vocales.
+      </translation>
 <translation id="9123211093995421438">Spécifie le nombre minimal de versions intermédiaires <ph name="PRODUCT_OS_NAME" /> autorisées pour le rollback à partir de la version stable.
 
       La valeur par défaut s'élève à 0 pour les particuliers et à 4 (environ la moitié d'un an) pour les appareils enregistrés par les entreprises.

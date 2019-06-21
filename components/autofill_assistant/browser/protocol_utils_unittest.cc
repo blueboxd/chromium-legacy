@@ -96,6 +96,21 @@ TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
   EXPECT_TRUE(scripts[0]->handle.interrupt);
 }
 
+TEST(ProtocolUtilsTest, InterruptsCannotBeAutostart) {
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
+  presentation->set_autostart(true);
+  presentation->set_interrupt(true);
+  presentation->mutable_precondition()->add_domain("www.example.com");
+
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script_proto, &scripts);
+  ASSERT_THAT(scripts, SizeIs(1));
+  EXPECT_FALSE(scripts[0]->handle.autostart);
+  EXPECT_TRUE(scripts[0]->handle.interrupt);
+}
+
 TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   TriggerContext trigger_context;
   trigger_context.script_parameters["a"] = "b";

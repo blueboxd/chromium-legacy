@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">साइन इन में गड़बड़ी</translation>
 <translation id="1887597546629269384">दोबारा "Hey Google" बोलें</translation>
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
-<translation id="1889984860246851556">प्रॉक्सी सेटिंग खोलें</translation>
 <translation id="1890674179660343635">&lt;span&gt;आईडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">पूरी स्‍क्रीन खोलें</translation>
 <translation id="189358972401248634">अन्य भाषाएं</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">&amp;फिर से करें</translation>
 <translation id="2973324205039581528">साइट म्यूट करें</translation>
 <translation id="2977480621796371840">समूह से हटाएं</translation>
-<translation id="2979128960948974571">इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="2979639724566107830">नई विंडो में खोलें</translation>
 <translation id="2981113813906970160">बड़ा माउस कर्सर दिखाएं</translation>
 <translation id="2982970937345031">अनाम रूप से रिपोर्ट करें</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">नई &amp;गुप्त विंडो</translation>
 <translation id="3323521181261657960">बोनस! आप और देर तक डिवाइस इस्तेमाल कर सकते हैं</translation>
 <translation id="3325910708063135066">Mac सिस्टम प्राथमिकताओं में कैमरा और माइक्रोफ़ोन किए गए हैं</translation>
-<translation id="3330615614570718993">इस डिवाइस पर प्लग इन वीएम चालू करने के लिए अपने एडमिन से संपर्क करें.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">ऐप्लिकेशन की जानकारी</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - वीडियो 'पिक्चर में पिक्चर' मोड में चल रहा है</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="CUSTODIAN_EMAIL" /> द्वारा प्रबंधित किया जाता है.</translation>
 <translation id="3468275649641751422">कोई वीडियो या ऑडियो फ़ाइल स्ट्रीम करें</translation>
 <translation id="3468999815377931311">Android फ़ोन</translation>
-<translation id="3470248707805984963">कोई गड़बड़ी हुई. कृपया फिर से कोशिश करें.</translation>
 <translation id="3470442499439619530">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
 <translation id="3475843873335999118">माफ़ कीजिए, आपके फ़िंगरप्रिंट की अब भी पहचान नहीं हुई हैैै. कृपया अपना पासवर्ड डालें.</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">Smart Lock चालू करने के लिए अपना पासवर्ड डालें. अगली बार, आपका फ़ोन आपके <ph name="DEVICE_TYPE" /> को अनलॉक कर देगा. आप सेटिंग में जाकर Smart Lock को बंद कर सकते हैं.</translation>
 <translation id="3630132874740063857">आपका फ़ोन</translation>
 <translation id="3630995161997703415">इस साइट को अपनी अलमारी में जोड़ें ताकि आप किसी भी समय इसका उपयोग कर सकें</translation>
-<translation id="3635256809897331115">प्लग इन वीएम का इस्तेमाल करने के लिए लॉन्च पर क्लिक या टैप करें. अगली बार आप लॉन्चर पर आइकॉन को चुनकर प्लग इन वीएम को शुरू कर सकते हैं.</translation>
 <translation id="3636096452488277381">कैसे हैं, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> बाकी</translation>
 <translation id="3637682276779847508">अगर आप सही पिन अनलॉक कुंजी नहीं डाल पाते हैं तो आपका SIM कार्ड हमेशा के लिए अक्षम कर दिया जाएगा.</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">इस प्रकार की फ़ाइल आपके कंप्‍यूटर को नुकसान पहुंचा सकती है. क्‍या फिर भी आप <ph name="FILE_NAME" /> को रखना चाहते हैं?</translation>
 <translation id="3918972485393593704">Google को जानकारी भेजें</translation>
 <translation id="3919145445993746351">अपने सभी कंप्यूटर पर अपने एक्सटेंशन पाने के लिए, सिंक चालू करें</translation>
-<translation id="391999873395511996">वर्चुअल मशीन डाउनलोड हो रही है.</translation>
 <translation id="3920504717067627103">प्रमाणपत्र नीतियां</translation>
 <translation id="392089482157167418">ChromeVox (कंप्यूटर का बोलकर दिया गया जवाब) चालू करें</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2911,7 +2905,6 @@
 <translation id="5449551289610225147">गलत पासवर्ड</translation>
 <translation id="5449588825071916739">सभी टैब बुकमार्क करें</translation>
 <translation id="5449716055534515760">विं&amp;डो बंद करें</translation>
-<translation id="5453630479789469584">प्लग इन वीएम सेट अप नहीं किया जा सका</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> के साथ</translation>
 <translation id="545426320101607695">वह भाषा जिसमें अनुवाद करना है</translation>
 <translation id="5457113250005438886">अमान्य</translation>
@@ -4831,7 +4824,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> स्थानीय रूप से संग्रहित डेटा</translation>
 <translation id="833986336429795709">यह लिंक खोलने के लिए कोई ऐप्लिकेशन चुनें</translation>
 <translation id="8342861492835240085">कोई संग्रह चुनें</translation>
-<translation id="8343187330304787218"><ph name="DEVICE_TYPE" /> पर अपने प्लग इन वीएम चलाने के लिए सेटिंग प्रबंधित करें</translation>
 <translation id="8343956361364550006">सबसे बढ़िया वीडियो या ऐनिमेशन के लिए उच्च बैंडविड्थ का इस्तेमाल करें. हो सकता है कि धीमे कनेक्शन वाले अन्य लोगों को आपकी सामग्री दिखाई न दे.</translation>
 <translation id="8351419472474436977">इस एक्सटेंशन ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले काम को बदल सकता है, खंडित कर सकता है या उसे छिप कर सुन सकता है. अगर आप पक्का नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="835238322900896202">अनइंस्टॉल करते समय एक गड़बड़ी हुई. कृपया 'टर्मिनल' के ज़रिए अनइंस्टॉल करें.</translation>

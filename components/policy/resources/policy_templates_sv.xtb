@@ -2544,6 +2544,10 @@
       Observera att detta inte rekommenderas eftersom det kan användas för att förbigå tillägget nameConstraints som begränsar värdnamnen som ett visst certifikat kan auktoriseras för.
 
       Om den här principen inte har ställts in eller har ställts in på falskt betraktas servercertifikat som saknar tillägget subjectAlternativeName och innehåller antingen ett DNS-namn eller en IP-adress som otillförlitliga.</translation>
+<translation id="5578571772998293651">Tillåt feedback från användare.
+        Om principen är inställd på falskt kan användare inte skicka feedback till Google.
+
+        Om principen inte har ställts in eller är inställd på sant kan användare skicka feedback till Google via en tangentkombination eller Meny -&gt; Hjälp -&gt; Rapportera ett problem.</translation>
 <translation id="5581292529942108810">Konfigurera principer som gäller tillägget Chrome Reporting Extension.
 
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3943,6 +3947,7 @@
       Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillåt en företagsanvändare att vara enbart primär flerprofilsanvändare (standardbeteendet för företagshanterade användare)</translation>
 <translation id="8183108371184777472">Förhindra att webbläsarfönstret öppnas</translation>
+<translation id="8186911565834244165">Tillåt feedback från användare</translation>
 <translation id="8214600119442850823">Konfigurerar lösenordshanteraren.</translation>
 <translation id="8217516105848565518">Den här principen är utfasad. Använd RemoteAccessHostDomainList i stället.</translation>
 <translation id="8244171102276095471">Aktivera RC4-krypteringssviter i TLS</translation>
@@ -4385,6 +4390,12 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
+<translation id="91196902572559194">Den här principen ger Google Assistent behörighet att lyssna efter röstaktiveringsfrasen.
+
+      Om principen har aktiverats lyssnar Google-assistenten efter röstaktiveringsfrasen.
+      Om principen har inaktiverats lyssnar Google-assistenten inte efter röstaktiveringsfrasen.
+      Om principen inte har ställts in får användaren bestämma om Google-assistenten ska lyssna efter röstaktiveringsfrasen.
+      </translation>
 <translation id="9123211093995421438">Anger det lägsta antalet milstolpar som det ska gå att återställa <ph name="PRODUCT_OS_NAME" /> till, räknat från den aktuella stabila versionen.
 
       Standardvärdet är 0 för konsumenter och 4 (ungefär ett halvår) för företagsregistrerade enheter.

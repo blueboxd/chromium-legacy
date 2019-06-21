@@ -67,8 +67,8 @@ StorageType GetStorageType(DeprecatedStorageQuota::Type type) {
 }
 
 void DeprecatedQueryStorageUsageAndQuotaCallback(
-    V8PersistentCallbackFunction<V8StorageUsageCallback>* success_callback,
-    V8PersistentCallbackFunction<V8StorageErrorCallback>* error_callback,
+    V8StorageUsageCallback* success_callback,
+    V8StorageErrorCallback* error_callback,
     mojom::QuotaStatusCode status_code,
     int64_t usage_in_bytes,
     int64_t quota_in_bytes,
@@ -87,12 +87,11 @@ void DeprecatedQueryStorageUsageAndQuotaCallback(
   }
 }
 
-void RequestStorageQuotaCallback(
-    V8PersistentCallbackFunction<V8StorageQuotaCallback>* success_callback,
-    V8PersistentCallbackFunction<V8StorageErrorCallback>* error_callback,
-    mojom::QuotaStatusCode status_code,
-    int64_t usage_in_bytes,
-    int64_t granted_quota_in_bytes) {
+void RequestStorageQuotaCallback(V8StorageQuotaCallback* success_callback,
+                                 V8StorageErrorCallback* error_callback,
+                                 mojom::QuotaStatusCode status_code,
+                                 int64_t usage_in_bytes,
+                                 int64_t granted_quota_in_bytes) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     if (error_callback) {
       error_callback->InvokeAndReportException(nullptr,
@@ -117,13 +116,10 @@ void DeprecatedStorageQuota::EnqueueStorageErrorCallback(
 
   ExecutionContext::From(script_state)
       ->GetTaskRunner(TaskType::kMiscPlatformAPI)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(
-              &V8PersistentCallbackFunction<
-                  V8StorageErrorCallback>::InvokeAndReportException,
-              WrapPersistent(ToV8PersistentCallbackFunction(error_callback)),
-              nullptr, WrapPersistent(DOMError::Create(exception_code))));
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&V8StorageErrorCallback::InvokeAndReportException,
+                           WrapPersistent(error_callback), nullptr,
+                           WrapPersistent(DOMError::Create(exception_code))));
 }
 
 DeprecatedStorageQuota::DeprecatedStorageQuota(Type type) : type_(type) {}
@@ -152,10 +148,9 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
     return;
   }
 
-  auto callback = WTF::Bind(
-      &DeprecatedQueryStorageUsageAndQuotaCallback,
-      WrapPersistent(ToV8PersistentCallbackFunction(success_callback)),
-      WrapPersistent(ToV8PersistentCallbackFunction(error_callback)));
+  auto callback = WTF::Bind(&DeprecatedQueryStorageUsageAndQuotaCallback,
+                            WrapPersistent(success_callback),
+                            WrapPersistent(error_callback));
   GetQuotaHost(execution_context)
       .QueryStorageUsageAndQuota(
           WrapRefCounted(security_origin), storage_type,
@@ -180,10 +175,9 @@ void DeprecatedStorageQuota::requestQuota(
     return;
   }
 
-  auto callback = WTF::Bind(
-      &RequestStorageQuotaCallback,
-      WrapPersistent(ToV8PersistentCallbackFunction(success_callback)),
-      WrapPersistent(ToV8PersistentCallbackFunction(error_callback)));
+  auto callback =
+      WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
+                WrapPersistent(error_callback));
 
   Document& document = To<Document>(execution_context);
   const SecurityOrigin* security_origin = document.GetSecurityOrigin();

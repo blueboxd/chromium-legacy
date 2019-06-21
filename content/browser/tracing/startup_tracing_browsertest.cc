@@ -162,7 +162,7 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CreateTemporaryFile(&temp_file_path_);
     auto* startup_config = tracing::TraceStartupConfig::GetInstance();
-    startup_config->is_enabled_from_background_tracing_ = true;
+    startup_config->enable_background_tracing_for_testing_ = true;
     startup_config->EnableFromBackgroundTracing();
     startup_config->startup_duration_ = 3;
     tracing::EnableStartupTracingIfNeeded();

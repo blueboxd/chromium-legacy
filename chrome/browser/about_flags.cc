@@ -1663,6 +1663,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-search-ready-omnibox", flag_descriptions::kSearchReadyOmniboxName,
      flag_descriptions::kSearchReadyOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kSearchReadyOmniboxFeature)},
+    {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
+     flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
 #endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
@@ -1698,6 +1701,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniBackupDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniBackup)},
 #endif  // OS_CHROMEOS
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    {"terminal-system-app", flag_descriptions::kTerminalSystemAppName,
+     flag_descriptions::kTerminalSystemAppDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kTerminalSystemApp)},
+#endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,

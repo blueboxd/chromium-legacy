@@ -53,21 +53,9 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
         layout, visible_rect, visible_rect.size(), plane_addrs[0],
         plane_addrs[1], plane_addrs[2], src_video_frame->timestamp());
   } else if (VideoFrame::NumPlanes(layout.format()) == 1) {
-    size_t plane_size =
-        VideoFrame::AllocationSize(layout.format(), layout.coded_size());
-    if (plane_size > layout.buffer_sizes()[0] - layout.planes()[0].offset) {
-      // VideoFrameLayout can describe planes that are larger than the useful
-      // data they contain.
-      VLOGF(1) << "buffer_size - offset is smaller than expected"
-               << "buffer_size=" << layout.buffer_sizes()[0]
-               << ", offset=" << layout.planes()[0].offset
-               << ", plane_size=" << plane_size;
-      return nullptr;
-    }
-
     video_frame = VideoFrame::WrapExternalDataWithLayout(
-        layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_size,
-        src_video_frame->timestamp());
+        layout, visible_rect, visible_rect.size(), plane_addrs[0],
+        layout.planes()[0].size, src_video_frame->timestamp());
   }
   if (!video_frame) {
     return nullptr;
@@ -125,35 +113,38 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  const VideoFrameLayout& layout = video_frame->layout();
-
   // Map all buffers from their start address.
-  const auto& dmabuf_fds = video_frame->DmabufFds();
-  std::vector<std::pair<uint8_t*, size_t>> chunks;
-  const auto& buffer_sizes = layout.buffer_sizes();
-  std::vector<uint8_t*> buffer_addrs(buffer_sizes.size(), nullptr);
-  DCHECK_LE(buffer_addrs.size(), dmabuf_fds.size());
-  DCHECK_LE(buffer_addrs.size(), VideoFrame::kMaxPlanes);
-  for (size_t i = 0; i < buffer_sizes.size(); i++) {
-    buffer_addrs[i] = Mmap(buffer_sizes[i], dmabuf_fds[i].get());
-    if (!buffer_addrs[i]) {
-      MunmapBuffers(chunks, std::move(video_frame));
-      return nullptr;
-    }
-    chunks.emplace_back(buffer_addrs[i], buffer_sizes[i]);
+  const auto& planes = video_frame->layout().planes();
+  if (planes[0].offset != 0) {
+    VLOGF(1) << "The offset of the first plane is not zero";
+    return nullptr;
   }
 
   // Always prepare VideoFrame::kMaxPlanes addresses for planes initialized by
   // nullptr. This enables to specify nullptr to redundant plane, for pixel
   // format whose number of planes are less than VideoFrame::kMaxPlanes.
-  const auto& planes = layout.planes();
-  const size_t num_of_planes = layout.num_planes();
   uint8_t* plane_addrs[VideoFrame::kMaxPlanes] = {};
-  for (size_t i = 0; i < num_of_planes; i++) {
-    uint8_t* buffer =
-        i < buffer_addrs.size() ? buffer_addrs[i] : buffer_addrs.back();
-    plane_addrs[i] = buffer + planes[i].offset;
+  const size_t num_planes = planes.size();
+  const auto& dmabuf_fds = video_frame->DmabufFds();
+  std::vector<std::pair<uint8_t*, size_t>> chunks;
+  DCHECK_EQ(dmabuf_fds.size(), num_planes);
+  for (size_t i = 0; i < num_planes;) {
+    size_t next_buf = i + 1;
+    // Search the index of the plane from which the next buffer starts.
+    while (next_buf < num_planes && planes[next_buf].offset != 0)
+      next_buf++;
+
+    // Map the current buffer.
+    const auto& last_plane = planes[next_buf - 1];
+    const size_t mapped_size = last_plane.offset + last_plane.size;
+    uint8_t* mapped_addr = Mmap(mapped_size, dmabuf_fds[i].get());
+    chunks.emplace_back(mapped_addr, mapped_size);
+    for (size_t j = i; j < next_buf; ++j)
+      plane_addrs[j] = mapped_addr + planes[j].offset;
+
+    i = next_buf;
   }
+
   return CreateMappedVideoFrame(std::move(video_frame), plane_addrs, chunks);
 }
 

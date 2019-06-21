@@ -12,8 +12,14 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
+#include "components/crx_file/id_util.h"
 
 namespace web_app {
+
+// static
+AppId TestInstallFinalizer::GetAppIdForUrl(const GURL& url) {
+  return GenerateAppIdFromURL(url);
+}
 
 TestInstallFinalizer::TestInstallFinalizer() {}
 
@@ -23,7 +29,7 @@ void TestInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
     const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
-  AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
+  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
   if (next_app_id_.has_value()) {
     app_id = next_app_id_.value();
     next_app_id_.reset();

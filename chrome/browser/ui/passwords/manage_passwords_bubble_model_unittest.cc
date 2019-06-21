@@ -48,14 +48,6 @@ namespace {
 
 constexpr ukm::SourceId kTestSourceId = 0x1234;
 
-constexpr char kSignInPromoCountTilNoThanksMetric[] =
-    "PasswordManager.SignInPromoCountTilNoThanks";
-constexpr char kSignInPromoCountTilSignInMetric[] =
-    "PasswordManager.SignInPromoCountTilSignIn";
-constexpr char kSignInPromoDismissalCountMetric[] =
-    "PasswordManager.SignInPromoDismissalCount";
-constexpr char kSignInPromoDismissalReasonMetric[] =
-    "PasswordManager.SignInPromo";
 constexpr char kSiteOrigin[] = "http://example.com/login";
 constexpr char kUsername[] = "Admin";
 constexpr char kUsernameExisting[] = "User";
@@ -409,7 +401,6 @@ TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
 TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
   prefs()->SetBoolean(password_manager::prefs::kWasSignInPasswordPromoClicked,
                       true);
-  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*controller(), SavePassword(pending_password().username_value,
@@ -418,10 +409,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
 
   EXPECT_FALSE(model()->ReplaceToShowPromotionIfNeeded());
   DestroyModelAndVerifyControllerExpectations();
-  histogram_tester.ExpectTotalCount(kSignInPromoDismissalReasonMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilSignInMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilNoThanksMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
@@ -445,12 +432,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
-  histogram_tester.ExpectUniqueSample(
-      kSignInPromoDismissalReasonMetric,
-      password_manager::metrics_util::CHROME_SIGNIN_OK, 1);
-  histogram_tester.ExpectUniqueSample(kSignInPromoCountTilSignInMetric, 1, 1);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilNoThanksMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
@@ -469,12 +450,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
-  histogram_tester.ExpectUniqueSample(
-      kSignInPromoDismissalReasonMetric,
-      password_manager::metrics_util::CHROME_SIGNIN_CANCEL, 1);
-  histogram_tester.ExpectUniqueSample(kSignInPromoCountTilNoThanksMetric, 1, 1);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilSignInMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
@@ -492,12 +467,6 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
-  histogram_tester.ExpectUniqueSample(
-      kSignInPromoDismissalReasonMetric,
-      password_manager::metrics_util::CHROME_SIGNIN_DISMISSED, 1);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilSignInMetric, 0);
-  histogram_tester.ExpectTotalCount(kSignInPromoCountTilNoThanksMetric, 0);
-  histogram_tester.ExpectUniqueSample(kSignInPromoDismissalCountMetric, 1, 1);
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }

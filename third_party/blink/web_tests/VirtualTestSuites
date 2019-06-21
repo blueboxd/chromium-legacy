@@ -943,31 +943,6 @@
     "args": ["--enable-features=ScriptStreamingOnPreload"]
   },
   {
-    "prefix": "streams-native",
-    "base": "external/wpt/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "http/tests/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "http/tests/fetch",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "external/wpt/fetch",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
-    "prefix": "streams-native",
-    "base": "external/wpt/encoding/streams",
-    "args": ["--enable-blink-features=StreamsNative"]
-  },
-  {
     "prefix": "focusless-spat-nav",
     "base": "fast/spatial-navigation/focusless",
     "args": ["--enable-blink-features=FocuslessSpatialNavigation",

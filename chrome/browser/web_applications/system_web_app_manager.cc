@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -106,14 +107,19 @@ void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
   if (!NeedsUpdate())
     return;
 
-  std::vector<GURL> installed_apps = pending_app_manager_->GetInstalledAppUrls(
-      InstallSource::kSystemInstalled);
+  std::map<AppId, GURL> installed_apps =
+      pending_app_manager_->registrar()->GetExternallyInstalledApps(
+          InstallSource::kSystemInstalled);
 
   std::set<SystemAppType> installed_app_types;
-  for (const auto& it : system_app_infos_) {
-    if (std::find(installed_apps.begin(), installed_apps.end(),
-                  it.second.install_url) != installed_apps.end())
-      installed_app_types.insert(it.first);
+  for (const auto& type_and_info : system_app_infos_) {
+    const GURL& install_url = type_and_info.second.install_url;
+    if (std::find_if(installed_apps.begin(), installed_apps.end(),
+                     [install_url](const std::pair<AppId, GURL> id_and_url) {
+                       return id_and_url.second == install_url;
+                     }) != installed_apps.end()) {
+      installed_app_types.insert(type_and_info.first);
+    }
   }
 
   std::vector<InstallOptions> install_options_list;
@@ -149,11 +155,12 @@ base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
   if (app_url_it == system_app_infos_.end())
     return base::Optional<AppId>();
 
-  return pending_app_manager_->LookupAppId(app_url_it->second.install_url);
+  return pending_app_manager_->registrar()->LookupExternalAppId(
+      app_url_it->second.install_url);
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
-  return pending_app_manager_->HasAppIdWithInstallSource(
+  return pending_app_manager_->registrar()->HasExternalAppWithInstallSource(
       app_id, InstallSource::kSystemInstalled);
 }
 
@@ -217,9 +224,18 @@ void SystemWebAppManager::MigrateSystemWebApps(
     // installed.
     if (!type_and_info.second.migration_source.empty() &&
         !base::Contains(already_installed, type_and_info.first)) {
-      ui_delegate_->MigrateOSAttributes(
-          type_and_info.second.migration_source,
-          *GetAppIdForSystemApp(type_and_info.first));
+      base::Optional<AppId> system_app_id =
+          GetAppIdForSystemApp(type_and_info.first);
+      // TODO(crbug.com/977466): Replace with a DCHECK once we understand why
+      // this is happening.
+      if (!system_app_id) {
+        LOG(ERROR) << "System App Type "
+                   << static_cast<int>(type_and_info.first)
+                   << " could not be found when running migration.";
+        continue;
+      }
+      ui_delegate_->MigrateOSAttributes(type_and_info.second.migration_source,
+                                        *system_app_id);
     }
   }
 }

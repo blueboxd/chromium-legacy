@@ -22,6 +22,8 @@ namespace web_app {
 
 enum class InstallResultCode;
 
+class AppRegistrar;
+
 // PendingAppManager installs, uninstalls, and updates apps.
 //
 // Implementations of this class should perform each set of operations serially
@@ -45,7 +47,7 @@ class PendingAppManager {
   using SynchronizeCallback =
       base::OnceCallback<void(SynchronizeResult result)>;
 
-  PendingAppManager();
+  explicit PendingAppManager(AppRegistrar* registrar);
   virtual ~PendingAppManager();
 
   virtual void Shutdown() = 0;
@@ -78,10 +80,6 @@ class PendingAppManager {
   virtual void UninstallApps(std::vector<GURL> uninstall_urls,
                              const UninstallCallback& callback) = 0;
 
-  // Returns the URLs of those apps installed from |install_source|.
-  virtual std::vector<GURL> GetInstalledAppUrls(
-      InstallSource install_source) const = 0;
-
   // Installs an app for each InstallOptions in |desired_apps_install_options|
   // and uninstalls any apps in GetInstalledAppUrls(install_source) that are not
   // in |desired_apps_install_options|'s URLs.
@@ -99,14 +97,7 @@ class PendingAppManager {
       InstallSource install_source,
       SynchronizeCallback callback);
 
-  // Returns the app id for |url| if the PendingAppManager is aware of it.
-  virtual base::Optional<AppId> LookupAppId(const GURL& url) const = 0;
-
-  // Returns whether the PendingAppManager has installed an app with |app_id|
-  // from |install_source|.
-  virtual bool HasAppIdWithInstallSource(
-      const AppId& app_id,
-      web_app::InstallSource install_source) const = 0;
+  AppRegistrar* registrar() { return registrar_; }
 
  private:
   struct SynchronizeRequest {
@@ -131,6 +122,8 @@ class PendingAppManager {
                                        const GURL& app_url,
                                        bool succeeded);
   void OnAppSynchronized(InstallSource source, bool succeeded);
+
+  AppRegistrar* registrar_;
 
   base::flat_map<InstallSource, SynchronizeRequest> synchronize_requests_;
 

@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Alternar conexão de rede. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rolar para a direita</translation>
 <translation id="1812997170047690955">O que está na minha tela?</translation>
+<translation id="1820355135508821526">O recurso <ph name="FEATURE_NAME" /> foi desativado por uma política aplicada a este dispositivo. Entre em contato com seu administrador para solicitar alterações.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (carregando…)</translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">O chip está bloqueado</translation>
+<translation id="2651765386227849097">O Google Assistente está desativado neste dispositivo.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Clicar e arrastar</translation>
 <translation id="2700493154570097719">Configurar teclado</translation>
@@ -262,6 +264,7 @@
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">O atalho para alternar o modo de alto contraste foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4924411785043111640">Reiniciar e redefinir</translation>
@@ -299,6 +302,7 @@
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas configurações.</translation>
+<translation id="5682642926269496722">O Google Assistente não está disponível para a conta de usuário atual.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="5710450975648804523">O "Não perturbe" está ativado</translation>
 <translation id="574392208103952083">Médio</translation>
@@ -332,6 +336,7 @@
 <translation id="6064337552080329342">Não foi possível verificar sua senha. Tente novamente.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Carregando <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">O Google Assistente não está disponível em uma sessão de visitante.</translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
 <translation id="6164005077879661055">Todos os arquivos e dados locais associados ao usuário supervisionado serão
 permanentemente excluídos assim que esse usuário for removido. Os websites visitados por esse usuário supervisionado e suas configurações ainda poderão ser vistos pelo administrador em <ph name="MANAGEMENT_URL" />.</translation>
@@ -374,6 +379,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
 <translation id="6715542151869432661">Nenhum dispositivo móvel encontrado.</translation>
 <translation id="6723839937902243910">Energia</translation>
+<translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">O acompanhamento de desempenho está ativado</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>

@@ -47,13 +47,24 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       IntSize mailbox_size,
       bool is_origin_top_left);
 
-  // |release_callback| is an optional callback to be invoked when this image
-  // is destroyed. It can be invoked on any thread.
+  // Creates an image wrapping a shared image mailbox. |release_callback| is a
+  // callback to be invoked when this mailbox/texture can be safely destroyed.
+  // It can be invoked on any thread. Note that it is assumed that the mailbox
+  // can only be used for read operations, no writes are allowed.
+  //
+  // |shared_image_texture_id| is an optional texture bound to the shared image
+  // mailbox imported into the provided context. If provided the caller must
+  // ensure that the texture is bound to the shared image mailbox, stays alive
+  // and has a read lock on the shared image until the |release_callback| is
+  // invoked.
+  //
   // If the image is created on a different thread than |context_thread_id| then
-  // the provided sync_token must be verified.
+  // the provided sync_token must be verified and no |shared_image_texture_id|
+  // should be provided.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromCanvasMailbox(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
+      GLuint shared_image_texture_id,
       const SkImageInfo& sk_image_info,
       GLenum texture_target,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -126,6 +137,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   AcceleratedStaticBitmapImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
+      GLuint shared_image_texture_id,
       const SkImageInfo& sk_image_info,
       GLenum texture_target,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,

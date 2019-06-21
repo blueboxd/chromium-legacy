@@ -125,6 +125,10 @@ extern const base::Feature kUsageTimeLimitPolicy;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWilcoDtc;
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTerminalSystemApp;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopCaptureTabSharingInfobar;
 

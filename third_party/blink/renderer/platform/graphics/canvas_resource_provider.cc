@@ -567,14 +567,18 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       EnsureWriteAccess();
       if (surface_) {
         // Take read access to the outgoing resource for the skia copy below.
-        ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
-            old_resource->GetTextureIdForBackendTexture(),
-            GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+        if (!old_resource->has_read_access()) {
+          ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+              old_resource->GetTextureIdForBackendTexture(),
+              GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+        }
         surface_->replaceBackendTexture(CreateGrTextureForResource(),
                                         GetGrSurfaceOrigin());
         surface_->flush();
-        ContextGL()->EndSharedImageAccessDirectCHROMIUM(
-            old_resource->GetTextureIdForBackendTexture());
+        if (!old_resource->has_read_access()) {
+          ContextGL()->EndSharedImageAccessDirectCHROMIUM(
+              old_resource->GetTextureIdForBackendTexture());
+        }
       }
     }
 

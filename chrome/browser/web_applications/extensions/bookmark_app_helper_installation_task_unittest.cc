@@ -33,6 +33,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
@@ -111,16 +112,15 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
 };
 
+web_app::AppId GetAppIdForUrl(const GURL& url) {
+  return web_app::TestInstallFinalizer::GetAppIdForUrl(url);
+}
+
 class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
  public:
   explicit TestBookmarkAppInstallFinalizer(web_app::TestAppRegistrar* registrar)
       : registrar_(registrar) {}
   ~TestBookmarkAppInstallFinalizer() override = default;
-
-  // Returns what would be the AppId if an app is installed with |url|.
-  web_app::AppId GetAppIdForUrl(const GURL& url) {
-    return crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
-  }
 
   void SetNextFinalizeInstallResult(const GURL& url,
                                     web_app::InstallResultCode code) {
@@ -178,12 +178,14 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
     std::tie(app_id, code) =
         next_finalize_install_results_[web_app_info.app_url];
     next_finalize_install_results_.erase(web_app_info.app_url);
+    const GURL& url = web_app_info.app_url;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting(
-            [&, app_id, code, callback = std::move(callback)]() mutable {
-              registrar_->AddAsInstalled(app_id);
+            [&, app_id, url, code, callback = std::move(callback)]() mutable {
+              registrar_->AddExternalApp(
+                  app_id, {url, web_app::InstallSource::kInternal});
               std::move(callback).Run(app_id, code);
             }));
   }
@@ -205,7 +207,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
         base::BindLambdaForTesting(
             [&, app_id, uninstalled, callback = std::move(callback)]() mutable {
               if (uninstalled)
-                registrar_->RemoveAsInstalled(app_id);
+                registrar_->RemoveExternalApp(app_id);
               std::move(callback).Run(uninstalled);
             }));
   }
@@ -295,8 +297,7 @@ class BookmarkAppHelperInstallationTaskTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    registrar_ =
-        std::make_unique<web_app::TestAppRegistrar>(/*profile=*/nullptr);
+    registrar_ = std::make_unique<web_app::TestAppRegistrar>();
     install_finalizer_ =
         std::make_unique<TestBookmarkAppInstallFinalizer>(registrar_.get());
 
@@ -647,7 +648,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest, InstallPlaceholder) {
   install_finalizer()->SetNextFinalizeInstallResult(
       kWebAppUrl, web_app::InstallResultCode::kSuccess);
   install_finalizer()->SetNextCreateOsShortcutsResult(
-      install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+      GetAppIdForUrl(kWebAppUrl), true);
 
   base::RunLoop run_loop;
   task->Install(
@@ -689,7 +690,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest, InstallPlaceholderTwice) {
     install_finalizer()->SetNextFinalizeInstallResult(
         kWebAppUrl, web_app::InstallResultCode::kSuccess);
     install_finalizer()->SetNextCreateOsShortcutsResult(
-        install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+        GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
     task->Install(
@@ -738,7 +739,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest, ReinstallPlaceholderSucceeds) {
     install_finalizer()->SetNextFinalizeInstallResult(
         kWebAppUrl, web_app::InstallResultCode::kSuccess);
     install_finalizer()->SetNextCreateOsShortcutsResult(
-        install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+        GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
     task->Install(
@@ -796,7 +797,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest, ReinstallPlaceholderFails) {
     install_finalizer()->SetNextFinalizeInstallResult(
         kWebAppUrl, web_app::InstallResultCode::kSuccess);
     install_finalizer()->SetNextCreateOsShortcutsResult(
-        install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+        GetAppIdForUrl(kWebAppUrl), true);
 
     base::RunLoop run_loop;
     task->Install(

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/web_applications/components/app_registrar.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 
 namespace web_app {
@@ -41,6 +43,31 @@ void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
 void AppRegistrar::NotifyAppRegistrarShutdown() {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnAppRegistrarShutdown();
+}
+
+std::map<AppId, GURL> AppRegistrar::GetExternallyInstalledApps(
+    InstallSource install_source) const {
+  std::map<AppId, GURL> installed_apps =
+      ExternallyInstalledWebAppPrefs::BuildAppIdsMap(profile()->GetPrefs(),
+                                                     install_source);
+  base::EraseIf(installed_apps, [this](const std::pair<AppId, GURL>& app) {
+    return !IsInstalled(app.first);
+  });
+
+  return installed_apps;
+}
+
+base::Optional<AppId> AppRegistrar::LookupExternalAppId(
+    const GURL& install_url) const {
+  return ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+      .LookupAppId(install_url);
+}
+
+bool AppRegistrar::HasExternalAppWithInstallSource(
+    const AppId& app_id,
+    InstallSource install_source) const {
+  return ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
+      profile()->GetPrefs(), app_id, install_source);
 }
 
 }  // namespace web_app

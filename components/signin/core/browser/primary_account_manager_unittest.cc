@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
@@ -27,38 +28,15 @@
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-class TestPrimaryAccountManagerObserver
-    : public PrimaryAccountManager::Observer {
- public:
-  TestPrimaryAccountManagerObserver()
-      : num_successful_signins_(0), num_signouts_(0) {}
-
-  ~TestPrimaryAccountManagerObserver() override {}
-
-  int num_successful_signins_;
-  int num_signouts_;
-
- private:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override {
-    num_successful_signins_++;
-  }
-
-  void GoogleSignedOut(const AccountInfo& account_info) override {
-    num_signouts_++;
-  }
-};
-
-}  // namespace
-
 class PrimaryAccountManagerTest : public testing::Test {
  public:
   PrimaryAccountManagerTest()
       : test_signin_client_(&user_prefs_),
         token_service_(&user_prefs_,
                        std::make_unique<FakeOAuth2TokenServiceDelegate>()),
-        account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
+        account_consistency_(signin::AccountConsistencyMethod::kDisabled),
+        num_successful_signins_(0),
+        num_signouts_(0) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(user_prefs_.registry());
@@ -106,13 +84,19 @@ class PrimaryAccountManagerTest : public testing::Test {
         &test_signin_client_, &token_service_, &account_tracker_,
         account_consistency_, std::move(policy_manager));
     manager_->Initialize(&local_state_);
-    manager_->SetObserver(&test_observer_);
+
+    // PrimaryAccountManagerTest will outlive the PrimaryAccountManager, so
+    // base::Unretained is safe.
+    manager_->SetGoogleSigninSucceededCallback(
+        base::BindRepeating(&PrimaryAccountManagerTest::GoogleSigninSucceeded,
+                            base::Unretained(this)));
+    manager_->SetGoogleSignedOutCallback(base::BindRepeating(
+        &PrimaryAccountManagerTest::GoogleSignedOut, base::Unretained(this)));
   }
 
   // Shuts down |manager_|.
   void ShutDownManager() {
     DCHECK(manager_);
-    manager_->ClearObserver();
     manager_.reset();
   }
 
@@ -125,8 +109,14 @@ class PrimaryAccountManagerTest : public testing::Test {
         manager_->GetAuthenticatedAccountId()));
 
     // Should go into token service and stop.
-    EXPECT_EQ(1, test_observer_.num_successful_signins_);
+    EXPECT_EQ(1, num_successful_signins_);
   }
+
+  void GoogleSigninSucceeded(const AccountInfo& account_info) {
+    num_successful_signins_++;
+  }
+
+  void GoogleSignedOut(const AccountInfo& account_info) { num_signouts_++; }
 
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
@@ -137,10 +127,11 @@ class PrimaryAccountManagerTest : public testing::Test {
   AccountFetcherService account_fetcher_;
   PrimaryAccountPolicyManagerImpl* policy_manager_;
   std::unique_ptr<PrimaryAccountManager> manager_;
-  TestPrimaryAccountManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;
   std::vector<std::string> cookies_;
   signin::AccountConsistencyMethod account_consistency_;
+  int num_successful_signins_;
+  int num_signouts_;
 };
 
 TEST_F(PrimaryAccountManagerTest, SignOut) {
@@ -302,11 +293,11 @@ TEST_F(PrimaryAccountManagerTest, ExternalSignIn) {
   CreatePrimaryAccountManager();
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
-  EXPECT_EQ(0, test_observer_.num_successful_signins_);
+  EXPECT_EQ(0, num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
-  EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, num_successful_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
@@ -316,16 +307,16 @@ TEST_F(PrimaryAccountManagerTest,
   CreatePrimaryAccountManager();
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
-  EXPECT_EQ(0, test_observer_.num_successful_signins_);
+  EXPECT_EQ(0, num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
-  EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, num_successful_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
   manager_->SignIn("user@gmail.com");
-  EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, num_successful_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }

@@ -16017,7 +16017,7 @@
             'principal': {
               'description': '''User principal 'user@realm'. The placeholder ${{LOGIN_ID}} is replaced by the username 'user'. The placeholder ${{LOGIN_EMAIL}} is replaced by the full principal 'user@realm'.''',
               'type': 'string',
-              'pattern': '^(?:[^@]+@[^@]+)|(?:\${LOGIN_ID})|(?:\${LOGIN_EMAIL})$',
+              'pattern': '^(?:[^@]+@[^@]+)|(?:\\${LOGIN_ID})|(?:\\${LOGIN_EMAIL})$',
             },
             'password': {
               'description': '''Kerberos password. The placeholder ${{PASSWORD}} is replaced by the login password.''',

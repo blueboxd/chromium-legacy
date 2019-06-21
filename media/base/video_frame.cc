@@ -143,31 +143,34 @@ static base::Optional<VideoFrameLayout> GetDefaultLayout(
       int uv_width = (coded_size.width() + 1) / 2;
       int uv_height = (coded_size.height() + 1) / 2;
       int uv_stride = uv_width;
-      int uv_size = uv_width * uv_height;
+      int uv_size = uv_stride * uv_height;
       planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width(), 0),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea()),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea() + uv_size),
+          VideoFrameLayout::Plane(coded_size.width(), 0, coded_size.GetArea()),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea(), uv_size),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea() + uv_size,
+                                  uv_size),
       };
       break;
     }
 
     case PIXEL_FORMAT_Y16:
-      planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width() * 2, 0)};
+      planes = std::vector<VideoFrameLayout::Plane>{VideoFrameLayout::Plane(
+          coded_size.width() * 2, 0, coded_size.GetArea() * 2)};
       break;
 
     case PIXEL_FORMAT_ARGB:
-      planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width() * 4, 0)};
+      planes = std::vector<VideoFrameLayout::Plane>{VideoFrameLayout::Plane(
+          coded_size.width() * 4, 0, coded_size.GetArea() * 4)};
       break;
 
     case PIXEL_FORMAT_NV12: {
       int uv_width = (coded_size.width() + 1) / 2;
+      int uv_height = (coded_size.height() + 1) / 2;
       int uv_stride = uv_width * 2;
+      int uv_size = uv_stride * uv_height;
       planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width(), 0),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea()),
+          VideoFrameLayout::Plane(coded_size.width(), 0, coded_size.GetArea()),
+          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea(), uv_size),
       };
       break;
     }
@@ -401,11 +404,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     uint8_t* u_data,
     uint8_t* v_data,
     base::TimeDelta timestamp) {
-  const size_t height = coded_size.height();
   auto layout = VideoFrameLayout::CreateWithStrides(
-      format, coded_size, {y_stride, u_stride, v_stride},
-      {std::abs(y_stride) * height, std::abs(u_stride) * height,
-       std::abs(v_stride) * height});
+      format, coded_size, {y_stride, u_stride, v_stride});
   if (!layout) {
     DLOG(ERROR) << "Invalid layout.";
     return nullptr;
@@ -476,11 +476,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvaData(
     return nullptr;
   }
 
-  const size_t height = coded_size.height();
   auto layout = VideoFrameLayout::CreateWithStrides(
-      format, coded_size, {y_stride, u_stride, v_stride, a_stride},
-      {abs(y_stride) * height, abs(u_stride) * height, abs(v_stride) * height,
-       abs(a_stride) * height});
+      format, coded_size, {y_stride, u_stride, v_stride, a_stride});
   if (!layout) {
     DLOG(ERROR) << "Invalid layout";
     return nullptr;
@@ -1274,13 +1271,8 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   static_assert(0 == kYPlane, "y plane data must be index 0");
 
   std::vector<size_t> plane_size = CalculatePlaneSize();
-  size_t total_buffer_size = layout_.GetTotalBufferSize();
-  // If caller does not provide buffer layout, it uses sum of calculated color
-  // planes' size as buffer size VideoFrame needs to allocate.
-  if (total_buffer_size == 0) {
-    total_buffer_size =
-        std::accumulate(plane_size.begin(), plane_size.end(), 0u);
-  }
+  const size_t total_buffer_size =
+      std::accumulate(plane_size.begin(), plane_size.end(), 0u);
 
   uint8_t* data = reinterpret_cast<uint8_t*>(
       base::AlignedAlloc(total_buffer_size, layout_.buffer_addr_align()));
@@ -1298,46 +1290,36 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
 }
 
 std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
+  // We have two cases for plane size mapping:
+  // 1) If plane size is specified: use planes' size.
+  // 2) VideoFrameLayout::size is unassigned: use legacy calculation formula.
+
   const size_t num_planes = NumPlanes(format());
-  const size_t num_buffers = layout_.num_buffers();
-  const bool buffer_equals_plane = num_buffers == num_planes;
-  const bool buffer_assigned = layout_.GetTotalBufferSize() > 0;
-
-  // We have three cases for plane size mapping:
-  // 1) buffer size assigned, and #buffers == #planes: use buffers' size as
-  //    color planes' size.
-  // 2) buffer size unassigned: use legacy calculation formula.
-  // 3) buffer size assigned, and #buffers < #planes: map first B-1 buffers'
-  //    size to first B-1 color planes. And for the rest color planes' size,
-  //    fallback to use legacy calculation formula.
-  // The reason to use buffer size (if available) as color plane size is that
-  // color plane size is used to calculate each plane's starting address.
-  // For caller who already specify a buffer for each plane, use buffer size
-  // to calculate buffer/plane head address is the trivial choice.
-  if (buffer_equals_plane && buffer_assigned) {
-    return layout_.buffer_sizes();
+  const auto& planes = layout_.planes();
+  std::vector<size_t> plane_size(num_planes);
+  bool plane_size_assigned = true;
+  DCHECK_EQ(planes.size(), num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    plane_size[i] = planes[i].size;
+    plane_size_assigned &= plane_size[i] != 0;
   }
 
-  size_t mappable_buffers = 0;
-  if (buffer_assigned)
-    mappable_buffers = num_buffers - (buffer_equals_plane ? 0 : 1);
+  if (plane_size_assigned)
+    return plane_size;
 
-  std::vector<size_t> plane_size;
+  // Reset plane size.
+  std::fill(plane_size.begin(), plane_size.end(), 0u);
   for (size_t plane = 0; plane < num_planes; ++plane) {
-    if (plane < mappable_buffers) {
-      DCHECK_LT(plane, num_buffers);
-      plane_size.push_back(layout_.buffer_sizes()[plane]);
-    } else {
-      // These values were chosen to mirror ffmpeg's get_video_buffer().
-      // TODO(dalecurtis): This should be configurable; eventually ffmpeg wants
-      // us to use av_cpu_max_align(), but... for now, they just hard-code 32.
-      const size_t height =
-          base::bits::Align(rows(plane), kFrameAddressAlignment);
-      const size_t width = std::abs(stride(plane));
-      plane_size.push_back(width * height);
-    }
+    // These values were chosen to mirror ffmpeg's get_video_buffer().
+    // TODO(dalecurtis): This should be configurable; eventually ffmpeg wants
+    // us to use av_cpu_max_align(), but... for now, they just hard-code 32.
+    const size_t height =
+        base::bits::Align(rows(plane), kFrameAddressAlignment);
+    const size_t width = std::abs(stride(plane));
+    plane_size[plane] = width * height;
   }
-  if (num_planes > 1 && mappable_buffers < num_planes) {
+
+  if (num_planes > 1) {
     // The extra line of UV being allocated is because h264 chroma MC
     // overreads by one line in some cases, see libavcodec/utils.c:
     // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:

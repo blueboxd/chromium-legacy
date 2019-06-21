@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Meklēšana un izpēte</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Apturēt</translation>
-<translation id="1272444412400969138">Ierīces atlasītājs, ar kuru kopīgot cilni.</translation>
 <translation id="1283039547216852943">Pieskarties, lai izvērstu</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="1291207594882862231">Dzēst vēsturi, sīkfailus, vietnes datus, kešatmiņu…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Izstrādātāja rīki</translation>
 <translation id="1692118695553449118">Sinhronizācija ieslēgta</translation>
 <translation id="169515064810179024">Bloķēt vietņu piekļuvi kustību sensoriem</translation>
+<translation id="1697480839793160072">Tālruņi</translation>
+<translation id="1698058317516161971">E-pasta ziņojumi</translation>
 <translation id="1717218214683051432">Kustību sensori</translation>
 <translation id="1718835860248848330">Pēdējā stunda</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — atjaunināts <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Atļaut sīkfailus konkrētai vietnei.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}zero{# h}one{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Rādīt ieteikumus, ja nedarbojas tīmekļa adrese vai nevar izveidot savienojumu.</translation>
-<translation id="4044912625106523635">Ierīces atlasītājs, ar kuru kopīgot cilni, ir atvērts pilnā augstumā.</translation>
 <translation id="4046123991198612571">Nākamais ieraksts</translation>
 <translation id="4048707525896921369">Uzziniet par vietņu tēmām, neizejot no lapas. Izmantojot funkciju “Pieskarties, lai meklētu”, vārds un tā konteksts tiek nosūtīts pakalpojumam Google meklēšana, un tiek parādītas definīcijas, attēli, meklēšanas rezultāti un cita informācija.
 
@@ -747,7 +747,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6406506848690869874">Sinhronizācija</translation>
 <translation id="641643625718530986">Drukāt...</translation>
 <translation id="6416782512398055893">Lejupielādēts: <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Ierīces atlasītājs, ar kuru kopīgot cilni, ir aizvērts.</translation>
 <translation id="6427112570124116297">Iztulkojiet tīmekli</translation>
 <translation id="6433501201775827830">Meklētājprogrammas izvēle</translation>
 <translation id="6437478888915024427">Lapas informācija</translation>
@@ -787,7 +786,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="666268767214822976">Izmantojiet ieteikumus, lai skatītu saistītos vaicājumus un populāras vietnes, kad rakstāt adreses joslā.</translation>
 <translation id="666731172850799929">Atvērt lietotnē <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome konfidencialitātes paziņojums</translation>
-<translation id="6672986458216094438">Ierīces atlasītājs, ar kuru kopīgot cilni, ir atvērts pusekrāna augstumā.</translation>
 <translation id="6697492270171225480">Ja lapu neizdotas atrast, rāda ieteikumus par līdzīgām lapām</translation>
 <translation id="6697947395630195233">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>

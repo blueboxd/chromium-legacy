@@ -71,16 +71,13 @@ void DataTransferItem::getAsString(ScriptState* script_state,
   if (!callback || item_->Kind() != DataObjectItem::kStringKind)
     return;
 
-  auto* v8persistent_callback = ToV8PersistentCallbackFunction(callback);
   ExecutionContext* context = ExecutionContext::From(script_state);
-  probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString",
-                            v8persistent_callback);
+  probe::AsyncTaskScheduled(context, "DataTransferItem.getAsString", callback);
   context->GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&DataTransferItem::RunGetAsStringTask,
                            WrapPersistent(this), WrapPersistent(context),
-                           WrapPersistent(v8persistent_callback),
-                           item_->GetAsString()));
+                           WrapPersistent(callback), item_->GetAsString()));
 }
 
 File* DataTransferItem::getAsFile() const {
@@ -94,10 +91,9 @@ DataTransferItem::DataTransferItem(DataTransfer* data_transfer,
                                    DataObjectItem* item)
     : data_transfer_(data_transfer), item_(item) {}
 
-void DataTransferItem::RunGetAsStringTask(
-    ExecutionContext* context,
-    V8PersistentCallbackFunction<V8FunctionStringCallback>* callback,
-    const String& data) {
+void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
+                                          V8FunctionStringCallback* callback,
+                                          const String& data) {
   DCHECK(callback);
   probe::AsyncTask async_task(context, callback);
   if (context)

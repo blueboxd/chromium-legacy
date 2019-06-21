@@ -34,14 +34,18 @@ struct ReleaseContext {
 void ReleaseTexture(void* ctx) {
   auto* release_ctx = static_cast<ReleaseContext*>(ctx);
   if (release_ctx->context_provider_wrapper) {
-    release_ctx->context_provider_wrapper->Utils()->RemoveCachedMailbox(
-        release_ctx->gr_texture);
+    if (release_ctx->gr_texture) {
+      release_ctx->context_provider_wrapper->Utils()->RemoveCachedMailbox(
+          release_ctx->gr_texture);
+    }
 
-    auto* gl =
-        release_ctx->context_provider_wrapper->ContextProvider()->ContextGL();
-    if (release_ctx->is_shared_image)
-      gl->EndSharedImageAccessDirectCHROMIUM(release_ctx->texture_id);
-    gl->DeleteTextures(1u, &release_ctx->texture_id);
+    if (release_ctx->texture_id) {
+      auto* gl =
+          release_ctx->context_provider_wrapper->ContextProvider()->ContextGL();
+      if (release_ctx->is_shared_image)
+        gl->EndSharedImageAccessDirectCHROMIUM(release_ctx->texture_id);
+      gl->DeleteTextures(1u, &release_ctx->texture_id);
+    }
   }
 
   delete release_ctx;
@@ -59,11 +63,15 @@ SkiaTextureHolder::SkiaTextureHolder(
       image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
-    const MailboxTextureHolder* mailbox_texture_holder)
+    const MailboxTextureHolder* mailbox_texture_holder,
+    GLuint shared_image_texture_id)
     : TextureHolder(SharedGpuContext::ContextProviderWrapper(),
                     mailbox_texture_holder->mailbox_ref(),
                     mailbox_texture_holder->IsOriginTopLeft()) {
   const gpu::Mailbox mailbox = mailbox_texture_holder->GetMailbox();
+  DCHECK(!shared_image_texture_id || mailbox.IsSharedImage());
+  DCHECK(!shared_image_texture_id || !mailbox_texture_holder->IsCrossThread());
+
   const gpu::SyncToken sync_token = mailbox_texture_holder->GetSyncToken();
   const auto& sk_image_info = mailbox_texture_holder->sk_image_info();
   GLenum texture_target = mailbox_texture_holder->texture_target();
@@ -76,16 +84,23 @@ SkiaTextureHolder::SkiaTextureHolder(
   DCHECK(shared_gl &&
          shared_gr_context);  // context isValid already checked in callers
 
-  shared_gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   GLuint shared_context_texture_id = 0u;
-  if (mailbox.IsSharedImage()) {
-    shared_context_texture_id =
-        shared_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
-    shared_gl->BeginSharedImageAccessDirectCHROMIUM(
-        shared_context_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  bool should_delete_texture_on_release = true;
+
+  if (shared_image_texture_id) {
+    shared_context_texture_id = shared_image_texture_id;
+    should_delete_texture_on_release = false;
   } else {
-    shared_context_texture_id =
-        shared_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+    shared_gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+    if (mailbox.IsSharedImage()) {
+      shared_context_texture_id =
+          shared_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+      shared_gl->BeginSharedImageAccessDirectCHROMIUM(
+          shared_context_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    } else {
+      shared_context_texture_id =
+          shared_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+    }
   }
 
   GrGLTextureInfo texture_info;
@@ -102,7 +117,8 @@ SkiaTextureHolder::SkiaTextureHolder(
 
   auto* release_ctx = new ReleaseContext;
   release_ctx->mailbox_ref = mailbox_ref();
-  release_ctx->texture_id = shared_context_texture_id;
+  if (should_delete_texture_on_release)
+    release_ctx->texture_id = shared_context_texture_id;
   release_ctx->is_shared_image = mailbox.IsSharedImage();
   release_ctx->context_provider_wrapper = ContextProviderWrapper();
 
@@ -112,10 +128,11 @@ SkiaTextureHolder::SkiaTextureHolder(
       release_ctx);
   if (image_) {
     release_ctx->gr_texture = image_->getTexture();
+    DCHECK(release_ctx->gr_texture);
     ContextProviderWrapper()->Utils()->RegisterMailbox(image_->getTexture(),
                                                        mailbox);
   } else {
-    delete release_ctx;
+    ReleaseTexture(release_ctx);
   }
 }
 

@@ -29,13 +29,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 
 namespace autofill {
+
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using mojom::ButtonTitleType;
+using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 class FormStructureTest : public testing::Test {
  public:
@@ -2478,6 +2481,47 @@ TEST_F(FormStructureTest, EncodeUploadRequest_SubmissionIndicatorEvents_Match) {
       AutofillUploadContents::PROBABLE_FORM_SUBMISSION ==
           static_cast<int>(SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION),
       "PROBABLE_FORM_SUBMISSION enumerator does not match!");
+}
+
+TEST_F(FormStructureTest, ButtonTitleType_Match) {
+  // Statically assert that the mojo ButtonTitleType enum matches the
+  // corresponding entries the in proto AutofillUploadContents::ButtonTitle
+  // ButtonTitleType enum.
+  static_assert(AutofillUploadContents::ButtonTitle::NONE ==
+                    static_cast<int>(ButtonTitleType::NONE),
+                "NONE enumerator does not match!");
+
+  static_assert(
+      AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_SUBMIT_TYPE ==
+          static_cast<int>(ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE),
+      "BUTTON_ELEMENT_SUBMIT_TYPE enumerator does not match!");
+
+  static_assert(
+      AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_BUTTON_TYPE ==
+          static_cast<int>(ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE),
+      "BUTTON_ELEMENT_BUTTON_TYPE enumerator does not match!");
+
+  static_assert(
+      AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_SUBMIT_TYPE ==
+          static_cast<int>(ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE),
+      "INPUT_ELEMENT_SUBMIT_TYPE enumerator does not match!");
+
+  static_assert(
+      AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_BUTTON_TYPE ==
+          static_cast<int>(ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE),
+      "INPUT_ELEMENT_BUTTON_TYPE enumerator does not match!");
+
+  static_assert(AutofillUploadContents::ButtonTitle::HYPERLINK ==
+                    static_cast<int>(ButtonTitleType::HYPERLINK),
+                "HYPERLINK enumerator does not match!");
+
+  static_assert(AutofillUploadContents::ButtonTitle::DIV ==
+                    static_cast<int>(ButtonTitleType::DIV),
+                "DIV enumerator does not match!");
+
+  static_assert(AutofillUploadContents::ButtonTitle::SPAN ==
+                    static_cast<int>(ButtonTitleType::SPAN),
+                "SPAN enumerator does not match!");
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {

@@ -63,9 +63,6 @@ TEST_F(StoreMetricsReporterTest, StoreIndependentMetrics) {
 
       histogram_tester.ExpectBucketCount("PasswordManager.Enabled",
                                          password_manager_enabled, 1);
-      histogram_tester.ExpectBucketCount(
-          "PasswordManager.ShouldShowAutoSignInFirstRunExperience",
-          !first_run_ui_shown, 1);
     }
   }
 }

@@ -56,11 +56,10 @@ class ImageProcessorSimpleParamTest
       const std::vector<VideoFrame::StorageType>& output_storage_types) {
     const VideoPixelFormat input_format = input_image.PixelFormat();
     const VideoPixelFormat output_format = output_image.PixelFormat();
-    auto input_config_layout = test::CreateVideoFrameLayout(
-        input_format, input_image.Size(), VideoFrame::NumPlanes(input_format));
+    auto input_config_layout =
+        test::CreateVideoFrameLayout(input_format, input_image.Size());
     auto output_config_layout =
-        test::CreateVideoFrameLayout(output_format, output_image.Size(),
-                                     VideoFrame::NumPlanes(output_format));
+        test::CreateVideoFrameLayout(output_format, output_image.Size());
     LOG_ASSERT(input_config_layout);
     LOG_ASSERT(output_config_layout);
     ImageProcessor::PortConfig input_config(

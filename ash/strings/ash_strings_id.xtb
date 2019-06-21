@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Alihkan sambungan jaringan. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scroll ke kanan</translation>
 <translation id="1812997170047690955">Konten apa yang ada di layar saya?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> telah dinonaktifkan oleh kebijakan yang diterapkan ke perangkat ini. Harap hubungi administrator Anda untuk meminta perubahan.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asisten (sedang dimuat...)</translation>
 <translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Nyalakan ulang untuk mengupdate</translation>
 <translation id="2597972630681408282">Cahaya Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kartu SIM terkunci</translation>
+<translation id="2651765386227849097">Asisten Google dinonaktifkan di perangkat ini.</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2658778018866295321">Klik dan tarik</translation>
 <translation id="2700493154570097719">Setel keyboard Anda</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Baterai penuh.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Pintasan untuk beralih Mode Kontras Tinggi telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4924411785043111640">Mulai ulang dan setel ulang</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
+<translation id="5682642926269496722">Asisten Google tidak tersedia untuk akun pengguna saat ini.</translation>
 <translation id="5691772641933328258">Sidik jari tidak dikenali</translation>
 <translation id="5710450975648804523">Mode Jangan Ganggu aktif</translation>
 <translation id="574392208103952083">Sedang</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Maaf, sandi Anda tidak dapat diverifikasi. Harap coba lagi.</translation>
 <translation id="607652042414456612">Komputer Anda dapat ditemukan pada perangkat Bluetooth terdekat dan akan muncul sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengisi daya <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Asisten Google tidak tersedia dalam sesi tamu.</translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6164005077879661055">Semua file dan data lokal yang terkait dengan pengguna yang dilindungi akan dihapus secara permanen setelah pengguna yang dilindungi ini dihapus. Situs web yang dikunjungi dan setelan untuk pengguna yang dilindungi ini mungkin tetap dapat dilihat oleh pengelola di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6715542151869432661">Perangkat seluler tidak ditemukan.</translation>
 <translation id="6723839937902243910">Daya</translation>
+<translation id="6727969043791803658">Terhubung, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>

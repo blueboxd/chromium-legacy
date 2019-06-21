@@ -641,11 +641,15 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
 
     const volumeInfo = fileManager.volumeManager.getVolumeInfo(assert(root));
     if (volumeInfo) {
-      fileManager.ui.confirmDialog.show(
-          loadTimeData.getString('FORMATTING_WARNING'),
-          chrome.fileManagerPrivate.formatVolume.bind(
-              null, volumeInfo.volumeId),
-          null, null);
+      if (loadTimeData.getBoolean('FORMAT_DIALOG_ENABLED')) {
+        fileManager.ui.formatDialog.showModal(volumeInfo);
+      } else {
+        fileManager.ui.confirmDialog.show(
+            loadTimeData.getString('FORMATTING_WARNING'),
+            chrome.fileManagerPrivate.formatVolume.bind(
+                null, volumeInfo.volumeId),
+            null, null);
+      }
     }
   }
 

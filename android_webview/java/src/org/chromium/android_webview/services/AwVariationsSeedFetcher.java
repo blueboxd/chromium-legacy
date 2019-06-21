@@ -154,10 +154,8 @@ public class AwVariationsSeedFetcher extends JobService {
     }
 
     @Override
-    @SuppressWarnings("NoContextGetApplicationContext")
     public void onCreate() {
         super.onCreate();
-        ServiceInit.init(getApplicationContext());
         mSeedHolder = VariationsSeedHolder.getInstance();
     }
 

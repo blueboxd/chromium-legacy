@@ -444,7 +444,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika tidak disetel, kebijakan ini tidak berpengaruh dan reboot paksa tidak akan dilakukan saat pengguna logout. Hal yang sama berlaku jika kebijakan disetel ke Jangan pernah.
       Kebijakan ini hanya memengaruhi pengguna yang tidak berafiliasi.
       </translation>
-<translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan menge-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
+<translation id="1781356041596378058">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Developer. Jika Anda menyetel kebijakan ini ke false atau tidak menyetel kebijakan ini, pengguna dapat mengakses Opsi Developer dengan mengetuk tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="1793346220873697538">Nonaktifkan pencetakan PIN secara default</translation>
 <translation id="1797233582739332495">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang diperlukan</translation>
 <translation id="1798559516913615713">Masa berlaku cache GPO</translation>
@@ -2361,7 +2361,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika setelan ini dinonaktifkan, elemen halaman diizinkan menyetel cookie yang tidak berasal dari domain yang tercantum di kolom URL browser dan pengguna tidak dapat mengubah setelan ini.
 
       Jika kebijakan ini tidak ditetapkan, cookie pihak ketiga akan diaktifkan, tetapi pengguna dapat mengubahnya.</translation>
-<translation id="5442026853063570579">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menetapkan kebijakan ini ke 'DeveloperToolsDisallowed' (nilai 2), pengguna tidak dapat mengakses Opsi Developer. Jika Anda menetapkan kebijakan ini ke nilai lain atau tidak menetapkannya, pengguna dapat mengakses Opsi Developer dengan menge-tap nomor build di aplikasi setelan Android sebanyak 7 kali.</translation>
+<translation id="5442026853063570579">Kebijakan ini juga mengontrol akses ke Opsi Developer Android. Jika Anda menetapkan kebijakan ini ke 'DeveloperToolsDisallowed' (nilai 2), pengguna tidak dapat mengakses Opsi Developer. Jika Anda menetapkan kebijakan ini ke nilai lain atau tidak menetapkannya, pengguna dapat mengakses Opsi Developer dengan mengetuk nomor build di aplikasi setelan Android sebanyak 7 kali.</translation>
 <translation id="544342220587994947">Mengizinkan Anda menentukan daftar pola URL yang menetapkan situs tempat <ph name="PRODUCT_NAME" /> akan memilih sertifikat klien secara otomatis, jika situs meminta sertifikat.
 
           Nilai harus berupa array kamus dengan string JSON. Tiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN sebagai pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Selain itu, misalnya jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berisi bagian "ISSUER" dan "SUBJECT", sertifikat klien harus memenuhi kedua ketentuan untuk dipilih. Jika $FILTER menentukan organisasi ("O"), sertifikat harus memiliki minimal satu organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika $FILTER menentukan unit organisasi ("OU"), sertifikat harus memiliki minimal satu unit organisasi yang cocok dengan nilai yang ditentukan untuk dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak dibatasi lagi.
@@ -2461,6 +2461,10 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Perlu diperhatikan bahwa tindakan ini tidak disarankan, karena dapat melewati ekstensi nameConstraints yang membatasi hostname untuk mengotorisasi sertifikat yang diberikan.
 
       Jika kebijakan ini tidak disetel, atau disetel ke false, sertifikat server yang tidak menyertakan ekstensi subjectAlternativeName yang berisi nama DNS atau alamat IP tidak akan dipercaya.</translation>
+<translation id="5578571772998293651">Izinkan masukan pengguna.
+        Kalau kebijakan disetel ke false, pengguna tidak bisa mengirim masukan ke Google.
+
+        Kalau kebijakan tidak disetel atau disetel ke true, pengguna bisa mengirim masukan ke Google melalui Menu-&gt;Bantuan-&gt;Laporkan Masalah atau kombinasi kunci.</translation>
 <translation id="5581292529942108810">Konfigurasi kebijakan terkait Ekstensi Pelaporan Chrome.
 
       Kebijakan ini hanya berlaku jika <ph name="CHROME_REPORTING_EXTENSION_NAME" /> diaktifkan, dan mesin didaftarkan ke <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3792,6 +3796,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika kebijakan ini tidak disetel, tidak akan ada pengecualian untuk daftar hitam dari kebijakan 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
 <translation id="8183108371184777472">Sembunyikan peluncuran jendela browser</translation>
+<translation id="8186911565834244165">Izinkan masukan pengguna</translation>
 <translation id="8214600119442850823">Mengonfigurasi pengelola sandi.</translation>
 <translation id="8217516105848565518">Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Mengaktifkan paket penyandian RC4 di TLS</translation>
@@ -4201,6 +4206,12 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="9112897538922695510">Memungkinkan Anda mendaftarkan daftar penangan protokol. Ini hanya dapat menjadi kebijakan yang disarankan. Properti |protokol| sebaiknya disetel ke skema seperti 'mailto' dan properti |url| sebaiknya disetel ke pola URL aplikasi yang menangani skema. Pola tersebut dapat berisi '%s', yang apabila disajikan akan menggantikan URL yang ditangani.
 
           Penangan protokol yang didaftarkan oleh kebijakan digabung dengan penangan protokol yang didaftarkan oleh pengguna dan keduanya tersedia untuk digunakan. Pengguna dapat mengganti penangan protokol yang dipasang oleh kebijakan dengan memasang penangan default baru, namun pengguna tidak dapat membuang penangan protokol yang didaftarkan oleh kebijakan.</translation>
+<translation id="91196902572559194">Kebijakan ini memberikan izin kepada Asisten Google untuk mendengarkan frasa aktivasi suara.
+
+      Kalau kebijakan ini diaktifkan, Asisten Google akan mendengarkan frasa aktivasi suara.
+      Kalau kebijakan ini dinonaktifkan, Asisten Google tidak akan mendengarkan frasa aktivasi suara.
+      Kalau kebijakan tidak disetel, pengguna bisa memutuskan apakah akan mengizinkan Asisten Google mendengarkan frasa aktivasi suara.
+      </translation>
 <translation id="9123211093995421438">Penerapan jumlah minimum rollback milestone <ph name="PRODUCT_OS_NAME" /> akan diizinkan mulai versi yang stabil kapan saja.
 
       Jumlah defaultnya adalah 0 untuk pelanggan, 4 (sekitar setengah tahun) untuk perangkat yang didaftarkan perusahaan.

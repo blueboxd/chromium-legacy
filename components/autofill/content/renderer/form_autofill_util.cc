@@ -31,7 +31,6 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -49,7 +48,6 @@
 #include "third_party/blink/public/web/web_option_element.h"
 #include "third_party/blink/public/web/web_select_element.h"
 
-using autofill::FormFieldData;
 using blink::WebAutofillState;
 using blink::WebDocument;
 using blink::WebElement;
@@ -66,6 +64,9 @@ using blink::WebString;
 using blink::WebVector;
 
 namespace autofill {
+
+using mojom::ButtonTitleType;
+
 namespace form_util {
 
 const size_t kMaxParseableFields = 200;

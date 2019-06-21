@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">Eroare de conectare</translation>
 <translation id="1887597546629269384">Rostește din nou „Hei Google"</translation>
 <translation id="1887850431809612466">Versiune hardware</translation>
-<translation id="1889984860246851556">Deschide setările de proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Deschide ecranul complet</translation>
 <translation id="189358972401248634">Alte limbi</translation>
@@ -1316,7 +1315,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="2973324205039581528">Dezactivează sunetul pentru site</translation>
 <translation id="2977480621796371840">Elimină din grup</translation>
-<translation id="2979128960948974571">Poate dura câteva minute.</translation>
 <translation id="2979639724566107830">Deschide într-o fereastră nouă</translation>
 <translation id="2981113813906970160">Afișați cursorul de mouse mare</translation>
 <translation id="2982970937345031">Raportează anonim</translation>
@@ -1535,7 +1533,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3319048459796106952">Fereastră nouă &amp;incognito</translation>
 <translation id="3323521181261657960">Bonus! Ai primit o durată mai mare de folosire a dispozitivului</translation>
 <translation id="3325910708063135066">Camera foto și microfonul sunt dezactivate în System Preferences (Preferințe de sistem) pentru Mac</translation>
-<translation id="3330615614570718993">Contactează-ți administratorul pentru a activa Plugin VM pe acest dispozitiv.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informații despre aplicație</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – Videoclipul se redă în modul picture-in-picture</translation>
@@ -1627,7 +1624,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="346431825526753">Acesta este un cont pentru copii gestionat de <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">Redă în flux un fișier video sau audio</translation>
 <translation id="3468999815377931311">Telefon Android</translation>
-<translation id="3470248707805984963">A apărut o eroare. Încearcă din nou.</translation>
 <translation id="3470442499439619530">Eliminați acest utilizator</translation>
 <translation id="3473479545200714844">Lupă de ecran</translation>
 <translation id="3475843873335999118">Ne pare rău, amprenta nu este recunoscută. Introdu parola.</translation>
@@ -1740,7 +1736,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3629631988386925734">Introdu parola pentru a activa Smart Lock. Data viitoare, telefonul tău va debloca dispozitivul <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock din Setări.</translation>
 <translation id="3630132874740063857">Telefonul</translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
-<translation id="3635256809897331115">Dă clic pe sau atinge Lansează pentru a folosi Plugin VM. Pe viitor, poți porni Plugin VM selectând pictograma din Lansator.</translation>
 <translation id="3636096452488277381">Bună ziua, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – Timp rămas: <ph name="TIME" /></translation>
 <translation id="3637682276779847508">Cardul SIM va fi dezactivat definitiv dacă nu vei introduce cheia corectă de deblocare a codului PIN.</translation>
@@ -1955,7 +1950,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3916445069167113093">Acest tip de fișier poate dăuna computerului. Vrei să păstrezi <ph name="FILE_NAME" /> totuși?</translation>
 <translation id="3918972485393593704">Raportează detaliile la Google</translation>
 <translation id="3919145445993746351">Pentru a accesa extensiile pe toate computerele, activează sincronizarea</translation>
-<translation id="391999873395511996">Se descarcă mașina virtuală.</translation>
 <translation id="3920504717067627103">Politici de certificat</translation>
 <translation id="392089482157167418">Activați ChromeVox (feedback rostit)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,7 +2906,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5449551289610225147">Parolă nevalidă</translation>
 <translation id="5449588825071916739">Marcați toate filele</translation>
 <translation id="5449716055534515760">Închide fe&amp;reastra</translation>
-<translation id="5453630479789469584">Plugin VM nu a putut fi configurat</translation>
 <translation id="5454166040603940656">cu <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">Limba în care se traduce</translation>
 <translation id="5457113250005438886">Nevalide</translation>
@@ -4833,7 +4826,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8339059274628563283">Date salvate local de <ph name="SITE" /></translation>
 <translation id="833986336429795709">Pentru a deschide acest link, alege o aplicație</translation>
 <translation id="8342861492835240085">Selectează o colecție</translation>
-<translation id="8343187330304787218">Gestionează setările pentru rularea Plugin VM pe <ph name="DEVICE_TYPE" /></translation>
 <translation id="8343956361364550006">Pentru cea mai bună calitate a videoclipului sau a animației, folosește o lățime de bandă mare. Este posibil ca alte persoane cu conexiuni lente să nu-ți vadă conținutul.</translation>
 <translation id="8351419472474436977">Această extensie a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faceți online. Dacă nu știți sigur de ce a apărut această modificare, probabil că nu ați aprobat-o.</translation>
 <translation id="835238322900896202">A apărut o eroare în timpul dezinstalării. Te rugăm să dezinstalezi folosind Terminal.</translation>

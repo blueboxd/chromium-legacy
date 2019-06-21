@@ -2045,8 +2045,10 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
   }
 
   if (atk_object_) {
+    // We explicitly clear g_current_focused and g_current_active_descendant
+    // just in case there is another reference to atk_object_ somewhere.
     if (atk_object_ == g_current_focused)
-      g_current_focused = nullptr;
+      SetWeakGPtrToAtkObject(&g_current_focused, nullptr);
     if (atk_object_ == g_current_active_descendant)
       SetWeakGPtrToAtkObject(&g_current_active_descendant, nullptr);
     atk_object::Detach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
@@ -2950,7 +2952,7 @@ void AXPlatformNodeAuraLinux::OnFocused() {
                                    ATK_STATE_FOCUSED, false);
   }
 
-  g_current_focused = atk_object_;
+  SetWeakGPtrToAtkObject(&g_current_focused, atk_object_);
   g_signal_emit_by_name(atk_object_, "focus-event", true);
   atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_FOCUSED,
                                  true);

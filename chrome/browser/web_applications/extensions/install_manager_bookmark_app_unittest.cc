@@ -543,6 +543,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 
     web_app::InstallOptions install_options;
     install_options.launch_container = web_app::LaunchContainer::kTab;
+    install_options.install_source = web_app::InstallSource::kInternal;
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -555,6 +556,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 
     web_app::InstallOptions install_options;
     install_options.launch_container = web_app::LaunchContainer::kWindow;
+    install_options.install_source = web_app::InstallSource::kInternal;
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 

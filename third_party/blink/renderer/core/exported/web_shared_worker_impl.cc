@@ -187,8 +187,6 @@ void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
   } else {
     OnAppCacheSelected();
   }
-
-  client_->WorkerScriptLoaded();
 }
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {

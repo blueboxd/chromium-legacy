@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Aktivera och inaktivera nätverksanslutning. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Rulla åt höger</translation>
 <translation id="1812997170047690955">Vad visas på skärmen?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> har inaktiverats av en princip som gäller för enheten. Prata med administratören om du vill ändra den.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (läses in …)</translation>
 <translation id="1850504506766569011">Wi-Fi är inaktiverat.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Starta om för att uppdatera</translation>
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
+<translation id="2651765386227849097">Google-assistenten har inaktiverats på den här enheten.</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2658778018866295321">Klicka och dra</translation>
 <translation id="2700493154570097719">Ställ in tangentbord</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Kortkommandot för att aktivera och inaktivera högkontrastläget har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batterinivå</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4924411785043111640">Starta om och återställ</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Mikrofonuttag</translation>
 <translation id="5669267381087807207">Aktiverar</translation>
 <translation id="5673434351075758678">Från <ph name="FROM_LOCALE" /> till <ph name="TO_LOCALE" /> efter synkronisering av inställningarna.</translation>
+<translation id="5682642926269496722">Google-assistenten är inte tillgänglig för det här användarkontot.</translation>
 <translation id="5691772641933328258">Fingeravtrycket känns inte igen</translation>
 <translation id="5710450975648804523">Stör ej har aktiverats</translation>
 <translation id="574392208103952083">Medium</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Lösenordet kunde inte verifieras. Försök igen.</translation>
 <translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME" /> med adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Laddar <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google-assistenten är inte tillgänglig i en gästsession.</translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="6164005077879661055">Alla filer och lokala data som är kopplade till den hanterade användaren tas bort permanent när den hanterade användaren tas bort. Besökta webbplatser och inställningar för den hanterade användaren kan fortfarande vara synliga för den som hanterar användaren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Läs mer</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME" /> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="6715542151869432661">Inga mobila enheter hittades.</translation>
 <translation id="6723839937902243910">Batteri</translation>
+<translation id="6727969043791803658">Ansluten, <ph name="BATTERY_PERCENTAGE" /> % batterinivå</translation>
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>

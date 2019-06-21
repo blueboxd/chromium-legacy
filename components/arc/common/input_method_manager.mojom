@@ -22,6 +22,8 @@ struct ImeInfo {
   bool enabled;
   // intent: URL to open the settings activity of the IME.
   string settings_url;
+  // Whether the IME is allowed to be enabled in clamshell mode.
+  [MinVersion=8] bool is_allowed_in_clamshell_mode;
 };
 
 // Represents the information of the text field.

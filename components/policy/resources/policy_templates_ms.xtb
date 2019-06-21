@@ -2545,6 +2545,10 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Harap maklum bahawa langkah ini tidak disyorkan kerana boleh membenarkan pintasan sambungan nameConstraints yang menyekat nama hos yang boleh diberi kebenaran oleh sijil tertentu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, sijil pelayan yang ketiadaan sambungan subjectAlternativeName yang mengandungi sama ada nama DNS atau alamat IP tidak akan dipercayai.</translation>
+<translation id="5578571772998293651">Benarkan maklum balas pengguna.
+        Jika dasar ini ditetapkan kepada palsu, pengguna tidak dapat menghantar maklum balas kepada Google.
+
+        Jika dasar ini tidak ditetapkan atau ditetapkan kepada benar, pengguna boleh menghantar maklum balas kepada Google melalui Menu-&gt;Bantuan-&gt;Laporkan Isu atau melalui gabungan kekunci.</translation>
 <translation id="5581292529942108810">Konfigurasikan dasar yang berkaitan dengan Sambungan Pelaporan Chrome.
 
       Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3945,6 +3949,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, tiada pengecualian untuk senarai hitam daripada dasar 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Membenarkan pengguna perusahaan untuk menjadi pengguna berbilang profil utama sahaja (Tingkah laku lalai untuk pengguna perusahaan yang dikendalikan)</translation>
 <translation id="8183108371184777472">Tahan pelancaran tetingkap penyemak imbas</translation>
+<translation id="8186911565834244165">Benarkan maklum balas pengguna</translation>
 <translation id="8214600119442850823">Mengkonfigurasi pengurus kata laluan.</translation>
 <translation id="8217516105848565518">Dasar ini telah ditamatkan. Sebaliknya, sila gunakan RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Mendayakan suit sifer RC4 dalam TLS</translation>
@@ -4390,6 +4395,12 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>
+<translation id="91196902572559194">Dasar ini memberi Google Assistant kebenaran untuk mendengar ungkapan pengaktifan suara.
+
+      Jika dasar ini didayakan, Google Assistant akan mendengar ungkapan pengaktifan suara.
+      Jika dasar ini dilumpuhkan, Google Assistant tidak akan mendengar ungkapan pengaktifan suara.
+      Jika dasar ini tidak ditetapkan, pengguna boleh menentukan sama ada hendak membenarkan Google Assistant mendengar ungkapan pengaktifan suara.
+      </translation>
 <translation id="9123211093995421438">Menyatakan bilangan pengunduran pencapaian <ph name="PRODUCT_OS_NAME" /> minimum yang harus dibenarkan bermula daripada versi stabil pada bila-bila masa.
 
       Nilai lalai ialah 0 untuk pengguna, 4 (kira-kira setengah tahun) untuk peranti yang didaftarkan bawah perusahaan.

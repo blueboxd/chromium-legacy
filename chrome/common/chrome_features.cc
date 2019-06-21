@@ -212,6 +212,12 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
 const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// Enable chrome://terminal in Chrome OS or Linux.
+const base::Feature kTerminalSystemApp{"TerminalSystemApp",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enable using tab sharing infobars for desktop capture.
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};

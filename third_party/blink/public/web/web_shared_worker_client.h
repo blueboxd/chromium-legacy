@@ -51,7 +51,6 @@ class WebSharedWorkerClient {
   virtual void WorkerContextClosed() = 0;
   virtual void WorkerContextDestroyed() = 0;
   virtual void WorkerReadyForInspection() {}
-  virtual void WorkerScriptLoaded() = 0;
   virtual void WorkerScriptLoadFailed() = 0;
   virtual void WorkerScriptEvaluated(bool success) = 0;
   // Called on the main thread during initialization, before requesting the main

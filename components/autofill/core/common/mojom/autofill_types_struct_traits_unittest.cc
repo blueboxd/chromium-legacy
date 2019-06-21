@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
@@ -387,7 +386,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   input.username_predictions = {1, 13, 2};
   input.button_titles.push_back(
       std::make_pair(base::ASCIIToUTF16("Sign-up"),
-                     autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

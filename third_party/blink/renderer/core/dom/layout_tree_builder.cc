@@ -47,7 +47,7 @@ namespace blink {
 
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(
     Element& element,
-    const Node::AttachContext& context,
+    Node::AttachContext& context,
     const ComputedStyle* style,
     LegacyLayout legacy)
     : LayoutTreeBuilder(element, context, style), legacy_(legacy) {

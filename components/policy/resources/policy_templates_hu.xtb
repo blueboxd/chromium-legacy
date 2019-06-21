@@ -2482,6 +2482,10 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felhívjuk figyelmét, hogy nem javasoljuk ennek a módszernek a használatát, ugyanis lehetővé teheti a nameConstraints bővítmény megkerülését. Ez a bővítmény szolgál annak korlátozására, hogy az adott tanúsítvány mely gazdagépnevekhez kaphat jogosultságot.
 
       Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a DNS-nevet vagy IP-címet tartalmazó subjectAlternativeName bővítménnyel nem rendelkező szervertanúsítványokat a böngésző nem fogja megbízhatónak tekinteni.</translation>
+<translation id="5578571772998293651">Felhasználói visszajelzés engedélyezése.
+        Ha a házirend értéke hamis, a felhasználók nem küldhetnek visszajelzést a Google számára.
+
+        Ha a házirend nincs beállítva, vagy értéke igaz, a felhasználók küldhetnek visszajelzést a Google számára a Menü -&gt; Súgó -&gt; Hibabejelentés lehetőség vagy billentyűkombináció használatával.</translation>
 <translation id="5581292529942108810">A Chrome Reporting Extension házirendjeinek konfigurálása.
 
       A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.</translation>
@@ -3844,6 +3848,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha nincs beállítva, nem lesz kivétel az „URLBlacklist” házirend alól.</translation>
 <translation id="8176035528522326671">A vállalati felhasználók csak elsődleges többprofilú felhasználók lehetnek (alapértelmezett működés vállalati kezelésű felhasználók esetén)</translation>
 <translation id="8183108371184777472">A böngészőablak elindításának tiltása</translation>
+<translation id="8186911565834244165">Felhasználói visszajelzés engedélyezése</translation>
 <translation id="8214600119442850823">A jelszókezelőt konfigurálja</translation>
 <translation id="8217516105848565518">Ez a házirend elavult. Használja helyette a RemoteAccessHostDomainList házirendet.</translation>
 <translation id="8244171102276095471">RC4 rejtjelezési csomagok engedélyezése a TLS protokollban</translation>
@@ -4279,6 +4284,12 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="9112897538922695510">Lehetővé teszi a protokollkezelők listájának regisztrálását. Csak ajánlott házirend lehet. A |protocol| tulajdonságot a sémához – például „mailto” – kell beállítani, az |url| tulajdonságot pedig a sémát kezelő alkalmazás URL-mintájához. A minta tartalmazhat „%s” karakterláncot, amelynek – ha van – helyére majd a kezelt URL kerül.
 
           A rendszer egyesíti a házirend által regisztrált protokollkezelőket a felhasználó által regisztráltakkal, és mindkétféle protokollkezelő használatra készen rendelkezésre áll. A felhasználó új alapértelmezett kezelő telepítésével felülírhatja a házirend által telepített protokollkezelőket, a házirend által regisztrált protokollkezelőt azonban nem tudja eltávolítani.</translation>
+<translation id="91196902572559194">Ez a házirend engedélyezi a Google Segéd számára, hogy figyelje a hangalapú aktiválásra szolgáló kifejezést.
+
+      Ha a házirend engedélyezve van, a Google Segéd figyeli a hangalapú aktiválásra szolgáló kifejezést.
+      Ha a házirend le van tiltva, a Google Segéd nem figyeli a hangalapú aktiválásra szolgáló kifejezést.
+      Ha a házirend nincs beállítva, a felhasználók eldönthetik, hogy figyelje-e a Google Segéd a hangalapú aktiválásra szolgáló kifejezést.
+      </translation>
 <translation id="9123211093995421438">Megadja a <ph name="PRODUCT_OS_NAME" />-mérföldkövek minimális számát, amelyeknél engedélyezve van a visszaállítás, az aktuális stabil verziótól kezdve.
 
       Az alapértelmezett érték fogyasztóknál a 0, a vállalati szinten regisztrált eszközöknél 4 (nagyjából fél év).

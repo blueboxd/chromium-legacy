@@ -113,7 +113,7 @@ id<GREYMatcher> CancelButton() {
 
 // Returns a matcher for the search button.
 id<GREYMatcher> SearchButton() {
-  return grey_accessibilityID(kToolbarOmniboxButtonIdentifier);
+  return grey_accessibilityID(kToolbarSearchButtonIdentifier);
 }
 
 // Returns a matcher for the tab grid button.
@@ -689,7 +689,7 @@ void FocusOmnibox() {
   }
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kToolbarOmniboxButtonIdentifier)]
+                                          kToolbarSearchButtonIdentifier)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:firstResponder()];

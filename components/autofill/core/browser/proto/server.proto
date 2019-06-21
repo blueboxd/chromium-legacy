@@ -384,7 +384,8 @@ message AutofillUploadContents {
     optional string title = 1;
 
     // Describes how the button is implemented in HTML source. Corresponds to
-    // components/autofill/core/common/button_title_type.h
+    // the mojo ButtonTitleType enum defined in
+    // components/autofill/core/common/mojom/autofill_types.mojom.h
     enum ButtonTitleType {
       NONE = 0;
       BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>

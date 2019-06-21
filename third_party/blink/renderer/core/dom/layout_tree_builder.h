@@ -30,7 +30,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -39,13 +38,6 @@
 namespace blink {
 
 class ComputedStyle;
-
-inline void InitAttachContextParentAndSibling(Node::AttachContext& context,
-                                              const Node& node) {
-  context.parent = LayoutTreeBuilderTraversal::ParentLayoutObject(node);
-  context.next_sibling =
-      LayoutTreeBuilderTraversal::NextSiblingLayoutObject(node);
-}
 
 // The LayoutTreeBuilder class uses the DOM tree and CSS style rules as input to
 // form a LayoutObject Tree which is then used for layout computations in a
@@ -67,7 +59,7 @@ class LayoutTreeBuilder {
 
  protected:
   LayoutTreeBuilder(NodeType& node,
-                    const Node::AttachContext& context,
+                    Node::AttachContext& context,
                     const ComputedStyle* style)
       : node_(node), context_(context), style_(style) {
     DCHECK(!node.GetLayoutObject());
@@ -77,6 +69,11 @@ class LayoutTreeBuilder {
   }
 
   LayoutObject* NextLayoutObject() const {
+    if (!context_.next_sibling_valid) {
+      context_.next_sibling =
+          LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*node_);
+      context_.next_sibling_valid = true;
+    }
     LayoutObject* next = context_.next_sibling;
     // If a text node is wrapped in an anonymous inline for display:contents
     // (see CreateInlineWrapperForDisplayContents()), use the wrapper as the
@@ -91,14 +88,14 @@ class LayoutTreeBuilder {
   }
 
   Member<NodeType> node_;
-  const Node::AttachContext& context_;
+  Node::AttachContext& context_;
   const ComputedStyle* style_;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
  public:
   LayoutTreeBuilderForElement(Element&,
-                              const Node::AttachContext&,
+                              Node::AttachContext&,
                               const ComputedStyle*,
                               LegacyLayout legacy);
 
@@ -114,7 +111,7 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
  public:
   LayoutTreeBuilderForText(Text& text,
-                           const Node::AttachContext& context,
+                           Node::AttachContext& context,
                            const ComputedStyle* style_from_parent)
       : LayoutTreeBuilder(text, context, style_from_parent) {}
 

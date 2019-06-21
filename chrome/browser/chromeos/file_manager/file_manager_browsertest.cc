@@ -1064,6 +1064,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("breadcrumbsNavigate")));
 
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    FormatDialog, /* format_dialog.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("formatDialog").EnableFormatDialog(),
+                      TestCase("formatDialogEmpty").EnableFormatDialog(),
+                      TestCase("formatDialogCancel").EnableFormatDialog()));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;

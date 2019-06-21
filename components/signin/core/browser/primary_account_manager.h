@@ -21,11 +21,12 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 struct AccountInfo;
 class AccountTrackerService;
@@ -41,26 +42,9 @@ enum class SignoutDelete;
 
 class PrimaryAccountManager : public OAuth2TokenServiceObserver {
  public:
-  class Observer {
-   public:
-    // Called when a user signs into Google services such as sync.
-    // This method is not called during a reauth.
-    virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
-
-    // Called when the currently signed-in user for a user has been signed out.
-    virtual void GoogleSignedOut(const AccountInfo& account_info) {}
-
-    // Called during the signin as soon as
-    // PrimaryAccountManager::authenticated_account_id_ is set.
-    virtual void AuthenticatedAccountSet(const AccountInfo& account_info) {}
-
-    // Called during the signout as soon as
-    // PrimaryAccountManager::authenticated_account_id_ is cleared.
-    virtual void AuthenticatedAccountCleared() {}
-
-   protected:
-    virtual ~Observer() {}
-  };
+  typedef base::RepeatingCallback<void(const AccountInfo&)>
+      AccountSigninCallback;
+  typedef base::RepeatingCallback<void()> AccountClearedCallback;
 
 #if !defined(OS_CHROMEOS)
   // Used to remove accounts from the token service and the account tracker.
@@ -117,12 +101,23 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // Methods to set or clear the observer of signin.
-  // In practice these should only be used by IdentityManager.
-  // NOTE: If SetObserver is called, ClearObserver should be called before
-  // the destruction of PrimaryAccountManager.
-  void SetObserver(Observer* observer);
-  void ClearObserver();
+  // If set, this callback will be invoked whenever a user signs into Google
+  // services such as sync. This callback is not called during a reauth.
+  void SetGoogleSigninSucceededCallback(AccountSigninCallback callback);
+
+#if !defined(OS_CHROMEOS)
+  // If set, this callback will be invoked whenever the currently signed-in user
+  // for a user has been signed out.
+  void SetGoogleSignedOutCallback(AccountSigninCallback callback);
+#endif
+
+  // If set, this callback will be invoked during the signin as soon as
+  // PrimaryAccountManager::authenticated_account_id_ is set.
+  void SetAuthenticatedAccountSetCallback(AccountSigninCallback callback);
+
+  // If set, this callback will be invoked during the signout as soon as
+  // PrimaryAccountManager::authenticated_account_id_ is cleared.
+  void SetAuthenticatedAccountClearedCallback(AccountClearedCallback callback);
 
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
@@ -192,10 +187,6 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   void OnRefreshTokensLoaded() override;
 #endif
 
-  // Observer to notify on signin events.
-  // There is a DCHECK on destruction that this has been cleared.
-  Observer* observer_ = nullptr;
-
   SigninClient* client_;
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
@@ -208,6 +199,14 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
 
   // Account id after successful authentication.
   CoreAccountId authenticated_account_id_;
+
+  // Callbacks which will be invoked, if set, for signin-related events.
+  AccountSigninCallback on_google_signin_succeeded_callback_;
+#if !defined(OS_CHROMEOS)
+  AccountSigninCallback on_google_signed_out_callback_;
+#endif
+  AccountSigninCallback on_authenticated_account_set_callback_;
+  AccountClearedCallback on_authenticated_account_cleared_callback_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;

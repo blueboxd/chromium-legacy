@@ -935,6 +935,9 @@ extern const char kRewriteLevelDBOnDeletionDescription[];
 extern const char kRendererSideResourceSchedulerName[];
 extern const char kRendererSideResourceSchedulerDescription[];
 
+extern const char kReorderBookmarksName[];
+extern const char kReorderBookmarksDescription[];
+
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
 
@@ -1982,6 +1985,11 @@ extern const char kWakeOnPacketsDescription[];
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+extern const char kTerminalSystemAppName[];
+extern const char kTerminalSystemAppDescription[];
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------
 

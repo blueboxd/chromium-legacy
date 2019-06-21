@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
@@ -28,7 +29,8 @@ operator=(PendingAppManager::SynchronizeRequest&&) = default;
 PendingAppManager::SynchronizeRequest::SynchronizeRequest(
     SynchronizeRequest&& other) = default;
 
-PendingAppManager::PendingAppManager() = default;
+PendingAppManager::PendingAppManager(AppRegistrar* registrar)
+    : registrar_(registrar) {}
 
 PendingAppManager::~PendingAppManager() = default;
 
@@ -36,6 +38,7 @@ void PendingAppManager::SynchronizeInstalledApps(
     std::vector<InstallOptions> desired_apps_install_options,
     InstallSource install_source,
     SynchronizeCallback callback) {
+  DCHECK(registrar_);
   DCHECK(std::all_of(desired_apps_install_options.begin(),
                      desired_apps_install_options.end(),
                      [&install_source](const InstallOptions& install_options) {
@@ -44,17 +47,20 @@ void PendingAppManager::SynchronizeInstalledApps(
   // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
   DCHECK(!base::Contains(synchronize_requests_, install_source));
 
-  std::vector<GURL> current_urls = GetInstalledAppUrls(install_source);
-  std::sort(current_urls.begin(), current_urls.end());
+  std::vector<GURL> installed_urls;
+  for (auto apps_it : registrar_->GetExternallyInstalledApps(install_source))
+    installed_urls.push_back(apps_it.second);
+
+  std::sort(installed_urls.begin(), installed_urls.end());
 
   std::vector<GURL> desired_urls;
-  for (const auto& info : desired_apps_install_options) {
-    desired_urls.emplace_back(info.url);
-  }
+  for (const auto& info : desired_apps_install_options)
+    desired_urls.push_back(info.url);
+
   std::sort(desired_urls.begin(), desired_urls.end());
 
   auto urls_to_remove =
-      base::STLSetDifference<std::vector<GURL>>(current_urls, desired_urls);
+      base::STLSetDifference<std::vector<GURL>>(installed_urls, desired_urls);
 
   // Run callback immediately if there's no work to be done.
   if (urls_to_remove.empty() && desired_apps_install_options.empty()) {

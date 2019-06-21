@@ -53,6 +53,7 @@
 
 namespace autofill {
 
+using mojom::ButtonTitleType;
 using mojom::SubmissionIndicatorEvent;
 
 namespace {
@@ -347,9 +348,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
 }
 
 // Helper function for explicit conversion between |ButtonTitleType| defined in
-// "button_title_type.h" and "server.proto".
+// "autofill_types.mojom.h" and "server.proto".
 AutofillUploadContents_ButtonTitle_ButtonTitleType ToServerButtonTitleType(
-    autofill::ButtonTitleType input) {
+    ButtonTitleType input) {
   switch (input) {
     case ButtonTitleType::NONE:
       return AutofillUploadContents::ButtonTitle::NONE;

@@ -369,6 +369,7 @@ void WebAppInstallTask::OnDialogCompleted(
         finalize_options.source = InstallFinalizer::Source::kSystemInstalled;
         break;
       case InstallSource::kArc:
+      case InstallSource::kInvalid:
         NOTREACHED();
         break;
     }

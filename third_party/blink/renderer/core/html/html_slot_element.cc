@@ -260,6 +260,7 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
       children_context.previous_in_flow = nullptr;
       children_context.parent = layout_object;
       children_context.next_sibling = nullptr;
+      children_context.next_sibling_valid = true;
     }
 
     for (auto& node : AssignedNodes())

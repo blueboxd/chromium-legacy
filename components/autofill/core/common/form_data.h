@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "url/gurl.h"
@@ -19,7 +18,7 @@ namespace autofill {
 
 // Pair of a button title (e.g. "Register") and its type (e.g.
 // INPUT_ELEMENT_SUBMIT_TYPE).
-using ButtonTitleInfo = std::pair<base::string16, ButtonTitleType>;
+using ButtonTitleInfo = std::pair<base::string16, mojom::ButtonTitleType>;
 
 // List of button titles of a given form.
 using ButtonTitleList = std::vector<ButtonTitleInfo>;

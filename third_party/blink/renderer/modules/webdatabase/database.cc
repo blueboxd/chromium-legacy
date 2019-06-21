@@ -292,24 +292,20 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
     if (success && IsNew()) {
       STORAGE_DVLOG(1)
           << "Scheduling DatabaseCreationCallbackTask for database " << this;
-      auto* v8persistent_callback =
-          ToV8PersistentCallbackFunction(creation_callback);
       probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
-                                v8persistent_callback);
+                                creation_callback);
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(
-              FROM_HERE,
-              WTF::Bind(&Database::RunCreationCallback, WrapPersistent(this),
-                        WrapPersistent(v8persistent_callback)));
+          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
+                                          WrapPersistent(this),
+                                          WrapPersistent(creation_callback)));
     }
   }
 
   return success;
 }
 
-void Database::RunCreationCallback(
-    V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback) {
+void Database::RunCreationCallback(V8DatabaseCallback* creation_callback) {
   probe::AsyncTask async_task(GetExecutionContext(), creation_callback);
   creation_callback->InvokeAndReportException(nullptr, this);
 }

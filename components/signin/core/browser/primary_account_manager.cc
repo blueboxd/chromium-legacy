@@ -42,8 +42,6 @@ PrimaryAccountManager::PrimaryAccountManager(
 }
 
 PrimaryAccountManager::~PrimaryAccountManager() {
-  DCHECK(!observer_);
-
   token_service_->RemoveObserver(this);
 }
 
@@ -230,15 +228,15 @@ void PrimaryAccountManager::SetAuthenticatedAccountId(
   // if Chrome crashes before the next commit interval.
   client_->GetPrefs()->CommitPendingWrite();
 
-  if (observer_) {
-    observer_->AuthenticatedAccountSet(info);
+  if (on_authenticated_account_set_callback_) {
+    on_authenticated_account_set_callback_.Run(info);
   }
 }
 
 void PrimaryAccountManager::ClearAuthenticatedAccountId() {
   authenticated_account_id_ = CoreAccountId();
-  if (observer_) {
-    observer_->AuthenticatedAccountCleared();
+  if (on_authenticated_account_cleared_callback_) {
+    on_authenticated_account_cleared_callback_.Run();
   }
 }
 
@@ -246,14 +244,34 @@ bool PrimaryAccountManager::IsAuthenticated() const {
   return !authenticated_account_id_.empty();
 }
 
-void PrimaryAccountManager::SetObserver(Observer* observer) {
-  DCHECK(!observer_) << "SetObserver shouldn't be called multiple times.";
-  observer_ = observer;
+void PrimaryAccountManager::SetGoogleSigninSucceededCallback(
+    AccountSigninCallback callback) {
+  DCHECK(!on_google_signin_succeeded_callback_)
+      << "GoogleSigninSucceededCallback shouldn't be set multiple times.";
+  on_google_signin_succeeded_callback_ = callback;
 }
 
-void PrimaryAccountManager::ClearObserver() {
-  DCHECK(observer_);
-  observer_ = nullptr;
+#if !defined(OS_CHROMEOS)
+void PrimaryAccountManager::SetGoogleSignedOutCallback(
+    AccountSigninCallback callback) {
+  DCHECK(!on_google_signed_out_callback_)
+      << "GoogleSignedOutCallback shouldn't be set multiple times.";
+  on_google_signed_out_callback_ = callback;
+}
+#endif  // !defined(OS_CHROMEOS)
+
+void PrimaryAccountManager::SetAuthenticatedAccountSetCallback(
+    AccountSigninCallback callback) {
+  DCHECK(!on_authenticated_account_set_callback_)
+      << "AuthenticatedAccountSetCallback shouldn't be set multiple times.";
+  on_authenticated_account_set_callback_ = callback;
+}
+
+void PrimaryAccountManager::SetAuthenticatedAccountClearedCallback(
+    AccountClearedCallback callback) {
+  DCHECK(!on_authenticated_account_cleared_callback_)
+      << "AuthenticatedAccountClearedCallback shouldn't be set multiple times.";
+  on_authenticated_account_cleared_callback_ = callback;
 }
 
 void PrimaryAccountManager::SignIn(const std::string& username) {
@@ -269,8 +287,8 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
 
   SetAuthenticatedAccountInfo(info.gaia, info.email);
 
-  if (!reauth_in_progress && observer_ != nullptr)
-    observer_->GoogleSigninSucceeded(GetAuthenticatedAccountInfo());
+  if (!reauth_in_progress && on_google_signin_succeeded_callback_)
+    on_google_signin_succeeded_callback_.Run(GetAuthenticatedAccountInfo());
 
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());
@@ -381,8 +399,8 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
 
 void PrimaryAccountManager::FireGoogleSignedOut(
     const AccountInfo& account_info) {
-  if (observer_ != nullptr) {
-    observer_->GoogleSignedOut(account_info);
+  if (on_google_signed_out_callback_) {
+    on_google_signed_out_callback_.Run(account_info);
   }
 }
 

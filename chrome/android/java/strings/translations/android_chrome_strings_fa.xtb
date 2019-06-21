@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">جستجو و کاوش</translation>
 <translation id="1264974993859112054">ورزش</translation>
 <translation id="1272079795634619415">توقف</translation>
-<translation id="1272444412400969138">انتخاب‌گر دستگاه برای هم‌رسانی برگه‌ای با آن.</translation>
 <translation id="1283039547216852943">برای بزرگ کردن ضربه بزنید</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">ابزار برنامه‌نویس</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
+<translation id="1697480839793160072">تلفن</translation>
+<translation id="1698058317516161971">ایمیل‌ها</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
 <translation id="1718835860248848330">ساعت قبل</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> به‌روزرسانی شده است</translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
-<translation id="4044912625106523635">انتخابگر دستگاه برای هم‌رسانی برگه با آن به‌صورت کامل باز شده است.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4048707525896921369">‏بدون ترک کردن صفحه با موضوعات وب‌سایت‌ها آشنا شوید. «ضربه برای جستجو»، کلمه و متن اطراف آن را به «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
 
@@ -437,7 +437,7 @@
 
     قبل از دسترسی به این سایت، مطمئن شوید به آن اعتماد دارید.</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
-<translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
+<translation id="4256782883801055595">مجوزهای متن‌باز</translation>
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
 <translation id="4262028915562328938">خطای همگام‌سازی رخ داد برای دریافت جزئیات ضربه بزنید.</translation>
 <translation id="4269820728363426813">کپی نشانی پیوند</translation>
@@ -747,7 +747,6 @@
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> مگابایت بارگیری شد</translation>
-<translation id="6418750371676080905">انتخابگر دستگاه برای هم‌رسانی برگه‌ای با آن بسته شده است.</translation>
 <translation id="6427112570124116297">وب را ترجمه کنید</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>
 <translation id="6437478888915024427">اطلاعات صفحه</translation>
@@ -787,7 +786,6 @@
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
-<translation id="6672986458216094438">انتخابگر دستگاه برای هم‌رسانی برگه‌ای با آن به‌صورت نیمه باز است.</translation>
 <translation id="6697492270171225480">نمایش پیشنهادهای صفحه‌های مشابه وقتی صفحه‌ای پیدا نمی‌شود</translation>
 <translation id="6697947395630195233">‏Chrome برای اشتراک‌گذاری مکانتان با این سایت باید به مکانتان دسترسی داشته باشد.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>

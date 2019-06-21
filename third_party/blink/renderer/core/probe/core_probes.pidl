@@ -127,7 +127,7 @@ interface CoreProbes {
   void WillSendWebSocketHandshakeRequest([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
   void DidReceiveWebSocketHandshakeResponse([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request, network::mojom::blink::WebSocketHandshakeResponse* response);
   void DidCloseWebSocket([Keep] ExecutionContext*, uint64_t identifier);
-  void DidReceiveWebSocketMessage(ExecutionContext*, uint64_t identifier, int opcode, bool masked, const char* payload, size_t payload_length);
+  void DidReceiveWebSocketMessage(ExecutionContext*, uint64_t identifier, int opcode, bool masked, const Vector<base::span<const char>>& data);
   void DidSendWebSocketMessage(ExecutionContext*, uint64_t identifier, int opcode, bool masked, const char* payload, size_t payload_length);
   void DidReceiveWebSocketMessageError(ExecutionContext*, uint64_t identifier, const String& error_message);
   void NetworkStateChanged([Keep] LocalFrame*, bool online);

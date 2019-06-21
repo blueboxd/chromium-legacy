@@ -93,25 +93,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     std::string id_;
   };
 
-  // Classes that want to monitor status of refresh token and refresh token
-  // request should implement this interface and register with the
-  // AddDiagnosticsObserver() call.
-  class DiagnosticsObserver {
-   public:
-    // Caled when a new refresh token is available. Contains diagnostic
-    // information about the source of the update credentials operation.
-    virtual void OnRefreshTokenAvailableFromSource(
-        const CoreAccountId& account_id,
-        bool is_refresh_token_valid,
-        const std::string& source) {}
-
-    // Called when a refreh token is revoked. Contains diagnostic information
-    // about the source that initiated the revokation operation.
-    virtual void OnRefreshTokenRevokedFromSource(
-        const CoreAccountId& account_id,
-        const std::string& source) {}
-  };
-
   // The parameters used to fetch an OAuth2 access token.
   struct RequestParameters {
     RequestParameters(const std::string& client_id,
@@ -138,10 +119,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
   void RemoveObserver(OAuth2TokenServiceObserver* observer);
-
-  // Add or remove observers of this token service.
-  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
-  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
   // TODO(https://crbug.com/967598): Remove these APIs once we can use
   // OAuth2AccessTokenManager without OAuth2TokenService.
@@ -255,11 +232,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // OAuth2TokenServiceTest.
   OAuth2TokenService::TokenCache& token_cache();
 
-  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
-  GetDiagnosticsObservers() {
-    return diagnostics_observer_list_;
-  }
-
   const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
   GetAccessTokenDiagnosticsObservers();
 
@@ -322,10 +294,12 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void CancelAllRequests();
 
   // Cancels all requests related to a given |account_id|. Virtual so it can be
   // overridden for tests.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
@@ -379,10 +353,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
   std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;
-
-  // List of observers to notify when access token status changes.
-  base::ObserverList<DiagnosticsObserver, true>::Unchecked
-      diagnostics_observer_list_;
 
   // The depth of batch changes.
   int batch_change_depth_;

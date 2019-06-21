@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scorri a destra</translation>
 <translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
+<translation id="1820355135508821526">La funzionalità <ph name="FEATURE_NAME" /> è stata disattivata da un criterio applicato a questo dispositivo. Contatta l'amministratore per richiedere modifiche.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Riavvia per aggiornare</translation>
 <translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
+<translation id="2651765386227849097">L'Assistente Google è disattivato su questo dispositivo.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
@@ -262,6 +264,7 @@
 <translation id="4895488851634969361">La batteria è carica.</translation>
 <translation id="490375751687810070">Verticale</translation>
 <translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="4924411785043111640">Riavvia e reimposta</translation>
@@ -299,6 +302,7 @@
 <translation id="5648021990716966815">Jack per microfono</translation>
 <translation id="5669267381087807207">In fase di attivazione</translation>
 <translation id="5673434351075758678">Da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
+<translation id="5682642926269496722">L'Assistente Google non è disponibile per l'attuale account utente.</translation>
 <translation id="5691772641933328258">Impronta digitale non riconosciuta</translation>
 <translation id="5710450975648804523">Funzione Non disturbare attiva</translation>
 <translation id="574392208103952083">Medio</translation>
@@ -332,6 +336,7 @@
 <translation id="6064337552080329342">Impossibile verificare la password. Riprova.</translation>
 <translation id="607652042414456612">Il tuo computer è rilevabile per i dispositivi Bluetooth nelle vicinanze e verrà visualizzato come "<ph name="NAME" />" con l'indirizzo <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">In carica: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">L'Assistente Google non è disponibile in una sessione Ospite.</translation>
 <translation id="615957422585914272">Mostra tastiera sullo schermo</translation>
 <translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
@@ -373,6 +378,7 @@
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
 <translation id="6715542151869432661">Nessun dispositivo mobile trovato.</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
+<translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>

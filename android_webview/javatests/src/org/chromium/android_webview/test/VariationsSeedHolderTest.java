@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.VariationsUtils;
-import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.services.VariationsSeedHolder;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -83,7 +82,6 @@ public class VariationsSeedHolderTest {
 
     @Before
     public void setUp() throws IOException {
-        ServiceInit.setPrivateDataDirectorySuffix();
         VariationsTestUtils.deleteSeeds();
     }
 

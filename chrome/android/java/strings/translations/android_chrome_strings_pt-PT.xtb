@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1264974993859112054">Desporto</translation>
 <translation id="1272079795634619415">Parar</translation>
-<translation id="1272444412400969138">O selecionador do dispositivo com o qual pretende partilhar um separador.</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Ferramentas do Programador</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que os sites acedam aos sensores de movimentos</translation>
+<translation id="1697480839793160072">Telefones</translation>
+<translation id="1698058317516161971">Emails</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Permita cookies para um site específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço Web não responder ou não for possível estabelecer ligação</translation>
-<translation id="4044912625106523635">O selecionador do dispositivo com o qual pretende partilhar um separador está aberto à altura total.</translation>
 <translation id="4046123991198612571">Faixa seguinte</translation>
 <translation id="4048707525896921369">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
@@ -747,7 +747,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s)</translation>
-<translation id="6418750371676080905">O selecionador do dispositivo com o qual pretende partilhar um separador está fechado.</translation>
 <translation id="6427112570124116297">Traduzir a Web</translation>
 <translation id="6433501201775827830">Escolher o motor de pesquisa</translation>
 <translation id="6437478888915024427">Informações da página</translation>
@@ -787,7 +786,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Sites populares à medida que escreve na barra de endereço</translation>
 <translation id="666731172850799929">Abrir no <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
-<translation id="6672986458216094438">O selecionador do dispositivo com o qual pretende partilhar um separador está aberto a meia altura.</translation>
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes se não for possível encontrar uma página</translation>
 <translation id="6697947395630195233">O Chrome precisa de acesso à sua localização para a partilhar com este site.</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>

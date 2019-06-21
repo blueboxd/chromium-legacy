@@ -628,10 +628,14 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
           PIXEL_FORMAT_NV12, coded_size,
           std::vector<VideoFrameLayout::Plane>{
               VideoFrameLayout::Plane(output_format_.primary_line_stride_bytes,
-                                      output_format_.primary_start_offset),
+                                      output_format_.primary_start_offset,
+                                      output_format_.primary_line_stride_bytes *
+                                          output_format_.primary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.secondary_start_offset)});
+                  output_format_.secondary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels)});
       DCHECK(layout);
       break;
 
@@ -640,14 +644,19 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
           PIXEL_FORMAT_YV12, coded_size,
           std::vector<VideoFrameLayout::Plane>{
               VideoFrameLayout::Plane(output_format_.primary_line_stride_bytes,
-                                      output_format_.primary_start_offset),
+                                      output_format_.primary_start_offset,
+                                      output_format_.primary_line_stride_bytes *
+                                          output_format_.primary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.secondary_start_offset),
+                  output_format_.secondary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.tertiary_start_offset),
-          });
+                  output_format_.tertiary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels)});
       DCHECK(layout);
       break;
 

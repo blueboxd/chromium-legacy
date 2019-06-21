@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/autofill/core/common/submission_source.h"
 
 namespace gfx {
 class RectF;
@@ -83,7 +83,7 @@ class AutofillHandler {
   // personal profile.
   void OnFormSubmitted(const FormData& form,
                        bool known_success,
-                       SubmissionSource source);
+                       mojom::SubmissionSource source);
 
   // Invoked when |forms| has been detected.
   void OnFormsSeen(const std::vector<FormData>& forms,
@@ -145,7 +145,7 @@ class AutofillHandler {
 
   virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
-                                   SubmissionSource source) = 0;
+                                   mojom::SubmissionSource source) = 0;
 
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
                                         const FormFieldData& field,

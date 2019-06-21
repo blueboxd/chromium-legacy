@@ -2460,6 +2460,10 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Bemærk, at dette ikke anbefales, da det kan tillade tilsidesættelse af udvidelsen nameConstraints, som begrænser de hostnavne, et givet certifikat kan godkendes til.
 
       Hvis denne politik ikke er indstillet eller er indstillet til falsk, anses servercertifikater, som ikke indeholder en subjectAlternativeName-udvidelse med enten et DNS-navn eller en IP-adresse, ikke for pålidelige.</translation>
+<translation id="5578571772998293651">Tillad brugerfeedback.
+        Hvis politikken er angivet som falsk, kan brugerne ikke sende feedback til Google.
+
+        Hvis politikken ikke er angivet eller er angivet som sand, kan brugerne sende feedback til Google via menuen-&gt;Hjælp-&gt;Rapportér et problem eller tastekombinationer.</translation>
 <translation id="5581292529942108810">Konfigurer politikker, der er relateret til Chrome Reporting Extension.
 
       Disse politikker gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3820,6 +3824,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
       Hvis denne politik ikke angives, vil der ikke være nogen undtagelser til sortlisten fra politikken "URLBlacklist".</translation>
 <translation id="8176035528522326671">Tillad, at kun virksomhedsbrugeren er primær multiprofilbruger (standardadfærd for virksomhedsadministrerede brugere)</translation>
 <translation id="8183108371184777472">Tillad ikke, at browservinduet åbnes</translation>
+<translation id="8186911565834244165">Tillad brugerfeedback</translation>
 <translation id="8214600119442850823">Konfigurerer adgangskodeadministratoren.</translation>
 <translation id="8217516105848565518">Denne politik er udfaset. Brug RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244171102276095471">Aktivér RC4-krypteringspakker i TLS</translation>
@@ -4239,6 +4244,12 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>
+<translation id="91196902572559194">Denne politik giver Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning.
+
+      Hvis politikken er aktiveret, lytter Google Assistent efter den stemmestyrede aktiveringssætning.
+      Hvis politikken er deaktiveret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
+      Hvis politikken ikke er angivet, kan brugerne vælge, om de vil tillade, at Google Assistent lytter efter den stemmestyrede aktiveringssætning.
+      </translation>
 <translation id="9123211093995421438">Angiver, hvor mange gange tidligere versioner af <ph name="PRODUCT_OS_NAME" /> der mindst skal kunne gendannes, regnet fra den aktuelle stabile version.
 
       Standardværdien er 0 for forbrugerenheder og 4 (ca. et halvt år) for enheder, der er tilmeldt via en virksomhed.

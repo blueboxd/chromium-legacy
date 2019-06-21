@@ -78,11 +78,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
-using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
@@ -95,6 +90,15 @@ using testing::SaveArg;
 using testing::UnorderedElementsAre;
 
 namespace autofill {
+
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
+using mojom::ButtonTitleType;
+using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
+
 namespace {
 
 const int kDefaultPageID = 137;
@@ -661,6 +665,54 @@ class AutofillManagerTest : public testing::Test {
   }
 };
 
+class SuggestionMatchingTest : public AutofillManagerTest,
+                               public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+    InitializeFeatures();
+  }
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  void InitializeFeatures();
+#else
+  void InitializeFeatures();
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+  std::string MakeLabel(const std::vector<std::string>& parts);
+
+  enum class EnabledFeature { kNone, kDesktop, kMobile };
+  EnabledFeature enabled_feature_;
+  std::string icon_;
+  base::test::ScopedFeatureList features_;
+};
+
+// TODO(crbug.com/963630): Implement tests for mobile label experiment.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+void SuggestionMatchingTest::InitializeFeatures() {
+  enabled_feature_ =
+      GetParam() ? EnabledFeature::kMobile : EnabledFeature::kNone;
+  features_.InitWithFeatureState(
+      features::kAutofillUseMobileLabelDisambiguation, false);
+}
+#else
+void SuggestionMatchingTest::InitializeFeatures() {
+  enabled_feature_ =
+      GetParam() ? EnabledFeature::kDesktop : EnabledFeature::kNone;
+  if (enabled_feature_ == EnabledFeature::kDesktop) {
+    icon_ = "accountBoxIcon";
+  }
+  features_.InitWithFeatureState(
+      features::kAutofillUseImprovedLabelDisambiguation, GetParam());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+std::string SuggestionMatchingTest::MakeLabel(
+    const std::vector<std::string>& parts) {
+  return base::JoinString(
+      parts, l10n_util::GetStringUTF8(IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
+}
+
 // Test that calling OnFormsSeen with an empty set of forms (such as when
 // reloading a page or when the renderer processes a set of forms but detects
 // no changes) does not load the forms again.
@@ -970,9 +1022,9 @@ TEST_F(AutofillManagerTest, OnAutocompleteEntrySelected) {
   autofill_manager_->OnAutocompleteEntrySelected(test_value);
 }
 
-// Test that we return all address profile suggestions when all form fields are
-// empty.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
+// Test that we return all address profile suggestions when all form fields
+// are empty.
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_EmptyValue) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -982,17 +1034,31 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include full first relevant field, which in this case is the
-  // address line 1.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 }
 
 // Test that we return only matching address profile suggestions when the
 // selected form field has been partially filled out.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_MatchCharacter) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1003,14 +1069,25 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
 
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, icon_, 1));
 }
 
 // Tests that we return address profile suggestions values when the section
 // is already autofilled, and that we merge identical values.
-TEST_F(AutofillManagerTest,
+TEST_P(SuggestionMatchingTest,
        GetProfileSuggestions_AlreadyAutofilledMergeValues) {
   // Set up our form data.
   FormData form;
@@ -1052,17 +1129,31 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "G", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. No labels,
-  // with duplicate values "Grimes" merged.
-  CheckSuggestions(
-      kDefaultPageID, Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
-      Suggestion("Grimes", "1234 Smith Blvd., Carl Grimes", "", 2),
-      Suggestion("Grimes", "1234 Smith Blvd., Robin Grimes", "", 3));
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      CheckSuggestions(
+          kDefaultPageID,
+          Suggestion("Googler", "1600 Amphitheater pkwy", icon_, 1),
+          Suggestion("Grimes", "1234 Smith Blvd.", icon_, 2));
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      // Test that we sent the right values to the external delegate. No labels
+      // with duplicate values "Grimes" merged.
+      CheckSuggestions(
+          kDefaultPageID,
+          Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
+          Suggestion("Grimes", "1234 Smith Blvd., Carl Grimes", "", 2),
+          Suggestion("Grimes", "1234 Smith Blvd., Robin Grimes", "", 3));
+  }
 }
 
 // Tests that we return address profile suggestions values when the section
 // is already autofilled, and that they have no label.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
+TEST_P(SuggestionMatchingTest,
+       GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1077,9 +1168,20 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. No labels.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, icon_, 1));
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -1108,7 +1210,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_UnknownFields) {
 }
 
 // Test that we cull duplicate profile suggestions.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_WithDuplicates) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1123,10 +1225,26 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 }
 
 // Test that we return no suggestions when autofill is disabled.
@@ -1591,7 +1709,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
-TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
+TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1602,10 +1720,28 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right address suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      // The first phone number is not formatted because it is invalid for the
+      // app locale.
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
@@ -1636,7 +1772,7 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
 // only return address suggestions. Instead of credit card suggestions, we
 // should return a warning explaining that credit card profile suggestions are
 // unavailable when the form is not https.
-TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
+TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1647,10 +1783,26 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
@@ -1668,9 +1820,11 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   external_delegate_->CheckNoSuggestions(kDefaultPageID);
 }
 
-TEST_F(AutofillManagerTest,
+TEST_P(SuggestionMatchingTest,
        ShouldShowAddressSuggestionsIfCreditCardAutofillDisabled) {
-  DisableCreditCardAutofill();
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      features::kAutofillCreditCardAblationExperiment);
 
   // Set up our form data.
   FormData form;
@@ -1681,10 +1835,26 @@ TEST_F(AutofillManagerTest,
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Check that address suggestions will still be available.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 }
 
 TEST_F(AutofillManagerTest,
@@ -1726,7 +1896,7 @@ TEST_F(AutofillManagerTest,
 
 // Test that we return normal autofill suggestions when trying to autofill
 // already filled forms.
-TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
+TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1738,10 +1908,28 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      // The below phone number is not formatted because it is not valid for the
+      // app locale. It has an extra digit.
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, icon_, 1),
+                   Suggestion("Elvis", label2, icon_, 2));
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1772,7 +1960,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
 
 // Test that we do not return duplicate values drawn from multiple profiles when
 // filling an already filled field.
-TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
+TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWithDuplicateValues) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1791,12 +1979,23 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   field.value = ASCIIToUTF16("Elvis");
   GetAutofillSuggestions(form, field);
 
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, icon_, 1));
 }
 
-TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_FancyPhone) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1812,13 +2011,41 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
   const FormFieldData& field = form.fields[9];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include the most private field of those that would be filled.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("18007724743", "Natty Bumppo", "", 1),  // 1800PRAIRIE
-      Suggestion("23456789012", "123 Apple St.", "", 2),
-      Suggestion("12345678901", "3734 Elvis Presley Blvd.", "", 3));
+  std::string value1;
+  std::string value2;
+  std::string value3;
+  std::string label1;
+  std::string label2;
+  std::string label3;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      value1 = "(800) 772-4743";
+      // The below phone number is not formatted because it is not valid for the
+      // app locale. It has an extra digit.
+      value2 = "23456789012";
+      value3 = "(234) 567-8901";
+      label1 = "Natty Bumppo";
+      label2 = MakeLabel(
+          {"Charles Holley", "123 Apple St., unit 6", "buddy@gmail.com"});
+      label3 = MakeLabel({"Elvis Presley", "3734 Elvis Presley Blvd., Apt. 10",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      value1 = "18007724743";  // 1800PRAIRIE
+      value2 = "23456789012";
+      value3 = "12345678901";
+      label1 = "Natty Bumppo";
+      label2 = "123 Apple St.";
+      label3 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion(value1, label1, icon_, 1),
+                   Suggestion(value2, label2, icon_, 2),
+                   Suggestion(value3, label3, icon_, 3));
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
@@ -3957,7 +4184,8 @@ TEST_F(AutofillManagerTest,
 
 // Test that we do not query for Autocomplete suggestions when there are
 // Autofill suggestions available.
-TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
+TEST_P(SuggestionMatchingTest,
+       AutocompleteSuggestions_NoneWhenAutofillPresent) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -3973,12 +4201,25 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
 
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include full first relevant field, which in this case is the
-  // address line 1.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  if (enabled_feature_ == EnabledFeature::kDesktop) {
+    CheckSuggestions(
+        kDefaultPageID,
+        Suggestion("Charles",
+                   MakeLabel({"123 Apple St., unit 6", "23456789012",
+                              "buddy@gmail.com"}),
+                   icon_, 1),
+        Suggestion("Elvis",
+                   MakeLabel({"3734 Elvis Presley Blvd., Apt. 10",
+                              "(234) 567-8901", "theking@gmail.com"}),
+                   icon_, 2));
+  } else {
+    // Test that we sent the right values to the external delegate. Inferred
+    // labels include full first relevant field, which in this case is the
+    // address line 1.
+    CheckSuggestions(kDefaultPageID,
+                     Suggestion("Charles", "123 Apple St.", "", 1),
+                     Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  }
 }
 
 // Test that we query for Autocomplete suggestions when there are no Autofill
@@ -4773,15 +5014,6 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    AutofillManagerTest,
-    ProfileMatchingTypesTest,
-    testing::Combine(
-        testing::ValuesIn(kProfileMatchingTypesTestCases),
-        testing::Range(static_cast<int>(AutofillDataModel::UNVALIDATED),
-                       static_cast<int>(AutofillDataModel::UNSUPPORTED) + 1),
-        testing::Bool()));
-
 // Tests that DeterminePossibleFieldTypesForUpload is called when a form is
 // submitted.
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload_IsTriggered) {
@@ -5560,9 +5792,9 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
-// Verify that typing "gmail" will match "theking@gmail.com" and
-// "buddy@gmail.com" when substring matching is enabled.
-TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
+// Verify that typing "gmail" matches "theking@gmail.com" and "buddy@gmail.com"
+// when substring matching is enabled.
+TEST_P(SuggestionMatchingTest, DisplaySuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5576,14 +5808,33 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   test::CreateTestFormField("Email", "email", "gmail", "email", &field);
   GetAutofillSuggestions(form, field);
 
-  CheckSuggestions(
-      kDefaultPageID, Suggestion("buddy@gmail.com", "123 Apple St.", "", 1),
-      Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label1 =
+          MakeLabel({"Charles Holley", "123 Apple St., unit 6", "23456789012"});
+      label2 = MakeLabel({"Elvis Presley", "3734 Elvis Presley Blvd., Apt. 10",
+                          "(234) 567-8901"});
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("buddy@gmail.com", label1, icon_, 1),
+                   Suggestion("theking@gmail.com", label2, icon_, 2));
 }
 
 // Verify that typing "apple" will match "123 Apple St." when substring matching
 // is enabled.
-TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
+TEST_P(SuggestionMatchingTest,
+       DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5597,8 +5848,23 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("123 Apple St., unit 6", "123 Apple St.", "", 1));
+  std::string value;
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      value = "123 Apple St., unit 6";
+      label = "Charles Holley";
+      break;
+    case EnabledFeature::kMobile:
+      // TODO(crbug.com/963630)
+      return;
+    case EnabledFeature::kNone:
+      value = "123 Apple St., unit 6";
+      label = "123 Apple St.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion(value, label, icon_, 1));
 }
 
 // Verify that typing "mail" will not match any of the "@gmail.com" email
@@ -5871,7 +6137,7 @@ TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_AddressField) {
 // Verify that typing "S" into the middle name field will match and order middle
 // names "Shawn Smith" followed by "Adam Smith" i.e. prefix matched followed by
 // substring matched.
-TEST_F(AutofillManagerTest,
+TEST_P(SuggestionMatchingTest,
        DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
@@ -5904,12 +6170,18 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Middle Name", "middlename", "S", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Shawn Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
-                 1),
-      Suggestion("Adam Smith", "1234 Smith Blvd., Robin Adam Smith Grimes", "",
-                 2));
+  if (enabled_feature_ == EnabledFeature::kDesktop) {
+    CheckSuggestions(kDefaultPageID,
+                     Suggestion("Shawn Smith", "1234 Smith Blvd.", icon_, 1),
+                     Suggestion("Adam Smith", "1234 Smith Blvd.", icon_, 2));
+  } else {
+    CheckSuggestions(
+        kDefaultPageID,
+        Suggestion("Shawn Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes",
+                   "", 1),
+        Suggestion("Adam Smith", "1234 Smith Blvd., Robin Adam Smith Grimes",
+                   "", 2));
+  }
 }
 
 TEST_F(AutofillManagerTest, ShouldUploadForm) {
@@ -7160,6 +7432,17 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    AutofillManagerTest,
+    ProfileMatchingTypesTest,
+    testing::Combine(
+        testing::ValuesIn(kProfileMatchingTypesTestCases),
+        testing::Range(static_cast<int>(AutofillDataModel::UNVALIDATED),
+                       static_cast<int>(AutofillDataModel::UNSUPPORTED) + 1),
+        testing::Bool()));
+
 INSTANTIATE_TEST_SUITE_P(All, OnFocusOnFormFieldTest, testing::Bool());
+
+INSTANTIATE_TEST_SUITE_P(, SuggestionMatchingTest, testing::Bool());
 
 }  // namespace autofill

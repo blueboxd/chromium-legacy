@@ -170,6 +170,7 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
       helper->set_is_system_app();
       break;
     case web_app::InstallSource::kArc:
+    case web_app::InstallSource::kInvalid:
       NOTREACHED();
       break;
   }

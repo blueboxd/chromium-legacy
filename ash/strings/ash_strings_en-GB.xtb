@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Toggle network connection. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scroll right</translation>
 <translation id="1812997170047690955">What's on my screen?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> has been disabled by a policy applied to this device. Please talk to your administrator to request changes.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (loading...)</translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Restart to update</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
+<translation id="2651765386227849097">The Google Assistant is disabled on this device.</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2658778018866295321">Click and drag</translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Battery is full.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">The shortcut to toggle high contrast mode has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Restart and reset</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Mic jack</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5673434351075758678">From '<ph name="FROM_LOCALE" />' to '<ph name="TO_LOCALE" />' after syncing your settings.</translation>
+<translation id="5682642926269496722">The Google Assistant is not available for current user account.</translation>
 <translation id="5691772641933328258">Fingerprint not recognised</translation>
 <translation id="5710450975648804523">Do Not Disturb is on</translation>
 <translation id="574392208103952083">Medium</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Sorry, your password couldn't be verified. Please try again.</translation>
 <translation id="607652042414456612">Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME" />" with address <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Charging <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">The Google Assistant is not available in a guest session.</translation>
 <translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Learn more</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="6715542151869432661">No mobile devices found.</translation>
 <translation id="6723839937902243910">Power</translation>
+<translation id="6727969043791803658">Connected, <ph name="BATTERY_PERCENTAGE" />% battery</translation>
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>

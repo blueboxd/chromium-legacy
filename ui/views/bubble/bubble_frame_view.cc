@@ -446,15 +446,17 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   SetBackground(std::make_unique<views::BubbleBackground>(bubble_border_));
 }
 
-void BubbleFrameView::SetFootnoteView(View* view) {
-  if (!view)
+void BubbleFrameView::SetFootnoteView(std::unique_ptr<View> view) {
+  if (!view) {
+    delete footnote_container_;
+    footnote_container_ = nullptr;
     return;
+  }
 
   DCHECK(!footnote_container_);
   int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
-  footnote_container_ =
-      new FootnoteContainerView(footnote_margins_, view, radius);
-  AddChildView(footnote_container_);
+  footnote_container_ = AddChildView(std::make_unique<FootnoteContainerView>(
+      footnote_margins_, view.release(), radius));
 }
 
 void BubbleFrameView::SetCornerRadius(int radius) {

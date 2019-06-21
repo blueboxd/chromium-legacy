@@ -80,6 +80,12 @@ class OAuth2AccessTokenManager {
   // used to request the tokens.
   void ClearCacheForAccount(const CoreAccountId& account_id);
 
+  // Cancels all requests that are currently in progress.
+  void CancelAllRequests();
+
+  // Cancels all requests related to a given |account_id|.
+  void CancelRequestsForAccount(const CoreAccountId& account_id);
+
  private:
   // TODO(https://crbug.com/967598): Remove this once |token_cache_| management
   // is moved to OAuth2AccessTokenManager.

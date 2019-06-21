@@ -10,7 +10,7 @@ assert(is_chromeos,
 
 source_set("cups_proxy") {
   sources = [
-    "cups_proxy_service.cpp",
+    "cups_proxy_service.cc",
     "cups_proxy_service.h",
     "cups_proxy_service_delegate.cc",
     "cups_proxy_service_delegate.h",

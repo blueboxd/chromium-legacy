@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Укључите/искључите мрежну везу. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Помери надесно</translation>
 <translation id="1812997170047690955">Шта је на екрану?</translation>
+<translation id="1820355135508821526">Функција <ph name="FEATURE_NAME" /> је онемогућена у складу са смерницама које се примењују на овај уређај. Затражите од администратора да то промени.</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Помоћник (учитава се...)</translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Рестартујте да бисте ажурирали</translation>
 <translation id="2597972630681408282">Ноћно светло: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
+<translation id="2651765386227849097">Google помоћник је онемогућен на овом уређају.</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2658778018866295321">Кликните и превуците</translation>
 <translation id="2700493154570097719">Подесите тастатуру</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="490375751687810070">Вертикално</translation>
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4924411785043111640">Рестартуј и ресетуј</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Утикач за микрофон</translation>
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5673434351075758678">Са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ после синхронизације уређаја.</translation>
+<translation id="5682642926269496722">Google није доступан за актуелни кориснички налог.</translation>
 <translation id="5691772641933328258">Отисак прста није препознат</translation>
 <translation id="5710450975648804523">Режим Не узнемиравај је укључен</translation>
 <translation id="574392208103952083">Средња</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Жао нам је, верификација лозинке није успела. Пробајте поново.</translation>
 <translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME" />“ са адресом <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Пуњење уређаја <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google помоћник није доступан у сесији госта.</translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
 <translation id="6715542151869432661">Није пронађен ниједан мобилни уређај.</translation>
 <translation id="6723839937902243910">Енергија</translation>
+<translation id="6727969043791803658">Повезано, ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>

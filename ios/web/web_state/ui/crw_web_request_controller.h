@@ -14,11 +14,12 @@
 @class WKWebView;
 @class CRWWebRequestController;
 @class CRWWKNavigationHandler;
+@class CRWLegacyNativeContentController;
 
 namespace web {
 class NavigationContextImpl;
 class WebStateImpl;
-class WKBackForwardListItemHolder;
+class UserInteractionState;
 }  // namespace web
 
 @protocol CRWWebRequestControllerDelegate <NSObject>
@@ -31,22 +32,34 @@ class WKBackForwardListItemHolder;
 - (BOOL)webRequestControllerIsBeingDestroyed:
     (CRWWebRequestController*)requestController;
 
-// Prepares web controller and delegates for anticipated page change.
-// Allows several methods to invoke webWill/DidAddPendingURL on anticipated page
-// change, using the same cached request and calculated transition types.
-// Returns navigation context for this request.
-- (std::unique_ptr<web::NavigationContextImpl>)
-         webRequestController:(CRWWebRequestController*)requestController
-    registerLoadRequestForURL:(const GURL&)requestURL
-                     referrer:(const web::Referrer&)referrer
-                   transition:(ui::PageTransition)transition
-       sameDocumentNavigation:(BOOL)sameDocumentNavigation
-               hasUserGesture:(BOOL)hasUserGesture
-            rendererInitiated:(BOOL)rendererInitiated
-        placeholderNavigation:(BOOL)placeholderNavigation;
-
 // Asks proxy to disconnect scroll proxy if needed.
 - (void)webRequestControllerDisconnectScrollViewProxy:
+    (CRWWebRequestController*)requestController;
+
+// Asks the delegate for the associated |UserInteractionState|.
+- (web::UserInteractionState*)webRequestControllerUserInteractionState:
+    (CRWWebRequestController*)requestController;
+
+// Asks the delegate for the associated |CRWLegacyNativeContentController|.
+- (CRWLegacyNativeContentController*)
+    webRequestControllerLegacyNativeContentController:
+        (CRWWebRequestController*)requestController;
+
+// Tells the delegate to record the state (scroll position, form values,
+// whatever can be harvested) from the current page into the current session
+// entry.
+- (void)webRequestControllerRecordStateInHistory:
+    (CRWWebRequestController*)requestController;
+
+// Tells the delegate to restores the state for current page from session
+// history.
+- (void)webRequestControllerRestoreStateFromHistory:
+    (CRWWebRequestController*)requestController;
+
+- (WKWebView*)webRequestControllerWebView:
+    (CRWWebRequestController*)requestController;
+
+- (CRWWKNavigationHandler*)webRequestControllerNavigationHandler:
     (CRWWebRequestController*)requestController;
 
 @end
@@ -57,33 +70,62 @@ class WKBackForwardListItemHolder;
 
 @property(nonatomic, weak) id<CRWWebRequestControllerDelegate> delegate;
 
-// The WKNavigationDelegate handler class.
-@property(nonatomic, weak) CRWWKNavigationHandler* navigationHandler;
-
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Loads request for the URL of the current navigation item.
-- (void)
-    loadRequestForCurrentNavigationItemInWebView:(WKWebView*)webView
-                                      itemHolder:
-                                          (web::WKBackForwardListItemHolder*)
-                                              holder;
+// Checks if a load request of the current navigation item should proceed. If
+// this returns |YES|, caller should create a webView and call
+// |loadRequestForCurrentNavigationItem|. Otherwise this will set the request
+// state to finished and call |didFinishWithURL| with failure.
+- (BOOL)maybeLoadRequestForCurrentNavigationItem;
+
+// Loads request for the URL of the current navigation item. Subclasses may
+// choose to build a new NSURLRequest and call
+// |loadRequestForCurrentNavigationItem| on the underlying web view, or use
+// native web view navigation where possible (for example, going back and
+// forward through the history stack).
+- (void)loadRequestForCurrentNavigationItem;
+
+// Should be called by owner component after URL is finished loading and
+// self.navigationHandler.navigationState is set to FINISHED. |context| contains
+// information about the navigation associated with the URL. It is nil if
+// currentURL is invalid.
+- (void)didFinishWithURL:(const GURL&)currentURL
+             loadSuccess:(BOOL)loadSuccess
+                 context:(const web::NavigationContextImpl*)context;
+
+// Calls |registerLoadRequestForURL| with empty referrer and link or client
+// redirect transition based on user interaction state. Returns navigation
+// context for this request.
+- (std::unique_ptr<web::NavigationContextImpl>)
+    registerLoadRequestForURL:(const GURL&)URL
+       sameDocumentNavigation:(BOOL)sameDocumentNavigation
+               hasUserGesture:(BOOL)hasUserGesture
+            rendererInitiated:(BOOL)rendererInitiated
+        placeholderNavigation:(BOOL)placeholderNavigation;
+
+// Creates a page change request and registers it with the navigation handler.
+// Returns navigation context for this request.
+- (std::unique_ptr<web::NavigationContextImpl>)
+    registerLoadRequestForURL:(const GURL&)requestURL
+                     referrer:(const web::Referrer&)referrer
+                   transition:(ui::PageTransition)transition
+       sameDocumentNavigation:(BOOL)sameDocumentNavigation
+               hasUserGesture:(BOOL)hasUserGesture
+            rendererInitiated:(BOOL)rendererInitiated
+        placeholderNavigation:(BOOL)placeholderNavigation;
 
 // Loads |data| of type |MIMEType| and replaces last committed URL with the
 // given |URL|.
 - (void)loadData:(NSData*)data
-         webView:(WKWebView*)webView
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL;
 
 // Loads |HTML| into the page and use |URL| to resolve relative URLs within the
 // document.
-- (void)loadHTML:(NSString*)HTML
-         webView:(WKWebView*)webView
-          forURL:(const GURL&)URL;
+- (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL;
 
 @end
 

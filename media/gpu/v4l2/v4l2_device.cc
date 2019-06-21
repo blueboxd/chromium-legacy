@@ -1049,12 +1049,8 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
 // static
 uint32_t V4L2Device::VideoFrameLayoutToV4L2PixFmt(
     const VideoFrameLayout& layout) {
-  if (layout.num_buffers() == 0) {
-    VLOGF(1) << "layout.num_buffers() must be more than 0: " << layout;
-    return 0;
-  }
   return VideoPixelFormatToV4L2PixFmt(layout.format(),
-                                      layout.num_buffers() == 1);
+                                      !layout.is_multi_planar());
 }
 
 // static
@@ -1446,20 +1442,19 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   if (num_buffers > num_color_planes) {
-    VLOG(1) << "pix_mp.num_planes: " << num_buffers << " should not be larger "
-            << "than NumPlanes(" << VideoPixelFormatToString(video_format)
+    VLOG(1) << "pix_mp.um_planes: " << num_buffers
+            << " should not be larger than NumPlanes("
+            << VideoPixelFormatToString(video_format)
             << "): " << num_color_planes;
     return base::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.
   std::vector<VideoFrameLayout::Plane> planes;
-  std::vector<size_t> buffer_sizes;
   planes.reserve(num_color_planes);
-  buffer_sizes.reserve(num_buffers);
   for (size_t i = 0; i < num_buffers; ++i) {
     const v4l2_plane_pix_format& plane_format = pix_mp.plane_fmt[i];
-    planes.emplace_back(static_cast<int32_t>(plane_format.bytesperline), 0u);
-    buffer_sizes.push_back(plane_format.sizeimage);
+    planes.emplace_back(static_cast<int32_t>(plane_format.bytesperline), 0u,
+                        plane_format.sizeimage);
   }
   // For the case that #color planes > #buffers, it fills stride of color
   // plane which does not map to buffer.
@@ -1472,9 +1467,10 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     switch (pix_fmt) {
       case V4L2_PIX_FMT_NV12:
         // The stride of UV is the same as Y in NV12.
-        planes.emplace_back(y_stride, y_stride_abs * pix_mp.height);
-        DCHECK_EQ(1u, buffer_sizes.size());
-        DCHECK_EQ(2u, planes.size());
+        // The height is half of Y plane.
+        planes.emplace_back(y_stride, y_stride_abs * pix_mp.height,
+                            y_stride_abs * pix_mp.height / 2);
+        DCHECK_EQ(3u, planes.size());
         break;
       case V4L2_PIX_FMT_YUV420:
       case V4L2_PIX_FMT_YVU420: {
@@ -1489,9 +1485,9 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
         const int32_t half_stride = y_stride / 2;
         const size_t plane_0_area = y_stride_abs * pix_mp.height;
         const size_t plane_1_area = plane_0_area / 4;
-        planes.emplace_back(half_stride, plane_0_area);
-        planes.emplace_back(half_stride, plane_0_area + plane_1_area);
-        DCHECK_EQ(1u, buffer_sizes.size());
+        planes.emplace_back(half_stride, plane_0_area, plane_1_area);
+        planes.emplace_back(half_stride, plane_0_area + plane_1_area,
+                            plane_1_area);
         DCHECK_EQ(3u, planes.size());
         break;
       }
@@ -1505,10 +1501,15 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   // Some V4L2 devices expect buffers to be page-aligned. We cannot detect
   // such devices individually, so set this as a video frame layout property.
   constexpr size_t buffer_alignment = 0x1000;
-
-  return VideoFrameLayout::CreateWithPlanes(
-      video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
-      std::move(buffer_sizes), buffer_alignment);
+  if (num_buffers == 1) {
+    return VideoFrameLayout::CreateWithPlanes(
+        video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
+        buffer_alignment);
+  } else {
+    return VideoFrameLayout::CreateMultiPlanar(
+        video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
+        buffer_alignment);
+  }
 }
 
 // static

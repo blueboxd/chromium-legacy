@@ -77,7 +77,7 @@ void WhitespaceAttacher::DidVisitText(Text* text) {
   } else {
     if (last_text_node_->ContainsOnlyWhitespaceOrEmpty()) {
       Node::AttachContext context;
-      InitAttachContextParentAndSibling(context, *text);
+      context.parent = LayoutTreeBuilderTraversal::ParentLayoutObject(*text);
       last_text_node_->ReattachLayoutTreeIfNeeded(context);
     }
   }
@@ -117,7 +117,8 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
   Node::AttachContext context;
   context.previous_in_flow = previous_in_flow;
   context.use_previous_in_flow = true;
-  InitAttachContextParentAndSibling(context, *last_text_node_);
+  context.parent =
+      LayoutTreeBuilderTraversal::ParentLayoutObject(*last_text_node_);
 
   for (Node* sibling = last_text_node_; sibling;
        sibling = LayoutTreeBuilderTraversal::NextLayoutSibling(*sibling)) {

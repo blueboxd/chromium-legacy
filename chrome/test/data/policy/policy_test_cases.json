@@ -1013,11 +1013,15 @@
       "KerberosAccounts": [
         {
           "principal": "user1@realm",
-          "password": "password1"
+          "password": "password1",
+          "remember_password": true
         },
         {
-          "principal": "user2@realm",
-          "remember_password": true,
+          "principal": "${LOGIN_EMAIL}"
+        },
+        {
+          "principal": "${LOGIN_ID}",
+          "password": "${PASSWORD}",
           "krb5conf": [
             "line1",
             "line2"

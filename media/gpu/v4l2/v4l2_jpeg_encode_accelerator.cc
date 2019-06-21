@@ -1244,7 +1244,7 @@ bool V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::SetInputBufferFormat(
 
     auto num_planes = input_layout.num_planes();
     for (size_t i = 0; i < num_planes; i++) {
-      format.fmt.pix_mp.plane_fmt[i].sizeimage = input_layout.buffer_sizes()[i];
+      format.fmt.pix_mp.plane_fmt[i].sizeimage = input_layout.planes()[i].size;
       format.fmt.pix_mp.plane_fmt[i].bytesperline =
           input_layout.planes()[i].stride;
     }
@@ -1442,26 +1442,23 @@ bool V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::EnqueueInputRecord() {
 
   const auto& frame = job_record->input_frame;
   for (size_t i = 0; i < input_buffer_num_planes_; i++) {
-    if (device_input_layout_->num_buffers() == 1) {
-      qbuf.m.planes[i].bytesused = VideoFrame::AllocationSize(
-          frame->format(), device_input_layout_->coded_size());
-    } else {
-      DCHECK_EQ(device_input_layout_->num_buffers(),
-                VideoFrame::NumPlanes(device_input_layout_->format()));
+    if (device_input_layout_->is_multi_planar()) {
       qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
           VideoFrame::PlaneSize(frame->format(), i,
                                 device_input_layout_->coded_size())
               .GetArea());
+    } else {
+      qbuf.m.planes[i].bytesused = VideoFrame::AllocationSize(
+          frame->format(), device_input_layout_->coded_size());
     }
 
     const auto& fds = frame->DmabufFds();
     const auto& planes = frame->layout().planes();
-    DCHECK_EQ(device_input_layout_->num_buffers(), planes.size());
     qbuf.m.planes[i].m.fd = (i < fds.size()) ? fds[i].get() : fds.back().get();
     qbuf.m.planes[i].data_offset = planes[i].offset;
     qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
     qbuf.m.planes[i].length =
-        device_input_layout_->buffer_sizes()[i] + qbuf.m.planes[i].data_offset;
+        planes[i].size + qbuf.m.planes[i].data_offset;
   }
 
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);

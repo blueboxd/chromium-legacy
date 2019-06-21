@@ -47,13 +47,13 @@ class PluginVmImageManager
     virtual void OnDownloadStarted() = 0;
     virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                            int64_t content_length,
-                                           int64_t download_bytes_per_sec) = 0;
+                                           base::TimeDelta elapsed_time) = 0;
     virtual void OnDownloadCompleted() = 0;
     virtual void OnDownloadCancelled() = 0;
     // TODO(https://crbug.com/904851): Add failure reasons.
     virtual void OnDownloadFailed() = 0;
-    virtual void OnImportProgressUpdated(uint64_t percent_completed,
-                                         int64_t import_percent_per_sec) = 0;
+    virtual void OnImportProgressUpdated(int percent_completed,
+                                         base::TimeDelta elapsed_time) = 0;
     virtual void OnImported() = 0;
     virtual void OnImportCancelled() = 0;
     virtual void OnImportFailed() = 0;

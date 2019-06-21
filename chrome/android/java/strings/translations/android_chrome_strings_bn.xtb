@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">সার্চ করুন, ঘুরে দেখুন</translation>
 <translation id="1264974993859112054">খেলাধূলা</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
-<translation id="1272444412400969138">ট্যাব শেয়ার করার জন্য ডিভাইস পিকার।</translation>
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">ডেভেলপার টুল</translation>
 <translation id="1692118695553449118">সিঙ্ক চালু রয়েছে</translation>
 <translation id="169515064810179024">মোশন সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
+<translation id="1697480839793160072">টেলিফোন</translation>
+<translation id="1698058317516161971">ইমেল</translation>
 <translation id="1717218214683051432">মোশন সেন্সর</translation>
 <translation id="1718835860248848330">শেষ ঘণ্টা</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - আপডেট হয়েছে <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -405,7 +406,6 @@
 <translation id="4008040567710660924">কোনও নির্দিষ্ট সাইটের জন্য কুকিকে অনুমতি দিন।</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
 <translation id="4042870126885713738">যখন কোনো ওয়েব ঠিকানা সমাধান করা না গেলে অথবা কোনো সংযোগ স্থাপন করা না গেলে সেক্ষেত্রে প্রস্তাবগুলি দেখান</translation>
-<translation id="4044912625106523635">ট্যাব শেয়ার করতে ডিভাইস পিকার সম্পূর্ণ স্ক্রিন জুড়ে খুলেছে।</translation>
 <translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
 <translation id="4048707525896921369">পৃষ্ঠাতে থাকাকালীন ওয়েবসাইটে গিয়ে বিষয়গুলি সম্পর্কে জানুন। 'সার্চ করতে ট্যাপ করা' বৈশিষ্ট্যটি একটি শব্দ এবং এটির সাথে সম্পর্কযুক্ত প্রসঙ্গ Google সার্চে পাঠায়, তার সাথে সংজ্ঞা, ছবি, সার্চ ফলাফল এবং আরও অনেক কিছু দেখায়৷
 
@@ -749,7 +749,6 @@
 <translation id="6406506848690869874">সিঙ্ক</translation>
 <translation id="641643625718530986">প্রিন্ট...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ডাউনলোড হয়েছে</translation>
-<translation id="6418750371676080905">ট্যাব শেয়ার করার ডিভাইস পিকার বন্ধ আছে।</translation>
 <translation id="6427112570124116297">ওয়েবের কন্টেন্ট অনুবাদ করুন</translation>
 <translation id="6433501201775827830">আপনার সার্চ ইঞ্জিন বেছে নিন</translation>
 <translation id="6437478888915024427">পৃষ্ঠার তথ্য</translation>
@@ -789,7 +788,6 @@
 <translation id="666268767214822976">সম্পর্কিত কোয়েরি এবং অ্যাড্রেস বারের মধ্যে আপনার টাইপ করা জনপ্রিয় ওয়েবসাইটগুলি দেখাতে একটি পূর্বাভাস পরিষেবা ব্যবহার করুন</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="666981079809192359">Chrome এর গোপনীয়তা বিজ্ঞপ্তি</translation>
-<translation id="6672986458216094438">ট্যাব শেয়ার করার ডিভাইস পিকার অর্ধেক স্ক্রিন জুড়ে খুলেছে।</translation>
 <translation id="6697492270171225480">কোনও একটি পৃষ্ঠা খুঁজে পাওয়া না গেলে একইরকম আরও পৃষ্ঠার সাজেশন দেখুন</translation>
 <translation id="6697947395630195233">এই সাইটটির সাথে আপনার লোকেশন শেয়ার করার জন্য Chrome কে আপনার লোকেশনের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6698801883190606802">সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>

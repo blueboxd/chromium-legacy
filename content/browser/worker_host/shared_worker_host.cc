@@ -116,7 +116,6 @@ SharedWorkerHost::SharedWorkerHost(
       instance_(std::move(instance)),
       process_id_(process_id),
       next_connection_request_id_(1),
-      creation_time_(base::TimeTicks::Now()),
       interface_provider_binding_(this),
       weak_factory_(this) {
   DCHECK(instance_);
@@ -133,8 +132,6 @@ SharedWorkerHost::SharedWorkerHost(
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
-  UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
-                           base::TimeTicks::Now() - creation_time_);
   switch (phase_) {
     case Phase::kInitial:
       // Tell clients that this worker failed to start. This is only needed in
@@ -477,14 +474,7 @@ void SharedWorkerHost::OnReadyForInspection() {
     devtools_handle_->WorkerReadyForInspection();
 }
 
-void SharedWorkerHost::OnScriptLoaded() {
-  UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoaded",
-                      base::TimeTicks::Now() - creation_time_);
-}
-
 void SharedWorkerHost::OnScriptLoadFailed() {
-  UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoadFailed",
-                      base::TimeTicks::Now() - creation_time_);
   for (const ClientInfo& info : clients_)
     info.client->OnScriptLoadFailed();
 }

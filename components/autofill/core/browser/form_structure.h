@@ -27,7 +27,6 @@
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/submission_source.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -323,8 +322,10 @@ class FormStructure {
   }
 #endif
 
-  SubmissionSource submission_source() const { return submission_source_; }
-  void set_submission_source(SubmissionSource submission_source) {
+  mojom::SubmissionSource submission_source() const {
+    return submission_source_;
+  }
+  void set_submission_source(mojom::SubmissionSource submission_source) {
     submission_source_ = submission_source;
   }
   bool operator==(const FormData& form) const;
@@ -612,7 +613,7 @@ class FormStructure {
   // DetermineHeuristicTypes().
   int developer_engagement_metrics_;
 
-  SubmissionSource submission_source_ = SubmissionSource::NONE;
+  mojom::SubmissionSource submission_source_ = mojom::SubmissionSource::NONE;
 
   // The randomized encoder to use to encode form metadata during upload.
   // If this is nullptr, no randomized metadata will be sent.

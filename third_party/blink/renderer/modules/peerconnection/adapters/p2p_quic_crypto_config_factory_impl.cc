@@ -116,7 +116,7 @@ P2PQuicCryptoConfigFactoryImpl::CreateClientCryptoConfig() {
   std::unique_ptr<quic::ProofVerifier> proof_verifier(
       new InsecureProofVerifier);
   return std::make_unique<quic::QuicCryptoClientConfig>(
-      std::move(proof_verifier), quic::TlsClientHandshaker::CreateSslCtx());
+      std::move(proof_verifier));
 }
 
 std::unique_ptr<quic::QuicCryptoServerConfig>
@@ -130,8 +130,7 @@ P2PQuicCryptoConfigFactoryImpl::CreateServerCryptoConfig() {
   return std::make_unique<quic::QuicCryptoServerConfig>(
       std::string(source_address_token_secret, kInputKeyingMaterialLength),
       random_generator_, std::move(proof_source),
-      quic::KeyExchangeSource::Default(),
-      quic::TlsServerHandshaker::CreateSslCtx());
+      quic::KeyExchangeSource::Default());
 }
 
 }  // namespace blink

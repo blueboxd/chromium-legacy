@@ -46,8 +46,8 @@ public class TabGridDialogCoordinator {
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
-                null, mMediator.getTabGridDialogHandler(), compositorViewHolder, null, false,
-                R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
+                null, mMediator.getTabGridDialogHandler(), null, null, compositorViewHolder, null,
+                false, R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
         mParentLayout = new TabGridDialogParent(context, compositorViewHolder);
     }
@@ -66,7 +66,9 @@ public class TabGridDialogCoordinator {
             TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
             mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
                     mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
+            mMediator.onReset(tabs.get(0).getId());
         } else {
+            mMediator.onReset(null);
             if (mToolbarCoordinator != null) {
                 mToolbarCoordinator.destroy();
             }
@@ -80,6 +82,5 @@ public class TabGridDialogCoordinator {
     public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mTabListCoordinator.resetWithListOfTabs(tabs);
         updateDialogContent(tabs);
-        mMediator.onReset(tabs == null ? null : tabs.get(0).getId());
     }
 }

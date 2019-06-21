@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_helper.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -330,21 +329,16 @@ class MockDocumentValidationMessageClient
   // ValidationMessageClient::trace(visitor); }
 };
 
-class MockApplicationCacheHostHelper
-    : public blink::ApplicationCacheHostHelper {
+class MockApplicationCacheHost : public blink::ApplicationCacheHost {
  public:
-  MockApplicationCacheHostHelper() {}
-  ~MockApplicationCacheHostHelper() override = default;
+  MockApplicationCacheHost(DocumentLoader* loader)
+      : blink::ApplicationCacheHost(loader, nullptr, nullptr) {}
+  ~MockApplicationCacheHost() override = default;
 
   void SelectCacheWithoutManifest() override {
     without_manifest_was_called_ = true;
   }
-  bool SelectCacheWithManifest(const blink::KURL& manifestURL) override {
-    with_manifest_was_called_ = true;
-    return true;
-  }
 
-  bool with_manifest_was_called_ = false;
   bool without_manifest_was_called_ = false;
 };
 
@@ -883,16 +877,14 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 TEST_F(DocumentTest, SandboxDisablesAppCache) {
   NavigateTo(KURL("https://test.com/foobar/document"), "", "sandbox");
 
+  GetDocument().Loader()->SetApplicationCacheHostForTesting(
+      MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
-  appcache_host->helper_ =
-      MakeGarbageCollected<MockApplicationCacheHostHelper>();
   appcache_host->SelectCacheWithManifest(
       KURL("https://test.com/foobar/manifest"));
-  auto* mock_host_helper = static_cast<MockApplicationCacheHostHelper*>(
-      appcache_host->helper_.Get());
-  EXPECT_FALSE(mock_host_helper->with_manifest_was_called_);
-  EXPECT_TRUE(mock_host_helper->without_manifest_was_called_);
+  auto* mock_host = static_cast<MockApplicationCacheHost*>(appcache_host);
+  EXPECT_TRUE(mock_host->without_manifest_was_called_);
 }
 
 // Verifies that calling EnsurePaintLocationDataValidForNode cleans compositor

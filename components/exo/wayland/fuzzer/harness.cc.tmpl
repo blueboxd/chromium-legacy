@@ -97,6 +97,8 @@ namespace wayland_fuzzer {
           {{request.constructed}}_add_listener(new_object, &{{request.constructed}}::kListener, harness);
         {% endif %}
         harness->add_{{request.constructed}}(new_object);
+      {% elif request.is_destructor %}
+        harness->remove_{{interface.name}}(action.receiver());
       {% endif %}
     }
   {% endfor %}

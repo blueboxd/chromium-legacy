@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Søg, og udforsk</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1272444412400969138">Liste over enheder, der kan deles fane med.</translation>
 <translation id="1283039547216852943">Tryk for at udvide</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Udviklerværktøjer</translation>
 <translation id="1692118695553449118">Synkronisering er slået til</translation>
 <translation id="169515064810179024">Bloker adgang til bevægelsessensorer på websites</translation>
+<translation id="1697480839793160072">Telefoner</translation>
+<translation id="1698058317516161971">Mails</translation>
 <translation id="1717218214683051432">Bevægelsessensorer</translation>
 <translation id="1718835860248848330">Den seneste time</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – opdateret <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
-<translation id="4044912625106523635">Listen over enheder, der kan deles fane med, er åbnet i fuld højde.</translation>
 <translation id="4046123991198612571">Næste nummer</translation>
 <translation id="4048707525896921369">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
@@ -747,7 +747,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6406506848690869874">Synkronisering</translation>
 <translation id="641643625718530986">Udskriv…</translation>
 <translation id="6416782512398055893">Der er downloadet <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Listen over enheder, der kan deles fane med, er lukket.</translation>
 <translation id="6427112570124116297">Oversæt på nettet</translation>
 <translation id="6433501201775827830">Vælg en søgemaskine</translation>
 <translation id="6437478888915024427">Sideoplysninger</translation>
@@ -787,7 +786,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="666268767214822976">Brug en forslagstjeneste til at få vist relaterede forespørgsler og populære websites, mens du skriver i adresselinjen</translation>
 <translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
-<translation id="6672986458216094438">Listen over enheder, der kan deles fane med, er åbnet i halv højde.</translation>
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>

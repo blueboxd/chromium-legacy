@@ -133,9 +133,4 @@ v8::Maybe<bool> V8TreatNonObjectAsNullBooleanFunction::Invoke(bindings::V8ValueO
   }
 }
 
-v8::Maybe<bool> V8PersistentCallbackFunction<V8TreatNonObjectAsNullBooleanFunction>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) {
-  return Proxy()->Invoke(
-      callback_this_value);
-}
-
 }  // namespace blink

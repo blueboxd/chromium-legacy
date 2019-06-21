@@ -61,15 +61,7 @@ namespace {
 
 using printing::PrinterQueryResult;
 
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum PpdSourceForHistogram { kUser = 0, kScs = 1, kPpdSourceMax };
-
 constexpr int kPpdMaxLineLength = 255;
-
-void RecordPpdSource(const PpdSourceForHistogram& source) {
-  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PpdSource", source, kPpdSourceMax);
-}
 
 void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
   if (success) {
@@ -694,7 +686,6 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
   if (ppd_ref_resolved) {
     *printer->mutable_ppd_reference() = GetPpdReference(printer_dict);
   } else if (!printer_ppd_path.empty()) {
-    RecordPpdSource(kUser);
     GURL tmp = net::FilePathToFileURL(base::FilePath(printer_ppd_path));
     if (!tmp.is_valid()) {
       LOG(ERROR) << "Invalid ppd path: " << printer_ppd_path;
@@ -703,7 +694,6 @@ void CupsPrintersHandler::AddOrReconfigurePrinter(const base::ListValue* args,
     }
     printer->mutable_ppd_reference()->user_supplied_ppd_url = tmp.spec();
   } else if (!ppd_manufacturer.empty() && !ppd_model.empty()) {
-    RecordPpdSource(kScs);
     // Pull out the ppd reference associated with the selected manufacturer and
     // model.
     bool found = false;

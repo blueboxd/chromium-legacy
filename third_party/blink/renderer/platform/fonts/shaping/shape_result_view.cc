@@ -13,9 +13,8 @@
 
 namespace blink {
 
+// Note: We allocate |RunInfoPart| in flexible array in |ShapeResultView|.
 struct ShapeResultView::RunInfoPart {
-  USING_FAST_MALLOC(RunInfoPart);
-
  public:
   RunInfoPart(scoped_refptr<const ShapeResult::RunInfo> run,
               ShapeResult::RunInfo::GlyphDataRange range,
@@ -79,6 +78,11 @@ struct ShapeResultView::RunInfoPart {
   }
   unsigned OffsetToRunStartIndex() const { return offset_; }
 
+  // The helper function for implementing |CreateViewsForResult()| for
+  // handling iterating over |Vector<scoped_refptr<RunInfo>>| and
+  // |base::span<RunInfoPart>|.
+  const RunInfoPart* get() const { return this; }
+
   scoped_refptr<const ShapeResult::RunInfo> run_;
   ShapeResult::RunInfo::GlyphDataRange range_;
 
@@ -129,26 +133,29 @@ ShapeResultView::ShapeResultView(const ShapeResultType* other)
       has_vertical_offsets_(other->has_vertical_offsets_),
       width_(0) {}
 
-ShapeResultView::~ShapeResultView() = default;
+ShapeResultView::~ShapeResultView() {
+  for (auto& part : Parts())
+    part.~RunInfoPart();
+}
 
 scoped_refptr<ShapeResult> ShapeResultView::CreateShapeResult() const {
   ShapeResult* new_result =
       new ShapeResult(primary_font_, start_index_ + char_index_offset_,
                       num_characters_, Direction());
-  new_result->runs_.ReserveCapacity(parts_.size());
-  for (const auto& part : parts_) {
+  new_result->runs_.ReserveCapacity(num_parts_);
+  for (const auto& part : RunsOrParts()) {
     auto new_run = ShapeResult::RunInfo::Create(
-        part->run_->font_data_.get(), part->run_->direction_,
-        part->run_->canvas_rotation_, part->run_->script_, part->start_index_,
-        part->NumGlyphs(), part->num_characters_);
-    new_run->glyph_data_.CopyFromRange(part->range_);
+        part.run_->font_data_.get(), part.run_->direction_,
+        part.run_->canvas_rotation_, part.run_->script_, part.start_index_,
+        part.NumGlyphs(), part.num_characters_);
+    new_run->glyph_data_.CopyFromRange(part.range_);
     for (HarfBuzzRunGlyphData& glyph_data : new_run->glyph_data_) {
-      glyph_data.character_index -= part->offset_;
+      glyph_data.character_index -= part.offset_;
     }
 
     new_run->start_index_ += char_index_offset_;
-    new_run->width_ = part->width_;
-    new_run->num_characters_ = part->num_characters_;
+    new_run->width_ = part.width_;
+    new_run->num_characters_ = part.num_characters_;
     new_result->runs_.push_back(std::move(new_run));
   }
 
@@ -171,7 +178,9 @@ void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
   num_characters_ += std::min(end_index, other->EndIndex()) -
                      std::max(start_index, other->StartIndex());
 
-  for (const auto& run : other->RunsOrParts()) {
+  RunInfoPart* part = Parts().data() + num_parts_;
+  for (const auto& run_or_part : other->RunsOrParts()) {
+    auto* const run = run_or_part.get();
     if (!run->GetRunInfo())
       continue;
     // Compute start/end of the run, or of the part if ShapeResultView.
@@ -205,14 +214,15 @@ void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
       // Adjust start_index for runs to be continuous.
       unsigned part_start_index = run_start + adjusted_start + index_diff;
       unsigned part_offset = adjusted_start;
-      parts_.push_back(std::make_unique<RunInfoPart>(
-          run->GetRunInfo(), range, part_start_index, part_offset,
-          part_characters, part_width));
+      new (part) RunInfoPart(run->GetRunInfo(), range, part_start_index,
+                             part_offset, part_characters, part_width);
+      ++part;
 
       num_glyphs_ += range.end - range.begin;
       width_ += part_width;
     }
   }
+  num_parts_ = static_cast<wtf_size_t>(std::distance(Parts().data(), part));
 }
 
 scoped_refptr<ShapeResultView> ShapeResultView::Create(const Segment* segments,
@@ -224,9 +234,20 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(const Segment* segments,
            (!segments[i].result || !segments[i].view));
   }
 #endif
+  wtf_size_t num_parts = 0;
+  for (auto& segment : base::span<const Segment>(segments, segment_count)) {
+    num_parts += segment.result ? segment.result->RunsOrParts().size()
+                                : segment.view->RunsOrParts().size();
+  }
+  static_assert(sizeof(ShapeResultView) % alignof(RunInfoPart) == 0,
+                "We have RunInfoPart as flexible array in ShapeResultView");
+  const size_t byte_size =
+      sizeof(ShapeResultView) + sizeof(RunInfoPart) * num_parts;
+  void* buffer = ::WTF::Partitions::FastMalloc(
+      byte_size, ::WTF::GetStringWithTypeName<ShapeResultView>());
   ShapeResultView* out = segments[0].result
-                             ? new ShapeResultView(segments[0].result)
-                             : new ShapeResultView(segments[0].view);
+                             ? new (buffer) ShapeResultView(segments[0].result)
+                             : new (buffer) ShapeResultView(segments[0].view);
   out->AddSegments(segments, segment_count);
   return base::AdoptRef(out);
 }
@@ -251,7 +272,14 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(
     const ShapeResult* result) {
   // This specialization is an optimization to allow the bounding box to be
   // re-used.
-  ShapeResultView* out = new ShapeResultView(result);
+  const wtf_size_t num_parts = result->RunsOrParts().size();
+  static_assert(sizeof(ShapeResultView) % alignof(RunInfoPart) == 0,
+                "We have RunInfoPart as flexible array in ShapeResultView");
+  const size_t byte_size =
+      sizeof(ShapeResultView) + sizeof(RunInfoPart) * num_parts;
+  void* buffer = ::WTF::Partitions::FastMalloc(
+      byte_size, ::WTF::GetStringWithTypeName<ShapeResultView>());
+  ShapeResultView* out = new (buffer) ShapeResultView(result);
   out->char_index_offset_ = result->StartIndex();
   if (!out->Rtl()) {
     out->start_index_ = 0;
@@ -267,7 +295,7 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(
 void ShapeResultView::AddSegments(const Segment* segments,
                                   size_t segment_count) {
   // This method assumes that no parts have been added yet.
-  DCHECK_EQ(parts_.size(), 0u);
+  DCHECK_EQ(num_parts_, 0u);
 
   // Segments are in logical order, runs and parts are in visual order. Iterate
   // over segments back-to-front for RTL.
@@ -305,25 +333,22 @@ void ShapeResultView::AddSegments(const Segment* segments,
 }
 
 unsigned ShapeResultView::PreviousSafeToBreakOffset(unsigned index) const {
-  for (auto it = parts_.rbegin(); it != parts_.rend(); ++it) {
+  for (auto it = RunsOrParts().rbegin(); it != RunsOrParts().rend(); ++it) {
     const auto& part = *it;
-    if (!part)
-      continue;
-
-    unsigned run_start = part->start_index_;
+    unsigned run_start = part.start_index_;
     if (index >= run_start) {
       unsigned offset = index - run_start;
-      if (offset <= part->num_characters_) {
-        return part->PreviousSafeToBreakOffset(offset) + run_start;
+      if (offset <= part.num_characters_) {
+        return part.PreviousSafeToBreakOffset(offset) + run_start;
       }
       if (!Rtl()) {
-        return run_start + part->num_characters_;
+        return run_start + part.num_characters_;
       }
     } else if (Rtl()) {
-      if (it == parts_.rbegin())
-        return part->start_index_;
+      if (it == RunsOrParts().rbegin())
+        return part.start_index_;
       const auto& previous_run = *--it;
-      return previous_run->start_index_ + previous_run->num_characters_;
+      return previous_run.start_index_ + previous_run.num_characters_;
     }
   }
 
@@ -332,9 +357,9 @@ unsigned ShapeResultView::PreviousSafeToBreakOffset(unsigned index) const {
 
 void ShapeResultView::GetRunFontData(
     Vector<ShapeResult::RunFontData>* font_data) const {
-  for (const auto& part : parts_) {
+  for (const auto& part : RunsOrParts()) {
     font_data->push_back(ShapeResult::RunFontData(
-        {part->run_->font_data_.get(), part->end() - part->begin()}));
+        {part.run_->font_data_.get(), part.end() - part.begin()}));
   }
 }
 
@@ -342,9 +367,9 @@ void ShapeResultView::FallbackFonts(
     HashSet<const SimpleFontData*>* fallback) const {
   DCHECK(fallback);
   DCHECK(primary_font_);
-  for (const auto& part : parts_) {
-    if (part->run_->font_data_ && part->run_->font_data_ != primary_font_) {
-      fallback->insert(part->run_->font_data_.get());
+  for (const auto& part : RunsOrParts()) {
+    if (part.run_->font_data_ && part.run_->font_data_ != primary_font_) {
+      fallback->insert(part.run_->font_data_.get());
     }
   }
 }
@@ -377,13 +402,13 @@ float ShapeResultView::ForEachGlyph(float initial_advance,
                                     GlyphCallback glyph_callback,
                                     void* context) const {
   auto total_advance = initial_advance;
-  for (const auto& part : parts_) {
-    if (part->HasGlyphOffsets()) {
+  for (const auto& part : RunsOrParts()) {
+    if (part.HasGlyphOffsets()) {
       total_advance =
-          ForEachGlyphImpl<true>(total_advance, glyph_callback, context, *part);
+          ForEachGlyphImpl<true>(total_advance, glyph_callback, context, part);
     } else {
-      total_advance = ForEachGlyphImpl<false>(total_advance, glyph_callback,
-                                              context, *part);
+      total_advance =
+          ForEachGlyphImpl<false>(total_advance, glyph_callback, context, part);
     }
   }
   return total_advance;
@@ -445,15 +470,13 @@ float ShapeResultView::ForEachGlyph(float initial_advance,
                                     void* context) const {
   auto total_advance = initial_advance;
 
-  for (const auto& part : parts_) {
-    if (part->HasGlyphOffsets()) {
-      total_advance =
-          ForEachGlyphImpl<true>(total_advance, from, to, index_offset,
-                                 glyph_callback, context, *part);
+  for (const auto& part : Parts()) {
+    if (part.HasGlyphOffsets()) {
+      total_advance = ForEachGlyphImpl<true>(
+          total_advance, from, to, index_offset, glyph_callback, context, part);
     } else {
-      total_advance =
-          ForEachGlyphImpl<false>(total_advance, from, to, index_offset,
-                                  glyph_callback, context, *part);
+      total_advance = ForEachGlyphImpl<false>(
+          total_advance, from, to, index_offset, glyph_callback, context, part);
     }
   }
   return total_advance;
@@ -469,11 +492,11 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
   unsigned run_offset = index_offset;
   float advance_so_far = initial_advance;
 
-  for (const auto& part : parts_) {
-    if (!part->NumGlyphs())
+  for (const auto& part : RunsOrParts()) {
+    if (!part.NumGlyphs())
       continue;
 
-    const auto& run = part->run_;
+    const auto& run = part.run_;
     unsigned graphemes_in_cluster = 1;
     float cluster_advance = 0;
     bool rtl = Direction() == TextDirection::kRtl;
@@ -484,22 +507,22 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
     // contain multiple glyphs and grapheme clusters, with mutually overlapping
     // boundaries.
     const unsigned character_index_offset_for_glyph_data =
-        CharacterIndexOffsetForGlyphData(*part) + run_offset;
+        CharacterIndexOffsetForGlyphData(part) + run_offset;
     uint16_t cluster_start =
-        static_cast<uint16_t>(rtl ? part->CharacterIndexOfEndGlyph() +
+        static_cast<uint16_t>(rtl ? part.CharacterIndexOfEndGlyph() +
                                         character_index_offset_for_glyph_data
-                                  : part->GlyphAt(0).character_index +
+                                  : part.GlyphAt(0).character_index +
                                         character_index_offset_for_glyph_data);
 
-    const unsigned num_glyphs = part->NumGlyphs();
+    const unsigned num_glyphs = part.NumGlyphs();
     for (unsigned i = 0; i < num_glyphs; ++i) {
-      const HarfBuzzRunGlyphData& glyph_data = part->GlyphAt(i);
+      const HarfBuzzRunGlyphData& glyph_data = part.GlyphAt(i);
       uint16_t current_character_index =
           glyph_data.character_index + character_index_offset_for_glyph_data;
 
       bool is_run_end = (i + 1 == num_glyphs);
       bool is_cluster_end =
-          is_run_end || (part->GlyphAt(i + 1).character_index +
+          is_run_end || (part.GlyphAt(i + 1).character_index +
                              character_index_offset_for_glyph_data !=
                          current_character_index);
 
@@ -523,9 +546,9 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
           cluster_end = current_character_index;
         } else {
           cluster_end = static_cast<uint16_t>(
-              is_run_end ? part->CharacterIndexOfEndGlyph() +
+              is_run_end ? part.CharacterIndexOfEndGlyph() +
                                character_index_offset_for_glyph_data
-                         : part->GlyphAt(i + 1).character_index +
+                         : part.GlyphAt(i + 1).character_index +
                                character_index_offset_for_glyph_data);
         }
         graphemes_in_cluster = ShapeResult::CountGraphemesInCluster(
@@ -590,24 +613,21 @@ FloatRect ShapeResultView::ComputeInkBounds() const {
   FloatRect ink_bounds;
 
   float run_advance = 0.0f;
-  for (const auto& part : parts_) {
-    if (part->HasGlyphOffsets()) {
-      if (part->IsHorizontal()) {
-        ComputePartInkBounds<true, true>(*part.get(), run_advance, &ink_bounds);
+  for (const auto& part : Parts()) {
+    if (part.HasGlyphOffsets()) {
+      if (part.IsHorizontal()) {
+        ComputePartInkBounds<true, true>(part, run_advance, &ink_bounds);
       } else {
-        ComputePartInkBounds<false, true>(*part.get(), run_advance,
-                                          &ink_bounds);
+        ComputePartInkBounds<false, true>(part, run_advance, &ink_bounds);
       }
     } else {
-      if (part->IsHorizontal()) {
-        ComputePartInkBounds<true, false>(*part.get(), run_advance,
-                                          &ink_bounds);
+      if (part.IsHorizontal()) {
+        ComputePartInkBounds<true, false>(part, run_advance, &ink_bounds);
       } else {
-        ComputePartInkBounds<false, false>(*part.get(), run_advance,
-                                           &ink_bounds);
+        ComputePartInkBounds<false, false>(part, run_advance, &ink_bounds);
       }
     }
-    run_advance += part->Width();
+    run_advance += part.Width();
   }
 
   return ink_bounds;

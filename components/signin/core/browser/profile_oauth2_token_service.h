@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
+#include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "build/buildflag.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -15,8 +17,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
-
-#include <memory>
 
 namespace identity {
 class IdentityManager;
@@ -41,6 +41,14 @@ class PrefRegistrySimple;
 // request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
+  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
+                                       bool /* is_refresh_token_valid */,
+                                       const std::string& /* source */)>
+      RefreshTokenAvailableFromSourceCallback;
+  typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
+                                       const std::string& /* source */)>
+      RefreshTokenRevokedFromSourceCallback;
+
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
@@ -48,6 +56,18 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // If set, this callback will be invoked when a new refresh token is
+  // available. Contains diagnostic information about the source of the update
+  // credentials operation.
+  void SetRefreshTokenAvailableFromSourceCallback(
+      RefreshTokenAvailableFromSourceCallback callback);
+
+  // If set, this callback will be invoked when a refresh token is revoked.
+  // Contains diagnostic information about the source that initiated the
+  // revocation operation.
+  void SetRefreshTokenRevokedFromSourceCallback(
+      RefreshTokenRevokedFromSourceCallback callback);
 
   void Shutdown();
 
@@ -113,6 +133,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   void RecreateDeviceIdIfNeeded();
 
   PrefService* user_prefs_;
+
+  // Callbacks to invoke, if set, for refresh token-related events.
+  RefreshTokenAvailableFromSourceCallback on_refresh_token_available_callback_;
+  RefreshTokenRevokedFromSourceCallback on_refresh_token_revoked_callback_;
 
   signin_metrics::SourceForRefreshTokenOperation update_refresh_token_source_ =
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;

@@ -441,12 +441,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        // This will call back to onPolicyFetchedBeforeSignIn.
-        mDelegate.fetchAndApplyCloudPolicy(
-                this, mNativeSigninManagerAndroid, mSignInState.mAccount.name);
+        mDelegate.fetchAndApplyCloudPolicy(this, mNativeSigninManagerAndroid,
+                mSignInState.mAccount.name, this::onPolicyFetchedBeforeSignIn);
     }
 
-    @CalledByNative
     @VisibleForTesting
     /**
      * If the user is managed, its policy has been fetched and is being enforced; features like sync
@@ -708,8 +706,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isForceSigninEnabled(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
-        void fetchAndApplyCloudPolicy(
-                @JCaller SigninManager self, long nativeSigninManagerAndroid, String username);
+        void fetchAndApplyCloudPolicy(@JCaller SigninManager self, long nativeSigninManagerAndroid,
+                String username, Runnable callback);
 
         void abortSignIn(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 

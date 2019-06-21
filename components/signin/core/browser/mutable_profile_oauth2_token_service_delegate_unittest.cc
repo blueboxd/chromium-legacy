@@ -82,7 +82,6 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
       public OAuth2TokenServiceObserver,
-      public OAuth2TokenService::DiagnosticsObserver,
       public WebDataServiceConsumer {
  public:
   MutableProfileOAuth2TokenServiceDelegateTest()
@@ -203,14 +202,14 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     ++auth_error_changed_count_;
   }
 
-  // OAuth2TokenService::DiagnosticsObserver implementation
+  // ProfileOAuth2TokenService callbacks.
   void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
                                          bool is_refresh_token_valid,
-                                         const std::string& source) override {
+                                         const std::string& source) {
     source_for_refresh_token_available_ = source;
   }
   void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
-                                       const std::string& source) override {
+                                       const std::string& source) {
     source_for_refresh_token_revoked_ = source;
   }
 
@@ -1518,7 +1517,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ProfileOAuth2TokenService token_service(
       &pref_service_,
       CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled));
-  token_service.AddDiagnosticsObserver(this);
+  token_service.SetRefreshTokenAvailableFromSourceCallback(
+      base::BindRepeating(&MutableProfileOAuth2TokenServiceDelegateTest::
+                              OnRefreshTokenAvailableFromSource,
+                          base::Unretained(this)));
+  token_service.SetRefreshTokenRevokedFromSourceCallback(
+      base::BindRepeating(&MutableProfileOAuth2TokenServiceDelegateTest::
+                              OnRefreshTokenRevokedFromSource,
+                          base::Unretained(this)));
 
   {
     base::HistogramTester h_tester;
@@ -1579,7 +1585,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     base::RunLoop().RunUntilIdle();
   }
 
-  token_service.RemoveDiagnosticsObserver(this);
   token_service.Shutdown();
 }
 

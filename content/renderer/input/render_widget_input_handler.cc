@@ -443,8 +443,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // do this here so that we can attribute lateny information from the mouse as
   // a scroll interaction, instead of just classifying as mouse input.
   if (injected_scroll_params && injected_scroll_params->size()) {
-    HandleInjectedScrollGestures(*injected_scroll_params, input_event,
-                                 latency_info);
+    HandleInjectedScrollGestures(std::move(*injected_scroll_params),
+                                 input_event, latency_info);
   }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
@@ -497,6 +497,12 @@ void RenderWidgetInputHandler::HandleInputEvent(
     delegate_->FocusChangeComplete();
   }
 #endif
+
+  // Ensure all injected scrolls were handled or queue up - any remaining
+  // injected scrolls at this point would not be processed.
+  DCHECK(!handling_injected_scroll_params_ ||
+         !*handling_injected_scroll_params_ ||
+         (*handling_injected_scroll_params_)->empty());
 }
 
 void RenderWidgetInputHandler::DidOverscrollFromBlink(

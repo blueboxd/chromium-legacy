@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Activa o desactiva la connexió a la xarxa. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Desplaça't cap a la dreta</translation>
 <translation id="1812997170047690955">Què hi ha a la pantalla?</translation>
+<translation id="1820355135508821526">Una política aplicada a aquest dispositiu ha desactivat <ph name="FEATURE_NAME" />. Demana-li a l'administrador que faci els canvis pertinents.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (s'està carregant...)</translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Reinicia per actualitzar</translation>
 <translation id="2597972630681408282">Llum nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
+<translation id="2651765386227849097">L'Assistent de Google està desactivat en aquest dispositiu.</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2658778018866295321">Fes clic i arrossega</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">La drecera per activar/desactivar el mode d'alt contrast ha canviat. A partir d'ara, utilitza <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4924411785043111640">Reinicia i restableix</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Connector per al micròfon</translation>
 <translation id="5669267381087807207">S'està activant</translation>
 <translation id="5673434351075758678">Després de sincronitzar la configuració, canvia <ph name="FROM_LOCALE" /> per <ph name="TO_LOCALE" />.</translation>
+<translation id="5682642926269496722">L'Assistent de Google no està disponible per al compte d'usuari actual.</translation>
 <translation id="5691772641933328258">L'empremta digital no s'ha reconegut</translation>
 <translation id="5710450975648804523">Mode No molestis activat</translation>
 <translation id="574392208103952083">Mitjà</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">No s'ha pogut verificar la contrasenya. Torna-ho a provar.</translation>
 <translation id="607652042414456612">El vostre ordinador està visible als dispositius Bluetooth propers i apareixerà com a "<ph name="NAME" />" amb l'adreça <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">S'està carregant: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">L'Assistent de Google no està disponible a les sessions de convidat.</translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6164005077879661055">Tots els fitxers i les dades locals associats amb l'usuari supervisat se suprimiran permanentment quan aquest usuari supervisat se suprimeixi. És possible que el gestor encara pugui veure els llocs web visitats i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Més informació</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha vinculat i ja està disponible per a tots els usuaris. Podeu eliminar la vinculació a Configuració.</translation>
 <translation id="6715542151869432661">No s'ha trobat cap dispositiu mòbil.</translation>
 <translation id="6723839937902243910">Bateria</translation>
+<translation id="6727969043791803658">Connectat, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">La traça del rendiment està activada</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>

@@ -54,6 +54,7 @@ namespace blink {
 
 class BaseFetchContext;
 enum class FileErrorCode;
+class SharedBuffer;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 
@@ -200,7 +201,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
   uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
-  Vector<char> receiving_message_data_;
+  scoped_refptr<SharedBuffer> receiving_message_data_;
   Member<ExecutionContext> execution_context_;
 
   bool receiving_message_type_is_text_;

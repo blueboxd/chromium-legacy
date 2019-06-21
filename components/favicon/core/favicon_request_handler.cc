@@ -16,7 +16,9 @@
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/favicon_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "ui/gfx/image/image_png_rep.h"
 
 namespace favicon {
 
@@ -215,9 +217,11 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
   favicon_base::FaviconRawBitmapResult sync_bitmap_result =
       synced_favicon_getter_.Run(page_url);
   if (sync_bitmap_result.is_valid()) {
-    // If request to sync succeeds, send the retrieved bitmap.
+    // If request to sync succeeds, resize bitmap to desired size and send.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kSync);
-    std::move(response_callback).Run(sync_bitmap_result);
+    std::move(response_callback)
+        .Run(favicon_base::ResizeFaviconBitmapResult({sync_bitmap_result},
+                                                     desired_size_in_pixel));
     return;
   }
 

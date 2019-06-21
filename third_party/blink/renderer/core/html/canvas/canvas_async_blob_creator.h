@@ -131,12 +131,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   scoped_refptr<base::SingleThreadTaskRunner> parent_frame_task_runner_;
 
   // Used for HTMLCanvasElement only
-  //
-  // Note: CanvasAsyncBlobCreator is never held by other objects. As soon as
-  // an instance gets created, ScheduleAsyncBlobCreation is invoked, and then
-  // the instance is only held by a task runner (via PostTask). Thus the
-  // instance has only limited lifetime. Hence, Persistent here is okay.
-  Member<V8PersistentCallbackFunction<V8BlobCallback>> callback_;
+  Member<V8BlobCallback> callback_;
 
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;

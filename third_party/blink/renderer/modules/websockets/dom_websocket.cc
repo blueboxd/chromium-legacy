@@ -733,9 +733,13 @@ void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
 }
 
 void DOMWebSocket::DidReceiveBinaryMessage(
-    std::unique_ptr<Vector<char>> binary_data) {
+    const Vector<base::span<const char>>& data) {
+  size_t size = 0;
+  for (const auto& span : data) {
+    size += span.size();
+  }
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidReceiveBinaryMessage() "
-                   << binary_data->size() << " byte binary message";
+                   << size << " byte binary message";
   ReflectBufferedAmountConsumption();
   DCHECK(!origin_string_.IsNull());
 
@@ -745,11 +749,10 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
   switch (binary_type_) {
     case kBinaryTypeBlob: {
-      size_t size = binary_data->size();
-      scoped_refptr<RawData> raw_data = RawData::Create();
-      binary_data->swap(*raw_data->MutableData());
       auto blob_data = std::make_unique<BlobData>();
-      blob_data->AppendData(std::move(raw_data));
+      for (const auto& span : data) {
+        blob_data->AppendBytes(span.data(), span.size());
+      }
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
@@ -759,11 +762,9 @@ void DOMWebSocket::DidReceiveBinaryMessage(
     }
 
     case kBinaryTypeArrayBuffer:
-      DOMArrayBuffer* array_buffer =
-          DOMArrayBuffer::Create(binary_data->data(), binary_data->size());
+      DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(data);
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeArrayBuffer);
-      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer,
-                                        binary_data->size());
+      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer, size);
       event_queue_->Dispatch(
           MessageEvent::Create(array_buffer, origin_string_));
       break;

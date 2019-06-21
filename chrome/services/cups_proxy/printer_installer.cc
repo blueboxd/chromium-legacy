@@ -80,6 +80,8 @@ void PrinterInstallerImpl::InstallPrinterIfNeeded(ipp_t* ipp,
                                weak_factory_.GetWeakPtr(), std::move(cb)));
 }
 
+// TODO(crbug.com/945409): Test whether we need to call
+// CupsPrintersManager::PrinterInstalled here.
 void PrinterInstallerImpl::OnInstallPrinter(InstallPrinterCallback cb,
                                             bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -93,6 +93,7 @@ namespace autofill {
 
 using base::StartsWith;
 using base::TimeTicks;
+using mojom::SubmissionSource;
 
 const int kCreditCardSigninPromoImpressionLimit = 3;
 

@@ -56,13 +56,19 @@
 @end
 
 namespace {
+
+// TODO(crbug.com/977314): Theses variables are only used in simulator until
+// tests are fixed.
+#if TARGET_IPHONE_SIMULATOR
 const char kContentDispositionWithFileName[] =
     "attachment; filename=\"suggested_filename.pdf\"";
+const char kPdfContentType[] = "application/pdf";
+const char kInvalidFileNameUrl[] = "https://test.test/";
+#endif
+
+const char kValidFileNameUrl[] = "https://test.test/file_name.pdf";
 const char kContentDispositionWithoutFileName[] =
     "attachment; parameter=parameter_value";
-const char kInvalidFileNameUrl[] = "https://test.test/";
-const char kValidFileNameUrl[] = "https://test.test/file_name.pdf";
-const char kPdfContentType[] = "application/pdf";
 const char kHtmlContentType[] = "text/html";
 }  // namespace
 
@@ -131,6 +137,8 @@ TEST_F(OpenInTabHelperTest, WebStateObservationDestruction) {
   EXPECT_TRUE(delegate_.openInDestroyed);
 }
 
+// TODO(crbug.com/977314): Tests fail on iOS devices.
+#if TARGET_IPHONE_SIMULATOR
 // Tests that openIn is enabled for PDF documents and that it uses the file name
 // from the content desposition key in the response headers.
 TEST_F(OpenInTabHelperTest, OpenInForPDFWithFileNameFromContentDesposition) {
@@ -142,7 +150,6 @@ TEST_F(OpenInTabHelperTest, OpenInForPDFWithFileNameFromContentDesposition) {
   EXPECT_EQ(url, delegate_.lastOpenedDocumentURL);
   EXPECT_NSEQ(@"suggested_filename.pdf", delegate_.lastSuggestedFileName);
 }
-
 // Tests that openIn is enabled for PDF documents and that it uses the file name
 // from the URL if the content desposition key in the response headers doesn't
 // have file name.
@@ -173,6 +180,7 @@ TEST_F(OpenInTabHelperTest, OpenInForPDFWithDefaultFileName) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_file_name),
               delegate_.lastSuggestedFileName);
 }
+#endif
 
 // Tests that openIn is disabled for non PDF documents.
 TEST_F(OpenInTabHelperTest, OpenInDisabledForNonPDF) {

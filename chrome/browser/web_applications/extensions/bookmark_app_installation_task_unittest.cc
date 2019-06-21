@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -93,7 +94,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   // Returns what would be the AppId if an app is installed with |url|.
   web_app::AppId GetAppIdForUrl(const GURL& url) {
-    return web_app::GenerateAppIdFromURL(url);
+    return web_app::TestInstallFinalizer::GetAppIdForUrl(url);
   }
 
   void SetNextFinalizeInstallResult(const GURL& url,
@@ -155,12 +156,14 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
     std::tie(app_id, code) =
         next_finalize_install_results_[web_app_info.app_url];
     next_finalize_install_results_.erase(web_app_info.app_url);
+    const GURL& url = web_app_info.app_url;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting(
-            [&, app_id, code, callback = std::move(callback)]() mutable {
-              registrar_->AddAsInstalled(app_id);
+            [&, app_id, url, code, callback = std::move(callback)]() mutable {
+              registrar_->AddExternalApp(
+                  app_id, {url, web_app::InstallSource::kExternalPolicy});
               std::move(callback).Run(app_id, code);
             }));
   }
@@ -182,7 +185,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
         base::BindLambdaForTesting(
             [&, app_id, uninstalled, callback = std::move(callback)]() mutable {
               if (uninstalled)
-                registrar_->RemoveAsInstalled(app_id);
+                registrar_->RemoveExternalApp(app_id);
               std::move(callback).Run(uninstalled);
             }));
   }
@@ -279,7 +282,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
     auto* provider = static_cast<web_app::TestWebAppProvider*>(
         web_app::WebAppProvider::Get(profile()));
 
-    auto registrar = std::make_unique<web_app::TestAppRegistrar>(profile());
+    auto registrar = std::make_unique<web_app::TestAppRegistrar>();
     registrar_ = registrar.get();
 
     auto install_finalizer =

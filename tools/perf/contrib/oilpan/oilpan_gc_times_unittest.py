@@ -34,9 +34,6 @@ class OilpanGCTimesTestData(object):
     self._renderer_thread = self._renderer_process.GetOrCreateThread(2)
     self._renderer_thread.name = thread_name
     self._results = page_test_results.PageTestResults()
-    self._results.telemetry_info.benchmark_name = 'benchmark'
-    self._results.telemetry_info.benchmark_start_epoch = 123
-    self._results.telemetry_info.benchmark_descriptions = 'foo'
 
   @property
   def results(self):

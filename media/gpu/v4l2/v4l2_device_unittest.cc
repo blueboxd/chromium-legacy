@@ -79,19 +79,44 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12) {
   EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
   std::vector<VideoFrameLayout::Plane> expected_planes(
-      {{320, 0u}, {320, 57600u}});
+      {{320, 0u, 86400u}, {320, 57600u, 28800u}});
   EXPECT_EQ(expected_planes, layout->planes());
-  EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
-  EXPECT_EQ(86400u, layout->GetTotalBufferSize());
+  EXPECT_EQ(layout->is_multi_planar(), false);
   std::ostringstream ostream;
   ostream << *layout;
   const std::string kNoModifierStr =
       std::to_string(gfx::NativePixmapHandle::kNoModifier);
-  EXPECT_EQ(ostream.str(),
-            "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
-            "planes (stride, offset): [(320, 0), (320, 57600)], buffer_sizes: "
-            "[86400], modifier: " +
-                kNoModifierStr + ")");
+  EXPECT_EQ(
+      ostream.str(),
+      "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
+      "planes (stride, offset, size): [(320, 0, 86400), (320, 57600, 28800)], "
+      "is_multi_planar: 0, buffer_addr_align: 4096, modifier: " +
+          kNoModifierStr + ")");
+}
+
+// Test V4L2FormatToVideoFrameLayout with NV12M pixelformat, which has two
+// buffers and two color planes.
+TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12M) {
+  auto layout = V4L2Device::V4L2FormatToVideoFrameLayout(
+      V4L2FormatVideoOutputMplane(300, 180, V4L2_PIX_FMT_NV12, V4L2_FIELD_ANY,
+                                  {320, 320}, {57600, 28800}));
+  ASSERT_TRUE(layout.has_value());
+  EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
+  EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
+  std::vector<VideoFrameLayout::Plane> expected_planes(
+      {{320, 0u, 57600u}, {320, 0u, 28800u}});
+  EXPECT_EQ(expected_planes, layout->planes());
+  EXPECT_EQ(layout->is_multi_planar(), true);
+  std::ostringstream ostream;
+  ostream << *layout;
+  const std::string kNoModifierStr =
+      std::to_string(gfx::NativePixmapHandle::kNoModifier);
+  EXPECT_EQ(
+      ostream.str(),
+      "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
+      "planes (stride, offset, size): [(320, 0, 57600), (320, 0, 28800)], "
+      "is_multi_planar: 1, buffer_addr_align: 4096, modifier: " +
+          kNoModifierStr + ")");
 }
 
 // Test V4L2FormatToVideoFrameLayout with YUV420 pixelformat, which has one
@@ -104,18 +129,17 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutYUV420) {
   EXPECT_EQ(PIXEL_FORMAT_I420, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
   std::vector<VideoFrameLayout::Plane> expected_planes(
-      {{320, 0u}, {160, 57600u}, {160, 72000u}});
+      {{320, 0u, 86400}, {160, 57600u, 14400u}, {160, 72000u, 14400u}});
   EXPECT_EQ(expected_planes, layout->planes());
-  EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
-  EXPECT_EQ(86400u, layout->GetTotalBufferSize());
   std::ostringstream ostream;
   ostream << *layout;
   const std::string kNoModifierStr =
       std::to_string(gfx::NativePixmapHandle::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 300x180, "
-            "planes (stride, offset): [(320, 0), (160, 57600), (160, 72000)], "
-            "buffer_sizes: [86400], modifier: " +
+            "planes (stride, offset, size): [(320, 0, 86400), (160, 57600, "
+            "14400), (160, 72000, 14400)], "
+            "is_multi_planar: 0, buffer_addr_align: 4096, modifier: " +
                 kNoModifierStr + ")");
 }
 

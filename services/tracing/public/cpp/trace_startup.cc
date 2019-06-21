@@ -38,7 +38,8 @@ void EnableStartupTracingIfNeeded() {
   if (startup_config->IsEnabled()) {
     if (TracingUsesPerfettoBackend()) {
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
-          startup_config->GetBackgroundStartupTracingEnabled());
+          startup_config->GetSessionOwner() ==
+          TraceStartupConfig::SessionOwner::kBackgroundTracing);
     }
 
     const TraceConfig& trace_config = startup_config->GetTraceConfig();

@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
-<translation id="1272444412400969138">Selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos de sitios web, la caché…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">Permitir cookies en un sitio web específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Muestra sugerencias cuando no se puede resolver una dirección web o no se puede establecer una conexión</translation>
-<translation id="4044912625106523635">Se ha abierto el selector de dispositivo con el que se comparte una pestaña para que ocupe toda la pantalla.</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
 <translation id="4048707525896921369">Obtén información sobre los temas que aparecen en los sitios web sin salir de la página. La función Tocar para buscar envía una palabra y el contexto que la rodea a la Búsqueda de Google y te muestra definiciones, imágenes, resultados de búsqueda y más información.
 
@@ -747,7 +745,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">MB descargados: <ph name="MBS" /></translation>
-<translation id="6418750371676080905">Se ha cerrado el selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="6427112570124116297">Traduce la Web</translation>
 <translation id="6433501201775827830">Elegir tu motor de búsqueda</translation>
 <translation id="6437478888915024427">Información de la página</translation>
@@ -787,7 +784,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="666268767214822976">Utiliza un servicio de predicciones para mostrar consultas relacionadas y sitios web populares a medida que escribes en la barra de direcciones</translation>
 <translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
-<translation id="6672986458216094438">Se ha abierto a media altura el selector de dispositivo con el que se comparte una pestaña.</translation>
 <translation id="6697492270171225480">Mostrar sugerencias de páginas similares cuando no se encuentre una página</translation>
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>

@@ -40,31 +40,6 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
   void InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value);
 };
 
-template <>
-class V8PersistentCallbackFunction<V8VoidCallbackFunctionModules> final : public V8PersistentCallbackFunctionBase {
-  using V8CallbackFunction = V8VoidCallbackFunctionModules;
-
- public:
-  explicit V8PersistentCallbackFunction(V8CallbackFunction* callback_function)
-      : V8PersistentCallbackFunctionBase(callback_function) {}
-  ~V8PersistentCallbackFunction() override = default;
-
-  // Returns a wrapper-tracing version of this callback function.
-  V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
-
-  v8::Maybe<void> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) WARN_UNUSED_RESULT;
-  MODULES_EXPORT void InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value);
-
- private:
-  V8CallbackFunction* Proxy() {
-    return As<V8CallbackFunction>();
-  }
-
-  template <typename V8CallbackFunction>
-  friend V8PersistentCallbackFunction<V8CallbackFunction>*
-  ToV8PersistentCallbackFunction(V8CallbackFunction*);
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_VOID_CALLBACK_FUNCTION_MODULES_H_

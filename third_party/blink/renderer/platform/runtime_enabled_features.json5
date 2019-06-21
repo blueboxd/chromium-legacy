@@ -423,7 +423,7 @@
     },
     {
       name: "CSSVariables2",
-      status: "stable",
+      status: "experimental",
     },
     // Support for registered custom properties with <image> syntax.
     {
@@ -1475,6 +1475,7 @@
     },
     {
       name: "StreamsNative",
+      status: "experimental",
     },
     {
       name: "TextFragmentIdentifiers",

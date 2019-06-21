@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/picture_snapshot.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -504,16 +505,11 @@ Response InspectorLayerTreeAgent::replaySnapshot(const String& snapshot_id,
   Response response = GetSnapshotById(snapshot_id, snapshot);
   if (!response.isSuccess())
     return response;
-  Vector<char> base64_data = snapshot->Replay(
-      from_step.fromMaybe(0), to_step.fromMaybe(0), scale.fromMaybe(1.0));
-  if (base64_data.IsEmpty())
+  auto png_data = snapshot->Replay(from_step.fromMaybe(0), to_step.fromMaybe(0),
+                                   scale.fromMaybe(1.0));
+  if (png_data.IsEmpty())
     return Response::Error("Image encoding failed");
-  static constexpr char kUrlPrefix[] = "data:image/png;base64,";
-  StringBuilder url;
-  url.ReserveCapacity(sizeof(kUrlPrefix) + base64_data.size());
-  url.Append(kUrlPrefix);
-  url.Append(base64_data.begin(), base64_data.size());
-  *data_url = url.ToString();
+  *data_url = "data:image/png;base64," + Base64Encode(png_data);
   return Response::OK();
 }
 

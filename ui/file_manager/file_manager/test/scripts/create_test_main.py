@@ -247,6 +247,9 @@ for filename, substitutions in (
   buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
                     'cr_button/cr_button.html">', '')
   buf = buf.replace('src="files_', 'src="' + elements_path('files_'))
+  # The format dialog imports a bunch of files not available in a ui test, so
+  # just ignore it completely.
+  buf = buf.replace('<link rel="import" href="files_format_dialog.html">', '')
   for old, new in substitutions:
     buf = buf.replace(old, new)
   write('test/gen/' + filename, buf)

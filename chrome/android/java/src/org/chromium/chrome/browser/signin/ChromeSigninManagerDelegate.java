@@ -60,9 +60,9 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
 
     @Override
     public void fetchAndApplyCloudPolicy(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, String username) {
+            long nativeSigninManagerAndroid, String username, Runnable callback) {
         SigninManagerJni.get().fetchAndApplyCloudPolicy(
-                signinManager, nativeSigninManagerAndroid, username);
+                signinManager, nativeSigninManagerAndroid, username, callback);
     }
 
     @Override

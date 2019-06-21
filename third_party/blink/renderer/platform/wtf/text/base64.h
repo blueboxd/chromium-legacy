@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_BASE64_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_BASE64_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -37,18 +38,12 @@ enum Base64EncodePolicy { kBase64DoNotInsertLFs, kBase64InsertLFs };
 
 enum Base64DecodePolicy { kBase64DoNotValidatePadding, kBase64ValidatePadding };
 
-WTF_EXPORT void Base64Encode(const char*,
-                             unsigned,
-                             Vector<char>&,
-                             Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT void Base64Encode(const Vector<char>&,
-                             Vector<char>&,
-                             Base64EncodePolicy = kBase64DoNotInsertLFs);
-WTF_EXPORT void Base64Encode(const std::string&,
+WTF_EXPORT void Base64Encode(base::span<const uint8_t>,
                              Vector<char>&,
                              Base64EncodePolicy = kBase64DoNotInsertLFs);
 WTF_EXPORT String Base64Encode(base::span<const uint8_t>,
-                               Base64EncodePolicy = kBase64DoNotInsertLFs);
+                               Base64EncodePolicy = kBase64DoNotInsertLFs)
+    WARN_UNUSED_RESULT;
 
 WTF_EXPORT bool Base64Decode(
     const String&,
@@ -85,18 +80,6 @@ WTF_EXPORT String NormalizeToBase64(const String&);
 WTF_EXPORT String Base64URLEncode(const char*,
                                   unsigned,
                                   Base64EncodePolicy = kBase64DoNotInsertLFs);
-
-inline void Base64Encode(const Vector<char>& in,
-                         Vector<char>& out,
-                         Base64EncodePolicy policy) {
-  Base64Encode(in.data(), in.size(), out, policy);
-}
-
-inline void Base64Encode(const std::string& in,
-                         Vector<char>& out,
-                         Base64EncodePolicy policy) {
-  Base64Encode(in.c_str(), static_cast<unsigned>(in.length()), out, policy);
-}
 
 }  // namespace WTF
 

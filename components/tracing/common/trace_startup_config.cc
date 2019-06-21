@@ -96,7 +96,7 @@ TraceStartupConfig::TraceStartupConfig() {
   } else if (EnableFromBackgroundTracing()) {
     DCHECK(IsEnabled());
     DCHECK(!IsTracingStartupForDuration());
-    DCHECK(GetBackgroundStartupTracingEnabled());
+    DCHECK_EQ(SessionOwner::kBackgroundTracing, session_owner_);
     CHECK(!ShouldTraceToResultFile());
   }
 }
@@ -143,10 +143,6 @@ base::FilePath TraceStartupConfig::GetResultFile() const {
 
 void TraceStartupConfig::OnTraceToResultFileFinished() {
   finished_writing_to_file_ = true;
-}
-
-bool TraceStartupConfig::GetBackgroundStartupTracingEnabled() const {
-  return is_enabled_from_background_tracing_;
 }
 
 bool TraceStartupConfig::IsUsingPerfettoOutput() const {
@@ -241,21 +237,21 @@ bool TraceStartupConfig::EnableFromConfigFile() {
 }
 
 bool TraceStartupConfig::EnableFromBackgroundTracing() {
+  bool enabled = enable_background_tracing_for_testing_;
 #if defined(OS_ANDROID)
   // Tests can enable this value.
-  is_enabled_from_background_tracing_ =
-      is_enabled_from_background_tracing_ ||
-      base::android::GetBackgroundStartupTracingFlag();
+  enabled |= base::android::GetBackgroundStartupTracingFlag();
 #else
   // TODO(ssid): Implement saving setting to preference for next startup.
 #endif
   // Do not set the flag to false if it's not enabled unnecessarily.
-  if (!is_enabled_from_background_tracing_)
+  if (!enabled)
     return false;
 
   SetBackgroundStartupTracingEnabled(false);
   trace_config_ = GetDefaultBrowserStartupConfig();
   is_enabled_ = true;
+  session_owner_ = SessionOwner::kBackgroundTracing;
   should_trace_to_result_file_ = false;
   // Set startup duration to 0 since background tracing config will configure
   // the durations later.

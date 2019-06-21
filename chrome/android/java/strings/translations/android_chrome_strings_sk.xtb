@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Prehľadať a preskúmať</translation>
 <translation id="1264974993859112054">Šport</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
-<translation id="1272444412400969138">Výber zariadení, s ktorými sa má karta zdieľať.</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="1291207594882862231">Vymazať históriu, súbory cookie, dáta webov, vyrovnávaciu pamäť…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Nástroje pre vývojárov</translation>
 <translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="169515064810179024">Blokovať webom prístup k senzorom pohybu</translation>
+<translation id="1697480839793160072">Telefóny</translation>
+<translation id="1698058317516161971">E‑maily</translation>
 <translation id="1717218214683051432">Senzory pohybu</translation>
 <translation id="1718835860248848330">Posledná hodina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – aktualizované <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Povolenie súborov cookie konkrétneho webu</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hod.}few{# hod.}many{# hod.}other{# hod.}}</translation>
 <translation id="4042870126885713738">Zobrazovať návrhy, ak sa nedá nájsť webová adresa alebo nadviazať spojenie</translation>
-<translation id="4044912625106523635">Výber zariadení, s ktorými sa má karta zdieľať, je otvorený na celú výšku.</translation>
 <translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="4048707525896921369">Získajte informácie o témach na weboch bez toho, aby ste museli opustiť stránku. Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
 
@@ -747,7 +747,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6406506848690869874">Synchronizácia</translation>
 <translation id="641643625718530986">Tlačiť...</translation>
 <translation id="6416782512398055893">Stiahnuté: <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">Výber zariadení, s ktorým sa má karta zdieľať, je zavretý.</translation>
 <translation id="6427112570124116297">Preklad webu</translation>
 <translation id="6433501201775827830">Výber vyhľadávača</translation>
 <translation id="6437478888915024427">Informácie o stránke</translation>
@@ -787,7 +786,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="666268767214822976">Predpovedať súvisiace dopyty a populárne weby pri zadávaní textu do panela s adresou</translation>
 <translation id="666731172850799929">Otvoriť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Oznámenie o ochrane súkromia prehliadača Chrome</translation>
-<translation id="6672986458216094438">Výber zariadení, s ktorými sa má karta zdieľať, je otvorený na polovičnú výšku.</translation>
 <translation id="6697492270171225480">Zobraziť návrhy podobných stránok, keď sa stránka nedá nájsť</translation>
 <translation id="6697947395630195233">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom.</translation>
 <translation id="6698801883190606802">Spravovať synchronizované údaje</translation>

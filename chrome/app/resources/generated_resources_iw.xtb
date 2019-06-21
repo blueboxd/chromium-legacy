@@ -597,7 +597,6 @@
 <translation id="1887442540531652736">שגיאת כניסה</translation>
 <translation id="1887597546629269384">‏יש לומר שוב "Hey Google"</translation>
 <translation id="1887850431809612466">שכתוב חומרה</translation>
-<translation id="1889984860246851556">‏פתיחת הגדרות של שרת proxy</translation>
 <translation id="1890674179660343635">‏&lt;span&gt;מזהה: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">פתח מסך מלא</translation>
 <translation id="189358972401248634">שפות אחרות</translation>
@@ -1313,7 +1312,6 @@
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
 <translation id="2973324205039581528">השתקת האתר</translation>
 <translation id="2977480621796371840">הסרה מהקבוצה</translation>
-<translation id="2979128960948974571">הפעולה זו עשויה להימשך כמה דקות.</translation>
 <translation id="2979639724566107830">פתח בחלון חדש</translation>
 <translation id="2981113813906970160">הצג סמן עכבר גדול</translation>
 <translation id="2982970937345031">דיווח באופן אנונימי</translation>
@@ -1532,7 +1530,6 @@
 <translation id="3319048459796106952">חלון 'גלישה בסתר' חדש</translation>
 <translation id="3323521181261657960">בונוס! קיבלת עוד זמן מסך</translation>
 <translation id="3325910708063135066">‏המצלמה והמיקרופון מושבתים בהעדפות המערכת של Mac</translation>
-<translation id="3330615614570718993">‏יש לפנות למנהל המערכת כדי להפעיל את Plugin VM במכשיר זה.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">פרטי יישום</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - הסרטון פועל במצב תמונה בתוך תמונה</translation>
@@ -1624,7 +1621,6 @@
 <translation id="346431825526753">זהו חשבון לילדים, המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">העברת קובץ וידאו או אודיו בסטרימינג</translation>
 <translation id="3468999815377931311">‏טלפון Android</translation>
-<translation id="3470248707805984963">אירעה שגיאה. אפשר לנסות שוב.</translation>
 <translation id="3470442499439619530">הסר משתמש זה</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
 <translation id="3475843873335999118">המערכת עדיין לא מזהה את טביעת האצבע. הזן את הסיסמה שלך.</translation>
@@ -1737,7 +1733,6 @@
 <translation id="3629631988386925734">‏כדי להפעיל את Smart Lock צריך להזין סיסמה. בפעם הבאה, הטלפון יבטל את הנעילה של <ph name="DEVICE_TYPE" />. אפשר להשבית את Smart Lock דרך ההגדרות.</translation>
 <translation id="3630132874740063857">הטלפון שלך</translation>
 <translation id="3630995161997703415">כדי שניתן יהיה תמיד להשתמש באתר הזה יש להוסיף אותו למדף</translation>
-<translation id="3635256809897331115">‏יש ללחוץ או להקיש על 'הפעלה' כדי להשתמש ב-Plugin VM. בעתיד אפשר יהיה להפעיל את Plugin VM על ידי בחירת הסמל במרכז האפליקציות.</translation>
 <translation id="3636096452488277381">אהלן, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684">‏‎‎‎%‎‏‎‎‏‎‏‎<ph name="PERCENTAGE" />‌ - נותרו <ph name="TIME" /></translation>
 <translation id="3637682276779847508">‏כרטיס ה-SIM שלך יושבת לצמיתות אם לא תזין את המפתח הנכון לביטול נעילת ה-PIN.</translation>
@@ -1952,7 +1947,6 @@
 <translation id="3916445069167113093">סוג קובץ זה עלול לגרום נזק למחשב שלך. האם ברצונך לשמור את <ph name="FILE_NAME" /> בכל מקרה?</translation>
 <translation id="3918972485393593704">‏שליחת הפרטים אל Google</translation>
 <translation id="3919145445993746351">כדי לקבל גישה אל התוספים שלך בכל המחשבים שברשותך, יש להפעיל את הסנכרון</translation>
-<translation id="391999873395511996">מתבצעת הורדה של המכונה הווירטואלית.</translation>
 <translation id="3920504717067627103">מדיניות אישורים </translation>
 <translation id="392089482157167418">‏הפעל את ChromeVox (משוב קולי)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2909,7 +2903,6 @@
 <translation id="5449551289610225147">סיסמה לא חוקית</translation>
 <translation id="5449588825071916739">צור סימניה לכל הכרטיסיות</translation>
 <translation id="5449716055534515760">סגור ח&amp;לון</translation>
-<translation id="5453630479789469584">‏לא ניתן להגדיר את Plugin VM</translation>
 <translation id="5454166040603940656">עם <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">שפת היעד של התרגום</translation>
 <translation id="5457113250005438886">לא חוקי</translation>
@@ -4829,7 +4822,6 @@
 <translation id="8339059274628563283">נתונים המאוחסנים באופן מקומי עבור <ph name="SITE" /></translation>
 <translation id="833986336429795709">צריך לבחור אפליקציה כדי לפתוח את הקישור הזה</translation>
 <translation id="8342861492835240085">בחירת אוסף</translation>
-<translation id="8343187330304787218">‏ניהול ההגדרות להפעלת Plugin VM במכשיר <ph name="DEVICE_TYPE" /></translation>
 <translation id="8343956361364550006">כדי ליהנות מסרטונים ואנימציה באיכות הגבוהה ביותר, יש להשתמש ברוחב פס גדול. ייתכן שאנשים אחרים עם חיבור איטי לא יראו את התוכן שלך.</translation>
 <translation id="8351419472474436977">‏תוסף זה השתלט על הגדרות שרת ה-Proxy שלך. משמעות הדבר היא שהוא יכול לשנות, לקטוע או לצותת לכל פעולה שתבצע באינטרנט. אם אינך יודע בוודאות מדוע שינוי זה התרחש, סביר להניח שזהו שינוי לא רצוי.</translation>
 <translation id="835238322900896202">אירעה שגיאה במהלך הסרת ההתקנה. יש להסיר את ההתקנה באמצעות המסוף.</translation>

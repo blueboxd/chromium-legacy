@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Tafuta na ugundue</translation>
 <translation id="1264974993859112054">Michezo</translation>
 <translation id="1272079795634619415">Simamisha</translation>
-<translation id="1272444412400969138">Kiteua kifaa cha kushiriki kichupo.</translation>
 <translation id="1283039547216852943">Gusa ili upanue</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
 <translation id="1291207594882862231">Futa historia, vidakuzi, data ya tovuti, akiba…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Zana za Wasadini Programu</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="169515064810179024">Zuia tovuti zisifikie vitambuzi vya mwendo</translation>
+<translation id="1697480839793160072">Simu</translation>
+<translation id="1698058317516161971">Barua pepe</translation>
 <translation id="1717218214683051432">Vitambuzi vya mwendo</translation>
 <translation id="1718835860248848330">Saa iliyopita</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Imesasishwa <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Ruhusu vidakuzi katika tovuti maalum.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{Saa #}other{Saa #}}</translation>
 <translation id="4042870126885713738">Onyesha mapendekezo wakati anwani ya wavuti inaposhindwa kutatuliwa au muunganisho ukiwa hauwezi kufanyika</translation>
-<translation id="4044912625106523635">Kiteua kifaa cha kushiriki kichupo kimefunguliwa kwa urefu kamili.</translation>
 <translation id="4046123991198612571">Wimbo unaofuata</translation>
 <translation id="4048707525896921369">Pata maelezo kuhusu mada kwenye tovuti bila kuondoka kwenye ukurasa. Kipengele cha Gusa ili Utafute hutuma neno na muktadha wake kwenye huduma ya Tafuta na Google na kuonyesha ufafanuzi, picha, matokeo ya utafutaji na maelezo mengine.
 
@@ -747,7 +747,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6406506848690869874">Sawazisha</translation>
 <translation id="641643625718530986">Chapisha...</translation>
 <translation id="6416782512398055893">Umepakua MB <ph name="MBS" /></translation>
-<translation id="6418750371676080905">Kiteuzi cha kifaa cha kushiriki kichupo kimefungwa.</translation>
 <translation id="6427112570124116297">Tafsiri Wavuti</translation>
 <translation id="6433501201775827830">Chagua mtambo wako wa kutafuta</translation>
 <translation id="6437478888915024427">Maelezo ya ukurasa</translation>
@@ -787,7 +786,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="666268767214822976">Tumia huduma ya ubashiri ili kuonyesha hoja zinazohusiana na tovuti maarufu unapocharaza katika sehemu ya anwani</translation>
 <translation id="666731172850799929">Fungua katika <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ilani ya Faragha ya Chrome</translation>
-<translation id="6672986458216094438">Kiteua kifaa kitashiriki kichupo ambacho kimefunguliwa nusu.</translation>
 <translation id="6697492270171225480">Onyesha mapendekezo ya kurasa zinazofanana na ukurasa huu wakati haupatikani</translation>
 <translation id="6697947395630195233">Chrome inahitaji kufikia maelezo ya mahali ulipo ili kuyashiriki na tovuti hii.</translation>
 <translation id="6698801883190606802">Dhibiti data iliyosawazishwa</translation>

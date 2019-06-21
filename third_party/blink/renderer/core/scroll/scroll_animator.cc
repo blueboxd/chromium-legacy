@@ -61,7 +61,7 @@ ScrollAnimatorBase* ScrollAnimatorBase::Create(
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
-                               WTF::TimeFunction time_function)
+                               TimeFunction time_function)
     : ScrollAnimatorBase(scrollable_area),
       time_function_(time_function),
       last_granularity_(ScrollGranularity::kScrollByPixel) {}

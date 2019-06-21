@@ -663,9 +663,9 @@ void TestWebWidgetClient::InjectGestureScrollEvent(
     ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
-  if (injected_type == WebInputEvent::kGestureScrollUpdate) {
-    injected_gesture_scroll_update_count_++;
-  }
+  InjectedScrollGestureData data{delta, granularity, scrollable_area_element_id,
+                                 injected_type};
+  injected_scroll_gesture_data_.push_back(data);
 }
 
 void TestWebWidgetClient::RegisterViewportLayers(

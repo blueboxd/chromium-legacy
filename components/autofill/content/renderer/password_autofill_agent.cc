@@ -74,6 +74,7 @@ namespace autofill {
 using mojom::FillingStatus;
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 namespace {
 

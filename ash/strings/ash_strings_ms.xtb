@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Togol sambungan rangkaian. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Tatal ke kanan</translation>
 <translation id="1812997170047690955">Apakah yang terdapat pada skrin saya?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> telah dilumpuhkan oleh dasar yang digunakan pada peranti ini. Sila berbincang dengan pentadbir anda untuk meminta perubahan.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Pembantu (memuat...)</translation>
 <translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Mulakan semula untuk mengemas kini</translation>
 <translation id="2597972630681408282">Lampu Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kad SIM dikunci</translation>
+<translation id="2651765386227849097">Google Assistant dilumpuhkan pada peranti ini.</translation>
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2658778018866295321">Klik dan seret</translation>
 <translation id="2700493154570097719">Tetapkan papan kekunci anda</translation>
@@ -262,6 +264,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
 <translation id="490375751687810070">Menegak</translation>
 <translation id="4905614135390995787">Pintasan untuk menogol Mod Kontras Tinggi telah ditukar. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Bateri <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4924411785043111640">Mulakan semula dan tetapkan semula</translation>
@@ -299,6 +302,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5648021990716966815">Bicu mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
+<translation id="5682642926269496722">Google Assistant tidak tersedia untuk akaun pengguna semasa.</translation>
 <translation id="5691772641933328258">Cap jari tidak dikenali</translation>
 <translation id="5710450975648804523">Jangan Ganggu dihidupkan</translation>
 <translation id="574392208103952083">Sederhana</translation>
@@ -332,6 +336,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6064337552080329342">Maaf, kata laluan anda tidak dapat disahkan. Sila cuba semula.</translation>
 <translation id="607652042414456612">Komputer anda boleh ditemui oleh peranti Bluetooth yang berdekatan sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengecas <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google Assistant tidak tersedia dalam sesi tetamu.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
@@ -373,6 +378,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
 <translation id="6715542151869432661">Peranti mudah alih tidak ditemui.</translation>
 <translation id="6723839937902243910">Kuasa</translation>
+<translation id="6727969043791803658">Disambungkan, bateri <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Pengesanan prestasi dihidupkan</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>

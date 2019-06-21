@@ -428,6 +428,18 @@ class EchoCancellationContainer {
     return EchoCancellationTypeSet(types);
   }
 
+  static bool ShouldUseExperimentalSystemEchoCanceller(
+      const media::AudioParameters& parameters) {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    if (base::FeatureList::IsEnabled(features::kForceEnableSystemAec) &&
+        (parameters.effects() &
+         media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
+      return true;
+    }
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    return false;
+  }
+
   EchoCancellationType SelectBestEcMode(
       const ConstraintSet& constraint_set) const {
     DCHECK(!IsEmpty());
@@ -455,13 +467,23 @@ class EchoCancellationContainer {
     if (device_parameters_.IsValid() &&
         ec_mode_allowed_values_.Contains(
             EchoCancellationType::kEchoCancellationSystem) &&
-        device_parameters_.effects() & media::AudioParameters::ECHO_CANCELLER) {
+        (device_parameters_.effects() &
+             media::AudioParameters::ECHO_CANCELLER ||
+         ShouldUseExperimentalSystemEchoCanceller(device_parameters_))) {
       return EchoCancellationType::kEchoCancellationSystem;
     }
 
+    // At this point we have at least two elements, hence the only two options
+    // from which to select are either AEC3 or System, where AEC3 has higher
+    // priority.
+    if (ec_mode_allowed_values_.Contains(
+            EchoCancellationType::kEchoCancellationAec3)) {
+      return EchoCancellationType::kEchoCancellationAec3;
+    }
+
     DCHECK(ec_mode_allowed_values_.Contains(
-        EchoCancellationType::kEchoCancellationAec3));
-    return EchoCancellationType::kEchoCancellationAec3;
+        EchoCancellationType::kEchoCancellationDisabled));
+    return EchoCancellationType::kEchoCancellationDisabled;
   }
 
   // This function computes the fitness score of the given |ec_mode|. The

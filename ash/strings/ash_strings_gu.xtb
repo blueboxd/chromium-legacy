@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">નેટવર્ક કનેક્શન ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">જમણે સ્ક્રોલ કરો</translation>
 <translation id="1812997170047690955">મારી સ્ક્રીન પર શું છે?</translation>
+<translation id="1820355135508821526">આ ડિવાઇસ પર લાગુ કરવામાં આવેલી નીતિ દ્વારા <ph name="FEATURE_NAME" /> સુવિધા બંધ કરવામાં આવી છે. ફેરફારો કરવાની વિનંતી કરવા માટે કૃપા કરીને તમારા વ્યવસ્થાપક સાથે વાત કરો.</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">સહાયક (લોડ થઈ રહ્યું છે…)</translation>
 <translation id="1850504506766569011">વાઇ-ફાઇ બંધ છે.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">અપડેટ કરવા માટે ફરી શરૂ કરો</translation>
 <translation id="2597972630681408282">રાત્રિ પ્રકાશ: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
+<translation id="2651765386227849097">આ ડિવાઇસમાં Google આસિસ્ટંટ બંધ કરેલું છે.</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2658778018866295321">ક્લિક કરો અને ખેંચો</translation>
 <translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
 <translation id="490375751687810070">વર્ટિકલ</translation>
 <translation id="4905614135390995787">હાઇ કોન્ટ્રાસ્ટ મોડને ટૉગલ કરવાનો શૉર્ટકટ બદલાઇ ગયો છો. <ph name="OLD_SHORTCUT" />ને બદલે કૃપા કરીને <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
+<translation id="490788395437447240">બૅટરી <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">સશક્ત</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">માઇક જેક</translation>
 <translation id="5669267381087807207">સક્રિય કરી રહ્યું છે</translation>
 <translation id="5673434351075758678">તમારી સેટિંગને સિંક કર્યા પછી "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />"માં ફેરવો.</translation>
+<translation id="5682642926269496722">હાલના વપરાશકર્તા એકાઉન્ટ માટે Google આસિસ્ટંટ ઉપલબ્ધ નથી.</translation>
 <translation id="5691772641933328258">ફિંગરપ્રિન્ટ ઓળખી શકાઈ નથી</translation>
 <translation id="5710450975648804523">ખલેલ પાડશો નહીં ચાલુ છે</translation>
 <translation id="574392208103952083">મધ્યમ</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">માફ કરશો, તમારો પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="607652042414456612">નજીકનાં Bluetooth ડિવાઇસ માટે તમારું કમ્પ્યુટર શોધવાયોગ્ય છે અને તે સરનામાં <ph name="ADDRESS" /> સાથે "<ph name="NAME" />" તરીકે દેખાશે</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> ને ચાર્જ કરી રહ્યાં છે</translation>
+<translation id="612734058257491180">અતિથિ સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ હોતું નથી.</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6164005077879661055">એકવાર આ નિરીક્ષણ કરેલ વપરાશકર્તાને દૂર કરવામાં આવે પછી નિરીક્ષણ કરેલ વપરાશકર્તા સાથે સંકળાયેલી બધી ફાઇલો અને સ્થાનિક ડેટા કાયમી રૂપે કાઢી નાંખવામાં આવશે. નિરીક્ષણ કરેલ વપરાશકર્તા માટે મુલાકાત લીધેલી વેબસાઇટ્સ અને સેટિંગ્સ <ph name="MANAGEMENT_URL" /> પરના સંચાલકને હજી પણ દૃશ્યમાન હોઈ શકે છે.</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="6715542151869432661">કોઈ મોબાઇલ ઉપકરણો મળ્યાં નથી.</translation>
 <translation id="6723839937902243910">પાવર</translation>
+<translation id="6727969043791803658">કનેક્ટ થયેલ, બૅટરી <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">કાર્યપ્રદર્શનની નોંધ રાખવાનું ચાલુ કરેલું છે</translation>
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6803622936009808957">કોઈ સમર્થિત રિઝોલ્યૂશન મળ્યું ન હોવાથી, પ્રદર્શનોને પ્રતિબિંબિત કરી શકાયા નથી. તેને બદલે વિસ્તૃત ડેસ્કટૉપ દાખલ કર્યું.</translation>

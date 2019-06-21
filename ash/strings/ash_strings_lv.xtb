@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Pārslēgt tīkla savienojumu. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Ritināt pa labi</translation>
 <translation id="1812997170047690955">Kas ir redzams ekrānā?</translation>
+<translation id="1820355135508821526">Funkcija <ph name="FEATURE_NAME" /> ir atspējota šajā ierīcē lietotās politikas dēļ, Lūdzu, sazinieties ar administratoru, lai pieprasītu izmaiņas.</translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Restartēt, lai atjauninātu</translation>
 <translation id="2597972630681408282">Nakts režīms: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karte ir bloķēta.</translation>
+<translation id="2651765386227849097">Google asistents ir atspējots šajā ierīcē.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2658778018866295321">Noklikšķiniet un velciet</translation>
 <translation id="2700493154570097719">Iestatiet savu tastatūru</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Akumulators ir pilnībā uzlādēts.</translation>
 <translation id="490375751687810070">Vertikāli</translation>
 <translation id="4905614135390995787">Īsinājumtaustiņi, ar kuriem pārslēgt augsta kontrasta režīmu, ir mainījušies. Lūdzu, izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Akumulators: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4924411785043111640">Restartēt un atiestatīt</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Mikrofona ligzda</translation>
 <translation id="5669267381087807207">Notiek aktivizācija</translation>
 <translation id="5673434351075758678">Pēc iestatījumu sinhronizēšanas valoda tika mainīta no “<ph name="FROM_LOCALE" />” uz “<ph name="TO_LOCALE" />”.</translation>
+<translation id="5682642926269496722">Google asistents nav pieejams pašlaik izmantotajam lietotāja kontam.</translation>
 <translation id="5691772641933328258">Pirksta nospiedums netika atpazīts</translation>
 <translation id="5710450975648804523">Režīms “Netraucēt” ir ieslēgts</translation>
 <translation id="574392208103952083">Vidējs</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Diemžēl jūsu paroli nevarēja verificēt. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="607652042414456612">Tuvumā esošas Bluetooth ierīces var uztvert jūsu datoru; tā nosaukums ir “<ph name="NAME" />”, adrese — <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Uzlāde: <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google asistents nav pieejams viesa sesijā.</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth ierīce “<ph name="DEVICE_NAME" />” ir savienota pārī un ir pieejama visiem lietotājiem. Lai pārtrauktu šo savienojumus, atveriet iestatījumus.</translation>
 <translation id="6715542151869432661">Netika atrasta neviena mobilā ierīce.</translation>
 <translation id="6723839937902243910">Strāvas padeve</translation>
+<translation id="6727969043791803658">Savienojums izveidots, akumulatora uzlādes līmenis: <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="6751826523481687655">Veiktspējas izsekošana ir ieslēgta.</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>

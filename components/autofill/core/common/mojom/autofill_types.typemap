@@ -13,7 +13,6 @@ public_headers = [
   "//components/autofill/core/common/password_form_fill_data.h",
   "//components/autofill/core/common/password_form_generation_data.h",
   "//components/autofill/core/common/password_generation_util.h",
-  "//components/autofill/core/common/submission_source.h",
 ]
 traits_headers =
     [ "//components/autofill/core/common/mojom/autofill_types_struct_traits.h" ]
@@ -41,6 +40,5 @@ type_mappings = [
   "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
   "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
-  "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
   "autofill.mojom.ValueElementPair=autofill::ValueElementPair",
 ]

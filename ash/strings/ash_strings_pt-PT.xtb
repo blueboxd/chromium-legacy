@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Ativar/desativar ligação de rede. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Deslocar para a direita</translation>
 <translation id="1812997170047690955">O que está no meu ecrã?</translation>
+<translation id="1820355135508821526">A funcionalidade <ph name="FEATURE_NAME" /> foi desativada por uma política aplicada a este dispositivo. Fale com o seu administrador para solicitar alterações.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
 <translation id="2597972630681408282">Luz noturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
+<translation id="2651765386227849097">O Assistente Google está desativado neste dispositivo.</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2658778018866295321">Clique e arraste</translation>
 <translation id="2700493154570097719">Definir o teclado</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4924411785043111640">Reiniciar e repor</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
+<translation id="5682642926269496722">O Assistente Google não está disponível para a conta do utilizador atual.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="5710450975648804523">Modo Não incomodar ativado</translation>
 <translation id="574392208103952083">Médio</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Lamentamos, mas não foi possível validar a sua palavra-passe. Tente novamente.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">O Assistente Google não está disponível em Sessões de convidado.</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="6715542151869432661">Não foram encontrados dispositivos móveis.</translation>
 <translation id="6723839937902243910">Alimentação</translation>
+<translation id="6727969043791803658">Ligado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>

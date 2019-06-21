@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Netwerkverbinding schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Naar rechts scrollen</translation>
 <translation id="1812997170047690955">Wat wordt er op mijn scherm weergegeven?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> is uitgeschakeld door een beleid dat is toegepast op dit apparaat. Neem contact op met je beheerder om wijzigingen aan te vragen.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laden...)</translation>
 <translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Opnieuw starten om updates uit te voeren</translation>
 <translation id="2597972630681408282">Nachtverlichting: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Simkaart is vergrendeld</translation>
+<translation id="2651765386227849097">De Google Assistent is uitgeschakeld op dit apparaat.</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2658778018866295321">Klikken en slepen</translation>
 <translation id="2700493154570097719">Je toetsenbord instellen</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">De batterij is vol.</translation>
 <translation id="490375751687810070">Verticaal</translation>
 <translation id="4905614135390995787">De sneltoets om de modus voor hoog contrast in of uit te schakelen, is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Batterij <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="4924411785043111640">Opnieuw opstarten en resetten</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Microfoonaansluiting</translation>
 <translation id="5669267381087807207">Wordt geactiveerd</translation>
 <translation id="5673434351075758678">Van '<ph name="FROM_LOCALE" />' naar '<ph name="TO_LOCALE" />' na synchronisatie van je instellingen.</translation>
+<translation id="5682642926269496722">De Google Assistent is niet beschikbaar voor het huidige gebruikersaccount.</translation>
 <translation id="5691772641933328258">Vingerafdruk niet herkend</translation>
 <translation id="5710450975648804523">'Niet storen' is ingeschakeld</translation>
 <translation id="574392208103952083">Gemiddeld</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Je wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
 <translation id="607652042414456612">Je computer is vindbaar voor Bluetooth-apparaten in de buurt en wordt weergegeven als '<ph name="NAME" />' met adres <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wordt opgeladen</translation>
+<translation id="612734058257491180">De Google Assistent is niet beschikbaar in een gastsessie.</translation>
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="6164005077879661055">Alle bestanden en lokale gegevens gekoppeld aan de gebruiker met beperkte rechten worden permanent verwijderd zodra de gebruiker met beperkte rechten is verwijderd. Bezochte websites en instellingen voor deze gebruiker met beperkte rechten kunnen nog steeds zichtbaar zijn voor de beheerder op <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
 <translation id="6715542151869432661">Geen mobiele apparaten gevonden.</translation>
 <translation id="6723839937902243910">Voeding</translation>
+<translation id="6727969043791803658">Verbonden, batterij <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Bijhouden van prestaties is ingeschakeld</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>

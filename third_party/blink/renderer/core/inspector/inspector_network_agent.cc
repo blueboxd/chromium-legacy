@@ -1296,15 +1296,25 @@ void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
       CurrentTimeTicksInSeconds());
 }
 
-void InspectorNetworkAgent::DidReceiveWebSocketMessage(uint64_t identifier,
-                                                       int op_code,
-                                                       bool masked,
-                                                       const char* payload,
-                                                       size_t payload_length) {
+void InspectorNetworkAgent::DidReceiveWebSocketMessage(
+    uint64_t identifier,
+    int op_code,
+    bool masked,
+    const Vector<base::span<const char>>& data) {
+  size_t size = 0;
+  for (const auto& span : data) {
+    size += span.size();
+  }
+  Vector<char> flatten;
+  flatten.ReserveCapacity(SafeCast<wtf_size_t>(size));
+  for (const auto& span : data) {
+    flatten.Append(span.data(), SafeCast<wtf_size_t>(span.size()));
+  }
   GetFrontend()->webSocketFrameReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
       CurrentTimeTicksInSeconds(),
-      WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
+      WebSocketMessageToProtocol(op_code, masked, flatten.data(),
+                                 flatten.size()));
 }
 
 void InspectorNetworkAgent::DidSendWebSocketMessage(uint64_t identifier,

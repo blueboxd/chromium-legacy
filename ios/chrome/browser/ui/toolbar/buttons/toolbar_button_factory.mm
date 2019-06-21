@@ -172,25 +172,25 @@
   return bookmarkButton;
 }
 
-- (ToolbarButton*)omniboxButton {
-  ToolbarSearchButton* omniboxButton = [ToolbarSearchButton
+- (ToolbarButton*)searchButton {
+  ToolbarSearchButton* searchButton = [ToolbarSearchButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
 
-  [self configureButton:omniboxButton width:kOmniboxButtonWidth];
-  [omniboxButton addTarget:self.dispatcher
-                    action:@selector(closeFindInPage)
-          forControlEvents:UIControlEventTouchUpInside];
-  [omniboxButton addTarget:self.dispatcher
-                    action:@selector(focusOmniboxFromSearchButton)
-          forControlEvents:UIControlEventTouchUpInside];
+  [self configureButton:searchButton width:kSearchButtonWidth];
+  [searchButton addTarget:self.dispatcher
+                   action:@selector(closeFindInPage)
+         forControlEvents:UIControlEventTouchUpInside];
+  [searchButton addTarget:self.dispatcher
+                   action:@selector(focusOmniboxFromSearchButton)
+         forControlEvents:UIControlEventTouchUpInside];
 
-  omniboxButton.accessibilityLabel =
+  searchButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
-  omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
+  searchButton.accessibilityIdentifier = kToolbarSearchButtonIdentifier;
 
-  omniboxButton.visibilityMask =
-      self.visibilityConfiguration.omniboxButtonVisibility;
-  return omniboxButton;
+  searchButton.visibilityMask =
+      self.visibilityConfiguration.searchButtonVisibility;
+  return searchButton;
 }
 
 - (UIButton*)cancelButton {

@@ -5,19 +5,27 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_SERVICE_H_
 #define CHROME_BROWSER_SHARING_SHARING_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+namespace syncer {
+class DeviceInfoTracker;
+}  // namespace syncer
+
+class SharingDeviceInfo;
+class SharingMessageHandler;
+class SharingSyncPreference;
 
 // Class to manage lifecycle of sharing feature, and provide APIs to send
 // sharing messages to other devices.
 class SharingService : public KeyedService {
  public:
-  SharingService();
+  SharingService(std::unique_ptr<SharingSyncPreference> sync_prefs,
+                 syncer::DeviceInfoTracker* device_info_tracker);
   ~SharingService() override;
 
   // Returns a list of DeviceInfo that is available to receive messages.
@@ -36,6 +44,9 @@ class SharingService : public KeyedService {
       SharingMessageHandler* handler);
 
  private:
+  std::unique_ptr<SharingSyncPreference> sync_prefs_;
+  syncer::DeviceInfoTracker* device_info_tracker_;
+
   DISALLOW_COPY_AND_ASSIGN(SharingService);
 };
 

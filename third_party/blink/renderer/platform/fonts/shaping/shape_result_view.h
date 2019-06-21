@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_VIEW_H_
 
 #include <memory>
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -163,8 +164,13 @@ class PLATFORM_EXPORT ShapeResultView final
                             FloatRect* ink_bounds) const;
 
   // Common signatures with ShapeResult, to templatize algorithms.
-  const Vector<std::unique_ptr<RunInfoPart>, 4>& RunsOrParts() const {
-    return parts_;
+  base::span<const RunInfoPart> RunsOrParts() const { return Parts(); }
+
+  base::span<RunInfoPart> Parts() {
+    return {reinterpret_cast<RunInfoPart*>(parts_), num_parts_};
+  }
+  base::span<const RunInfoPart> Parts() const {
+    return {reinterpret_cast<const RunInfoPart*>(parts_), num_parts_};
   }
   unsigned StartIndexOffsetForRun() const { return char_index_offset_; }
 
@@ -187,7 +193,14 @@ class PLATFORM_EXPORT ShapeResultView final
   unsigned char_index_offset_;
 
   float width_;
-  Vector<std::unique_ptr<RunInfoPart>, 4> parts_;
+  wtf_size_t num_parts_ = 0;
+
+  // TODO(yosin): We should declare |RunInoPart| in this file to avoid using
+  // dummy struct.
+  // Note: To avoid declaring |RunInfoPart| here, we use dummy struct.
+  struct {
+    void* alignment;
+  } parts_[];
 
  private:
   friend class ShapeResult;
@@ -206,6 +219,8 @@ class PLATFORM_EXPORT ShapeResultView final
                          GlyphCallback,
                          void* context,
                          const RunInfoPart& part) const;
+
+  DISALLOW_COPY_AND_ASSIGN(ShapeResultView);
 };
 
 }  // namespace blink

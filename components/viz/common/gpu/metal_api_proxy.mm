@@ -5,6 +5,8 @@
 #include "components/viz/common/gpu/metal_api_proxy.h"
 
 #include "base/debug/crash_logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/gl/progress_reporter.h"
@@ -172,7 +174,7 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
     newLibraryWithSource:(NSString*)source
                  options:(nullable MTLCompileOptions*)options
                    error:(__autoreleasing NSError**)error {
-  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
+  newLibraryCount_ += 1;
 
   // Capture the shader's source in a crash key in case newLibraryWithSource
   // hangs.
@@ -184,6 +186,9 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
     DLOG(WARNING) << "Truncating shader in crash log.";
 
   shaderKey.Set(sourceAsSysString);
+
+  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
+  SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
   id<MTLLibrary> library = [device_ newLibraryWithSource:source
                                                  options:options
                                                    error:error];
@@ -237,13 +242,18 @@ PROXY_METHOD3_SLOW(void,
     fragmentShaderKey.Set(fragmentSource_);
   else
     DLOG(WARNING) << "Failed to capture fragment shader.";
+  static crash_reporter::CrashKeyString<16> newLibraryCountKey(
+      "MTLNewLibraryCount");
+  newLibraryCountKey.Set(base::NumberToString(newLibraryCount_));
 
   gl::ScopedProgressReporter scoped_reporter(progressReporter_);
+  SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
   id<MTLRenderPipelineState> pipelineState =
       [device_ newRenderPipelineStateWithDescriptor:descriptor error:error];
 
   vertexShaderKey.Clear();
   fragmentShaderKey.Clear();
+  newLibraryCountKey.Clear();
   return pipelineState;
 }
 PROXY_METHOD4_SLOW(nullable id<MTLRenderPipelineState>,

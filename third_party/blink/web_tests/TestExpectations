@@ -3536,7 +3536,6 @@ crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/media-elem
 crbug.com/626703 external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/content-type/response.window.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
@@ -3842,7 +3841,6 @@ crbug.com/626703 external/wpt/css/css-transforms/transform-box/view-box-mutation
 crbug.com/626703 external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-026.html [ Failure ]
@@ -3917,7 +3915,6 @@ crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients
 crbug.com/626703 external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/blink-cors/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
-crbug.com/626703 virtual/streams-native/external/wpt/fetch/http-cache/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
@@ -5694,7 +5691,6 @@ crbug.com/922951 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Skip ]
 crbug.com/922951 fast/scroll-snap/snaps-for-different-key-granularity.html [ Skip ]
 crbug.com/922951 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
-crbug.com/922951 http/tests/devtools/audits/audits-successful-run.js [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
 crbug.com/922951 http/tests/history/back-to-post.html [ Skip ]
 crbug.com/922951 http/tests/images/feature-policy-unoptimized-images-cached-image.html [ Skip ]
@@ -5818,7 +5814,6 @@ crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # Sheriff 2019-02-26
 crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
-crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable-stream.html [ Failure Pass ]
 
 # Sheriff 2019-02-27
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
@@ -6140,18 +6135,10 @@ crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Fa
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
 # Flaky on Linux
-crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-duration.html [ Pass Failure ]
-crbug.com/973769 [ Linux ] http/tests/media/video-seek-to-middle.html [ Pass Failure ]
 crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
-crbug.com/973769 [ Linux ] media/video-pause-immediately.html [ Pass Failure ]
-crbug.com/973769 [ Linux ] media/W3C/audio/events/event_timeupdate_manual.html [ Pass Failure ]
 
 # Flaky on Linux
 crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
-
-# Failing with lazy-feedback-allocation feature in V8. See the bug for more
-# details.
-crbug.com/976587 netinfo/gc-unused-listeners.html [ Pass Failure ]
 
 # Sheriff 2019-06-19
 crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
@@ -6163,3 +6150,7 @@ crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollabl
 crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976157 inspector-protocol/runtime/runtime-console-basic-functions.js [ Pass Failure ]
 crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listener.html [ Pass Timeout Failure ]
+
+crbug.com/974710 [ Win7 ] http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/974710 [ Win7 ] virtual/blink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+crbug.com/974710 [ Win7 ] virtual/isolated_world_csp/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]

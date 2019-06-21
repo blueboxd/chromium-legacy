@@ -78,7 +78,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerContextClosed() override;
   void WorkerContextDestroyed() override;
   void WorkerReadyForInspection() override;
-  void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

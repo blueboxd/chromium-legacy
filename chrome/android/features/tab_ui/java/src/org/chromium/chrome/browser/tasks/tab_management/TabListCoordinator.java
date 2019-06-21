@@ -55,6 +55,9 @@ public class TabListCoordinator implements Destroyable {
     private final TabListRecyclerView mRecyclerView;
     private final @TabListMode int mMode;
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
+    private final SimpleRecyclerViewMcpBase
+            .ItemViewTypeCallback<PropertyModel> mGridDefaultItemViewTypeCallback =
+            (item) -> TabGridViewHolder.TabGridViewItemType.CLOSABLE_TAB;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -64,8 +67,15 @@ public class TabListCoordinator implements Destroyable {
      *                              the tabs concerned.
      * @param thumbnailProvider Provider to provide screenshot related details.
      * @param titleProvider Provider for a given tab's title.
+     * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
+     *                            tabs.
      * @param createGroupButtonProvider {@link TabListMediator.CreateGroupButtonProvider}
      *         to provide "Create group" button.
+     * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
+     *                                        click on a grid card.
+     * @param dialogHandler A handler to handle requests about updating TabGridDialog.
+     * @param itemViewTypeCallback Callback that returns the view type for each item in the list.
+     * @param selectionDelegateProvider Provider to provide selected Tabs for a selectable tab list.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param dynamicResourceLoader The {@link DynamicResourceLoader} to register dynamic UI
      *                              resource for compositor layer animation.
@@ -82,6 +92,8 @@ public class TabListCoordinator implements Destroyable {
             @Nullable TabListMediator
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler,
+            SimpleRecyclerViewMcpBase.ItemViewTypeCallback<PropertyModel> itemViewTypeCallback,
+            TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
             @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
             boolean attachToParent, @LayoutRes int layoutId, String componentName) {
         TabListModel tabListModel = new TabListModel();
@@ -90,9 +102,14 @@ public class TabListCoordinator implements Destroyable {
 
         RecyclerViewAdapter adapter;
         if (mMode == TabListMode.GRID) {
+            if (itemViewTypeCallback == null) {
+                itemViewTypeCallback = mGridDefaultItemViewTypeCallback;
+            }
+
             SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey> mcp =
                     new SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey>(
-                            null, TabGridViewBinder::onBindViewHolder, tabListModel) {
+                            itemViewTypeCallback, TabGridViewBinder::onBindViewHolder,
+                            tabListModel) {
                         @Override
                         public void onViewRecycled(TabGridViewHolder viewHolder) {
                             viewHolder.resetThumbnail();
@@ -142,8 +159,8 @@ public class TabListCoordinator implements Destroyable {
 
         mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
-                createGroupButtonProvider, null, gridCardOnClickListenerProvider, dialogHandler,
-                componentName);
+                createGroupButtonProvider, selectionDelegateProvider,
+                gridCardOnClickListenerProvider, dialogHandler, componentName);
 
         if (mMode == TabListMode.GRID) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(

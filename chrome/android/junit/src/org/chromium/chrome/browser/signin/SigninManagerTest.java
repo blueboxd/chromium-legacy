@@ -191,7 +191,7 @@ public class SigninManagerTest {
         doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
         // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
         // invoked.
-        doNothing().when(mDelegateMock).fetchAndApplyCloudPolicy(any(), anyLong(), any());
+        doNothing().when(mDelegateMock).fetchAndApplyCloudPolicy(any(), anyLong(), any(), any());
 
         doReturn(true).when(mSigninManager).isSigninSupported();
         doNothing().when(mNativeMock).onSignInCompleted(any(), anyLong(), any());

@@ -93,8 +93,8 @@ class QuicChromiumClientSessionTest
   QuicChromiumClientSessionTest()
       : version_(std::get<0>(GetParam())),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
-        crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
-                       quic::TlsClientHandshaker::CreateSslCtx()),
+        crypto_config_(
+            quic::test::crypto_test_utils::ProofVerifierForTesting()),
         default_read_(new MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)),
         socket_data_(
             new SequencedSocketData(base::make_span(default_read_.get(), 1),

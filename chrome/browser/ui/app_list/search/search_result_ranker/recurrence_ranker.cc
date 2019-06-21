@@ -328,16 +328,20 @@ std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
   return SortAndTruncateRanks(n, Rank(condition));
 }
 
-void RecurrenceRanker::MaybeSave() {
+void RecurrenceRanker::SaveToDisk() {
   if (is_ephemeral_user_)
     return;
 
+  time_of_last_save_ = Time::Now();
+  RecurrenceRankerProto proto;
+  ToProto(&proto);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SaveProtoToDisk, proto_filepath_, proto));
+}
+
+void RecurrenceRanker::MaybeSave() {
   if (Time::Now() - time_of_last_save_ > min_seconds_between_saves_) {
-    time_of_last_save_ = Time::Now();
-    RecurrenceRankerProto proto;
-    ToProto(&proto);
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&SaveProtoToDisk, proto_filepath_, proto));
+    SaveToDisk();
   }
 }
 
@@ -346,10 +350,6 @@ void RecurrenceRanker::ToProto(RecurrenceRankerProto* proto) {
   predictor_->ToProto(proto->mutable_predictor());
   targets_->ToProto(proto->mutable_targets());
   conditions_->ToProto(proto->mutable_conditions());
-}
-
-void RecurrenceRanker::ForceSaveOnNextUpdateForTesting() {
-  time_of_last_save_ = Time::UnixEpoch();
 }
 
 const char* RecurrenceRanker::GetPredictorNameForTesting() const {

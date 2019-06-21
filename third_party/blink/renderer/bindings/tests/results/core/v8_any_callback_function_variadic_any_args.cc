@@ -242,9 +242,4 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const Vec
   }
 }
 
-v8::Maybe<ScriptValue> V8PersistentCallbackFunction<V8AnyCallbackFunctionVariadicAnyArgs>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<ScriptValue>& arguments) {
-  return Proxy()->Invoke(
-      callback_this_value, arguments);
-}
-
 }  // namespace blink

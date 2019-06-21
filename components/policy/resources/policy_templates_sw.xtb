@@ -439,7 +439,7 @@ SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kusafisha Chrome kita
       Sera hii ikiwekwa kuwa ArcSession, hulazimisha kifaa kuwaka tena mtumiaji akiondoka kwenye akaunti ikiwa Android imefunguka.
       Sera ikiwekwa kuwa 'Kila Wakati', hulazimisha kifaa kuwaka katika kila tukio la mtumiaji kuondoka kwenye akaunti.
       Sera isipowekwa, haina athari na hakuna kulazimisha kifaa kuwaka tena mtumiaji akiondoka kwenye akaunti. Hali hii inatumika pia ikiwa sera imewekwa kuwa 'Isiwahi'.
-      Sera hii inaathari tu watumiaji wasio washirika.
+      Sera hii inaathiri tu watumiaji wasio washirika.
       </translation>
 <translation id="1781356041596378058">Sera hii pia inadhibiti idhini ya kufikia Chaguo za Wasanidi Programu wa Android. Ukiweka sera hii kuwa ndivyo, watumiaji hawataweza kufikia Chaguo za Wasanidi Programu. Ukiweka sera hii kuwa sivyo au uiache bila kuiweka, watumiaji wataweza kufikia Chaguo za Wasanidi Programu kwa kugonga mara saba kwenye nambari ya muundo katika programu ya mipangilio ya Android.</translation>
 <translation id="1793346220873697538">Zima uchapishaji kwa kutumia PIN kwa chaguomsingi</translation>
@@ -2520,6 +2520,10 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Kumbuka kwamba hali hii haipendekezwi, kwa sababu inaweza kusababisha kukwepa kiendelezi cha nameConstraints kinachozuia majina ya wapangishaji ambayo cheti maalum kinaweza kuidhinishwa kushughulikia.
 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, vyeti vya seva visivyo na kiendelezi cha subjectAlternativeName kilicho na jina la DNS au anwani ya IP havitaaminiwa.</translation>
+<translation id="5578571772998293651">Ruhusu maoni ya watumiaji.
+        Iwapo sera imewekwa kuwa sivyo, watumiaji hawawezi kutuma maoni kwa Google.
+
+        Iwapo sera haijawekwa au imewekwa kuwa ndivyo, watumiaji wanaweza kutuma maoni kwa Google kupitia Menyu-&gt;Usaidizi-&gt;Ripoti Tatizo au mkusanyiko wa funguo.</translation>
 <translation id="5581292529942108810">Weka mipangilio inayohusiana na sera za Kiendelezi cha Kuripoti cha Chrome.
 
       Sera hii inaweza kutumika tu wakati umewasha <ph name="CHROME_REPORTING_EXTENSION_NAME" /> na mashine imejumuishwa katika <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3895,6 +3899,7 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
       Iwapo sera hii haijawekwa hakutakuwa na ruhusa katika orodha ya kuondoa idhini kutoka sera ya 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Ruhusu mtumiaji wa biashara kuwa mtumiaji wa kwanza wa multiprofile pekee (Tabia ya chaguomsingi kwa watumiaji wanaosimamiwa kibiashara)</translation>
 <translation id="8183108371184777472">Bana hatua ya kufunguka kwa dirisha la kivinjari</translation>
+<translation id="8186911565834244165">Ruhusu maoni ya watumiaji</translation>
 <translation id="8214600119442850823">Husanidi kidhibiti cha manenosiri.</translation>
 <translation id="8217516105848565518">Sera hii haitumiki tena. Badala yake, tafadhali tumia RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Washa mipangilio ya kriptografia ya RC4 katika TLS</translation>
@@ -4313,6 +4318,12 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 <translation id="9112897538922695510">Hukuruhusu kusajili orodha ya vishikilizi vya itifaki. Hii inaweza kuwa sera iliyopendekezwa pekee. Sifa |protocol| inastahili kuwekwa kuwa mpango kama vile 'mailto' na sifa |url| inastahili kuwekwa kuwa mpangilio wa URL ya programu inayoshikilia mpango. Mpangilio unajumuisha '%s', ambayo ikiwepo itabadilishwa na URL iliyoshikiliwa.
 
           Vishikilizi vya itifaki vilivyosajiliwa na sera vinaunganishwa na vilivyosajiliwa na  mtumiaji na vyote viwili vinapatikana kwa matumizi. Mtumiaji anaweza kubatilisha vishikilizi vya itifaki vilivyosakinishwa na sera kwa kusakinisha kishikilizi kipya cha chaguomsingi, lakini hawezi kuondoa kishikilizi cha itifaki kilichosajiliwa na sera.</translation>
+<translation id="91196902572559194">Sera hii inaipa programu ya Mratibu wa Google ruhusa ya kusikiliza kifungu cha kuwasha sauti.
+
+      Ikiwa sera hii imewashwa, programu ya Mratibu wa Google itasikiliza kifungu cha kuwasha sauti.
+      Ikiwa sera hii imezimwa, programu ya Mratibu wa Google haitasikiliza kifungu cha kuwasha sauti.
+      Ikiwa sera hii haijawekwa, watumiaji wanaweza kuamua ikiwa wataruhusu Programu ya Mratibu wa Google isikilize kifungu cha kuwasha sauti.
+      </translation>
 <translation id="9123211093995421438">Hubainisha idadi ya chini zaidi ya matukio ya urejesheji wa <ph name="PRODUCT_OS_NAME" /> ambayo yanapaswa kuruhusiwa kuanzia kwenye toleo thabiti wakati wowote.
 
       Thamani chaguomsingi ya mteja huwa ni 0 na 4 (kwa takribani nusu ya mwaka) kwa vifaa vilivyojumuishwa katika biashara.

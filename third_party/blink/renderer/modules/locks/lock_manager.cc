@@ -108,9 +108,7 @@ class LockManager::LockRequestImpl final
   }
 
   void Failed() override {
-    // Ensure a local reference to the callback's wrapper is retained, as it
-    // can no longer be traced once removed from |manager_|'s list.
-    auto* callback = ToV8PersistentCallbackFunction(callback_.Release());
+    auto* callback = callback_.Release();
 
     manager_->RemovePendingRequest(this);
     binding_.Close();
@@ -137,9 +135,7 @@ class LockManager::LockRequestImpl final
     mojom::blink::LockHandleAssociatedPtr handle;
     handle.Bind(std::move(handle_info));
 
-    // Ensure a local reference to the callback's wrapper is retained, as it
-    // can no longer be traced once removed from |manager_|'s list.
-    auto* callback = ToV8PersistentCallbackFunction(callback_.Release());
+    auto* callback = callback_.Release();
 
     manager_->RemovePendingRequest(this);
     binding_.Close();

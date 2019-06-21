@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
-<translation id="1272444412400969138">Selector de dispositivo con el que se comparte una pestaña</translation>
 <translation id="1283039547216852943">Presiona para expandir</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1291207594882862231">Borra el historial, las cookies, los datos del sitio, la caché…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Herramientas del programador</translation>
 <translation id="1692118695553449118">La sincronización está activada.</translation>
 <translation id="169515064810179024">Impedir que los sitios accedan a los sensores de movimiento</translation>
+<translation id="1697480839793160072">Teléfonos</translation>
+<translation id="1698058317516161971">Correos electrónicos</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Actualizado hace <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Permite las cookies para un sitio específico.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Mostrar sugerencias cuando no se resuelve una dirección web o cuando no se puede establecer una conexión</translation>
-<translation id="4044912625106523635">El selector de dispositivo con el que se comparte una pestaña está abierto en tamaño completo.</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4048707525896921369">Obtén información acerca de temas en sitios web sin salir de la página. "Presionar para buscar" envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, fotos, resultados de la búsqueda y otros detalles.
 
@@ -747,7 +747,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893">Se descargaron <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">El selector de dispositivo con el que se comparte una pestaña está cerrado.</translation>
 <translation id="6427112570124116297">Traduce la Web</translation>
 <translation id="6433501201775827830">Selecciona el motor de búsqueda</translation>
 <translation id="6437478888915024427">Información de la página</translation>
@@ -787,7 +786,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="666268767214822976">Usar un servicio de predicción para ver consultas relacionadas y sitios web populares a medida que escribes en la barra de direcciones.</translation>
 <translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidad de Chrome</translation>
-<translation id="6672986458216094438">El selector de dispositivo con el que se comparte una pestaña está abierto a media altura.</translation>
 <translation id="6697492270171225480">Mostrar sugerencias para páginas similares cuando no se puede encontrar una específica</translation>
 <translation id="6697947395630195233">Chrome necesita acceso a tu ubicación para compartirla con este sitio.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>

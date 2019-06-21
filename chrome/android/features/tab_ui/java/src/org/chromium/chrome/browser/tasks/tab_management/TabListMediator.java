@@ -260,6 +260,11 @@ class TabListMediator {
             int index = mModel.indexFromId(tabId);
             if (index == TabModel.INVALID_TAB_INDEX) return;
             boolean selected = mModel.get(index).get(TabProperties.IS_SELECTED);
+            if (selected) {
+                RecordUserAction.record("TabMultiSelect.TabUnselected");
+            } else {
+                RecordUserAction.record("TabMultiSelect.TabSelected");
+            }
             mModel.get(index).set(TabProperties.IS_SELECTED, !selected);
         }
     };
@@ -317,6 +322,9 @@ class TabListMediator {
      *                                   possible.
      * @param selectionDelegateProvider Provider for a {@link SelectionDelegate} that is used for
      *                                  a selectable list. It's null when selection is not possible.
+     * @param gridCardOnClickListenerProvider Provides the onClickListener for opening dialog when
+     *                                        click on a grid card.
+     * @param dialogHandler A handler to handle requests about updating TabGridDialog.
      * @param componentName This is a unique string to identify different components.
      */
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
@@ -676,9 +684,19 @@ class TabListMediator {
         if (currentTab == null) return false;
 
         for (int i = 0; i < tabs.size(); i++) {
-            addTabInfoToModel(tabs.get(i), i, tabs.get(i).getId() == currentTab.getId());
+            addTabInfoToModel(
+                    tabs.get(i), i, isSelectedTab(tabs.get(i).getId(), currentTab.getId()));
         }
         return false;
+    }
+
+    private boolean isSelectedTab(int tabId, int tabModelSelectedTabId) {
+        SelectionDelegate<Integer> selectionDelegate = getTabSelectionDelegate();
+        if (selectionDelegate == null) {
+            return tabId == tabModelSelectedTabId;
+        } else {
+            return selectionDelegate.isItemSelected(tabId);
+        }
     }
 
     /**

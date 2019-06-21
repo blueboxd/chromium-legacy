@@ -49,7 +49,6 @@ scoped_refptr<media::VideoFrame> ConstructVideoFrame(
   gfx::Rect visible_rect(coded_size);
 
   std::vector<base::ScopedFD> dma_buf_fds(num_planes);
-  std::vector<size_t> buffer_sizes(num_planes);
   std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
 
   for (size_t i = 0; i < num_planes; ++i) {
@@ -58,10 +57,10 @@ scoped_refptr<media::VideoFrame> ConstructVideoFrame(
             .TakeFD();
     planes[i].stride = dma_buf_planes[i]->stride;
     planes[i].offset = dma_buf_planes[i]->offset;
-    buffer_sizes[i] = dma_buf_planes[i]->size;
+    planes[i].size = dma_buf_planes[i]->size;
   }
   auto layout = media::VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes));
+      pixel_format, coded_size, std::move(planes));
 
   return media::VideoFrame::WrapExternalDmabufs(
       *layout,                 // layout

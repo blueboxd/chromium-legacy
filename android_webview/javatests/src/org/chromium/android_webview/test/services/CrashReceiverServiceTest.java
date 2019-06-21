@@ -7,18 +7,15 @@ package org.chromium.android_webview.test.services;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.os.ParcelFileDescriptor;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
-import org.chromium.base.ContextUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +26,6 @@ import java.io.IOException;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class CrashReceiverServiceTest {
-    @Before
-    public void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(InstrumentationRegistry.getInstrumentation()
-                                                            .getTargetContext()
-                                                            .getApplicationContext());
-    }
-
     /**
      * Ensure that the minidump copying doesn't trigger when we pass it invalid file descriptors.
      */

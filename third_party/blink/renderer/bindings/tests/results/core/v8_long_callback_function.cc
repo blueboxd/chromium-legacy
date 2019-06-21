@@ -126,9 +126,4 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(bindings::V8ValueOrScriptWrapp
   }
 }
 
-v8::Maybe<int32_t> V8PersistentCallbackFunction<V8LongCallbackFunction>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, int32_t num1, int32_t num2) {
-  return Proxy()->Invoke(
-      callback_this_value, num1, num2);
-}
-
 }  // namespace blink

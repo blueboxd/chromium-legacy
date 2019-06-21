@@ -4,8 +4,10 @@
 <translation id="1135993792949700405">Chrome envoie les données à caractère personnel sélectionnées par vos soins à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1625889395409731085">Ouvrir le lien externe ?</translation>
 <translation id="1699570257714336246">Informations manquantes</translation>
+<translation id="2203046366315513658">Diminuer la valeur</translation>
 <translation id="3604604794717279723">J'accepte</translation>
 <translation id="4437727785356380473">L'Assistant Google dans Chrome est fermé.</translation>
+<translation id="4517854969512651305">Augmenter la valeur</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="5014174725590676422">L'écran de première utilisation de l'Assistant Google dans Chrome est affiché</translation>
 <translation id="5188078772080029703">L'URL et le contenu du site sont envoyés à Google via Chrome, tout comme votre adresse e-mail et le type de votre carte de crédit enregistrés dans Chrome. Vous pouvez désactiver cette option dans les paramètres de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>

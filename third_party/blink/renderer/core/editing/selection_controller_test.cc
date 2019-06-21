@@ -11,12 +11,27 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 
 class SelectionControllerTest : public EditingTestBase {
  protected:
+  using AppendTrailingWhitespace =
+      SelectionController::AppendTrailingWhitespace;
+  using SelectInputEventType = SelectionController::SelectInputEventType;
+
   SelectionControllerTest() = default;
+
+  SelectionController& Controller() {
+    return GetFrame().GetEventHandler().GetSelectionController();
+  }
+
+  static PositionWithAffinity GetPositionFromHitTestResult(
+      const HitTestResult& hit_test_result) {
+    return hit_test_result.InnerNode()->GetLayoutObject()->PositionForPoint(
+        hit_test_result.LocalPoint());
+  }
 
   VisibleSelection VisibleSelectionInDOMTree() const {
     return Selection().ComputeVisibleSelectionInDOMTree();
@@ -26,6 +41,10 @@ class SelectionControllerTest : public EditingTestBase {
     return Selection().GetSelectionInFlatTree();
   }
 
+  bool SelectClosestWordFromHitTestResult(
+      const HitTestResult& result,
+      AppendTrailingWhitespace append_trailing_whitespace,
+      SelectInputEventType select_input_event_type);
   void SetCaretAtHitTestResult(const HitTestResult&);
   void SetNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           TextGranularity);
@@ -33,6 +52,14 @@ class SelectionControllerTest : public EditingTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(SelectionControllerTest);
 };
+
+bool SelectionControllerTest::SelectClosestWordFromHitTestResult(
+    const HitTestResult& result,
+    AppendTrailingWhitespace append_trailing_whitespace,
+    SelectInputEventType select_input_event_type) {
+  return Controller().SelectClosestWordFromHitTestResult(
+      result, append_trailing_whitespace, select_input_event_type);
+}
 
 void SelectionControllerTest::SetCaretAtHitTestResult(
     const HitTestResult& hit_test_result) {
@@ -203,6 +230,66 @@ TEST_F(SelectionControllerTest, AdjustSelectionWithTrailingWhitespace) {
   EXPECT_EQ(PositionInFlatTree::BeforeNode(*input),
             result.ComputeStartPosition());
   EXPECT_EQ(PositionInFlatTree::AfterNode(*input), result.ComputeEndPosition());
+}
+
+// For http://crbug.com/974569
+TEST_F(SelectionControllerTest,
+       SelectClosestWordFromHitTestResultAtEndOfLine1) {
+  InsertStyleElement("body { margin: 0; padding: 0; font: 10px monospace; }");
+  SetBodyContent("<pre>(1)\n(2)</pre>");
+
+  // Click/Tap after "(1)"
+  HitTestLocation location(IntPoint(40, 10));
+  HitTestResult result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location);
+  ASSERT_EQ("<pre>(1)|\n(2)</pre>",
+            GetSelectionTextFromBody(
+                SelectionInDOMTree::Builder()
+                    .Collapse(GetPositionFromHitTestResult(result))
+                    .Build()));
+
+  // Select word by mouse
+  EXPECT_TRUE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kMouse));
+  EXPECT_EQ("<pre>(1)^\n(|2)</pre>", GetSelectionTextFromBody());
+
+  // Select word by tap
+  EXPECT_FALSE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kTouch));
+  EXPECT_EQ("<pre>(1)^\n(|2)</pre>", GetSelectionTextFromBody())
+      << "selection isn't changed";
+}
+
+TEST_F(SelectionControllerTest,
+       SelectClosestWordFromHitTestResultAtEndOfLine2) {
+  InsertStyleElement("body { margin: 0; padding: 0; font: 10px monospace; }");
+  SetBodyContent("<pre>ab:\ncd</pre>");
+
+  // Click/Tap after "(1)"
+  HitTestLocation location(IntPoint(40, 10));
+  HitTestResult result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location);
+  ASSERT_EQ("<pre>ab:|\ncd</pre>",
+            GetSelectionTextFromBody(
+                SelectionInDOMTree::Builder()
+                    .Collapse(GetPositionFromHitTestResult(result))
+                    .Build()));
+
+  // Select word by mouse
+  EXPECT_TRUE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kMouse));
+  // TODO(yosin): This should be "<pre>ab:^\ncd|</pre>"
+  EXPECT_EQ("<pre>ab:^\nc|d</pre>", GetSelectionTextFromBody());
+
+  // Select word by tap
+  EXPECT_FALSE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kTouch));
+  EXPECT_EQ("<pre>ab:^\nc|d</pre>", GetSelectionTextFromBody())
+      << "selection isn't changed";
 }
 
 }  // namespace blink

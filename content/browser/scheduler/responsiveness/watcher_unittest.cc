@@ -53,6 +53,30 @@ class FakeCalculator : public Calculator {
   std::vector<base::TimeTicks> queue_times_io_;
 };
 
+class FakeMetricSource : public MetricSource {
+ public:
+  FakeMetricSource(Delegate* delegate, bool register_message_loop_observer)
+      : MetricSource(delegate),
+        register_message_loop_observer_(register_message_loop_observer) {}
+  ~FakeMetricSource() override {}
+
+  void RegisterMessageLoopObserverUI() override {
+    if (register_message_loop_observer_)
+      MetricSource::RegisterMessageLoopObserverUI();
+  }
+  void RegisterMessageLoopObserverIO() override {
+    if (register_message_loop_observer_)
+      MetricSource::RegisterMessageLoopObserverIO();
+  }
+
+  std::unique_ptr<NativeEventObserver> CreateNativeEventObserver() override {
+    return nullptr;
+  }
+
+ private:
+  bool register_message_loop_observer_;
+};
+
 class FakeWatcher : public Watcher {
  public:
   std::unique_ptr<Calculator> CreateCalculator() override {
@@ -62,17 +86,9 @@ class FakeWatcher : public Watcher {
     return calculator;
   }
 
-  std::unique_ptr<NativeEventObserver> CreateNativeEventObserver() override {
-    return nullptr;
-  }
-
-  void RegisterMessageLoopObserverUI() override {
-    if (register_message_loop_observer_)
-      Watcher::RegisterMessageLoopObserverUI();
-  }
-  void RegisterMessageLoopObserverIO() override {
-    if (register_message_loop_observer_)
-      Watcher::RegisterMessageLoopObserverIO();
+  std::unique_ptr<MetricSource> CreateMetricSource() override {
+    return std::make_unique<FakeMetricSource>(this,
+                                              register_message_loop_observer_);
   }
 
   FakeWatcher(bool register_message_loop_observer)

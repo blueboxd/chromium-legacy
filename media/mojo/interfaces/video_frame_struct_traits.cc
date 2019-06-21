@@ -152,22 +152,23 @@ bool StructTraits<media::mojom::VideoFrameDataView,
       return false;
 
     const size_t num_planes = media::VideoFrame::NumPlanes(format);
-
     std::vector<int> strides =
         media::VideoFrame::ComputeStrides(format, coded_size);
-    std::vector<size_t> buffer_sizes;
-    buffer_sizes.reserve(num_planes);
+    if (num_planes != strides.size())
+      return false;
+    if (num_planes != dmabuf_fds_data.size())
+      return false;
+
+    std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
-      buffer_sizes.emplace_back(static_cast<size_t>(
-          media::VideoFrame::PlaneSize(format, i, coded_size).GetArea()));
+      planes[i].stride = strides[i];
+      planes[i].offset = 0;
+      planes[i].size = static_cast<size_t>(
+          media::VideoFrame::PlaneSize(format, i, coded_size).GetArea());
     }
 
-    DCHECK_EQ(num_planes, dmabuf_fds_data.size());
-    DCHECK_EQ(num_planes, strides.size());
-    DCHECK_EQ(num_planes, buffer_sizes.size());
-
-    auto layout = media::VideoFrameLayout::CreateWithStrides(
-        format, coded_size, std::move(strides), std::move(buffer_sizes));
+    auto layout = media::VideoFrameLayout::CreateWithPlanes(format, coded_size,
+                                                            std::move(planes));
     if (!layout)
       return false;
 

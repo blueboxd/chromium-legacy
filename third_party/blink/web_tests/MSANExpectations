@@ -178,7 +178,6 @@ crbug.com/856601 [ Linux ] virtual/service-worker-servicification/external/wpt/s
 crbug.com/856601 [ Linux ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/idlharness.https.window.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/css/filter-effects/interfaces.any.html [ Timeout Pass ]
 crbug.com/856601 [ Linux ] external/wpt/webxr/idlharness.https.window.html [ Timeout Pass ]
-crbug.com/856601 [ Linux ] virtual/streams-native/external/wpt/fetch/api/idl.any.sharedworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] fast/js/toString-stack-overflow.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/css/css-masking/idlharness.html [ Pass Timeout ]

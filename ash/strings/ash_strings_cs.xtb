@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Přepnout připojení k síti. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Posunout doprava</translation>
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
+<translation id="1820355135508821526">Funkce <ph name="FEATURE_NAME" /> byla zakázána zásadou použitou na toto zařízení. Chcete-li požádat o změny, kontaktujte svého administrátora.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítání...)</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Restartovat a aktualizovat</translation>
 <translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karta je uzamčena</translation>
+<translation id="2651765386227849097">Asistent Google je na tomto zařízení vypnutý.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2658778018866295321">Kliknout a přetáhnout</translation>
 <translation id="2700493154570097719">Nastavit klávesnici</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
 <translation id="490375751687810070">Na výšku</translation>
 <translation id="4905614135390995787">Zkratka k přepínání režimu vysokého kontrastu se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % baterie</translation>
 <translation id="4917385247580444890">Silný</translation>
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="4924411785043111640">Restartovat a resetovat</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Konektor mikrofonu</translation>
 <translation id="5669267381087807207">Probíhá aktivace</translation>
 <translation id="5673434351075758678">Po synchronizaci nastavení se oznámení změní z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
+<translation id="5682642926269496722">Asistent Google pro aktuální uživatelský účet není k dispozici.</translation>
 <translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
 <translation id="574392208103952083">Střední</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Litujeme, heslo se nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
+<translation id="612734058257491180">Asistent Google v relaci hosta není k dispozici.</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Další informace</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je teď k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6715542151869432661">Nebyla nalezena žádná mobilní zařízení.</translation>
 <translation id="6723839937902243910">Napájení</translation>
+<translation id="6727969043791803658">Připojeno, <ph name="BATTERY_PERCENTAGE" /> % baterie</translation>
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>

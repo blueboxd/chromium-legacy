@@ -121,21 +121,6 @@ enum AccountChooserUserAction {
   ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
-enum SyncSignInUserAction {
-  CHROME_SIGNIN_DISMISSED,
-  CHROME_SIGNIN_OK,
-  CHROME_SIGNIN_CANCEL,
-  CHROME_SIGNIN_ACTION_COUNT
-};
-
-enum AccountChooserUsabilityMetric {
-  ACCOUNT_CHOOSER_LOOKS_OK,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME,
-  ACCOUNT_CHOOSER_DUPLICATES,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES,
-  ACCOUNT_CHOOSER_USABILITY_COUNT,
-};
-
 enum CredentialManagerGetResult {
   // The promise is rejected.
   CREDENTIAL_MANAGER_GET_REJECTED,
@@ -385,9 +370,6 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
-// Log a user action on showing the Chrome sign in promo.
-void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
-
 // Logs whether a password was rejected due to same origin but different scheme.
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
 
@@ -396,12 +378,6 @@ void LogCountHttpMigratedPasswords(int count);
 
 // Logs mode of HTTP password migration.
 void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode);
-
-// Log if the account chooser has empty username or duplicate usernames. In
-// addition record number of the placeholder avatars and total number of rows.
-void LogAccountChooserUsability(AccountChooserUsabilityMetric usability,
-                                int count_empty_icons,
-                                int count_accounts);
 
 // Log the result of navigator.credentials.get.
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,

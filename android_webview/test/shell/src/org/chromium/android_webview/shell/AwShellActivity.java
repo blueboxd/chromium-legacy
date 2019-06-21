@@ -36,7 +36,6 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.content_public.browser.NavigationController;
@@ -70,9 +69,6 @@ public class AwShellActivity extends Activity {
 
         AwShellResourceProvider.registerResources(this);
 
-        ((AwShellApplication) getApplication()).initCommandLine();
-
-        ContextUtils.initApplicationContext(getApplicationContext());
         AwBrowserProcess.loadLibrary(null);
 
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {

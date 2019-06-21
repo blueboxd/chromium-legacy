@@ -15,8 +15,9 @@
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -82,14 +83,6 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SimulatePreviouslyInstalledApp(
       GURL url,
       InstallSource install_source) {
-    std::string id =
-        crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
-    extensions::ExtensionRegistry::Get(profile())->AddEnabled(
-        extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
-
-    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(url, id, install_source);
-
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
 

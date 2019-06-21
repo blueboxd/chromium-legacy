@@ -17,6 +17,8 @@
 namespace chromeos {
 namespace printing {
 
+class CupsProxyServiceDelegate;
+
 // CupsProxy Service Implementation.
 //
 // Singleton Chrome Service managed by the ServiceManager and lives in the
@@ -28,7 +30,8 @@ namespace printing {
 // lazily intiate it on first use.
 class CupsProxyService : public service_manager::Service {
  public:
-  explicit CupsProxyService(service_manager::mojom::ServiceRequest request);
+  CupsProxyService(service_manager::mojom::ServiceRequest request,
+                   std::unique_ptr<CupsProxyServiceDelegate> delegate);
   ~CupsProxyService() override;
 
  private:
@@ -49,6 +52,9 @@ class CupsProxyService : public service_manager::Service {
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry binder_registry_;
+
+  // Delegate providing necessary Profile dependencies.
+  std::unique_ptr<CupsProxyServiceDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsProxyService);
 };

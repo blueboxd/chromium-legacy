@@ -263,6 +263,7 @@ void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
       FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this);
   AttachContext first_letter_context(context);
   first_letter_context.next_sibling = first_letter_text;
+  first_letter_context.next_sibling_valid = true;
   first_letter_context.parent = first_letter_text->Parent();
   if (first_letter_context.parent->ForceLegacyLayout())
     first_letter_context.force_legacy_layout = true;

@@ -284,7 +284,8 @@ public class ManualFillingControllerTest {
         when(mMockKeyboard.calculateKeyboardHeight(any())).thenReturn(0);
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
         when(mMockActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
-        ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
+        ChromeFullscreenManager fullscreenManager =
+                new ChromeFullscreenManager(mMockActivity, null, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
         when(mMockActivity.getCompositorViewHolder()).thenReturn(mMockCompositorViewHolder);
         when(mMockActivity.getResources()).thenReturn(mMockResources);

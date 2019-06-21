@@ -42,7 +42,7 @@
 // Button to display the tools menu.
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
 // Button to display the tools menu.
-@property(nonatomic, strong, readonly) ToolbarButton* omniboxButton;
+@property(nonatomic, strong, readonly) ToolbarButton* searchButton;
 // Separator between the toolbar and the content.
 @property(nonatomic, strong, readonly) UIView* separator;
 

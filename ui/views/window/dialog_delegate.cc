@@ -229,7 +229,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
               ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
               : 2);
     }
-    frame->SetFootnoteView(delegate->CreateFootnoteView().release());
+    frame->SetFootnoteView(delegate->CreateFootnoteView());
   }
   frame->SetBubbleBorder(std::move(border));
   return frame;

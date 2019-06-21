@@ -27,7 +27,6 @@ jumbo_static_library("common") {
     "autofill_switches.h",
     "autofill_util.cc",
     "autofill_util.h",
-    "button_title_type.h",
     "form_data.cc",
     "form_data.h",
     "form_data_predictions.cc",
@@ -49,7 +48,6 @@ jumbo_static_library("common") {
     "save_password_progress_logger.h",
     "signatures_util.cc",
     "signatures_util.h",
-    "submission_source.h",
   ]
 
   deps = [

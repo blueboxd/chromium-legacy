@@ -463,10 +463,10 @@ String FileReaderLoader::ConvertToDataURL() {
   builder.Append(";base64,");
 
   Vector<char> out;
-  Base64Encode(static_cast<const char*>(raw_data_->Data()),
-               static_cast<unsigned>(bytes_loaded_), out);
-  out.push_back('\0');
-  builder.Append(out.data());
+  Base64Encode(base::make_span(static_cast<const uint8_t*>(raw_data_->Data()),
+                               SafeCast<unsigned>(bytes_loaded_)),
+               out);
+  builder.Append(out.data(), out.size());
 
   return builder.ToString();
 }

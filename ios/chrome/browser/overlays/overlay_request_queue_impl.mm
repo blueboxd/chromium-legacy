@@ -121,5 +121,6 @@ void OverlayRequestQueueImpl::RequestCancellationHelper::RenderProcessGone(
 
 void OverlayRequestQueueImpl::RequestCancellationHelper::WebStateDestroyed(
     web::WebState* web_state) {
+  queue_->CancelAllRequests();
   web_state->RemoveObserver(this);
 }

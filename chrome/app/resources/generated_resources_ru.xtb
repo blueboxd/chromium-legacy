@@ -599,7 +599,6 @@
 <translation id="1887442540531652736">Ошибка входа</translation>
 <translation id="1887597546629269384">Скажите "Эй, Google" ещё раз</translation>
 <translation id="1887850431809612466">Версия оборудования</translation>
-<translation id="1889984860246851556">Настройки прокси-сервера</translation>
 <translation id="1890674179660343635">&lt;span&gt;Идентификатор:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Открыть в полноэкранном режиме</translation>
 <translation id="189358972401248634">Другие языки</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">&amp;Повторить</translation>
 <translation id="2973324205039581528">Отключить звук на сайте</translation>
 <translation id="2977480621796371840">Удалить из группы</translation>
-<translation id="2979128960948974571">Процесс может занять несколько минут.</translation>
 <translation id="2979639724566107830">Открыть в новом окне</translation>
 <translation id="2981113813906970160">Показывать большой курсор мыши</translation>
 <translation id="2982970937345031">Отправить анонимный отзыв</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">Новое окно в режиме &amp;инкогнито</translation>
 <translation id="3323521181261657960">Время использования устройства продлено</translation>
 <translation id="3325910708063135066">Камера и микрофон отключены в системных настройках macOS</translation>
-<translation id="3330615614570718993">Чтобы включить Plugin VM на этом устройстве, свяжитесь с администратором.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">О приложении</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" />: видео воспроизводится в режиме "Картинка в картинке"</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">Этим детским аккаунтом управляет <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468275649641751422">Режимы трансляции аудио- и видеофайлов</translation>
 <translation id="3468999815377931311">Телефон Android</translation>
-<translation id="3470248707805984963">Произошла ошибка. Повторите попытку.</translation>
 <translation id="3470442499439619530">Удалить профиль</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3475843873335999118">Не удалось распознать отпечаток пальца. Введите пароль.</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">Чтобы включить Smart Lock, введите пароль. После этого вы сможете разблокировать устройство <ph name="DEVICE_TYPE" /> с помощью телефона. Выключить Smart Lock можно в настройках.</translation>
 <translation id="3630132874740063857">Телефон</translation>
 <translation id="3630995161997703415">Добавьте этот сайт на панель запуска, чтобы он всегда был у вас под рукой.</translation>
-<translation id="3635256809897331115">Чтобы использовать Plugin VM, нажмите "Запустить". В дальнейшем вы сможете запускать Plugin VM с помощью его значка на панели запуска.</translation>
 <translation id="3636096452488277381">Привет, <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% (ещё <ph name="TIME" />)</translation>
 <translation id="3637682276779847508">Если вы введете неправильный PUK-код, SIM-карта будет окончательно заблокирована.</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">Файл этого типа может нанести вред компьютеру. Все равно сохранить <ph name="FILE_NAME" />?</translation>
 <translation id="3918972485393593704">Отправить данные в Google</translation>
 <translation id="3919145445993746351">Чтобы автоматически установить расширения на всех своих компьютерах, включите синхронизацию.</translation>
-<translation id="391999873395511996">Скачивание виртуальной машины…</translation>
 <translation id="3920504717067627103">Политики сертификатов</translation>
 <translation id="392089482157167418">Включить ChromeVox (голосовое сопровождение)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,7 +2906,6 @@
 <translation id="5449551289610225147">Неправильный пароль</translation>
 <translation id="5449588825071916739">Добавить все вкладки в закладки</translation>
 <translation id="5449716055534515760">Закрыть &amp;окно</translation>
-<translation id="5453630479789469584">Не удалось настроить Plugin VM</translation>
 <translation id="5454166040603940656">с помощью <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">Язык перевода</translation>
 <translation id="5457113250005438886">Недопустимые данные</translation>
@@ -4832,7 +4825,6 @@
 <translation id="8339059274628563283">Локальные данные сайта <ph name="SITE" /></translation>
 <translation id="833986336429795709">Чтобы открыть ссылку, выберите приложение</translation>
 <translation id="8342861492835240085">Выберите коллекцию</translation>
-<translation id="8343187330304787218">Управляйте настройками запуска Plugin VM на устройстве <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8343956361364550006">Используйте для видеосвязи канал с высокой пропускной способностью. В противном случае пользователи с медленным подключением к Интернету увидят не всё.</translation>
 <translation id="8351419472474436977">Это расширение контролирует настройки прокси-сервера. Это значит, что оно может отследить или изменить передаваемые вами данные, а также оборвать интернет-соединение. Если вы не знали об этом, вам следует отключить расширение.</translation>
 <translation id="835238322900896202">При удалении произошла ошибка. Используйте терминал.</translation>

@@ -30,10 +30,8 @@ public class VariationsSeedServer extends Service {
     }
 
     @Override
-    @SuppressWarnings("NoContextGetApplicationContext")
     public void onCreate() {
         super.onCreate();
-        ServiceInit.init(getApplicationContext());
         mSeedHolder = VariationsSeedHolder.getInstance();
     }
 }

@@ -175,6 +175,9 @@
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
+      .external-wrapper {
+        display: flex;
+      }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -287,9 +290,11 @@
                     $i18n{inputMethodEnabled}
                   </div>
                 </div>
-                <cr-icon-button class="icon-external"
-                    hidden="[[!item.hasOptionsPage]]"
-                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
+                <div class="external-wrapper" hidden="[[!item.hasOptionsPage]]">
+                  <div class="separator"></div>
+                  <cr-icon-button class="icon-external"
+                      on-click="onInputMethodOptionsTap_"></cr-icon-button>
+                </div>
               </div>
             </template>
             <cr-link-row class="hr list-item" id="manageInputMethods"

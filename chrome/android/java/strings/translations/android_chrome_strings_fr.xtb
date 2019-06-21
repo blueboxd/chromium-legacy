@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Rechercher et explorer</translation>
 <translation id="1264974993859112054">Sports</translation>
 <translation id="1272079795634619415">Arrêter</translation>
-<translation id="1272444412400969138">Outil de sélection de l'appareil avec lequel partager un onglet.</translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Outils de développement</translation>
 <translation id="1692118695553449118">La synchronisation est activée.</translation>
 <translation id="169515064810179024">Bloque l'accès à vos capteurs de mouvement pour certains sites</translation>
+<translation id="1697480839793160072">Numéros de téléphone</translation>
+<translation id="1698058317516161971">Adresses e-mail</translation>
 <translation id="1717218214683051432">Capteurs de mouvement</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Dernière mise à jour : <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Autorisez les cookies pour un site spécifique.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
-<translation id="4044912625106523635">L'outil de sélection de l'appareil avec lequel partager un onglet est ouvert à hauteur maximale.</translation>
 <translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4048707525896921369">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité "Appuyer pour rechercher" transmet un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
 
@@ -747,7 +747,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
-<translation id="6418750371676080905">L'outil de sélection de l'appareil avec lequel partager un onglet est fermé.</translation>
 <translation id="6427112570124116297">Traduire le Web</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
 <translation id="6437478888915024427">Infos sur la page</translation>
@@ -787,7 +786,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666731172850799929">Ouvrir dans <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
-<translation id="6672986458216094438">L'outil de sélection de l'appareil avec lequel partager un onglet est ouvert à mi-hauteur.</translation>
 <translation id="6697492270171225480">Afficher des suggestions de pages similaires lorsqu'une page est introuvable</translation>
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>

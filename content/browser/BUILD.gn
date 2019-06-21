@@ -1714,6 +1714,8 @@ jumbo_source_set("browser") {
     "scheduler/responsiveness/calculator.h",
     "scheduler/responsiveness/message_loop_observer.cc",
     "scheduler/responsiveness/message_loop_observer.h",
+    "scheduler/responsiveness/metric_source.cc",
+    "scheduler/responsiveness/metric_source.h",
     "scheduler/responsiveness/native_event_observer.cc",
     "scheduler/responsiveness/native_event_observer.h",
     "scheduler/responsiveness/native_event_observer_mac.mm",

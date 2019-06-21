@@ -2693,7 +2693,9 @@ void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
   // Per spec, consult current playback position to check for changing time.
   double media_time = CurrentPlaybackPosition();
   bool media_time_has_progressed =
-      media_time != last_time_update_event_media_time_;
+      std::isnan(last_time_update_event_media_time_)
+          ? media_time != 0
+          : media_time != last_time_update_event_media_time_;
 
   if (periodic_event && !media_time_has_progressed)
     return;

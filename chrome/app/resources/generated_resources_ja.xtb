@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">ログインエラー</translation>
 <translation id="1887597546629269384">もう一度「OK Google」と話しかけてください</translation>
 <translation id="1887850431809612466">ハードウェア リビジョン</translation>
-<translation id="1889984860246851556">プロキシ設定を開く</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">全画面表示</translation>
 <translation id="189358972401248634">その他の言語</translation>
@@ -1316,7 +1315,6 @@
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2973324205039581528">サイトをミュート</translation>
 <translation id="2977480621796371840">グループから削除</translation>
-<translation id="2979128960948974571">この処理には数分かかることがあります。</translation>
 <translation id="2979639724566107830">新しいウィンドウで開く</translation>
 <translation id="2981113813906970160">大きいマウス カーソルを表示する</translation>
 <translation id="2982970937345031">匿名で報告</translation>
@@ -1535,7 +1533,6 @@
 <translation id="3319048459796106952">シークレット ウィンドウを開く(&amp;I)</translation>
 <translation id="3323521181261657960">ボーナス利用時間が増えました</translation>
 <translation id="3325910708063135066">Mac のシステム環境設定でカメラとマイクがオフになっています</translation>
-<translation id="3330615614570718993">このデバイスでプラグイン VM を有効にするには、管理者にお問い合わせください。</translation>
 <translation id="3331321258768829690">（<ph name="UTCOFFSET" />）<ph name="LONGTZNAME" />（<ph name="EXEMPLARCITY" />）</translation>
 <translation id="3331974543021145906">アプリ情報</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - ピクチャー イン ピクチャー モードで再生中の動画</translation>
@@ -1627,7 +1624,6 @@
 <translation id="346431825526753">これは <ph name="CUSTODIAN_EMAIL" /> によって管理されている子供向けのアカウントです。</translation>
 <translation id="3468275649641751422">動画または音声ファイルのストリーミング</translation>
 <translation id="3468999815377931311">Android スマートフォン</translation>
-<translation id="3470248707805984963">エラーが発生しました。もう一度お試しください。</translation>
 <translation id="3470442499439619530">このユーザーを削除</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="3475843873335999118">指紋を認識できません。パスワードを入力してください。</translation>
@@ -1740,7 +1736,6 @@
 <translation id="3629631988386925734">パスワードを入力すると Smart Lock が有効になり、次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="3630132874740063857">スマートフォン</translation>
 <translation id="3630995161997703415">このサイトをシェルフに追加するといつでも使えるようになります</translation>
-<translation id="3635256809897331115">プラグイン VM を使用するには [起動] をクリックまたはタップしてください。今後は、ランチャー内のアイコンを選択すればプラグイン VM を開始できます。</translation>
 <translation id="3636096452488277381">こんにちは、<ph name="USER_GIVEN_NAME" /> さん。</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 残り <ph name="TIME" /></translation>
 <translation id="3637682276779847508">正しい PIN ロック解除キーを入力できない場合、SIM カードは永久的に無効になります。</translation>
@@ -1955,7 +1950,6 @@
 <translation id="3916445069167113093">この種類のファイルはコンピュータに損害を与える可能性があります。<ph name="FILE_NAME" /> のダウンロードを続けますか？</translation>
 <translation id="3918972485393593704">Google に詳細なレポートを送信する</translation>
 <translation id="3919145445993746351">お使いのどのパソコンでも同じ拡張機能を使用するには、同期を有効にします</translation>
-<translation id="391999873395511996">仮想マシンをダウンロードしています。</translation>
 <translation id="3920504717067627103">証明書ポリシー</translation>
 <translation id="392089482157167418">ChromeVox（音声フィードバック）を有効にする</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,7 +2906,6 @@
 <translation id="5449551289610225147">パスワードが無効です</translation>
 <translation id="5449588825071916739">すべてのタブをブックマークに追加する</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
-<translation id="5453630479789469584">プラグイン VM を設定できませんでした</translation>
 <translation id="5454166040603940656">- <ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">翻訳先の言語</translation>
 <translation id="5457113250005438886">無効</translation>
@@ -4834,7 +4827,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> によりデータがローカルに保存されました</translation>
 <translation id="833986336429795709">このリンクを開くにはアプリを選択します</translation>
 <translation id="8342861492835240085">コレクションを選択</translation>
-<translation id="8343187330304787218"><ph name="DEVICE_TYPE" /> でプラグイン VM を実行するための設定を管理します</translation>
 <translation id="8343956361364550006">動画やアニメーションを快適に表示するため、高帯域幅を使用します。接続速度が遅い他のユーザーにはコンテンツが表示されない場合があります。</translation>
 <translation id="8351419472474436977">この拡張機能によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
 <translation id="835238322900896202">アンインストール中にエラーが発生しました。ターミナルからアンインストールしてください。</translation>

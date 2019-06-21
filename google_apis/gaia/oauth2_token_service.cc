@@ -430,15 +430,6 @@ void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
   delegate_->RemoveObserver(observer);
 }
 
-void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
-  diagnostics_observer_list_.AddObserver(observer);
-}
-
-void OAuth2TokenService::RemoveDiagnosticsObserver(
-    DiagnosticsObserver* observer) {
-  diagnostics_observer_list_.RemoveObserver(observer);
-}
-
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
     AccessTokenDiagnosticsObserver* observer) {
   token_manager_->AddDiagnosticsObserver(observer);
@@ -706,20 +697,12 @@ void OAuth2TokenService::ClearCacheForAccount(const CoreAccountId& account_id) {
 }
 
 void OAuth2TokenService::CancelAllRequests() {
-  std::vector<Fetcher*> fetchers_to_cancel;
-  for (const auto& pending_fetcher : pending_fetchers_)
-    fetchers_to_cancel.push_back(pending_fetcher.second.get());
-  CancelFetchers(fetchers_to_cancel);
+  token_manager_->CancelAllRequests();
 }
 
 void OAuth2TokenService::CancelRequestsForAccount(
     const CoreAccountId& account_id) {
-  std::vector<Fetcher*> fetchers_to_cancel;
-  for (const auto& pending_fetcher : pending_fetchers_) {
-    if (pending_fetcher.first.account_id == account_id)
-      fetchers_to_cancel.push_back(pending_fetcher.second.get());
-  }
-  CancelFetchers(fetchers_to_cancel);
+  token_manager_->CancelRequestsForAccount(account_id);
 }
 
 void OAuth2TokenService::CancelFetchers(

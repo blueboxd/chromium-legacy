@@ -536,7 +536,7 @@
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" uzantısı otomatik olarak devre dışı bırakıldı.</translation>
 <translation id="1802687198411089702">Sayfa yanıt vermiyor. Sayfanın yanıt vermesini bekleyebilir veya sayfadan çıkabilirsiniz.</translation>
 <translation id="1802931390041703523">Bu sayfada Flash engellendi</translation>
-<translation id="1803531841600994172">Çevrilecek hedef dil</translation>
+<translation id="1803531841600994172">Çeviri hedef dili</translation>
 <translation id="1803545009660609783">Yeniden eğit</translation>
 <translation id="1805472176602625930">Güvenlik anahtarının üzerindeki düğmeye basın</translation>
 <translation id="1805738995123446102">Arka plan sekmesi mikrofonunuzu kullanıyor</translation>
@@ -600,7 +600,6 @@
 <translation id="1887442540531652736">Oturum açma hatası</translation>
 <translation id="1887597546629269384">Tekrar "Hey Google" deyin</translation>
 <translation id="1887850431809612466">Donanım düzeltmesi</translation>
-<translation id="1889984860246851556">Proxy ayarlarını aç</translation>
 <translation id="1890674179660343635">&lt;span&gt;Kimlik: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Tam ekranı aç</translation>
 <translation id="189358972401248634">Diğer diller</translation>
@@ -1316,7 +1315,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
 <translation id="2973324205039581528">Sitenin Sesini Kapat</translation>
 <translation id="2977480621796371840">Gruptan kaldır</translation>
-<translation id="2979128960948974571">Bu işlem birkaç dakika sürebilir.</translation>
 <translation id="2979639724566107830">Yeni pencerede aç</translation>
 <translation id="2981113813906970160">Büyük fare imleci göster</translation>
 <translation id="2982970937345031">Anonim olarak bildir</translation>
@@ -1535,7 +1533,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3319048459796106952">Yeni &amp;gizli pencere</translation>
 <translation id="3323521181261657960">Bonus! Ekran süreniz arttı</translation>
 <translation id="3325910708063135066">Kamera ve mikrofon, Mac Sistem Tercihleri'nde kapatıldı</translation>
-<translation id="3330615614570718993">Bu cihazda Plugin VM'yi etkinleştirmek için lütfen yöneticinize danışın.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Uygulama bilgisi</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - Video pencere içinde pencere modunda oynatılıyor</translation>
@@ -1627,7 +1624,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="346431825526753">Bu hesap çocuklar içindir ve <ph name="CUSTODIAN_EMAIL" /> tarafından yönetilmektedir</translation>
 <translation id="3468275649641751422">Video veya ses dosyasını canlı oynatma</translation>
 <translation id="3468999815377931311">Android telefon</translation>
-<translation id="3470248707805984963">Bir hata oluştu. Lütfen tekrar deneyin.</translation>
 <translation id="3470442499439619530">Bu Kullanıcıyı Kaldır</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="3475843873335999118">Maalesef parmak iziniz hâlâ tanınamadı. Lütfen şifrenizi girin.</translation>
@@ -1740,7 +1736,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3629631988386925734">Smart Lock'u açmak için şifrenizi girin. Böylece, bir dahaki sefere telefonunuzu kullanarak <ph name="DEVICE_TYPE" /> cihazınızın kilidini açabilirsiniz. Ayarlar'dan Smart Lock'u kapatabilirsiniz.</translation>
 <translation id="3630132874740063857">Telefonunuz</translation>
 <translation id="3630995161997703415">Bu siteyi istediğiniz zaman kullanmak için rafınıza ekleyin</translation>
-<translation id="3635256809897331115">Plugin VM'yi kullanmak için Başlat'ı tıklayın veya bu düğmeye dokunun. İlerleyen zamanlarda Başlatıcı'daki simgeyi seçerek Plugin VM'yi başlatabilirsiniz.</translation>
 <translation id="3636096452488277381">Merhaba <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684">%<ph name="PERCENTAGE" /> - <ph name="TIME" /> kaldı</translation>
 <translation id="3637682276779847508">Doğru PIN Kilit Açma Anahtarını giremezseniz SIM kartınız kalıcı olarak devre dışı bırakılacaktır.</translation>
@@ -1955,7 +1950,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3916445069167113093">Bu türden bir dosya bilgisayarınıza zarar verebilir. <ph name="FILE_NAME" /> adlı dosyayı yine de saklamak istiyor musunuz?</translation>
 <translation id="3918972485393593704">Ayrıntıları Google'a bildir</translation>
 <translation id="3919145445993746351">Uzantıları tüm bilgisayarlarınızda almak için senkronizasyonu açın</translation>
-<translation id="391999873395511996">Sanal makine indiriliyor.</translation>
 <translation id="3920504717067627103">Sertifika Politikaları</translation>
 <translation id="392089482157167418">ChromeVox'u (sesli geri bildirim) etkinleştir</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2912,9 +2906,8 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5449551289610225147">Geçersiz şifre</translation>
 <translation id="5449588825071916739">Tüm Sekmelere Yer İşareti Koy</translation>
 <translation id="5449716055534515760">Pencereyi &amp;Kapat</translation>
-<translation id="5453630479789469584">Plugin VM kurulumu yapılamadı</translation>
 <translation id="5454166040603940656"><ph name="PROVIDER" /> ile</translation>
-<translation id="545426320101607695">Çevrilecek Hedef Dil</translation>
+<translation id="545426320101607695">Çeviri Hedef Dili</translation>
 <translation id="5457113250005438886">Geçersiz</translation>
 <translation id="5457459357461771897">Bilgisayarınızdaki fotoğrafları, müzikleri ve diğer medyaları okuma ve silme</translation>
 <translation id="5457599981699367932">Misafir olarak Göz At</translation>
@@ -4833,7 +4826,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8339059274628563283">Yerel olarak depolanan <ph name="SITE" /> verileri</translation>
 <translation id="833986336429795709">Bu bağlantıyı açmak için bir uygulama seçin</translation>
 <translation id="8342861492835240085">Koleksiyon seçin</translation>
-<translation id="8343187330304787218"><ph name="DEVICE_TYPE" /> cihazınızda Plugin VM'yi çalıştırma ayarlarını yönetin</translation>
 <translation id="8343956361364550006">En iyi video veya animasyon için yüksek bant genişliği kullanın. Bağlantısı yavaş olan diğer kullanıcılar içeriğinizi göremeyebilir.</translation>
 <translation id="8351419472474436977">Bu uzantı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden olduğundan emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
 <translation id="835238322900896202">Yükleme kaldırma işlemi sırasında bir hata oluştu. Lütfen Terminali kullanarak yüklemeyi kaldırın.</translation>

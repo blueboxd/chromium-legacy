@@ -551,8 +551,10 @@ void VaapiVideoDecoder::FlushTask() {
     return;
   }
 
-  // Put the decoder in an idle state, ready to resume.
+  // Put the decoder in an idle state, ready to resume. This will release all
+  // VASurfaces currently held, so |output_frames_| should be empty after reset.
   decoder_->Reset();
+  DCHECK(output_frames_.empty());
 
   // Notify the client flushing is done.
   RunDecodeCB(std::move(current_decode_task_->decode_done_cb_),
@@ -582,7 +584,10 @@ void VaapiVideoDecoder::ResetTask(base::OnceClosure reset_cb) {
     return;
   }
 
+  // Put the decoder in an idle state, ready to resume. This will release all
+  // VASurfaces currently held, so |output_frames_| should be empty after reset.
   decoder_->Reset();
+  DCHECK(output_frames_.empty());
   SetState(State::kResetting);
 
   // Wait until any pending decode task has been aborted.

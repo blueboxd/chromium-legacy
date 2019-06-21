@@ -101,11 +101,6 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
-void LogSyncSigninPromoUserAction(SyncSignInUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SignInPromo", action,
-                            CHROME_SIGNIN_ACTION_COUNT);
-}
-
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.ShouldBlockPasswordForSameOriginButDifferentScheme",
@@ -119,17 +114,6 @@ void LogCountHttpMigratedPasswords(int count) {
 void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.HttpPasswordMigrationMode", mode,
                             HTTP_PASSWORD_MIGRATION_MODE_COUNT);
-}
-
-void LogAccountChooserUsability(AccountChooserUsabilityMetric usability,
-                                int count_empty_icons,
-                                int count_accounts) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogUsability",
-                            usability, ACCOUNT_CHOOSER_USABILITY_COUNT);
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.AccountChooserDialogEmptyAvatars",
-                           count_empty_icons);
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.AccountChooserDialogAccounts",
-                           count_accounts);
 }
 
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,

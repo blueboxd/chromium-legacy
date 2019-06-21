@@ -132,6 +132,8 @@ ScriptValue CheckedGetInternalStream(ScriptState* script_state,
 }
 
 TEST(ReadableStreamOperationsTest, IsReadableStream) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
@@ -168,6 +170,8 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
 }
 
 TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
@@ -196,6 +200,8 @@ TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
 }
 
 TEST(ReadableStreamOperationsTest, GetReader) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   auto* stream =
@@ -233,6 +239,8 @@ TEST(ReadableStreamOperationsTest, GetReader) {
 }
 
 TEST(ReadableStreamOperationsTest, IsDisturbed) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   auto* stream =
@@ -253,6 +261,8 @@ TEST(ReadableStreamOperationsTest, IsDisturbed) {
 }
 
 TEST(ReadableStreamOperationsTest, Read) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   ScriptValue reader =
@@ -302,6 +312,8 @@ TEST(ReadableStreamOperationsTest, Read) {
 
 TEST(ReadableStreamOperationsTest,
      CreateReadableStreamWithCustomUnderlyingSourceAndStrategy) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   auto* underlying_source =
@@ -369,6 +381,8 @@ TEST(ReadableStreamOperationsTest,
 }
 
 TEST(ReadableStreamOperationsTest, IsReadable) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
 
@@ -409,6 +423,8 @@ TEST(ReadableStreamOperationsTest, IsReadable) {
 }
 
 TEST(ReadableStreamOperationsTest, IsClosed) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
 
@@ -449,6 +465,8 @@ TEST(ReadableStreamOperationsTest, IsClosed) {
 }
 
 TEST(ReadableStreamOperationsTest, IsErrored) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
 
@@ -489,6 +507,8 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
 }
 
 TEST(ReadableStreamOperationsTest, Tee) {
+  ScopedStreamsNativeForTest enabled(false);
+
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   v8::Local<v8::Context> context = scope.GetScriptState()->GetContext();
@@ -560,7 +580,8 @@ TEST(ReadableStreamOperationsTest, Tee) {
 }
 
 TEST(ReadableStreamOperationsTest, Serialize) {
-  ScopedTransferableStreamsForTest enabled(true);
+  ScopedStreamsNativeForTest streams_native_enabled(false);
+  ScopedTransferableStreamsForTest transferable_streams_enabled(true);
 
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());

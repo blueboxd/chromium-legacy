@@ -72,6 +72,18 @@ def IsConstructor(message):
   return GetConstructorArg(message) is not None
 
 
+def IsDestructor(message):
+  """Check if a message is a destructor.
+
+  Args:
+    message: the message which you want to check.
+
+  Returns:
+    True if the message has the type='destructor' attribute, false otherwise.
+  """
+  return message.attrib.get('type') == 'destructor'
+
+
 def GetConstructedInterface(message):
   """Gets the interface constructed by a message.
 

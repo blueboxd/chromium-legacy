@@ -16,7 +16,7 @@
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1409544243779336081">המלצה על אפליקציה</translation>
-<translation id="1498028757988366001">חיפשת את זה בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה לצמיתות מהחשבון בכל המכשירים שברשותך.</translation>
+<translation id="1498028757988366001">חיפשת את השאילתה הזו בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה באופן סופי מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
 <translation id="169515659049020177">Shift</translation>

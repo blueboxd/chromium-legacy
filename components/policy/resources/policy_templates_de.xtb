@@ -453,8 +453,8 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       </translation>
 <translation id="1767673020408652620">App-Empfehlungen bei Nullstatus des Suchfelds aktivieren</translation>
 <translation id="17719159826324007">
-      Wenn diese Richtlinie auf "ArcSession" gesetzt ist, wird das Gerät nach einer Nutzerabmeldung zum Neustart gezwungen, wenn Android gestartet wurde.
-      Ist die Richtlinie auf "Immer" festgelegt, wird das Gerät nach jeder Abmeldung zu einem Neustart gezwungen.
+      Wenn diese Richtlinie auf "ArcSession" gesetzt ist und Android gestartet wurde, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
+      Ist die Richtlinie auf "Immer" festgelegt, wird nach jeder Abmeldung ein Neustart auf dem Gerät erzwungen.
       Wenn die Richtlinie nicht konfiguriert ist, hat sie keine Auswirkung und es wird nach der Nutzerabmeldung kein Neustart erzwungen. Dasselbe gilt bei der Einstellung "Nie".
       Diese Richtlinie wirkt sich nur auf nicht verknüpfte Nutzer aus.
       </translation>
@@ -2474,6 +2474,10 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Beachten Sie, dass diese Einstellung nicht empfohlen wird, da hierdurch die "nameConstraints"-Erweiterung umgangen werden kann. Diese Erweiterung beschränkt die Hostnamen, für die ein bestimmtes Zertifikat autorisiert werden kann.
 
       Wenn diese Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, werden Serverzertifikate ohne "subjectAlternativeName"-Erweiterung, die entweder einen DNS-Namen oder eine IP-Adresse enthalten, als nicht vertrauenswürdig eingestuft.</translation>
+<translation id="5578571772998293651">Hiermit wird Nutzerfeedback zugelassen.
+        Wenn die Richtlinie auf "false" gesetzt ist, können Nutzer kein Feedback an Google senden.
+
+        Ist sie nicht konfiguriert oder aber auf "true" gesetzt, dann können Nutzer über das Menü &gt; "Hilfe" &gt; "Problem melden" Feedback an Google senden.</translation>
 <translation id="5581292529942108810">Richtlinien für die Chrome Reporting Extension konfigurieren.
 
 Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
@@ -3808,6 +3812,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       Bleibt diese Richtlinie unkonfiguriert, gibt es keine Ausnahmen von der schwarzen Liste aus der Richtlinie "URLBlacklist".</translation>
 <translation id="8176035528522326671">Unternehmensnutzer nur als primären Nutzer mehrerer Profile zulassen (Standardverhalten für von Unternehmen verwaltete Nutzer)</translation>
 <translation id="8183108371184777472">Öffnen des Browserfensters verhindern</translation>
+<translation id="8186911565834244165">Nutzerfeedback zulassen</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
@@ -4225,6 +4230,12 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
           Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>
+<translation id="91196902572559194">Mit dieser Richtlinie wird Google Assistant die Berechtigung erteilt, bei Gesprächen zuzuhören, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+
+      Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      Wenn die Richtlinie deaktiviert ist, hört Google Assistant nicht bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      Wenn die Richtlinie nicht konfiguriert ist, können die Nutzer entscheiden, ob Google Assistant bei Gesprächen zuhören darf, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
+      </translation>
 <translation id="9123211093995421438">Gibt die Mindestanzahl der <ph name="PRODUCT_OS_NAME" />-Meilensteine an. Wird diese erreicht, sollte ein Rollback jederzeit von der stabilen Version aus möglich sein.
 
       Standardwert ist 0 für Kundengeräte und 4 (ca. ein halbes Jahr) für unternehmenseigene Geräte.

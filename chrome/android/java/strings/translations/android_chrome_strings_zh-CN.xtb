@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
 <translation id="1272079795634619415">停止</translation>
-<translation id="1272444412400969138">要与之分享标签页的设备选择器。</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小时}other{# 小时}}</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
-<translation id="4044912625106523635">要与之分享标签页的设备选择器已全屏打开。</translation>
 <translation id="4046123991198612571">下一曲</translation>
 <translation id="4048707525896921369">无需离开所在页面，便可了解网站上的主题。“点按搜索”功能会将所选字词及上下文一起发送给 Google 搜索，后者即会据此返回相应的定义、图片、搜索结果及其他详情。
 
@@ -747,7 +745,6 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
-<translation id="6418750371676080905">要与之分享标签页的设备选择器已关闭。</translation>
 <translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
@@ -787,7 +784,6 @@
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
-<translation id="6672986458216094438">要与之分享标签页的设备选择器已半屏打开。</translation>
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>

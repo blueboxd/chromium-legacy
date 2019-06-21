@@ -40,8 +40,14 @@ class WebPepperSocketChannelClientProxy final
   void DidReceiveTextMessage(const String& payload) override {
     impl_->DidReceiveTextMessage(payload);
   }
-  void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override {
-    impl_->DidReceiveBinaryMessage(std::move(payload));
+  void DidReceiveBinaryMessage(
+      const Vector<base::span<const char>>& data) override {
+    std::unique_ptr<Vector<char>> data_to_pass =
+        std::make_unique<Vector<char>>();
+    for (const auto& span : data) {
+      data_to_pass->Append(span.data(), static_cast<wtf_size_t>(span.size()));
+    }
+    impl_->DidReceiveBinaryMessage(std::move(data_to_pass));
   }
   void DidError() override { impl_->DidError(); }
   void DidConsumeBufferedAmount(uint64_t consumed) override {

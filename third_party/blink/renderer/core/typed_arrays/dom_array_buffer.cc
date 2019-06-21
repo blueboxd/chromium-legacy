@@ -102,4 +102,25 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
   return Create(ArrayBuffer::Create(contents));
 }
 
+DOMArrayBuffer* DOMArrayBuffer::Create(
+    const Vector<base::span<const char>>& data) {
+  size_t size = 0;
+  for (const auto& span : data) {
+    size += span.size();
+  }
+  WTF::ArrayBufferContents contents(size, 1,
+                                    WTF::ArrayBufferContents::kNotShared,
+                                    WTF::ArrayBufferContents::kDontInitialize);
+  uint8_t* ptr = static_cast<uint8_t*>(contents.Data());
+  if (UNLIKELY(!ptr))
+    OOM_CRASH();
+
+  for (const auto& span : data) {
+    memcpy(ptr, span.data(), span.size());
+    ptr += span.size();
+  }
+
+  return Create(ArrayBuffer::Create(contents));
+}
+
 }  // namespace blink

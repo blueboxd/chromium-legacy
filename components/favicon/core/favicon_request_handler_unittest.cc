@@ -32,31 +32,39 @@ using testing::Invoke;
 
 const char kDummyPageUrl[] = "https://www.example.com";
 const char kDummyIconUrl[] = "https://www.example.com/favicon16.png";
-const int kDesiredSizeInPixel = 16;
+const int kDefaultDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
 const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
 const SkColor kTestColor = SK_ColorRED;
 base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
 
-SkBitmap CreateTestSkBitmap() {
+SkBitmap CreateTestSkBitmap(int desired_size_in_pixel) {
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(kDesiredSizeInPixel, kDesiredSizeInPixel);
+  bitmap.allocN32Pixels(desired_size_in_pixel, desired_size_in_pixel);
   bitmap.eraseColor(kTestColor);
   return bitmap;
 }
 
-favicon_base::FaviconRawBitmapResult CreateTestBitmapResult() {
+favicon_base::FaviconRawBitmapResult CreateTestBitmapResult(
+    int desired_size_in_pixel) {
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
-  gfx::PNGCodec::EncodeBGRASkBitmap(CreateTestSkBitmap(), false, &data->data());
+  gfx::PNGCodec::EncodeBGRASkBitmap(CreateTestSkBitmap(desired_size_in_pixel),
+                                    false, &data->data());
   favicon_base::FaviconRawBitmapResult result;
   result.bitmap_data = data;
   result.icon_url = GURL(kDummyIconUrl);
+  result.pixel_size = gfx::Size(desired_size_in_pixel, desired_size_in_pixel);
   return result;
+}
+
+favicon_base::FaviconRawBitmapResult CreateTestBitmapResult() {
+  return CreateTestBitmapResult(kDefaultDesiredSizeInPixel);
 }
 
 favicon_base::FaviconImageResult CreateTestImageResult() {
   favicon_base::FaviconImageResult result;
-  result.image = gfx::Image::CreateFrom1xBitmap(CreateTestSkBitmap());
+  result.image = gfx::Image::CreateFrom1xBitmap(
+      CreateTestSkBitmap(kDefaultDesiredSizeInPixel));
   result.icon_url = GURL(kDummyIconUrl);
   return result;
 }
@@ -133,9 +141,10 @@ class FaviconRequestHandlerTest : public ::testing::Test {
 TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -145,7 +154,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
       .WillOnce([](auto) { return favicon_base::FaviconRawBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
@@ -158,9 +167,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -170,7 +180,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
       .WillOnce([](auto) { return CreateTestBitmapResult(); });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
@@ -183,9 +193,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
   scoped_feature_list_.InitAndDisableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(CreateTestBitmapResult());
@@ -196,7 +207,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
@@ -209,9 +220,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForFullUrl) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       kEnableHistoryFaviconsGoogleServerQuery, {{"trim_url_path", "false"}});
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -233,7 +245,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForFullUrl) {
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
@@ -244,9 +256,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForFullUrl) {
 TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForTrimmedUrl) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       kEnableHistoryFaviconsGoogleServerQuery, {{"trim_url_path", "true"}});
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -268,7 +281,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForTrimmedUrl) {
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
@@ -416,9 +429,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImageForTrimmedUrl) {
 TEST_F(FaviconRequestHandlerTest, ShouldNotQueryGoogleServerIfCannotSendData) {
   scoped_feature_list_.InitAndEnableFeature(
       kEnableHistoryFaviconsGoogleServerQuery);
-  EXPECT_CALL(mock_favicon_service_,
-              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
-                                      kDesiredSizeInPixel, _, _, &tracker_))
+  EXPECT_CALL(
+      mock_favicon_service_,
+      GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                              kDefaultDesiredSizeInPixel, _, _, &tracker_))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::FaviconRawBitmapCallback callback, auto) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
@@ -430,11 +444,39 @@ TEST_F(FaviconRequestHandlerTest, ShouldNotQueryGoogleServerIfCannotSendData) {
       .Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
-      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      GURL(kDummyPageUrl), kDefaultDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
       kDummyPlatform,
       /*icon_url_for_uma=*/GURL(),
       /*can_send_history_data=*/false, &tracker_);
+}
+
+TEST_F(FaviconRequestHandlerTest, ShouldResizeSyncBitmap) {
+  const int kDesiredSizeInPixel = 32;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list_.InitAndDisableFeature(
+      kEnableHistoryFaviconsGoogleServerQuery);
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDesiredSizeInPixel, _, _, &tracker_))
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
+        return kDummyTaskId;
+      });
+  // Have sync return bitmap of different size from the one requested.
+  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
+      .WillOnce([](auto) { return CreateTestBitmapResult(16); });
+  favicon_base::FaviconRawBitmapResult result;
+  favicon_request_handler_.GetRawFaviconForPageURL(
+      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
+      kDummyPlatform,
+      /*icon_url_for_uma=*/GURL(),
+      /*can_send_history_data=*/true, &tracker_);
+  EXPECT_TRUE(result.is_valid());
+  EXPECT_EQ(gfx::Size(kDesiredSizeInPixel, kDesiredSizeInPixel),
+            result.pixel_size);
 }
 
 }  // namespace

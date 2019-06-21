@@ -103,6 +103,11 @@ void HttpAuthManagerImpl::OnLoginSuccesfull() {
     return;
   }
 
+  // ProvisionallySaveForm() might not have called, so |form_manager_| might be
+  // not in submitted state. Do nothing in that case.
+  if (!form_manager_->is_submitted())
+    return;
+
   // TODO(crbug/831123) Move the logic into the PasswordFormManager.
   bool is_update = form_manager_->IsPasswordUpdate();
   bool is_new_login = form_manager_->IsNewLogin();

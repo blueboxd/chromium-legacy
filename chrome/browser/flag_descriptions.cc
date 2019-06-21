@@ -1565,6 +1565,11 @@ const char kRendererSideResourceSchedulerName[] =
 const char kRendererSideResourceSchedulerDescription[] =
     "Migrate some ResourceScheduler functionalities to renderer";
 
+const char kReorderBookmarksName[] = "Reorder bookmarks";
+const char kReorderBookmarksDescription[] =
+    "Allows the user to reorder their bookmarks from their Android device. "
+    "The bookmark ordering will be synced across devices.";
+
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
 const char kRequestTabletSiteDescription[] =
@@ -3306,6 +3311,13 @@ const char kWakeOnPacketsDescription[] =
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+const char kTerminalSystemAppName[] = "Terminal System App";
+const char kTerminalSystemAppDescription[] =
+    "Enables the Terminal System App at chrome://terminal which is used for "
+    "the Chrome OS Linux terminal.";
+#endif  // #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // All views-based platforms --------------------------------------------------
 

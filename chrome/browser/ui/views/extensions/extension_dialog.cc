@@ -84,7 +84,8 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
   extensions::ExtensionViewHost* host_ptr = host.get();
   ExtensionDialog* dialog = new ExtensionDialog(std::move(host), observer);
   dialog->set_title(title);
-  dialog->InitWindow(parent_window, is_modal, width, height);
+  dialog->InitWindow(parent_window, is_modal, width, height, min_width,
+                     min_height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -99,7 +100,9 @@ ExtensionDialog* ExtensionDialog::Show(const GURL& url,
 void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
                                  bool is_modal,
                                  int width,
-                                 int height) {
+                                 int height,
+                                 int min_width,
+                                 int min_height) {
   views::Widget* window =
       is_modal ? constrained_window::CreateBrowserModalDialogViews(this, parent)
                : views::DialogDelegate::CreateDialogWidget(
@@ -108,18 +111,24 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   // Center the window over the parent browser window or the screen.
   gfx::Rect screen_rect =
       display::Screen::GetScreen()->GetDisplayNearestWindow(parent).work_area();
-  gfx::Rect bounds_rect = parent
-                              ? views::Widget::GetWidgetForNativeWindow(parent)
-                                    ->GetWindowBoundsInScreen()
-                              : screen_rect;
-  bounds_rect.ClampToCenteredSize({width, height});
+  gfx::Rect bounds = parent ? views::Widget::GetWidgetForNativeWindow(parent)
+                                  ->GetWindowBoundsInScreen()
+                            : screen_rect;
+  bounds.ClampToCenteredSize({width, height});
 
-  // Ensure the top left and top right of the window are on screen, with
-  // priority given to the top left. Use the display's work_area() rather than
-  // bounds(), since the work_area() may be smaller e.g. when the docked
-  // magnifier is enabled.
-  bounds_rect.AdjustToFit(screen_rect);
-  window->SetBounds(bounds_rect);
+  // Make sure bounds is larger than {min_width, min_height}.
+  if (bounds.width() < min_width) {
+    bounds.set_x(bounds.x() + (bounds.width() - min_width) / 2);
+    bounds.set_width(min_width);
+  }
+  if (bounds.height() < min_height) {
+    bounds.set_y(bounds.y() + (bounds.height() - min_height) / 2);
+    bounds.set_height(min_height);
+  }
+
+  // Make sure bounds is still on screen.
+  bounds.AdjustToFit(screen_rect);
+  window->SetBounds(bounds);
 
   window->Show();
   // TODO(jamescook): Remove redundant call to Activate()?

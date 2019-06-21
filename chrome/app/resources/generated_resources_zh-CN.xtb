@@ -597,7 +597,6 @@
 <translation id="1887442540531652736">登录错误</translation>
 <translation id="1887597546629269384">再说一次“Hey Google”</translation>
 <translation id="1887850431809612466">硬件版本</translation>
-<translation id="1889984860246851556">打开代理设置</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">以全屏模式打开</translation>
 <translation id="189358972401248634">其他语言</translation>
@@ -963,7 +962,7 @@
 <translation id="2454247629720664989">关键字</translation>
 <translation id="245661998428026871">“画中画”模式中的视频将会停止播放。</translation>
 <translation id="2457246892030921239">“<ph name="APP_NAME" />”想从 <ph name="VOLUME_NAME" />复制文件。</translation>
-<translation id="2458379781610688953">请更新帐号，<ph name="EMAIL" /></translation>
+<translation id="2458379781610688953">更新帐号，<ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">设备管理令牌无效。</translation>
 <translation id="2462724976360937186">证书授权中心密钥 ID</translation>
 <translation id="2462752602710430187">已添加<ph name="PRINTER_NAME" /></translation>
@@ -1128,7 +1127,7 @@
 <translation id="2693176596243495071">糟糕！发生了未知错误。请稍后重试；如果问题依然存在，请与您的管理员联系。</translation>
 <translation id="2695749433451188613">互联网打印协议 (HTTPS)</translation>
 <translation id="2699911226086014512">PIN 码操作失败，错误代码为 <ph name="RETRIES" />。</translation>
-<translation id="2701737434167469065">请登录，<ph name="EMAIL" /></translation>
+<translation id="2701737434167469065">登录，<ph name="EMAIL" /></translation>
 <translation id="270358213449696159">Google Chrome 操作系统条款内容</translation>
 <translation id="2704184184447774363">Microsoft 文档签名</translation>
 <translation id="270516211545221798">触控板速度</translation>
@@ -1311,7 +1310,6 @@
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2973324205039581528">将单个网站静音</translation>
 <translation id="2977480621796371840">从组中移除</translation>
-<translation id="2979128960948974571">此过程可能需要几分钟时间。</translation>
 <translation id="2979639724566107830">在新窗口中打开</translation>
 <translation id="2981113813906970160">显示大号鼠标光标</translation>
 <translation id="2982970937345031">以匿名方式报告</translation>
@@ -1528,7 +1526,6 @@
 <translation id="3319048459796106952">打开新的无痕窗口(&amp;I)</translation>
 <translation id="3323521181261657960">恭喜！您获得了更多的设备使用时间</translation>
 <translation id="3325910708063135066">已在 Mac 系统偏好设置中关闭摄像头和麦克风</translation>
-<translation id="3330615614570718993">要在此设备上启用插件虚拟机，请与管理员联系。</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">应用信息</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> - 视频正在“画中画”模式中播放</translation>
@@ -1620,7 +1617,6 @@
 <translation id="346431825526753">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
 <translation id="3468275649641751422">流式传输视频或音频文件</translation>
 <translation id="3468999815377931311">Android 手机</translation>
-<translation id="3470248707805984963">出错了。请重试。</translation>
 <translation id="3470442499439619530">删除此用户</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="3475843873335999118">抱歉，系统仍无法识别您的指纹。请输入您的密码。</translation>
@@ -1733,7 +1729,6 @@
 <translation id="3629631988386925734">请输入您的密码，以启用 Smart Lock。下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="3630132874740063857">您的手机</translation>
 <translation id="3630995161997703415">请将此网站添加到您的任务栏中，以便随时使用</translation>
-<translation id="3635256809897331115">要使用插件虚拟机，请点击或点按“启动”。日后，您可以通过选择启动器中对应的图标来启动插件虚拟机。</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，您好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 还可使用 <ph name="TIME" /></translation>
 <translation id="3637682276779847508">如果您无法输入正确的 PIN 码解锁密钥，您的 SIM 卡将被永久停用。</translation>
@@ -1948,7 +1943,6 @@
 <translation id="3916445069167113093">此类型的文件可能会损害您的计算机。您仍然要保留 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="3918972485393593704">向 Google 报告详细信息</translation>
 <translation id="3919145445993746351">若想在您的所有计算机上使用您的扩展程序，请开启同步功能</translation>
-<translation id="391999873395511996">正在下载虚拟机。</translation>
 <translation id="3920504717067627103">证书政策</translation>
 <translation id="392089482157167418">启用 ChromeVox（语音反馈）</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2904,7 +2898,6 @@
 <translation id="5449551289610225147">密码无效</translation>
 <translation id="5449588825071916739">为所有标签页添加书签</translation>
 <translation id="5449716055534515760">关闭窗口(&amp;D)</translation>
-<translation id="5453630479789469584">无法设置插件虚拟机</translation>
 <translation id="5454166040603940656">提供方：<ph name="PROVIDER" /></translation>
 <translation id="545426320101607695">翻译目标语言</translation>
 <translation id="5457113250005438886">无效</translation>
@@ -4822,7 +4815,6 @@
 <translation id="8339059274628563283"><ph name="SITE" /> 本地存储的数据</translation>
 <translation id="833986336429795709">要打开此链接，请选择一个应用</translation>
 <translation id="8342861492835240085">选择一个集合</translation>
-<translation id="8343187330304787218">管理与在 <ph name="DEVICE_TYPE" /> 上运行插件虚拟机相关的设置</translation>
 <translation id="8343956361364550006">使用高带宽网络可获得最佳视频或动画效果。网速较慢的其他人可能看不到您的内容。</translation>
 <translation id="8351419472474436977">此扩展程序控制了您的代理设置，也就是说，它可以更改、破坏或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
 <translation id="835238322900896202">卸载时出错。请通过终端进行卸载。</translation>

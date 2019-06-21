@@ -1418,10 +1418,10 @@
                   '|ios/web/public/payments'
     },
     'pdf': {
-      'filepath': 'components/pdf'\
-                  '|chrome/browser/pdf'\
-                  '|chrome/browser/ui/pdf'\
-                  '|pdf'
+      'filepath': 'components/pdf/'\
+                  '|chrome/browser/pdf/'\
+                  '|chrome/browser/ui/pdf/'\
+                  '|pdf/'
     },
     'pepper_api': {
       'filepath': 'ppapi/api'\

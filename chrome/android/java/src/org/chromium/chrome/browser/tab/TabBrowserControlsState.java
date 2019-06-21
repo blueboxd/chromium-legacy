@@ -26,6 +26,13 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mConstraints = -1;
 
+    private int mTopControlsOffset;
+    private int mBottomControlsOffset;
+    private int mContentOffset;
+
+    /** {@code true} if offset was changed by compositor. */
+    private boolean mOffsetInitialized;
+
     public static void createForTab(Tab tab) {
         tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabBrowserControlsState(tab));
     }
@@ -111,10 +118,47 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             }
 
             @Override
+            public void onCrash(Tab tab) {
+                mTopControlsOffset = 0;
+                mBottomControlsOffset = 0;
+                mContentOffset = 0;
+                mOffsetInitialized = false;
+            }
+
+            @Override
             public void onDestroyed(Tab tab) {
                 tab.removeObserver(this);
             }
         });
+    }
+
+    /**
+     * Sets new top control and content offset from renderer.
+     * @param topControlsOffset Top control offset.
+     * @param contentOffset Content offset.
+     */
+    void setTopOffset(int topControlsOffset, int contentOffset) {
+        mTopControlsOffset = topControlsOffset;
+        mContentOffset = contentOffset;
+        notifyControlsOffsetChanged();
+    }
+
+    /**
+     * Sets new bottom control offset from renderer.
+     * @param bottomControlsOffset Bottom control offset.
+     */
+    void setBottomOffset(int bottomControlsOffset) {
+        mBottomControlsOffset = bottomControlsOffset;
+        notifyControlsOffsetChanged();
+    }
+
+    private void notifyControlsOffsetChanged() {
+        mOffsetInitialized = true;
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onBrowserControlsOffsetChanged(
+                    mTopControlsOffset, mBottomControlsOffset, mContentOffset);
+        }
     }
 
     @Override
@@ -202,6 +246,26 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
+    }
+
+    /** @return Top control offset */
+    public int topControlsOffset() {
+        return mTopControlsOffset;
+    }
+
+    /** @return Bottom control offset */
+    public int bottomControlsOffset() {
+        return mBottomControlsOffset;
+    }
+
+    /** @return content offset */
+    public int contentOffset() {
+        return mContentOffset;
+    }
+
+    /** @return Whether the control offset is initialized by compositor. */
+    public boolean offsetInitialized() {
+        return mOffsetInitialized;
     }
 
     // ImeEventObserver

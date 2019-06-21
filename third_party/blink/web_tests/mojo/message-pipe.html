@@ -95,4 +95,12 @@ async_test((test) => {
   pipe1.handle1.writeMessage(new ArrayBuffer(0), [pipe2.handle1]);
 }, "Send handle");
 
+test(() => {
+  const pipe1 = Mojo.createMessagePipe();
+  const pipe2 = Mojo.createMessagePipe();
+  pipe2.handle0.close();
+  const result = pipe1.handle0.writeMessage(new ArrayBuffer(0), [pipe2.handle0]);
+  assert_equals(result, Mojo.RESULT_INVALID_ARGUMENT);
+}, "Send invalid handle");
+
 </script>

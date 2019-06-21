@@ -26,6 +26,7 @@
       "file_manager/file_list.js",
       "file_manager/files_tooltip.js",
       "file_manager/folder_shortcuts.js",
+      "file_manager/format_dialog.js",
       "file_manager/gear_menu.js",
       "file_manager/grid_view.js",
       "file_manager/install_linux_package_dialog.js",

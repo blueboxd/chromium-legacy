@@ -864,6 +864,25 @@
     Formatting the removable media is going to erase all data. Do you wish to continue?
   </message>
 
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE" desc="Title of the format USB drive dialog.">
+    Format <ph name="DRIVE_NAME">$1<ex>Untitled USB</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_MESSAGE" desc="Advisory message shown before formatting a USB drive.">
+    Formatting a drive will delete all data stored on it. This action cannot be undone.
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_DELETE_WARNING" desc="Advisory message shown before formatting a USB drive that contains files.">
+    <ph name="TOTAL_FILE_SIZE">$1<ex>38.3 MB</ex></ph> of files will be deleted
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_DRIVE_NAME_LABEL" desc="Label for the USB drive name input field">
+    Drive name
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_FORMAT_LABEL" desc="Label for the format filesystem selector">
+    Format
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
+    Erase and Format
+  </message>
+
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
     Select an app to open this file
   </message>

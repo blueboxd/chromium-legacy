@@ -2490,6 +2490,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Tenha em atenção que esta ação não é recomendada, dado que pode permitir ignorar a extensão nameConstraints que restringe os nomes de anfitriões para os quais um determinado certificado pode ser autorizado.
 
       Se esta política não estiver definida ou for definida como falsa, os certificados de servidor que não possuam uma extensão subjectAlternativeName com um nome DNS ou um endereço IP não serão fidedignos.</translation>
+<translation id="5578571772998293651">Permita comentários de utilizadores.
+        Se a política estiver definida como falsa, os utilizadores não podem enviar comentários para a Google.
+
+        Se a política não estiver definida ou estiver definida como verdadeira, os utilizadores podem enviar comentários para a Google através do Menu -&gt; Ajuda -&gt; Comunicar um problema ou de uma combinação de teclas.</translation>
 <translation id="5581292529942108810">Configure as políticas relacionadas com a Chrome Reporting Extension.
 
       Esta política apenas entra em vigor quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e a máquina está associada à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3842,6 +3846,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida, não existirão exceções à lista negra da política "URLBlacklist".</translation>
 <translation id="8176035528522326671">Permitir que o utilizador empresarial seja apenas um utilizador principal de vários perfis (comportamento predefinido para utilizadores geridos por empresas)</translation>
 <translation id="8183108371184777472">Suprimir a execução da janela do navegador</translation>
+<translation id="8186911565834244165">Permitir comentários de utilizadores</translation>
 <translation id="8214600119442850823">Configura o gestor de palavras-passe.</translation>
 <translation id="8217516105848565518">Esta política foi descontinuada. Em alternativa, utilize a política RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Ative os conjuntos de cifras RC4 no TLS</translation>
@@ -4278,6 +4283,12 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 
           Os controladores de protocolos registados pela política são unidos com os que são registados pelo utilizador e ambos estão disponíveis para utilização. O utilizador pode substituir os controladores de protocolos instalados pela política ao instalar um novo controlador predefinido, mas não pode remover um controlador de protocolos registado pela política.</translation>
+<translation id="91196902572559194">Esta política autoriza o Assistente Google a ouvir a frase de ativação por voz.
+
+      Se a política estiver ativada, o Assistente Google vai ouvir a frase de ativação por voz.
+      Se a política estiver desativada, o Assistente Google não vai ouvir a frase de ativação por voz.
+      Se a política não estiver definida, os utilizadores podem decidir se pretendem permitir que o Assistente Google ouça a frase de ativação por voz.
+      </translation>
 <translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> que devem ser autorizados para reversão a partir da versão estável em qualquer altura.
 
       A predefinição é 0 para consumidores e 4 (aprox. meio ano) para dispositivos inscritos através de empresas.

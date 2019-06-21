@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">검색 및 탐색</translation>
 <translation id="1264974993859112054">스포츠</translation>
 <translation id="1272079795634619415">중지</translation>
-<translation id="1272444412400969138">탭을 공유할 기기 선택도구</translation>
 <translation id="1283039547216852943">탭하여 펼치기</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
@@ -403,7 +402,6 @@
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{#시간}other{#시간}}</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
-<translation id="4044912625106523635">탭을 공유할 기기 선택도구가 전체 높이로 열렸습니다.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
 <translation id="4048707525896921369">페이지에서 나가지 않고도 웹사이트에 언급된 주제에 관해 자세히 알아보세요. 탭하여 검색 기능은 단어와 관련 맥락을 Google 검색으로 전송하여 정의, 사진, 검색결과 및 기타 세부정보를 제공합니다.
 
@@ -747,7 +745,6 @@
 <translation id="6406506848690869874">동기화</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="6416782512398055893"><ph name="MBS" />MB 다운로드됨</translation>
-<translation id="6418750371676080905">탭을 공유할 기기 선택도구가 닫혔습니다.</translation>
 <translation id="6427112570124116297">웹 번역</translation>
 <translation id="6433501201775827830">검색엔진 선택</translation>
 <translation id="6437478888915024427">페이지 정보</translation>
@@ -787,7 +784,6 @@
 <translation id="666268767214822976">예상 검색어 서비스를 사용하여 검색주소창에 입력할 때 관련 검색어 및 인기 웹사이트 표시</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />에서 열기</translation>
 <translation id="666981079809192359">Chrome 개인정보처리방침</translation>
-<translation id="6672986458216094438">탭을 공유할 기기 선택도구가 절반 높이로 열렸습니다.</translation>
 <translation id="6697492270171225480">페이지를 찾을 수 없을 때 비슷한 페이지 제안 표시</translation>
 <translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="6698801883190606802">동기화된 데이터 관리</translation>

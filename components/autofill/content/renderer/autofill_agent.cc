@@ -81,6 +81,8 @@ using blink::WebVector;
 
 namespace autofill {
 
+using mojom::SubmissionSource;
+
 namespace {
 
 // Time to wait, in ms, o ensure that only a single select change will be acted

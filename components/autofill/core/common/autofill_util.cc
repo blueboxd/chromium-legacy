@@ -25,6 +25,7 @@ namespace autofill {
 using features::kAutofillKeyboardAccessory;
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 const char kAutofillKeyboardAccessoryAnimationDurationKey[] =
     "animation_duration_millis";

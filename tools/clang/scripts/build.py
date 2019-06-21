@@ -24,9 +24,9 @@ import sys
 
 from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     FORCE_HEAD_REVISION_FILE, PACKAGE_VERSION, RELEASE_VERSION,
-                    STAMP_FILE, CopyFile, CopyDiaDllTo, DownloadAndUnpack,
-                    EnsureDirExists, GetWinSDKDir, ReadStampFile, RmTree,
-                    WriteStampFile)
+                    STAMP_FILE, CopyFile, CopyDiaDllTo, DownloadUrl,
+                    DownloadAndUnpack, EnsureDirExists, GetWinSDKDir,
+                    ReadStampFile, RmTree, WriteStampFile)
 
 
 # Path constants. (All of these should be absolute paths.)
@@ -36,6 +36,8 @@ COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
 LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
+LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
+LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 CHROME_TOOLS_SHIM_DIR = os.path.join(LLVM_DIR, 'llvm', 'tools', 'chrometools')
 THREADS_ENABLED_BUILD_DIR = os.path.join(THIRD_PARTY_DIR,
                                          'llvm-threads-enabled')
@@ -277,6 +279,7 @@ def main():
   parser.add_argument('--gcc-toolchain', help='(no longer used)')
   parser.add_argument('--lto-lld', action='store_true',
                       help='build lld with LTO (only applies on Linux)')
+  parser.add_argument('--pgo', action='store_true', help='build with PGO')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
                       help='build the latest revision')
   parser.add_argument('--run-tests', action='store_true',
@@ -309,6 +312,9 @@ def main():
     # TODO(hans): Use it on Windows too.
     print('--lto-lld is only effective on Linux. Ignoring the option.')
     args.lto_lld = False
+  if args.pgo and not args.bootstrap:
+    print('--pgo requires --bootstrap')
+    return 1
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
     print('Android NDK not found at ' + ANDROID_NDK_DIR)
     print('The Android NDK is needed to build a Clang whose -fsanitize=address')
@@ -396,6 +402,8 @@ def main():
                      '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
                      # See PR41956: Don't link libcxx into libfuzzer.
                      '-DCOMPILER_RT_USE_LIBCXX=NO',
+                     # Don't run Go bindings tests; PGO makes them confused.
+                     '-DLLVM_INCLUDE_GO_TESTS=OFF',
                      ]
 
   if sys.platform == 'win32':
@@ -419,7 +427,12 @@ def main():
     os.chdir(LLVM_BOOTSTRAP_DIR)
 
     projects = 'clang'
-    if args.lto_lld:
+    if args.pgo:
+      # Need libclang_rt.profile
+      projects += ';compiler-rt'
+    if (sys.platform.startswith('linux') and args.pgo) or args.lto_lld:
+      # Old gnu ld doesn't handle libclang_rt.profile well.
+      # TODO(crbug.com/958852): Always use lld for later stages.
       projects += ';lld'
     if sys.platform == 'darwin':
       # Need libc++ and compiler-rt for the bootstrap compiler on mac.
@@ -448,7 +461,6 @@ def main():
           "-DCOMPILER_RT_BUILD_BUILTINS=ON",
           "-DCOMPILER_RT_BUILD_CRT=OFF",
           "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
-          "-DCOMPILER_RT_BUILD_PROFILE=OFF",
           "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
           "-DCOMPILER_RT_BUILD_XRAY=OFF",
           "-DCOMPILER_RT_ENABLE_IOS=OFF",
@@ -477,7 +489,74 @@ def main():
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
 
-    print('Bootstrap compiler installed; building final compiler.')
+    print('Bootstrap compiler installed.')
+
+  if args.pgo:
+    print('Building instrumented compiler')
+    if os.path.exists(LLVM_INSTRUMENTED_DIR):
+      RmTree(LLVM_INSTRUMENTED_DIR)
+    EnsureDirExists(LLVM_INSTRUMENTED_DIR)
+    os.chdir(LLVM_INSTRUMENTED_DIR)
+
+    projects = 'clang'
+    if sys.platform == 'darwin':
+      projects += ';libcxx;compiler-rt'
+
+    instrument_args = base_cmake_args + [
+        '-DLLVM_ENABLE_THREADS=OFF',
+        '-DLLVM_ENABLE_PROJECTS=' + projects,
+        '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
+        '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        # Build with the bootstrap compiler.
+        '-DCMAKE_C_COMPILER=' + cc,
+        '-DCMAKE_CXX_COMPILER=' + cxx,
+        # Build with instrumentation.
+        '-DLLVM_BUILD_INSTRUMENTED=IR',
+        ]
+
+    if sys.platform.startswith('linux'):
+      # Ubuntu 16's ld doesn't generate __start__ section, so link with lld.
+      instrument_args.append('-DLLVM_ENABLE_LLD=ON')
+
+    RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
+               msvc_arch='x64')
+    RunCommand(['ninja'], msvc_arch='x64')
+    print('Instrumented compiler built.')
+
+    # Train by building some C++ code.
+    #
+    # pgo_training-1.ii is a preprocessed (on Linux) version of
+    # src/third_party/blink/renderer/core/layout/layout_object.cc, selected
+    # because it's a large translation unit in Blink, which is normally the
+    # slowest part of Chromium to compile. Using this, we get ~20% shorter
+    # build times for Linux, Android, and Mac, which is also what we got when
+    # training by actually building a target in Chromium. (For comparison, a
+    # C++-y "Hello World" program only resulted in 14% faster builds.)
+    # See https://crbug.com/966403#c16 for all numbers.
+    #
+    # TODO(hans): Enhance the training, perhaps by including preprocessed code
+    # from more platforms, and by doing some linking so that lld can benefit
+    # from PGO as well. Perhaps the training could be done asynchronously by
+    # dedicated buildbots that upload profiles to the cloud.
+    training_source = 'pgo_training-1.ii'
+    with open(training_source, 'w') as f:
+      DownloadUrl(CDS_URL + '/' + training_source, f)
+    train_cmd = [os.path.join(LLVM_INSTRUMENTED_DIR, 'bin', 'clang++'),
+                '-target', 'x86_64-unknown-unknown', '-O2', '-g', '-std=c++14',
+                 '-fno-exceptions', '-fno-rtti', '-w', '-c', training_source]
+    if sys.platform == 'darwin':
+      train_cmd.extend(['-stdlib=libc++', '-isysroot',
+                        subprocess.check_output(['xcrun',
+                                                 '--show-sdk-path']).rstrip()])
+    RunCommand(train_cmd, msvc_arch='x64')
+
+    # Merge profiles.
+    profdata = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'llvm-profdata')
+    RunCommand([profdata, 'merge', '-output=' + LLVM_PROFDATA_FILE] +
+                glob.glob(os.path.join(LLVM_INSTRUMENTED_DIR, 'profiles',
+                                       '*.profraw')), msvc_arch='x64')
+    print('Profile generated.')
+
 
 
   compiler_rt_args = [
@@ -539,6 +618,7 @@ def main():
 
   # Build lld and code coverage tools. This is done separately from the rest of
   # the build because these tools require threading support.
+  print('Building thread-enabled tools.')
   tools_with_threading = [ 'dsymutil', 'lld', 'llvm-cov', 'llvm-profdata' ]
   print('Building the following tools with threading support: %s' %
         str(tools_with_threading))
@@ -580,6 +660,8 @@ def main():
              msvc_arch='x64', env=deployment_env)
   RunCommand(['ninja'] + tools_with_threading, msvc_arch='x64')
 
+  print('Building final compiler.')
+
   default_tools = ['plugins', 'blink_gc_plugin', 'translation_unit']
   chrome_tools = list(set(default_tools + args.extra_tools))
   if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
@@ -594,6 +676,8 @@ def main():
       '-DCMAKE_INSTALL_PREFIX=' + LLVM_BUILD_DIR,
       '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(CHROMIUM_DIR, 'tools', 'clang'),
       '-DCHROMIUM_TOOLS=%s' % ';'.join(chrome_tools)]
+  if args.pgo:
+    cmake_args.append('-DLLVM_PROFDATA_FILE=' + LLVM_PROFDATA_FILE)
   if sys.platform == 'darwin':
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']

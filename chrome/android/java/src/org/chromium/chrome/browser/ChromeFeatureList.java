@@ -300,6 +300,7 @@ public abstract class ChromeFeatureList {
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
+    public static final String REORDER_BOOKMARKS = "ReorderBookmarks";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SEARCH_READY_OMNIBOX = "SearchReadyOmnibox";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";

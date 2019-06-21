@@ -111,6 +111,12 @@ class FileManagerUI {
         new cr.filebrowser.InstallLinuxPackageDialog(this.element);
 
     /**
+     * Dialog for formatting
+     * @const {!HTMLElement}
+     */
+    this.formatDialog = queryRequiredElement('#format-dialog');
+
+    /**
      * The container element of the dialog.
      * @type {!HTMLElement}
      */

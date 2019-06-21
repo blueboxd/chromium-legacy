@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Εναλλαγή σύνδεσης δικτύου. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Κύλιση δεξιά</translation>
 <translation id="1812997170047690955">Τι υπάρχει στην οθόνη μου;</translation>
+<translation id="1820355135508821526">Η λειτουργία <ph name="FEATURE_NAME" /> έχει απενεργοποιηθεί από μια πολιτική που εφαρμόστηκε σε αυτήν τη συσκευή. Επικοινωνήστε με τον διαχειριστή σας για να αιτηθείτε αλλαγές.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Βοηθός (φόρτωση…)</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Επανεκκίνηση για ενημέρωση</translation>
 <translation id="2597972630681408282">Νυχτερινός φωτισμός: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Η κάρτα SIM είναι κλειδωμένη</translation>
+<translation id="2651765386227849097">Ο Βοηθός Google έχει απενεργοποιηθεί σε αυτήν τη συσκευή.</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2658778018866295321">Κάντε κλικ και σύρετε</translation>
 <translation id="2700493154570097719">Ρύθμιση του πληκτρολογίου σας</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Η μπαταρία είναι πλήρης.</translation>
 <translation id="490375751687810070">Κατακόρυφη περιστροφή</translation>
 <translation id="4905614135390995787">Η συντόμευση για την εναλλαγή της Λειτουργίας υψηλής αντίθεσης άλλαξε. Χρησιμοποιήστε τη συντόμευση <ph name="NEW_SHORTCUT" /> αντί για τη συντόμευση <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Μπαταρία <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Ισχυρό</translation>
 <translation id="4918086044614829423">Αποδοχή</translation>
 <translation id="4924411785043111640">Επανεκκίνηση και επαναφορά</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Υποδοχή μικροφώνου</translation>
 <translation id="5669267381087807207">Ενεργοποίηση</translation>
 <translation id="5673434351075758678">Από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεων.</translation>
+<translation id="5682642926269496722">Ο Βοηθός Google δεν είναι διαθέσιμος για τον τρέχοντα λογαριασμό χρήστη.</translation>
 <translation id="5691772641933328258">Δεν είναι δυνατή η αναγνώριση του δακτυλικού αποτυπώματος</translation>
 <translation id="5710450975648804523">Η λειτουργία "Μην ενοχλείτε" είναι ενεργή</translation>
 <translation id="574392208103952083">Μέτριο</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Λυπούμαστε, δεν ήταν δυνατή η επαλήθευση του κωδικού πρόσβασης. Δοκιμάστε ξανά.</translation>
 <translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως "<ph name="NAME" />" με διεύθυνση <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Φόρτιση <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Ο Βοηθός Google δεν είναι διαθέσιμος σε περιόδους σύνδεσης επισκέπτη.</translation>
 <translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
 <translation id="6164005077879661055">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με το χρήστη υπό επίβλεψη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης υπό επίβλεψη. Οι ιστοσελίδες που έχει επισκεφτεί και οι ρυθμίσεις που έχει επιλέξει ενδεχομένως να εξακολουθούν να εμφανίζονται στο διαχειριστή στη διεύθυνση <ph name="MANAGEMENT_URL" /> .</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6715542151869432661">Δεν βρέθηκαν κινητές συσκευές.</translation>
 <translation id="6723839937902243910">Ενεργοποίηση</translation>
+<translation id="6727969043791803658">Συνδεδεμένη, μπαταρία <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="6751826523481687655">Η παρακολούθηση απόδοσης έχει ενεργοποιηθεί</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
 <translation id="6803622936009808957">Δεν ήταν δυνατός ο αντικατοπτρισμός των οθονών καθώς δεν βρέθηκαν υποστηριζόμενες αναλύσεις. Έχει ενεργοποιηθεί εναλλακτικά η εκτεταμένη επιφάνεια εργασίας.</translation>

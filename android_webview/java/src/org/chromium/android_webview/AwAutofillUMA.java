@@ -6,8 +6,8 @@ package org.chromium.android_webview;
 
 import android.content.Context;
 
+import org.chromium.autofill.mojom.SubmissionSource;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.components.autofill.SubmissionSource;
 
 import java.util.concurrent.TimeUnit;
 

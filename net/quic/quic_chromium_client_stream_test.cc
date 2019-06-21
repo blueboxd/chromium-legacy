@@ -161,8 +161,8 @@ class QuicChromiumClientStreamTest
       public WithScopedTaskEnvironment {
  public:
   QuicChromiumClientStreamTest()
-      : crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
-                       quic::TlsClientHandshaker::CreateSslCtx()),
+      : crypto_config_(
+            quic::test::crypto_test_utils::ProofVerifierForTesting()),
         session_(new quic::test::MockQuicConnection(
                      &helper_,
                      &alarm_factory_,

@@ -11,11 +11,12 @@ import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,65 +36,71 @@ class TabSelectionEditorCoordinator {
         void show();
 
         /**
-         * Hides the TabSelectionEditor.
+         * @return Whether or not the TabSelectionEditor consumed the event.
          */
-        void hide();
-
-        /**
-         * @return Whether the TabSelectionEditor is visible.
-         */
-        boolean isEditorVisible();
+        boolean handleBackPressed();
     }
 
     private final Context mContext;
     private final View mParentView;
     private final TabModelSelector mTabModelSelector;
-
     private final TabSelectionEditorLayout mTabSelectionEditorLayout;
+    private final TabListCoordinator mTabListCoordinator;
+    private final SelectionDelegate<Integer> mSelectionDelegate = new SelectionDelegate<>();
+    private final PropertyModel mModel = new PropertyModel(TabSelectionEditorProperties.ALL_KEYS);
+    private final PropertyModelChangeProcessor mTabSelectionEditorLayoutChangeProcessor;
+    private final TabSelectionEditorMediator mTabSelectionEditorMediator;
 
     public TabSelectionEditorCoordinator(Context context, View parentView,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager) {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
+        mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
+                mTabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false,
+                null, null, null, this::getItemViewType, this::getSelectionDelegate, null, null,
+                false, R.layout.tab_list_recycler_view_layout, COMPONENT_NAME);
 
-        // TODO(meiliang): call mTabSelectionEditorLayout.initialize()
         mTabSelectionEditorLayout = LayoutInflater.from(context)
                 .inflate(R.layout.tab_selection_editor_layout, null)
                 .findViewById(R.id.selectable_list);
+        mTabSelectionEditorLayout.initialize(mParentView, mTabListCoordinator.getContainerView(),
+                mTabListCoordinator.getContainerView().getAdapter(), mSelectionDelegate);
+        mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
+
+        mTabSelectionEditorLayoutChangeProcessor = PropertyModelChangeProcessor.create(
+                mModel, mTabSelectionEditorLayout, TabSelectionEditorLayoutBinder::bind);
+
+        mTabSelectionEditorMediator = new TabSelectionEditorMediator(
+                mContext, mTabModelSelector, this::resetWithListOfTabs, mModel, mSelectionDelegate);
     }
 
-    private void resetWithListOfTabs(@Nullable List<Tab> tab) {
-        // TODO(meiliang): reset TabListCoordinator and TabSelectionEditorMediator
+    /**
+     * @return The {@link SelectionDelegate} that is used in this component.
+     */
+    SelectionDelegate<Integer> getSelectionDelegate() {
+        return mSelectionDelegate;
     }
 
+    /**
+     * Gets the view type for each item in the list.
+     */
+    int getItemViewType(PropertyModel item) {
+        return TabGridViewHolder.TabGridViewItemType.SELECTABLE_TAB;
+    }
+
+    /**
+     * Resets {@link TabListCoordinator} with the provided list.
+     * @param tabs List of {@link Tab}s to reset.
+     */
+    void resetWithListOfTabs(@Nullable List<Tab> tabs) {
+        mTabListCoordinator.resetWithListOfTabs(tabs);
+    }
+
+    /**
+     * @return {@link TabSelectionEditorController} that can control the TabSelectionEditor.
+     */
     TabSelectionEditorController getController() {
-        // TODO(meiliang): move this to TabSelectionEditorMediator.
-        return new TabSelectionEditorController() {
-            @Override
-            public void show() {
-                List<Tab> tabs = new ArrayList<>();
-                TabModelFilter tabModelFilter =
-                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-                for (int i = 0; i < tabModelFilter.getCount(); i++) {
-                    Tab tab = tabModelFilter.getTabAt(i);
-                    if (tabModelFilter.getRelatedTabList(tab.getId()).size() == 1) {
-                        tabs.add(tab);
-                    }
-                }
-                resetWithListOfTabs(tabs);
-            }
-
-            @Override
-            public void hide() {
-                resetWithListOfTabs(null);
-            }
-
-            @Override
-            public boolean isEditorVisible() {
-                // TODO(meiliang): get visibility from PropertyModel
-                return false;
-            }
-        };
+        return mTabSelectionEditorMediator;
     }
 }

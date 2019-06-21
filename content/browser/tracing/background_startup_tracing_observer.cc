@@ -25,8 +25,9 @@ class PreferenceManagerImpl
   }
 
   bool GetBackgroundStartupTracingEnabled() const override {
-    return tracing::TraceStartupConfig::GetInstance()
-        ->GetBackgroundStartupTracingEnabled();
+    return tracing::TraceStartupConfig::GetInstance()->IsEnabled() &&
+           tracing::TraceStartupConfig::GetInstance()->GetSessionOwner() ==
+               tracing::TraceStartupConfig::SessionOwner::kBackgroundTracing;
   }
 };
 

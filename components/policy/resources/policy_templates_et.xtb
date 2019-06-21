@@ -2549,6 +2549,10 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Pange tähele, et me ei soovita seda teha, kuna see võib lubada möödumise laiendist nameConstraints, mis piirab hostinimesid, millele antud sertifikaadil võib olla volitus juurde pääseda.
 
       Kui see reegel on määramata või määratud väärtusele Väär, ei usaldata serveri sertifikaate, millel pole laiendit subjectAlternativeName koos DNS-i nime või IP-aadressiga.</translation>
+<translation id="5578571772998293651">Lubatakse kasutaja tagasiside.
+        Kui reegel on seatud väärtusele Väär, ei saa kasutajad Google'ile tagasisidet saata.
+
+        Kui reegel on määramata või seatud väärtusele Tõene, saavad kasutajad Google'ile tagasisidet saata valikutega Menüü -&gt; Abi -&gt; Probleemist teavitamine või klahvikombinatsiooniga.</translation>
 <translation id="5581292529942108810">Võimaldab seadistada Chrome'i aruandluse laiendusega seotud reeglid.
 
       Reegel kehtib ainult juhul, kui <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
@@ -3945,6 +3949,7 @@ Vaadake ka reegleid „CookiesAllowedForUrls” ja „CookiesSessionOnlyForUrls�
       Kui seda reeglit ei määrata, siis ei ole reegli „URLBlacklist” mustas loendis erandeid.</translation>
 <translation id="8176035528522326671">Luba ettevõtte kasutajal olla ainult peamine mitme profiiliga kasutaja (vaikekäitumine ettevõtte hallatud kasutajate puhul)</translation>
 <translation id="8183108371184777472">Brauseriakna käivitamise blokeerimine</translation>
+<translation id="8186911565834244165">Kasutaja tagasiside lubamine</translation>
 <translation id="8214600119442850823">Seadistatakse paroolihaldur.</translation>
 <translation id="8217516105848565518">Selle reegli tugi on katkestatud. Kasutage selle asemel reeglit RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">TLS-is RC4 šifreerimiskomplektide lubamine</translation>
@@ -4388,6 +4393,12 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.
 
           Reegliga registreeritud protokollitöötlejad liidetakse kasutaja registreeritud töötlejatega ja mõlemad on kasutamiseks saadaval. Kasutajad saavad alistada reegliga installitud protokollitöötlejad, kui installivad uue vaiketöötleja, kuid nad ei saa eemaldada reegliga registreeritud protokollitöötlejat.</translation>
+<translation id="91196902572559194">Reegel annab Google'i assistendile loa kuulata häälega aktiveerimise fraasi.
+
+      Kui reegel on lubatud, kuulab Google'i assistent häälega aktiveerimise fraasi.
+      Kui reegel on keelatud, ei kuula Google'i assistent häälega aktiveerimise fraasi.
+      Kui reegel on määramata, saavad kasutajad otsustada, kas lubada Google'i assistendil kuulata häälega aktiveerimise fraasi.
+      </translation>
 <translation id="9123211093995421438">Määrab teenuse <ph name="PRODUCT_OS_NAME" /> verstapostide miinimumarvu alates millal tahes välja lastud stabiilsest versioonist, mille puhul on tagasiminek lubatud.
 
       Vaikeväärtus tarbija jaoks on 0, ettevõttes registreeritud seadmete puhul 4 (ligikaudu pool aastat).

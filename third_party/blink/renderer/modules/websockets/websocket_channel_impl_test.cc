@@ -53,8 +53,13 @@ class MockWebSocketChannelClient
 
   MOCK_METHOD2(DidConnect, void(const String&, const String&));
   MOCK_METHOD1(DidReceiveTextMessage, void(const String&));
-  void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override {
-    DidReceiveBinaryMessageMock(*payload);
+  void DidReceiveBinaryMessage(
+      const Vector<base::span<const char>>& data) override {
+    Vector<char> flatten;
+    for (const auto& span : data) {
+      flatten.Append(span.data(), static_cast<wtf_size_t>(span.size()));
+    }
+    DidReceiveBinaryMessageMock(flatten);
   }
   MOCK_METHOD1(DidReceiveBinaryMessageMock, void(const Vector<char>&));
   MOCK_METHOD0(DidError, void());

@@ -4,6 +4,7 @@
 
 import * as face from './face_utils.mjs';
 import * as reflection from './reflection.mjs';
+import { SwitchTrack } from './track.mjs';
 
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';

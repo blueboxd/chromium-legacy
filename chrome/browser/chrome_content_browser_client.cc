@@ -408,6 +408,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/speech/tts_chromeos.h"
@@ -4048,7 +4049,8 @@ void ChromeContentBrowserClient::RunServiceInstance(
   if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::printing::CupsProxyService>(
-            std::move(*receiver)));
+            std::move(*receiver),
+            std::make_unique<chromeos::CupsProxyServiceDelegateImpl>()));
     return;
   }
 

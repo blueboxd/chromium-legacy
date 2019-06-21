@@ -32,9 +32,17 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   // function will be called to create a TextureHolder object.
   SkiaTextureHolder(sk_sp<SkImage>,
                     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
+
   // This function consumes the mailbox in the input parameter and turn it into
   // a texture-backed SkImage.
-  explicit SkiaTextureHolder(const MailboxTextureHolder* texture_holder);
+  // |shared_image_texture_id| is an optional texture bound to the
+  // |texture_holder|'s mailbox and imported into its context. Note that if a
+  // texture is provided it must:
+  // 1) Be associated with a shared image mailbox.
+  // 2) Stay alive and have a read lock on the shared image until the
+  //    |MailboxRef| is destroyed.
+  SkiaTextureHolder(const MailboxTextureHolder* texture_holder,
+                    GLuint shared_image_texture_id);
 
  private:
   // The image_ should always be texture-backed.

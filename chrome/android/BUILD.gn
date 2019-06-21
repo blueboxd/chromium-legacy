@@ -1552,12 +1552,6 @@ static_library("browser_test_support") {
   ]
 }
 
-# Unwind tables are added to only official builds (public_apk(s)) so that
-# developer builds are not affected.
-_add_unwind_tables_in_chrome_32bit_apk =
-    is_android && !is_component_build && is_official_build &&
-    (target_cpu == "arm" || target_cpu == "arm64")
-
 # Defines a target that derives from the chrome public application. This
 # can be either an APK or an app bundle module. This supports both the
 # chrome_public_xxx targets (for Android J-K) and chrome_modern_public_xxx
@@ -1601,11 +1595,6 @@ template("chrome_public_apk_or_module_tmpl") {
     }
 
     shared_libraries = [ ":libchrome" ]
-    add_unwind_tables_in_apk =
-        _add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
-    if (add_unwind_tables_in_apk) {
-      shared_library_for_unwind_asset = "chrome"
-    }
 
     # Android supports webp transparent resources properly since API level 18,
     # so this can only be activated for modern ones (which target API >= 21).
@@ -1757,12 +1746,6 @@ template("monochrome_public_apk_or_module_tmpl") {
         "//android_webview:platform_service_bridge_upstream_implementation_java",
       ]
     }
-
-    _needs_arm32_lib = target_cpu == "arm" ||
-                       (target_cpu == "arm64" && build_apk_secondary_abi)
-    add_unwind_tables_in_apk =
-        _add_unwind_tables_in_chrome_32bit_apk && _needs_arm32_lib &&
-        (!defined(use_trichrome_library) || !use_trichrome_library)
   }
 }
 
@@ -1919,11 +1902,7 @@ template("chrome_test_apk_tmpl") {
 
     testonly = true
     target_type = "instrumentation_test_apk"
-    add_unwind_tables_in_apk =
-        _add_unwind_tables_in_chrome_32bit_apk && target_cpu == "arm"
-    if (add_unwind_tables_in_apk) {
-      shared_library_for_unwind_asset = "chromefortest"
-    }
+    shared_library_for_unwind_asset = "chromefortest"
 
     deps = _chrome_public_shared_deps + invoker.deps + [
              ":chrome_apk_pak_assets",
@@ -2095,6 +2074,29 @@ if (enable_arcore) {
     if (proguard_enabled && !enable_proguard_obfuscation) {
       proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
     }
+  }
+}
+
+# Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is deigned to
+# be runnable against uninstrumented Chrome apks.
+instrumentation_test_apk("chrome_smoke_test") {
+  apk_name = "ChromeSmokeTest"
+  apk_under_test = "//chrome/android:chrome_public_apk"
+  android_manifest =
+      "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest.xml"
+  testonly = true
+  java_files =
+      [ "javatests/src/org/chromium/chrome/test/smoke/ChromeSmokeTest.java" ]
+  deps = [
+    "//base:base_java_test_support",
+    "//chrome/test/android:chrome_java_test_pagecontroller",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/junit",
+  ]
+
+  if (!is_java_debug) {
+    proguard_enabled = true
+    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
   }
 }
 

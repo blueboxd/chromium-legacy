@@ -62,6 +62,8 @@ using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 namespace autofill {
 
+using mojom::SubmissionSource;
+
 namespace {
 
 const int METHOD_GET = 0;
@@ -1951,10 +1953,11 @@ TEST_P(AutofillUploadTest, RichMetadata) {
   FormStructure form_structure(form);
   form_structure.set_page_language("fr-ca");
 
-  for (int i = 0; i < 7; ++i) {
-    SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
+  for (int i = 0; i <= static_cast<int>(SubmissionSource::kMaxValue); ++i) {
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
+    SCOPED_TRACE(testing::Message()
+                 << "submission source = " << submission_source);
     form_structure.set_submission_source(submission_source);
     form_structure.set_randomized_encoder(
         RandomizedEncoder::Create(pref_service_.get()));
@@ -2022,10 +2025,11 @@ TEST_P(AutofillUploadTest, Throttling) {
 
   AutofillDownloadManager download_manager(driver_.get(), this);
   FormStructure form_structure(form);
-  for (int i = 0; i < 7; ++i) {
-    SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
+  for (int i = 0; i <= static_cast<int>(SubmissionSource::kMaxValue); ++i) {
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
+    SCOPED_TRACE(testing::Message()
+                 << "submission source = " << submission_source);
     form_structure.set_submission_source(submission_source);
 
     // The first attempt should succeed.
@@ -2083,10 +2087,11 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
   FormStructure form_structure(form);
   FormStructure small_form_structure(small_form);
 
-  for (int i = 0; i < 7; ++i) {
-    SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
+  for (int i = 0; i <= static_cast<int>(SubmissionSource::kMaxValue); ++i) {
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
+    SCOPED_TRACE(testing::Message()
+                 << "submission source = " << submission_source);
     form_structure.set_submission_source(submission_source);
     small_form_structure.set_submission_source(submission_source);
 

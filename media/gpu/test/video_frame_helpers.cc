@@ -249,7 +249,7 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
   // Create planes for layout. We cannot use WrapExternalData() because it
   // calls GetDefaultLayout() and it supports only a few pixel formats.
   base::Optional<VideoFrameLayout> layout =
-      CreateVideoFrameLayout(format, visible_size, 1u /* num_buffers */);
+      CreateVideoFrameLayout(format, visible_size);
   if (!layout) {
     LOG(ERROR) << "Failed to create VideoFrameLayout";
     return nullptr;
@@ -268,33 +268,19 @@ scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
 }
 
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
-                                                        const gfx::Size& size,
-                                                        bool single_buffer) {
+                                                        const gfx::Size& size) {
   const size_t num_planes = VideoFrame::NumPlanes(format);
-  const size_t num_buffers = single_buffer ? 1u : num_planes;
-  // If num_buffers = 1, all the planes are stored in the same buffer.
-  // If num_buffers = num_planes, each of plane is stored in a separate
-  // buffer and located in the beginning of the buffer.
-  std::vector<size_t> buffer_sizes(num_buffers);
+
   std::vector<VideoFrameLayout::Plane> planes(num_planes);
   const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = strides[i];
-    if (num_buffers == 1) {
-      planes[i].offset = offset;
-      offset += VideoFrame::PlaneSize(format, i, size).GetArea();
-    } else {
-      planes[i].offset = 0;
-      buffer_sizes[i] = VideoFrame::PlaneSize(format, i, size).GetArea();
-    }
+    planes[i].offset = offset;
+    planes[i].size = VideoFrame::PlaneSize(format, i, size).GetArea();
+    offset += planes[i].size;
   }
-
-  if (num_buffers == 1)
-    buffer_sizes[0] = VideoFrame::AllocationSize(format, size);
-
-  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes),
-                                            std::move(buffer_sizes));
+  return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes));
 }
 
 }  // namespace test

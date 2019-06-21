@@ -392,17 +392,18 @@ void MHTMLArchive::GenerateMHTMLPart(const String& boundary,
     // fetch it all.
     const SharedBuffer::DeprecatedFlatData flat_data(resource.data);
     const char* data = flat_data.Data();
-    size_t data_length = flat_data.size();
+    wtf_size_t data_length = SafeCast<wtf_size_t>(flat_data.size());
     Vector<char> encoded_data;
     if (!strcmp(content_encoding, kQuotedPrintable)) {
-      QuotedPrintableEncode(data, SafeCast<wtf_size_t>(data_length),
-                            false /* is_header */, encoded_data);
+      QuotedPrintableEncode(data, data_length, false /* is_header */,
+                            encoded_data);
       output_buffer.Append(encoded_data.data(), encoded_data.size());
     } else {
       DCHECK(!strcmp(content_encoding, kBase64));
       // We are not specifying insertLFs = true below as it would cut the lines
       // with LFs and MHTML requires CRLFs.
-      Base64Encode(data, SafeCast<wtf_size_t>(data_length), encoded_data);
+      Base64Encode(base::as_bytes(base::make_span(data, data_length)),
+                   encoded_data);
       wtf_size_t index = 0;
       wtf_size_t encoded_data_length = encoded_data.size();
       do {

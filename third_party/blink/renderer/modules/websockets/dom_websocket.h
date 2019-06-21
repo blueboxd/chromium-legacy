@@ -134,7 +134,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // WebSocketChannelClient functions.
   void DidConnect(const String& subprotocol, const String& extensions) override;
   void DidReceiveTextMessage(const String& message) override;
-  void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
+  void DidReceiveBinaryMessage(
+      const Vector<base::span<const char>>& data) override;
   void DidError() override;
   void DidConsumeBufferedAmount(uint64_t) override;
   void DidStartClosingHandshake() override;

@@ -197,6 +197,13 @@ class LayerTreeViewFactory {
   std::unique_ptr<content::LayerTreeView> layer_tree_view_;
 };
 
+struct InjectedScrollGestureData {
+  WebFloatSize delta;
+  ScrollGranularity granularity;
+  CompositorElementId scrollable_area_element_id;
+  WebInputEvent::Type type;
+};
+
 class TestWebWidgetClient : public WebWidgetClient {
  public:
   // If no delegate is given, a stub is used.
@@ -240,19 +247,20 @@ class TestWebWidgetClient : public WebWidgetClient {
   int FinishedLoadingLayoutCount() const {
     return finished_loading_layout_count_;
   }
-  int InjectedGestureScrollCount() const {
-    return injected_gesture_scroll_update_count_;
+  const Vector<InjectedScrollGestureData>& GetInjectedScrollGestureData()
+      const {
+    return injected_scroll_gesture_data_;
   }
 
  private:
   content::LayerTreeView* layer_tree_view_ = nullptr;
   cc::AnimationHost* animation_host_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;
+  Vector<InjectedScrollGestureData> injected_scroll_gesture_data_;
   bool animation_scheduled_ = false;
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;
-  int injected_gesture_scroll_update_count_ = 0;
 };
 
 class TestWebViewClient : public WebViewClient {

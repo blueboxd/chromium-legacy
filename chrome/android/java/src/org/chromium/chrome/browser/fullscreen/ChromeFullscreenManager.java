@@ -18,6 +18,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
+import org.chromium.base.Supplier;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.task.PostTask;
@@ -28,7 +29,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
 import org.chromium.chrome.browser.tab.TabAttributes;
-import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -64,6 +64,7 @@ public class ChromeFullscreenManager extends FullscreenManager
     @ControlsPosition private final int mControlsPosition;
     private final boolean mExitFullscreenOnStop;
     private final TokenHolder mHidingTokenHolder = new TokenHolder(this::scheduleVisibilityUpdate);
+    private final Supplier<BrowserControlsOffsetHelper> mControlsOffsetHelper;
 
     private TabModelSelectorTabObserver mTabFullscreenObserver;
     @Nullable private ControlContainer mControlContainer;
@@ -160,25 +161,31 @@ public class ChromeFullscreenManager extends FullscreenManager
     /**
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
+     * @param controlsOffsetHelper Supplies {@link BrowserControlsOffsetHelper}.
      * @param controlsPosition Where the browser controls are.
      */
-    public ChromeFullscreenManager(Activity activity, @ControlsPosition int controlsPosition) {
-        this(activity, controlsPosition, true);
+    public ChromeFullscreenManager(Activity activity,
+            Supplier<BrowserControlsOffsetHelper> controlsOffsetHelper,
+            @ControlsPosition int controlsPosition) {
+        this(activity, controlsOffsetHelper, controlsPosition, true);
     }
 
     /**
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
+     * @param controlsOffsetHelper Supplies {@link BrowserControlsOffsetHelper}.
      * @param controlsPosition Where the browser controls are.
      * @param exitFullscreenOnStop Whether fullscreen mode should exit on stop - should be
      *                             true for Activities that are not always fullscreen.
      */
-    public ChromeFullscreenManager(Activity activity, @ControlsPosition int controlsPosition,
-            boolean exitFullscreenOnStop) {
+    public ChromeFullscreenManager(Activity activity,
+            Supplier<BrowserControlsOffsetHelper> controlsOffsetHelper,
+            @ControlsPosition int controlsPosition, boolean exitFullscreenOnStop) {
         super(activity.getWindow());
 
         mActivity = activity;
         mControlsPosition = controlsPosition;
+        mControlsOffsetHelper = controlsOffsetHelper;
         mExitFullscreenOnStop = exitFullscreenOnStop;
         mBrowserVisibilityDelegate =
                 new BrowserStateBrowserControlsVisibilityDelegate(new Runnable() {
@@ -694,9 +701,7 @@ public class ChromeFullscreenManager extends FullscreenManager
         Tab tab = getTab();
         if (tab != null) {
             if (tab.isInitialized()) {
-                if (TabBrowserControlsOffsetHelper.from(tab).isControlsOffsetOverridden()) {
-                    return true;
-                }
+                if (mControlsOffsetHelper.get().offsetOverridden()) return true;
             } else {
                 assert false : "Accessing a destroyed tab, setTab should have been called";
             }

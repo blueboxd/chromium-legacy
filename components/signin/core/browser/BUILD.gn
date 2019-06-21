@@ -124,7 +124,13 @@ static_library("internals") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/components/account_manager" ]
+    deps += [
+      "//chromeos/components/account_manager",
+
+      # TODO(crbug.com/816954): Remove this line when Account Manager is
+      # launched.
+      "//chromeos/constants",
+    ]
   }
 }
 

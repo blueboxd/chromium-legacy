@@ -129,8 +129,8 @@ class QuicProxyClientSocketTest
             quic::QuicUtils::StreamIdDelta(version_.transport_version)),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         mock_quic_data_(version_),
-        crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
-                       quic::TlsClientHandshaker::CreateSslCtx()),
+        crypto_config_(
+            quic::test::crypto_test_utils::ProofVerifierForTesting()),
         connection_id_(quic::test::TestConnectionId(2)),
         client_maker_(version_,
                       connection_id_,

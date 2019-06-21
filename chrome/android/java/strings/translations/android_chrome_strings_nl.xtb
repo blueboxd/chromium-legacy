@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1272444412400969138">Apparaatkiezer om een tabblad te delen.</translation>
 <translation id="1283039547216852943">Tik om uit te vouwen</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="1291207594882862231">Geschiedenis, cookies, sitegegevens, cachegeheugen wissen</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">Ontwikkelaarstools</translation>
 <translation id="1692118695553449118">Synchronisatie is ingeschakeld</translation>
 <translation id="169515064810179024">Sites geen toegang tot bewegingssensoren geven</translation>
+<translation id="1697480839793160072">Telefoons</translation>
+<translation id="1698058317516161971">E-mailadressen</translation>
 <translation id="1717218214683051432">Bewegingssensoren</translation>
 <translation id="1718835860248848330">Afgelopen uur</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Geüpdatet <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">Cookies voor een specifieke site toestaan.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
 <translation id="4042870126885713738">Suggesties weergeven wanneer een webadres onjuist is of er geen verbinding kan worden gemaakt</translation>
-<translation id="4044912625106523635">Apparaatkiezer om een tabblad te delen is met volledige hoogte geopend.</translation>
 <translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4048707525896921369">Meer informatie over onderwerpen op websites zonder dat je de pagina hoeft te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
 
@@ -747,7 +747,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="641643625718530986">Afdrukken…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB gedownload</translation>
-<translation id="6418750371676080905">Apparaatkiezer om een tabblad te delen is gesloten.</translation>
 <translation id="6427112570124116297">Laat webpagina's vertalen</translation>
 <translation id="6433501201775827830">Je zoekmachine kiezen</translation>
 <translation id="6437478888915024427">Pagina-informatie</translation>
@@ -787,7 +786,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="666268767214822976">Een voorspellingsservice gebruiken om gerelateerde zoekopdrachten en populaire websites te tonen terwijl je in de adresbalk typt</translation>
 <translation id="666731172850799929">Openen in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Privacybeleid van Chrome</translation>
-<translation id="6672986458216094438">Apparaatkiezer om een tabblad te delen is met halve hoogte geopend.</translation>
 <translation id="6697492270171225480">Suggesties voor vergelijkbare pagina's weergeven wanneer een pagina niet wordt gevonden</translation>
 <translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>

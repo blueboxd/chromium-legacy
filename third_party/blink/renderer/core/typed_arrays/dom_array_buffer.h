@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_H_
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -31,6 +33,7 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     return Create(WTF::ArrayBuffer::Create(contents));
   }
   static DOMArrayBuffer* Create(scoped_refptr<SharedBuffer>);
+  static DOMArrayBuffer* Create(const Vector<base::span<const char>>&);
 
   // Only for use by XMLHttpRequest::responseArrayBuffer and
   // Internals::serializeObject.

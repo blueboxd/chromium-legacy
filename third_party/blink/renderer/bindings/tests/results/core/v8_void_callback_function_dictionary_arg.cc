@@ -123,14 +123,4 @@ void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(bindings::V8V
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg) {
-  return Proxy()->Invoke(
-      callback_this_value, arg);
-}
-
-void V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const TestDictionary*& arg) {
-  Proxy()->InvokeAndReportException(
-      callback_this_value, arg);
-}
-
 }  // namespace blink

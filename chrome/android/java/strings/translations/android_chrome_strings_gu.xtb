@@ -44,7 +44,6 @@
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1264974993859112054">રમત-ગમત</translation>
 <translation id="1272079795634619415">રોકો</translation>
-<translation id="1272444412400969138">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર.</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
@@ -101,6 +100,8 @@
 <translation id="1679068421605151609">વિકાસકર્તા સાધનો</translation>
 <translation id="1692118695553449118">સમન્વયન ચાલુ છે</translation>
 <translation id="169515064810179024">સાઇટને મોશન સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
+<translation id="1697480839793160072">ટેલિફોન</translation>
+<translation id="1698058317516161971">ઇમેઇલ</translation>
 <translation id="1717218214683051432">મોશન સેન્સર</translation>
 <translation id="1718835860248848330">છેલ્લા એક કલાક</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> અપડેટ કર્યું</translation>
@@ -403,7 +404,6 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# કલાક}one{# કલાક}other{# કલાક}}</translation>
 <translation id="4042870126885713738">જ્યારે વેબ ઍડ્રેસ ન ઉકેલાય અથવા કનેક્શન કરી શકાતું ન હોય ત્યારે સૂચનો દર્શાવો</translation>
-<translation id="4044912625106523635">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર સંપૂર્ણ ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4048707525896921369">પેજ છોડ્યાં વગર વેબસાઇટ પરના મુદ્દાઓ વિશે જાણો. શોધને ટૅપ કરવાથી એક શબ્દ અને તેની આસપાસનો સંદર્ભ Google શોધને મોકલે છે, જે વ્યાખ્યાઓ, ફોટોો, શોધ પરિણામો અને અન્ય વિગતો પરત કરે છે.
 
@@ -747,7 +747,6 @@
 <translation id="6406506848690869874">સમન્વયન</translation>
 <translation id="641643625718530986">પ્રિન્ટ…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ડાઉનલોડ કર્યા</translation>
-<translation id="6418750371676080905">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર બંધ છે.</translation>
 <translation id="6427112570124116297">વેબનો અનુવાદ કરો</translation>
 <translation id="6433501201775827830">તમારું શોધ એંજિન પસંદ કરો</translation>
 <translation id="6437478888915024427">પેજ વિશે માહિતી</translation>
@@ -787,7 +786,6 @@
 <translation id="666268767214822976">સરનામાં બારમાં લખતાંની સાથે સંબંધિત ક્વેરીઝ અને લોકપ્રિય વેબસાઇટ્સ દર્શાવવા માટે પૂર્વાનુમાન સેવાનો ઉપયોગ કરો.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>
-<translation id="6672986458216094438">જેની સાથે ટૅબ શેર કરવું છે તે ડિવાઇસ પિકર અડધી ઊંચાઈએ ખૂલે છે.</translation>
 <translation id="6697492270171225480">જ્યારે કોઈ પેજ ન મળે ત્યારે તેના જેવા પેજ માટે સૂચનો બતાવો</translation>
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>

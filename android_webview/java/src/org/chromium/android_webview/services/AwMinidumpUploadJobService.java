@@ -15,13 +15,6 @@ import org.chromium.components.minidump_uploader.MinidumpUploaderImpl;
 // OBS: This class needs to be public to be started from android.app.ActivityThread.
 public class AwMinidumpUploadJobService extends MinidumpUploadJobService {
     @Override
-    @SuppressWarnings("NoContextGetApplicationContext")
-    public void onCreate() {
-        super.onCreate();
-        ServiceInit.init(getApplicationContext());
-    }
-
-    @Override
     protected MinidumpUploader createMinidumpUploader(PersistableBundle unusedExtras) {
         return new MinidumpUploaderImpl(new AwMinidumpUploaderDelegate());
     }

@@ -12,14 +12,14 @@
           "reason": "background"
         },
         {
-          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
+          "object": "NGPhysicalTextFragment 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [108, 116, 424, 19],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'Tests that the entire viewport is painted with a floated html element.'",
+          "object": "NGPhysicalTextFragment 'Tests that the entire viewport is painted with a floated html element.'",
           "rect": [8, 16, 424, 19],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

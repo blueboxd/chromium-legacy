@@ -68,7 +68,7 @@ SiteDataCacheFactory::CreateForTesting(
 // static
 void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
     SiteDataCacheFactory* factory,
-    const content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
 
@@ -86,7 +86,7 @@ void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
 // static
 void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
     SiteDataCacheFactory* factory,
-    const content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(factory);
   // See OnBrowserContextCreatedOnUIThread for why it's safe to use a raw

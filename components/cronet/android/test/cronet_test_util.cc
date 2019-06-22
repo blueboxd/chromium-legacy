@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cronet/android/cronet_tests_jni_headers/CronetTestUtil_jni.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
-#include "jni/CronetTestUtil_jni.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 

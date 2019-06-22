@@ -126,11 +126,11 @@ MediaNotificationView::MediaNotificationView(
 
   header_row->SetAppName(default_app_name_);
   header_row->ClearAppIcon();
-  header_row->SetProperty(views::kMarginsKey,
-                          new gfx::Insets(kMediaNotificationHeaderTopInset,
-                                          kMediaNotificationHeaderInset,
-                                          kMediaNotificationHeaderInset,
-                                          kMediaNotificationHeaderRightInset));
+  header_row->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets(kMediaNotificationHeaderTopInset,
+                  kMediaNotificationHeaderInset, kMediaNotificationHeaderInset,
+                  kMediaNotificationHeaderRightInset));
   header_row_ = AddChildView(std::move(header_row));
 
   // |main_row_| holds the main content of the notification.

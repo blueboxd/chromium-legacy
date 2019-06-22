@@ -36,7 +36,7 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
   explicit GeneratedIconImageSource(base::char16 letter,
                                     SkColor color,
                                     int output_size)
-      : gfx::CanvasImageSource(gfx::Size(output_size, output_size), false),
+      : gfx::CanvasImageSource(gfx::Size(output_size, output_size)),
         letter_(letter),
         color_(color),
         output_size_(output_size) {}

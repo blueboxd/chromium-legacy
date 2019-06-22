@@ -2710,15 +2710,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // DisplayItemClient and LayoutObject's other fields.
   PaintInvalidationReason full_paint_invalidation_reason_;
 
-  scoped_refptr<const ComputedStyle> style_;
-
-  // Oilpan: This untraced pointer to the owning Node is considered safe.
-  UntracedMember<Node> node_;
-
-  LayoutObject* parent_;
-  LayoutObject* previous_;
-  LayoutObject* next_;
-
 #if DCHECK_IS_ON()
   unsigned has_ax_object_ : 1;
   unsigned set_needs_layout_forbidden_ : 1;
@@ -3202,6 +3193,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
  private:
   friend class LineLayoutItem;
+
+  scoped_refptr<const ComputedStyle> style_;
+
+  // Oilpan: This untraced pointer to the owning Node is considered safe.
+  UntracedMember<Node> node_;
+
+  LayoutObject* parent_;
+  LayoutObject* previous_;
+  LayoutObject* next_;
 
   // Store state between styleWillChange and styleDidChange
   static bool affects_parent_block_;

@@ -365,10 +365,6 @@ DownloadRequestLimiter* TestingBrowserProcess::download_request_limiter() {
   return download_request_limiter_.get();
 }
 
-net_log::ChromeNetLog* TestingBrowserProcess::net_log() {
-  return nullptr;
-}
-
 component_updater::ComponentUpdateService*
 TestingBrowserProcess::component_updater() {
   return nullptr;

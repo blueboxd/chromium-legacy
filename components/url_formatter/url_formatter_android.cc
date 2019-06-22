@@ -6,10 +6,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "components/url_formatter/android/jni_headers/UrlFormatter_jni.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
-#include "jni/UrlFormatter_jni.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;

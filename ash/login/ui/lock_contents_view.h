@@ -199,6 +199,11 @@ class ASH_EXPORT LockContentsView
 
   void ShowAuthErrorMessageForDebug(int unlock_attempt);
 
+  // Called by LockScreenMediaControlsView.
+  void CreateMediaControlsLayout();
+  void HideMediaControlsLayout();
+  bool AreMediaControlsEnabled() const;
+
  private:
   class UserState {
    public:
@@ -355,7 +360,7 @@ class ASH_EXPORT LockContentsView
   ScrollableUsersListView* users_list_ = nullptr;
 
   // View for media controls that appear on the lock screen if user enabled.
-  LockScreenMediaControlsView* media_controls_view_ = nullptr;
+  std::unique_ptr<LockScreenMediaControlsView> media_controls_view_;
 
   // View that contains the note action button and the system info labels,
   // placed on the top right corner of the screen without affecting layout of

@@ -260,11 +260,11 @@ AwBrowserContext::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_.get();
 }
 
-base::FilePath AwBrowserContext::GetPath() const {
+base::FilePath AwBrowserContext::GetPath() {
   return context_storage_path_;
 }
 
-bool AwBrowserContext::IsOffTheRecord() const {
+bool AwBrowserContext::IsOffTheRecord() {
   // Android WebView does not support off the record profile yet.
   return false;
 }

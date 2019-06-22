@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/android/jni_string.h"
-#include "jni/MidiDeviceAndroid_jni.h"
+#include "media/midi/midi_jni_headers/MidiDeviceAndroid_jni.h"
 #include "media/midi/midi_output_port_android.h"
 
 using base::android::JavaRef;

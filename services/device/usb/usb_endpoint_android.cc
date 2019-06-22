@@ -4,7 +4,7 @@
 
 #include "services/device/usb/usb_endpoint_android.h"
 
-#include "jni/ChromeUsbEndpoint_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbEndpoint_jni.h"
 
 namespace device {
 

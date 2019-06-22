@@ -30,7 +30,7 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
   SpinningEffectSource(const base::WeakPtr<ShelfSpinnerController>& host,
                        const std::string& app_id,
                        const gfx::ImageSkia& image)
-      : gfx::CanvasImageSource(image.size(), false /* is opaque */),
+      : gfx::CanvasImageSource(image.size()),
         host_(host),
         app_id_(app_id),
         image_(image) {}

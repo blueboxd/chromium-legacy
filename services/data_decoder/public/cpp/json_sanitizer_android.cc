@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "jni/JsonSanitizer_jni.h"
+#include "services/data_decoder/public/cpp/android/safe_json_jni_headers/JsonSanitizer_jni.h"
 
 using base::android::JavaParamRef;
 

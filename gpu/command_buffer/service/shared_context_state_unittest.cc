@@ -15,13 +15,13 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state_test_helpers.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gl_context_mock.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
@@ -53,13 +53,13 @@ TEST_F(SharedContextStateTest, InitFailsIfLostContext) {
   InSequence sequence;
 
   auto surface = base::MakeRefCounted<gl::GLSurfaceStub>();
-  auto context = base::MakeRefCounted<StrictMock<GLContextMock>>();
+  auto context = base::MakeRefCounted<gl::GLContextStub>();
   const char gl_version[] = "2.1";
   context->SetGLVersionString(gl_version);
   const char gl_extensions[] = "GL_KHR_robustness";
   context->SetExtensionsString(gl_extensions);
 
-  context->GLContextStub::MakeCurrent(surface.get());
+  context->MakeCurrent(surface.get());
 
   GpuFeatureInfo gpu_feature_info;
   GpuDriverBugWorkarounds workarounds;
@@ -77,7 +77,6 @@ TEST_F(SharedContextStateTest, InitFailsIfLostContext) {
   ContextStateTestHelpers::SetupInitState(&gl_interface, feature_info.get(),
                                           gfx::Size(1, 1));
 
-  EXPECT_TRUE(context->WasAllocatedUsingRobustnessExtension());
   EXPECT_CALL(gl_interface, GetGraphicsResetStatusARB())
       .WillOnce(Return(GL_GUILTY_CONTEXT_RESET_ARB));
 

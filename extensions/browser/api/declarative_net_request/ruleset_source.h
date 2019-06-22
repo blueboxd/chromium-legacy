@@ -129,7 +129,7 @@ class RulesetSource {
   // Creates RulesetSource corresponding to the dynamic rules added by the
   // extension. This must only be called for extensions which specified a
   // declarative ruleset.
-  static RulesetSource CreateDynamic(const content::BrowserContext* context,
+  static RulesetSource CreateDynamic(content::BrowserContext* context,
                                      const Extension& extension);
 
   // Creates a temporary source i.e. a source corresponding to temporary files.

@@ -20,7 +20,6 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/safe_browsing/SafeBrowsingApiBridge.java",
   ]
-  jni_package = "components/safe_browsing/android"
 }
 
 # This target is for the mobile version.

@@ -769,10 +769,15 @@ gfx::ImageSkia GetStatusTrayIcon() {
     return gfx::ImageSkia();
 
   return family->CreateExact(size).AsImageSkia();
-#else
-  // On other platforms, just get a static resource image.
+#elif defined(OS_LINUX)
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_PRODUCT_LOGO_128);
+#elif defined(OS_MACOSX)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_STATUS_TRAY_ICON);
+#else
+  NOTREACHED();
+  return gfx::ImageSkia();
 #endif
 }
 

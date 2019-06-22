@@ -1115,7 +1115,7 @@ class NavigationHandleGrabber : public WebContentsObserver {
       return;
     if (navigation_handle->HasCommitted())
       committed_title2_ = true;
-    run_loop_.QuitClosure().Run();
+    run_loop_.Quit();
   }
 
   void WaitForTitle2() { run_loop_.Run(); }

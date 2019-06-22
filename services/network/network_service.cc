@@ -220,10 +220,9 @@ void HandleBadMessage(const std::string& error) {
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log,
     service_manager::mojom::ServiceRequest service_request,
     bool delay_initialization_until_set_client)
-    : registry_(std::move(registry)), binding_(this) {
+    : net_log_(GetNetLog()), registry_(std::move(registry)), binding_(this) {
   DCHECK(!g_network_service);
   g_network_service = this;
 
@@ -247,12 +246,6 @@ NetworkService::NetworkService(
         base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
   } else if (request.is_pending()) {
     Bind(std::move(request));
-  }
-
-  if (net_log) {
-    net_log_ = net_log;
-  } else {
-    net_log_ = GetNetLog();
   }
 
   if (!delay_initialization_until_set_client)
@@ -304,7 +297,7 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 
-  // Add an observer that will emit network change events to the ChromeNetLog.
+  // Add an observer that will emit network change events to |net_log_|.
   // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be
   // logging the network change before other IO thread consumers respond to it.
   network_change_observer_ =
@@ -351,9 +344,8 @@ void NetworkService::set_os_crypt_is_configured() {
 
 std::unique_ptr<NetworkService> NetworkService::Create(
     mojom::NetworkServiceRequest request,
-    net::NetLog* net_log,
     service_manager::mojom::ServiceRequest service_request) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request), net_log,
+  return std::make_unique<NetworkService>(nullptr, std::move(request),
                                           std::move(service_request));
 }
 
@@ -379,7 +371,7 @@ std::unique_ptr<NetworkService> NetworkService::CreateForTesting(
     service_manager::mojom::ServiceRequest service_request) {
   return std::make_unique<NetworkService>(
       std::make_unique<service_manager::BinderRegistry>(),
-      nullptr /* request */, nullptr /* net_log */, std::move(service_request));
+      nullptr /* request */, std::move(service_request));
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {

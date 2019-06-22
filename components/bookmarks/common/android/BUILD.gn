@@ -26,7 +26,6 @@ android_library("bookmarks_java") {
 }
 
 generate_jni("bookmarks_jni_headers") {
-  jni_package = "components/bookmarks"
   sources = [
     "java/src/org/chromium/components/bookmarks/BookmarkId.java",
   ]

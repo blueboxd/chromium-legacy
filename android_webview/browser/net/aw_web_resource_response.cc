@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "android_webview/browser/input_stream.h"
+#include "android_webview/native_jni/AwWebResourceResponse_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "jni/AwWebResourceResponse_jni.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"

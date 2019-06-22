@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
-#include "jni/PaymentHandlerHost_jni.h"
+#include "components/payments/content/android/jni_headers/PaymentHandlerHost_jni.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 
 namespace payments {

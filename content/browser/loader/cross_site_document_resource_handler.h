@@ -106,10 +106,6 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // |next_handler_| in response to OnWillRead.
   void StopLocalBuffering(bool copy_data_to_next_handler);
 
-  // Helper for UMA logging.
-  void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
-                          int http_response_code);
-
   // WeakPtrFactory for |next_handler_|.
   base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
 

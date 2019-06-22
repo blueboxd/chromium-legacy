@@ -18,11 +18,12 @@ namespace blink {
 // static
 ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
     ScriptState* script_state,
-    HTMLVideoElement& element) {
-  DOMException* exception =
-      HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(element);
-  if (exception)
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+    HTMLVideoElement& element,
+    ExceptionState& exception_state) {
+  HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
+      element, nullptr /* options */, exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();

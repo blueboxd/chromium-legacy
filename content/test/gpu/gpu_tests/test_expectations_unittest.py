@@ -207,16 +207,11 @@ def _TestCheckTestExpectationsAreForExistingTests(expectations):
   expectations_file.write(expectations)
   expectations_file.close()
   gpu_tests = gpu_integration_test.GpuIntegrationTest
-  generate_gpu_fn = gpu_tests.GenerateGpuTests
-  expectations_files_fn = gpu_tests.ExpectationsFiles
-  gpu_tests.GenerateGpuTests = mock.MagicMock(return_value=[('a/b/c', ())])
-  gpu_tests.ExpectationsFiles = mock.MagicMock(
-      return_value=[expectations_file.name])
-  try:
-    CheckTestExpectationsAreForExistingTests(gpu_tests, options)
-  finally:
-    gpu_tests.GenerateGpuTests = generate_gpu_fn
-    gpu_tests.ExpectationsFiles = expectations_files_fn
+  with mock.patch.object(
+      gpu_tests, 'GenerateGpuTests', return_value=[('a/b/c', ())]):
+    with mock.patch.object(
+        gpu_tests, 'ExpectationsFiles', return_value=[expectations_file.name]):
+      CheckTestExpectationsAreForExistingTests(gpu_tests, options)
 
 
 def _CheckPatternIsValid(pattern):

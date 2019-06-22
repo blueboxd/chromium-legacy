@@ -108,7 +108,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/url/IDNStringUtil.java",
     ]
-    jni_package = "url"
   }
 }
 

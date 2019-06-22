@@ -264,6 +264,7 @@ class TestingProfile : public Profile {
   void SetSupervisedUserId(const std::string& id);
 
   // content::BrowserContext
+  base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -272,6 +273,7 @@ class TestingProfile : public Profile {
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   // Do not override IsOffTheRecord to turn a normal profile into an incognito
   // profile dynamically.
+  bool IsOffTheRecord() final;
   bool IsOffTheRecord() const final;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;

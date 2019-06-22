@@ -92,9 +92,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 
 const CommandLinePrefStore::SwitchToPreferenceMapEntry
     ChromeCommandLinePrefStore::integer_switch_map_[] = {
-      { switches::kDiskCacheSize, prefs::kDiskCacheSize },
-      { switches::kMediaCacheSize, prefs::kMediaCacheSize },
-    };
+        {switches::kDiskCacheSize, prefs::kDiskCacheSize}};
 
 ChromeCommandLinePrefStore::ChromeCommandLinePrefStore(
     const base::CommandLine* command_line)

@@ -26,8 +26,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_support_android.h"
 #include "gtest/gtest.h"
-#include "jni/NativeTest_jni.h"
 #include "testing/android/native_test/main_runner.h"
+#include "testing/android/native_test/native_test_jni_headers/NativeTest_jni.h"
 #include "testing/android/native_test/native_test_util.h"
 
 using base::android::JavaParamRef;

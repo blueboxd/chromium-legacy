@@ -8,5 +8,5 @@
     RuntimeEnabled=PictureInPictureV2
 ]
 partial interface HTMLElement {
-    [CallWith=ScriptState, NewObject] Promise<PictureInPictureWindow> requestPictureInPicture(PictureInPictureOptions options);
+    [CallWith=ScriptState, NewObject, RaisesException] Promise<PictureInPictureWindow> requestPictureInPicture(optional PictureInPictureOptions options);
 };

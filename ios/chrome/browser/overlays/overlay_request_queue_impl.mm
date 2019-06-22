@@ -61,14 +61,18 @@ base::WeakPtr<OverlayRequestQueueImpl> OverlayRequestQueueImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void OverlayRequestQueueImpl::PopFrontRequest() {
+std::unique_ptr<OverlayRequest> OverlayRequestQueueImpl::PopFrontRequest() {
   DCHECK(!requests_.empty());
+  std::unique_ptr<OverlayRequest> request = std::move(requests_.front());
   requests_.pop_front();
+  return request;
 }
 
-void OverlayRequestQueueImpl::PopBackRequest() {
+std::unique_ptr<OverlayRequest> OverlayRequestQueueImpl::PopBackRequest() {
   DCHECK(!requests_.empty());
+  std::unique_ptr<OverlayRequest> request = std::move(requests_.back());
   requests_.pop_back();
+  return request;
 }
 
 #pragma mark OverlayRequestQueue

@@ -9,8 +9,8 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/crash/android/jni_headers/ChildProcessCrashObserver_jni.h"
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
-#include "jni/ChildProcessCrashObserver_jni.h"
 
 namespace crash_reporter {
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/overlay_window.h"
@@ -63,8 +64,10 @@ class TestOverlayWindow : public OverlayWindow {
   void Hide() override {}
   bool IsVisible() override { return false; }
   bool IsAlwaysOnTop() override { return false; }
-  gfx::Rect GetBounds() override { return gfx::Rect(); }
-  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  gfx::Rect GetBounds() override { return gfx::Rect(size_); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {
+    size_ = natural_size;
+  }
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
   void SetMutedState(MutedState muted_state) override {}
@@ -75,6 +78,8 @@ class TestOverlayWindow : public OverlayWindow {
   cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
+  gfx::Size size_;
+
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
 
@@ -93,8 +98,6 @@ class PictureInPictureServiceImplTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    // WebUIControllerFactory::RegisterFactory(
-    //     ContentWebUIControllerFactory::GetInstance());
 
     SetBrowserClientForTesting(&browser_client_);
 
@@ -109,8 +112,6 @@ class PictureInPictureServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-    // WebUIControllerFactory::UnregisterFactoryForTesting(
-    //     ContentWebUIControllerFactory::GetInstance());
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -150,13 +151,25 @@ TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
                          11, base::UnguessableToken::Deserialize(0x111111, 0)));
 
   EXPECT_CALL(delegate(),
-              EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)));
+              EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)))
+      .WillRepeatedly(testing::Return(PictureInPictureResult::kSuccess));
 
-  service().StartSession(kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
-                         true /* show_play_pause_button */,
-                         true /* show_mute_button */, std::move(observer_ptr),
-                         base::DoNothing());
+  blink::mojom::PictureInPictureSessionPtr session_ptr;
+  gfx::Size window_size;
+
+  service().StartSession(
+      kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
+      true /* show_play_pause_button */, true /* show_mute_button */,
+      std::move(observer_ptr),
+      base::BindLambdaForTesting(
+          [&](blink::mojom::PictureInPictureSessionPtr a, const gfx::Size& b) {
+            session_ptr = std::move(a);
+            window_size = b;
+          }));
+
   EXPECT_TRUE(service().active_session_for_testing());
+  EXPECT_TRUE(session_ptr);
+  EXPECT_EQ(gfx::Size(42, 42), window_size);
 
   // Picture-in-Picture media player id should not be reset when the media is
   // destroyed (e.g. video stops playing). This allows the Picture-in-Picture
@@ -165,6 +178,39 @@ TEST_F(PictureInPictureServiceImplTest, MAYBE_EnterPictureInPicture) {
       MediaPlayerDelegateHostMsg_OnMediaDestroyed(
           contents()->GetMainFrame()->GetRoutingID(), kPlayerVideoOnlyId));
   EXPECT_TRUE(service().active_session_for_testing());
+}
+
+TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture_NotSupported) {
+  const int kPlayerVideoOnlyId = 30;
+
+  blink::mojom::PictureInPictureSessionObserverPtr observer_ptr;
+  EXPECT_FALSE(service().active_session_for_testing());
+
+  viz::SurfaceId surface_id =
+      viz::SurfaceId(viz::FrameSinkId(1, 1),
+                     viz::LocalSurfaceId(
+                         11, base::UnguessableToken::Deserialize(0x111111, 0)));
+
+  EXPECT_CALL(delegate(),
+              EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)))
+      .WillRepeatedly(testing::Return(PictureInPictureResult::kNotSupported));
+
+  blink::mojom::PictureInPictureSessionPtr session_ptr;
+  gfx::Size window_size;
+
+  service().StartSession(
+      kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
+      true /* show_play_pause_button */, true /* show_mute_button */,
+      std::move(observer_ptr),
+      base::BindLambdaForTesting(
+          [&](blink::mojom::PictureInPictureSessionPtr a, const gfx::Size& b) {
+            session_ptr = std::move(a);
+            window_size = b;
+          }));
+
+  EXPECT_FALSE(service().active_session_for_testing());
+  EXPECT_FALSE(session_ptr);
+  EXPECT_EQ(gfx::Size(), window_size);
 }
 
 }  // namespace content

@@ -330,6 +330,7 @@ source_set("v4_local_database_manager_unittest") {
     ":v4_test_util",
     "//base",
     "//base/test:test_support",
+    "//components/safe_browsing:features",
     "//content/test:test_support",
     "//net",
     "//net:test_support",
@@ -361,13 +362,14 @@ source_set("v4_update_protocol_manager_unittest") {
 source_set("unit_tests_shared") {
   testonly = true
   sources = [
+    "allowlist_checker_client_unittest.cc",
     "database_manager_unittest.cc",
     "util_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
     "v4_protocol_manager_util_unittest.cc",
-    "whitelist_checker_client_unittest.cc",
   ]
   deps = [
+    ":allowlist_checker_client",
     ":database_manager",
     ":safebrowsing_proto",
     ":test_database_manager",
@@ -375,7 +377,6 @@ source_set("unit_tests_shared") {
     ":v4_get_hash_protocol_manager",
     ":v4_protocol_manager_util",
     ":v4_test_util",
-    ":whitelist_checker_client",
     "//base",
     "//content/public/browser",
     "//content/test:test_support",
@@ -412,6 +413,7 @@ source_set("unit_tests_desktop") {
     ":v4_update_protocol_manager",
     "//base",
     "//components/prefs:test_support",
+    "//components/safe_browsing:features",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//content/test:test_support",
     "//crypto",
@@ -428,10 +430,10 @@ source_set("unit_tests_desktop") {
   }
 }
 
-static_library("whitelist_checker_client") {
+static_library("allowlist_checker_client") {
   sources = [
-    "whitelist_checker_client.cc",
-    "whitelist_checker_client.h",
+    "allowlist_checker_client.cc",
+    "allowlist_checker_client.h",
   ]
   deps = [
     ":database_manager",
@@ -439,15 +441,15 @@ static_library("whitelist_checker_client") {
   ]
 }
 
-source_set("whitelist_checker_client_unittest") {
+source_set("allowlist_checker_client_unittest") {
   testonly = true
   sources = [
-    "whitelist_checker_client_unittest.cc",
+    "allowlist_checker_client_unittest.cc",
   ]
   deps = [
+    ":allowlist_checker_client",
     ":database_manager",
     ":test_database_manager",
-    ":whitelist_checker_client",
     "//base:base",
     "//base/test:test_support",
     "//content/public/browser",

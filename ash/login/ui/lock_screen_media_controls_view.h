@@ -6,27 +6,72 @@
 #define ASH_LOGIN_UI_LOCK_SCREEN_MEDIA_CONTROLS_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/login/ui/lock_screen.h"
+#include "base/timer/timer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "ui/views/view.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace ash {
 
-class LoginExpandedPublicAccountView;
+class LockContentsView;
 
-class LockScreenMediaControlsView : public views::View {
+class LockScreenMediaControlsView
+    : public views::View,
+      public media_session::mojom::MediaControllerObserver {
  public:
-  LockScreenMediaControlsView();
+  LockScreenMediaControlsView(service_manager::Connector* connector,
+                              LockContentsView* view);
   ~LockScreenMediaControlsView() override;
-
-  static bool AreMediaControlsEnabled(
-      LockScreen::ScreenType screen_type,
-      LoginExpandedPublicAccountView* expanded_view);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
 
+  views::View* GetMiddleSpacingView();
+
+  // media_session::mojom::MediaControllerObserver:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& actions)
+      override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
+
+  void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
+    hide_controls_timer_ = std::move(test_timer);
+  }
+
  private:
+  // Lock screen view which this view belongs to.
+  LockContentsView* const view_;
+
+  // Used to connect to the Media Session service.
+  service_manager::Connector* const connector_;
+
+  // Used to control the active session.
+  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+
+  // Used to receive updates to the active media controller.
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      observer_binding_{this};
+
+  // The info about the current media session. It will be null if there is not
+  // a current session.
+  media_session::mojom::MediaSessionInfoPtr media_session_info_;
+
+  // Spacing between controls and user.
+  std::unique_ptr<views::View> middle_spacing_;
+
+  // Automatically hides the controls a few seconds if no media playing.
+  std::unique_ptr<base::OneShotTimer> hide_controls_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };
 

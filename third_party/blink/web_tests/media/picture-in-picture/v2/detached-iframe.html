@@ -20,6 +20,6 @@ promise_test(async t => {
   const element = frame.contentDocument.createElement('div');
   document.body.removeChild(frame);
   return promise_rejects(t, 'InvalidStateError',
-    requestPictureInPictureWithTrustedClick(element, { aspectRatio: 1 }));
+    requestPictureInPictureWithTrustedClick(element, { height: 1, width: 1 }));
 }, 'request Picture-in-Picture rejects when frame is detached');
 </script>

@@ -50,12 +50,17 @@ let testFunction = function(session, t, fakeDeviceController) {
         // have an input source.
         assert_equals(session.inputSources.length, 1,
           "removing the gamepad shouldn't remove the input source");
+        // However, disconnecting the gamepad from the input source should cause
+        // the input source to be re-created. Verify this.
+        assertInputSourceRecreated(event);
         assertGamepadDisconnected();
+        cached_input_source = session.inputSources[0];
       } else if (inputChangeEvents === 3) {
         assert_equals(session.inputSources.length, 1,
           "re-adding the gamepad shouldn't add an extra input source");
         // The third event should be reconnecting our gamepad, we should still
-        // have an input source.
+        // have an input source. However, it should have been re-created.
+        assertInputSourceRecreated(event);
         assertGamepadConnected();
       } else if (inputChangeEvents === 4) {
         // The fourth event should be disconnecting our gamepad, we should no
@@ -67,11 +72,18 @@ let testFunction = function(session, t, fakeDeviceController) {
         // The fifth event should be re-connecting our gamepad to prep for
         // ending the session.
         assert_equals(session.inputSources.length, 1,
-        "input source should have been re-connected");
+          "input source should have been re-connected");
         assertGamepadConnected();
         session.dispatchEvent(watcherDone);
       }
     });
+  }
+
+  function assertInputSourceRecreated(event) {
+    assert_equals(event.added.length, 1);
+    assert_equals(event.removed.length, 1);
+    assert_equals(session.inputSources[0], event.added[0]);
+    assert_equals(cached_input_source, event.removed[0]);
   }
 
   function assertGamepadConnected() {

@@ -23,7 +23,7 @@ android_library("splash_java") {
 }
 
 android_resources("splash_resources") {
-  resource_dirs = [ "to_upload/res_splash" ]
+  resource_dirs = [ "res_splash" ]
   custom_package = "org.chromium.webapk.lib.common.splash"
 }
 

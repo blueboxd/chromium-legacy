@@ -6,8 +6,8 @@
 
 #include "base/android/jni_string.h"
 #include "components/autofill/android/form_field_data_android.h"
+#include "components/autofill/android/jni_headers/FormData_jni.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "jni/FormData_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;

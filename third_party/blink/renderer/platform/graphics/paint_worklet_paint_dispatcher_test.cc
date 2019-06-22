@@ -42,7 +42,7 @@ class PaintWorkletPaintDispatcherAsyncTest : public ::testing::Test {
 
  private:
   void VerifyResultAndFinish(cc::PaintWorkletJobMap results) {
-    run_loop_.QuitClosure().Run();
+    run_loop_.Quit();
   }
 
   base::RunLoop run_loop_;

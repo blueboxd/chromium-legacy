@@ -9,7 +9,6 @@ include_rules = [
   "+components/sync_preferences",
   "+components/variations",
   "+google", # For third_party/protobuf.
-  "+jni",
   "+third_party/dom_distiller_js",
   "+third_party/re2",
   "+net/base",

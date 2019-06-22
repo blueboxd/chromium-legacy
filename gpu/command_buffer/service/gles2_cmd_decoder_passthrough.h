@@ -427,8 +427,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   GLenum PopError();
   bool FlushErrors();
 
-  bool IsRobustnessSupported();
-
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
@@ -847,7 +845,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool gpu_debug_commands_;
 
   // Context lost state
-  bool has_robustness_extension_;
   bool context_lost_;
   bool reset_by_robustness_extension_;
   bool lose_context_when_out_of_memory_;

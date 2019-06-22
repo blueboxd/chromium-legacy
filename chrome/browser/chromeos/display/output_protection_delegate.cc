@@ -34,17 +34,12 @@ bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
 
 }  // namespace
 
-OutputProtectionDelegate::Controller::Controller() {}
-
-OutputProtectionDelegate::Controller::~Controller() {}
+OutputProtectionDelegate::Controller::Controller() = default;
+OutputProtectionDelegate::Controller::~Controller() = default;
 
 OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
                                                    int render_frame_id)
-    : render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
-      window_(nullptr),
-      display_id_(display::kInvalidDisplayId),
-      weak_ptr_factory_(this) {
+    : render_process_id_(render_process_id), render_frame_id_(render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   display::Screen::GetScreen()->AddObserver(this);
 }
@@ -85,28 +80,31 @@ void OutputProtectionDelegate::OnWindowDestroying(aura::Window* window) {
 }
 
 void OutputProtectionDelegate::QueryStatus(
-    const QueryStatusCallback& callback) {
+    Controller::QueryStatusCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!InitializeControllerIfNecessary()) {
-    callback.Run(false, 0, 0);
+    std::move(callback).Run(/*success=*/false,
+                            display::DISPLAY_CONNECTION_TYPE_NONE,
+                            display::CONTENT_PROTECTION_METHOD_NONE);
     return;
   }
 
-  controller_->QueryStatus(display_id_, callback);
+  controller_->QueryStatus(display_id_, std::move(callback));
 }
 
 void OutputProtectionDelegate::SetProtection(
-    uint32_t desired_method_mask,
-    const SetProtectionCallback& callback) {
+    uint32_t protection_mask,
+    Controller::SetProtectionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!InitializeControllerIfNecessary()) {
-    callback.Run(false);
+    std::move(callback).Run(/*success=*/false);
     return;
   }
-  controller_->SetProtection(display_id_, desired_method_mask, callback);
-  desired_method_mask_ = desired_method_mask;
+
+  controller_->SetProtection(display_id_, protection_mask, std::move(callback));
+  protection_mask_ = protection_mask;
 }
 
 void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
@@ -124,9 +122,9 @@ void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
   if (display_id_ == new_display_id)
     return;
 
-  if (desired_method_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
+  if (protection_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
     DCHECK(controller_);
-    controller_->SetProtection(new_display_id, desired_method_mask_,
+    controller_->SetProtection(new_display_id, protection_mask_,
                                base::DoNothing());
     controller_->SetProtection(display_id_,
                                display::CONTENT_PROTECTION_METHOD_NONE,

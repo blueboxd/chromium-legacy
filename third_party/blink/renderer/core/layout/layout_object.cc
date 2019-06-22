@@ -183,23 +183,22 @@ LayoutObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope() {
 }
 #endif
 
-struct SameSizeAsLayoutObject : DisplayItemClient {
+struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   // Normally this field uses the gap between DisplayItemClient and
   // LayoutObject's other fields.
   uint8_t paint_invalidation_reason_;
-  void* pointers[5];
-  Member<void*> members[1];
 #if DCHECK_IS_ON()
   unsigned debug_bitfields_;
 #endif
   unsigned bitfields_;
   unsigned bitfields2_;
   unsigned bitfields3_;
+  void* pointers[4];
+  Member<void*> members[1];
   // The following fields are in FragmentData.
   IntRect visual_rect_;
   PhysicalOffset paint_offset_;
   std::unique_ptr<int> rare_data_;
-  std::unique_ptr<FragmentData> next_fragment_;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
@@ -298,17 +297,17 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
 
 LayoutObject::LayoutObject(Node* node)
     : full_paint_invalidation_reason_(PaintInvalidationReason::kNone),
-      style_(nullptr),
-      node_(node),
-      parent_(nullptr),
-      previous_(nullptr),
-      next_(nullptr),
 #if DCHECK_IS_ON()
       has_ax_object_(false),
       set_needs_layout_forbidden_(false),
       as_image_observer_count_(0),
 #endif
-      bitfields_(node) {
+      bitfields_(node),
+      style_(nullptr),
+      node_(node),
+      parent_(nullptr),
+      previous_(nullptr),
+      next_(nullptr) {
   InstanceCounters::IncrementCounter(InstanceCounters::kLayoutObjectCounter);
   if (node_)
     GetFrameView()->IncrementLayoutObjectCount();
@@ -3156,7 +3155,7 @@ void LayoutObject::WillBeRemovedFromTree() {
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
       RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     if (LocalFrameView* frame_view = GetFrameView()) {
-      frame_view->GetPaintTimingDetector().NotifyNodeRemoved(*this);
+      frame_view->GetPaintTimingDetector().LayoutObjectWillBeDestroyed(*this);
     }
   }
 }

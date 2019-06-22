@@ -405,10 +405,8 @@ class ShelfViewTest : public AshTestBase {
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), 0, 0);
-    shelf_view_->ButtonPressed(
-        button, release_event,
-        views::test::InkDropHostViewTestApi(button).GetInkDrop());
-    shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
+    button->NotifyClick(release_event);
+    button->OnMouseReleased(release_event);
   }
 
   // Simulates the second click of a double click.
@@ -419,10 +417,8 @@ class ShelfViewTest : public AshTestBase {
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
-    shelf_view_->ButtonPressed(
-        button, release_event,
-        views::test::InkDropHostViewTestApi(button).GetInkDrop());
-    shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
+    button->NotifyClick(release_event);
+    button->OnMouseReleased(release_event);
   }
 
   void DoDrag(int dist_x,

@@ -2,6 +2,7 @@ include_rules = [
   "-android_webview",
   "-android_webview/browser",
   "+android_webview/browser/gfx",
+  "+android_webview/native_jni",
   "+android_webview/common/aw_switches.h",
   "+android_webview/public/browser",
 ]

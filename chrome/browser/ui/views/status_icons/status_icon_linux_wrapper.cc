@@ -27,6 +27,20 @@ constexpr base::Feature kEnableDbusAndX11StatusIcons{
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
 
+gfx::ImageSkia GetBestImageRep(const gfx::ImageSkia& image) {
+  float best_scale = 0.0f;
+  SkBitmap best_rep;
+  for (const auto& rep : image.image_reps()) {
+    if (rep.scale() > best_scale) {
+      best_scale = rep.scale();
+      best_rep = rep.GetBitmap();
+    }
+  }
+  // All status icon implementations want the image in pixel coordinates, so use
+  // a scale factor of 1.
+  return gfx::ImageSkia(gfx::ImageSkiaRep(best_rep, 1.0f));
+}
+
 }  // namespace
 
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(
@@ -36,7 +50,7 @@ StatusIconLinuxWrapper::StatusIconLinuxWrapper(
     const base::string16& tool_tip)
     : status_icon_(std::move(status_icon)),
       status_icon_type_(status_icon_type),
-      image_(image),
+      image_(GetBestImageRep(image)),
       tool_tip_(tool_tip),
       menu_model_(nullptr) {
   status_icon_->SetDelegate(this);
@@ -48,9 +62,9 @@ StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
 }
 
 void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
-  image_ = image;
+  image_ = GetBestImageRep(image);
   if (status_icon_)
-    status_icon_->SetIcon(image);
+    status_icon_->SetIcon(image_);
 }
 
 void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {

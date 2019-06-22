@@ -21,8 +21,7 @@ class PaddedImageSource : public CanvasImageSource {
  public:
   PaddedImageSource(const ImageSkia& image, const Insets& insets)
       : CanvasImageSource(Size(image.width() + insets.width(),
-                               image.height() + insets.height()),
-                          false),
+                               image.height() + insets.height())),
         image_(image),
         insets_(insets) {}
 
@@ -49,8 +48,7 @@ ImageSkia CanvasImageSource::CreatePadded(const ImageSkia& image,
   return MakeImageSkia<PaddedImageSource>(image, insets);
 }
 
-CanvasImageSource::CanvasImageSource(const Size& size, bool is_opaque)
-    : size_(size), is_opaque_(is_opaque) {}
+CanvasImageSource::CanvasImageSource(const Size& size) : size_(size) {}
 
 ImageSkiaRep CanvasImageSource::GetImageForScale(float scale) {
   scoped_refptr<cc::DisplayItemList> display_item_list =

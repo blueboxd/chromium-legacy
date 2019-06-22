@@ -81,7 +81,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/shape_detection/InterfaceRegistrar.java",
     ]
-    jni_package = "shape_detection"
   }
 
   android_library("shape_detection_java") {

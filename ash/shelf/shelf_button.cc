@@ -34,31 +34,6 @@ const char* ShelfButton::GetClassName() const {
   return "ash/ShelfButton";
 }
 
-bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
-  Button::OnMousePressed(event);
-  shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
-void ShelfButton::OnMouseReleased(const ui::MouseEvent& event) {
-  Button::OnMouseReleased(event);
-  // PointerReleasedOnButton deletes the ShelfAppButton when user drags a pinned
-  // running app from shelf.
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
-  // WARNING: we may have been deleted.
-}
-
-void ShelfButton::OnMouseCaptureLost() {
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
-  Button::OnMouseCaptureLost();
-}
-
-bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
-  Button::OnMouseDragged(event);
-  shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
 void ShelfButton::AboutToRequestFocusFromTabTraversal(bool reverse) {
   shelf_view_->OnShelfButtonAboutToRequestFocusFromTabTraversal(this, reverse);
 }
@@ -67,18 +42,6 @@ void ShelfButton::AboutToRequestFocusFromTabTraversal(bool reverse) {
 // triggered by Button::GetAccessibleNodeData. (See https://crbug.com/932200)
 void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  const base::string16 title = shelf_view_->GetTitleForView(this);
-  node_data->SetName(title.empty() ? GetAccessibleName() : title);
-}
-
-void ShelfButton::OnFocus() {
-  shelf_view_->set_focused_button(this);
-  Button::OnFocus();
-}
-
-void ShelfButton::OnBlur() {
-  shelf_view_->set_focused_button(nullptr);
-  Button::OnBlur();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,13 +51,6 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
   if (listener_)
     listener_->ButtonPressed(this, event, GetInkDrop());
-}
-
-bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {
-  if (!shelf_view_->ShouldEventActivateButton(this, event))
-    return false;
-
-  return Button::ShouldEnterPushedState(event);
 }
 
 std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {

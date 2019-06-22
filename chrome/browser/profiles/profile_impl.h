@@ -77,7 +77,6 @@ class ProfileImpl : public Profile {
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif
-  base::FilePath GetPath() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -117,7 +116,10 @@ class ProfileImpl : public Profile {
   // not the Chrome user's display name.
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
+  base::FilePath GetPath() override;
+  bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
+  base::FilePath GetPath() const override;
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override;
   bool HasOffTheRecordProfile() override;

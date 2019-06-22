@@ -8,7 +8,6 @@ generate_jni("minidump_uploader_jni_headers") {
   sources = [
     "android/java/src/org/chromium/components/minidump_uploader/CrashReportMimeWriter.java",
   ]
-  jni_package = "components/minidump_uploader"
 }
 
 static_library("minidump_uploader") {

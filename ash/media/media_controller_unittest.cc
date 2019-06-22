@@ -104,7 +104,8 @@ TEST_F(MediaControllerTest, EnableLockScreenMediaKeys) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, true);
 
-  EXPECT_TRUE(MediaControllerImpl::AreLockScreenMediaKeysEnabled());
+  EXPECT_TRUE(
+      Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 }
 
 TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfFeatureDisabled) {
@@ -115,11 +116,13 @@ TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfFeatureDisabled) {
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, true);
 
-  EXPECT_FALSE(MediaControllerImpl::AreLockScreenMediaKeysEnabled());
+  EXPECT_FALSE(
+      Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 
   prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
 
-  EXPECT_FALSE(MediaControllerImpl::AreLockScreenMediaKeysEnabled());
+  EXPECT_FALSE(
+      Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 }
 
 TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfPreferenceDisabled) {
@@ -130,7 +133,8 @@ TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfPreferenceDisabled) {
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
 
-  EXPECT_FALSE(MediaControllerImpl::AreLockScreenMediaKeysEnabled());
+  EXPECT_FALSE(
+      Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 }
 
 TEST_F(MediaControllerTest, EnableMediaKeysWhenLockedAndKeysEnabled) {

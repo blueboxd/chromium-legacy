@@ -39,6 +39,9 @@ class MobileSessionShutdownMetricsProvider : public metrics::MetricsProvider {
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  protected:
+  // Returns the shutdown type of the last session.
+  MobileSessionShutdownType GetLastShutdownType();
+
   // Provides information on the last session environment, used to decide what
   // stability metrics to provide in ProvidePreviousSessionData.
   // These methods are virtual to be overridden in the tests.

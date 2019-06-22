@@ -3264,7 +3264,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
     ]
-    jni_package = "net"
   }
   generate_jni("net_test_jni_headers") {
     sources = [
@@ -3274,7 +3273,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
       "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
     ]
-    jni_package = "net/test"
   }
 }
 
@@ -3733,6 +3731,8 @@ bundle_data("net_unittests_bundle_data") {
     "data/crl_unittest/bad_crldp_has_crlissuer.pem",
     "data/crl_unittest/bad_fake_critical_crlentryextension.pem",
     "data/crl_unittest/bad_fake_critical_extension.pem",
+    "data/crl_unittest/bad_idp_contains_wrong_uri.pem",
+    "data/crl_unittest/bad_idp_indirectcrl.pem",
     "data/crl_unittest/bad_key_rollover_signature.pem",
     "data/crl_unittest/bad_nextupdate_too_old.pem",
     "data/crl_unittest/bad_signature.pem",
@@ -3743,6 +3743,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/crl_unittest/good_fake_extension.pem",
     "data/crl_unittest/good_fake_extension_no_nextupdate.pem",
     "data/crl_unittest/good_generalizedtime.pem",
+    "data/crl_unittest/good_idp_contains_uri.pem",
     "data/crl_unittest/good_issuer_name_normalization.pem",
     "data/crl_unittest/good_issuer_no_keyusage.pem",
     "data/crl_unittest/good_key_rollover.pem",
@@ -3766,6 +3767,8 @@ bundle_data("net_unittests_bundle_data") {
     "data/crl_unittest/invalid_garbage_tbscertlist.pem",
     "data/crl_unittest/invalid_garbage_thisupdate.pem",
     "data/crl_unittest/invalid_garbage_version.pem",
+    "data/crl_unittest/invalid_idp_dpname_choice_extra_data.pem",
+    "data/crl_unittest/invalid_idp_empty_sequence.pem",
     "data/crl_unittest/invalid_issuer_keyusage_no_crlsign.pem",
     "data/crl_unittest/invalid_key_rollover_issuer_keyusage_no_crlsign.pem",
     "data/crl_unittest/invalid_mismatched_signature_algorithm.pem",
@@ -6340,6 +6343,17 @@ fuzzer_test("net_cert_crl_parse_crl_tbscertlist_fuzzer") {
     "cert/internal/crl_parse_crl_tbscertlist_fuzzer.cc",
   ]
   seed_corpus = "data/fuzzer_data/crl_parse_crl_tbscertlist_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_crl_parse_issuing_distribution_point_fuzzer") {
+  sources = [
+    "cert/internal/crl_parse_issuing_distribution_point_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/crl_parse_issuing_distribution_point_fuzzer"
   deps = [
     "//base",
     "//net",

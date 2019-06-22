@@ -103,9 +103,9 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     icon_->SizeToPreferredSize();
     icon_->SetProperty(
         views::kMarginsKey,
-        new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                            DISTANCE_TOAST_LABEL_VERTICAL),
-                        0));
+        gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_TOAST_LABEL_VERTICAL),
+                    0));
     AddChildView(icon_);
   }
 
@@ -120,9 +120,9 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button->SetFocusForPlatform();
     gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-    close_button->SetProperty(
-        views::kMarginsKey, new gfx::Insets(close_button_spacing.top(), 0,
-                                            close_button_spacing.bottom(), 0));
+    close_button->SetProperty(views::kMarginsKey,
+                              gfx::Insets(close_button_spacing.top(), 0,
+                                          close_button_spacing.bottom(), 0));
     close_button_ = AddChildView(std::move(close_button));
   }
 }
@@ -395,9 +395,8 @@ void InfoBarView::SetLabelDetails(views::Label* label) const {
   label->SizeToPreferredSize();
   label->SetBackgroundColor(GetColor(kInfoBarLabelBackgroundColor));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_TOAST_LABEL_VERTICAL),
-                      0));
+  label->SetProperty(views::kMarginsKey,
+                     gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                     DISTANCE_TOAST_LABEL_VERTICAL),
+                                 0));
 }

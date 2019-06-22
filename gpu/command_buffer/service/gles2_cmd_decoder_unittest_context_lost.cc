@@ -35,7 +35,7 @@ class GLES2DecoderDrawOOMTest : public GLES2DecoderManualInitTest {
             error::ContextLostReason expected_other_reason) {
     const GLsizei kFakeLargeCount = 0x1234;
     SetupTexture();
-    if (context_->WasAllocatedUsingRobustnessExtension()) {
+    if (context_->HasRobustness()) {
       EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
           .WillOnce(Return(reset_status));
     }
@@ -106,15 +106,6 @@ class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
     if (has_robustness)
       init.extensions = "GL_KHR_robustness";
     InitDecoder(init);
-  }
-
-  void InitWithVirtualContextsAndRobustness() {
-    gpu::GpuDriverBugWorkarounds workarounds;
-    workarounds.use_virtualized_gl_contexts = true;
-    InitState init;
-    init.gl_version = "OpenGL ES 2.0";
-    init.extensions = "GL_KHR_robustness";
-    InitDecoderWithWorkarounds(init, workarounds);
   }
 
   void DoGetErrorWithContextLost(GLenum reset_status) {
@@ -307,19 +298,6 @@ TEST_P(GLES2DecoderLostContextTest, LoseInnocentFromGLError) {
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
   EXPECT_EQ(error::kInnocent, GetContextLostReason());
-}
-
-TEST_P(GLES2DecoderLostContextTest, LoseVirtualContextWithRobustness) {
-  InitWithVirtualContextsAndRobustness();
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown))
-      .Times(1);
-  // Signal guilty....
-  DoGetErrorWithContextLost(GL_GUILTY_CONTEXT_RESET_KHR);
-  EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
-  // ...but make sure we don't pretend, since for virtual contexts we don't
-  // know if this was really the guilty client.
-  EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
 TEST_P(GLES2DecoderLostContextTest, LoseGroupFromRobustness) {

@@ -15,13 +15,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/google/core/common/google_util.h"
+#include "components/search_engines/android/jni_headers/TemplateUrlService_jni.h"
 #include "components/search_engines/android/template_url_android.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
-#include "jni/TemplateUrlService_jni.h"
 #include "net/base/url_util.h"
 
 using base::android::JavaParamRef;

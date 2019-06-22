@@ -9,7 +9,6 @@ _jni_sources =
 
 generate_jni("safe_json_jni_headers") {
   sources = _jni_sources
-  jni_package = "data_decoder"
 }
 
 if (current_toolchain == default_toolchain) {

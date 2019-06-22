@@ -69,8 +69,10 @@ class OverlayPresenter {
     virtual void WillShowOverlay(OverlayPresenter* presenter,
                                  OverlayRequest* request) {}
 
-    // Called when |presenter| is finished dismissing its overlay UI.
-    virtual void DidHideOverlay(OverlayPresenter* presenter) {}
+    // Called when |presenter| is finished dismissing the overlay UI for
+    // |request|.
+    virtual void DidHideOverlay(OverlayPresenter* presenter,
+                                OverlayRequest* request) {}
 
     // Called when |presenter| is destroyed.
     virtual void OverlayPresenterDestroyed(OverlayPresenter* presenter) {}

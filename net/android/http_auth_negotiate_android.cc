@@ -11,12 +11,12 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/HttpNegotiateAuthenticator_jni.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/net_jni_headers/HttpNegotiateAuthenticator_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

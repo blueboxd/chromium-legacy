@@ -91,7 +91,8 @@
     [transitionContext completeTransition:success];
   }];
 
-  [animator startAnimation];
+  self.propertyAnimator = animator;
+  [self.propertyAnimator startAnimation];
 }
 
 @end

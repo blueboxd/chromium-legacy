@@ -442,7 +442,6 @@ void ProfileImpl::RegisterProfilePrefs(
   // Initialize the cache prefs.
   registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
-  registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
 }
 
 ProfileImpl::ProfileImpl(
@@ -849,12 +848,20 @@ ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
 }
 #endif  // !defined(OS_ANDROID)
 
+base::FilePath ProfileImpl::GetPath() {
+  return path_;
+}
+
 base::FilePath ProfileImpl::GetPath() const {
   return path_;
 }
 
 scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
   return io_task_runner_;
+}
+
+bool ProfileImpl::IsOffTheRecord() {
+  return false;
 }
 
 bool ProfileImpl::IsOffTheRecord() const {

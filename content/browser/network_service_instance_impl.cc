@@ -96,8 +96,8 @@ void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
     return;
   }
 
-  GetLocalNetworkService() = std::make_unique<network::NetworkService>(
-      nullptr, std::move(request), GetContentClient()->browser()->GetNetLog());
+  GetLocalNetworkService() =
+      std::make_unique<network::NetworkService>(nullptr, std::move(request));
 }
 
 void BindNetworkChangeManagerRequest(
@@ -248,8 +248,8 @@ network::NetworkService* GetNetworkServiceImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   if (!GetLocalNetworkService()) {
-    GetLocalNetworkService() = std::make_unique<network::NetworkService>(
-        nullptr, nullptr, GetContentClient()->browser()->GetNetLog());
+    GetLocalNetworkService() =
+        std::make_unique<network::NetworkService>(nullptr, nullptr);
   }
 
   return GetLocalNetworkService().get();

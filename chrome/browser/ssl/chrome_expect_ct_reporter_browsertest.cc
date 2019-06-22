@@ -70,7 +70,7 @@ class ExpectCTBrowserTest : public CertVerifierBrowserTest {
         EXPECT_EQ("application/expect-ct-report+json; charset=utf-8",
                   it->second);
       }
-      run_loop_->QuitClosure().Run();
+      run_loop_->Quit();
     }
 
     return http_response;

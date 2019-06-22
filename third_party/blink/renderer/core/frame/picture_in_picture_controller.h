@@ -47,6 +47,7 @@ class CORE_EXPORT PictureInPictureController
     kDisabledBySystem,
     kDisabledByFeaturePolicy,
     kDisabledByAttribute,
+    kInvalidWidthOrHeightOption,
   };
 
   // Enter Picture-in-Picture for an element with options if any and resolve

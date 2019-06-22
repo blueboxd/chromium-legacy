@@ -28,7 +28,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -91,8 +90,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
   [SigninEarlGreyUI signinWithIdentity:identity];
 
   // Check |identity| is signed-in.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 }
 
 // Tests that signing out from the Settings works correctly.
@@ -123,7 +121,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 // Tests that signing out of a managed account from the Settings works
@@ -146,8 +144,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
   SetEarlGreySynchronizationEnabled(YES);
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 
   // Go to Accounts Settings and tap the sign out button.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
@@ -167,7 +164,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
@@ -199,8 +196,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
           IDS_IOS_SETTINGS_TITLE);
   [[EarlGrey selectElementWithMatcher:settings_matcher]
       assertWithMatcher:grey_notVisible()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 }
 
 // Opens the sign in screen and then cancel it by opening a new tab. Ensures
@@ -269,7 +265,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 
   // Sign in with |identity1|.
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
@@ -300,7 +296,7 @@ void TapOnPrimarySignInButtonInRecentTabs() {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on
@@ -468,11 +464,10 @@ void TapOnPrimarySignInButtonInRecentTabs() {
   GREYAssertEqual(expectedString, webState->GetVisibleURL(), @"url not loaded");
   if (tapSettingsLink) {
     // Should be signed in.
-    CHROME_EG_ASSERT_NO_ERROR(
-        [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+    [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
   } else {
     // Should be not signed in.
-    CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+    [SigninEarlGreyUtils checkSignedOut];
   }
 }
 

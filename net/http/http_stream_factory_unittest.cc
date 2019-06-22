@@ -18,8 +18,10 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -361,6 +363,7 @@ TestCase kTests[] = {
 
 void PreconnectHelperForURL(int num_streams,
                             const GURL& url,
+                            NetworkIsolationKey network_isolation_key,
                             HttpNetworkSession* session) {
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryForPreconnect* mock_factory =
@@ -371,6 +374,7 @@ void PreconnectHelperForURL(int num_streams,
   request.method = "GET";
   request.url = url;
   request.load_flags = 0;
+  request.network_isolation_key = network_isolation_key;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -381,7 +385,7 @@ void PreconnectHelperForURL(int num_streams,
 void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   GURL url =
       test.ssl ? GURL("https://www.google.com") : GURL("http://www.google.com");
-  PreconnectHelperForURL(test.num_streams, url, session);
+  PreconnectHelperForURL(test.num_streams, url, NetworkIsolationKey(), session);
 }
 
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
@@ -610,8 +614,46 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
                                    std::move(owned_transport_conn_pool));
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
-  PreconnectHelperForURL(1, GURL("http://www.google.com:7"), session.get());
+  PreconnectHelperForURL(1, GURL("http://www.google.com:7"),
+                         NetworkIsolationKey(), session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
+}
+
+// Verify that preconnects use the specified NetworkIsolationKey.
+TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+  HttpNetworkSessionPeer peer(session.get());
+  CommonConnectJobParams common_connect_job_params =
+      session->CreateCommonConnectJobParams();
+  std::unique_ptr<CapturePreconnectsTransportSocketPool>
+      owned_transport_conn_pool =
+          std::make_unique<CapturePreconnectsTransportSocketPool>(
+              &common_connect_job_params);
+  CapturePreconnectsTransportSocketPool* transport_conn_pool =
+      owned_transport_conn_pool.get();
+  auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
+  mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
+                                   std::move(owned_transport_conn_pool));
+  peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
+
+  const GURL kURL("http://foo.test/");
+  const NetworkIsolationKey kKey1(url::Origin::Create(GURL("http://foo.test")));
+  const NetworkIsolationKey kKey2(url::Origin::Create(GURL("http://bar.test")));
+  PreconnectHelperForURL(1, kURL, kKey1, session.get());
+  EXPECT_EQ(1, transport_conn_pool->last_num_streams());
+  EXPECT_EQ(kKey1,
+            transport_conn_pool->last_group_id().network_isolation_key());
+
+  PreconnectHelperForURL(2, kURL, kKey2, session.get());
+  EXPECT_EQ(2, transport_conn_pool->last_num_streams());
+  EXPECT_EQ(kKey2,
+            transport_conn_pool->last_group_id().network_isolation_key());
 }
 
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
@@ -1164,7 +1206,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-    PreconnectHelperForURL(num_streams, url, session.get());
+    PreconnectHelperForURL(num_streams, url, NetworkIsolationKey(),
+                           session.get());
     EXPECT_EQ(num_streams, http_proxy_pool->last_num_streams());
   }
 }

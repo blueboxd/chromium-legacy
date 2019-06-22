@@ -19,6 +19,13 @@ namespace net {
 
 namespace {
 
+// id-ce-issuingDistributionPoint OBJECT IDENTIFIER ::= { id-ce 28 }
+// In dotted notation: 2.5.29.28
+der::Input IssuingDistributionPointOid() {
+  static const uint8_t oid[] = {0x55, 0x1d, 0x1c};
+  return der::Input(oid);
+}
+
 WARN_UNUSED_RESULT bool NormalizeNameTLV(const der::Input& name_tlv,
                                          std::string* out_normalized_name) {
   der::Parser parser(name_tlv);
@@ -27,6 +34,14 @@ WARN_UNUSED_RESULT bool NormalizeNameTLV(const der::Input& name_tlv,
   return parser.ReadTag(der::kSequence, &name_rdn) &&
          NormalizeName(name_rdn, out_normalized_name, &unused_errors) &&
          !parser.HasMore();
+}
+
+bool ContainsExactMatchingName(std::vector<base::StringPiece> a,
+                               std::vector<base::StringPiece> b) {
+  std::sort(a.begin(), a.end());
+  std::sort(b.begin(), b.end());
+  return !base::STLSetIntersection<std::vector<base::StringPiece>>(a, b)
+              .empty();
 }
 
 }  // namespace
@@ -153,6 +168,70 @@ bool ParseCrlTbsCertList(const der::Input& tbs_tlv, ParsedCrlTbsCertList* out) {
   // By definition the input was a single sequence, so there shouldn't be
   // unconsumed data.
   if (parser.HasMore())
+    return false;
+
+  return true;
+}
+
+bool ParseIssuingDistributionPoint(
+    const der::Input& extension_value,
+    std::unique_ptr<GeneralNames>* out_distribution_point_names) {
+  der::Parser idp_extension_value_parser(extension_value);
+  // IssuingDistributionPoint ::= SEQUENCE {
+  der::Parser idp_parser;
+  if (!idp_extension_value_parser.ReadSequence(&idp_parser))
+    return false;
+
+  // 5.2.5.  Conforming CRLs issuers MUST NOT issue CRLs where the DER
+  //    encoding of the issuing distribution point extension is an empty
+  //    sequence.
+  if (!idp_parser.HasMore())
+    return false;
+
+  //  distributionPoint          [0] DistributionPointName OPTIONAL,
+  base::Optional<der::Input> distribution_point;
+  if (!idp_parser.ReadOptionalTag(
+          der::kTagContextSpecific | der::kTagConstructed | 0,
+          &distribution_point)) {
+    return false;
+  }
+
+  if (distribution_point.has_value()) {
+    //   DistributionPointName ::= CHOICE {
+    der::Parser dp_name_parser(*distribution_point);
+    //        fullName                [0]     GeneralNames,
+    //        nameRelativeToCRLIssuer [1]     RelativeDistinguishedName }
+    base::Optional<der::Input> der_full_name;
+    if (!dp_name_parser.ReadOptionalTag(
+            der::kTagContextSpecific | der::kTagConstructed | 0,
+            &der_full_name)) {
+      return false;
+    }
+    if (!der_full_name) {
+      // Only fullName is supported.
+      return false;
+    }
+    CertErrors errors;
+    *out_distribution_point_names =
+        GeneralNames::CreateFromValue(*der_full_name, &errors);
+    if (!*out_distribution_point_names)
+      return false;
+
+    if (dp_name_parser.HasMore()) {
+      // CHOICE represents a single value.
+      return false;
+    }
+  }
+
+  //  onlyContainsUserCerts      [1] BOOLEAN DEFAULT FALSE,
+  //  onlyContainsCACerts        [2] BOOLEAN DEFAULT FALSE,
+  //  onlySomeReasons            [3] ReasonFlags OPTIONAL,
+  //  indirectCRL                [4] BOOLEAN DEFAULT FALSE,
+  //  onlyContainsAttributeCerts [5] BOOLEAN DEFAULT FALSE }
+  // onlyContainsUserCerts, onlyContainsCACerts, onlySomeReasons, indirectCRL,
+  // and onlyContainsAttributeCerts are not supported, fail parsing if they are
+  // present.
+  if (idp_parser.HasMore())
     return false;
 
   return true;
@@ -336,16 +415,65 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
   if (der::Input(&normalized_crl_issuer) != target_cert->normalized_issuer())
     return CRLRevocationStatus::UNKNOWN;
 
-  // 6.3.3 (b) (2) If the complete CRL includes an issuing distribution point
-  //               (IDP) CRL extension ...
-  // This implementation does not support CRL extensions, fail if any critical
-  // CRL extensions are present.
   if (tbs_cert_list.crl_extensions_tlv.has_value()) {
     std::map<der::Input, ParsedExtension> extensions;
     if (!ParseExtensions(*tbs_cert_list.crl_extensions_tlv, &extensions))
       return CRLRevocationStatus::UNKNOWN;
 
+    // 6.3.3 (b) (2) If the complete CRL includes an issuing distribution point
+    //               (IDP) CRL extension, check the following:
+    ParsedExtension idp_extension;
+    if (ConsumeExtension(IssuingDistributionPointOid(), &extensions,
+                         &idp_extension)) {
+      std::unique_ptr<GeneralNames> distribution_point_names;
+      if (!ParseIssuingDistributionPoint(idp_extension.value,
+                                         &distribution_point_names)) {
+        return CRLRevocationStatus::UNKNOWN;
+      }
+
+      if (distribution_point_names) {
+        // 6.3.3. [If the CRL was not specified in a distribution point], assume
+        //        a DP with both the reasons and the cRLIssuer fields omitted
+        //        and a distribution point name of the certificate issuer.
+        // Since only URI distribution point names are supported currently,
+        // just fail in this case.
+        // TODO(https://crbug.com/749276): update this if all distribution
+        // point name types are supported.
+        if (!cert_dp)
+          return CRLRevocationStatus::UNKNOWN;
+
+        // 6.3.3. (b) (2) (i) If the distribution point name is present in the
+        //                    IDP CRL extension and the distribution field is
+        //                    present in the DP, then verify that one of the
+        //                    names in the IDP matches one of the names in the
+        //                    DP.
+        // 5.2.5.  The identical encoding MUST be used in the distributionPoint
+        //         fields of the certificate and the CRL.
+        // TODO(https://crbug.com/749276): Check other name types?
+        if (!ContainsExactMatchingName(
+                cert_dp->uris,
+                distribution_point_names->uniform_resource_identifiers)) {
+          return CRLRevocationStatus::UNKNOWN;
+        }
+
+        // 6.3.3. (b) (2) (i) If the distribution point name is present in the
+        //                    IDP CRL extension and the distribution field is
+        //                    omitted from the DP, then verify that one of the
+        //                    names in the IDP matches one of the names in the
+        //                    cRLIssuer field of the DP.
+        // Indirect CRLs are not supported, if indirectCRL was specified,
+        // ParseIssuingDistributionPoint would already have failed.
+      }
+
+      // 6.3.3. (b) (2) (ii - iiii): onlyContainsUserCerts,
+      // onlyContainsCACerts, onlyContainsAttributeCerts not supported.
+      // TODO(https://crbug.com/749276): handle onlyContainsUserCerts &
+      // onlyContainsCACerts. Some random sampling of public CRLs found a few
+      // that use those and it should be easy enough to implement.
+    }
+
     for (const auto& ext : extensions) {
+      // Fail if any unhandled critical CRL extensions are present.
       if (ext.second.critical)
         return CRLRevocationStatus::UNKNOWN;
     }

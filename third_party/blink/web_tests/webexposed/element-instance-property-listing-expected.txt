@@ -638,6 +638,7 @@ html element iframe
     property frameBorder
     property getSVGDocument
     property height
+    property loading
     property longDesc
     property marginHeight
     property marginWidth
@@ -662,6 +663,7 @@ html element img
     property importance
     property intrinsicSize
     property isMap
+    property loading
     property longDesc
     property lowsrc
     property name

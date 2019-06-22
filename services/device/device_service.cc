@@ -30,7 +30,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/InterfaceRegistrar_jni.h"
+#include "services/device/device_service_jni_headers/InterfaceRegistrar_jni.h"
 #include "services/device/screen_orientation/screen_orientation_listener_android.h"
 #else
 #include "services/device/battery/battery_monitor_impl.h"

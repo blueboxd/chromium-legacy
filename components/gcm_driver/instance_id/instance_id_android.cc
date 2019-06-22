@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "jni/InstanceIDBridge_jni.h"
+#include "components/gcm_driver/instance_id/android/jni_headers/InstanceIDBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;

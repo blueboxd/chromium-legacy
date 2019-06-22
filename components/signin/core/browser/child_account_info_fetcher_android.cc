@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "jni/ChildAccountInfoFetcher_jni.h"
+#include "components/signin/core/browser/android/jni_headers/ChildAccountInfoFetcher_jni.h"
 
 using base::android::JavaParamRef;
 

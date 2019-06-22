@@ -47,6 +47,7 @@ constexpr char const* kTestParams[] = {
     "good_no_version.pem",
     "good_no_crldp.pem",
     "good_key_rollover.pem",
+    "good_idp_contains_uri.pem",
     "revoked.pem",
     "revoked_no_nextupdate.pem",
     "revoked_fake_crlentryextension.pem",
@@ -61,6 +62,8 @@ constexpr char const* kTestParams[] = {
     "bad_nextupdate_too_old.pem",
     "bad_wrong_issuer.pem",
     "bad_key_rollover_signature.pem",
+    "bad_idp_contains_wrong_uri.pem",
+    "bad_idp_indirectcrl.pem",
     "invalid_mismatched_signature_algorithm.pem",
     "invalid_revoked_empty_sequence.pem",
     "invalid_v1_with_extension.pem",
@@ -86,6 +89,8 @@ constexpr char const* kTestParams[] = {
     "invalid_garbage_after_revocationdate.pem",
     "invalid_garbage_after_crlentryextensions.pem",
     "invalid_garbage_crlentry.pem",
+    "invalid_idp_dpname_choice_extra_data.pem",
+    "invalid_idp_empty_sequence.pem",
 };
 
 struct PrintTestName {

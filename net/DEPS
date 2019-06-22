@@ -1,8 +1,8 @@
 include_rules = [
   "+crypto",
   "+gin",
-  "+jni",
   "+mojo/public",
+  "+net/net_jni_headers",
   "+third_party/apple_apsl",
   "+third_party/boringssl/src/include",
   "+third_party/nss",

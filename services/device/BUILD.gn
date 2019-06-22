@@ -306,7 +306,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
     ]
-    jni_package = "device_service"
   }
 
   android_library("java") {

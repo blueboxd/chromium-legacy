@@ -1232,6 +1232,7 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisabledForSmallImages) {
 }
 
 TEST_F(HTMLPreloadScannerTest, LazyLoadImage_FeatureDisabledWithAttribute) {
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {

@@ -93,7 +93,6 @@ if (is_android) {
   generate_jni("jni_headers") {
     visibility = [ ":power_save_blocker" ]
     sources = java_sources_needing_jni
-    jni_package = "device"
   }
 
   android_library("java") {

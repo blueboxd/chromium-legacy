@@ -637,8 +637,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     return browser_context;
   }
 
-  base::FilePath RemoteBoundLogsDir(
-      const BrowserContext* browser_context) const {
+  base::FilePath RemoteBoundLogsDir(BrowserContext* browser_context) const {
     return RemoteBoundLogsDir(browser_context->GetPath());
   }
 

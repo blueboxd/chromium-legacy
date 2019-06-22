@@ -72,7 +72,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
-  net::NetLog* GetNetLog() override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;

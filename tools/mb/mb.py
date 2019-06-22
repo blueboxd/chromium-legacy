@@ -1175,6 +1175,7 @@ class MetaBuildWrapper(object):
 
     is_android = 'target_os="android"' in vals['gn_args']
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
+    is_cros = 'target_os="chromeos"' in vals['gn_args']
     is_simplechrome = vals.get('cros_passthrough', False)
     is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
@@ -1255,7 +1256,8 @@ class MetaBuildWrapper(object):
           # Enable lsan when asan is enabled except on Windows where LSAN isn't
           # supported.
           # TODO(https://crbug.com/948939): Enable on Mac once things pass.
-          '--lsan=%d' % (asan and not is_mac and not is_win),
+          # TODO(https://crbug.com/974478): Enable on ChromeOS once things pass.
+          '--lsan=%d' % (asan and not is_mac and not is_win and not is_cros),
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,
@@ -1269,7 +1271,8 @@ class MetaBuildWrapper(object):
           # Enable lsan when asan is enabled except on Windows where LSAN isn't
           # supported.
           # TODO(https://crbug.com/948939): Enable on Mac once things pass.
-          '--lsan=%d' % (asan and not is_mac and not is_win),
+          # TODO(https://crbug.com/974478): Enable on ChromeOS once things pass.
+          '--lsan=%d' % (asan and not is_mac and not is_win and not is_cros),
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,

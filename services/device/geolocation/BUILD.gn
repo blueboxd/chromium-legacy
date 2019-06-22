@@ -129,7 +129,6 @@ if (is_android) {
       "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
       "android/java/src/org/chromium/device/geolocation/LocationProviderFactory.java",
     ]
-    jni_package = "device"
   }
 
   android_library("geolocation_java") {

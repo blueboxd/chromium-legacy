@@ -70,7 +70,6 @@ if (is_android) {
       "java/src/org/chromium/midi/UsbMidiDeviceAndroid.java",
       "java/src/org/chromium/midi/UsbMidiDeviceFactoryAndroid.java",
     ]
-    jni_package = "midi"
   }
 }
 

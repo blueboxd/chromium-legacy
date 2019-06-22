@@ -7868,11 +7868,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -7890,11 +7891,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -7912,11 +7914,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -7933,11 +7936,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -7951,11 +7955,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "swiftshader_unittests"
       }
@@ -7982,11 +7987,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8011,11 +8017,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8040,11 +8047,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8069,11 +8077,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8102,11 +8111,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8138,11 +8148,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8190,11 +8201,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -8235,11 +8247,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8265,11 +8278,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8294,11 +8308,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8325,11 +8340,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 20
         }
@@ -8355,11 +8371,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 2
         }
@@ -8385,11 +8402,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.3.3",
-              "os": "Ubuntu",
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 2
         }
@@ -8413,11 +8431,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -8438,11 +8457,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "angle_unittests"
       },
@@ -8460,11 +8480,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "angle_white_box_tests"
       },
@@ -8486,11 +8507,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "browser_tests"
       },
@@ -8508,11 +8530,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gl_tests"
       },
@@ -8530,11 +8553,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gl_unittests"
       },
@@ -8551,11 +8575,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "gles2_conform_test"
       },
@@ -8569,11 +8594,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         },
         "test": "swiftshader_unittests"
       }
@@ -8598,11 +8624,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 21600
         }
       },
       {
@@ -8626,11 +8653,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8655,11 +8683,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8684,11 +8713,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8713,11 +8743,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8746,11 +8777,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8782,11 +8814,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8834,11 +8867,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -8879,11 +8913,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8909,11 +8944,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8938,11 +8974,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false
         }
       },
@@ -8969,11 +9006,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 20
         }
@@ -9001,11 +9039,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 20
         }
@@ -9031,11 +9070,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 2
         }
@@ -9061,11 +9101,12 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3-410.78",
-              "os": "Ubuntu-14.04",
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 21600,
           "idempotent": false,
           "shards": 2
         }

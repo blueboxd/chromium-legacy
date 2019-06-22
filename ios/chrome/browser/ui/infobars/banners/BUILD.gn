@@ -24,6 +24,7 @@ source_set("public") {
   sources = [
     "infobar_banner_constants.h",
     "infobar_banner_constants.mm",
+    "infobar_banner_interaction_delegate.h",
   ]
 }
 

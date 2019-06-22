@@ -8,6 +8,7 @@
 #include <cups/cups.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -17,9 +18,6 @@ namespace cups_proxy {
 
 enum class InstallPrinterResult {
   kSuccess = 0,
-
-  // Couldn't find any printers referenced by the incoming request.
-  kNoPrintersFound,
 
   // Referenced printer is unknown to Chrome.
   kUnknownPrinterFound,
@@ -34,16 +32,23 @@ using InstallPrinterCallback = base::OnceCallback<void(InstallPrinterResult)>;
 // sequenced context.
 class PrinterInstaller {
  public:
-  // Factory function.
-  static std::unique_ptr<PrinterInstaller> Create(
+  explicit PrinterInstaller(
       base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
-
-  virtual ~PrinterInstaller() = default;
+  ~PrinterInstaller();
 
   // Pre-installs any printers required by |ipp| into the CUPS daemon, as
   // needed. |cb| will be run on this instance's sequenced context.
-  virtual void InstallPrinterIfNeeded(ipp_t* ipp,
-                                      InstallPrinterCallback cb) = 0;
+  void InstallPrinter(std::string printer_id, InstallPrinterCallback cb);
+
+ private:
+  void OnInstallPrinter(InstallPrinterCallback cb, bool success);
+  void Finish(InstallPrinterCallback cb, InstallPrinterResult res);
+
+  // Service delegate granting access to printing stack dependencies.
+  base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<PrinterInstaller> weak_factory_{this};
 };
 
 }  // namespace cups_proxy

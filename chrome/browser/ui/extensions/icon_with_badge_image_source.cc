@@ -54,7 +54,7 @@ IconWithBadgeImageSource::Badge::Badge(const std::string& text,
 IconWithBadgeImageSource::Badge::~Badge() {}
 
 IconWithBadgeImageSource::IconWithBadgeImageSource(const gfx::Size& size)
-    : gfx::CanvasImageSource(size, false) {}
+    : gfx::CanvasImageSource(size) {}
 
 IconWithBadgeImageSource::~IconWithBadgeImageSource() {}
 

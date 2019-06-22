@@ -45,7 +45,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/PaymentValidator.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
   ]
-  jni_package = "payments"
 }
 
 android_library("java") {

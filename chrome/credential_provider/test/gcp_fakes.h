@@ -69,15 +69,6 @@ class FakeOSUserManager : public OSUserManager {
                   bool add_to_users_group,
                   BSTR* sid,
                   DWORD* error) override;
-  // Add a user to the OS with domain associated with it.
-  HRESULT AddUser(const wchar_t* username,
-                  const wchar_t* password,
-                  const wchar_t* fullname,
-                  const wchar_t* comment,
-                  bool add_to_users_group,
-                  const wchar_t* domain,
-                  BSTR* sid,
-                  DWORD* error);
   HRESULT ChangeUserPassword(const wchar_t* domain,
                              const wchar_t* username,
                              const wchar_t* password,
@@ -112,14 +103,8 @@ class FakeOSUserManager : public OSUserManager {
                                          const wchar_t* username,
                                          bool allow) override;
 
-  bool IsDeviceDomainJoined() override;
-
   void SetShouldFailUserCreation(bool should_fail) {
     should_fail_user_creation_ = should_fail;
-  }
-
-  void SetIsDeviceDomainJoined(bool is_device_domain_joined) {
-    is_device_domain_joined_ = is_device_domain_joined;
   }
 
   struct UserInfo {
@@ -180,7 +165,16 @@ class FakeOSUserManager : public OSUserManager {
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
   bool should_fail_user_creation_ = false;
-  bool is_device_domain_joined_ = false;
+
+  // Add a user to the OS with domain associated with it.
+  HRESULT AddUser(const wchar_t* username,
+                  const wchar_t* password,
+                  const wchar_t* fullname,
+                  const wchar_t* comment,
+                  bool add_to_users_group,
+                  const wchar_t* domain,
+                  BSTR* sid,
+                  DWORD* error);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -279,12 +273,6 @@ class FakeWinHttpUrlFetcherFactory {
       const WinHttpUrlFetcher::Headers& headers,
       const std::string& response,
       HANDLE send_response_event_handle = INVALID_HANDLE_VALUE);
-
-  // Sets the response as a failed http attempt. The return result
-  // from http_url_fetcher.Fetch() would be set as the input HRESULT
-  // to this method.
-  void SetFakeFailedResponse(const GURL& url, HRESULT failed_hr);
-
   size_t requests_created() const { return requests_created_; }
 
  private:
@@ -305,7 +293,6 @@ class FakeWinHttpUrlFetcherFactory {
   };
 
   std::map<GURL, Response> fake_responses_;
-  std::map<GURL, HRESULT> failed_http_fetch_hr_;
   size_t requests_created_ = 0;
 };
 
@@ -329,7 +316,6 @@ class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
   Headers response_headers_;
   std::string response_;
   HANDLE send_response_event_handle_;
-  HRESULT response_hr_ = S_OK;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

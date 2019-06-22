@@ -469,7 +469,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     return false;
   }
 
-  if (!provider_host_->AllowServiceWorker(registration_->scope())) {
+  if (!provider_host_->AllowServiceWorker(registration_->scope(), GURL())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +

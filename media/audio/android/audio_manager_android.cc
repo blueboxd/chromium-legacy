@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "jni/AudioManagerAndroid_jni.h"
 #include "media/audio/android/audio_record_input.h"
 #include "media/audio/android/audio_track_output_stream.h"
 #include "media/audio/android/opensles_input.h"
@@ -21,6 +20,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
+#include "media/base/android/media_jni_headers/AudioManagerAndroid_jni.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 

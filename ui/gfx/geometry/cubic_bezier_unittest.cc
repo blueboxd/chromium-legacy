@@ -185,17 +185,31 @@ TEST(CubicBezierTest, InputOutOfRange) {
   EXPECT_EQ(0.0, vertical_gradient.Solve(-1.0));
   EXPECT_EQ(1.0, vertical_gradient.Solve(2.0));
 
+  CubicBezier vertical_trailing_gradient(0.5, 0.0, 1.0, 0.5);
+  EXPECT_EQ(0.0, vertical_trailing_gradient.Solve(-1.0));
+  EXPECT_EQ(1.0, vertical_trailing_gradient.Solve(2.0));
+
   CubicBezier distinct_endpoints(0.1, 0.2, 0.8, 0.8);
   EXPECT_EQ(-2.0, distinct_endpoints.Solve(-1.0));
   EXPECT_EQ(2.0, distinct_endpoints.Solve(2.0));
 
-  CubicBezier coincident_endpoint(0.0, 0.0, 0.8, 0.8);
-  EXPECT_EQ(-1.0, coincident_endpoint.Solve(-1.0));
-  EXPECT_EQ(2.0, coincident_endpoint.Solve(2.0));
+  CubicBezier coincident_leading_endpoint(0.0, 0.0, 0.5, 1.0);
+  EXPECT_EQ(-2.0, coincident_leading_endpoint.Solve(-1.0));
+  EXPECT_EQ(1.0, coincident_leading_endpoint.Solve(2.0));
 
-  CubicBezier three_coincident_points(0.0, 0.0, 0.0, 0.0);
-  EXPECT_EQ(0, three_coincident_points.Solve(-1.0));
-  EXPECT_EQ(2.0, three_coincident_points.Solve(2.0));
+  CubicBezier coincident_trailing_endpoint(1.0, 0.5, 1.0, 1.0);
+  EXPECT_EQ(-0.5, coincident_trailing_endpoint.Solve(-1.0));
+  EXPECT_EQ(1.0, coincident_trailing_endpoint.Solve(2.0));
+
+  // Two special cases with three coincident points. Both are equivalent to
+  // linear.
+  CubicBezier all_zeros(0.0, 0.0, 0.0, 0.0);
+  EXPECT_EQ(-1.0, all_zeros.Solve(-1.0));
+  EXPECT_EQ(2.0, all_zeros.Solve(2.0));
+
+  CubicBezier all_ones(1.0, 1.0, 1.0, 1.0);
+  EXPECT_EQ(-1.0, all_ones.Solve(-1.0));
+  EXPECT_EQ(2.0, all_ones.Solve(2.0));
 }
 
 TEST(CubicBezierTest, GetPoints) {

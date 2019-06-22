@@ -4,8 +4,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "components/payments/content/android/jni_headers/OriginSecurityChecker_jni.h"
 #include "content/public/common/origin_util.h"
-#include "jni/OriginSecurityChecker_jni.h"
 #include "url/gurl.h"
 
 namespace payments {

@@ -137,7 +137,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
         base::BindLambdaForTesting(
             [&](std::set<std::string> notification_ids, bool supports_sync) {
               displayed_notification_ids = std::move(notification_ids);
-              run_loop.QuitClosure().Run();
+              run_loop.Quit();
             }));
     run_loop.Run();
     return displayed_notification_ids;
@@ -156,7 +156,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
                                   notification_datas) {
               DCHECK(success);
               notification_database_datas = notification_datas;
-              run_loop.QuitClosure().Run();
+              run_loop.Quit();
             }));
     base::RunLoop().RunUntilIdle();
     return notification_database_datas;
@@ -175,7 +175,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
             [&](bool success,
                 const blink::NotificationResources& notification_resources) {
               result = success;
-              run_loop.QuitClosure().Run();
+              run_loop.Quit();
             }));
     run_loop.Run();
     return result;
@@ -190,7 +190,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
     context->WriteNotificationResources(
         std::move(resources), base::BindLambdaForTesting([&](bool success) {
           result = success;
-          run_loop.QuitClosure().Run();
+          run_loop.Quit();
         }));
     run_loop.Run();
     return result;
@@ -210,7 +210,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
         base::BindLambdaForTesting([&](bool success, const std::string& id) {
           DCHECK(success);
           notification_id = id;
-          run_loop.QuitClosure().Run();
+          run_loop.Quit();
         }));
     run_loop.Run();
     DCHECK(!notification_id.empty());
@@ -883,7 +883,7 @@ TEST_F(PlatformNotificationContextTest, ReDisplayNotifications) {
       {origin}, base::BindLambdaForTesting([&](size_t display_count) {
         // Expect the notification with resources to be reshown.
         ASSERT_EQ(1u, display_count);
-        run_loop.QuitClosure().Run();
+        run_loop.Quit();
       }));
   run_loop.Run();
 

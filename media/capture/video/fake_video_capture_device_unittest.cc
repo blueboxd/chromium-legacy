@@ -188,7 +188,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
 
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
-    run_loop_->QuitClosure().Run();
+    run_loop_->Quit();
   }
 
   void WaitForCapturedFrame() {

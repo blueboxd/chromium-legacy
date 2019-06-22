@@ -225,8 +225,7 @@ void ProfileImplIOData::InitializeExtensionsCookieStore(
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ =
-      content::CreateCookieStore(cookie_config, g_browser_process->net_log());
+  extensions_cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
 }
 
 net::CookieStore* ProfileImplIOData::GetExtensionsCookieStore() const {

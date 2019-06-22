@@ -120,7 +120,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void StartAutoupdateTimer() override {}
 #endif
 
-  net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;

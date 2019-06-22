@@ -99,7 +99,7 @@ class AutomationEventWaiter : public ui::AXEventBundleSink {
       int focused_node_id = update.tree_data.focus_id;
       focused_node_ids_.push_back(focused_node_id);
       if (focused_node_id == node_id_to_wait_for_)
-        run_loop_->QuitClosure().Run();
+        run_loop_->Quit();
     }
   }
 

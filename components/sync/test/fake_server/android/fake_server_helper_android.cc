@@ -19,9 +19,9 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server/fake_server_jni/FakeServerHelper_jni.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
-#include "jni/FakeServerHelper_jni.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

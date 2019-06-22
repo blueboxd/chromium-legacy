@@ -3,5 +3,4 @@ include_rules = [
   # Remove content dependencies: https://crbug.com/968156
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",
-  "+jni"
 ]

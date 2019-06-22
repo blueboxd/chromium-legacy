@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/AndroidProxyConfigServiceTestUtil_jni.h"
+#include "net/net_test_jni_headers/AndroidProxyConfigServiceTestUtil_jni.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/test/test_with_scoped_task_environment.h"

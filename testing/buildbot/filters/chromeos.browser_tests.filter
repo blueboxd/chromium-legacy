@@ -1,5 +1,30 @@
+# TODO(crbug.com/977736): Enable this.
+-ActiveDirectoryWebUILoginTest.PasswordChange_ReopenClearErrors
+
+# TODO(crbug.com/977737): Enable this.
+-AppListClientImplBrowserTest.OpenSearchResult
+
+# TODO(crbug.com/977738): Enable this.
+-ChromePluginTest.InstalledPlugins
+
+# TODO(crbug.com/977739): Enable this.
+-CrSettingsPeoplePageAccountManagerTest.All
+
+# TODO(crbug.com/977740): Enable this.
+-LoginUIKeyboardTest.CheckPODScreenDefault
+-LoginUIKeyboardTestWithUsersAndOwner.CheckPODScreenKeyboard
+
+# TODO(crbug.com/977741): Enable this.
+-LoginUtilsTest.RlzInitialized
+
 # TODO(crbug.com/976083): Enable this.
 -MSE_Widevine/EncryptedMediaTest.*
+
+# TODO(crbug.com/977743): Enable this.
+-ManagementApiKioskTest.ManagementApi
+
+# TODO(crbug.com/977744): Enable this.
+-ProcessMemoryMetricsEmitterTest.RendererBuildId
 
 # TODO(crbug.com/976807): Enable this.
 -SiteIsolationFlagHandlingTest.FlagHandlingTest*
@@ -8,6 +33,14 @@
 -StructSequence/OobeLocalizationTest.LocalizationTest/3
 -StructSequence/OobeLocalizationTest.LocalizationTest/4
 -StructSequence/OobeLocalizationTest.LocalizationTest/8
+
+# TODO(crbug.com/977745): Enable this.
+-SupervisionTransitionScreenTest.SuccessfulTransition/0
+-SupervisionTransitionScreenTest.TransitionTimeout/0
+
+# TODO(crbug.com/977749): Enable this.
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
 
 # TODO(crbug.com/976987): Enable this.
 -UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser/0
@@ -18,3 +51,6 @@
 -UserCloudPolicyManagerTest.PolicyForChildUser/1
 -UserCloudPolicyManagerTest.StartSession/0
 -UserCloudPolicyManagerTest.StartSession/1
+
+# TODO(crbug.com/977750): Enable this.
+-WelcomeScreenBrowserTest.WelcomeScreenKeyboardSelection

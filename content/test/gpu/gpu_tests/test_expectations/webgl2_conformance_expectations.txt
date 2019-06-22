@@ -266,11 +266,6 @@ crbug.com/950787 [ opengl linux passthrough intel ] conformance/extensions/webgl
 # Regressions in 10.12.4.
 crbug.com/705865 [ sierra intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
 crbug.com/705865 [ sierra intel ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
-
-# Flaky on 10.13 as well.
-crbug.com/870856 [ sierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
-crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
 # Regressions in 10.13
 crbug.com/774826 [ highsierra intel-0xa2e ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]
@@ -395,11 +390,13 @@ crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-
 # self.Fail('conformance2/rendering/texture-switch-performance.html',
 #     ['mac', 'amd'], bug=735483)
 
-# The following two failures are a regression in the Mac AMD
-# OpenGL driver on 10.13.6 specifically. Unfortunately when the
-# tests fail, they fail three times in a row, so we must mark them
-# failing rather than flaky.
-crbug.com/870856 [ highsierra amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+# The following two failures appeared to be a regression in the Mac AMD OpenGL
+# driver on 10.13.6 specifically, and are still flaky. Unfortunately when the
+# tests fail, they fail three times in a row, so we must mark them failing
+# rather than flaky.
+crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+crbug.com/870856 [ mac amd ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
+
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
 crbug.com/483282 [ sierra amd ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]
@@ -572,6 +569,7 @@ crbug.com/703779 [ opengl linux nvidia-0x1cb3 ] deqp/functional/gles3/fbocomplet
 
 # Linux Intel
 crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 # Already fixed with Mesa 17.2.3
 crbug.com/905011 [ linux intel ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]

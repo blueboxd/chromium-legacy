@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest, PolicyIsSet) {
                                   _))
       .WillOnce(testing::Invoke(
           [&run_loop](const std::string&, std::string*, const base::FilePath&) {
-            run_loop.QuitClosure().Run();
+            run_loop.Quit();
           }));
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest,
                                   _))
       .WillOnce(testing::Invoke(
           [&run_loop](const std::string&, std::string*, const base::FilePath&) {
-            run_loop.QuitClosure().Run();
+            run_loop.Quit();
           }));
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest,
       .WillOnce(
           testing::Invoke([&run_loop_updated](const std::string&, std::string*,
                                               const base::FilePath&) {
-            run_loop_updated.QuitClosure().Run();
+            run_loop_updated.Quit();
           }));
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(

@@ -489,9 +489,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
                            const gfx::ImageSkia& overlay,
                            const color_utils::HSL& hsl_shift,
                            int vertical_offset)
-      : gfx::CanvasImageSource(
-            image_to_tint.isNull() ? overlay.size() : image_to_tint.size(),
-            false),
+      : gfx::CanvasImageSource(image_to_tint.isNull() ? overlay.size()
+                                                      : image_to_tint.size()),
         background_color_(background_color),
         image_to_tint_(image_to_tint),
         overlay_(overlay),
@@ -542,7 +541,7 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
   ControlButtonBackgroundImageSource(SkColor background_color,
                                      const gfx::ImageSkia& bg_image,
                                      const gfx::Size& dest_size)
-      : gfx::CanvasImageSource(dest_size, false),
+      : gfx::CanvasImageSource(dest_size),
         background_color_(background_color),
         bg_image_(bg_image) {
     DCHECK(!bg_image.isNull());

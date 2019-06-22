@@ -160,9 +160,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // the frame tree has focus. If focus has changed, calls FireFocusEvent.
   void FireFocusEventsIfNeeded();
 
-  // Send the events triggered when a node lose focus.
-  virtual void OnFocusLost(BrowserAccessibility* node) {}
-
   // Return whether or not we are currently able to fire events.
   virtual bool CanFireEvents();
 

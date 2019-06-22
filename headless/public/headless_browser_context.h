@@ -61,7 +61,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
   virtual void Close() = 0;
 
   // GUID for this browser context.
-  virtual const std::string& Id() const = 0;
+  virtual const std::string& Id() = 0;
 
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 

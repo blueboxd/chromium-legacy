@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "content/browser/picture_in_picture/picture_in_picture_session.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 
@@ -34,12 +36,22 @@ void PictureInPictureServiceImpl::StartSession(
     blink::mojom::PictureInPictureSessionObserverPtr observer,
     StartSessionCallback callback) {
   blink::mojom::PictureInPictureSessionPtr session_ptr;
-
   gfx::Size window_size;
-  active_session_.reset(new PictureInPictureSession(
-      this, MediaPlayerId(render_frame_host_, player_id), surface_id,
-      natural_size, show_play_pause_button, show_mute_button,
-      mojo::MakeRequest(&session_ptr), std::move(observer), &window_size));
+
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+
+  auto result = web_contents_impl->EnterPictureInPicture(surface_id.value(),
+                                                         natural_size);
+
+  // Picture-in-Picture may not be supported by all embedders, so we should only
+  // create the session if the EnterPictureInPicture request was successful.
+  if (result == PictureInPictureResult::kSuccess) {
+    active_session_ = std::make_unique<PictureInPictureSession>(
+        this, MediaPlayerId(render_frame_host_, player_id), surface_id,
+        natural_size, show_play_pause_button, show_mute_button,
+        mojo::MakeRequest(&session_ptr), std::move(observer), &window_size);
+  }
 
   std::move(callback).Run(std::move(session_ptr), window_size);
 }

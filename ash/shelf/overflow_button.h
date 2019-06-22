@@ -28,13 +28,13 @@ class ASH_EXPORT OverflowButton : public ShelfControlButton {
   OverflowButton(ShelfView* shelf_view, Shelf* shelf);
   ~OverflowButton() override;
 
- private:
-  friend class OverflowButtonTestApi;
-
-  // views::Button:
+  // views::Button
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void NotifyClick(const ui::Event& event) override;
   const char* GetClassName() const override;
+
+ private:
+  friend class OverflowButtonTestApi;
 
   const gfx::ImageSkia horizontal_dots_image_;
   views::ImageView* horizontal_dots_image_view_;

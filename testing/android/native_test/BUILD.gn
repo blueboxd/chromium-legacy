@@ -69,5 +69,4 @@ generate_jni("native_test_jni_headers") {
     "java/src/org/chromium/native_test/MainRunner.java",
     "java/src/org/chromium/native_test/NativeTest.java",
   ]
-  jni_package = "testing"
 }

@@ -21,6 +21,10 @@
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #endif
 
+#if BUILDFLAG(ENABLE_OPENXR)
+#include "device/vr/openxr/openxr_device.h"
+#endif
+
 enum class IsolatedXRRuntimeProvider::RuntimeStatus {
   kEnable,
   kDisable,
@@ -75,6 +79,15 @@ void SetRuntimeStatus(device::mojom::IsolatedXRRuntimeProviderClientPtr& client,
 // available options.
 void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
   bool preferred_device_enabled = false;
+
+#if BUILDFLAG(ENABLE_OPENXR)
+  if (!preferred_device_enabled && IsOpenXrHardwareAvailable()) {
+    SetOpenXrRuntimeStatus(RuntimeStatus::kEnable);
+    preferred_device_enabled = true;
+  } else {
+    SetOpenXrRuntimeStatus(RuntimeStatus::kDisable);
+  }
+#endif
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   if (!preferred_device_enabled && IsWMRHardwareAvailable()) {
@@ -136,6 +149,13 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
   }
 #endif
 
+#if BUILDFLAG(ENABLE_OPENXR)
+  if (base::FeatureList::IsEnabled(features::kOpenXR)) {
+    should_check_openxr_ = device::OpenXRDevice::IsApiAvailable();
+    any_runtimes_available |= should_check_openxr_;
+  }
+#endif
+
   // Begin polling for devices
   if (any_runtimes_available) {
     PollForDeviceChanges();
@@ -183,6 +203,16 @@ void IsolatedXRRuntimeProvider::SetWMRRuntimeStatus(RuntimeStatus status) {
   SetRuntimeStatus(client_, status, &wmr_device_);
 }
 #endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
+
+#if BUILDFLAG(ENABLE_OPENXR)
+bool IsolatedXRRuntimeProvider::IsOpenXrHardwareAvailable() {
+  return should_check_openxr_ && device::OpenXRDevice::IsHardwareAvailable();
+}
+
+void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {
+  SetRuntimeStatus(client_, status, &openxr_device_);
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 
 IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)

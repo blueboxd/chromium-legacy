@@ -395,9 +395,6 @@ const char kLoadMediaRouterComponentExtension[] =
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Forces the maximum disk space to be used by the media cache, in bytes.
-const char kMediaCacheSize[]                = "media-cache-size";
-
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";

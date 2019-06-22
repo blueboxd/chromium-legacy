@@ -302,6 +302,5 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
     ]
-    jni_package = "components/invalidation"
   }
 }

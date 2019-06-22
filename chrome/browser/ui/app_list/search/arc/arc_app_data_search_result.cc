@@ -52,7 +52,7 @@ bool LaunchIntent(const std::string& intent_uri, int64_t display_id) {
 class AvatarImageSource : public gfx::CanvasImageSource {
  public:
   AvatarImageSource(gfx::ImageSkia avatar, int size)
-      : CanvasImageSource(gfx::Size(size, size), false), radius_(size / 2) {
+      : CanvasImageSource(gfx::Size(size, size)), radius_(size / 2) {
     avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
         avatar, skia::ImageOperations::RESIZE_BEST, gfx::Size(size, size));
   }

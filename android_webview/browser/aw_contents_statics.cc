@@ -8,6 +8,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/native_jni/AwContentsStatics_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
-#include "jni/AwContentsStatics_jni.h"
 #include "net/cert/cert_database.h"
 
 using base::android::AttachCurrentThread;

@@ -374,8 +374,17 @@ void* GLContextEGL::GetHandle() {
   return context_;
 }
 
-bool GLContextEGL::WasAllocatedUsingRobustnessExtension() {
-  return GLSurfaceEGL::IsCreateContextRobustnessSupported();
+unsigned int GLContextEGL::CheckStickyGraphicsResetStatus() {
+  DCHECK(IsCurrent(nullptr));
+  DCHECK(g_current_gl_driver);
+  const ExtensionsGL& ext = g_current_gl_driver->ext;
+  if ((graphics_reset_status_ == GL_NO_ERROR) &&
+      GLSurfaceEGL::IsCreateContextRobustnessSupported() &&
+      (ext.b_GL_KHR_robustness || ext.b_GL_EXT_robustness ||
+       ext.b_GL_ARB_robustness)) {
+    graphics_reset_status_ = glGetGraphicsResetStatusARB();
+  }
+  return graphics_reset_status_;
 }
 
 GLContextEGL::~GLContextEGL() {

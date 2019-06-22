@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
   "+components/download/downloader/in_progress",
+  "+components/download/internal/common/jni_headers",
   "+components/download/public/common",
   "+components/download/quarantine",
   "+components/filename_generation/filename_generation.h",
@@ -8,7 +9,6 @@ include_rules = [
   "+components/services/quarantine/public/cpp/quarantine_features_win.h",
   "+components/ukm/test_ukm_recorder.h",
   "+crypto",
-  "+jni",
   "+mojo/public/c/system",
   "+mojo/public/cpp/bindings",
   "+net/base/filename_util.h",

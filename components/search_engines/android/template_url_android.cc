@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "components/search_engines/template_url.h"
 
-#include "jni/TemplateUrl_jni.h"
+#include "components/search_engines/android/jni_headers/TemplateUrl_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

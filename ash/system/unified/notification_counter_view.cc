@@ -53,8 +53,8 @@ gfx::FontList GetNumberIconFontList() {
 class NumberIconImageSource : public gfx::CanvasImageSource {
  public:
   explicit NumberIconImageSource(size_t count)
-      : CanvasImageSource(gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize),
-                          false),
+      : CanvasImageSource(
+            gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize)),
         count_(count) {
     DCHECK_LE(count_, kTrayNotificationMaxCount + 1);
   }

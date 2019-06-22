@@ -14,4 +14,12 @@ bool RealTimePolicyEngine::CanFetchAllowlist() {
   return base::FeatureList::IsEnabled(kRealTimeUrlLookupFetchAllowlist);
 }
 
+// static
+bool RealTimePolicyEngine::CanPerformFullURLLookup() {
+  // TODO(vakh): This should also take into account whether the user is eligible
+  // for this service (see "Target Users" in the design doc).
+  return CanFetchAllowlist() &&
+         base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabled);
+}
+
 }  // namespace safe_browsing

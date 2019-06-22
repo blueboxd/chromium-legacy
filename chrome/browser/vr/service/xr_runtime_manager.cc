@@ -209,6 +209,12 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
     return gvr;
 #endif
 
+#if BUILDFLAG(ENABLE_OPENXR)
+  auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
+  if (openxr)
+    return openxr;
+#endif
+
 #if BUILDFLAG(ENABLE_OPENVR)
   auto* openvr = GetRuntime(device::mojom::XRDeviceId::OPENVR_DEVICE_ID);
   if (openvr)

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "android_webview/test/android_webview_unittests_jni/MockAwContentsClientBridge_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
@@ -15,7 +16,6 @@
 #include "base/run_loop.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "jni/MockAwContentsClientBridge_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_private_key.h"

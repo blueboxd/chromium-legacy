@@ -224,6 +224,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<content::WebContents*()> wc_getter) override;
   bool AllowSharedWorker(const GURL& worker_url,
@@ -334,7 +335,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   CreateSpeechRecognitionManagerDelegate() override;
   content::TtsControllerDelegate* GetTtsControllerDelegate() override;
   content::TtsPlatform* GetTtsPlatform() override;
-  net::NetLog* GetNetLog() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* prefs) override;
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;

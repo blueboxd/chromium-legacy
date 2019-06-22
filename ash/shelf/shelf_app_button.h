@@ -70,24 +70,27 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   // Callback used when a menu for this ShelfAppButton is closed.
   void OnMenuClosed();
 
-  // Overrides to views::Button:
+  // views::Button overrides:
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool ShouldEnterPushedState(const ui::Event& event) override;
 
-  // View override - needed by unit test.
+  // views::View overrides:
+  const char* GetClassName() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void Layout() override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // Update button state from ShelfItem.
   void ReflectItemStatus(const ShelfItem& item);
 
  protected:
-  // View overrides:
-  const char* GetClassName() const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void Layout() override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 

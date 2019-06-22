@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
@@ -109,18 +108,20 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
   }
 
   return MakeGarbageCollected<ScrollTimeline>(
-      scroll_source, orientation, start_scroll_offset, end_scroll_offset,
-      options->timeRange().GetAsDouble(),
+      &document, scroll_source, orientation, start_scroll_offset,
+      end_scroll_offset, options->timeRange().GetAsDouble(),
       Timing::StringToFillMode(options->fill()));
 }
 
-ScrollTimeline::ScrollTimeline(Element* scroll_source,
+ScrollTimeline::ScrollTimeline(Document* document,
+                               Element* scroll_source,
                                ScrollDirection orientation,
                                CSSPrimitiveValue* start_scroll_offset,
                                CSSPrimitiveValue* end_scroll_offset,
                                double time_range,
                                Timing::FillMode fill)
-    : scroll_source_(scroll_source),
+    : document_(document),
+      scroll_source_(scroll_source),
       resolved_scroll_source_(ResolveScrollSource(scroll_source_)),
       orientation_(orientation),
       start_scroll_offset_(start_scroll_offset),
@@ -348,6 +349,7 @@ void ScrollTimeline::AnimationDetached(Animation*) {
 }
 
 void ScrollTimeline::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_);
   visitor->Trace(scroll_source_);
   visitor->Trace(resolved_scroll_source_);
   visitor->Trace(start_scroll_offset_);

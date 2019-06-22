@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/no_destructor.h"
-#include "jni/ContentCaptureController_jni.h"
+#include "components/content_capture/android/jni_headers/ContentCaptureController_jni.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using base::android::AppendJavaStringArrayToStringVector;

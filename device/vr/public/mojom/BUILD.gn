@@ -33,6 +33,9 @@ mojom_component("mojom") {
   if (enable_windows_mr) {
     enabled_features += [ "enable_windows_mr" ]
   }
+  if (enable_openxr) {
+    enabled_features += [ "enable_openxr" ]
+  }
 }
 
 mojom_component("test_mojom") {

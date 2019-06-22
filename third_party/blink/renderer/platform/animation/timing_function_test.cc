@@ -354,7 +354,7 @@ TEST_F(TimingFunctionTest, CubicRange) {
   end = 10;
   cubic_custom_timing->Range(&start, &end);
   EXPECT_NEAR(-3.94, start, 0.01);
-  EXPECT_NEAR(4.578, end, 0.01);
+  EXPECT_NEAR(1.0, end, 0.01);
 }
 
 TEST_F(TimingFunctionTest, CubicEvaluate) {

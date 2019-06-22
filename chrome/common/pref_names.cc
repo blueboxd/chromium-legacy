@@ -2076,8 +2076,6 @@ const char kPepperFlashSettingsEnabled[] =
 const char kDiskCacheDir[] = "browser.disk_cache_dir";
 // Pref name for the policy specifying the maximal cache size.
 const char kDiskCacheSize[] = "browser.disk_cache_size";
-// Pref name for the policy specifying the maximal media cache size.
-const char kMediaCacheSize[] = "browser.media_cache_size";
 
 // Specifies the release channel that the device should be locked to.
 // Possible values: "stable-channel", "beta-channel", "dev-channel", or an

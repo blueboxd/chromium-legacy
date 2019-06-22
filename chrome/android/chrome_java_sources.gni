@@ -611,7 +611,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategoryCardView.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategoryTile.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategoryTileView.java",
-  "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesEnums.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesIPH.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesPage.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesSection.java",

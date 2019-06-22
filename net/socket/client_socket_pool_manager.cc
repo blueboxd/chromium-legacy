@@ -296,13 +296,11 @@ int PreconnectSocketsForHttpRequest(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& net_log,
     int num_preconnect_streams) {
   // QUIC proxies are currently not supported through this method.
   DCHECK(!proxy_info.is_quic());
-
-  // TODO(https://crbug.com/966896): Get this field from the caller.
-  NetworkIsolationKey network_isolation_key;
 
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,

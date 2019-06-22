@@ -54,7 +54,7 @@ class BatteryImageSource : public gfx::CanvasImageSource {
                      int height,
                      SkColor bg_color,
                      SkColor fg_color)
-      : gfx::CanvasImageSource(gfx::Size(height, height), false),
+      : gfx::CanvasImageSource(gfx::Size(height, height)),
         info_(info),
         bg_color_(bg_color),
         fg_color_(fg_color) {}

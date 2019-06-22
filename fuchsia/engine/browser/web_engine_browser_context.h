@@ -26,8 +26,8 @@ class WebEngineBrowserContext : public content::BrowserContext {
   // BrowserContext implementation.
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-  base::FilePath GetPath() const override;
-  bool IsOffTheRecord() const override;
+  base::FilePath GetPath() override;
+  bool IsOffTheRecord() override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;

@@ -16,9 +16,9 @@
 #include "base/stl_util.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/android/jni_headers/OAuth2TokenService_jni.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
-#include "jni/OAuth2TokenService_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;

@@ -1336,7 +1336,8 @@
       'name': 'Http09OnNonDefaultPortsEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:54-', 'chrome_os:54-'],
+      'supported_on': ['chrome.*:54-77', 'chrome_os:54-77'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -1345,7 +1346,9 @@
       'id': 345,
       'caption': '''Enable HTTP/0.9 support on non-default ports''',
       'tags': [],
-      'desc': '''This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+      'desc': '''This policy is deprecated, and slated for removal in Chrome 78, with no replacement.
+
+      This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
 
       This policy is disabled by default, and if enabled, leaves users open to the security issue https://crbug.com/600352.
 
@@ -2826,7 +2829,7 @@
       'name': 'MediaCacheSize',
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-71'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,

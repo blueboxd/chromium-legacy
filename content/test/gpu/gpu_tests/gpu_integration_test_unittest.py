@@ -52,34 +52,24 @@ def _GetSystemInfo(
 
 
 def _GetTagsToTest(browser, test_class=None, args=None):
-  gpu_tests = test_class or gpu_integration_test.GpuIntegrationTest
-  expectations_fn = gpu_tests.ExpectationsFiles
-  gpu_tests.ExpectationsFiles = mock.MagicMock(return_value=['exp.txt'])
-  ret = None
-  try:
+  test_class = test_class or gpu_integration_test.GpuIntegrationTest
+  with mock.patch.object(
+      test_class, 'ExpectationsFiles', return_value=['exp.txt']):
     possible_browser = fakes.FakePossibleBrowser()
     possible_browser._returned_browser = browser
     args = args or gpu_helper.GetMockArgs()
-    ret = set(gpu_tests.GenerateTags(args, possible_browser))
-  finally:
-    gpu_tests.ExpectationsFiles = expectations_fn
-  return ret
+    return set(test_class.GenerateTags(args, possible_browser))
 
 
 def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
-  exp_files_fn = test_class.ExpectationsFiles
-  ret = None
-  try:
-    test_class.ExpectationsFiles = mock.MagicMock(return_value=['exp.txt'])
+  with mock.patch.object(
+      test_class, 'ExpectationsFiles', return_value=['exp.txt']):
     _ = [_ for _ in test_class.GenerateGpuTests(args)]
     platform = fakes.FakePlatform('win', 'win10')
     browser = fakes.FakeBrowser(platform, 'release')
     browser._returned_system_info = _GetSystemInfo(
         gpu=VENDOR_NVIDIA, device=0x1cb3, gl_renderer='ANGLE Direct3D9')
-    ret = _GetTagsToTest(browser, test_class)
-  finally:
-    test_class.ExpectationsFiles = exp_files_fn
-  return ret
+    return _GetTagsToTest(browser, test_class)
 
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
@@ -195,7 +185,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEqual(
         _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
-             'imagination-powervr-sgx-554',
+             'imagination-PowerVR-SGX-554',
              'opengles', 'passthrough']))
 
   def testGenerateVendorTagUsingDeviceString(self):
@@ -207,7 +197,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEqual(
         _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
-             'imagination-triangle-monster-3000',
+             'imagination-Triangle-Monster-3000',
              'no-angle', 'no-passthrough']))
 
   def testSimpleIntegrationTest(self):

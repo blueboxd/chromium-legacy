@@ -207,7 +207,7 @@ class BookmarkAppTest : public extensions::ExtensionBrowserTest {
                      [this, &run_loop](const GURL& provided_url,
                                        web_app::InstallResultCode code) {
                        result_code_ = code;
-                       run_loop.QuitClosure().Run();
+                       run_loop.Quit();
                      }));
     run_loop.Run();
     ASSERT_TRUE(result_code_.has_value());

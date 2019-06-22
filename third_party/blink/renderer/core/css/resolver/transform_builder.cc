@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -109,6 +110,7 @@ bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);
 
       if (primitive_value.IsCalculated()) {
+        // TODO(xiaochengh): Get type from CSSPrimitiveValue directly.
         CSSCalcValue* css_calc_value = primitive_value.CssCalcValue();
         CSSPrimitiveValue::UnitType resolved_type =
             css_calc_value->ExpressionNode()->TypeWithCalcResolved();

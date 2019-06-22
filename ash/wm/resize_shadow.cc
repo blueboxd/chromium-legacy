@@ -34,8 +34,7 @@ static constexpr int kCornerRadiusOfWindow = 2;
 class ResizeShadowImageSource : public gfx::CanvasImageSource {
  public:
   ResizeShadowImageSource()
-      : gfx::CanvasImageSource(gfx::Size(kImageSide, kImageSide),
-                               false /* is opaque */) {}
+      : gfx::CanvasImageSource(gfx::Size(kImageSide, kImageSide)) {}
 
   ~ResizeShadowImageSource() override = default;
 

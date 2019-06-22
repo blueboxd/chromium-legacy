@@ -37,6 +37,8 @@ class FakeServiceDelegate
     installed_printers_.insert({printer.id(), false});
   }
 
+  void FailSetupPrinter() { fail_printer_setup_ = true; }
+
   // Service delegate overrides.
   bool IsPrinterInstalled(const Printer& printer) override {
     if (!base::Contains(installed_printers_, printer.id())) {
@@ -57,6 +59,10 @@ class FakeServiceDelegate
   void SetupPrinter(
       const Printer& printer,
       chromeos::printing::PrinterSetupCallback callback) override {
+    if (fail_printer_setup_) {
+      return std::move(callback).Run(false);
+    }
+
     // PrinterInstaller is expected to have checked if |printer| is already
     // installed before trying setup.
     if (IsPrinterInstalled(printer)) {
@@ -70,43 +76,42 @@ class FakeServiceDelegate
 
  private:
   std::map<std::string, bool> installed_printers_;
+
+  // Conditions whether calls to SetupPrinter succeed.
+  bool fail_printer_setup_ = false;
 };
 
 class PrinterInstallerTest : public testing::Test {
  public:
   PrinterInstallerTest() : weak_factory_(this) {
     delegate_ = std::make_unique<FakeServiceDelegate>();
-    printer_installer_ = PrinterInstaller::Create(delegate_->GetWeakPtr());
+    printer_installer_ =
+        std::make_unique<PrinterInstaller>(delegate_->GetWeakPtr());
   }
 
   ~PrinterInstallerTest() override = default;
 
-  bool RunInstallPrinterIfNeeded(ipp_t* ipp, Printer to_install) {
-    bool success = false;
-    printer_installer_->InstallPrinterIfNeeded(
-        ipp, base::BindOnce(&PrinterInstallerTest::OnRunInstallPrinterIfNeeded,
-                            weak_factory_.GetWeakPtr(), &success,
-                            std::move(to_install)));
-    scoped_task_environment_.RunUntilIdle();
-    return success;
+  InstallPrinterResult RunInstallPrinter(std::string printer_id) {
+    InstallPrinterResult ret;
+
+    base::RunLoop run_loop;
+    printer_installer_->InstallPrinter(
+        printer_id, base::BindOnce(&PrinterInstallerTest::OnRunInstallPrinter,
+                                   weak_factory_.GetWeakPtr(),
+                                   run_loop.QuitClosure(), &ret));
+
+    run_loop.Run();
+    return ret;
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  void OnRunInstallPrinterIfNeeded(bool* ret,
-                                   Printer to_install,
-                                   InstallPrinterResult result) {
-    if (result != InstallPrinterResult::kSuccess) {
-      return;
-    }
-
-    // If printer wasn't installed, fail.
-    if (!delegate_->IsPrinterInstalled(to_install)) {
-      return;
-    }
-
-    *ret = true;
+  void OnRunInstallPrinter(base::OnceClosure finish_cb,
+                           InstallPrinterResult* ret,
+                           InstallPrinterResult result) {
+    *ret = result;
+    std::move(finish_cb).Run();
   }
 
   // Backend fake driving the PrinterInstaller.
@@ -119,33 +124,23 @@ class PrinterInstallerTest : public testing::Test {
   base::WeakPtrFactory<PrinterInstallerTest> weak_factory_;
 };
 
-// Return a valid ScopedIppPtr that correctly references |id| in
-// the printer-uri field.
-::printing::ScopedIppPtr MakeIppReferencingPrinters(const std::string& id) {
-  ::printing::ScopedIppPtr ret = ::printing::WrapIpp(ippNew());
-
-  std::string uri = "ipp://localhost/printers/" + id;
-  ippAddString(ret.get(), IPP_TAG_PRINTER, IPP_TAG_URI, "printer-uri", NULL,
-               uri.c_str());
-
-  return ret;
-}
-
 // Standard install known printer workflow.
 TEST_F(PrinterInstallerTest, SimpleSanityTest) {
   Printer to_install(kGenericGUID);
   delegate_->AddPrinter(to_install);
 
-  auto ipp = MakeIppReferencingPrinters(to_install.id());
-  EXPECT_TRUE(RunInstallPrinterIfNeeded(ipp.get(), std::move(to_install)));
+  auto ret = RunInstallPrinter(kGenericGUID);
+  EXPECT_EQ(ret, InstallPrinterResult::kSuccess);
+  EXPECT_TRUE(delegate_->IsPrinterInstalled(to_install));
 }
 
 // Should fail to install an unknown(previously unseen) printer.
 TEST_F(PrinterInstallerTest, UnknownPrinter) {
   Printer to_install(kGenericGUID);
 
-  auto ipp = MakeIppReferencingPrinters(to_install.id());
-  EXPECT_FALSE(RunInstallPrinterIfNeeded(ipp.get(), std::move(to_install)));
+  auto ret = RunInstallPrinter(kGenericGUID);
+  EXPECT_EQ(ret, InstallPrinterResult::kUnknownPrinterFound);
+  EXPECT_FALSE(delegate_->IsPrinterInstalled(to_install));
 }
 
 // Ensure we never setup a printer that's already installed.
@@ -153,12 +148,23 @@ TEST_F(PrinterInstallerTest, InstallPrinterTwice) {
   Printer to_install(kGenericGUID);
   delegate_->AddPrinter(to_install);
 
-  auto ipp = MakeIppReferencingPrinters(to_install.id());
-  EXPECT_TRUE(RunInstallPrinterIfNeeded(ipp.get(), to_install));
+  auto ret = RunInstallPrinter(kGenericGUID);
+  EXPECT_EQ(ret, InstallPrinterResult::kSuccess);
 
   // |printer_installer_| should notice printer is already installed and bail
   // out. If it attempts setup, FakeServiceDelegate will fail the request.
-  EXPECT_TRUE(RunInstallPrinterIfNeeded(ipp.get(), to_install));
+  ret = RunInstallPrinter(kGenericGUID);
+  EXPECT_EQ(ret, InstallPrinterResult::kSuccess);
+}
+
+// Checks for correct response to failed SetupPrinter call.
+TEST_F(PrinterInstallerTest, SetupPrinterFailure) {
+  Printer to_install(kGenericGUID);
+  delegate_->AddPrinter(to_install);
+  delegate_->FailSetupPrinter();
+
+  auto ret = RunInstallPrinter(kGenericGUID);
+  EXPECT_EQ(ret, InstallPrinterResult::kPrinterInstallationFailure);
 }
 
 }  // namespace

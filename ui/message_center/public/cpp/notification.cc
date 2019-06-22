@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -22,9 +21,6 @@ namespace message_center {
 namespace {
 
 unsigned g_next_serial_number = 0;
-
-base::LazyInstance<std::map<std::string, const gfx::VectorIcon&>>::Leaky
-    g_vector_icon_registry = LAZY_INSTANCE_INITIALIZER;
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
                                            int height,
@@ -59,8 +55,6 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other) =
     default;
 
 RichNotificationData::~RichNotificationData() = default;
-
-Notification::Notification() : serial_number_(g_next_serial_number++) {}
 
 Notification::Notification(NotificationType type,
                            const std::string& id,
@@ -158,21 +152,6 @@ gfx::Image Notification::GenerateMaskedSmallIcon(int dip_size,
       masked, skia::ImageOperations::ResizeMethod::RESIZE_BEST,
       gfx::Size(dip_size, dip_size));
   return gfx::Image(resized);
-}
-
-// static
-void RegisterVectorIcons(
-    const std::vector<const gfx::VectorIcon*>& vector_icons) {
-  for (const gfx::VectorIcon* icon : vector_icons) {
-    g_vector_icon_registry.Get().insert(
-        std::pair<std::string, const gfx::VectorIcon&>(icon->name, *icon));
-  }
-}
-
-// static
-const gfx::VectorIcon* GetRegisteredVectorIcon(const std::string& id) {
-  auto iter = g_vector_icon_registry.Get().find(id);
-  return iter != g_vector_icon_registry.Get().end() ? &iter->second : nullptr;
 }
 
 }  // namespace message_center

@@ -698,11 +698,7 @@
   },
 
   "MediaCacheSize": {
-    "os": ["win", "mac", "linux"],
-    "test_policy": { "MediaCacheSize": 200 },
-    "pref_mappings": [
-      { "pref": "browser.media_cache_size" }
-    ]
+    "note": "This policy has been removed, see https://crbug.com/974387."
   },
 
   "DownloadRestrictions": {

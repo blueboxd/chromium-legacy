@@ -37,7 +37,6 @@ generate_jni("capture_jni_headers") {
     "java/src/org/chromium/media/VideoCapture.java",
     "java/src/org/chromium/media/VideoCaptureFactory.java",
   ]
-  jni_package = "media"
 }
 
 java_cpp_enum("media_java_enums_srcjar") {

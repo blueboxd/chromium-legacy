@@ -77,10 +77,6 @@ namespace metrics_services_manager {
 class MetricsServicesManager;
 }
 
-namespace net_log {
-class ChromeNetLog;
-}
-
 namespace network_time {
 class NetworkTimeTracker;
 }
@@ -159,7 +155,7 @@ class BrowserProcess {
   virtual NotificationUIManager* notification_ui_manager() = 0;
   virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
 
-  // Replacement for IOThread (And ChromeNetLog). It owns and manages the
+  // Replacement for IOThread. It owns and manages the
   // NetworkContext which will use the network service when the network service
   // is enabled. When the network service is not enabled, its NetworkContext is
   // backed by the IOThread's URLRequestContext.
@@ -249,8 +245,6 @@ class BrowserProcess {
   // |kSwitchesToRemoveOnAutorestart| array in browser_process_impl.cc.
   virtual void StartAutoupdateTimer() = 0;
 #endif
-
-  virtual net_log::ChromeNetLog* net_log() = 0;
 
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 

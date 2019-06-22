@@ -330,11 +330,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   constexpr int kVerticalMargin = 18;
   constexpr int kLineSpacing = 0;
   title_label_->SetProperty(views::kMarginsKey,
-                            new gfx::Insets(kHorizontalMargin, kVerticalMargin,
-                                            kLineSpacing, kVerticalMargin));
-  domain_label_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(kLineSpacing, kVerticalMargin,
-                                          kHorizontalMargin, kVerticalMargin));
+                            gfx::Insets(kHorizontalMargin, kVerticalMargin,
+                                        kLineSpacing, kVerticalMargin));
+  domain_label_->SetProperty(views::kMarginsKey,
+                             gfx::Insets(kLineSpacing, kVerticalMargin,
+                                         kHorizontalMargin, kVerticalMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);

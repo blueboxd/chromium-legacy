@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -33,7 +34,8 @@ const char kNotificationTitle[] = "My Title";
 const char kNotificationMessage[] = "My Message";
 const char kNotificationOrigin[] = "https://example.com";
 
-bool FixedTime(base::Time* time) {
+base::Time FixedTime() {
+  base::Time time;
   base::Time::Exploded exploded = {0};
   exploded.year = 1998;
   exploded.month = 9;
@@ -41,7 +43,8 @@ bool FixedTime(base::Time* time) {
   exploded.hour = 1;
   exploded.minute = 2;
   exploded.second = 3;
-  return base::Time::FromUTCExploded(exploded, time);
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time));
+  return time;
 }
 
 }  // namespace
@@ -58,19 +61,15 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
  protected:
   // Builds a notification object and initializes it to default values.
   message_center::Notification BuildNotification() {
-    // Set a fixed timestamp, to avoid having to test against current timestamp.
-    base::Time timestamp;
-    if (!FixedTime(&timestamp))
-      return message_center::Notification();
-
     GURL origin_url(kNotificationOrigin);
-    message_center::Notification notification = message_center::Notification(
+    message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
         base::UTF8ToUTF16(kNotificationTitle),
         base::UTF8ToUTF16(kNotificationMessage), gfx::Image() /* icon */,
         base::string16() /* display_source */, origin_url,
         NotifierId(origin_url), RichNotificationData(), nullptr /* delegate */);
-    notification.set_timestamp(timestamp);
+    // Set a fixed timestamp, to avoid having to test against current timestamp.
+    notification.set_timestamp(FixedTime());
     return notification;
   }
 

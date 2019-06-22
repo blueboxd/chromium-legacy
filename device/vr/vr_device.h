@@ -26,6 +26,7 @@ enum class VrViewerType {
   OPENVR_RIFT_CV1 = 22,
   OCULUS_UNKNOWN = 40,                 // Going through Oculus APIs
   WINDOWS_MIXED_REALITY_UNKNOWN = 60,  // Going through WMR APIs
+  OPENXR_UNKNOWN = 70,                 // Going through OpenXR APIs
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

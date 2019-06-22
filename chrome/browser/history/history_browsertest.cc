@@ -417,7 +417,7 @@ class RenderFrameHostGrabber : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override {
     if (navigation_handle->GetURL() == url_) {
       render_frame_host_ = navigation_handle->GetRenderFrameHost();
-      run_loop_.QuitClosure().Run();
+      run_loop_.Quit();
     }
   }
 

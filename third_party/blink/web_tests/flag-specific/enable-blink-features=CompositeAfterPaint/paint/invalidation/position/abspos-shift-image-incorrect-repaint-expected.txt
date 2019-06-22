@@ -22,12 +22,12 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [700, 217, 4, 19],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox '\n'",
+          "object": "NGPhysicalTextFragment ' '",
           "rect": [450, 217, 4, 19],
           "reason": "geometry"
         }

@@ -7,7 +7,9 @@
 -DumpAccessibilityTreeTest.AccessibilityOffscreenSelect/blink
 -DumpAccessibilityTreeTest.AccessibilityWindowCropsItems/blink
 -File/MediaTest.VideoBearMp4/0
+-File/MediaTest.VideoTulipWebm/0
 -Http/MediaTest.VideoBearMp4/0
+-Http/MediaTest.VideoTulipWebm/0
 -MediaColorTest.Yuv420pTheora
 -MediaColorTest.Yuv420pVp8
 -MediaSessionImplBrowserTest.MetadataWhenFileUrlScheme
@@ -39,6 +41,7 @@
 -SitePerProcessHighDPIHitTestBrowserTest.OverlapSurfaceHitTestTest/0
 -SitePerProcessHitTestBrowserTest.BubbledScrollEventsTransformedCorrectly/0
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture/0
+-SitePerProcessHitTestBrowserTest.CrossProcessMouseCapture/1
 -SitePerProcessHitTestBrowserTest.CrossProcessMouseEnterAndLeaveTest/0
 -SitePerProcessHitTestBrowserTest.CrossProcessMousePointerCapture/0
 -SitePerProcessHitTestBrowserTest.CrossProcessTooltipTestAndroid/0
@@ -59,6 +62,7 @@
 -TouchSelectionControllerClientAndroidSiteIsolationTest.BasicSelectionIsolatedIframe
 -WebContentsImplBrowserTest.PopupWindowBrowserNavResumeLoad
 -WebRtcBrowserTest.CanSetupH264VideoCallOnSupportedDevice
+-WebRtcCaptureFromElementBrowserTest.CaptureFromCanvas2DHandlesContextLoss
 -WebRtcCaptureFromElementBrowserTest.VerifyCanvasCaptureOffscreenCanvasFrames
 -WebRtcCaptureFromElementBrowserTest.VerifyCanvasCaptureWebGLFrames
 -WebRtcCaptureFromElementBrowserTest.VerifyCanvasCapture2DFrames

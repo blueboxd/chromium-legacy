@@ -16,7 +16,7 @@ class FootnoteContainerView : public View {
   METADATA_HEADER(FootnoteContainerView);
 
   FootnoteContainerView(const gfx::Insets& margins,
-                        View* child_view,
+                        std::unique_ptr<View> child_view,
                         float corner_radius);
   ~FootnoteContainerView() override;
 

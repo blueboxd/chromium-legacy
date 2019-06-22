@@ -33,7 +33,7 @@ class RasterDecoderOOMTest : public RasterDecoderManualInitTest {
 
   void OOM(GLenum reset_status,
            error::ContextLostReason expected_other_reason) {
-    if (context_->WasAllocatedUsingRobustnessExtension()) {
+    if (context_->HasRobustness()) {
       EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
           .WillOnce(Return(reset_status));
     }

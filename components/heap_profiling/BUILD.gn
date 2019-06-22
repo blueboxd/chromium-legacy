@@ -27,7 +27,6 @@ if (is_android) {
     sources = [
       "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java",
     ]
-    jni_package = "components_heap_profiling"
   }
 
   # This library must be included by the apk_under_test in order for the JNI

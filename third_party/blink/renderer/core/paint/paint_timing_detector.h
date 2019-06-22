@@ -49,7 +49,7 @@ class CORE_EXPORT PaintTimingDetector
       const PropertyTreeState& current_paint_chunk_properties);
   inline static void NotifyTextPaint(const IntRect& text_visual_rect);
 
-  void NotifyNodeRemoved(const LayoutObject&);
+  void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyBackgroundImageRemoved(const LayoutObject&,
                                     const ImageResourceContent*);
   void NotifyPaintFinished();
@@ -83,6 +83,7 @@ class CORE_EXPORT PaintTimingDetector
   void Trace(Visitor* visitor);
 
  private:
+  void StopRecordingIfNeeded();
   bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size) const;
   bool HasLargestTextPaintChanged(base::TimeTicks, uint64_t size) const;
   Member<LocalFrameView> frame_view_;

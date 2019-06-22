@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/sequenced_task_runner.h"
-#include "jni/TimeZoneMonitor_jni.h"
+#include "services/device/time_zone_monitor/time_zone_monitor_jni_headers/TimeZoneMonitor_jni.h"
 
 using base::android::JavaParamRef;
 

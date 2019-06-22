@@ -282,8 +282,8 @@
     # Similar to stable, but with a newer Mesa version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-18.3.3',
-        'os': 'Ubuntu',
+        'gpu': '8086:5912-19.0.2',
+        'os': 'Ubuntu-19.04',
         'pool': 'Chrome-GPU',
       },
     },
@@ -301,8 +301,8 @@
   'linux_nvidia_quadro_p400_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-410.78',
-        'os': 'Ubuntu-14.04',
+        'gpu': '10de:1cb3-418.56',
+        'os': 'Ubuntu-19.04',
         'pool': 'Chrome-GPU',
       },
     },

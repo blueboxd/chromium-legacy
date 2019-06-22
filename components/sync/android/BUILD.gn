@@ -66,5 +66,4 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/sync/ModelTypeHelper.java",
   ]
-  jni_package = "syncer"
 }

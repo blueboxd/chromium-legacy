@@ -11,7 +11,6 @@ _jni_sources = [
 
 generate_jni("media_session_jni_headers") {
   sources = _jni_sources
-  jni_package = "media_metadata"
 }
 
 if (current_toolchain == default_toolchain) {

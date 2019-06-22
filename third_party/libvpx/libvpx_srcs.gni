@@ -354,6 +354,7 @@ libvpx_srcs_x86 = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -823,6 +824,7 @@ libvpx_srcs_x86_64 = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -1277,6 +1279,7 @@ libvpx_srcs_arm = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -1673,6 +1676,7 @@ libvpx_srcs_arm_neon = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -2036,6 +2040,7 @@ libvpx_srcs_arm_neon_cpu_detect = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -2508,6 +2513,7 @@ libvpx_srcs_arm64 = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -2920,6 +2926,7 @@ libvpx_srcs_arm_neon_highbd = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -3355,6 +3362,7 @@ libvpx_srcs_arm64_highbd = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -3689,6 +3697,7 @@ libvpx_srcs_mips = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -4022,6 +4031,7 @@ libvpx_srcs_nacl = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]
@@ -4355,6 +4365,7 @@ libvpx_srcs_generic = [
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_atomics.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_thread.h",
+  "//third_party/libvpx/source/libvpx/vpx_util/vpx_timestamp.h",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.c",
   "//third_party/libvpx/source/libvpx/vpx_util/vpx_write_yuv_frame.h",
 ]

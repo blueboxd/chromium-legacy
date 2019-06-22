@@ -23,6 +23,7 @@ static const size_t kHttpMaxBufferSize = 2048;
 // If |ipp| refers to a printer, we return the associated printer_id.
 // Note: Expects the printer id to be embedded in the resource field of the
 // 'printer-uri' IPP attribute.
+// TODO(crbug.com/945409): Add testing suite.
 base::Optional<std::string> GetPrinterId(ipp_t* ipp);
 
 }  // namespace cups_proxy

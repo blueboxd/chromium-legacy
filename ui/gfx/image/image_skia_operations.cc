@@ -132,12 +132,8 @@ class BlendingImageSource : public BinaryImageSource {
 
 class SuperimposedImageSource : public gfx::CanvasImageSource {
  public:
-  SuperimposedImageSource(const ImageSkia& first,
-                          const ImageSkia& second)
-      : gfx::CanvasImageSource(first.size(), false /* is opaque */),
-        first_(first),
-        second_(second) {
-  }
+  SuperimposedImageSource(const ImageSkia& first, const ImageSkia& second)
+      : gfx::CanvasImageSource(first.size()), first_(first), second_(second) {}
 
   ~SuperimposedImageSource() override {}
 
@@ -400,7 +396,7 @@ class HorizontalShadowSource : public CanvasImageSource {
  public:
   HorizontalShadowSource(const std::vector<ShadowValue>& shadows,
                          bool fades_down)
-      : CanvasImageSource(Size(1, GetHeightForShadows(shadows)), false),
+      : CanvasImageSource(Size(1, GetHeightForShadows(shadows))),
         shadows_(shadows),
         fades_down_(fades_down) {}
   ~HorizontalShadowSource() override {}
@@ -458,9 +454,7 @@ class RotatedSource : public ImageSkiaSource {
 class IconWithBadgeSource : public gfx::CanvasImageSource {
  public:
   IconWithBadgeSource(const ImageSkia& icon, const ImageSkia& badge)
-      : gfx::CanvasImageSource(icon.size(), false /* is opaque */),
-        icon_(icon),
-        badge_(badge) {}
+      : gfx::CanvasImageSource(icon.size()), icon_(icon), badge_(badge) {}
 
   ~IconWithBadgeSource() override {}
 

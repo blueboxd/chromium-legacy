@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "skia/ext/image_operations.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -454,6 +455,19 @@ void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
   }
 }
 
+void ShelfAppButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ShelfButton::GetAccessibleNodeData(node_data);
+  const base::string16 title = shelf_view()->GetTitleForView(this);
+  node_data->SetName(title.empty() ? GetAccessibleName() : title);
+}
+
+bool ShelfAppButton::ShouldEnterPushedState(const ui::Event& event) {
+  if (!shelf_view()->ShouldEventActivateButton(this, event))
+    return false;
+
+  return Button::ShouldEnterPushedState(event);
+}
+
 void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
   ShelfID active_id = shelf_view()->model()->active_shelf_id();
   if (!active_id.IsNull() && item.id == active_id) {
@@ -504,6 +518,7 @@ bool ShelfAppButton::OnMousePressed(const ui::MouseEvent& event) {
   }
 
   ShelfButton::OnMousePressed(event);
+  shelf_view()->PointerPressedOnButton(this, ShelfView::MOUSE, event);
 
   if (shelf_view()->IsDraggedView(this)) {
     drag_timer_.Start(
@@ -517,12 +532,32 @@ void ShelfAppButton::OnMouseReleased(const ui::MouseEvent& event) {
   drag_timer_.Stop();
   ClearState(STATE_DRAGGING);
   ShelfButton::OnMouseReleased(event);
+  // PointerReleasedOnButton deletes the ShelfAppButton when user drags a pinned
+  // running app from shelf.
+  shelf_view()->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
   // WARNING: we may have been deleted.
 }
 
 void ShelfAppButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
+  shelf_view()->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
   ShelfButton::OnMouseCaptureLost();
+}
+
+bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
+  ShelfButton::OnMouseDragged(event);
+  shelf_view()->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
+  return true;
+}
+
+void ShelfAppButton::OnFocus() {
+  shelf_view()->set_focused_button(this);
+  Button::OnFocus();
+}
+
+void ShelfAppButton::OnBlur() {
+  shelf_view()->set_focused_button(nullptr);
+  Button::OnBlur();
 }
 
 void ShelfAppButton::Layout() {

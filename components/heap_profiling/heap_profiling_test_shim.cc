@@ -5,9 +5,9 @@
 #include "components/heap_profiling/heap_profiling_test_shim.h"
 
 #include "base/android/jni_string.h"
+#include "components/heap_profiling/jni_headers/HeapProfilingTestShim_jni.h"
 #include "components/heap_profiling/test_driver.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
-#include "jni/HeapProfilingTestShim_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

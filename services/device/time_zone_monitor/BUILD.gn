@@ -63,7 +63,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/device/time_zone_monitor/TimeZoneMonitor.java",
     ]
-    jni_package = "time_zone_monitor"
   }
 
   android_library("java") {

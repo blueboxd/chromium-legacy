@@ -726,7 +726,7 @@ void ToolbarView::InitLayout() {
 
   layout_manager_->SetFlexForView(location_bar_, location_bar_flex_rule);
   location_bar_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(0, location_bar_margin));
+                             gfx::Insets(0, location_bar_margin));
 
   if (browser_actions_) {
     layout_manager_->SetFlexForView(browser_actions_,

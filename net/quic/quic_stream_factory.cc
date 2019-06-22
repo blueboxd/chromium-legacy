@@ -57,7 +57,6 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "third_party/boringssl/src/include/openssl/aead.h"

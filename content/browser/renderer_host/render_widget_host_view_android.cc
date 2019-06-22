@@ -360,12 +360,6 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
     last_devtools_frame_metadata_.emplace(metadata);
     // Android WebView ignores transparent background.
     is_transparent = false;
-    // Android WebView always uses a black background while fullscreen.
-    // This inadvertently happened in the past (see https://crbug.com/961223#c5)
-    // but has been the behavior for long enough that it's become standard.
-    // This ensures the behaviour is robust.
-    if (host()->delegate()->IsFullscreenForCurrentTab())
-      root_background_color = SK_ColorBLACK;
   }
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(
@@ -443,6 +437,11 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   min_page_scale_ = metadata.min_page_scale_factor;
   max_page_scale_ = metadata.max_page_scale_factor;
   current_surface_size_ = metadata.viewport_size_in_pixels;
+
+  // With SurfaceSync we no longer call EvictFrameIfNecessary on every metadata
+  // change. We must still call UpdateWebViewBackgroundColorIfNecessary to
+  // maintain the associated background color changes.
+  UpdateWebViewBackgroundColorIfNecessary();
 }
 
 void RenderWidgetHostViewAndroid::Focus() {
@@ -993,6 +992,18 @@ void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
       current_surface_size_.width() == view_.GetPhysicalBackingSize().width();
   if (!is_width_same) {
     EvictDelegatedFrame();
+    SetContentBackgroundColor(SK_ColorBLACK);
+  }
+}
+
+void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
+  // Before SurfaceSync, Android WebView had a bug the BG color was always set
+  // to black when fullscreen (see https://crbug.com/961223#c5). As
+  // applications came to rely on this behavior, preserve it here.
+  if (!features::IsSurfaceSynchronizationEnabled())
+    return;
+  if (!using_browser_compositor_ &&
+      host()->delegate()->IsFullscreenForCurrentTab()) {
     SetContentBackgroundColor(SK_ColorBLACK);
   }
 }
@@ -2130,6 +2141,9 @@ void RenderWidgetHostViewAndroid::OnSizeChanged() {
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   EvictFrameIfNecessary();
+  // We may need to update the background color to match pre-surface-sync
+  // behavior of EvictFrameIfNecessary.
+  UpdateWebViewBackgroundColorIfNecessary();
   SynchronizeVisualProperties(
       cc::DeadlinePolicy::UseSpecifiedDeadline(
           ui::DelegatedFrameHostAndroid::ResizeTimeoutFrames()),

@@ -4,12 +4,12 @@
 
 #include "android_webview/browser/gfx/aw_gl_functor.h"
 
+#include "android_webview/native_jni/AwGLFunctor_jni.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/AwGLFunctor_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

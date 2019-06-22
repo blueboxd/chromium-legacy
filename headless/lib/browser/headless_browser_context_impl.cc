@@ -164,11 +164,11 @@ HeadlessBrowserContextImpl::CreateZoomLevelDelegate(
   return std::unique_ptr<content::ZoomLevelDelegate>();
 }
 
-base::FilePath HeadlessBrowserContextImpl::GetPath() const {
+base::FilePath HeadlessBrowserContextImpl::GetPath() {
   return path_;
 }
 
-bool HeadlessBrowserContextImpl::IsOffTheRecord() const {
+bool HeadlessBrowserContextImpl::IsOffTheRecord() {
   return context_options_->incognito_mode();
 }
 
@@ -290,7 +290,7 @@ const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
   return context_options_.get();
 }
 
-const std::string& HeadlessBrowserContextImpl::Id() const {
+const std::string& HeadlessBrowserContextImpl::Id() {
   return UniqueId();
 }
 

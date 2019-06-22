@@ -643,8 +643,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
   // Verify that no blocking occurred.
   EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-  EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-              testing::IsEmpty());
 }
 
 // Test that requests from a extension page hosted in a foreground tab use
@@ -670,8 +668,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                testing::IsEmpty());
   }
 
   // Test case #2: Fetch from an about:srcdoc subframe of a
@@ -686,8 +682,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                testing::IsEmpty());
   }
 }
 
@@ -763,8 +757,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // through the service worker).
     EXPECT_EQ("SERVICE WORKER INTERCEPT: >>>nosniff.xml - body\n<<<",
               fetch_result);
-    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                testing::IsEmpty());
   }
 
   // Test case #2: Network fetch used as a fallback when service worker ignores
@@ -784,8 +776,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
     // Verify that no blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                testing::IsEmpty());
   }
 }
 
@@ -1048,8 +1038,6 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
     // Verify that no CORB blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
-                testing::IsEmpty());
   }
 }
 

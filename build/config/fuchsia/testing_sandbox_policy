@@ -6,6 +6,7 @@
       "vulkan" ],
   "dev": ["null", "zero"],
   "services": [
+      "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.Log",
       "fuchsia.logger.LogSink",

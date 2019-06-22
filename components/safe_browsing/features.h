@@ -49,6 +49,10 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
+// Controls whether the real time URL lookup is enabled. Only works if
+// |kRealTimeUrlLookupFetchAllowlist| is also enabled.
+extern const base::Feature kRealTimeUrlLookupEnabled;
+
 // Controls whether the high confidence allowlist for real time URL lookup be
 // fetched.
 extern const base::Feature kRealTimeUrlLookupFetchAllowlist;

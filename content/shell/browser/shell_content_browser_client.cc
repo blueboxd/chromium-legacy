@@ -424,10 +424,6 @@ SpeechRecognitionManagerDelegate*
   return new ShellSpeechRecognitionManagerDelegate();
 }
 
-net::NetLog* ShellContentBrowserClient::GetNetLog() {
-  return shell_browser_main_parts_->net_log();
-}
-
 void ShellContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
     WebPreferences* prefs) {

@@ -61,5 +61,5 @@ interface PictureInPictureService {
       bool show_play_pause_button,
       bool show_mute_button,
       PictureInPictureSessionObserver observer)
-          => (PictureInPictureSession session, gfx.mojom.Size size);
+          => (PictureInPictureSession? session, gfx.mojom.Size size);
 };

@@ -9,7 +9,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/VibrationManagerImpl_jni.h"
+#include "services/device/vibration/android/vibration_jni_headers/VibrationManagerImpl_jni.h"
 #else
 #include "services/device/vibration/vibration_manager_impl.h"
 #endif

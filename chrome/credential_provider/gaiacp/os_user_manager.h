@@ -99,9 +99,6 @@ class [[clang::lto_visibility_public]] OSUserManager {
   // to another.
   static void SetInstanceForTesting(OSUserManager* instance);
 
-  // Checks if the device is domain joined.
-  virtual bool IsDeviceDomainJoined();
-
  protected:
   OSUserManager() {}
 

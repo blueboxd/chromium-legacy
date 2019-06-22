@@ -236,6 +236,15 @@ bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
   return true;
 }
 
+AsyncMatch
+RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+    const GURL& url,
+    Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  NOTREACHED();
+  return AsyncMatch::NO_MATCH;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {

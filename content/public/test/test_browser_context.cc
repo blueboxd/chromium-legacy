@@ -101,7 +101,7 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
   return request_context_.get();
 }
 
-base::FilePath TestBrowserContext::GetPath() const {
+base::FilePath TestBrowserContext::GetPath() {
   return browser_context_dir_.GetPath();
 }
 
@@ -112,7 +112,7 @@ std::unique_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
 }
 #endif  // !defined(OS_ANDROID)
 
-bool TestBrowserContext::IsOffTheRecord() const {
+bool TestBrowserContext::IsOffTheRecord() {
   return is_off_the_record_;
 }
 

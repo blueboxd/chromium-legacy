@@ -40,7 +40,7 @@ constexpr int kBadgePadding = 1;
 class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
  public:
   explicit BadgeBackgroundImageSource(int size, float padding)
-      : CanvasImageSource(gfx::Size(size, size), false), padding_(padding) {}
+      : CanvasImageSource(gfx::Size(size, size)), padding_(padding) {}
   ~BadgeBackgroundImageSource() override = default;
 
  private:

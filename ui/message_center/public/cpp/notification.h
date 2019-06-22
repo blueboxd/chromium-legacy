@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -33,10 +32,6 @@ struct VectorIcon;
 }  // namespace gfx
 
 namespace message_center {
-
-namespace mojom {
-class NotificationDataView;
-}
 
 // Represents an individual item in NOTIFICATION_TYPE_MULTIPLE notifications.
 struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
@@ -187,9 +182,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT RichNotificationData {
 
 class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
  public:
-  // Default constructor needed for generated mojom files.
-  Notification();
-
   // Creates a new notification.
   //
   // |type|: Type of the notification that dictates the layout.
@@ -459,8 +451,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   base::string16 display_source_;
 
  private:
-  friend struct mojo::StructTraits<mojom::NotificationDataView, Notification>;
-
   // The origin URL of the script which requested the notification.
   // Can be empty if requested through a chrome app or extension or if
   // it's a system notification.
@@ -481,17 +471,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // used to register the factory in MessageViewFactory.
   std::string custom_view_type_;
 };
-
-// Registering a vector icon allows it to later be looked up by name. This is
-// useful for vector icons sent over mojo: assuming the receiver has a known set
-// of icons it expects to see, this allows for icon lookup without
-// serialization/deserialization.
-MESSAGE_CENTER_PUBLIC_EXPORT
-void RegisterVectorIcons(
-    const std::vector<const gfx::VectorIcon*>& vector_icon);
-
-MESSAGE_CENTER_PUBLIC_EXPORT
-const gfx::VectorIcon* GetRegisteredVectorIcon(const std::string& id);
 
 }  // namespace message_center
 

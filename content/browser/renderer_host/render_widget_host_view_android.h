@@ -396,6 +396,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void EvictFrameIfNecessary();
 
+  // Helper function to update background color for WebView on fullscreen
+  // changes. See https://crbug.com/961223.
+  void UpdateWebViewBackgroundColorIfNecessary();
+
   // DevTools ScreenCast support for Android WebView.
   void SynchronousCopyContents(
       const gfx::Rect& src_subrect_dip,

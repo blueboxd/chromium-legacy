@@ -219,23 +219,23 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   const gfx::Insets toast_label_vertical_margin(
       provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL), 0);
   find_previous_button_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(toast_control_vertical_margin +
-                                          vector_button_horizontal_margin));
-  find_next_button_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(toast_control_vertical_margin +
-                                          vector_button_horizontal_margin));
-  close_button_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(toast_control_vertical_margin +
+      views::kMarginsKey, gfx::Insets(toast_control_vertical_margin +
+                                      vector_button_horizontal_margin));
+  find_next_button_->SetProperty(views::kMarginsKey,
+                                 gfx::Insets(toast_control_vertical_margin +
                                              vector_button_horizontal_margin));
+  close_button_->SetProperty(views::kMarginsKey,
+                             gfx::Insets(toast_control_vertical_margin +
+                                         vector_button_horizontal_margin));
   separator_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_control_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_control_vertical_margin + horizontal_margin));
   find_text_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_control_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_control_vertical_margin + horizontal_margin));
   match_count_text_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_label_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_label_vertical_margin + horizontal_margin));
 
   find_text_->SetBorder(views::NullBorder());
 

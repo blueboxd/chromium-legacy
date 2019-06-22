@@ -18,7 +18,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -62,7 +61,7 @@ void SignOutFromSettings() {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 }  // namespace
@@ -160,8 +159,7 @@ void SignOutFromSettings() {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -205,8 +203,7 @@ void SignOutFromSettings() {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

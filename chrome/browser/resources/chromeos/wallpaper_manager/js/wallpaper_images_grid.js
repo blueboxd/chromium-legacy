@@ -391,6 +391,7 @@ cr.define('wallpapers', function() {
         }
       }
 
+      // eslint-disable-next-line no-restricted-properties
       var parentSetter = cr.ui.Grid.prototype.__lookupSetter__('dataModel');
       parentSetter.call(this, dataModel);
     },

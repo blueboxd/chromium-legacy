@@ -104,7 +104,7 @@ AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
                                      AvatarPosition position,
                                      AvatarBorder border,
                                      profiles::AvatarShape shape)
-    : gfx::CanvasImageSource(canvas_size, false),
+    : gfx::CanvasImageSource(canvas_size),
       canvas_size_(canvas_size),
       width_(width),
       height_(GetScaledAvatarHeightForWidth(width, avatar)),

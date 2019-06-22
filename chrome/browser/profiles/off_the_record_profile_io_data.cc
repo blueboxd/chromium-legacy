@@ -121,8 +121,7 @@ void OffTheRecordProfileIOData::InitializeExtensionsCookieStore(
   content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  extensions_cookie_store_ =
-      content::CreateCookieStore(cookie_config, g_browser_process->net_log());
+  extensions_cookie_store_ = content::CreateCookieStore(cookie_config, nullptr);
 }
 
 net::CookieStore* OffTheRecordProfileIOData::GetExtensionsCookieStore() const {

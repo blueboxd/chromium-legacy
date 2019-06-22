@@ -89,7 +89,6 @@ class QuicTestPacketMaker {
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
-      size_t bytes_written,
       bool include_stop_sending_if_v99);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndRequestHeadersPacket(
@@ -122,7 +121,6 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback,
-      size_t bytes_written,
       bool include_stop_sending_if_v99);
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
       uint64_t num,
@@ -269,8 +267,7 @@ class QuicTestPacketMaker {
       spdy::SpdyHeaderBlock headers,
       quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
-      quic::QuicRstStreamErrorCode error_code,
-      size_t bytes_written);
+      quic::QuicRstStreamErrorCode error_code);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.

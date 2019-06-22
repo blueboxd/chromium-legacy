@@ -10,7 +10,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "jni/UsbMidiDeviceAndroid_jni.h"
+#include "media/midi/midi_jni_headers/UsbMidiDeviceAndroid_jni.h"
 #include "media/midi/usb_midi_descriptor_parser.h"
 
 using base::android::JavaParamRef;

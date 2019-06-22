@@ -68,4 +68,21 @@
   return self.bannerAnimator;
 }
 
+#pragma mark - Public Methods
+
+- (void)completePresentationTransitionIfRunning {
+  if (self.bannerAnimator.presenting &&
+      self.bannerAnimator.propertyAnimator.running) {
+    [self.bannerAnimator.propertyAnimator stopAnimation:NO];
+    [self.bannerAnimator.propertyAnimator
+        finishAnimationAtPosition:UIViewAnimatingPositionCurrent];
+  }
+}
+
+#pragma mark - InfobarBannerInteractionDelegate
+
+- (void)infobarBannerStartedInteraction {
+  [self completePresentationTransitionIfRunning];
+}
+
 @end

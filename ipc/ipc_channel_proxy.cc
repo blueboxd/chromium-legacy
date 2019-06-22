@@ -348,8 +348,7 @@ void ChannelProxy::Context::AddListenerTaskRunner(
 void ChannelProxy::Context::RemoveListenerTaskRunner(int32_t routing_id) {
   DCHECK(default_listener_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  if (base::Contains(listener_thread_task_runners_, routing_id))
-    listener_thread_task_runners_.erase(routing_id);
+  listener_thread_task_runners_.erase(routing_id);
 }
 
 // Called on the IPC::Channel thread.
@@ -360,10 +359,11 @@ base::SingleThreadTaskRunner* ChannelProxy::Context::GetTaskRunner(
     return default_listener_task_runner_.get();
 
   base::AutoLock lock(listener_thread_task_runners_lock_);
-  base::SingleThreadTaskRunner* task_runner =
-      listener_thread_task_runners_[routing_id].get();
-  if (task_runner)
-    return task_runner;
+  auto task_runner = listener_thread_task_runners_.find(routing_id);
+  if (task_runner != listener_thread_task_runners_.end()) {
+    DCHECK(task_runner->second.get());
+    return task_runner->second.get();
+  }
   return default_listener_task_runner_.get();
 }
 

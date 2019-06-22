@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "jni/DirectoryService_jni.h"
+#include "remoting/android/jni_headers/DirectoryService_jni.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/base/grpc_support/grpc_channel.h"

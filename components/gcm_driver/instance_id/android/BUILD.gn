@@ -8,14 +8,12 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/gcm_driver/instance_id/InstanceIDBridge.java",
   ]
-  jni_package = "components/gcm_driver/instance_id"
 }
 
 generate_jni("test_support_jni_headers") {
   sources = [
     "javatests/src/org/chromium/components/gcm_driver/instance_id/FakeInstanceIDWithSubtype.java",
   ]
-  jni_package = "components/gcm_driver/instance_id"
 }
 
 android_library("instance_id_driver_java") {

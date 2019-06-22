@@ -25,7 +25,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/LocationProviderFactory_jni.h"
+#include "services/device/geolocation/geolocation_jni_headers/LocationProviderFactory_jni.h"
 #endif
 
 namespace device {

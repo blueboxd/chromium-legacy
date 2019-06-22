@@ -455,6 +455,9 @@ const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 const char kBookmarkAppCreationLaunchType[] =
     "extensions.bookmark_app_creation_launch_type";
 
+// Deprecated 6/2019
+const char kMediaCacheSize[] = "browser.media_cache_size";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -514,6 +517,8 @@ void RegisterProfilePrefsForMigration(
 #endif  // !defined(OS_ANDROID)
 
   registry->RegisterIntegerPref(kBookmarkAppCreationLaunchType, 0);
+
+  registry->RegisterIntegerPref(kMediaCacheSize, 0);
 }
 
 }  // namespace
@@ -1103,5 +1108,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kBookmarkAppCreationLaunchType);
 
   // Added 6/2019.
-  profile_prefs->ClearPref(prefs::kMediaCacheSize);
+  profile_prefs->ClearPref(kMediaCacheSize);
 }

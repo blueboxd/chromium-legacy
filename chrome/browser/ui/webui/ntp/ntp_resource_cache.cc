@@ -347,8 +347,6 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.SetString("learnMoreLink", guest_tab_link);
 
-  SetDarkKey(&localized_strings);
-
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
 
@@ -467,8 +465,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       "isUserSignedIn",
       IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
 
-  SetDarkKey(&load_time_data);
-
   // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -583,12 +579,4 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string =
       ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
-}
-
-void NTPResourceCache::SetDarkKey(base::Value* dict) {
-  DCHECK(dict && dict->is_dict());
-  bool use_dark =
-      base::FeatureList::IsEnabled(features::kWebUIDarkMode) &&
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
-  dict->SetKey("dark", base::Value(use_dark ? "dark" : ""));
 }

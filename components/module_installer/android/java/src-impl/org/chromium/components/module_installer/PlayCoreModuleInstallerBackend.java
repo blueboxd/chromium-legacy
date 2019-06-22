@@ -77,8 +77,9 @@ import java.util.Set;
     private static final int INSTALL_STATUS_INTERNAL_ERROR = 18;
     private static final int INSTALL_STATUS_UNKNOWN_SPLITINSTALL_ERROR = 19;
     private static final int INSTALL_STATUS_UNKNOWN_REQUEST_ERROR = 20;
+    private static final int INSTALL_STATUS_NO_SPLITCOMPAT = 21;
     // Keep this one at the end and increment appropriately when adding new status.
-    private static final int INSTALL_STATUS_COUNT = 21;
+    private static final int INSTALL_STATUS_COUNT = 22;
 
     // FeatureModuleAvailabilityStatus defined in //tools/metrics/histograms/enums.xml.
     // These values are persisted to logs. Entries should not be renumbered and numeric values
@@ -181,7 +182,6 @@ import java.util.Set;
         Log.i(TAG, "Status for modules '%s' updated to %d", state.moduleNames(), state.status());
         switch (state.status()) {
             case SplitInstallSessionStatus.DOWNLOADING:
-            case SplitInstallSessionStatus.DOWNLOADED:
             case SplitInstallSessionStatus.INSTALLING:
             case SplitInstallSessionStatus.INSTALLED:
                 for (String name : state.moduleNames()) {
@@ -192,11 +192,19 @@ import java.util.Set;
                     finish(true, state.moduleNames(), INSTALL_STATUS_SUCCESS);
                 }
                 break;
+            // DOWNLOADED only gets sent if SplitCompat is not enabled. That's an error.
+            // SplitCompat should always be enabled.
+            case SplitInstallSessionStatus.DOWNLOADED:
             case SplitInstallSessionStatus.CANCELED:
             case SplitInstallSessionStatus.FAILED:
-                int status = state.status() == SplitInstallSessionStatus.CANCELED
-                        ? INSTALL_STATUS_CANCELLATION
-                        : getHistogramCode(state.errorCode());
+                int status;
+                if (state.status() == SplitInstallSessionStatus.DOWNLOADED) {
+                    status = INSTALL_STATUS_NO_SPLITCOMPAT;
+                } else if (state.status() == SplitInstallSessionStatus.CANCELED) {
+                    status = INSTALL_STATUS_CANCELLATION;
+                } else {
+                    status = getHistogramCode(state.errorCode());
+                }
                 Log.e(TAG, "Failed to install modules '%s': error code %s", state.moduleNames(),
                         status);
                 finish(false, state.moduleNames(), status);
@@ -281,9 +289,7 @@ import java.util.Set;
                 SplitInstallSessionStatus.INSTALLED);
         recordInstallTime(moduleName, ".PendingDownload", SplitInstallSessionStatus.UNKNOWN,
                 SplitInstallSessionStatus.DOWNLOADING);
-        recordInstallTime(moduleName, ".Downloading", SplitInstallSessionStatus.DOWNLOADING,
-                SplitInstallSessionStatus.DOWNLOADED);
-        recordInstallTime(moduleName, ".PendingInstall", SplitInstallSessionStatus.DOWNLOADED,
+        recordInstallTime(moduleName, ".Download", SplitInstallSessionStatus.DOWNLOADING,
                 SplitInstallSessionStatus.INSTALLING);
         recordInstallTime(moduleName, ".Installing", SplitInstallSessionStatus.INSTALLING,
                 SplitInstallSessionStatus.INSTALLED);

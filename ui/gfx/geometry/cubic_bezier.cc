@@ -57,14 +57,18 @@ void CubicBezier::InitGradients(double p1x,
   // End-point gradients are used to calculate timing function results
   // outside the range [0, 1].
   //
-  // There are three possibilities for the gradient at each end:
+  // There are four possibilities for the gradient at each end:
   // (1) the closest control point is not horizontally coincident with regard to
   //     (0, 0) or (1, 1). In this case the line between the end point and
   //     the control point is tangent to the bezier at the end point.
   // (2) the closest control point is coincident with the end point. In
   //     this case the line between the end point and the far control
   //     point is tangent to the bezier at the end point.
-  // (3) the closest control point is horizontally coincident with the end
+  // (3) both internal control points are coincident with an endpoint. There
+  //     are two special case that fall into this category:
+  //     CubicBezier(0, 0, 0, 0) and CubicBezier(1, 1, 1, 1). Both are
+  //     equivalent to linear.
+  // (4) the closest control point is horizontally coincident with the end
   //     point, but vertically distinct. In this case the gradient at the
   //     end point is Infinite. However, this causes issues when
   //     interpolating. As a result, we break down to a simple case of
@@ -74,13 +78,17 @@ void CubicBezier::InitGradients(double p1x,
     start_gradient_ = p1y / p1x;
   else if (!p1y && p2x > 0)
     start_gradient_ = p2y / p2x;
+  else if (!p1y && !p2y)
+    start_gradient_ = 1;
   else
     start_gradient_ = 0;
 
   if (p2x < 1)
     end_gradient_ = (p2y - 1) / (p2x - 1);
-  else if (p2x == 1 && p1x < 1)
+  else if (p2y == 1 && p1x < 1)
     end_gradient_ = (p1y - 1) / (p1x - 1);
+  else if (p2y == 1 && p1y == 1)
+    end_gradient_ = 1;
   else
     end_gradient_ = 0;
 }

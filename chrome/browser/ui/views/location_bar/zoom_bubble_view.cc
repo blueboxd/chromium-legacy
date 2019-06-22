@@ -422,8 +422,7 @@ void ZoomBubbleView::Init() {
   // Add zoom label with the new zoom percent.
   label_ = new ZoomValue(web_contents());
   UpdateZoomPercent();
-  label_->SetProperty(views::kMarginsKey,
-                      new gfx::Insets(label_vertical_margin));
+  label_->SetProperty(views::kMarginsKey, gfx::Insets(label_vertical_margin));
   AddChildView(label_);
 
   // Add extra padding between the zoom percent label and the buttons.
@@ -438,7 +437,7 @@ void ZoomBubbleView::Init() {
       CreateZoomButton(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2);
   zoom_out_button_ = zoom_out_button.get();
   zoom_out_button_->SetProperty(views::kMarginsKey,
-                                new gfx::Insets(vector_button_margin));
+                                gfx::Insets(vector_button_margin));
   AddChildView(zoom_out_button.release());
 
   // Add Zoom In ("+") button.
@@ -446,7 +445,7 @@ void ZoomBubbleView::Init() {
       CreateZoomButton(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2);
   zoom_in_button_ = zoom_in_button.get();
   zoom_in_button_->SetProperty(views::kMarginsKey,
-                               new gfx::Insets(vector_button_margin));
+                               gfx::Insets(vector_button_margin));
   AddChildView(zoom_in_button.release());
 
   // Add "Reset" button.

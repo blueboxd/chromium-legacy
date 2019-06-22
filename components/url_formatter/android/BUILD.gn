@@ -17,6 +17,4 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/url_formatter/UrlFormatter.java",
   ]
-
-  jni_package = "url_formatter"
 }

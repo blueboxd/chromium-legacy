@@ -31,10 +31,13 @@ public class ExploreSitesBridge {
     }
 
     /**
-     * Fetches the catalog data for Explore page.
+     * @Deprecated Please use getCatalog instead.
+     *
+     * Fetches the catalog data from disk for Explore surfaces.
      *
      * Callback will be called with |null| if an error occurred.
      */
+    @Deprecated
     public static void getEspCatalog(
             Profile profile, Callback<List<ExploreSitesCategory>> callback) {
         if (sCatalogForTesting != null) {
@@ -44,6 +47,48 @@ public class ExploreSitesBridge {
 
         List<ExploreSitesCategory> result = new ArrayList<>();
         nativeGetEspCatalog(profile, result, callback);
+    }
+
+    /**
+     * Retrieves the catalog data for Explore surfaces by attempting to retrieve the data from disk.
+     *
+     * If the catalog is not available on the disk, then loads the catalog from the network onto the
+     * disk and returns the new catalog from the disk.
+     *
+     * Use ExploreSitesBridge.isValidCatalog() to check for failure, as the callback can have a null
+     * catalog.
+     *
+     * @param profile - Profile associated with this update.
+     * @param source - int identifying source from ExploreSitesCatalogUpdateRequestSource.
+     * @param callback - method to call with resulting catalog.
+     *
+     */
+    public static void getCatalog(Profile profile,
+            @ExploreSitesCatalogUpdateRequestSource int source,
+            Callback<List<ExploreSitesCategory>> callback) {
+        if (sCatalogForTesting != null) {
+            callback.onResult(sCatalogForTesting);
+            return;
+        }
+
+        List<ExploreSitesCategory> result = new ArrayList<>();
+        nativeGetCatalog(profile, source, result, callback);
+    }
+
+    /**
+     * Check if a catalog is valid.
+     */
+    public static boolean isValidCatalog(List<ExploreSitesCategory> catalog) {
+        return catalog != null && !catalog.isEmpty();
+    }
+
+    /**
+     * Update the catalog from network. Takes care of updating histograms for
+     * ExploreSites.NTPLoadingCatalogFromNetwork and ExploreSites.CatalogUpdateRequestSource.
+     */
+    public static void initializeCatalog(
+            Profile profile, @ExploreSitesCatalogUpdateRequestSource int source) {
+        nativeInitializeCatalog(profile, source);
     }
 
     public static void getSiteImage(Profile profile, int siteID, Callback<Bitmap> callback) {
@@ -184,4 +229,9 @@ public class ExploreSitesBridge {
     private static native void nativeRecordClick(Profile profile, String url, int type);
 
     private static native void nativeIncrementNtpShownCount(Profile profile, int categoryId);
+
+    private static native void nativeGetCatalog(Profile profile, int source,
+            List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
+
+    private static native void nativeInitializeCatalog(Profile profile, int source);
 }

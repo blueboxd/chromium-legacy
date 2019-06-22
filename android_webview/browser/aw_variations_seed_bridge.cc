@@ -10,11 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "android_webview/native_jni/AwVariationsSeedBridge_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "components/variations/seed_response.h"
-#include "jni/AwVariationsSeedBridge_jni.h"
 
 namespace android_webview {
 

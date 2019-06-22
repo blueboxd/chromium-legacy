@@ -593,10 +593,12 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
   service_worker_object_hosts_.erase(version_id);
 }
 
-bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
+bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
+                                                   const GURL& script_url) {
   DCHECK(IsContextAlive());
   return GetContentClient()->browser()->AllowServiceWorker(
-      scope, site_for_cookies(), context_->wrapper()->resource_context(),
+      scope, site_for_cookies(), script_url,
+      context_->wrapper()->resource_context(),
       base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                           render_process_id_, frame_id()));
 }
@@ -922,7 +924,7 @@ void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
     blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
     RegisterCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, options->scope,
+  if (!CanServeContainerHostMethods(&callback, options->scope, script_url,
                                     kServiceWorkerRegisterErrorPrefix,
                                     nullptr)) {
     return;
@@ -1008,7 +1010,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
 void ServiceWorkerProviderHost::GetRegistration(
     const GURL& client_url,
     GetRegistrationCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, url(),
+  if (!CanServeContainerHostMethods(&callback, url(), GURL(),
                                     kServiceWorkerGetRegistrationErrorPrefix,
                                     nullptr)) {
     return;
@@ -1036,7 +1038,7 @@ void ServiceWorkerProviderHost::GetRegistration(
 
 void ServiceWorkerProviderHost::GetRegistrations(
     GetRegistrationsCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, url(),
+  if (!CanServeContainerHostMethods(&callback, url(), GURL(),
                                     kServiceWorkerGetRegistrationsErrorPrefix,
                                     base::nullopt)) {
     return;
@@ -1310,6 +1312,7 @@ template <typename CallbackType, typename... Args>
 bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
     CallbackType* callback,
     const GURL& scope,
+    const GURL& script_url,
     const char* error_prefix,
     Args... args) {
   if (!IsContextAlive()) {
@@ -1332,7 +1335,7 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
     return false;
   }
 
-  if (!AllowServiceWorker(scope)) {
+  if (!AllowServiceWorker(scope, script_url)) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +

@@ -297,6 +297,10 @@ Profile::ProfileType OffTheRecordProfileImpl::GetProfileType() const {
 #endif
 }
 
+base::FilePath OffTheRecordProfileImpl::GetPath() {
+  return profile_->GetPath();
+}
+
 base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
@@ -313,6 +317,10 @@ OffTheRecordProfileImpl::CreateZoomLevelDelegate(
 scoped_refptr<base::SequencedTaskRunner>
 OffTheRecordProfileImpl::GetIOTaskRunner() {
   return profile_->GetIOTaskRunner();
+}
+
+bool OffTheRecordProfileImpl::IsOffTheRecord() {
+  return true;
 }
 
 bool OffTheRecordProfileImpl::IsOffTheRecord() const {

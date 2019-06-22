@@ -43,7 +43,7 @@ void WaitForNextFrameToBePresented(ui::Compositor* compositor) {
   base::RunLoop runloop;
   compositor->RequestPresentationTimeForNextFrame(base::BindLambdaForTesting(
       [&runloop](const gfx::PresentationFeedback& feedback) {
-        runloop.QuitClosure().Run();
+        runloop.Quit();
       }));
   runloop.Run();
 }

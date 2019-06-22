@@ -10,7 +10,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distilled_page_prefs_android.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
-#include "jni/DomDistillerService_jni.h"
+#include "components/dom_distiller/core/jni_headers/DomDistillerService_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;

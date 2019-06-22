@@ -1,6 +1,7 @@
 {
   "features": [ "root-ssl-certificates" ],
   "services": [
+      "fuchsia.device.NameProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack"

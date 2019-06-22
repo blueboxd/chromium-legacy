@@ -7,17 +7,12 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 600, 250],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 125, 6, 30],
           "reason": "geometry"
         }
@@ -34,18 +29,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 250],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 250],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-          "rect": [0, 125, 6, 30],
           "reason": "geometry"
         }
       ]
@@ -61,7 +46,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 400, 600],
           "reason": "geometry"
         },
@@ -71,17 +56,17 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 600],
-          "reason": "geometry"
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='parent'",
+          "rect": [0, 250, 6, 350],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 300, 6, 30],
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
+          "object": "LayoutNGBlockFlow (relative positioned) DIV class='child'",
           "rect": [0, 125, 6, 30],
           "reason": "geometry"
         }
@@ -98,7 +83,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='container'",
           "rect": [0, 0, 800, 600],
           "reason": "geometry"
         },
@@ -106,16 +91,6 @@
           "object": "Scrolling background of LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='parent'",
-          "rect": [0, 0, 6, 600],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV class='child'",
-          "rect": [0, 300, 6, 30],
-          "reason": "geometry"
         }
       ]
     }

@@ -28,7 +28,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
-#include "jni/AccountTrackerService_jni.h"
+#include "components/signin/core/browser/android/jni_headers/AccountTrackerService_jni.h"
 #endif
 
 namespace {

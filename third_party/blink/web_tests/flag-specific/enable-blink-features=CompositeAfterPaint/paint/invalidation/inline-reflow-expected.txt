@@ -7,139 +7,134 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'A A A A A AA AA'",
+          "object": "NGPhysicalTextFragment 'A A A A A AA AA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'A A'",
+          "object": "NGPhysicalTextFragment 'A A'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AA AA AA A A A'",
+          "object": "NGPhysicalTextFragment 'AA AA AA A A A'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AA AA AAA AAA'",
+          "object": "NGPhysicalTextFragment 'AA AA AAA AAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAA AAA AAA AA'",
+          "object": "NGPhysicalTextFragment 'AAA AAA AAA AA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAA AAAA AAAA'",
+          "object": "NGPhysicalTextFragment 'AAA AAAA AAAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAAA AAAA AAAA'",
+          "object": "NGPhysicalTextFragment 'AAAAA AAAA AAAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAAA AAAAA'",
+          "object": "NGPhysicalTextFragment 'AAAAA AAAAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAAAA AAAAA'",
+          "object": "NGPhysicalTextFragment 'AAAAAA AAAAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAAAA AAAAAAA'",
+          "object": "NGPhysicalTextFragment 'AAAAAA AAAAAAA'",
           "rect": [0, 0, 300, 200],
-          "reason": "appeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'A A A A A'",
+          "object": "NGPhysicalTextFragment 'A A A A A AA AA'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'A A A A'",
           "rect": [0, 0, 200, 300],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'A A A A'",
+          "object": "NGPhysicalTextFragment 'A A'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AA AA AA A A A'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AA AA AA A'",
           "rect": [0, 0, 200, 300],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'AA AA AA A'",
+          "object": "NGPhysicalTextFragment 'AA AA AAA AAA'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AAA AAA AA'",
           "rect": [0, 0, 200, 300],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'AA AA AA'",
+          "object": "NGPhysicalTextFragment 'AAA AAA AAA AA'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AAA AAAA AAAA'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AAAA AAA'",
           "rect": [0, 0, 200, 300],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'AA AAA AAA'",
+          "object": "NGPhysicalTextFragment 'AAAAA AAAA AAAA'",
+          "rect": [0, 0, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'AAAAA AAAA'",
           "rect": [0, 0, 200, 300],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'AAA AAA AA'",
+          "object": "NGPhysicalTextFragment 'AAAAA AAAAA'",
           "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAA AAAA'",
+          "object": "NGPhysicalTextFragment 'AAAAAA AAAAA'",
           "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAA AAA'",
+          "object": "NGPhysicalTextFragment 'AAAAAA AAAAAAA'",
           "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAA AAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA AAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAAAAA'",
-          "rect": [0, 0, 200, 300],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
+          "object": "NGPhysicalTextFragment 'A A A A A'",
           "rect": [0, 300, 180, 20],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'A A A A A'",
-          "rect": [0, 300, 180, 20],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

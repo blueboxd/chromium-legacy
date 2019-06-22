@@ -109,8 +109,6 @@ if (is_android) {
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemShareInfoBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
     ]
-
-    jni_package = "components/offline_items_collection/core/android"
   }
 
   java_cpp_enum("jni_enums") {

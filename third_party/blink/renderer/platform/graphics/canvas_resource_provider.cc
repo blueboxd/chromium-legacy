@@ -491,7 +491,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   bool SupportsDirectCompositing() const override { return true; }
   bool SupportsSingleBuffering() const override { return false; }
   GLuint GetBackingTextureHandleForOverwrite() override {
-    if (!ContextProviderWrapper())
+    if (IsGpuContextLost())
       return 0u;
 
     FlushGrContext();
@@ -501,6 +501,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   scoped_refptr<CanvasResource> CreateResource() final {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateResource");
+    if (IsGpuContextLost())
+      return nullptr;
+
     return CanvasResourceSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
         ColorParams(), is_overlay_candidate_, is_origin_top_left_);
@@ -521,6 +524,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderSharedImage::ProduceCanvasResource");
+    if (IsGpuContextLost())
+      return nullptr;
+
     // Its important to end read access and ref the resource before the WillDraw
     // call below. Since it relies on resource ref-count to trigger
     // copy-on-write and asserts that we only have write access when the
@@ -544,6 +550,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
+    if (IsGpuContextLost())
+      return nullptr;
+
     EndWriteAccess();
     return resource_->Bitmap();
   }
@@ -551,7 +560,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   void WillDraw() override {
     DCHECK(resource_);
 
-    if (!ContextProviderWrapper())
+    if (IsGpuContextLost())
       return;
 
     // If |resource_| is still being used by the compositor we need to create
@@ -619,6 +628,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // only perform a GrContext flush if that SkSurface has any pending ops. And
     // this resource may be written to or read from skia without using the
     // SkSurface here.
+    if (IsGpuContextLost())
+      return;
     GetGrContext()->flush();
   }
 
@@ -629,7 +640,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     DCHECK(!resource()->is_cross_thread())
         << "Write access is only allowed on the owning thread";
 
-    if (current_resource_has_write_access_ || !ContextProviderWrapper())
+    if (current_resource_has_write_access_ || IsGpuContextLost())
       return;
 
     auto texture_id = resource()->GetTextureIdForBackendTexture();
@@ -641,7 +652,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   void EndWriteAccess() {
     DCHECK(!resource()->is_cross_thread());
 
-    if (!current_resource_has_write_access_ || !ContextProviderWrapper())
+    if (!current_resource_has_write_access_ || IsGpuContextLost())
       return;
 
     // Issue any skia work using this resource before releasing write access.
@@ -920,6 +931,12 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
+        if (usage == kAcceleratedDirect2DResourceUsage ||
+            usage == kAcceleratedDirect3DResourceUsage) {
+          // Shared images don't work for single buffered canvas yet.
+          continue;
+        }
+
         // TODO(khushalsagar): Also kAcceleratedDirect2DResourceUsage when we
         // switch it to use shared images.
         const bool is_overlay_candidate =

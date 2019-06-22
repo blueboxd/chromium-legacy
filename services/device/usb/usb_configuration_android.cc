@@ -4,7 +4,7 @@
 
 #include "services/device/usb/usb_configuration_android.h"
 
-#include "jni/ChromeUsbConfiguration_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbConfiguration_jni.h"
 #include "services/device/usb/usb_interface_android.h"
 
 using base::android::ScopedJavaLocalRef;

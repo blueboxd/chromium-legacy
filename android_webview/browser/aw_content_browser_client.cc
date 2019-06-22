@@ -312,8 +312,7 @@ void AwContentBrowserClient::set_check_cleartext_permitted(bool permitted) {
 
 AwContentBrowserClient::AwContentBrowserClient(
     AwFeatureListCreator* aw_feature_list_creator)
-    : net_log_(new net::NetLog()),
-      aw_feature_list_creator_(aw_feature_list_creator) {
+    : aw_feature_list_creator_(aw_feature_list_creator) {
   // |aw_feature_list_creator| should not be null. The AwBrowserContext will
   // take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
@@ -326,6 +325,9 @@ AwContentBrowserClient::AwContentBrowserClient(
   frame_interfaces_.AddInterface(
       base::BindRepeating(&DummyBindPasswordManagerDriver));
   sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
+
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    non_network_service_net_log_.reset(new net::NetLog());
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
@@ -681,8 +683,8 @@ void AwContentBrowserClient::ResourceDispatcherHostCreated() {
   AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated();
 }
 
-net::NetLog* AwContentBrowserClient::GetNetLog() {
-  return net_log_.get();
+net::NetLog* AwContentBrowserClient::GetNonNetworkServiceNetLog() {
+  return non_network_service_net_log_.get();
 }
 
 base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {

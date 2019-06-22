@@ -51,6 +51,9 @@ const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRealTimeUrlLookupEnabled{
+    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kRealTimeUrlLookupFetchAllowlist{
     "SafeBrowsingRealTimeUrlLookupFetchAllowlist",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -91,6 +94,7 @@ constexpr struct {
     {&kCommittedSBInterstitials, true},
     {&kForceUseAPDownloadProtection, false},
     {&kPasswordProtectionForSignedInUsers, true},
+    {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupFetchAllowlist, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},

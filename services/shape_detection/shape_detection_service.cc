@@ -24,7 +24,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/InterfaceRegistrar_jni.h"
+#include "services/shape_detection/shape_detection_jni_headers/InterfaceRegistrar_jni.h"
 #endif
 
 namespace shape_detection {

@@ -27,6 +27,7 @@ class RenderFrameHost;
 
 namespace prerender {
 class PrerenderHandle;
+class PrerenderManager;
 }
 
 class SiteEngagementService;
@@ -100,6 +101,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // URL that we decided to prefetch.
   base::Optional<GURL> prefetch_url_;
 
+  // True if a prefetch_url_ has already been prefetched, so we know
+  // whether to prefetch the url again when a tab becomes visible.
+  bool prefetch_url_prefetched_ = false;
+
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
   // Used for look up when an anchor element is clicked.
@@ -149,8 +154,12 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
 
-  // Given a url to prerender, use PrerenderManager to prerender that page.
-  void Prerender(const GURL& url);
+  // Decides whether to prefetch a URL and, if yes, calls Prefetch.
+  void MaybePrefetch();
+
+  // Given a url to prefetch, uses PrerenderManager to start a NoStatePrefetch
+  // of that URL.
+  virtual void Prefetch(prerender::PrerenderManager* prerender_manager);
 
   base::Optional<GURL> GetUrlToPrefetch(
       const url::Origin& document_origin,

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/lock.h"
-#include "jni/UsbMidiDeviceFactoryAndroid_jni.h"
+#include "media/midi/midi_jni_headers/UsbMidiDeviceFactoryAndroid_jni.h"
 #include "media/midi/usb_midi_device_android.h"
 
 using base::android::JavaParamRef;

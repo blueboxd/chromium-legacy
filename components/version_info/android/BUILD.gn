@@ -59,5 +59,4 @@ generate_jni("version_constants_bridge_jni") {
   sources = [
     "java/src/org/chromium/components/version_info/VersionConstantsBridge.java",
   ]
-  jni_package = "version_constants_bridge"
 }

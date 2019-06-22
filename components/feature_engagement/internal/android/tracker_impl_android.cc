@@ -15,9 +15,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "components/feature_engagement/internal/jni_headers/TrackerImpl_jni.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feature_engagement/public/tracker.h"
-#include "jni/TrackerImpl_jni.h"
 
 namespace feature_engagement {
 

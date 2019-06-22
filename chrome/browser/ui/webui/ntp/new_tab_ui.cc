@@ -53,11 +53,7 @@ const char* GetHtmlTextDirection(const base::string16& text) {
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui),
-      dark_mode_observer_(ui::NativeTheme::GetInstanceForNativeUi(),
-                          base::BindRepeating(&NewTabUI::OnDarkModeChanged,
-                                              base::Unretained(this))) {
+NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   Profile* profile = GetProfile();
@@ -76,8 +72,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   pref_change_registrar_.Add(
       prefs::kWebKitDefaultFontSize,
       base::Bind(&NewTabUI::OnDefaultFontSizeChanged, base::Unretained(this)));
-
-  dark_mode_observer_.Start();
 }
 
 NewTabUI::~NewTabUI() {}
@@ -89,16 +83,6 @@ void NewTabUI::OnShowBookmarkBarChanged() {
           : "false");
   web_ui()->CallJavascriptFunctionUnsafe("ntp.setBookmarkBarAttached",
                                          attached);
-}
-
-void NewTabUI::OnDarkModeChanged(bool /*dark_mode*/) {
-  if (!web_ui() || !web_ui()->CanCallJavascript())
-    return;
-
-  bool enabled = base::FeatureList::IsEnabled(features::kWebUIDarkMode);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "document.documentElement.toggleAttribute", base::Value("dark"),
-      base::Value(enabled && dark_mode_observer_.InDarkMode()));
 }
 
 void NewTabUI::OnDefaultFontSizeChanged() {

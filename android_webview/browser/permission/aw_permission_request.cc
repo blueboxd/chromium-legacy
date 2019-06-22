@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "android_webview/browser/permission/aw_permission_request_delegate.h"
+#include "android_webview/native_jni/AwPermissionRequest_jni.h"
 #include "base/android/jni_string.h"
-#include "jni/AwPermissionRequest_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;

@@ -9,6 +9,7 @@
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/common/aw_content_client.h"
+#include "android_webview/native_jni/AwDevToolsServer_jni.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
-#include "jni/AwDevToolsServer_jni.h"
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 

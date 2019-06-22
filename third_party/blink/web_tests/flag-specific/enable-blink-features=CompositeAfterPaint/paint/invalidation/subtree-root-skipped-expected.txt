@@ -7,6 +7,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "NGPhysicalTextFragment 'Selection is here'",
+          "rect": [8, 30, 103, 19],
+          "reason": "geometry"
+        },
+        {
           "object": "InlineTextBox 'PASS'",
           "rect": [10, 11, 35, 16],
           "reason": "appeared"
@@ -17,7 +22,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='div'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
           "reason": "geometry"
         }

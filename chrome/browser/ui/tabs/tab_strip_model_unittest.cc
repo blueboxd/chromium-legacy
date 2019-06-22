@@ -3230,6 +3230,29 @@ TEST_F(TabStripModelTest, CloseTabNotifiesObserversOfGroupChange) {
   EXPECT_EQ(num_group_changed_notifications, 1);
 }
 
+TEST_F(TabStripModelTest, InsertWebContentsAtWithGroupNotifiesObservers) {
+  TestTabStripModelDelegate delegate;
+  MockTabStripModelObserver observer;
+  TabStripModel strip(&delegate, profile());
+  strip.AddObserver(&observer);
+
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AppendWebContents(CreateWebContents(), false);
+  auto group_id = strip.AddToNewGroup({0, 1});
+  observer.ClearStates();
+
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            group_id);
+
+  EXPECT_EQ(observer.GetStateCount(), 2);
+  EXPECT_EQ(MockTabStripModelObserver::GROUP_CHANGED,
+            observer.GetStateAt(1).action);
+  EXPECT_TRUE(observer.StateEquals(
+      1, ExpectedGroupChangeState(strip, 1, base::nullopt, group_id)));
+
+  strip.CloseAllTabs();
+}
+
 // When inserting a WebContents, if a group is not specified, the new tab
 // should be left ungrouped.
 TEST_F(TabStripModelTest, InsertWebContentsAtDoesNotGroupByDefault) {
@@ -3289,212 +3312,3 @@ TEST_F(TabStripModelTest, InsertWebContentsAtWithPinnedGroupPins) {
   strip.CloseAllTabs();
 }
 
-namespace {
-
-// Checks whether a sequence of tabs have contiguous groups. |group_per_tab|
-// defines the group ID for each tab in the sequence.
-bool GroupsAreContiguous(
-    base::span<const base::Optional<TabGroupId>> group_per_tab) {
-  base::flat_set<TabGroupId> seen_groups;
-  base::Optional<TabGroupId> last_seen_group;
-  for (int tab_index = 0; tab_index < static_cast<int>(group_per_tab.size());
-       ++tab_index) {
-    // If the current tab is grouped and its group ID is not the same as the
-    // last seen tab, we have found a new or discontiguous group. Checking
-    // |seen_groups| tells us which.
-    if (group_per_tab[tab_index].has_value() &&
-        group_per_tab[tab_index] != last_seen_group) {
-      if (base::Contains(seen_groups, group_per_tab[tab_index].value()))
-        return false;
-      seen_groups.insert(group_per_tab[tab_index].value());
-    }
-
-    last_seen_group = group_per_tab[tab_index];
-  }
-
-  return true;
-}
-
-// Printing a base::Optional<TabGroupId> gives absolutely unreadable
-// results. For more readable output, this assigns successive integers to each
-// seen group, starting at 1. It prints those to the string, substituting "*"
-// for non-grouped tabs.  Sample output: "* 1 1 * * 2 2 2"
-std::string PrintGroupsToString(
-    base::span<const base::Optional<TabGroupId>> group_per_tab) {
-  if (group_per_tab.empty())
-    return "";
-
-  int next_group = 1;
-  base::flat_map<TabGroupId, int> group_to_output;
-  std::string result;
-  for (const base::Optional<TabGroupId>& cur : group_per_tab) {
-    if (!cur.has_value()) {
-      result += "* ";
-      continue;
-    }
-
-    if (!base::Contains(group_to_output, cur.value()))
-      group_to_output[cur.value()] = next_group++;
-
-    result += base::NumberToString(group_to_output[cur.value()]) + " ";
-  }
-
-  result.pop_back();
-  return result;
-}
-
-class TabStripGroupContiguityChecker : public TabStripModelObserver {
- public:
-  explicit TabStripGroupContiguityChecker(TabStripModel* model)
-      : model_(model) {
-    // This must be used on a TabStripModel with no tabs so we can accurately
-    // track the group of each tab at each observer update.
-    EXPECT_EQ(0, model_->count());
-    model_->AddObserver(this);
-  }
-  ~TabStripGroupContiguityChecker() override { model_->RemoveObserver(this); }
-
-  void OnTabStripModelChanged(
-      TabStripModel* model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override {
-    ASSERT_EQ(model_, model);
-    // Update our list of tabs' groups, |group_of_tab_|, according to the
-    // observer notification.
-    switch (change.type()) {
-      case TabStripModelChange::kInserted: {
-        const TabStripModelChange::Insert* insert = change.GetInsert();
-        for (const TabStripModelChange::ContentsWithIndex& data :
-             insert->contents) {
-          ASSERT_LE(data.index, static_cast<int>(group_of_tab_.size()));
-          group_of_tab_.insert(group_of_tab_.begin() + data.index,
-                               model_->GetTabGroupForTab(data.index));
-        }
-        break;
-      }
-      case TabStripModelChange::kRemoved: {
-        const TabStripModelChange::Remove* remove = change.GetRemove();
-        for (const TabStripModelChange::ContentsWithIndex& data :
-             remove->contents) {
-          ASSERT_LT(data.index, static_cast<int>(group_of_tab_.size()));
-          group_of_tab_.erase(group_of_tab_.begin() + data.index);
-        }
-        break;
-      }
-      case TabStripModelChange::kMoved: {
-        const TabStripModelChange::Move* move = change.GetMove();
-        ASSERT_LT(move->from_index, static_cast<int>(group_of_tab_.size()));
-        ASSERT_LT(move->to_index, static_cast<int>(group_of_tab_.size()));
-        auto from_iter = group_of_tab_.begin() + move->from_index;
-        auto to_iter = group_of_tab_.begin() + move->to_index;
-        if (from_iter <= to_iter) {
-          std::rotate(from_iter, from_iter + 1, to_iter + 1);
-        } else {
-          std::rotate(to_iter, from_iter, from_iter + 1);
-        }
-        break;
-      }
-      case TabStripModelChange::kGroupChanged: {
-        const TabStripModelChange::GroupChange* group_change =
-            change.GetGroupChange();
-        ASSERT_LT(group_change->index, static_cast<int>(group_of_tab_.size()));
-        EXPECT_EQ(group_change->old_group, group_of_tab_[group_change->index]);
-        group_of_tab_[group_change->index] = group_change->new_group;
-        break;
-      }
-      case TabStripModelChange::kSelectionOnly:
-        break;
-      case TabStripModelChange::kReplaced:
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    EXPECT_TRUE(GroupsAreContiguous(group_of_tab_))
-        << "Groups: " << PrintGroupsToString(group_of_tab_);
-  }
-
- private:
-  TabStripModel* const model_;
-  std::vector<base::Optional<TabGroupId>> group_of_tab_;
-};
-
-}  // namespace
-
-// Group contiguity is an invariant of the TabStripModel. It should also send
-// observer updates in a way that preserves this invariant. Otherwise,
-// reconstructing the TabStripModel state from a sequence of observer
-// notifications could result in an invalid state. This is important for
-// sessions code.
-//
-// TODO(crbug.com/971491): this doesn't test all cases because some cases do
-// result in an inconsistent state. For example, removing a tab in the middle of
-// a group sends the ungroup update before the remove update. Once this is
-// fixed, this test should be updated for full coverage.
-TEST_F(TabStripModelTest, GroupsAreAlwaysContiguousForObservers) {
-  TestTabStripModelDelegate delegate;
-  TabStripModel strip(&delegate, profile());
-
-  // This observers |strip|. On each update it receives, it updates its internal
-  // model of the tab strip and checks that all groups are contiguous in it.
-  TabStripGroupContiguityChecker checker(&strip);
-
-  // Add a few tabs to start out.
-  for (int i = 0; i < 6; ++i)
-    strip.AppendWebContents(CreateWebContents(), true);
-
-  // Since failures will happen from inside |checker|, we use |SCOPED_TRACE()|
-  // to see where they come from.
-
-  base::Optional<TabGroupId> group1, group2;
-  {
-    SCOPED_TRACE("Creating initial groups");
-    // Do some grouping, getting some tab reordering along the way.
-    group1 = strip.AddToNewGroup({1, 2});
-    group2 = strip.AddToNewGroup({4, 5});
-    strip.AddToExistingGroup({3}, group1.value());
-    strip.AddToExistingGroup({0}, group2.value());
-  }
-  // Groups: 1 1 1 2 2 2
-
-  {
-    ASSERT_EQ(6, strip.count());
-    SCOPED_TRACE("Remove tab at group beginning");
-    strip.DetachWebContentsAt(3);
-  }
-  // Groups: 1 1 1 2 2
-
-  {
-    ASSERT_EQ(5, strip.count());
-    SCOPED_TRACE("Insert ungrouped tab between groups");
-    strip.InsertWebContentsAt(3, CreateWebContents(), TabStripModel::ADD_NONE);
-  }
-  // Groups: 1 1 1 * 2 2
-
-  {
-    ASSERT_EQ(6, strip.count());
-    SCOPED_TRACE("Move ungrouped tab from between groups to end of group");
-    strip.MoveWebContentsAt(3, 5, false);
-  }
-  // Groups: 1 1 1 2 2 *
-
-  {
-    ASSERT_EQ(6, strip.count());
-    SCOPED_TRACE("Insert grouped tab into middle of group");
-    strip.InsertWebContentsAt(4, CreateWebContents(), TabStripModel::ADD_NONE,
-                              group2);
-  }
-  // Groups: 1 1 1 2 2 2 *
-
-  // The following test currently fails, but at some point should pass:
-  //
-  // {
-  //   ASSERT_EQ(7, strip.count());
-  //   SCOPED_TRACE("Remove tab in middle of group");
-  //   strip.DetachWebContentsAt(1);
-  // }
-  // // Groups: 1 1 2 2 2 *
-
-  strip.CloseAllTabs();
-}

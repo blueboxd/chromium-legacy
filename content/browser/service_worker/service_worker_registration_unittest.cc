@@ -84,6 +84,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;

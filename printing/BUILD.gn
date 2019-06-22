@@ -362,7 +362,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/printing/PrintingContext.java",
     ]
-    jni_package = "printing"
   }
 
   android_library("printing_java") {

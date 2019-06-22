@@ -31,7 +31,7 @@ class MockOverlayPresenterObserver : public OverlayPresenter::Observer {
   ~MockOverlayPresenterObserver() {}
 
   MOCK_METHOD2(WillShowOverlay, void(OverlayPresenter*, OverlayRequest*));
-  MOCK_METHOD1(DidHideOverlay, void(OverlayPresenter*));
+  MOCK_METHOD2(DidHideOverlay, void(OverlayPresenter*, OverlayRequest*));
 
   // OverlayPresenter's ObserverList checks that it is empty upon deallocation,
   // so a custom verification implemetation must be created.
@@ -157,8 +157,8 @@ TEST_F(OverlayPresenterImplTest, ResetUIDelegate) {
   // Reset the UI delegate and verify that the overlay UI is cancelled in the
   // previous delegate's context and presented in the new delegate's context.
   FakeOverlayPresenterUIDelegate new_ui_delegate;
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
   EXPECT_CALL(observer(), WillShowOverlay(&presenter(), request));
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
   presenter().SetUIDelegate(&new_ui_delegate);
   EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
             ui_delegate().GetPresentationState(request));
@@ -168,7 +168,7 @@ TEST_F(OverlayPresenterImplTest, ResetUIDelegate) {
 
   // Reset the UI delegate to nullptr and verify that the overlay UI is
   // cancelled in |new_ui_delegate|'s context.
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
   presenter().SetUIDelegate(nullptr);
   EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
             new_ui_delegate.GetPresentationState(request));
@@ -217,7 +217,7 @@ TEST_F(OverlayPresenterImplTest, ChangeActiveWebStateWhilePresenting) {
       std::make_unique<web::TestWebState>();
   web::WebState* second_web_state = passed_web_state.get();
   OverlayRequest* second_request = AddRequest(second_web_state);
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), first_request));
   web_state_list().InsertWebState(/*index=*/1, std::move(passed_web_state),
                                   WebStateList::InsertionFlags::INSERT_ACTIVATE,
                                   WebStateOpener());
@@ -231,8 +231,8 @@ TEST_F(OverlayPresenterImplTest, ChangeActiveWebStateWhilePresenting) {
 
   // Reactivate the first WebState and verify that its overlay is presented
   // while the second WebState's overlay is hidden.
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), second_request));
   EXPECT_CALL(observer(), WillShowOverlay(&presenter(), first_request));
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
   web_state_list().ActivateWebStateAt(0);
   EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kPresented,
             ui_delegate().GetPresentationState(first_request));
@@ -257,7 +257,7 @@ TEST_F(OverlayPresenterImplTest, ReplaceActiveWebState) {
       std::make_unique<web::TestWebState>();
   web::WebState* replacement_web_state = passed_web_state.get();
   OverlayRequest* replacement_request = AddRequest(replacement_web_state);
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), first_request));
   web_state_list().ReplaceWebStateAt(/*index=*/0, std::move(passed_web_state));
 
   // Verify that the previously shown overlay is canceled and that the overlay
@@ -281,7 +281,7 @@ TEST_F(OverlayPresenterImplTest, RemoveActiveWebState) {
             ui_delegate().GetPresentationState(request));
 
   // Remove the WebState and verify that its overlay was cancelled.
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
   web_state_list().CloseWebStateAt(/*index=*/0, /* close_flags= */ 0);
   EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
             ui_delegate().GetPresentationState(request));
@@ -306,7 +306,7 @@ TEST_F(OverlayPresenterImplTest, DismissForUserInteraction) {
 
   // Dismiss the overlay and check that the second request's overlay is
   // presented.
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), first_request));
   ui_delegate().SimulateDismissalForRequest(
       first_request, OverlayDismissalReason::kUserInteraction);
 
@@ -334,7 +334,7 @@ TEST_F(OverlayPresenterImplTest, CancelRequests) {
             ui_delegate().GetPresentationState(active_request));
 
   // Cancel the queue's requests and verify that the UI is also cancelled.
-  EXPECT_CALL(observer(), DidHideOverlay(&presenter()));
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), active_request));
   queue->CancelAllRequests();
   EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
             ui_delegate().GetPresentationState(active_request));

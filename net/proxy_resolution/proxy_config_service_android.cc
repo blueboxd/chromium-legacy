@@ -20,8 +20,8 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "jni/ProxyChangeListener_jni.h"
 #include "net/base/host_port_pair.h"
+#include "net/net_jni_headers/ProxyChangeListener_jni.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "url/third_party/mozilla/url_parse.h"
 

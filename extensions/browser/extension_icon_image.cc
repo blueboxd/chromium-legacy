@@ -57,8 +57,7 @@ extensions::ExtensionResource GetExtensionIconResource(
 class BlankImageSource : public gfx::CanvasImageSource {
  public:
   explicit BlankImageSource(const gfx::Size& size_in_dip)
-      : CanvasImageSource(size_in_dip, /*is_opaque =*/ false) {
-  }
+      : CanvasImageSource(size_in_dip) {}
   ~BlankImageSource() override {}
 
  private:

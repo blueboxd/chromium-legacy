@@ -252,8 +252,6 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
 
   BrowserAccessibility* last_focused_node = GetLastFocusedNode();
   if (focus != last_focused_node) {
-    if (last_focused_node)
-      OnFocusLost(last_focused_node);
     if (focus)
       FireFocusEvent(focus);
   }

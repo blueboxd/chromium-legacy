@@ -351,6 +351,12 @@ template("mac_framework_bundle") {
       ":$_shared_library_bundle_data",
     ]
 
+    if (enable_dsyms) {
+      data = [
+        "$root_out_dir/$_output_name.dSYM/",
+      ]
+    }
+
     bundle_root_dir = _framework_base_dir
     bundle_contents_dir = _framework_root_dir
     bundle_resources_dir = "$bundle_contents_dir/Resources"
@@ -551,6 +557,13 @@ template("mac_app_bundle") {
     if (_write_pkg_info) {
       deps += [ ":$_pkg_info_bundle_data" ]
     }
+
+    if (enable_dsyms) {
+      data = [
+        "$root_out_dir/$_output_name.dSYM/",
+      ]
+    }
+
     product_type = _product_type
     bundle_root_dir = "$root_out_dir/${_output_name}.${_output_extension}"
     bundle_contents_dir = "$bundle_root_dir/Contents"
@@ -616,6 +629,12 @@ template("mac_plugin_bundle") {
       deps = []
     }
     deps += [ ":$_loadable_module_bundle_data" ]
+
+    if (enable_dsyms) {
+      data = [
+        "$root_out_dir/$_output_name.dSYM/",
+      ]
+    }
 
     bundle_root_dir = "$root_out_dir/$_output_name.plugin"
     bundle_contents_dir = "$bundle_root_dir/Contents"

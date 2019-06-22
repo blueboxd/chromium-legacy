@@ -5895,6 +5895,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Played"/>
 </enum>
 
+<enum name="BooleanHasPossibleExplanation">
+  <int value="0" label="Unknown explanation"/>
+  <int value="1" label="Has possible explanation"/>
+</enum>
+
 <enum name="BooleanHasReadStoragePermission">
   <int value="0" label="Lacks Read Storage Permission"/>
   <int value="1" label="Has Read Storage Permission"/>
@@ -17761,8 +17766,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Failure"/>
 </enum>
 
-<!-- This must be kept current with ExploreSitesEnums.java's
-     ExploreSitesEnums.CatalogUpdateRequestSource -->
+<!-- This must be kept current with explore_sites_bridge.h's
+     ExploreSitesCatalogUpdateRequestSource -->
 
 <enum name="ExploreSitesCatalogUpdateRequestSource">
   <int value="0" label="New Tab Page"/>
@@ -20679,6 +20684,7 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="Unknown Request Error">
     Catch-all for unknown request failures.
   </int>
+  <int value="21" label="No SplitCompat">SplitCompat has not been enabled.</int>
 </enum>
 
 <enum name="FeatureObserver">
@@ -25899,6 +25905,7 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="GAMEPAD_SOURCE_WIN_XINPUT"/>
   <int value="12" label="GAMEPAD_SOURCE_WIN_RAW"/>
   <int value="13" label="GAMEPAD_SOURCE_WIN_MR"/>
+  <int value="14" label="GAMEPAD_SOURCE_OPENXR"/>
 </enum>
 
 <enum name="GamepadVendorProduct">
@@ -31175,6 +31182,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Not started - No refresh token"/>
 </enum>
 
+<enum name="IOSDeviceThermalState">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Nominal"/>
+  <int value="2" label="Fair"/>
+  <int value="3" label="Serious"/>
+  <int value="4" label="Critical"/>
+</enum>
+
 <enum name="IOSExternalURLRequestStatus">
   <int value="0" label="MainFrameAllowed"/>
   <int value="1" label="SubframeAllowed"/>
@@ -34852,6 +34867,7 @@ from previous Chrome versions.
   <int value="15614295" label="Portals:enabled"/>
   <int value="19629326" label="OmniboxExperimentalKeywordMode:enabled"/>
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
+  <int value="21055794" label="OpenXR:enabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="26875005" label="disable-explicit-dma-fences"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
@@ -35161,6 +35177,7 @@ from previous Chrome versions.
   <int value="503189154" label="ViewsBrowserWindows:disabled"/>
   <int value="503245473" label="disable-translate-new-ux"/>
   <int value="504994663" label="GenericSensor:disabled"/>
+  <int value="505561325" label="OpenXR:disabled"/>
   <int value="506680761" label="WebNFC:disabled"/>
   <int value="510066229"
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
@@ -58658,6 +58675,13 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="VersionComparison">
+  <summary>The difference between two compared versions.</summary>
+  <int value="0" label="Same">No version between versions.</int>
+  <int value="1" label="Minor">A difference in minor versions.</int>
+  <int value="2" label="Major">A difference in major versions.</int>
+</enum>
+
 <enum name="VideoCaptureError">
   <int value="0" label="kNone"/>
   <int value="1"
@@ -59496,6 +59520,7 @@ Full version information for the fingerprint enum values:
   <int value="22" label="OPENVR_RIFT_CV1"/>
   <int value="40" label="OCULUS_UNKNOWN"/>
   <int value="60" label="WINDOWS_MIXED_REALITY_UNKNOWN"/>
+  <int value="70" label="OPENXR_UNKNOWN"/>
 </enum>
 
 <enum name="VRVoiceSearchEndState">
@@ -62272,6 +62297,7 @@ Full version information for the fingerprint enum values:
   <int value="5" label="OCULUS_DEVICE_ID"/>
   <int value="6" label="WINDOWS_MIXED_REALITY_ID"/>
   <int value="7" label="ARCORE_DEVICE_ID"/>
+  <int value="8" label="OPENXR_DEVICE_ID"/>
 </enum>
 
 <enum name="XRReferenceSpaceType">

@@ -1007,6 +1007,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
     // compared to |LayoutObject::ForceLayout|.
     DCHECK(!box_->IsLayoutNGMixin());
+    bool needed_layout = box_->NeedsLayout();
     if (box_->NeedsLayout() && !needs_force_relayout)
       box_->LayoutIfNeeded();
     else
@@ -1034,6 +1035,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     layout_result = builder.ToBoxFragment();
 
     box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+
+    // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
+    // |NeedsLayout()| flag should not be cleared.
+    if (needed_layout && layout_result != box_->GetCachedLayoutResult()) {
+      box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+    }
   } else if (layout_result) {
     // OOF-positioned nodes have a two-tier cache, and their layout results
     // must always contain the correct percentage resolution size.

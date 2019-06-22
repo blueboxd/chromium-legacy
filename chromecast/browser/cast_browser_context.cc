@@ -93,11 +93,11 @@ CastBrowserContext::CreateZoomLevelDelegate(
 }
 #endif  // !defined(OS_ANDROID)
 
-base::FilePath CastBrowserContext::GetPath() const {
+base::FilePath CastBrowserContext::GetPath() {
   return path_;
 }
 
-bool CastBrowserContext::IsOffTheRecord() const {
+bool CastBrowserContext::IsOffTheRecord() {
   return false;
 }
 

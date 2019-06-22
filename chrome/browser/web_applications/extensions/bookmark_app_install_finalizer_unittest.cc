@@ -59,7 +59,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
         const Extension* extension,
         const SkBitmap& install_icon,
         const base::Optional<int>& dnr_ruleset_checksum) override {
-      run_loop_.QuitClosure().Run();
+      run_loop_.Quit();
     }
 
     void WaitForInstallToTrigger() { run_loop_.Run(); }

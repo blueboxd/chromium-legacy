@@ -14,6 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
@@ -22,11 +23,23 @@ namespace chromeos {
 class OutputProtectionDelegate : public aura::WindowObserver,
                                  public display::DisplayObserver {
  public:
-  typedef base::Callback<void(bool /* success */,
-                              uint32_t /* link_mask */,
-                              uint32_t /* protection_mask*/)>
-      QueryStatusCallback;
-  typedef base::Callback<void(bool /* success */)> SetProtectionCallback;
+  class Controller {
+   public:
+    using QueryStatusCallback = base::OnceCallback<
+        void(bool success, uint32_t connection_mask, uint32_t protection_mask)>;
+    using SetProtectionCallback = base::OnceCallback<void(bool success)>;
+
+    Controller();
+    virtual ~Controller();
+    virtual void QueryStatus(int64_t display_id,
+                             QueryStatusCallback callback) = 0;
+    virtual void SetProtection(int64_t display_id,
+                               uint32_t protection_mask,
+                               SetProtectionCallback callback) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Controller);
+  };
 
   OutputProtectionDelegate(int render_process_id, int render_frame_id);
   ~OutputProtectionDelegate() override;
@@ -40,24 +53,9 @@ class OutputProtectionDelegate : public aura::WindowObserver,
       const aura::WindowObserver::HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  void QueryStatus(const QueryStatusCallback& callback);
-  void SetProtection(uint32_t desired_method_mask,
-                     const SetProtectionCallback& callback);
-
-  // Display content protection controller interface.
-  class Controller {
-   public:
-    Controller();
-    virtual ~Controller();
-    virtual void QueryStatus(int64_t display_id,
-                             const QueryStatusCallback& callback) = 0;
-    virtual void SetProtection(int64_t display_id,
-                               uint32_t desired_method_mask,
-                               const SetProtectionCallback& callback) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Controller);
-  };
+  void QueryStatus(Controller::QueryStatusCallback callback);
+  void SetProtection(uint32_t protection_mask,
+                     Controller::SetProtectionCallback callback);
 
  private:
   void OnWindowMayHaveMovedToAnotherDisplay();
@@ -65,23 +63,23 @@ class OutputProtectionDelegate : public aura::WindowObserver,
   bool InitializeControllerIfNecessary();
 
   // Used to lookup the WebContents associated with the render frame.
-  int render_process_id_;
-  int render_frame_id_;
+  const int render_process_id_;
+  const int render_frame_id_;
 
   // Native window being observed.
-  aura::Window* window_;
+  aura::Window* window_ = nullptr;
 
-  // The display id which the renderer currently uses.
-  int64_t display_id_;
+  // Display ID of the observed window.
+  int64_t display_id_ = display::kInvalidDisplayId;
 
-  // The last desired method mask. Will enable this mask on new display if
-  // renderer changes display.
-  uint32_t desired_method_mask_;
+  // Last requested ContentProtectionMethod bitmask, applied when the observed
+  // window moves to another display.
+  uint32_t protection_mask_ = display::CONTENT_PROTECTION_METHOD_NONE;
 
   // The display content protection controller.
   std::unique_ptr<Controller> controller_;
 
-  base::WeakPtrFactory<OutputProtectionDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<OutputProtectionDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionDelegate);
 };

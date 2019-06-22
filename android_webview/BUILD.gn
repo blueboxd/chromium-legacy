@@ -68,7 +68,6 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
   ]
-  jni_package = "android_webview"
 
   deps = [
     ":cancellation_signal_android_jar_jni_headers",
@@ -77,7 +76,6 @@ generate_jni("native_jni") {
 
 generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
   classes = [ "android/os/CancellationSignal.class" ]
-  jni_package = "android_webview"
 }
 
 java_cpp_enum("aw_permission_request_resource") {

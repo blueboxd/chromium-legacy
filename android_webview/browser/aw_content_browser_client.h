@@ -140,7 +140,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
   void ResourceDispatcherHostCreated() override;
-  net::NetLog* GetNetLog() override;
   base::FilePath GetDefaultDownloadDirectory() override;
   std::string GetDefaultDownloadName() override;
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
@@ -259,12 +258,15 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
+  net::NetLog* GetNonNetworkServiceNetLog();
+
   static void DisableCreatingThreadPool();
 
  private:
   safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
 
-  std::unique_ptr<net::NetLog> net_log_;
+  // TODO(eroman): Remove once WebView has switched over to NetworkService.
+  std::unique_ptr<net::NetLog> non_network_service_net_log_;
 
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.

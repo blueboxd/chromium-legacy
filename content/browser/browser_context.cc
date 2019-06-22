@@ -773,7 +773,7 @@ std::unique_ptr<service_manager::Service> BrowserContext::HandleServiceRequest(
   return nullptr;
 }
 
-const std::string& BrowserContext::UniqueId() const {
+const std::string& BrowserContext::UniqueId() {
   return unique_id_;
 }
 

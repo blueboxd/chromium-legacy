@@ -13,7 +13,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/files/file.h"
-#include "jni/CreditUtils_jni.h"
+#include "components/about_ui/android/about_ui_jni_headers/CreditUtils_jni.h"
 #endif
 
 namespace about_ui {

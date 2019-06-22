@@ -2,6 +2,7 @@
   "features": [],
   "services": [
       "chromium.cast.ApplicationConfigManager",
+      "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",

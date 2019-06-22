@@ -63,10 +63,6 @@ namespace gcm {
 class GCMDriver;
 }
 
-namespace net_log {
-class ChromeNetLog;
-}
-
 namespace policy {
 class ChromeBrowserPolicyConnector;
 class PolicyService;
@@ -184,7 +180,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void StartAutoupdateTimer() override;
 #endif
 
-  net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
@@ -353,9 +348,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
   PrefChangeRegistrar pref_change_registrar_;
-
-  // Lives here so can safely log events on shutdown.
-  std::unique_ptr<net_log::ChromeNetLog> net_log_;
 
   std::unique_ptr<BatteryMetrics> battery_metrics_;
 

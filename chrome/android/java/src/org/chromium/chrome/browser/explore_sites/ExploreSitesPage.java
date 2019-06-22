@@ -16,7 +16,6 @@ import android.util.Base64;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -30,6 +29,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
@@ -83,7 +83,6 @@ public class ExploreSitesPage extends BasicNativePage {
     private PropertyModel mModel;
     private ContextMenuManager mContextMenuManager;
     private int mNavigateToCategory;
-    private boolean mHasFetchedNetworkCatalog;
     private boolean mIsLoaded;
     private int mInitialScrollPosition;
     private boolean mScrollUserActionReported;
@@ -128,7 +127,6 @@ public class ExploreSitesPage extends BasicNativePage {
         mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
         mProfile = mHost.getActiveTab().getProfile();
-        mHasFetchedNetworkCatalog = false;
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
                          .with(CATEGORY_LIST_KEY, new ListModel<>())
@@ -183,14 +181,17 @@ public class ExploreSitesPage extends BasicNativePage {
         });
 
         // We don't want to scroll to the 4th category if personalized
-        // or integrated with Most Likely.
+        // or integrated with Most Likely, or if we're on a touchless device.
         int variation = ExploreSitesBridge.getVariation();
         mInitialScrollPosition = variation == ExploreSitesVariation.PERSONALIZED
                         || ExploreSitesBridge.isIntegratedWithMostLikely(variation)
+                        || FeatureUtilities.isNoTouchModeEnabled()
                 ? INITIAL_SCROLL_POSITION_PERSONALIZED
                 : INITIAL_SCROLL_POSITION;
 
-        ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
+        ExploreSitesBridge.getCatalog(mProfile,
+                ExploreSitesCatalogUpdateRequestSource.EXPLORE_SITES_PAGE, this::translateToModel);
+
         RecordUserAction.record("Android.ExploreSitesPage.Open");
     }
 
@@ -202,19 +203,9 @@ public class ExploreSitesPage extends BasicNativePage {
 
     private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
         // If list is null or we received an empty catalog from network, show error.
-        if (categoryList == null || (categoryList.isEmpty() && mHasFetchedNetworkCatalog)) {
-            onUpdatedCatalog(false);
-            return;
-        }
-        // If list is empty and we never fetched from network before, fetch from network.
-        if (categoryList.isEmpty()) {
-            mModel.set(STATUS_KEY, CatalogLoadingState.LOADING_NET);
-            mHasFetchedNetworkCatalog = true;
-            ExploreSitesBridge.updateCatalogFromNetwork(
-                    mProfile, /* isImmediateFetch =*/true, this::onUpdatedCatalog);
-            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
-                    ExploreSitesEnums.CatalogUpdateRequestSource.EXPLORE_SITES_PAGE,
-                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
+        if (!ExploreSitesBridge.isValidCatalog(categoryList)) {
+            mModel.set(STATUS_KEY, CatalogLoadingState.ERROR);
+            mIsLoaded = true;
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
@@ -269,15 +260,6 @@ public class ExploreSitesPage extends BasicNativePage {
             }
 
             mModel.set(SCROLL_TO_CATEGORY_KEY, scrollPosition);
-        }
-    }
-
-    private void onUpdatedCatalog(Boolean hasFetchedCatalog) {
-        if (hasFetchedCatalog) {
-            ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
-        } else {
-            mModel.set(STATUS_KEY, CatalogLoadingState.ERROR);
-            mIsLoaded = true;
         }
     }
 

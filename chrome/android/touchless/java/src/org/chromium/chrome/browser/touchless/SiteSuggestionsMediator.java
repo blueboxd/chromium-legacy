@@ -9,11 +9,9 @@ import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory;
-import org.chromium.chrome.browser.explore_sites.ExploreSitesEnums;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesCatalogUpdateRequestSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -73,7 +71,9 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
         mMostVisitedSites.setObserver(this, NUM_FETCHED_SITES);
 
         mModel.addObserver(this);
-        ExploreSitesBridge.getEspCatalog(mProfile, this::onGetEspCatalog);
+
+        ExploreSitesBridge.initializeCatalog(
+                mProfile, ExploreSitesCatalogUpdateRequestSource.NEW_TAB_PAGE);
     }
 
     @Override
@@ -207,17 +207,5 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
                         suggestion.set(SiteSuggestionModel.ICON_KEY, icon);
                     }
                 });
-    }
-
-    private void onGetEspCatalog(List<ExploreSitesCategory> categoryList) {
-        boolean loadCatalogFromNetwork = categoryList == null || categoryList.isEmpty();
-        if (loadCatalogFromNetwork) {
-            ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true, (success) -> {});
-            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
-                    ExploreSitesEnums.CatalogUpdateRequestSource.NEW_TAB_PAGE,
-                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
-        }
-        RecordHistogram.recordBooleanHistogram(
-                "ExploreSites.NTPLoadingCatalogFromNetwork", loadCatalogFromNetwork);
     }
 }

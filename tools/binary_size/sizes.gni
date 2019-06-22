@@ -33,6 +33,17 @@ template("sizes_test") {
         "--size-path",
         mac_bin_path + "size",
       ]
+
+      if (!defined(data)) {
+        data = []
+      }
+
+      # 'size' is a symlink to 'llvm-size', so throw both in there, but don't
+      # add the entire bin path since it's large.
+      data += [
+        mac_bin_path + "llvm-size",
+        mac_bin_path + "size",
+      ]
     }
   }
 }

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_contents.h"
+#include "android_webview/native_jni/AwHttpAuthHandler_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AwHttpAuthHandler_jni.h"
 #include "net/base/auth.h"
 
 using base::android::ConvertJavaStringToUTF16;

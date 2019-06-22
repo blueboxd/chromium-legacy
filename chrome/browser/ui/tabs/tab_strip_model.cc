@@ -781,7 +781,7 @@ const TabGroupData* TabStripModel::GetDataForGroup(TabGroupId group) const {
 }
 
 base::Optional<TabGroupId> TabStripModel::GetTabGroupForTab(int index) const {
-  return (index == kNoTab) ? base::nullopt : contents_data_[index]->group();
+  return ContainsIndex(index) ? contents_data_[index]->group() : base::nullopt;
 }
 
 std::vector<TabGroupId> TabStripModel::ListTabGroups() const {
@@ -1472,6 +1472,8 @@ int TabStripModel::InsertWebContentsAtImpl(
     }
     data->set_opener(active_contents);
   }
+  if (group.has_value())
+    data->set_group(group);
 
   // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
   // be blocked, or just let the modal dialog manager make the blocking call
@@ -1495,14 +1497,13 @@ int TabStripModel::InsertWebContentsAtImpl(
                              /*triggered_by_other_operation=*/true);
   }
 
-  if (group.has_value())
-    contents_data_[index]->set_group(group);
-
   TabStripModelChange::Insert insert;
   insert.contents.push_back({raw_contents, index});
   TabStripModelChange change(std::move(insert));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
+  if (group.has_value())
+    NotifyGroupChange(index, base::nullopt, group);
 
   return index;
 }

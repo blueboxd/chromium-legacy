@@ -40,9 +40,6 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
   FloatRect element_timing_rect_;
   // The time of the first paint after fully loaded.
   base::TimeTicks paint_time = base::TimeTicks();
-#ifndef NDEBUG
-  String text = "";
-#endif
   DISALLOW_COPY_AND_ASSIGN(TextRecord);
 };
 
@@ -56,40 +53,43 @@ class TextRecordsManager {
 
  public:
   TextRecordsManager();
-  TextRecord* FindLargestPaintCandidate();
+  base::WeakPtr<TextRecord> FindLargestPaintCandidate();
 
-  void RemoveVisibleRecord(const DOMNodeId&);
-  void RemoveInvisibleRecord(const DOMNodeId&);
-  inline void RecordInvisibleNode(const DOMNodeId& node_id) {
+  void RemoveVisibleRecord(const LayoutObject&);
+  void RemoveInvisibleRecord(const LayoutObject&);
+  inline void RecordInvisibleObject(const LayoutObject& object) {
     DCHECK(!HasTooManyNodes());
-    invisible_node_ids_.insert(node_id);
+    invisible_node_ids_.insert(&object);
   }
-  void RecordVisibleNode(const DOMNodeId&,
-                         const uint64_t& visual_size,
-                         const FloatRect& element_timing_rect,
-                         const LayoutObject&);
+  void RecordVisibleObject(const LayoutObject&,
+                           const uint64_t& visual_size,
+                           const FloatRect& element_timing_rect,
+                           DOMNodeId);
   bool NeedMeausuringPaintTime() const {
     return !texts_queued_for_paint_time_.IsEmpty();
   }
   void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
 
   bool HasTooManyNodes() const;
-  inline bool HasRecorded(const DOMNodeId& node_id) const {
-    return visible_node_map_.Contains(node_id) ||
-           invisible_node_ids_.Contains(node_id);
+  inline bool HasRecorded(const LayoutObject& object) const {
+    return visible_node_map_.Contains(&object) ||
+           invisible_node_ids_.Contains(&object);
   }
 
-  size_t CountVisibleNodes() const { return visible_node_map_.size(); }
-  size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
+  size_t CountVisibleObjects() const { return visible_node_map_.size(); }
+  size_t CountInvisibleObjects() const { return invisible_node_ids_.size(); }
 
-  inline bool IsKnownVisibleNode(const DOMNodeId& node_id) const {
-    return visible_node_map_.Contains(node_id);
+  inline bool IsKnownVisible(const LayoutObject& object) const {
+    return visible_node_map_.Contains(&object);
   }
 
-  inline bool IsKnownInvisibleNode(const DOMNodeId& node_id) const {
-    return invisible_node_ids_.Contains(node_id);
+  inline bool IsKnownInvisible(const LayoutObject& object) const {
+    return invisible_node_ids_.Contains(&object);
   }
 
+  void CleanUp();
+
+  void CleanUpLargestContentfulPaint();
   void StopRecordingLargestTextPaint();
   bool IsRecordingLargestTextPaint() const { return is_recording_ltp_; }
 
@@ -113,14 +113,15 @@ class TextRecordsManager {
   // Timing.
   bool is_recording_ltp_ =
       RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled();
-  HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map_;
-  HashSet<DOMNodeId> invisible_node_ids_;
-  // This is used to order the nodes in |visible_node_map_| so that we can find
-  // the largest node efficiently. Note that the entries in |size_ordered_set_|
-  // and |visible_node_map_| should always be added/deleted together.
+  // Once LayoutObject* is destroyed, |visible_node_map_| and
+  // |invisible_node_ids_| must immediately clear the corresponding record from
+  // themselves.
+  HashMap<const LayoutObject*, std::unique_ptr<TextRecord>> visible_node_map_;
+  HashSet<const LayoutObject*> invisible_node_ids_;
+
   TextRecordSet size_ordered_set_;
   Deque<base::WeakPtr<TextRecord>> texts_queued_for_paint_time_;
-  TextRecord* cached_largest_paint_candidate_;
+  base::WeakPtr<TextRecord> cached_largest_paint_candidate_;
   Member<TextElementTiming> text_element_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
@@ -156,8 +157,8 @@ class CORE_EXPORT TextPaintTimingDetector final
                             const IntRect& aggregated_visual_rect,
                             const PropertyTreeState&);
   void OnPaintFinished();
-  void NotifyNodeRemoved(DOMNodeId);
-  TextRecord* FindLargestPaintCandidate();
+  void LayoutObjectWillBeDestroyed(const LayoutObject&);
+  base::WeakPtr<TextRecord> FindLargestPaintCandidate();
   void StopRecordEntries();
   void StopRecordingLargestTextPaint();
   bool IsRecording() const { return is_recording_; }

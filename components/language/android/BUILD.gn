@@ -10,7 +10,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/language/AndroidLanguageMetricsBridge.java",
     "java/src/org/chromium/components/language/GeoLanguageProviderBridge.java",
   ]
-  jni_package = "components/language"
 }
 
 source_set("language_bridge") {

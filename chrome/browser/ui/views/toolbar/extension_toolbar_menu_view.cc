@@ -119,7 +119,7 @@ void ExtensionToolbarMenuView::CloseAppMenu() {
 
 void ExtensionToolbarMenuView::UpdateMargins() {
   SetProperty(views::kMarginsKey,
-              new gfx::Insets(0, GetStartPadding(), 0, GetEndPadding()));
+              gfx::Insets(0, GetStartPadding(), 0, GetEndPadding()));
   menu_item_->Layout();
 }
 

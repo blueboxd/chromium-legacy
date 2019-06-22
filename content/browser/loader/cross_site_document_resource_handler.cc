@@ -67,53 +67,6 @@ class LocalIoBufferWithOffset : public net::WrappedIOBuffer {
 
 }  // namespace
 
-void CrossSiteDocumentResourceHandler::LogBlockedResponse(
-    ResourceRequestInfoImpl* resource_request_info,
-    int http_response_code) {
-  DCHECK(resource_request_info);
-  DCHECK(analyzer_);
-  DCHECK_NE(network::CrossOriginReadBlocking::MimeType::kInvalidMimeType,
-            analyzer_->canonical_mime_type());
-
-  analyzer_->LogBlockedResponse();
-
-  ResourceType resource_type = resource_request_info->GetResourceType();
-  UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked", resource_type);
-  switch (analyzer_->canonical_mime_type()) {
-    case MimeType::kHtml:
-      UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.HTML",
-                                resource_type);
-      break;
-    case MimeType::kXml:
-      UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.XML",
-                                resource_type);
-      break;
-    case MimeType::kJson:
-      UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.JSON",
-                                resource_type);
-      break;
-    case MimeType::kPlain:
-      UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Plain",
-                                resource_type);
-      break;
-    case MimeType::kOthers:
-      UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Others",
-                                resource_type);
-      break;
-
-    case MimeType::kNeverSniffed:
-      break;
-
-    case MimeType::kInvalidMimeType:
-      NOTREACHED();
-      break;
-  }
-  if (analyzer_->found_parser_breaker()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SiteIsolation.XSD.Browser.BlockedForParserBreaker", resource_type);
-  }
-}
-
 // ResourceController that runs a closure on Resume(), and forwards failures
 // back to CrossSiteDocumentHandler. The closure can optionally be run as
 // a PostTask.
@@ -464,7 +417,7 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
                      : "null",
                  "url", request()->url().spec());
 
-    LogBlockedResponse(info, analyzer_->http_response_code());
+    analyzer_->LogBlockedResponse();
 
     // Block the response and throw away the data.  Report zero bytes read.
     blocked_read_completed_ = true;

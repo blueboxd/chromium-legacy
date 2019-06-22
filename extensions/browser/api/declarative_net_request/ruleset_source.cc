@@ -244,9 +244,8 @@ RulesetSource RulesetSource::CreateStatic(const Extension& extension) {
 }
 
 // static
-RulesetSource RulesetSource::CreateDynamic(
-    const content::BrowserContext* context,
-    const Extension& extension) {
+RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
+                                           const Extension& extension) {
   base::FilePath dynamic_ruleset_directory =
       context->GetPath()
           .AppendASCII(kDynamicRulesetDirectory)

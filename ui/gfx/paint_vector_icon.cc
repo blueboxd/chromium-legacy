@@ -481,11 +481,10 @@ void PaintPath(Canvas* canvas,
 class VectorIconSource : public CanvasImageSource {
  public:
   explicit VectorIconSource(const IconDescription& data)
-      : CanvasImageSource(Size(data.dip_size, data.dip_size), false),
-        data_(data) {}
+      : CanvasImageSource(Size(data.dip_size, data.dip_size)), data_(data) {}
 
   VectorIconSource(const std::string& definition, int dip_size, SkColor color)
-      : CanvasImageSource(Size(dip_size, dip_size), false),
+      : CanvasImageSource(Size(dip_size, dip_size)),
         data_(kNoneIcon, dip_size, color, base::TimeDelta(), kNoneIcon),
         path_(PathFromSource(definition)) {}
 

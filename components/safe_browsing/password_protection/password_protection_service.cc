@@ -23,7 +23,6 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/db/database_manager.h"
-#include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/zoom/zoom_controller.h"

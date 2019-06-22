@@ -676,6 +676,10 @@ void TestingProfile::SetIsNewProfile(bool is_new_profile) {
   is_new_profile_ = is_new_profile;
 }
 
+base::FilePath TestingProfile::GetPath() {
+  return profile_path_;
+}
+
 base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
@@ -712,6 +716,10 @@ Profile::ProfileType TestingProfile::GetProfileType() const {
   if (original_profile_)
     return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
   return REGULAR_PROFILE;
+}
+
+bool TestingProfile::IsOffTheRecord() {
+  return original_profile_;
 }
 
 bool TestingProfile::IsOffTheRecord() const {

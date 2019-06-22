@@ -40,7 +40,8 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
                                 ScrollTimelineOptions*,
                                 ExceptionState&);
 
-  ScrollTimeline(Element*,
+  ScrollTimeline(Document*,
+                 Element*,
                  ScrollDirection,
                  CSSPrimitiveValue*,
                  CSSPrimitiveValue*,
@@ -50,7 +51,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
   bool IsScrollTimeline() const override { return true; }
-  Document* GetDocument() override { return &scroll_source_->GetDocument(); }
+  Document* GetDocument() override { return document_; }
   // ScrollTimeline is not active if scrollSource is null, does not currently
   // have a CSS layout box, or if its layout box is not a scroll container.
   // https://github.com/WICG/scroll-animations/issues/31
@@ -96,6 +97,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   static bool HasActiveScrollTimeline(Node* node);
 
  private:
+  Member<Document> document_;
   // Use |scroll_source_| only to implement the web-exposed API but use
   // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;

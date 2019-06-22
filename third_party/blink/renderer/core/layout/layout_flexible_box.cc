@@ -847,8 +847,10 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
     const Length& cross_size_length = IsHorizontalFlow()
                                           ? child.StyleRef().Height()
                                           : child.StyleRef().Width();
-    return ComputeMainSizeFromAspectRatioUsing(child, cross_size_length) -
-           main_axis_border_scrollbar_padding;
+    LayoutUnit result =
+        ComputeMainSizeFromAspectRatioUsing(child, cross_size_length);
+    result = AdjustChildSizeForAspectRatioCrossAxisMinAndMax(child, result);
+    return result - main_axis_border_scrollbar_padding;
   }
 
   // The flex basis is indefinite (=auto), so we need to compute the actual

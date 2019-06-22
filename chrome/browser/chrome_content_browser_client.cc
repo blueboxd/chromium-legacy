@@ -2392,6 +2392,7 @@ bool ChromeContentBrowserClient::AllowAppCache(
 bool ChromeContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party_url,
+    const GURL& script_url,
     content::ResourceContext* context,
     base::RepeatingCallback<content::WebContents*()> wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -2404,7 +2405,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
   // because of the extension, rather than because of the user's content
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
-          scope, first_party_url, context)) {
+          scope, first_party_url, script_url, context)) {
     return false;
   }
 #endif
@@ -3140,10 +3141,6 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #else
   return nullptr;
 #endif
-}
-
-net::NetLog* ChromeContentBrowserClient::GetNetLog() {
-  return g_browser_process->net_log();
 }
 
 base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {

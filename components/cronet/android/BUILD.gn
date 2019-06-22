@@ -43,7 +43,6 @@ generate_jni("cronet_jni_headers") {
     "java/src/org/chromium/net/impl/CronetUrlRequest.java",
     "java/src/org/chromium/net/impl/CronetUrlRequestContext.java",
   ]
-  jni_package = "cronet"
 }
 
 generate_jni_registration("cronet_jni_registration") {
@@ -706,7 +705,6 @@ if (!is_component_build) {
       "test/src/org/chromium/net/QuicTestServer.java",
       "test/src/org/chromium/net/TestUploadDataStreamHandler.java",
     ]
-    jni_package = "cronet_tests"
   }
 
   shared_library("cronet_tests") {

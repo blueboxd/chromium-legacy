@@ -132,9 +132,9 @@ views::MdTextButton* ConfirmInfoBar::CreateButton(
       views::MdTextButton::Create(this, GetDelegate()->GetButtonLabel(type));
   button->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_TOAST_CONTROL_VERTICAL),
-                      0));
+      gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                      DISTANCE_TOAST_CONTROL_VERTICAL),
+                  0));
   auto* button_ptr = AddChildView(std::move(button));
   button_ptr->SizeToPreferredSize();
   return button_ptr;

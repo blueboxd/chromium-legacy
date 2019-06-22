@@ -9,6 +9,7 @@
 
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/grit/components_strings.h"
+#include "android_webview/native_jni/AwContentsClientBridge_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -20,7 +21,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AwContentsClientBridge_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"

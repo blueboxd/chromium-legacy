@@ -53,6 +53,5 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/components/download/NetworkStatusListenerAndroid.java",
     ]
-    jni_package = "components/download/network"
   }
 }

@@ -17,6 +17,10 @@ class RealTimePolicyEngine {
  public:
   // Can the high confidence allowlist be sync'd?
   static bool CanFetchAllowlist();
+
+  // Return true if the feature to enable full URL lookups is enabled and the
+  // allowlist fetch is enabled.
+  static bool CanPerformFullURLLookup();
 };  // class RealTimePolicyEngine
 
 }  // namespace safe_browsing

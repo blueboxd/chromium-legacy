@@ -50,7 +50,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/AndroidNetworkLibraryTestUtil_jni.h"
+#include "net/net_test_jni_headers/AndroidNetworkLibraryTestUtil_jni.h"
 #endif
 
 using net::test::IsError;

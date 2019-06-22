@@ -385,7 +385,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // settings allows service workers to run at |scope|. If this provider is for
   // a window client, the check involves the topmost frame url as well as
   // |scope|, and may display tab-level UI.
-  bool AllowServiceWorker(const GURL& scope);
+  // If non-empty, |script_url| is the script the service worker will run.
+  bool AllowServiceWorker(const GURL& scope, const GURL& script_url);
 
   // Called when our controller has been terminated and doomed due to an
   // exceptional condition like it could no longer be read from the script
@@ -569,12 +570,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Perform common checks that need to run before ContainerHost methods that
   // come from a child process are handled.
   // |scope| is checked if it is allowed to run a service worker.
+  // If non-empty, |script_url| is the script associated with the service
+  // worker.
   // Returns true if all checks have passed.
   // If anything looks wrong |callback| will run with an error
   // message prefixed by |error_prefix| and |args|, and false is returned.
   template <typename CallbackType, typename... Args>
   bool CanServeContainerHostMethods(CallbackType* callback,
                                     const GURL& scope,
+                                    const GURL& script_url,
                                     const char* error_prefix,
                                     Args... args);
 

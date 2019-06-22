@@ -50,9 +50,12 @@ std::string GLContextStub::GetGLRenderer() {
   return std::string("CHROMIUM");
 }
 
-bool GLContextStub::WasAllocatedUsingRobustnessExtension() {
-  return HasExtension("GL_ARB_robustness") ||
-         HasExtension("GL_KHR_robustness") || HasExtension("GL_EXT_robustness");
+unsigned int GLContextStub::CheckStickyGraphicsResetStatus() {
+  DCHECK(IsCurrent(nullptr));
+  if ((graphics_reset_status_ == GL_NO_ERROR) && HasRobustness()) {
+    graphics_reset_status_ = glGetGraphicsResetStatusARB();
+  }
+  return graphics_reset_status_;
 }
 
 void GLContextStub::SetUseStubApi(bool stub_api) {
@@ -65,6 +68,11 @@ void GLContextStub::SetExtensionsString(const char* extensions) {
 
 void GLContextStub::SetGLVersionString(const char* version_str) {
   version_str_ = std::string(version_str ? version_str : "");
+}
+
+bool GLContextStub::HasRobustness() {
+  return HasExtension("GL_ARB_robustness") ||
+         HasExtension("GL_KHR_robustness") || HasExtension("GL_EXT_robustness");
 }
 
 GLContextStub::~GLContextStub() {}

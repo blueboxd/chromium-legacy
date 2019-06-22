@@ -23,7 +23,6 @@ class ASH_EXPORT BackButton : public ShelfControlButton {
   explicit BackButton(ShelfView* shelf_view);
   ~BackButton() override;
 
- protected:
   // views::Button:
   void NotifyClick(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;

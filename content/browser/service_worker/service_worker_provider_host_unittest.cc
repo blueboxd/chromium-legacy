@@ -49,10 +49,13 @@ class ServiceWorkerTestContentClient : public TestContentClient {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   struct AllowServiceWorkerCallLog {
-    AllowServiceWorkerCallLog(const GURL& scope, const GURL& first_party)
-        : scope(scope), first_party(first_party) {}
+    AllowServiceWorkerCallLog(const GURL& scope,
+                              const GURL& first_party,
+                              const GURL& script_url)
+        : scope(scope), first_party(first_party), script_url(script_url) {}
     const GURL scope;
     const GURL first_party;
+    const GURL script_url;
   };
 
   ServiceWorkerTestContentBrowserClient() {}
@@ -60,9 +63,10 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
-    logs_.emplace_back(scope, first_party);
+    logs_.emplace_back(scope, first_party, script_url);
     return false;
   }
 
@@ -543,6 +547,8 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[0].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[0].first_party);
+  EXPECT_EQ(GURL("https://www.example.com/bar"),
+            test_browser_client.logs()[0].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             GetRegistration(remote_endpoint.host_ptr()->get(),
@@ -552,6 +558,7 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[1].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[1].first_party);
+  EXPECT_EQ(GURL(), test_browser_client.logs()[1].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             GetRegistrations(remote_endpoint.host_ptr()->get()));
@@ -560,6 +567,7 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[2].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[2].first_party);
+  EXPECT_EQ(GURL(), test_browser_client.logs()[2].script_url);
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -583,7 +591,8 @@ TEST_F(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
 
-  EXPECT_FALSE(host->AllowServiceWorker(GURL("https://www.example.com/scope")));
+  EXPECT_FALSE(
+      host->AllowServiceWorker(GURL("https://www.example.com/scope"), GURL()));
 
   ASSERT_EQ(1ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/scope"),

@@ -101,8 +101,7 @@ constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
 class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
  public:
   explicit ClippedFolderIconImageSource(const gfx::ImageSkia& image)
-      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size(),
-                               false),
+      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size()),
         image_(image) {}
   ~ClippedFolderIconImageSource() override = default;
 

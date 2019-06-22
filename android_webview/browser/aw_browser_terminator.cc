@@ -9,6 +9,7 @@
 
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/native_jni/AwBrowserProcess_jni.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -27,7 +28,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AwBrowserProcess_jni.h"
 
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;

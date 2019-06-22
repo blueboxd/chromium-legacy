@@ -8,6 +8,7 @@
 
 #include "android_webview/common/crash_reporter/aw_crash_reporter_client.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
+#include "android_webview/native_jni/AwDebug_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
@@ -23,7 +24,6 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
-#include "jni/AwDebug_jni.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/util/net/http_body.h"
 #include "third_party/crashpad/crashpad/util/net/http_multipart_builder.h"

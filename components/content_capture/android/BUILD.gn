@@ -41,5 +41,4 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/content_capture/ContentCaptureFeatures.java",
     "java/src/org/chromium/components/content_capture/ContentCaptureReceiverManager.java",
   ]
-  jni_package = "content_capture"
 }

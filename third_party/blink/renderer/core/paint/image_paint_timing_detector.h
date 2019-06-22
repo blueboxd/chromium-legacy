@@ -212,7 +212,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
       const ImageResourceContent& cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
   void OnPaintFinished();
-  void NotifyNodeRemoved(DOMNodeId);
+  void LayoutObjectWillBeDestroyed(DOMNodeId);
   void NotifyBackgroundImageRemoved(DOMNodeId, const ImageResourceContent*);
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if

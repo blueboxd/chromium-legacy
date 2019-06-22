@@ -17,7 +17,10 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -37,12 +40,12 @@ const int16_t kInitialWindowPos = std::numeric_limits<int16_t>::min();
 
 }  // namespace
 
-StatusIconLinuxX11::StatusIconLinuxX11() : ImageButton(this) {}
+StatusIconLinuxX11::StatusIconLinuxX11() : Button(this) {}
 
 StatusIconLinuxX11::~StatusIconLinuxX11() = default;
 
 void StatusIconLinuxX11::SetIcon(const gfx::ImageSkia& image) {
-  SetImage(views::Button::STATE_NORMAL, image);
+  // Nothing to do.
 }
 
 void StatusIconLinuxX11::SetToolTip(const base::string16& tool_tip) {
@@ -71,7 +74,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
 
   auto host = std::make_unique<views::DesktopWindowTreeHostX11>(
       widget_.get(), native_widget.get());
-  aura::WindowTreeHost* window_tree_host = host.get();
+  host_ = host.get();
 
   int visual_id;
   if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
@@ -98,15 +101,14 @@ void StatusIconLinuxX11::OnSetDelegate() {
 
   widget_->Init(params);
 
-  Window window = window_tree_host->GetAcceleratedWidget();
+  Window window = host_->GetAcceleratedWidget();
   DCHECK(window);
 
   widget_->SetContentsView(this);
   set_owned_by_client();
 
+  SetBorder(nullptr);
   SetIcon(delegate_->GetImage());
-  SetImageHorizontalAlignment(ALIGN_CENTER);
-  SetImageVerticalAlignment(ALIGN_MIDDLE);
   SetTooltipText(delegate_->GetToolTip());
   set_context_menu_controller(this);
 
@@ -153,4 +155,30 @@ void StatusIconLinuxX11::ShowContextMenuForViewImpl(
 
 void StatusIconLinuxX11::ButtonPressed(Button* sender, const ui::Event& event) {
   delegate_->OnClick();
+}
+
+void StatusIconLinuxX11::PaintButtonContents(gfx::Canvas* canvas) {
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  canvas->UndoDeviceScaleFactor();
+
+  gfx::Rect bounds = host_->GetBoundsInPixels();
+  const gfx::ImageSkia& image = delegate_->GetImage();
+
+  // If the image fits in the window, center it.  But if it won't fit, downscale
+  // it preserving aspect ratio.
+  float scale =
+      std::min({1.0f, static_cast<float>(bounds.width()) / image.width(),
+                static_cast<float>(bounds.height()) / image.height()});
+  float x_offset = (bounds.width() - scale * image.width()) / 2.0f;
+  float y_offset = (bounds.height() - scale * image.height()) / 2.0f;
+
+  gfx::Transform transform;
+  transform.Translate(x_offset, y_offset);
+  transform.Scale(scale, scale);
+  canvas->Transform(transform);
+
+  cc::PaintFlags flags;
+  flags.setFilterQuality(kHigh_SkFilterQuality);
+  canvas->DrawImageInt(image, 0, 0, image.width(), image.height(), 0, 0,
+                       image.width(), image.height(), true, flags);
 }

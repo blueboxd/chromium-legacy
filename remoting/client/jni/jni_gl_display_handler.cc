@@ -11,7 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "jni/GlDisplay_jni.h"
+#include "remoting/android/jni_headers/GlDisplay_jni.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/cursor_shape_stub_proxy.h"
 #include "remoting/client/display/gl_canvas.h"

@@ -6,6 +6,7 @@ package org.chromium.android_browsertests_apk;
 
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.PathUtils;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -34,6 +35,8 @@ public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication 
         super.attachBaseContext(base);
 
         if (isBrowserProcess) {
+            ApplicationStatus.initialize(this);
+
             // Test-only stuff, see also NativeUnitTest.java.
             PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         }

@@ -144,7 +144,6 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
     ]
-    jni_package = "media"
   }
 
   java_cpp_enum("java_enums") {

@@ -26,7 +26,6 @@ generate_jni("aw_net_jni_headers") {
   sources = [
     "java/src/org/chromium/android_webview/test/AwEmbeddedTestServerImpl.java",
   ]
-  jni_package = "android_webview/test"
 }
 
 source_set("aw_java_test_native_support") {

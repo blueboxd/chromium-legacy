@@ -18,7 +18,6 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -543,21 +542,15 @@ void CreditCardSaveManager::SetProfilesForCreditCardUpload(
   // Reset |upload_decision_metrics_| to begin logging detected problems.
   upload_decision_metrics_ = 0;
   bool has_profile = false;
-  bool has_modified_profile = false;
 
   // First, collect all of the addresses used or modified recently.
   for (AutofillProfile* profile : personal_data_manager_->GetProfiles()) {
     has_profile = true;
-    if ((now - profile->modification_date()) < fifteen_minutes) {
-      has_modified_profile = true;
-      candidate_profiles.push_back(*profile);
-    } else if ((now - profile->use_date()) < fifteen_minutes) {
+    if ((now - profile->use_date()) < fifteen_minutes ||
+        (now - profile->modification_date()) < fifteen_minutes) {
       candidate_profiles.push_back(*profile);
     }
   }
-
-  AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
-      has_modified_profile);
 
   if (candidate_profiles.empty()) {
     upload_decision_metrics_ |=
@@ -640,13 +633,6 @@ void CreditCardSaveManager::SetProfilesForCreditCardUpload(
   // Set up |upload_request->profiles|.
   upload_request->profiles.assign(candidate_profiles.begin(),
                                   candidate_profiles.end());
-  if (!has_modified_profile) {
-    for (const AutofillProfile& profile : candidate_profiles) {
-      UMA_HISTOGRAM_COUNTS_1000(
-          "Autofill.DaysSincePreviousUseAtSubmission.Profile",
-          (profile.use_date() - profile.previous_use_date()).InDays());
-    }
-  }
 }
 
 int CreditCardSaveManager::GetDetectedValues() const {

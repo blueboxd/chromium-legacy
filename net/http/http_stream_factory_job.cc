@@ -876,7 +876,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     return PreconnectSocketsForHttpRequest(
         GetSocketGroup(), destination_, request_info_.load_flags, priority_,
         session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
-        request_info_.privacy_mode, net_log_, num_streams_);
+        request_info_.privacy_mode, request_info_.network_isolation_key,
+        net_log_, num_streams_);
   }
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =

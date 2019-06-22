@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/native_jni/AwQuotaManagerBridge_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -19,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
-#include "jni/AwQuotaManagerBridge_jni.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"

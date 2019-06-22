@@ -272,12 +272,17 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   if (current_visibility_ == visibility)
     return;
 
-  // Check if the visibility changed from HIDDEN to VISIBLE. Since navigation
+  // Check if the visibility changed from VISIBLE to HIDDEN. Since navigation
   // predictor is currently restricted to Android, it is okay to disregard the
   // occluded state.
   if (current_visibility_ != content::Visibility::HIDDEN ||
       visibility != content::Visibility::VISIBLE) {
     current_visibility_ = visibility;
+
+    if (prerender_handle_) {
+      prerender_handle_->OnNavigateAway();
+      prerender_handle_.reset();
+    }
 
     // Stop any future preconnects while hidden.
     timer_.Stop();
@@ -289,6 +294,9 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
   // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
   // the web contents that was fully hidden is now fully visible.
   MaybePreconnectNow(Action::kPreconnectOnVisibilityChange);
+  if (prefetch_url_.has_value()) {
+    MaybePrefetch();
+  }
 }
 
 void NavigationPredictor::MaybePreconnectNow(Action log_action) {
@@ -790,9 +798,7 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_origin.host(), prefetch_url_->host());
     MaybePreconnectNow(Action::kPrefetch);
-    if (prefetch_after_preconnect_) {
-      Prerender(prefetch_url_.value());
-    }
+    MaybePrefetch();
     return;
   }
 
@@ -808,24 +814,36 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   base::UmaHistogramEnumeration(action_histogram_name, Action::kNone);
 }
 
-void NavigationPredictor::Prerender(const GURL& url) {
+void NavigationPredictor::MaybePrefetch() {
+  // If prefetches aren't allowed here, this URL has already
+  // been prefetched, or the current tab is hidden,
+  // we shouldn't prefetch again.
+  if (!prefetch_after_preconnect_ || prefetch_url_prefetched_ ||
+      current_visibility_ == content::Visibility::HIDDEN) {
+    return;
+  }
+
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(
           browser_context_);
 
   if (prerender_manager) {
-    content::SessionStorageNamespace* session_storage_namespace =
-        web_contents()->GetController().GetDefaultSessionStorageNamespace();
-    gfx::Size size = web_contents()->GetContainerBounds().size();
-
-    if (prerender_handle_) {
-      prerender_handle_->OnCancel();
-    }
-    // TODO(sofiyase): Only prerender when the tab is in the foreground.
-    // https://crbug.com/976071
-    prerender_handle_ = prerender_manager->AddPrerenderFromNavigationPredictor(
-        url, session_storage_namespace, size);
+    Prefetch(prerender_manager);
+    prefetch_url_prefetched_ = true;
   }
+}
+
+void NavigationPredictor::Prefetch(
+    prerender::PrerenderManager* prerender_manager) {
+  DCHECK(!prefetch_url_prefetched_);
+  DCHECK(!prerender_handle_);
+
+  content::SessionStorageNamespace* session_storage_namespace =
+      web_contents()->GetController().GetDefaultSessionStorageNamespace();
+  gfx::Size size = web_contents()->GetContainerBounds().size();
+
+  prerender_handle_ = prerender_manager->AddPrerenderFromNavigationPredictor(
+      prefetch_url_.value(), session_storage_namespace, size);
 }
 
 base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(

@@ -3192,7 +3192,7 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
     if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
       content::Details<std::string> dom_op_result(details);
       if (*dom_op_result.ptr() == expected_notification_) {
-        run_loop_->QuitClosure().Run();
+        run_loop_->Quit();
       }
     }
   }

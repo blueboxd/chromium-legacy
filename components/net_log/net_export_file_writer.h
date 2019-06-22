@@ -35,8 +35,6 @@ class NetworkContext;
 
 namespace net_log {
 
-class ChromeNetLog;
-
 // NetExportFileWriter is used exclusively as a support class for
 // chrome://net-export/. There's a single instance created globally that acts as
 // the interface to all NetExportMessageHandlers which can tell it to start or
@@ -151,7 +149,6 @@ class NetExportFileWriter {
   void SetDefaultLogBaseDirectoryGetterForTest(const DirectoryGetter& getter);
 
  private:
-  friend class ChromeNetLog;
   friend class NetExportFileWriterTest;
 
   // The possible logging states of NetExportFileWriter.

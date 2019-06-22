@@ -626,11 +626,6 @@ PictureInPictureResult Shell::EnterPictureInPicture(
   // tests to run accordingly.
   if (!switches::IsRunWebTestsSwitchPresent())
     return PictureInPictureResult::kNotSupported;
-
-  auto* controller =
-      PictureInPictureWindowController::GetOrCreateForWebContents(web_contents);
-  controller->EmbedSurface(surface_id, natural_size);
-
   return PictureInPictureResult::kSuccess;
 }
 

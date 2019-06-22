@@ -70,6 +70,7 @@ class ChromeContentBrowserClientExtensionsPart
       const GURL& new_url);
   static bool AllowServiceWorker(const GURL& scope,
                                  const GURL& first_party_url,
+                                 const GURL& script_url,
                                  content::ResourceContext* context);
   static void OverrideNavigationParams(
       content::SiteInstance* site_instance,

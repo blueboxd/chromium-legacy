@@ -99,12 +99,14 @@ class OffTheRecordProfileImpl : public Profile {
   GURL GetHomePage() override;
 
   // content::BrowserContext implementation:
+  base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
+  bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;

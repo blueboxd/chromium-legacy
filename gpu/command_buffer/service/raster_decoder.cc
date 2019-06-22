@@ -398,12 +398,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 #endif
   }
 
-  bool IsRobustnessSupported() {
-    return has_robustness_extension_ &&
-           shared_context_state_->context()
-               ->WasAllocatedUsingRobustnessExtension();
-  }
-
   const gl::GLVersionInfo& gl_version_info() {
     return feature_info()->gl_version_info();
   }
@@ -525,7 +519,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool use_passthrough_ = false;
   bool use_ddl_ = false;
 
-  bool has_robustness_extension_ = false;
   bool reset_by_robustness_extension_ = false;
 
   // The current decoder error communicates the decoder error through command
@@ -737,10 +730,6 @@ ContextResult RasterDecoderImpl::Initialize(
   CHECK_GL_ERROR();
 
   query_manager_ = std::make_unique<QueryManager>();
-
-  has_robustness_extension_ = features().arb_robustness ||
-                              features().khr_robustness ||
-                              features().ext_robustness;
 
   if (attrib_helper.enable_oop_rasterization) {
     if (!features().chromium_raster_transport) {
@@ -1078,39 +1067,33 @@ bool RasterDecoderImpl::CheckResetStatus() {
   DCHECK(!WasContextLost());
   DCHECK(shared_context_state_->context()->IsCurrent(nullptr));
 
-  if (IsRobustnessSupported()) {
-    // If the reason for the call was a GL error, we can try to determine the
-    // reset status more accurately.
-    GLenum driver_status = api()->glGetGraphicsResetStatusARBFn();
-    if (driver_status == GL_NO_ERROR)
+  // If the reason for the call was a GL error, we can try to determine the
+  // reset status more accurately.
+  GLenum driver_status =
+      shared_context_state_->context()->CheckStickyGraphicsResetStatus();
+  if (driver_status == GL_NO_ERROR)
+    return false;
+
+  LOG(ERROR) << "RasterDecoder context lost via ARB/EXT_robustness. Reset "
+                "status = "
+             << gles2::GLES2Util::GetStringEnum(driver_status);
+
+  switch (driver_status) {
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kGuilty);
+      break;
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kInnocent);
+      break;
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kUnknown);
+      break;
+    default:
+      NOTREACHED();
       return false;
-
-    LOG(ERROR) << "RasterDecoder context lost via ARB/EXT_robustness. Reset "
-                  "status = "
-               << gles2::GLES2Util::GetStringEnum(driver_status);
-
-    // Don't pretend we know which client was responsible.
-    if (workarounds().use_virtualized_gl_contexts)
-      driver_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
-
-    switch (driver_status) {
-      case GL_GUILTY_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kGuilty);
-        break;
-      case GL_INNOCENT_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kInnocent);
-        break;
-      case GL_UNKNOWN_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kUnknown);
-        break;
-      default:
-        NOTREACHED();
-        return false;
-    }
-    reset_by_robustness_extension_ = true;
-    return true;
   }
-  return false;
+  reset_by_robustness_extension_ = true;
+  return true;
 }
 
 gles2::Logger* RasterDecoderImpl::GetLogger() {

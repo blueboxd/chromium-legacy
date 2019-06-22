@@ -351,6 +351,61 @@ crl_strings = {
        OCTET_STRING { `5678` }
      }
   ''',
+
+  # An issuingDistributionPoint with multiple fullName values, one of which
+  # matches the URI in |LEAF|'s crlDistributionPoints extension.
+  'issuingDistributionPoint': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [0] {
+             [0] {
+               [1 PRIMITIVE] { "foo@example.com" }
+               [6 PRIMITIVE] { "http://zexample.com/foo.crl" }
+               [6 PRIMITIVE] { "http://example.com/foo.crl" }
+               [6 PRIMITIVE] { "http://aexample.com/foo.crl" }
+             }
+           }
+         }
+       }
+     }
+  ''',
+
+  'issuingDistributionPoint_wrong_uri': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [0] {
+             [0] {
+               [6 PRIMITIVE] { "http://example.com/FOO.CRL" }
+             }
+           }
+         }
+       }
+     }
+  ''',
+
+  'issuingDistributionPoint_with_indirectCRL': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [0] {
+             [0] {
+               [6 PRIMITIVE] { "http://example.com/foo.crl" }
+             }
+           }
+           [4 PRIMITIVE] { `ff` }
+         }
+       }
+     }
+  ''',
+
 }
 
 
@@ -490,6 +545,26 @@ Store(
   %(nextUpdate)s
   # no revoked certs list
   # no crlExtensions
+''' % crl_strings))
+
+
+Store(
+    'good_idp_contains_uri',
+    'Leaf covered by CRLs and not revoked, CRL has IDP with URI matching '
+    'cert DP',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint)s
+    }
+  }
 ''' % crl_strings))
 
 
@@ -755,6 +830,44 @@ Store(
   # no revoked certs list
   # no crlExtensions
 ''' % crl_strings, signer=OTHER_CA))
+
+
+Store(
+    'bad_idp_contains_wrong_uri',
+    'Leaf not covered by CRL (IDP with different URI)',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_wrong_uri)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_indirectcrl',
+    'CRL IDP name matches, but has indirectCRL flag set',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_indirectCRL)s
+    }
+  }
+''' % crl_strings))
 
 
 Store(
@@ -1227,3 +1340,67 @@ Store(
                  {'LEAF_SERIAL':LEAF['cert'].get_serial_number()}))))
 
 
+Store(
+    'invalid_idp_dpname_choice_extra_data',
+    'IssuingDistributionPoint extension distributionPoint is invalid',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      SEQUENCE {
+        OBJECT_IDENTIFIER { 2.5.29.28 }
+        BOOLEAN { `ff` }
+        OCTET_STRING {
+          SEQUENCE {
+            [0] {
+              [0] {
+                [6 PRIMITIVE] { "http://example.com/foo.crl" }
+              }
+              [1] {
+                SET {
+                  SEQUENCE {
+                    # countryName
+                    OBJECT_IDENTIFIER { 2.5.4.6 }
+                    PrintableString { "US" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'invalid_idp_empty_sequence',
+    'IssuingDistributionPoint extension is invalid',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      SEQUENCE {
+        OBJECT_IDENTIFIER { 2.5.29.28 }
+        BOOLEAN { `ff` }
+        OCTET_STRING {
+          SEQUENCE {
+          }
+        }
+      }
+    }
+  }
+''' % crl_strings))

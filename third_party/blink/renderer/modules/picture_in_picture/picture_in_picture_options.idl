@@ -4,6 +4,7 @@
 
 // https://wicg.github.io/picture-in-picture/v2/
 dictionary PictureInPictureOptions {
-  required double aspectRatio;
+  long height;
+  long width;
   boolean interactive = false;
 };

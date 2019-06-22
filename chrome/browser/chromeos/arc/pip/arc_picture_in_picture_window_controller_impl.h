@@ -34,8 +34,6 @@ class ArcPictureInPictureWindowControllerImpl
   void Close(bool should_pause_video) override;
   void CloseAndFocusInitiator() override;
   void OnWindowDestroyed() override;
-  void EmbedSurface(const viz::SurfaceId& surface_id,
-                    const gfx::Size& natural_size) override;
   content::OverlayWindow* GetWindowForTesting() override;
   void UpdateLayerBounds() override;
   bool IsPlayerActive() override;

@@ -5841,6 +5841,28 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
                                    .Clip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerUnderClipUnerMulticol) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="multicol" style="columns: 2">
+      <div id="clip" style="height: 100px; overflow: hidden">
+        <div id="composited"
+             style="width: 200px; height: 200px; will-change: transform">
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  const auto* flow_thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  const auto* fragment_clip =
+      flow_thread->FirstFragment().PaintProperties()->FragmentClip();
+  const auto* clip_properties = PaintPropertiesForElement("clip");
+  const auto* composited = GetLayoutObjectByElementId("composited");
+  EXPECT_EQ(clip_properties->OverflowClip(),
+            &composited->FirstFragment().LocalBorderBoxProperties().Clip());
+  EXPECT_EQ(fragment_clip, clip_properties->OverflowClip()->Parent());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   SetBodyInnerHTML(R"HTML(
     <div id="fixed" style="position: fixed; top: 20px; left: 20px">

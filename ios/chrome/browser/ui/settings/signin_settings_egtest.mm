@@ -15,7 +15,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -74,8 +73,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
@@ -95,8 +93,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];

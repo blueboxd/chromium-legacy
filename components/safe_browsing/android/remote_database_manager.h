@@ -48,6 +48,8 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
                          Client* client) override;
   AsyncMatch CheckCsdWhitelistUrl(const GURL& url, Client* client) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
+  AsyncMatch CheckUrlForHighConfidenceAllowlist(const GURL& url,
+                                                Client* client) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;

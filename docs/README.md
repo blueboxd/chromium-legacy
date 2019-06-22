@@ -170,6 +170,9 @@ used when committed.
 *   [IPC Fuzzer](testing/ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
 *   [Running Chrome tests with AddressSanitizer (asan) and LeakSanitizer (lsan)](testing/linux_running_asan_tests.md) -
     Run Chrome tests with ASAN and LSAN builds to detect addressability issues and memory leaks.
+*   [Code Coverage](testing/code_coverage.md) - Code coverage for Chromium.
+*   [Code Coverage in Gerrit](testing/code_coverage_in_gerrit.md) - Per-CL code
+    coverage in Gerrit to assist code reviews.
 
 ### GPU-related docs
 *   [GPU Pixel Wrangling](gpu/pixel_wrangling.md) - Instructions for GPU

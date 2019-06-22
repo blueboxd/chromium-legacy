@@ -1,11 +1,11 @@
 include_rules = [
   "+sandbox",
 
+  "+components/crash/android/jni_headers",
   "+components/browser_watcher/stability_report_user_stream_data_source.h",
   "+components/gwp_asan/crash_handler/crash_handler.h",
   "+content/public/common/content_descriptors.h",
   "+content/public/common/result_codes.h",
-  "+jni",
   "+third_party/crashpad",
   "+third_party/lss/linux_syscall_support.h",
 ]

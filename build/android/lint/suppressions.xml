@@ -108,7 +108,7 @@ Still reading?
   </issue>
   <issue id="IconDensities">
     <!-- This is intentional to save on WebAPKs' size. -->
-    <ignore regexp="chrome/android/webapk/shell_apk/to_upload/res/drawable-*"/>
+    <ignore regexp="chrome/android/webapk/shell_apk/res/drawable-*"/>
     <!-- crbug.com/457918 is tracking missing assets -->
     <ignore regexp="chrome/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="chrome/android/java/res/drawable-xxxhdpi"/>

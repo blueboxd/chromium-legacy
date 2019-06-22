@@ -33,16 +33,21 @@ const char kUserGestureRequired[] =
     "Picture-in-Picture.";
 const char kDisablePictureInPicturePresent[] =
     "\"disablePictureInPicture\" attribute is present.";
+const char kInvalidSize[] =
+    "The width and height attributes must be greater "
+    "than zero.";
+
 }  // namespace
 
 // static
 ScriptPromise HTMLElementPictureInPicture::requestPictureInPicture(
     ScriptState* script_state,
     HTMLElement& element,
-    PictureInPictureOptions* options) {
-  DOMException* exception = CheckIfPictureInPictureIsAllowed(element);
-  if (exception)
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+    PictureInPictureOptions* options,
+    ExceptionState& exception_state) {
+  CheckIfPictureInPictureIsAllowed(element, options, exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
@@ -54,32 +59,41 @@ ScriptPromise HTMLElementPictureInPicture::requestPictureInPicture(
 }
 
 // static
-DOMException* HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
-    HTMLElement& element) {
+void HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
+    HTMLElement& element,
+    PictureInPictureOptions* options,
+    ExceptionState& exception_state) {
   Document& document = element.GetDocument();
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
 
-  switch (controller.IsElementAllowed(element)) {
+  switch (controller.VerifyElementAndOptions(element, options)) {
     case Status::kFrameDetached:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, kDetachedError);
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        kDetachedError);
+      return;
     case Status::kMetadataNotLoaded:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, kMetadataNotLoadedError);
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        kMetadataNotLoadedError);
+      return;
     case Status::kVideoTrackNotAvailable:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError, kVideoTrackNotAvailableError);
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        kVideoTrackNotAvailableError);
+      return;
     case Status::kDisabledByFeaturePolicy:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError, kFeaturePolicyBlocked);
+      exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+      return;
     case Status::kDisabledByAttribute:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          kDisablePictureInPicturePresent);
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        kDisablePictureInPicturePresent);
+      return;
     case Status::kDisabledBySystem:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, kNotAvailable);
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                        kNotAvailable);
+      return;
+    case Status::kInvalidWidthOrHeightOption:
+      exception_state.ThrowTypeError(kInvalidSize);
+      return;
     case Status::kEnabled:
       break;
   }
@@ -90,11 +104,9 @@ DOMException* HTMLElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
   DCHECK(frame);
   if (!controller.PictureInPictureElement() &&
       !LocalFrame::ConsumeTransientUserActivation(frame)) {
-    return MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError, kUserGestureRequired);
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      kUserGestureRequired);
   }
-
-  return nullptr;
 }
 
 }  // namespace blink

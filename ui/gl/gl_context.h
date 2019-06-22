@@ -159,7 +159,12 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the last GLContext made current, virtual or real.
   static GLContext* GetCurrent();
 
-  virtual bool WasAllocatedUsingRobustnessExtension();
+  // Returns the 'sticky' value of glGetGraphicsResetStatus, if available.
+  // 'sticky' implies that if glGetGraphicsResetStatus ever returns a value
+  // other than GL_NO_ERROR, that value is returned until the context is
+  // destroyed.
+  // The context must be current.
+  virtual unsigned int CheckStickyGraphicsResetStatus();
 
   // Make this context current when used for context virtualization.
   bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);

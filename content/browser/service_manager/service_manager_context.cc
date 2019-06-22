@@ -272,8 +272,7 @@ std::unique_ptr<service_manager::Service> CreateNetworkService(
   registry->AddInterface(base::BindRepeating(
       [](network::mojom::NetworkServiceTestRequest request) {}));
   return std::make_unique<network::NetworkService>(
-      std::move(registry), nullptr /* request */, nullptr /* net_log */,
-      std::move(service_request));
+      std::move(registry), nullptr /* request */, std::move(service_request));
 }
 
 bool AudioServiceOutOfProcess() {

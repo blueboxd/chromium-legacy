@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'before'",
+          "object": "NGPhysicalTextFragment 'after'",
           "rect": [102, 122, 40, 19],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'after'",
-          "rect": [102, 122, 29, 19],
-          "reason": "appeared"
+          "reason": "full"
         }
       ]
     }

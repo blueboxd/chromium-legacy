@@ -115,8 +115,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
 
   big_message_label_ = new views::Label(GetBigMessage(), {kTitleFont});
   big_message_label_->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(kTitleHeight - kTitleFontSize, 0, 0, 0));
+      views::kMarginsKey, gfx::Insets(kTitleHeight - kTitleFontSize, 0, 0, 0));
   big_message_label_->SetMultiLine(false);
   big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   upper_container_view->AddChildView(big_message_label_);
@@ -144,16 +143,16 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   progress_bar_ = new views::ProgressBar(kProgressBarHeight);
   progress_bar_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(kProgressBarTopMargin - kProgressBarHeight, 0, 0, 0));
+      gfx::Insets(kProgressBarTopMargin - kProgressBarHeight, 0, 0, 0));
   upper_container_view->AddChildView(progress_bar_);
 
   download_progress_message_label_ =
       new views::Label(base::string16(), {kDownloadProgressMessageFont});
   download_progress_message_label_->SetEnabledColor(gfx::kGoogleGrey700);
   download_progress_message_label_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(kDownloadProgressMessageHeight -
-                                              kDownloadProgressMessageFontSize,
-                                          0, 0, 0));
+      views::kMarginsKey, gfx::Insets(kDownloadProgressMessageHeight -
+                                          kDownloadProgressMessageFontSize,
+                                      0, 0, 0));
   download_progress_message_label_->SetMultiLine(false);
   download_progress_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   upper_container_view->AddChildView(download_progress_message_label_);

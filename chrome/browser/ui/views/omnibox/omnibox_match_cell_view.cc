@@ -106,9 +106,7 @@ class PlaceholderImageSource : public gfx::CanvasImageSource {
 
 PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
                                                SkColor color)
-    : gfx::CanvasImageSource(canvas_size, false),
-      color_(color),
-      size_(canvas_size) {}
+    : gfx::CanvasImageSource(canvas_size), color_(color), size_(canvas_size) {}
 
 PlaceholderImageSource::~PlaceholderImageSource() = default;
 
@@ -146,7 +144,7 @@ class EncircledImageSource : public gfx::CanvasImageSource {
 EncircledImageSource::EncircledImageSource(const int radius,
                                            const SkColor color,
                                            const gfx::ImageSkia& image)
-    : gfx::CanvasImageSource(gfx::Size(radius * 2, radius * 2), false),
+    : gfx::CanvasImageSource(gfx::Size(radius * 2, radius * 2)),
       radius_(radius),
       color_(color),
       image_(image) {}

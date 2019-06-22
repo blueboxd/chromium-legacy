@@ -481,6 +481,31 @@ base::string16 ShelfView::GetTitleForView(const views::View* view) const {
   return item ? item->title : base::string16();
 }
 
+void ShelfView::ToggleOverflowBubble() {
+  if (IsShowingOverflowBubble()) {
+    overflow_bubble_->Hide();
+    return;
+  }
+
+  if (!overflow_bubble_)
+    overflow_bubble_.reset(new OverflowBubble(shelf_));
+
+  // TODO(agawronska): Move this to DefaultShelfView.
+  ShelfView* overflow_view =
+      new DefaultShelfView(model_, shelf_, shelf_widget_);
+  overflow_view->overflow_mode_ = true;
+  overflow_view->Init();
+  overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
+  overflow_view->OnShelfAlignmentChanged(
+      GetWidget()->GetNativeWindow()->GetRootWindow());
+  overflow_view->main_shelf_ = this;
+  UpdateOverflowRange(overflow_view);
+
+  overflow_bubble_->Show(overflow_button_, overflow_view);
+
+  shelf_->UpdateVisibilityState();
+}
+
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
   gfx::Size preferred_size = GetPreferredSize();
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
@@ -1088,8 +1113,8 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (index == -1 || view_model_->view_size() < 1)
     return;  // View is being deleted, ignore request.
 
-  if (view == GetAppListButton() || view == GetBackButton())
-    return;  // Views are not draggable, ignore request.
+  // The home and back buttons should be handled separately.
+  DCHECK(view != GetAppListButton() || view != GetBackButton());
 
   // Only when the repost event occurs on the same shelf item, we should ignore
   // the call in ShelfView::ButtonPressed(...).
@@ -1630,31 +1655,6 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       std::max(min_index, is_overflow_mode() ? first_visible_index_ : 0);
   max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
-}
-
-void ShelfView::ToggleOverflowBubble() {
-  if (IsShowingOverflowBubble()) {
-    overflow_bubble_->Hide();
-    return;
-  }
-
-  if (!overflow_bubble_)
-    overflow_bubble_.reset(new OverflowBubble(shelf_));
-
-  // TODO(agawronska): Move this to DefaultShelfView.
-  ShelfView* overflow_view =
-      new DefaultShelfView(model_, shelf_, shelf_widget_);
-  overflow_view->overflow_mode_ = true;
-  overflow_view->Init();
-  overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
-  overflow_view->OnShelfAlignmentChanged(
-      GetWidget()->GetNativeWindow()->GetRootWindow());
-  overflow_view->main_shelf_ = this;
-  UpdateOverflowRange(overflow_view);
-
-  overflow_bubble_->Show(overflow_button_, overflow_view);
-
-  shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnFadeOutAnimationEnded() {

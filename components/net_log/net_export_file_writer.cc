@@ -150,7 +150,7 @@ void NetExportFileWriter::StartNetLog(
 
   network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter_));
   base::Value custom_constants = base::Value::FromUniquePtrValue(
-      ChromeNetLog::GetPlatformConstants(command_line_string, channel_string));
+      GetPlatformConstantsForNetLog(command_line_string, channel_string));
 
   net_log_exporter_.set_connection_error_handler(base::BindOnce(
       &NetExportFileWriter::OnConnectionError, base::Unretained(this)));

@@ -60,7 +60,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
 };
 
 FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
-    : gfx::CanvasImageSource(size, false), icons_(icons), size_(size) {
+    : gfx::CanvasImageSource(size), icons_(icons), size_(size) {
   DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 

@@ -28,12 +28,11 @@
 // Returns a fake managed identity.
 - (ChromeIdentity*)fakeManagedIdentity;
 
-// Checks that |identity| is actually signed in to the active profile.
-- (NSError*)checkSignedInWithIdentity:(ChromeIdentity*)identity
-    WARN_UNUSED_RESULT;
+// Induces a GREYAssert if |identity| is not signed in to the active profile.
+- (void)checkSignedInWithIdentity:(ChromeIdentity*)identity;
 
-// Checks that no identity is signed in.
-- (NSError*)checkSignedOut WARN_UNUSED_RESULT;
+// Induces a GREYAssert if an identity is signed in.
+- (void)checkSignedOut;
 
 @end
 

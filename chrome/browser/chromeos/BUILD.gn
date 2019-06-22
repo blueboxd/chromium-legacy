@@ -1727,6 +1727,8 @@ source_set("chromeos") {
     "policy/status_uploader.h",
     "policy/system_log_uploader.cc",
     "policy/system_log_uploader.h",
+    "policy/task_executor_with_retries.cc",
+    "policy/task_executor_with_retries.h",
     "policy/tpm_auto_update_mode_policy_handler.cc",
     "policy/tpm_auto_update_mode_policy_handler.h",
     "policy/upload_job.h",

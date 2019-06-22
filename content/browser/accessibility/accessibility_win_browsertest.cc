@@ -836,7 +836,7 @@ class NativeWinEventWaiter {
   void OnEvent(const std::string& event_str) {
     DLOG(INFO) << "Got event " + event_str;
     if (base::MatchPattern(event_str, match_pattern_))
-      run_loop_.QuitClosure().Run();
+      run_loop_.Quit();
   }
 
   void Wait() { run_loop_.Run(); }
@@ -1696,7 +1696,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
         offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
     EXPECT_EQ(prev_x, x);
     EXPECT_EQ(prev_y, y);
-    EXPECT_EQ(1, width);
+    EXPECT_EQ(7, width);
     EXPECT_EQ(prev_height, height);
   }
 }

@@ -98,7 +98,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/policy/core/common/policy_service.h"
@@ -258,8 +257,6 @@ void BrowserProcessImpl::Init() {
   // Must be created after the NotificationService.
   print_job_manager_ = std::make_unique<printing::PrintJobManager>();
 #endif
-
-  net_log_ = std::make_unique<net_log::ChromeNetLog>();
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
@@ -1009,10 +1006,6 @@ void BrowserProcessImpl::StartAutoupdateTimer() {
 }
 #endif
 
-net_log::ChromeNetLog* BrowserProcessImpl::net_log() {
-  return net_log_.get();
-}
-
 component_updater::ComponentUpdateService*
 BrowserProcessImpl::component_updater() {
   if (component_updater_)
@@ -1113,24 +1106,6 @@ void BrowserProcessImpl::PreCreateThreads(
       std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
       std::make_unique<SiteIsolationPrefsObserver>(local_state());
-
-  if (command_line.HasSwitch(network::switches::kLogNetLog) &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::FilePath log_file =
-        command_line.GetSwitchValuePath(network::switches::kLogNetLog);
-    if (log_file.empty()) {
-      base::FilePath user_data_dir;
-      bool success =
-          base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-      DCHECK(success);
-      log_file = user_data_dir.AppendASCII("netlog.json");
-    }
-    net_log_->StartWritingToFile(
-        log_file,
-        net::GetNetCaptureModeFromCommandLine(
-            command_line, network::switches::kNetLogCaptureMode),
-        command_line.GetCommandLineString(), chrome::GetChannelName());
-  }
 
   // TODO(mmenke): This can be created on first use.
   if (!SystemNetworkContextManager::GetInstance())

@@ -215,11 +215,15 @@ var cr = cr || function(global) {
     // TODO(crbug.com/425829): Remove above suppression once we no longer use
     // deprecated functions lookupGetter, defineGetter, lookupSetter, and
     // defineSetter.
+    // eslint-disable-next-line no-restricted-properties
     if (!obj.__lookupGetter__(name)) {
+      // eslint-disable-next-line no-restricted-properties
       obj.__defineGetter__(name, getGetter(name, kind));
     }
 
+    // eslint-disable-next-line no-restricted-properties
     if (!obj.__lookupSetter__(name)) {
+      // eslint-disable-next-line no-restricted-properties
       obj.__defineSetter__(name, getSetter(name, kind, opt_setHook));
     }
   }

@@ -39,7 +39,6 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",
-    "//ui/message_center/public/mojo:mojo",
     "//url/mojom:url_mojom_gurl",
   ]
 

@@ -58,7 +58,7 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // Use |inside_border_insets| to add additional space between the child
   // view area and the host view border. |between_child_spacing| controls the
   // space in between child views. Use view->SetProperty(kMarginsKey,
-  // new gfx::Insets(xxx)) to add additional margins on a per-view basis. The
+  // gfx::Insets(xxx)) to add additional margins on a per-view basis. The
   // |collapse_margins_spacing| parameter controls whether or not adjacent
   // spacing/margins are collapsed based on the max of the two values. For the
   // cross axis, |collapse_margins_spacing| will collapse to the max of

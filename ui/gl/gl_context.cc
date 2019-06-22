@@ -283,8 +283,9 @@ void GLContext::SetGLStateRestorer(GLStateRestorer* state_restorer) {
   state_restorer_ = base::WrapUnique(state_restorer);
 }
 
-bool GLContext::WasAllocatedUsingRobustnessExtension() {
-  return false;
+GLenum GLContext::CheckStickyGraphicsResetStatus() {
+  DCHECK(IsCurrent(nullptr));
+  return GL_NO_ERROR;
 }
 
 void GLContext::InitializeDynamicBindings() {

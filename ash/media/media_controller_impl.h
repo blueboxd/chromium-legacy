@@ -47,9 +47,9 @@ class ASH_EXPORT MediaControllerImpl
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Determine if lock screen media keys are enabled based on feature flag and
-  // user preference.
-  static bool AreLockScreenMediaKeysEnabled();
+  // Determine if lock screen media keys are enabled.
+  bool AreLockScreenMediaKeysEnabled() const;
+  void SetMediaControlsDismissed(bool media_controls_dismissed);
 
   void AddObserver(MediaCaptureObserver* observer);
   void RemoveObserver(MediaCaptureObserver* observer);
@@ -129,6 +129,9 @@ class ASH_EXPORT MediaControllerImpl
   // If true then the media keys should be forwarded to the client instead of
   // being handled in ash.
   bool force_media_client_key_handling_ = false;
+
+  // Whether the lock screen media controls are dismissed.
+  bool media_controls_dismissed_ = false;
 
   // Mojo pointer to the active media session controller.
   media_session::mojom::MediaControllerPtr media_session_controller_ptr_;

@@ -26,7 +26,7 @@ class CrashMetricsReporterObserver : public CrashMetricsReporter::Observer {
                             const CrashMetricsReporter::ReportedCrashTypeSet&
                                 reported_counts) override {
     recorded_crash_types_ = reported_counts;
-    wait_run_loop_.QuitClosure().Run();
+    wait_run_loop_.Quit();
   }
 
   const CrashMetricsReporter::ReportedCrashTypeSet& recorded_crash_types()

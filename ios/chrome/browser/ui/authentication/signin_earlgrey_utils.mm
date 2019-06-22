@@ -37,7 +37,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
                                           name:@"Fake Managed"];
 }
 
-- (NSError*)checkSignedInWithIdentity:(ChromeIdentity*)identity {
+- (void)checkSignedInWithIdentity:(ChromeIdentity*)identity {
   BOOL identityIsNonNil = identity != nil;
   EG_TEST_HELPER_ASSERT_TRUE(identityIsNonNil, @"Need to give an identity");
 
@@ -55,11 +55,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
                        identity.gaiaID, primaryAccountGaiaID];
   EG_TEST_HELPER_ASSERT_TRUE(
       [identity.gaiaID isEqualToString:primaryAccountGaiaID], errorStr);
-
-  return nil;
 }
 
-- (NSError*)checkSignedOut {
+- (void)checkSignedOut {
   // Required to avoid any problem since the following test is not dependant to
   // UI, and the previous action has to be totally finished before going through
   // the assert.
@@ -67,8 +65,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
 
   EG_TEST_HELPER_ASSERT_TRUE([SignInEarlGreyUtilsAppInterface isSignedOut],
                              @"Unexpected signed in user");
-
-  return nil;
 }
 
 @end

@@ -26,6 +26,7 @@
 #include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shelf/shelf.h"
@@ -322,7 +323,7 @@ ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
 
 LockScreenMediaControlsView* LockContentsView::TestApi::media_controls_view()
     const {
-  return view_->media_controls_view_;
+  return view_->media_controls_view_.get();
 }
 
 views::View* LockContentsView::TestApi::note_action() const {
@@ -626,7 +627,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   primary_big_view_ = nullptr;
   opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
-  media_controls_view_ = nullptr;
+  media_controls_view_.reset();
   layout_actions_.clear();
   // Removing child views can change focus, which may result in LockContentsView
   // getting focused. Make sure to clear internal references before that happens
@@ -1207,16 +1208,51 @@ void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
                            std::min(available_width, desired_width));
 }
 
+bool LockContentsView::AreMediaControlsEnabled() const {
+  return Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled() &&
+         base::FeatureList::IsEnabled(features::kLockScreenMediaControls) &&
+         screen_type_ == LockScreen::ScreenType::kLock &&
+         !expanded_view_->GetVisible();
+}
+
+void LockContentsView::HideMediaControlsLayout() {
+  main_view_->RemoveChildView(media_controls_view_->GetMiddleSpacingView());
+  main_view_->RemoveChildView(media_controls_view_.get());
+
+  // Don't allow media keys to be used on lock screen since controls are hidden.
+  Shell::Get()->media_controller()->SetMediaControlsDismissed(true);
+
+  Layout();
+}
+
+void LockContentsView::CreateMediaControlsLayout() {
+  // |media_controls_view_| should not be attached to a parent.
+  DCHECK(!media_controls_view_->parent());
+
+  // Space between primary user and media controls.
+  main_view_->AddChildView(media_controls_view_->GetMiddleSpacingView());
+
+  // Media controls view.
+  main_view_->AddChildView(media_controls_view_.get());
+
+  // Set |spacing_middle|.
+  AddDisplayLayoutAction(base::BindRepeating(
+      &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
+      media_controls_view_->GetMiddleSpacingView(), media_controls_view_.get(),
+      kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
+      kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
+}
+
 void LockContentsView::CreateLowDensityLayout(
     const std::vector<LoginUserInfo>& users) {
   DCHECK_LE(users.size(), 2u);
 
   main_view_->AddChildView(primary_big_view_);
 
-  // If the lock screen media controls view should be shown.
-  const bool media_controls_enabled =
-      LockScreenMediaControlsView::AreMediaControlsEnabled(screen_type_,
-                                                           expanded_view_);
+  // Build media controls view.
+  media_controls_view_ = std::make_unique<LockScreenMediaControlsView>(
+      Shell::Get()->connector(), this);
+  media_controls_view_->set_owned_by_client();
 
   if (users.size() > 1) {
     // Space between primary user and secondary user.
@@ -1234,21 +1270,6 @@ void LockContentsView::CreateLowDensityLayout(
         spacing_middle, opt_secondary_big_view_,
         kLowDensityDistanceBetweenUsersInLandscapeDp,
         kLowDensityDistanceBetweenUsersInPortraitDp));
-  } else if (media_controls_enabled) {
-    // Space between primary user and media controls.
-    auto* spacing_middle = new NonAccessibleView();
-    main_view_->AddChildView(spacing_middle);
-
-    // Build media controls view.
-    media_controls_view_ = new LockScreenMediaControlsView();
-    main_view_->AddChildView(media_controls_view_);
-
-    // Set |spacing_middle|.
-    AddDisplayLayoutAction(base::BindRepeating(
-        &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
-        spacing_middle, media_controls_view_,
-        kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
-        kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
   }
 }
 

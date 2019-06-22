@@ -4,7 +4,7 @@
 
 #include "components/signin/core/browser/consistency_cookie_manager_android.h"
 
-#include "jni/ConsistencyCookieManager_jni.h"
+#include "components/signin/core/browser/android/jni_headers/ConsistencyCookieManager_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace signin {

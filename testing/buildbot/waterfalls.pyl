@@ -2605,6 +2605,7 @@
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'linux_intel_hd_630_experimental',
         ],
         'test_suites': {
@@ -2616,6 +2617,7 @@
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [
+          'limited_capacity_bot',
           'linux_nvidia_quadro_p400_experimental',
         ],
         'test_suites': {

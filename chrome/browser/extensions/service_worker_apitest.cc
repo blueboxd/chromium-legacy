@@ -1551,26 +1551,41 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
 }
 
-// An observer to block on service worker registration stored.
-class RegistrationStoredObserver
-    : public content::ServiceWorkerContextObserver {
+// An observer for service worker registration events.
+class TestRegistrationObserver : public content::ServiceWorkerContextObserver {
  public:
-  RegistrationStoredObserver(content::ServiceWorkerContext* context,
-                             base::OnceClosure callback)
-      : context_(context), registered_callback_(std::move(callback)) {
+  using RegistrationsMap = std::map<GURL, int>;
+
+  explicit TestRegistrationObserver(content::ServiceWorkerContext* context)
+      : context_(context) {
     context_->AddObserver(this);
   }
 
-  ~RegistrationStoredObserver() override {
+  ~TestRegistrationObserver() override {
     if (context_) {
       context_->RemoveObserver(this);
     }
   }
 
+  // Wait for the first service worker registration with an extension scheme
+  // scope to be stored.
+  void WaitForRegistrationStored() { stored_run_loop_.Run(); }
+
+  int GetCompletedCount(const GURL& scope) const {
+    const auto it = registrations_completed_map_.find(scope);
+    return it == registrations_completed_map_.end() ? 0 : it->second;
+  }
+
+ private:
+  // ServiceWorkerContextObserver overrides.
+  void OnRegistrationCompleted(const GURL& scope) override {
+    ++registrations_completed_map_[scope];
+  }
+
   void OnRegistrationStored(int64_t registration_id,
                             const GURL& scope) override {
     if (scope.SchemeIs(kExtensionScheme)) {
-      std::move(registered_callback_).Run();
+      stored_run_loop_.Quit();
     }
   }
 
@@ -1578,9 +1593,9 @@ class RegistrationStoredObserver
     context_ = nullptr;
   }
 
- private:
+  RegistrationsMap registrations_completed_map_;
+  base::RunLoop stored_run_loop_;
   content::ServiceWorkerContext* context_;
-  base::OnceClosure registered_callback_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
@@ -1591,8 +1606,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
       storage_partition->GetServiceWorkerContext();
 
   // Set up an observer to wait for the registration to be stored.
-  base::RunLoop registration_loop;
-  RegistrationStoredObserver observer(context, registration_loop.QuitClosure());
+  TestRegistrationObserver observer(context);
 
   ExtensionTestMessageListener event_listener_added("ready", false);
   event_listener_added.set_failure_message("ERROR");
@@ -1602,8 +1616,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
       kFlagNone);
   ASSERT_TRUE(extension);
 
-  // Wait for service worker registration to be stored.
-  registration_loop.Run();
+  observer.WaitForRegistrationStored();
   EXPECT_TRUE(event_listener_added.WaitUntilSatisfied());
 
   // Stop the service worker.
@@ -1620,6 +1633,33 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ui_test_utils::NavigateToURL(browser(),
                                extension->GetResourceURL("page.html"));
   EXPECT_TRUE(finished_listener.WaitUntilSatisfied());
+}
+
+// Tests the restriction on registering service worker scripts at root scope.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       ServiceWorkerScriptRootScope) {
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  content::ServiceWorkerContext* context =
+      storage_partition->GetServiceWorkerContext();
+
+  // Set up an observer to track all SW registrations. We expect only
+  // one for the extension's root scope. This test attempts to register
+  // an additional service worker, which will fail.
+  TestRegistrationObserver observer(context);
+  ExtensionTestMessageListener registration_listener("REGISTRATION_FAILED",
+                                                     false);
+  registration_listener.set_failure_message("WORKER_STARTED");
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/worker_based_background/script_root_scope"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+
+  EXPECT_TRUE(registration_listener.WaitUntilSatisfied());
+  // We expect exactly one registration, which is the one specified in the
+  // manifest.
+  EXPECT_EQ(1, observer.GetCompletedCount(extension->url()));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,

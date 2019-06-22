@@ -7,7 +7,6 @@ generate_jni("about_ui_jni_headers") {
   sources = [
     "java/src/org/chromium/components/aboutui/CreditUtils.java",
   ]
-  jni_package = "components/about_ui"
 }
 
 android_library("aboutui_java") {

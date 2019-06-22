@@ -43,7 +43,6 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -676,31 +675,29 @@ class BidirectionalStreamQuicImplTest
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamPacket(
       uint64_t packet_number) {
-    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
+    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion,
                                              &client_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerRstStreamPacket(
       uint64_t packet_number) {
-    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
+    return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion,
                                              &server_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientEarlyRstStreamPacket(
       uint64_t packet_number) {
-    return ConstructRstStreamCancelledPacket(packet_number, kIncludeVersion, 0,
+    return ConstructRstStreamCancelledPacket(packet_number, kIncludeVersion,
                                              &client_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRstStreamCancelledPacket(
       uint64_t packet_number,
       bool include_version,
-      size_t bytes_written,
       QuicTestPacketMaker* maker) {
-    std::unique_ptr<quic::QuicReceivedPacket> packet(
-        maker->MakeRstPacket(packet_number, include_version, stream_id_,
-                             quic::QUIC_STREAM_CANCELLED, bytes_written,
-                             /*include_stop_sending_if_v99=*/true));
+    std::unique_ptr<quic::QuicReceivedPacket> packet(maker->MakeRstPacket(
+        packet_number, include_version, stream_id_, quic::QUIC_STREAM_CANCELLED,
+        /*include_stop_sending_if_v99=*/true));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
     return packet;

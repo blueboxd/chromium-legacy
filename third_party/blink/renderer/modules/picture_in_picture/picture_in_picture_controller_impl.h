@@ -55,6 +55,11 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
+  // Returns whether the combination of element and options can be in
+  // Picture-in-Picture.
+  Status VerifyElementAndOptions(const HTMLElement&,
+                                 const PictureInPictureOptions*) const;
+
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;

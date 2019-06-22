@@ -543,7 +543,6 @@ if (is_android) {
   }
 
   generate_jni("service_jni_headers") {
-    jni_package = "components/viz/service"
     sources = [
       "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",
       "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",

@@ -248,12 +248,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 #endif
 
   // Returns the path of the directory where this context's data is stored.
-  virtual base::FilePath GetPath() const = 0;
+  virtual base::FilePath GetPath() = 0;
 
   // Return whether this context is off the record. Default is false.
   // Note that for Chrome this does not imply Incognito as Guest sessions are
   // also off the record.
-  virtual bool IsOffTheRecord() const = 0;
+  virtual bool IsOffTheRecord() = 0;
 
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
@@ -331,7 +331,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       service_manager::mojom::ServiceRequest request);
 
   // Returns a unique string associated with this browser context.
-  virtual const std::string& UniqueId() const;
+  virtual const std::string& UniqueId();
 
   // Returns a random salt string that is used for creating media device IDs.
   // Returns a random string by default.

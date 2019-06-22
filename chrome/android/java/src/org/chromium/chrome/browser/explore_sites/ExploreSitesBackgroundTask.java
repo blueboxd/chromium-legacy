@@ -71,8 +71,8 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
         ExploreSitesBridge.updateCatalogFromNetwork(getProfile(), false /*isImmediateFetch*/,
                 (ignored) -> mTaskFinishedCallback.taskFinished(false));
         RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
-                ExploreSitesEnums.CatalogUpdateRequestSource.BACKGROUND,
-                ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
+                ExploreSitesCatalogUpdateRequestSource.BACKGROUND,
+                ExploreSitesCatalogUpdateRequestSource.NUM_ENTRIES);
     }
 
     @Override

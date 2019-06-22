@@ -6,7 +6,7 @@ include_rules = [
   "+crypto",
   "+device/udev_linux",
   "+gpu",
-  "+jni",
+  "+media/midi/midi_jni_headers",
   "+mojo/public/cpp/bindings/callback_helpers.h",
   "+mojo/public/cpp/system/platform_handle.h",
   "+services/device/public",

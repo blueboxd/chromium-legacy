@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/safe_browsing/db/whitelist_checker_client.h"
+#include "components/safe_browsing/db/allowlist_checker_client.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/visual_utils.h"
@@ -125,7 +125,7 @@ void PasswordProtectionRequest::CheckWhitelist() {
   tracker_.PostTask(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
       FROM_HERE,
-      base::BindOnce(&WhitelistCheckerClient::StartCheckCsdWhitelist,
+      base::BindOnce(&AllowlistCheckerClient::StartCheckCsdWhitelist,
                      password_protection_service_->database_manager(),
                      main_frame_url_, result_callback));
 }

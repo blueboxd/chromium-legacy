@@ -12,7 +12,6 @@ _jni_sources = [
 
 generate_jni("jni_headers") {
   sources = _jni_sources
-  jni_package = "crash"
 }
 
 java_cpp_enum("java_enums_srcjar") {
@@ -58,7 +57,6 @@ _java_handler_jni_sources =
 
 generate_jni("java_handler_jni_headers") {
   sources = _java_handler_jni_sources
-  jni_package = "crashpad"
 }
 
 android_library("handler_java") {

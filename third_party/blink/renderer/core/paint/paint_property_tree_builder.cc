@@ -2491,38 +2491,48 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   // should also skip any fragment clip created by the skipped pagination
   // container. We also need to skip fragment clip if the object is a paint
   // invalidation container which doesn't allow fragmentation.
-  // TODO(crbug.com/803649): This may also skip necessary clips under the
-  // skipped fragment clip.
-  if (object_.IsColumnSpanAll() ||
-      (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-       object_.IsPaintInvalidationContainer() &&
-       ToLayoutBoxModelObject(object_).Layer()->EnclosingPaginationLayer())) {
-    if (const auto* pagination_layer_in_tree_hierarchy =
-            object_.Parent()->EnclosingLayer()->EnclosingPaginationLayer()) {
-      const auto& clip_container =
-          pagination_layer_in_tree_hierarchy->GetLayoutObject();
-      const auto* properties = clip_container.FirstFragment().PaintProperties();
-      if (properties && properties->FragmentClip()) {
-        // However, because we don't allow an object's clip to escape the
-        // output clip of the object's effect, we can't skip fragment clip if
-        // between this object and the container there is any effect that has
-        // an output clip. TODO(crbug.com/803649): Fix this workaround.
-        const auto& clip_container_effect = clip_container.FirstFragment()
-                                                .LocalBorderBoxProperties()
-                                                .Effect()
-                                                .Unalias();
-        for (const auto* effect =
-                 &context_.fragments[0].current_effect->Unalias();
-             effect && effect != &clip_container_effect;
-             effect = SafeUnalias(effect->Parent())) {
-          if (effect->OutputClip())
-            return;
-        }
-        context_.fragments[0].current.clip =
-            properties->FragmentClip()->Parent();
-      }
-    }
+  bool skip_fragment_clip_for_composited_layer =
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      object_.IsPaintInvalidationContainer() &&
+      ToLayoutBoxModelObject(object_).Layer()->EnclosingPaginationLayer();
+  if (!skip_fragment_clip_for_composited_layer && !object_.IsColumnSpanAll())
+    return;
+
+  const auto* pagination_layer_in_tree_hierarchy =
+      object_.Parent()->EnclosingLayer()->EnclosingPaginationLayer();
+  if (!pagination_layer_in_tree_hierarchy)
+    return;
+
+  const auto& clip_container =
+      pagination_layer_in_tree_hierarchy->GetLayoutObject();
+  const auto* properties = clip_container.FirstFragment().PaintProperties();
+  if (!properties || !properties->FragmentClip())
+    return;
+
+  // Skip fragment clip for composited layer only when there are no other clips.
+  // TODO(crbug.com/803649): This is still incorrect if this object first
+  // appear in the second or later fragment of its parent.
+  if (skip_fragment_clip_for_composited_layer &&
+      properties->FragmentClip() != context_.fragments[0].current.clip)
+    return;
+
+  // However, because we don't allow an object's clip to escape the
+  // output clip of the object's effect, we can't skip fragment clip if
+  // between this object and the container there is any effect that has
+  // an output clip. TODO(crbug.com/803649): Fix this workaround.
+  const auto& clip_container_effect = clip_container.FirstFragment()
+                                          .LocalBorderBoxProperties()
+                                          .Effect()
+                                          .Unalias();
+  for (const auto* effect = &context_.fragments[0].current_effect->Unalias();
+       effect && effect != &clip_container_effect;
+       effect = SafeUnalias(effect->Parent())) {
+    if (effect->OutputClip())
+      return;
   }
+
+  // Skip the fragment clip.
+  context_.fragments[0].current.clip = properties->FragmentClip()->Parent();
 }
 
 void PaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {

@@ -27,20 +27,20 @@ OutputProtectionControllerAsh::~OutputProtectionControllerAsh() {
   manager()->UnregisterClient(client_id_);
 }
 
-void OutputProtectionControllerAsh::QueryStatus(
-    int64_t display_id,
-    const OutputProtectionDelegate::QueryStatusCallback& callback) {
+void OutputProtectionControllerAsh::QueryStatus(int64_t display_id,
+                                                QueryStatusCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  manager()->QueryContentProtection(client_id_, display_id, callback);
+  manager()->QueryContentProtection(client_id_, display_id,
+                                    std::move(callback));
 }
 
 void OutputProtectionControllerAsh::SetProtection(
     int64_t display_id,
-    uint32_t desired_method_mask,
-    const OutputProtectionDelegate::SetProtectionCallback& callback) {
+    uint32_t protection_mask,
+    SetProtectionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  manager()->ApplyContentProtection(client_id_, display_id, desired_method_mask,
-                                    callback);
+  manager()->ApplyContentProtection(client_id_, display_id, protection_mask,
+                                    std::move(callback));
 }
 
 }  // namespace chromeos

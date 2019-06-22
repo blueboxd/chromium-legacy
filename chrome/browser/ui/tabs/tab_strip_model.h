@@ -319,9 +319,10 @@ class TabStripModel {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns the group that contains the tab at |index|, or nullopt if it is not
-  // grouped. This feature is in development and gated behind a feature flag
-  // (see https://crbug.com/915956).
+  // Returns the group that contains the tab at |index|, or nullopt if the tab
+  // index is invalid or not grouped.
+  // This feature is in development and gated behind a feature flag (see
+  // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
   // Returns the TabGroupData instance for the given |group|.

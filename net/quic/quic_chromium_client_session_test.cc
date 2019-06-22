@@ -51,7 +51,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
@@ -518,7 +517,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED, 0,
+                         quic::QUIC_STREAM_CANCELLED,
                          /*include_stop_sending_if_v99=*/false));
     // After the STREAMS_BLOCKED is sent, receive a MAX_STREAMS to increase
     // the limit to 53.
@@ -657,7 +656,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_STREAM_CANCELLED, 0,
+                         quic::QUIC_STREAM_CANCELLED,
                          /*include_stop_sending_if_v99=*/false));
   } else {
     quic_data.AddWrite(

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "jni/ChromeUsbConnection_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbConnection_jni.h"
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_service.h"
 

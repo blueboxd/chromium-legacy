@@ -5,7 +5,7 @@
 #include "components/viz/service/frame_sinks/external_begin_frame_source_android.h"
 
 #include "base/android/jni_android.h"
-#include "jni/ExternalBeginFrameSourceAndroid_jni.h"
+#include "components/viz/service/service_jni_headers/ExternalBeginFrameSourceAndroid_jni.h"
 
 namespace viz {
 

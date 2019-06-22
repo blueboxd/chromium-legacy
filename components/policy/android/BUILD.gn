@@ -38,7 +38,6 @@ android_library("policy_java_test_support") {
 generate_jni("jni_headers") {
   visibility = [ "//components/policy/*" ]
   sources = _jni_sources
-  jni_package = "policy"
 }
 
 junit_binary("components_policy_junit_tests") {

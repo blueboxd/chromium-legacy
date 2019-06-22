@@ -170,7 +170,6 @@ if (is_android) {
       "android/java/src/org/chromium/components/dom_distiller/core/DomDistillerService.java",
       "android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
     ]
-    jni_package = "dom_distiller_core"
   }
 
   java_cpp_enum("distiller_type_java") {

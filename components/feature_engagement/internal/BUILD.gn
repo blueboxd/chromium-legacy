@@ -148,6 +148,5 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/components/feature_engagement/internal/TrackerImpl.java",
     ]
-    jni_package = "components/feature_engagement/internal"
   }
 }

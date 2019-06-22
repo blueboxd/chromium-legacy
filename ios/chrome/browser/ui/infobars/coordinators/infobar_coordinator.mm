@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
@@ -92,6 +93,14 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
   self.bannerTransitionDriver.bannerPositioner = self;
   self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
+  if ([self.bannerViewController
+          conformsToProtocol:@protocol(InfobarBannerInteractable)]) {
+    UIViewController<InfobarBannerInteractable>* interactableBanner =
+        base::mac::ObjCCastStrict<UIViewController<InfobarBannerInteractable>>(
+            self.bannerViewController);
+    interactableBanner.interactionDelegate = self.bannerTransitionDriver;
+  }
+
   __weak __typeof(self) weakSelf = self;
   [self.baseViewController
       presentViewController:self.bannerViewController
@@ -175,7 +184,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                     animated:(BOOL)animated
                   completion:(void (^)())completion {
   DCHECK(self.baseViewController);
-  if (self.baseViewController.presentedViewController) {
+  // Make sure the banner is completely presented before trying to dismiss it.
+  [self.bannerTransitionDriver completePresentationTransitionIfRunning];
+
+  if (self.baseViewController.presentedViewController ==
+      self.bannerViewController) {
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{

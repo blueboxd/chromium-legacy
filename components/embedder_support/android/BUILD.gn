@@ -52,7 +52,6 @@ generate_jni("view_jni_headers") {
   sources = [
     "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java",
   ]
-  jni_package = "view"
 }
 
 java_strings_grd("web_contents_delegate_strings_grd") {
@@ -171,5 +170,4 @@ generate_jni("web_contents_delegate_jni_headers") {
     "java/src/org/chromium/components/embedder_support/delegate/ColorChooserAndroid.java",
     "java/src/org/chromium/components/embedder_support/delegate/WebContentsDelegateAndroid.java",
   ]
-  jni_package = "web_contents_delegate_android"
 }

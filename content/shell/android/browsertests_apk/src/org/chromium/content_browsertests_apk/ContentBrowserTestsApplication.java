@@ -6,6 +6,7 @@ package org.chromium.content_browsertests_apk;
 
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.PathUtils;
 import org.chromium.native_test.NativeBrowserTestApplication;
 
@@ -20,6 +21,8 @@ public class ContentBrowserTestsApplication extends NativeBrowserTestApplication
         super.attachBaseContext(base);
 
         if (isBrowserProcess()) {
+            ApplicationStatus.initialize(this);
+
             // Test-only stuff, see also NativeUnitTest.java.
             PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         }

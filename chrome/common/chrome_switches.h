@@ -123,7 +123,6 @@ extern const char kLaunchInProcessSimpleBrowserSwitch[];
 extern const char kLaunchSimpleBrowserSwitch[];
 extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
-extern const char kMediaCacheSize[];
 extern const char kMonitoringDestinationID[];
 extern const char kNativeMessagingConnectHost[];
 extern const char kNativeMessagingConnectExtension[];

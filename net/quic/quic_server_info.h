@@ -60,7 +60,7 @@ class QUIC_EXPORT_PRIVATE QuicServerInfo {
 
     void Clear();
 
-    // This class matches QuicClientCryptoConfig::CachedState.
+    // This class matches QuicCryptoClientConfig::CachedState.
     std::string server_config;         // A serialized handshake message.
     std::string source_address_token;  // An opaque proof of IP ownership.
     std::string cert_sct;              // Signed timestamp of the leaf cert.

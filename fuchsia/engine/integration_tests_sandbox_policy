@@ -1,9 +1,10 @@
 {
   "features": [
       "isolated-persistent-storage",
-      "shell",
+      "deprecated-shell",
       "system-temp" ],
   "services": [
+      "fuchsia.device.NameProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",

@@ -67,9 +67,8 @@ class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
                                      int dest_width,
                                      int dest_height,
                                      bool draw_mirrored)
-      : gfx::CanvasImageSource(
-            bg_image.isNull() ? gfx::Size(1, 1) : bg_image.size(),
-            false),
+      : gfx::CanvasImageSource(bg_image.isNull() ? gfx::Size(1, 1)
+                                                 : bg_image.size()),
         bg_image_(bg_image),
         source_x_(source_x),
         source_y_(source_y),

@@ -70,9 +70,6 @@ PictureInPictureWindowManager::EnterPictureInPicture(
     CreateWindowInternal(web_contents);
   }
 
-  pip_window_controller_->EmbedSurface(surface_id, natural_size);
-  pip_window_controller_->Show();
-
   return content::PictureInPictureResult::kSuccess;
 }
 

@@ -154,11 +154,11 @@ std::unique_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
 }
 #endif  // !defined(OS_ANDROID)
 
-base::FilePath ShellBrowserContext::GetPath() const {
+base::FilePath ShellBrowserContext::GetPath() {
   return path_;
 }
 
-bool ShellBrowserContext::IsOffTheRecord() const {
+bool ShellBrowserContext::IsOffTheRecord() {
   return off_the_record_;
 }
 

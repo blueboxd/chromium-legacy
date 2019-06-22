@@ -136,16 +136,13 @@ template("webapk_tmpl") {
   # Populate background color in values/background_color.xml
   mustache_pass(_generate_res_background_xml_target_name) {
     forward_variables_from(invoker, [ "config_file" ])
-    input = "to_upload/res_template/values/background_color.xml"
+    input = "res_template/values/background_color.xml"
     output = "${_generated_res_background_dir}/values/background_color.xml"
   }
 
   android_resources(_resources_target_name) {
     custom_package = "org.chromium.webapk.shell_apk"
-    resource_dirs = [
-      "res",
-      "to_upload/res",
-    ]
+    resource_dirs = [ "res" ]
     generated_resource_dirs = [ _generated_res_background_dir ]
     generated_resource_files =
         get_target_outputs(":$_generate_res_background_xml_target_name")

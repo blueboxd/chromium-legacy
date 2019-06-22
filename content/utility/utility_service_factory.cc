@@ -110,7 +110,7 @@ void RunNetworkServiceOnIOThread(
     std::unique_ptr<service_manager::BinderRegistry> network_registry,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   auto service = std::make_unique<network::NetworkService>(
-      std::move(network_registry), nullptr /* request */, nullptr /* net_log */,
+      std::move(network_registry), nullptr /* request */,
       std::move(service_request), true);
 
   // Transfer ownership of the service to itself, and have it post to the main

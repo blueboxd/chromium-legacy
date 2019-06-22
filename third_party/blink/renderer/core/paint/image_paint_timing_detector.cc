@@ -153,7 +153,7 @@ void ImagePaintTimingDetector::OnPaintFinished() {
   RegisterNotifySwapTime();
 }
 
-void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
+void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(DOMNodeId node_id) {
   if (!is_recording_)
     return;
   // Todo: check whether it is visible background image.

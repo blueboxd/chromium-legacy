@@ -3120,6 +3120,7 @@ interface HTMLIFrameElement : HTMLElement
     getter featurePolicy
     getter frameBorder
     getter height
+    getter loading
     getter longDesc
     getter marginHeight
     getter marginWidth
@@ -3139,6 +3140,7 @@ interface HTMLIFrameElement : HTMLElement
     setter csp
     setter frameBorder
     setter height
+    setter loading
     setter longDesc
     setter marginHeight
     setter marginWidth
@@ -3163,6 +3165,7 @@ interface HTMLImageElement : HTMLElement
     getter importance
     getter intrinsicSize
     getter isMap
+    getter loading
     getter longDesc
     getter lowsrc
     getter name
@@ -3189,6 +3192,7 @@ interface HTMLImageElement : HTMLElement
     setter importance
     setter intrinsicSize
     setter isMap
+    setter loading
     setter longDesc
     setter lowsrc
     setter name
@@ -4242,6 +4246,7 @@ interface Image
     getter importance
     getter intrinsicSize
     getter isMap
+    getter loading
     getter longDesc
     getter lowsrc
     getter name
@@ -4268,6 +4273,7 @@ interface Image
     setter importance
     setter intrinsicSize
     setter isMap
+    setter loading
     setter longDesc
     setter lowsrc
     setter name

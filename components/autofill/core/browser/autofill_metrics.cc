@@ -1458,13 +1458,6 @@ void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
 }
 
 // static
-void AutofillMetrics::LogHasModifiedProfileOnCreditCardFormSubmission(
-    bool has_modified_profile) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.HasModifiedProfile.CreditCardFormSubmission",
-                        has_modified_profile);
-}
-
-// static
 void AutofillMetrics::LogNumberOfAddressesSuppressedForDisuse(
     size_t num_profiles) {
   UMA_HISTOGRAM_COUNTS_1000("Autofill.AddressesSuppressedForDisuse",

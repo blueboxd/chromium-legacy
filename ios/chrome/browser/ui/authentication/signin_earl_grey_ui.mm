@@ -66,9 +66,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   [self confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {

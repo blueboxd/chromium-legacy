@@ -687,7 +687,7 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 base::DictionaryValue ChromeContentClient::GetNetLogConstants() const {
-  auto platform_dict = net_log::ChromeNetLog::GetPlatformConstants(
+  auto platform_dict = net_log::GetPlatformConstantsForNetLog(
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelName());
   if (platform_dict)

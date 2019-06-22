@@ -73,7 +73,7 @@ class files and runtime **.exec** files. Then we need to process them using the
   ```
 
 2. We can also generate JSON format report for
-   [coverage tool](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/code_coverage.md)
+   [coverage tool](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/code_coverage.md)
    created by Chrome Ops - CATS team.
    In this case, we need to change `--format` to json, for example:
 

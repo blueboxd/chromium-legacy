@@ -50,9 +50,9 @@ constexpr int kDaysInAWeek = 7;
 // The tag associated to register |update_check_timer_|.
 constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
 
-// The tag associated to register |start_update_check_retry_timer_|.
-constexpr char kStartUpdateCheckRetryTimerTag[] =
-    "DeviceScheduledUpdateCheckerRetry";
+// The tag associated to register |start_update_check_timer_task_executor_|.
+constexpr char kStartUpdateCheckTimerTaskRunnerTag[] =
+    "StartUpdateCheckTimerTaskRunner";
 
 DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::Frequency GetFrequency(
     const std::string& frequency) {
@@ -265,6 +265,8 @@ base::Optional<base::Time> CalculateNextUpdateCheckMonthlyTime(
 // |cros_settings_observer_| will be destroyed as part of this object
 // guaranteeing to not run |OnScheduledUpdateCheckDataChanged| after its
 // destruction. Therefore, it's safe to use "this" while adding this observer.
+// Similarly, |start_update_check_timer_task_executor_| will be destroyed as
+// part of this object, so it's safe to use "this" with any callbacks.
 DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
     chromeos::CrosSettings* cros_settings)
     : cros_settings_(cros_settings),
@@ -272,7 +274,13 @@ DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
           chromeos::kDeviceScheduledUpdateCheck,
           base::BindRepeating(
               &DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged,
-              base::Unretained(this)))) {
+              base::Unretained(this)))),
+      start_update_check_timer_task_executor_(
+          kStartUpdateCheckTimerTaskRunnerTag,
+          base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
+                              base::Unretained(this)),
+          update_checker_internal::kMaxRetryUpdateCheckIterations,
+          update_checker_internal::kStartUpdateCheckTimerRetryTime) {
   // Check if policy already exists.
   OnScheduledUpdateCheckDataChanged();
 }
@@ -291,7 +299,15 @@ void DeviceScheduledUpdateChecker::UpdateCheck() {
   // If a policy exists, schedule the next update check timer.
   if (!scheduled_update_check_data_)
     return;
-  StartUpdateCheckTimer();
+
+  // |start_update_check_timer_task_executor_| will be destroyed as part of this
+  // object, so it's safe to use "this" with any callbacks.
+  start_update_check_timer_task_executor_.Start(
+      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
+                          base::Unretained(this)),
+      base::BindOnce(
+          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
+          base::Unretained(this)));
 }
 
 void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
@@ -314,7 +330,12 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
   scheduled_update_check_data_ = std::move(scheduled_update_check_data);
 
   // Policy has been updated, calculate and set |update_check_timer_| again.
-  StartUpdateCheckTimer();
+  start_update_check_timer_task_executor_.Start(
+      base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
+                          base::Unretained(this)),
+      base::BindOnce(
+          &DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure,
+          base::Unretained(this)));
 }
 
 base::Optional<base::Time>
@@ -392,12 +413,6 @@ DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
 }
 
 void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
-  // Cancel any pending calls to |StartUpdateCheckTimer| to avoid redundant
-  // work, one could be lingering due to a call to
-  // |RetryStartUpdateCheckTimer|. If an error occurs while starting the
-  // timer it will be retried again in this function.
-  start_update_check_retry_timer_.reset();
-
   // For accuracy of the next update check, capture current time as close to the
   // start of this function as possible.
   const base::TimeTicks cur_ticks = GetTicksSinceBoot();
@@ -410,7 +425,7 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   base::Optional<base::Time> update_check_time =
       CalculateNextUpdateCheckTime(cur_time);
   if (!update_check_time) {
-    RetryStartUpdateCheckTimer();
+    start_update_check_timer_task_executor_.ScheduleRetry();
     return;
   }
   scheduled_update_check_data_->next_update_check_time_ticks =
@@ -434,58 +449,26 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
 }
 
 void DeviceScheduledUpdateChecker::OnTimerStartResult(bool result) {
+  // Schedule a retry if |update_check_timer_| failed to start.
   if (!result) {
     LOG(ERROR) << "Failed to start update check timer";
-    // This method runs either due to |update_check_timer_|'s start operation
-    // failing or |start_update_check_timer_|'s start operation failing. In both
-    // cases it's called by |NativeTimer| and it's best to schedule
-    // |RetryStartUpdateCheckTimer| as a separate task as it destroys the same
-    // |NativeTimer| object inside it.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &DeviceScheduledUpdateChecker::RetryStartUpdateCheckTimer,
-            weak_factory_.GetWeakPtr()));
+    start_update_check_timer_task_executor_.ScheduleRetry();
     return;
   }
 }
 
-void DeviceScheduledUpdateChecker::RetryStartUpdateCheckTimer() {
+void DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure() {
   // Retrying has a limit. In the unlikely scenario this is met, reset all
   // state. Now an update check can only happen when a new policy comes in or
   // Chrome is restarted.
-  if (update_check_timer_start_attempts_ >=
-      update_checker_internal::kMaxRetryUpdateCheckIterations) {
-    LOG(ERROR) << "Aborting attempts to start update check timer";
-    ResetState();
-    return;
-  }
-
-  // There can only be one pending call to |StartUpdateCheckTimer| at any given
-  // time. For easier state maintenance, instantiate fresh timers for each
-  // retry attempt. The old timer must be destroyed before creating a new timer
-  // with the same tag as per the semantics of |NativeTimer|. That's why using
-  // std::make_unique with the assignment operator would not have worked here.
-  update_check_timer_.reset();
-  ++update_check_timer_start_attempts_;
-  start_update_check_retry_timer_.reset();
-  start_update_check_retry_timer_ =
-      std::make_unique<chromeos::NativeTimer>(kStartUpdateCheckRetryTimerTag);
-  start_update_check_retry_timer_->Start(
-      GetTicksSinceBoot() +
-          update_checker_internal::kStartUpdateCheckTimerRetryTime,
-      base::BindOnce(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
-                     base::Unretained(this)),
-      base::BindOnce(&DeviceScheduledUpdateChecker::OnTimerStartResult,
-                     base::Unretained(this)));
+  LOG(ERROR) << "Failed to start update check timer after all retries";
+  ResetState();
 }
 
 void DeviceScheduledUpdateChecker::ResetState() {
-  weak_factory_.InvalidateWeakPtrs();
-  update_check_timer_start_attempts_ = 0;
-  start_update_check_retry_timer_.reset();
   update_check_timer_.reset();
   scheduled_update_check_data_ = base::nullopt;
+  start_update_check_timer_task_executor_.Stop();
 }
 
 base::Time DeviceScheduledUpdateChecker::GetCurrentTime() {

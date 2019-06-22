@@ -65,7 +65,7 @@ TEST_F(IdentityControllerImplTest, GetUserInfo) {
   identity_controller()->GetUserInfo(base::BindLambdaForTesting(
       [&run_loop, &returned_user_info](mojom::UserInfoPtr user_info) {
         returned_user_info = std::move(user_info);
-        run_loop.QuitClosure().Run();
+        run_loop.Quit();
       }));
   run_loop.Run();
   EXPECT_EQ(returned_user_info->display_name, kUserDisplayName);

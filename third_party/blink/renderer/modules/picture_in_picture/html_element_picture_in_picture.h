@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class DOMException;
+class ExceptionState;
 class HTMLElement;
 class PictureInPictureOptions;
 class ScriptPromise;
@@ -19,12 +19,14 @@ class HTMLElementPictureInPicture {
   STATIC_ONLY(HTMLElementPictureInPicture);
 
  public:
-  static ScriptPromise requestPictureInPicture(
-      ScriptState*,
-      HTMLElement&,
-      PictureInPictureOptions* options);
+  static ScriptPromise requestPictureInPicture(ScriptState*,
+                                               HTMLElement&,
+                                               PictureInPictureOptions*,
+                                               ExceptionState&);
 
-  static DOMException* CheckIfPictureInPictureIsAllowed(HTMLElement&);
+  static void CheckIfPictureInPictureIsAllowed(HTMLElement&,
+                                               PictureInPictureOptions*,
+                                               ExceptionState&);
 };
 
 }  // namespace blink

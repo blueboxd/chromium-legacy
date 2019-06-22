@@ -8,7 +8,7 @@
 <script src="utils.js"></script>
 <body></body>
 <script>
-const options = { aspectRatio: 1 };
+const options = { height: 1, width: 1 };
 
 promise_test(async t => {
   enablePictureInPictureV2ForTest(t);
@@ -30,6 +30,6 @@ promise_test(async t => {
   assert_equals(document.pictureInPictureElement, video);
 
   const element = document.createElement('div');
-  return element.requestPictureInPicture({ aspectRatio: 1 });
+  return element.requestPictureInPicture({ height: 1, width: 1 });
 }, 'request Picture-in-Picture does not require user gesture if document.pictureInPictureElement is set');
 </script>

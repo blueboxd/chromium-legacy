@@ -74,7 +74,7 @@ class BookmarkDragImageSource : public gfx::CanvasImageSource {
   BookmarkDragImageSource(const base::string16& title,
                           const gfx::ImageSkia& icon,
                           size_t count)
-      : gfx::CanvasImageSource(kBookmarkDragImageSize, false),
+      : gfx::CanvasImageSource(kBookmarkDragImageSize),
         title_(title),
         icon_(icon),
         count_(count) {}

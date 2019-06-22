@@ -2065,7 +2065,7 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // resource_context() can return null in unit tests.
   if ((context_->wrapper()->resource_context() &&
        !GetContentClient()->browser()->AllowServiceWorker(
-           scope_, scope_, context_->wrapper()->resource_context(),
+           scope_, scope_, script_url_, context_->wrapper()->resource_context(),
            base::NullCallback()))) {
     return false;
   }

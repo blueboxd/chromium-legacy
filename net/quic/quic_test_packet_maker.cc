@@ -175,7 +175,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_version,
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code) {
-  return MakeRstPacket(num, include_version, stream_id, error_code, 0,
+  return MakeRstPacket(num, include_version, stream_id, error_code,
                        /*include_stop_sending_if_v99=*/true);
 }
 
@@ -184,13 +184,13 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_version,
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code,
-    size_t bytes_written,
     bool include_stop_sending_if_v99) {
   InitializeHeader(num, include_version);
 
   quic::QuicFrames frames;
 
-  quic::QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
+  quic::QuicRstStreamFrame rst(1, stream_id, error_code,
+                               stream_offsets_[stream_id]);
   frames.push_back(quic::QuicFrame(&rst));
   DVLOG(1) << "Adding frame: " << frames.back();
 
@@ -283,7 +283,7 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     bool send_feedback) {
   return MakeAckAndRstPacket(num, include_version, stream_id, error_code,
                              largest_received, smallest_received, least_unacked,
-                             send_feedback, 0,
+                             send_feedback,
                              /*include_stop_sending_if_v99=*/true);
 }
 
@@ -297,7 +297,6 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     uint64_t smallest_received,
     uint64_t least_unacked,
     bool send_feedback,
-    size_t bytes_written,
     bool include_stop_sending_if_v99) {
   InitializeHeader(num, include_version);
 
@@ -315,7 +314,8 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   frames.push_back(quic::QuicFrame(&ack));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  quic::QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
+  quic::QuicRstStreamFrame rst(1, stream_id, error_code,
+                               stream_offsets_[stream_id]);
   frames.push_back(quic::QuicFrame(&rst));
   DVLOG(1) << "Adding frame: " << frames.back();
 
@@ -742,8 +742,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     spdy::SpdyHeaderBlock headers,
     quic::QuicStreamId parent_stream_id,
     size_t* spdy_headers_frame_length,
-    quic::QuicRstStreamErrorCode error_code,
-    size_t bytes_written) {
+    quic::QuicRstStreamErrorCode error_code) {
   spdy::SpdySerializedFrame spdy_frame = MakeSpdyHeadersFrame(
       stream_id, fin, priority, std::move(headers), parent_stream_id);
   if (spdy_headers_frame_length) {
@@ -753,7 +752,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
       quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
 
-  quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code, bytes_written);
+  quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
+                                     stream_offsets_[stream_id]);
 
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(headers_frame));

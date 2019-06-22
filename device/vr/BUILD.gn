@@ -117,14 +117,16 @@ if (enable_vr) {
       ]
     }
 
-    if (enable_openvr || enable_oculus_vr || enable_windows_mr) {
+    if (enable_openvr || enable_oculus_vr || enable_windows_mr ||
+        enable_openxr) {
       sources += [
         "windows/compositor_base.cc",
         "windows/compositor_base.h",
       ]
     }
 
-    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr)) {
+    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr ||
+                   enable_openxr)) {
       libs = [
         "d3d11.lib",
         "DXGI.lib",
@@ -229,6 +231,13 @@ if (enable_vr) {
         "oculus/oculus_render_loop.h",
         "oculus/oculus_type_converters.cc",
         "oculus/oculus_type_converters.h",
+      ]
+    }
+
+    if (enable_openxr) {
+      sources += [
+        "openxr/openxr_device.cc",
+        "openxr/openxr_device.h",
       ]
     }
   }

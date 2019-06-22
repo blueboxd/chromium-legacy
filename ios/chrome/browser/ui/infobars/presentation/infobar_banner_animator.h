@@ -17,6 +17,9 @@
 // one.
 @property(nonatomic, assign) BOOL presenting;
 
+// The UIViewPropertyAnimator animating the presentation/dismissal.
+@property(nonatomic, strong) UIViewPropertyAnimator* propertyAnimator;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_PRESENTATION_INFOBAR_BANNER_ANIMATOR_H_

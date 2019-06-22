@@ -7,7 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV id='target'",
+          "object": "LayoutNGBlockFlow DIV",
+          "rect": [8, 8, 784, 20],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "rect": [8, 8, 784, 20],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) DIV id='target'",
           "rect": [8, 8, 100, 100],
           "reason": "appeared"
         }

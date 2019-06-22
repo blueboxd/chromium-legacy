@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "jni/CrashReportMimeWriter_jni.h"
+#include "components/minidump_uploader/minidump_uploader_jni_headers/CrashReportMimeWriter_jni.h"
 #include "third_party/crashpad/crashpad/handler/minidump_to_upload_parameters.h"
 #include "third_party/crashpad/crashpad/snapshot/exception_snapshot.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"

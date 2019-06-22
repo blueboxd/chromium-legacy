@@ -58,6 +58,11 @@ const char* ShelfControlButton::GetClassName() const {
   return "ash/ShelfControlButton";
 }
 
+void ShelfControlButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ShelfButton::GetAccessibleNodeData(node_data);
+  node_data->SetName(GetAccessibleName());
+}
+
 void ShelfControlButton::PaintButtonContents(gfx::Canvas* canvas) {
   PaintBackground(canvas, GetContentsBounds());
 }

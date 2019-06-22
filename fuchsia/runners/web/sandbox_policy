@@ -3,6 +3,7 @@
     "isolated-persistent-storage"
   ],
   "services": [
+      "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",

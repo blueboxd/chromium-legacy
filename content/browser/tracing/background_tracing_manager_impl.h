@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
@@ -87,6 +88,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   CONTENT_EXPORT static BackgroundTracingManagerImpl* GetInstance();
 
+  // Callable from any thread.
   static void ActivateForProcess(int child_process_id,
                                  mojom::ChildControl* child_control);
 
@@ -149,6 +151,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       perfetto::protos::pbzero::ChromeMetadataPacket* metadata);
   bool IsTriggerHandleValid(TriggerHandle handle) const;
   void OnScenarioAborted();
+  static void AddPendingAgentConstructor(base::OnceClosure constructor);
+  void MaybeConstructPendingAgents();
 
   std::unique_ptr<BackgroundTracingActiveScenario> active_scenario_;
 
@@ -161,6 +165,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   std::set<EnabledStateObserver*> background_tracing_observers_;
   std::set<tracing::mojom::BackgroundTracingAgent*> agents_;
   std::set<AgentObserver*> agent_observers_;
+
+  std::vector<base::OnceClosure> pending_agent_constructors_;
 
   IdleCallback idle_callback_;
   base::RepeatingClosure tracing_enabled_callback_for_testing_;

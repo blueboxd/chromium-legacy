@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,6 +47,10 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   const std::map<GURL, int>& GetAreaRankMap() const { return area_rank_map_; }
 
+  bool prefetch_url_prefetched() const { return prefetch_url_prefetched_; }
+
+  int calls_to_prefetch() const { return calls_to_prefetch_; }
+
  private:
   double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
@@ -57,6 +62,10 @@ class TestNavigationPredictor : public NavigationPredictor {
     return 100 * metrics.ratio_area;
   }
 
+  void Prefetch(prerender::PrerenderManager* prerender_manager) override {
+    calls_to_prefetch_ += 1;
+  }
+
   // Maps from target URL to area rank of the anchor element.
   mutable std::map<GURL, int> area_rank_map_;
 
@@ -64,6 +73,8 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   // Used to bind Mojo interface
   mojo::Binding<AnchorElementMetricsHost> binding_;
+
+  int calls_to_prefetch_ = 0;
 };
 
 class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
@@ -99,6 +110,10 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     return predictor_service_helper_->preconnect_origin();
   }
 
+  bool prefetch_url_prefetched() {
+    return predictor_service_helper_->prefetch_url_prefetched();
+  }
+
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -108,7 +123,8 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
-                       base::Optional<int> prefetch_url_score_threshold) {
+                       base::Optional<int> prefetch_url_score_threshold,
+                       base::Optional<bool> prefetch_after_preconnect) {
     if (field_trial_initiated_)
       return;
 
@@ -124,6 +140,10 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     if (prefetch_url_score_threshold.has_value()) {
       params["prefetch_url_score_threshold"] =
           base::NumberToString(prefetch_url_score_threshold.value());
+    }
+    if (prefetch_after_preconnect.has_value()) {
+      params["prefetch_after_preconnect"] =
+          prefetch_after_preconnect.value() ? "true" : "false";
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);
@@ -481,13 +501,57 @@ TEST_F(NavigationPredictorTest,
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
+class NavigationPredictorPrefetchAfterPreconnectEnabledTest
+    : public NavigationPredictorTest {
+ public:
+  NavigationPredictorPrefetchAfterPreconnectEnabledTest() {
+    SetupFieldTrial(base::nullopt, base::nullopt, true);
+  }
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh(), false);
+  }
+};
+
+// Test that a prefetch after preconnect occurs only when the current tab is
+// in the foreground, and that it does not occur multiple times for the same
+// URL.
+TEST_F(NavigationPredictorPrefetchAfterPreconnectEnabledTest,
+       PrefetchWithTabs) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_large = "https://example.com/large";
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+
+  // Hide the tab and load the page. The URL should not be prefetched.
+  web_contents()->WasHidden();
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(prefetch_url_prefetched());
+  EXPECT_EQ(predictor_service_helper_->calls_to_prefetch(), 0);
+
+  // Making the tab visible should start a prefetch.
+  web_contents()->WasShown();
+  EXPECT_TRUE(prefetch_url_prefetched());
+  EXPECT_EQ(predictor_service_helper_->calls_to_prefetch(), 1);
+
+  // Switching a tab from HIDDEN to VISIBLE should not start a prefetch
+  // if a prefetch already occurred for that URL.
+  web_contents()->WasHidden();
+  web_contents()->WasShown();
+  EXPECT_TRUE(prefetch_url_prefetched());
+  EXPECT_EQ(predictor_service_helper_->calls_to_prefetch(), 1);
+}
+
 // Framework for testing cases where prefetch is effectively
 // disabled by setting |prefetch_url_score_threshold| to too high.
 class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchDisabledTest() {
     SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */);
+                    101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {
@@ -583,7 +647,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
  public:
   NavigationPredictorPreconnectPrefetchDisabledTest() {
     SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */);
+                    101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {

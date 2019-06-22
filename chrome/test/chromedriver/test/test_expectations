@@ -43,7 +43,7 @@ _READY_TO_RUN_FILTER = [
     'ContentEditableTest.testShouldAppendToTinyMCE',
     'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
     'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
-    'WindowSwitchingTest.canOpenANewWindow,'
+    'WindowSwitchingTest.canOpenANewWindow',
 ]
 
 _OS_NEGATIVE_FILTER = {}

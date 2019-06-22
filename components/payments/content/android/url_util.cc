@@ -5,7 +5,7 @@
 #include "components/payments/core/url_util.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "jni/UrlUtil_jni.h"
+#include "components/payments/content/android/jni_headers/UrlUtil_jni.h"
 #include "url/gurl.h"
 
 namespace payments {

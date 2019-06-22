@@ -49,7 +49,7 @@ class HalfRoundedRectBackground : public Background {
 }  // namespace
 
 FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
-                                             View* child_view,
+                                             std::unique_ptr<View> child_view,
                                              float corner_radius) {
   SetLayoutManager(
       std::make_unique<BoxLayout>(BoxLayout::kVertical, margins, 0));
@@ -58,8 +58,8 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
                                    GetNativeTheme()->SystemDarkModeEnabled()
                                        ? gfx::kGoogleGrey900
                                        : gfx::kGoogleGrey200));
-  AddChildView(child_view);
-  SetVisible(child_view->GetVisible());
+  auto* child_view_ptr = AddChildView(std::move(child_view));
+  SetVisible(child_view_ptr->GetVisible());
 }
 
 FootnoteContainerView::~FootnoteContainerView() = default;

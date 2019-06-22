@@ -7,14 +7,23 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_interaction_delegate.h"
+
 @protocol InfobarBannerPositioner;
 
 // The transition delegate used to present an InfobarBanner.
 @interface InfobarBannerTransitionDriver
-    : NSObject <UIViewControllerTransitioningDelegate>
+    : NSObject <UIViewControllerTransitioningDelegate,
+                InfobarBannerInteractionDelegate>
 
 // Delegate used to position the InfobarBanner.
 @property(nonatomic, assign) id<InfobarBannerPositioner> bannerPositioner;
+
+// Completes the banner presentation if taking place. This will stop the banner
+// animation and move it to the presenting ViewController hierarchy.
+// This method should be called if trying to dismiss the banner before its
+// presentation has finished.
+- (void)completePresentationTransitionIfRunning;
 
 @end
 

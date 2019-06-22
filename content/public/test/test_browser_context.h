@@ -44,12 +44,12 @@ class TestBrowserContext : public BrowserContext {
   }
 
   // BrowserContext implementation.
-  base::FilePath GetPath() const override;
+  base::FilePath GetPath() override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
-  bool IsOffTheRecord() const override;
+  bool IsOffTheRecord() override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   ResourceContext* GetResourceContext() override;
   BrowserPluginGuestManager* GetGuestManager() override;

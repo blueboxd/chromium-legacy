@@ -3332,33 +3332,6 @@ def _CheckNoDeprecatedCss(input_api, output_api):
   return results
 
 
-_DEPRECATED_JS = [
-  ( "__lookupGetter__", "Object.getOwnPropertyDescriptor" ),
-  ( "__defineGetter__", "Object.defineProperty" ),
-  ( "__lookupSetter__", "Object.getOwnPropertyDescriptor" ),
-  ( "__defineSetter__", "Object.defineProperty" ),
-]
-
-
-# TODO: add unit tests
-def _CheckNoDeprecatedJs(input_api, output_api):
-  """Make sure that we don't use deprecated JS in Chrome code."""
-  results = []
-  file_inclusion_pattern = [r".+\.js$"]  # TODO(dbeam): .html?
-  black_list = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
-                input_api.DEFAULT_BLACK_LIST)
-  file_filter = lambda f: input_api.FilterSourceFile(
-      f, white_list=file_inclusion_pattern, black_list=black_list)
-  for fpath in input_api.AffectedFiles(file_filter=file_filter):
-    for lnum, line in fpath.ChangedContents():
-      for (deprecated, replacement) in _DEPRECATED_JS:
-        if deprecated in line:
-          results.append(output_api.PresubmitError(
-              "%s:%d: Use of deprecated JS %s, use %s instead" %
-              (fpath.LocalPath(), lnum, deprecated, replacement)))
-  return results
-
-
 def _CheckForRelativeIncludes(input_api, output_api):
   bad_files = {}
   for f in input_api.AffectedFiles(include_deletes=False):
@@ -3789,7 +3762,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCss(input_api, output_api))
-  results.extend(_CheckNoDeprecatedJs(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
   results.extend(_CheckForLongPathnames(input_api, output_api))

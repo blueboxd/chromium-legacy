@@ -21,7 +21,7 @@
 
 #ifdef OS_ANDROID
 #include "base/android/jni_string.h"
-#include "jni/SuggestionAnswer_jni.h"
+#include "components/omnibox/browser/jni_headers/SuggestionAnswer_jni.h"
 
 using base::android::ScopedJavaLocalRef;
 #endif

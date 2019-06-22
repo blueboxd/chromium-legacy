@@ -81,7 +81,7 @@ void ExecuteExtensionAction(Browser* browser, const Extension* extension) {
 class BlankImageSource : public gfx::CanvasImageSource {
  public:
   explicit BlankImageSource(const gfx::Size& size)
-     : gfx::CanvasImageSource(size, false) {}
+      : gfx::CanvasImageSource(size) {}
   ~BlankImageSource() override {}
 
   void Draw(gfx::Canvas* canvas) override {}

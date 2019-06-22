@@ -21,7 +21,7 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
 
   void OnLargestImageUpdated(const ImageRecord* largest_image);
 
-  void OnLargestTextUpdated(const TextRecord* largest_text);
+  void OnLargestTextUpdated(base::WeakPtr<TextRecord> largest_text);
 
   void Trace(blink::Visitor* visitor);
 

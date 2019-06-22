@@ -176,7 +176,6 @@ if (enable_message_center) {
       ":test_support",
       "//base",
       "//base/test:test_support",
-      "//mojo/core/embedder",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
@@ -199,15 +198,6 @@ if (enable_message_center) {
       "//third_party/mesa_headers",
       "//ui/resources:ui_test_pak_data",
     ]
-
-    if (is_chromeos) {
-      sources += [ "public/mojo/struct_traits_unittest.cc" ]
-
-      deps += [
-        "//mojo/core/embedder",
-        "//ui/message_center/public/mojo:test_interfaces",
-      ]
-    }
 
     if (toolkit_views) {
       sources += [

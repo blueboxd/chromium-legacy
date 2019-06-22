@@ -35,12 +35,6 @@ void ArcPictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   // Should be a no-op on ARC. This is managed on the Android side.
 }
 
-void ArcPictureInPictureWindowControllerImpl::EmbedSurface(
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size) {
-  // Should be a no-op on ARC. This is managed on the Android side.
-}
-
 content::OverlayWindow*
 ArcPictureInPictureWindowControllerImpl::GetWindowForTesting() {
   // Should be a no-op on ARC. This is managed on the Android side.

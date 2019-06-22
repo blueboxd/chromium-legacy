@@ -1843,32 +1843,20 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   // Verify that histograms are correctly incremented.
   base::HistogramTester::CountsMap expected_counts;
   std::string histogram_base = "SiteIsolation.XSD.Browser";
-  std::string bucket;
   switch (scenario.canonical_mime_type) {
     case MimeType::kHtml:
-      bucket = "HTML";
-      break;
     case MimeType::kXml:
-      bucket = "XML";
-      break;
     case MimeType::kJson:
-      bucket = "JSON";
-      break;
     case MimeType::kPlain:
-      bucket = "Plain";
-      break;
     case MimeType::kOthers:
-      bucket = "Others";
       break;
     case MimeType::kNeverSniffed:
       DCHECK_EQ(Verdict::kBlock, scenario.verdict);
       DCHECK_EQ(-1, scenario.verdict_packet);
-      bucket = "Blocked without sniffing / no bucket";
       break;
     case MimeType::kInvalidMimeType:
       DCHECK_EQ(Verdict::kAllow, scenario.verdict);
       DCHECK_EQ(-1, scenario.verdict_packet);
-      bucket = "Allowed without considering the MIME type / no bucket";
       break;
   }
   int start_action = static_cast<int>(
@@ -1890,40 +1878,14 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
     NOTREACHED();
   }
 
-  // The parser-breaker detection only on responses that are not blocked by
-  // normal mime-sniffing.
-  bool scenario_requires_parser_breaker_detection =
-      (network::CrossOriginReadBlocking::kYes ==
-       network::CrossOriginReadBlocking::SniffForFetchOnlyResource(
-           scenario.data())) &&
-      !((network::CrossOriginReadBlocking::kYes ==
-         network::CrossOriginReadBlocking::SniffForJSON(scenario.data())) &&
-        (scenario.canonical_mime_type == MimeType::kJson ||
-         scenario.canonical_mime_type == MimeType::kPlain));
-  if (should_be_blocked && expected_to_sniff &&
-      scenario_requires_parser_breaker_detection) {
-    expected_counts[histogram_base + ".BlockedForParserBreaker"] = 1;
-  }
-
   // Expecting two actions: ResponseStarted and one of the outcomes.
   expected_counts[histogram_base + ".Action"] = 2;
   EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Action"),
               testing::ElementsAre(base::Bucket(start_action, 1),
                                    base::Bucket(end_action, 1)))
       << "Should have incremented the right actions.";
-  if (should_be_blocked) {
-    expected_counts[histogram_base + ".Blocked"] = 1;
+  if (should_be_blocked)
     expected_counts[histogram_base + ".Blocked.CanonicalMimeType"] = 1;
-    expected_counts[histogram_base + ".Blocked." + bucket] = 1;
-    EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked"),
-                testing::ElementsAre(
-                    base::Bucket(static_cast<int>(scenario.resource_type), 1)))
-        << "Should have incremented aggregate blocking.";
-    EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked." + bucket),
-                testing::ElementsAre(
-                    base::Bucket(static_cast<int>(scenario.resource_type), 1)))
-        << "Should have incremented blocking for resource type.";
-  }
   // Make sure that the expected metrics, and only those metrics, were
   // incremented.
   EXPECT_THAT(histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser"),

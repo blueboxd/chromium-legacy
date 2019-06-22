@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -213,17 +214,19 @@ void OverlayPresenterImpl::OverlayWasDismissed(
   // Pop the request for overlays dismissed by the user.  The check against the
   // queue's front request prevents popping the request twice in the event that
   // the front request was cancelled by the queue during a user-triggered
-  // dismissal.
+  // dismissal.  |popped_request| is used to extend the lifetime of the request
+  // past the DidHideOverlay() callbacks.
+  std::unique_ptr<OverlayRequest> popped_request;
   if (reason == OverlayDismissalReason::kUserInteraction && queue &&
       queue->front_request() == request) {
-    queue->PopFrontRequest();
+    popped_request = queue->PopFrontRequest();
   }
 
   presenting_ = false;
 
   // Notify the observers that the overlay UI was hidden.
   for (auto& observer : observers_) {
-    observer.DidHideOverlay(this);
+    observer.DidHideOverlay(this, request);
   }
 
   // Only show the next overlay if the active request has changed, either

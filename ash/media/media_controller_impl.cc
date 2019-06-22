@@ -50,12 +50,17 @@ void MediaControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 PrefRegistry::PUBLIC);
 }
 
-// static
-bool MediaControllerImpl::AreLockScreenMediaKeysEnabled() {
+bool MediaControllerImpl::AreLockScreenMediaKeysEnabled() const {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   return base::FeatureList::IsEnabled(features::kLockScreenMediaKeys) &&
-         prefs->GetBoolean(prefs::kLockScreenMediaKeysEnabled);
+         prefs->GetBoolean(prefs::kLockScreenMediaKeysEnabled) &&
+         !media_controls_dismissed_;
+}
+
+void MediaControllerImpl::SetMediaControlsDismissed(
+    bool media_controls_dismissed) {
+  media_controls_dismissed_ = media_controls_dismissed;
 }
 
 void MediaControllerImpl::AddObserver(MediaCaptureObserver* observer) {

@@ -395,11 +395,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
   }
 }
 
-void BrowserAccessibilityManagerWin::OnFocusLost(BrowserAccessibility* node) {
-  BrowserAccessibilityManager::OnFocusLost(node);
-  DCHECK(node);
-}
-
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {

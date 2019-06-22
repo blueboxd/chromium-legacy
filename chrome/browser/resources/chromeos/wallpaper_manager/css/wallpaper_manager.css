@@ -398,12 +398,12 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 }
 
 #minimize-button {
-  background-image: url(../images/ui/button_minimize.png);
+  background-image: url(../images/ui/button_minimize.svg);
   right: 52px;
 }
 
 #close-button {
-  background-image: url(../images/ui/button_close.png);
+  background-image: url(../images/ui/button_close.svg);
   right: 12px;
 }
 
@@ -809,7 +809,7 @@ html[dir='rtl'] #current-wallpaper-more-options {
 
 #current-wallpaper-more-options #center,
 #current-wallpaper-more-options #center-cropped {
-  color: rgb(128, 134, 139);
+  color: rgb(95, 99, 104);
 }
 
 #current-wallpaper-more-options #center.disabled,

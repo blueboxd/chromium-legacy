@@ -26,7 +26,6 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
@@ -218,8 +217,7 @@ id<GREYMatcher> UndoAccountConsistencyButton() {
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 
   // Undo the sign-in and dismiss the Sign In screen.
   [[EarlGrey selectElementWithMatcher:UndoAccountConsistencyButton()]
@@ -228,7 +226,7 @@ id<GREYMatcher> UndoAccountConsistencyButton() {
       performAction:grey_tap()];
 
   // |identity| shouldn't be signed in.
-  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 // Signs in to an account and then taps the Advanced link to go to settings.
@@ -247,13 +245,7 @@ id<GREYMatcher> UndoAccountConsistencyButton() {
     [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
         performAction:grey_tap()];
 
-    NSError* signedInError =
-        [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-    // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-    // due to timing issues.
-    if (signedInError != nil) {
-      GREYAssert(false, signedInError.localizedDescription);
-    }
+    [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
   }
 
   // Tap Settings link.
@@ -274,8 +266,7 @@ id<GREYMatcher> UndoAccountConsistencyButton() {
         performAction:grey_tap()];
   }
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
+  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
 
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
                  @"Sync should have finished its original setup");

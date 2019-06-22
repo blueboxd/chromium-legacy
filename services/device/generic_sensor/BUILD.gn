@@ -121,7 +121,6 @@ if (is_android) {
     visibility = [ ":generic_sensor" ]
 
     sources = device_sensors_jni_sources
-    jni_package = "device"
   }
 
   android_library("java") {

@@ -151,6 +151,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
     {"ok", IDS_OK},
+    {"remove", IDS_REMOVE},
     {"restart", IDS_SETTINGS_RESTART},
 #if !defined(OS_CHROMEOS)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},

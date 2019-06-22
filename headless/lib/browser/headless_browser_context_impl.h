@@ -46,7 +46,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   HeadlessWebContents* GetWebContentsForDevToolsAgentHostId(
       const std::string& devtools_agent_host_id) override;
   void Close() override;
-  const std::string& Id() const override;
+  const std::string& Id() override;
 
   void SetDevToolsFrameToken(int render_process_id,
                              int render_frame_routing_id,
@@ -60,8 +60,8 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   // BrowserContext implementation:
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-  base::FilePath GetPath() const override;
-  bool IsOffTheRecord() const override;
+  base::FilePath GetPath() override;
+  bool IsOffTheRecord() override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;

@@ -73,7 +73,8 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
 
   float ydelta = cumulative_scroll_.y();
   float xdelta = cumulative_scroll_.x();
-  bool in_y_direction = std::abs(ydelta) * kWeightAngle30 > std::abs(xdelta);
+  bool in_y_direction = std::abs(ydelta) > std::abs(xdelta);
+  bool in_x_direction = std::abs(ydelta) * kWeightAngle30 < std::abs(xdelta);
   OverscrollAction type = OverscrollAction::NONE;
   bool navigate_forward = false;
   if (ydelta > 0 && in_y_direction) {
@@ -84,7 +85,7 @@ void OverscrollRefresh::OnOverscrolled(const cc::OverscrollBehavior& behavior) {
       return;
     }
     type = OverscrollAction::PULL_TO_REFRESH;
-  } else if (!in_y_direction &&
+  } else if (in_x_direction &&
              (scroll_begin_x_ < edge_width_ ||
               viewport_width_ - scroll_begin_x_ < edge_width_)) {
     // Swipe-to-navigate. Check overscroll-behavior-x

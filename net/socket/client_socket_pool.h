@@ -129,7 +129,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     PrivacyMode privacy_mode() const { return privacy_mode_; }
 
-    const NetworkIsolationKey& network_isolation_key() {
+    const NetworkIsolationKey& network_isolation_key() const {
       return network_isolation_key_;
     }
 

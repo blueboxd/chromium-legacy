@@ -90,9 +90,8 @@ void BrowserContextDependencyManager::DumpContextDependencies(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDumpBrowserContextDependencyGraphFlag)) {
     base::FilePath dot_file =
-        static_cast<const content::BrowserContext*>(context)
-            ->GetPath()
-            .AppendASCII("browser-context-dependencies.dot");
+        static_cast<content::BrowserContext*>(context)->GetPath().AppendASCII(
+            "browser-context-dependencies.dot");
     DumpDependenciesAsGraphviz("BrowserContext", dot_file);
   }
 }

@@ -7,6 +7,7 @@ include_rules = [
   # lib is the top-level target, and must remain a leaf in the dependency tree.
   "-android_webview/lib",
 
+  "+android_webview/native_jni",
   "+components/about_ui",
   "+components/content_capture",
   "+components/embedder_support/android/java",
@@ -23,7 +24,6 @@ include_rules = [
   "+content/public/common",
   "+crypto",
   "+gpu",
-  "+jni",
   # Only this one header in media which doesn't depend on anything else.
   "+media/media_buildflags.h",
   "+mojo/public/cpp/bindings",

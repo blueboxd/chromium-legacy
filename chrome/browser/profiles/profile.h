@@ -137,6 +137,16 @@ class Profile : public content::BrowserContext {
 
   // content::BrowserContext implementation ------------------------------------
 
+  // Returns the path of the directory where this context's data is stored.
+  base::FilePath GetPath() override = 0;
+  virtual base::FilePath GetPath() const = 0;
+
+  // Return whether this context is off the record. Default is false.
+  // Note that for Chrome this does not imply Incognito as Guest sessions are
+  // also off the record.
+  bool IsOffTheRecord() override = 0;
+  virtual bool IsOffTheRecord() const = 0;
+
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
 

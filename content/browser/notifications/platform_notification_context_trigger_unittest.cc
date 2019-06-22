@@ -119,7 +119,7 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
         ->GetDisplayedNotifications(base::BindLambdaForTesting(
             [&](std::set<std::string> notification_ids, bool supports_sync) {
               displayed_notification_ids = std::move(notification_ids);
-              run_loop.QuitClosure().Run();
+              run_loop.Quit();
             }));
     run_loop.Run();
     return displayed_notification_ids;

@@ -1142,11 +1142,6 @@ class AutofillMetrics {
   static void LogNumberOfProfilesAtAutofillableFormSubmission(
       size_t num_profiles);
 
-  // Log whether user modified an address profile shortly before submitting
-  // credit card form.
-  static void LogHasModifiedProfileOnCreditCardFormSubmission(
-      bool has_modified_profile);
-
   // Log the number of autofill address suggestions suppressed because they have
   // not been used for a long time. Note that these addresses are only
   // suppressed when the user has not typed any data into the field from which

@@ -9,6 +9,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cert/internal/general_names.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
@@ -144,6 +145,35 @@ struct NET_EXPORT_PRIVATE ParsedCrlTbsCertList {
   // Parsing guarantees that if extensions is present the version is v2.
   base::Optional<der::Input> crl_extensions_tlv;
 };
+
+// Parses a DER-encoded IssuingDistributionPoint extension value.
+// Returns true on success and sets the results in the
+// |out_distribution_point_names| parameter.
+//
+// If the IssuingDistributionPoint contains a distributionPoint fullName field,
+// |out_distribution_point_names| will contain the parsed representation.
+// If the distributionPoint type is nameRelativeToCRLIssuer, parsing will fail.
+//
+// onlyContainsUserCerts, onlyContainsCACerts, indirectCRL and
+// onlyContainsAttributeCerts are not supported and parsing will fail if they
+// are present.
+//
+// Note that on success |out_distribution_point_names| aliases data from the
+// input |extension_value|.
+//
+// On failure |out_distribution_point_names| has undefined state.
+//
+// IssuingDistributionPoint ::= SEQUENCE {
+//     distributionPoint          [0] DistributionPointName OPTIONAL,
+//     onlyContainsUserCerts      [1] BOOLEAN DEFAULT FALSE,
+//     onlyContainsCACerts        [2] BOOLEAN DEFAULT FALSE,
+//     onlySomeReasons            [3] ReasonFlags OPTIONAL,
+//     indirectCRL                [4] BOOLEAN DEFAULT FALSE,
+//     onlyContainsAttributeCerts [5] BOOLEAN DEFAULT FALSE }
+NET_EXPORT_PRIVATE bool ParseIssuingDistributionPoint(
+    const der::Input& extension_value,
+    std::unique_ptr<GeneralNames>* out_distribution_point_names)
+    WARN_UNUSED_RESULT;
 
 NET_EXPORT_PRIVATE CRLRevocationStatus
 GetCRLStatusForCert(const der::Input& cert_serial,

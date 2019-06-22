@@ -11,15 +11,18 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/widget/widget.h"
 
+namespace aura {
+class WindowTreeHost;
+}
+
 // A status icon that uses the XEmbed protocol.
 // https://standards.freedesktop.org/xembed-spec/xembed-spec-latest.html
 class StatusIconLinuxX11 : public views::StatusIconLinux,
-                           public views::ImageButton,
+                           public views::Button,
                            public views::ContextMenuController,
                            public views::ButtonListener {
  public:
@@ -40,8 +43,13 @@ class StatusIconLinuxX11 : public views::StatusIconLinux,
   // views::ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
+  // views::Button:
+  void PaintButtonContents(gfx::Canvas* canvas) override;
+
  private:
   std::unique_ptr<views::Widget> widget_;
+
+  aura::WindowTreeHost* host_ = nullptr;
 
   std::unique_ptr<views::MenuRunner> menu_runner_;
 

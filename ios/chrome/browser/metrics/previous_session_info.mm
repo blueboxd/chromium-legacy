@@ -104,6 +104,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @property(nonatomic, assign) BOOL isFirstSessionAfterOSUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
+@property(nonatomic, strong) NSString* OSVersion;
 @property(nonatomic, strong) NSDate* sessionEndTime;
 
 @end
@@ -122,6 +123,7 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 @synthesize isFirstSessionAfterUpgrade = _isFirstSessionAfterUpgrade;
 @synthesize isFirstSessionAfterLanguageChange =
     _isFirstSessionAfterLanguageChange;
+@synthesize OSVersion = _OSVersion;
 @synthesize sessionEndTime = _sessionEndTime;
 
 // Singleton PreviousSessionInfo.
@@ -155,6 +157,7 @@ static PreviousSessionInfo* gSharedInstance = nil;
         base::SysUTF8ToNSString(base::SysInfo::OperatingSystemVersion());
     gSharedInstance.isFirstSessionAfterOSUpgrade =
         ![versionOfOSAtLastRun isEqualToString:currentOSVersion];
+    gSharedInstance.OSVersion = versionOfOSAtLastRun;
 
     NSString* lastRanVersion = [defaults stringForKey:kLastRanVersion];
     NSString* currentVersion =

@@ -12,67 +12,67 @@
           "reason": "background"
         },
         {
-          "object": "InlineTextBox 'AAAA'",
+          "object": "NGPhysicalTextFragment 'AAAA'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'BBBB'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'CCCC'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'DDDD'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'EEEE'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'FFFF'",
+          "rect": [10, 8, 920, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'GGGG'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'BBBB'",
+          "object": "NGPhysicalTextFragment 'HHHH'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'CCCC'",
+          "object": "NGPhysicalTextFragment 'IIII JJJJ'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'DDDD'",
+          "object": "NGPhysicalTextFragment 'KKKK'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'EEEE'",
+          "object": "NGPhysicalTextFragment 'LLLL'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'FFFF'",
+          "object": "NGPhysicalTextFragment 'MMMM'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'GGGG'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'HHHH'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'IIII JJJJ'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'KKKK'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'LLLL'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'MMMM'",
-          "rect": [10, 8, 920, 212],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'NNNN'",
+          "object": "NGPhysicalTextFragment 'NNNN'",
           "rect": [10, 8, 920, 212],
           "reason": "appeared"
         },
@@ -82,34 +82,34 @@
           "reason": "background"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB'",
+          "object": "NGPhysicalTextFragment 'AAAA'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'CCCC DDDD'",
+          "object": "NGPhysicalTextFragment 'BBBB'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'EEEE FFFF GGGG'",
+          "object": "NGPhysicalTextFragment 'CCCC'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'HHHH IIII JJJJ'",
+          "object": "NGPhysicalTextFragment 'DDDD'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL'",
+          "object": "NGPhysicalTextFragment 'EEEE'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'MMMM NNNN'",
+          "object": "NGPhysicalTextFragment 'FFFF'",
           "rect": [168, 8, 423, 227],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ],
       "transform": 1
@@ -199,94 +199,94 @@
           "reason": "background"
         },
         {
-          "object": "InlineTextBox 'AAAA'",
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [10, 8, 390, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [10, 8, 390, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'FFFF'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'BBBB'",
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [10, 8, 390, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'GGGG'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'CCCC'",
+          "object": "NGPhysicalTextFragment 'HHHH'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'DDDD'",
+          "object": "NGPhysicalTextFragment 'IIII JJJJ'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'EEEE'",
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [10, 8, 390, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'KKKK'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'FFFF'",
+          "object": "NGPhysicalTextFragment 'LLLL'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'GGGG'",
+          "object": "NGPhysicalTextFragment 'MMMM'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'HHHH'",
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [10, 8, 390, 212],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'NNNN'",
           "rect": [10, 8, 390, 212],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'IIII JJJJ'",
-          "rect": [10, 8, 390, 212],
-          "reason": "disappeared"
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [39, 8, 352, 561],
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK'",
-          "rect": [10, 8, 390, 212],
-          "reason": "disappeared"
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [39, 8, 352, 561],
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'LLLL'",
-          "rect": [10, 8, 390, 212],
-          "reason": "disappeared"
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [39, 8, 352, 561],
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'MMMM'",
-          "rect": [10, 8, 390, 212],
-          "reason": "disappeared"
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [39, 8, 352, 561],
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [10, 8, 390, 212],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [39, 8, 352, 562],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [39, 8, 352, 562],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [39, 8, 352, 562],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [39, 8, 352, 562],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [39, 8, 352, 562],
-          "reason": "appeared"
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [39, 8, 352, 561],
+          "reason": "geometry"
         }
       ]
     }
@@ -306,53 +306,53 @@
           "reason": "incremental"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [439, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [439, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [439, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [439, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [439, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [439, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [439, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [439, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [439, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [439, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'AAAA BBBB CCCC'",
-          "rect": [39, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'AAAA BBBB CCCC'",
+          "rect": [39, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'DDDD EEEE FFFF'",
-          "rect": [39, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'DDDD EEEE FFFF'",
+          "rect": [39, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
-          "rect": [39, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'GGGG HHHH IIII JJJJ'",
+          "rect": [39, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'KKKK LLLL MMMM'",
-          "rect": [39, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'KKKK LLLL MMMM'",
+          "rect": [39, 8, 352, 561],
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'NNNN'",
-          "rect": [39, 8, 352, 562],
+          "object": "NGPhysicalTextFragment 'NNNN'",
+          "rect": [39, 8, 352, 561],
           "reason": "geometry"
         }
       ]

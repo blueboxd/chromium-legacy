@@ -16,9 +16,9 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "jni/CodecProfileLevelList_jni.h"
-#include "jni/MediaCodecUtil_jni.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_jni_headers/CodecProfileLevelList_jni.h"
+#include "media/base/android/media_jni_headers/MediaCodecUtil_jni.h"
 #include "media/base/video_codecs.h"
 #include "url/gurl.h"
 

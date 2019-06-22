@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/trace_event/cfi_backtrace_android.h"
-#include "jni/UnwindTestHelper_jni.h"
+#include "services/tracing/jni_headers/UnwindTestHelper_jni.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {

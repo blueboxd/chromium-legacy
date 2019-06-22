@@ -28,7 +28,7 @@ class ShadowNineboxSource : public CanvasImageSource {
  public:
   ShadowNineboxSource(const std::vector<ShadowValue>& shadows,
                       float corner_radius)
-      : CanvasImageSource(CalculateSize(shadows, corner_radius), false),
+      : CanvasImageSource(CalculateSize(shadows, corner_radius)),
         shadows_(shadows),
         corner_radius_(corner_radius) {
     DCHECK(!shadows.empty());

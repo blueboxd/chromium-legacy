@@ -19,7 +19,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chromoting/jni/JniOAuthTokenGetter.java",
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
   ]
-  jni_package = "remoting"
 }
 
 _raw_resources_base_dir = "$target_gen_dir/credits_resources_raw/res"

@@ -5,8 +5,8 @@
 #include "media/audio/android/audio_record_input.h"
 
 #include "base/logging.h"
-#include "jni/AudioRecordInput_jni.h"
 #include "media/audio/android/audio_manager_android.h"
+#include "media/base/android/media_jni_headers/AudioRecordInput_jni.h"
 #include "media/base/audio_bus.h"
 
 using base::android::JavaParamRef;

@@ -375,7 +375,6 @@ android_library("android_webview_unittests_java") {
 }
 
 generate_jni("android_webview_unittests_jni") {
-  jni_package = "android_webview_unittests"
   sources = [
     "../unittestjava/src/org/chromium/android_webview/unittest/InputStreamUnittest.java",
     "../unittestjava/src/org/chromium/android_webview/unittest/MockAwContentsClientBridge.java",

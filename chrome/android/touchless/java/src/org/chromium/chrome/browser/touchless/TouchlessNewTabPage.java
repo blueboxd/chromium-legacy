@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -116,7 +117,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
                 activity, profile, nativePageHost, TabModelSelector.from(mTab));
         SuggestionsUiDelegate suggestionsUiDelegate = new SuggestionsUiDelegateImpl(
                 suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost,
-                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
+                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
         suggestionsUiDelegate.addDestructionObserver(this::destroy);
 
         assert suggestionsUiDelegate.getSuggestionsSource() != null;

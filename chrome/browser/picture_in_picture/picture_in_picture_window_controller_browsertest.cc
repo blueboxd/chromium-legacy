@@ -72,7 +72,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD1(Close, void(bool));
   MOCK_METHOD0(CloseAndFocusInitiator, void());
   MOCK_METHOD0(OnWindowDestroyed, void());
-  MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());
   MOCK_METHOD0(IsPlayerActive, bool());
@@ -1379,11 +1378,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   {
     WidgetBoundsChangeWaiter waiter(overlay_window);
 
-    window_controller()->EmbedSurface(
-        viz::SurfaceId(
-            viz::FrameSinkId(1, 1),
-            viz::LocalSurfaceId(9, base::UnguessableToken::Create())),
-        gfx::Size(200, 100));
+    overlay_window->SetSurfaceId(viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(9, base::UnguessableToken::Create())));
+    overlay_window->UpdateVideoSize(gfx::Size(200, 100));
 
     waiter.Wait();
   }

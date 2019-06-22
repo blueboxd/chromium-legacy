@@ -110,8 +110,8 @@ class AwBrowserContext : public content::BrowserContext,
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
 
   // content::BrowserContext implementation.
-  base::FilePath GetPath() const override;
-  bool IsOffTheRecord() const override;
+  base::FilePath GetPath() override;
+  bool IsOffTheRecord() override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;

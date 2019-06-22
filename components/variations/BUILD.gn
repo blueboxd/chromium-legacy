@@ -92,7 +92,6 @@ if (is_android) {
       "android/java/src/org/chromium/components/variations/VariationsAssociatedData.java",
       "android/java/src/org/chromium/components/variations/firstrun/VariationsSeedBridge.java",
     ]
-    jni_package = "variations"
   }
 
   android_library("load_seed_result_enum_java") {

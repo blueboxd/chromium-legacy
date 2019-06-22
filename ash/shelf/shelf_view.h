@@ -172,6 +172,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns the title of the shelf item |view|.
   base::string16 GetTitleForView(const views::View* view) const;
 
+  // Toggles the overflow menu.
+  void ToggleOverflowBubble();
+
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
@@ -436,9 +439,6 @@ class ASH_EXPORT ShelfView : public views::View,
   //    to overflow button.
   //  * In the overflow mode, returns only bubble's bounds.
   gfx::Rect GetBoundsForDragInsertInScreen();
-
-  // Toggles the overflow menu.
-  void ToggleOverflowBubble();
 
   // Invoked after the fading out animation for item deletion is ended.
   void OnFadeOutAnimationEnded();

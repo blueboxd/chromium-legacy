@@ -56,7 +56,7 @@ function getEmptyPrinter_() {
     },
     printerPpdReferenceResolved: false,
     printerProtocol: 'ipp',
-    printerQueue: '',
+    printerQueue: 'ipp/print',
     printerStatus: '',
   };
 }
@@ -258,10 +258,6 @@ Polymer({
   /** @private */
   addPressed_: function() {
     this.addPrinterInProgress_ = true;
-    // Set the default printer queue to be "ipp/print".
-    if (!this.newPrinter.printerQueue) {
-      this.set('newPrinter.printerQueue', 'ipp/print');
-    }
 
     if (this.newPrinter.printerProtocol == 'ipp' ||
         this.newPrinter.printerProtocol == 'ipps') {

@@ -31,9 +31,8 @@ void LevelDBScopesTestBase::SetUp() {
 void LevelDBScopesTestBase::TearDown() {
   if (leveldb_) {
     base::RunLoop loop;
-    if (leveldb_->RequestDestruction(
-            base::BindLambdaForTesting([&loop]() { loop.QuitClosure().Run(); }),
-            base::SequencedTaskRunnerHandle::Get())) {
+    if (leveldb_->RequestDestruction(loop.QuitClosure(),
+                                     base::SequencedTaskRunnerHandle::Get())) {
       leveldb_.reset();
       loop.Run();
     }

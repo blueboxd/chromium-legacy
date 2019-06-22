@@ -392,7 +392,7 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
   void VerifyCompletedMutationResultAndFinish(MutateStatus expectation,
                                               MutateStatus result) {
     EXPECT_EQ(expectation, result);
-    run_loop_.QuitClosure().Run();
+    run_loop_.Quit();
   }
 
   // Verifying that intermediate result callbacks are invoked the correct number

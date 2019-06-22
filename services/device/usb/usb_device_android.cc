@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/ChromeUsbDevice_jni.h"
+#include "services/device/usb/jni_headers/ChromeUsbDevice_jni.h"
 #include "services/device/usb/usb_configuration_android.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device_handle_android.h"

@@ -17,6 +17,7 @@ import android.view.View.OnCreateContextMenuListener;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesCatalogUpdateRequestSource;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -254,12 +255,8 @@ public class TileGroup implements MostVisitedSites.Observer {
             if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
             if (suggestion.source == TileSource.EXPLORE && !mExploreSitesLoaded) {
                 mExploreSitesLoaded = true;
-                ExploreSitesBridge.getEspCatalog(Profile.getLastUsedProfile(), (catalog) -> {
-                    if (catalog == null || catalog.isEmpty()) {
-                        ExploreSitesBridge.updateCatalogFromNetwork(
-                                Profile.getLastUsedProfile(), true, (finished) -> {});
-                    }
-                });
+                ExploreSitesBridge.initializeCatalog(Profile.getLastUsedProfile(),
+                        ExploreSitesCatalogUpdateRequestSource.NEW_TAB_PAGE);
             }
         }
 

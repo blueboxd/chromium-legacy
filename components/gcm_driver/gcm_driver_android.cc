@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "jni/GCMDriver_jni.h"
+#include "components/gcm_driver/android/jni_headers/GCMDriver_jni.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;

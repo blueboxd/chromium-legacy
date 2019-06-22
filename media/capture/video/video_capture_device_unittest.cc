@@ -338,7 +338,7 @@ class VideoCaptureDeviceTest
   void OnFrameCaptured(const VideoCaptureFormat& format) {
     last_format_ = format;
     if (run_loop_)
-      run_loop_->QuitClosure().Run();
+      run_loop_->Quit();
   }
 
   void WaitForCapturedFrame() {

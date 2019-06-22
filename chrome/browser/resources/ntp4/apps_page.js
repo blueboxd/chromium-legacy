@@ -317,6 +317,7 @@ cr.define('ntp', function() {
 
       // TODO(crbug.com/425829): Remove above suppression once we no longer use
       // deprecated function defineGetter.
+      // eslint-disable-next-line no-restricted-properties
       this.appContents_.__defineGetter__('contextMenu', function() {
         return self.contextMenu;
       });

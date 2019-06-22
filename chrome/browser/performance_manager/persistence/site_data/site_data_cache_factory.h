@@ -59,10 +59,10 @@ class SiteDataCacheFactory {
   // associated with this browser context.
   static void OnBrowserContextCreatedOnUIThread(
       SiteDataCacheFactory* factory,
-      const content::BrowserContext* browser_context);
+      content::BrowserContext* browser_context);
   static void OnBrowserContextDestroyedOnUIThread(
       SiteDataCacheFactory* factory,
-      const content::BrowserContext* browser_context);
+      content::BrowserContext* browser_context);
 
   // Returns a pointer to the data cache associated with |browser_context_id|,
   // or null if there's no cache for this context yet.

@@ -20,13 +20,10 @@ class OutputProtectionControllerAsh
   ~OutputProtectionControllerAsh() override;
 
   // OutputProtectionDelegate::Controller:
-  void QueryStatus(
-      int64_t display_id,
-      const OutputProtectionDelegate::QueryStatusCallback& callback) override;
-  void SetProtection(
-      int64_t display_id,
-      uint32_t desired_method_mask,
-      const OutputProtectionDelegate::SetProtectionCallback& callback) override;
+  void QueryStatus(int64_t display_id, QueryStatusCallback callback) override;
+  void SetProtection(int64_t display_id,
+                     uint32_t protection_mask,
+                     SetProtectionCallback callback) override;
 
  private:
   const display::ContentProtectionManager::ClientId client_id_;

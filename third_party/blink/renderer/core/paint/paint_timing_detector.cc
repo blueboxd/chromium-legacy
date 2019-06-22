@@ -61,8 +61,10 @@ PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
 void PaintTimingDetector::NotifyPaintFinished() {
   if (text_paint_timing_detector_) {
     text_paint_timing_detector_->OnPaintFinished();
-    if (text_paint_timing_detector_->FinishedReportingText())
+    if (text_paint_timing_detector_->FinishedReportingText()) {
+      text_paint_timing_detector_->StopRecordEntries();
       text_paint_timing_detector_ = nullptr;
+    }
   }
   if (image_paint_timing_detector_) {
     image_paint_timing_detector_->OnPaintFinished();
@@ -114,15 +116,17 @@ void PaintTimingDetector::NotifyImagePaint(
   }
 }
 
-void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
+void PaintTimingDetector::LayoutObjectWillBeDestroyed(
+    const LayoutObject& object) {
+  if (text_paint_timing_detector_)
+    text_paint_timing_detector_->LayoutObjectWillBeDestroyed(object);
+
   DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
   if (node_id == kInvalidDOMNodeId)
     return;
 
-  if (text_paint_timing_detector_)
-    text_paint_timing_detector_->NotifyNodeRemoved(node_id);
   if (image_paint_timing_detector_)
-    image_paint_timing_detector_->NotifyNodeRemoved(node_id);
+    image_paint_timing_detector_->LayoutObjectWillBeDestroyed(node_id);
 }
 
 void PaintTimingDetector::NotifyBackgroundImageRemoved(
@@ -137,12 +141,7 @@ void PaintTimingDetector::NotifyBackgroundImageRemoved(
   }
 }
 
-void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
-  if (type == WebInputEvent::kMouseMove || type == WebInputEvent::kMouseEnter ||
-      type == WebInputEvent::kMouseLeave ||
-      WebInputEvent::IsPinchGestureEventType(type)) {
-    return;
-  }
+void PaintTimingDetector::StopRecordingIfNeeded() {
   DCHECK(frame_view_);
   if (text_paint_timing_detector_) {
     text_paint_timing_detector_->StopRecordingLargestTextPaint();
@@ -155,19 +154,19 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
     image_paint_timing_detector_->StopRecordEntries();
 }
 
+void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
+  if (type == WebInputEvent::kMouseMove || type == WebInputEvent::kMouseEnter ||
+      type == WebInputEvent::kMouseLeave ||
+      WebInputEvent::IsPinchGestureEventType(type)) {
+    return;
+  }
+  StopRecordingIfNeeded();
+}
+
 void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
   if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
     return;
-  DCHECK(frame_view_);
-  if (text_paint_timing_detector_) {
-    text_paint_timing_detector_->StopRecordingLargestTextPaint();
-    if (!RuntimeEnabledFeatures::ElementTimingEnabled(
-            frame_view_->GetFrame().GetDocument())) {
-      text_paint_timing_detector_->StopRecordEntries();
-    }
-  }
-  if (image_paint_timing_detector_)
-    image_paint_timing_detector_->StopRecordEntries();
+  StopRecordingIfNeeded();
 }
 
 bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {

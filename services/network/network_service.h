@@ -62,15 +62,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public service_manager::Service,
       public mojom::NetworkService {
  public:
-  // |net_log| is an optional shared NetLog, which will be used instead of the
-  // service's own NetLog. It must outlive the NetworkService.
-  //
-  // TODO(https://crbug.com/767450): Once the NetworkService can always create
-  // its own NetLog in production, remove the |net_log| argument.
   NetworkService(
       std::unique_ptr<service_manager::BinderRegistry> registry,
       mojom::NetworkServiceRequest request = nullptr,
-      net::NetLog* net_log = nullptr,
       service_manager::mojom::ServiceRequest service_request = nullptr,
       bool delay_initialization_until_set_client = false);
 
@@ -108,12 +102,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Creates a NetworkService instance on the current thread, optionally using
   // the passed-in NetLog. Does not take ownership of |net_log|. Must be
   // destroyed before |net_log|.
-  //
-  // TODO(https://crbug.com/767450): Make it so NetworkService can always create
-  // its own NetLog, instead of sharing one.
   static std::unique_ptr<NetworkService> Create(
       mojom::NetworkServiceRequest request,
-      net::NetLog* net_log = nullptr,
       service_manager::mojom::ServiceRequest service_request = nullptr);
 
   // Creates a testing instance of NetworkService not bound to an actual
@@ -268,7 +258,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool initialized_ = false;
 
-  net::NetLog* net_log_ = nullptr;
+  net::NetLog* net_log_;
 
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   net::TraceNetLogObserver trace_net_log_observer_;

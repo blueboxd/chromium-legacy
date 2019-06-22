@@ -36,6 +36,7 @@
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_isolated_world_ids.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -625,6 +626,8 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
+  if (world_id >= blink::IsolatedWorldId::kEmbedderWorldIdLimit)
+    return;
   if (!security_origin->IsString() && !security_origin->IsNull())
     return;
 

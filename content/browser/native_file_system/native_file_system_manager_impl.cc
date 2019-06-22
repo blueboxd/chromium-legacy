@@ -10,6 +10,7 @@
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
+#include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,6 +137,20 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
       std::make_unique<NativeFileSystemDirectoryHandleImpl>(
           this, binding_context, url, handle_state),
       mojo::MakeRequest(&result));
+  return result;
+}
+
+blink::mojom::NativeFileSystemFileWriterPtr
+NativeFileSystemManagerImpl::CreateFileWriter(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const SharedHandleState& handle_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  blink::mojom::NativeFileSystemFileWriterPtr result;
+  writer_bindings_.AddBinding(std::make_unique<NativeFileSystemFileWriterImpl>(
+                                  this, binding_context, url, handle_state),
+                              mojo::MakeRequest(&result));
   return result;
 }
 

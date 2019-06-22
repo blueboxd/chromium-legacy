@@ -145,9 +145,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
     virtual void TabletModeEventReceived(TabletMode mode,
                                          const base::TimeTicks& timestamp) {}
 
-    // Called just before the screen is dimmed in response to user inactivity.
-    virtual void ScreenDimImminent() {}
-
     // Called when the idle action will be performed after
     // |time_until_idle_action|.
     virtual void IdleActionImminent(
@@ -320,11 +317,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // false on failure.
   virtual void DeleteArcTimers(const std::string& tag,
                                VoidDBusMethodCallback callback) = 0;
-
-  // Instructs powerd to defer dimming the screen. This only has an effect when
-  // called shortly (i.e. seconds) after observers have received
-  // ScreenDimImminent notifications.
-  virtual void DeferScreenDim() = 0;
 
   PowerManagerClient();
   virtual ~PowerManagerClient();

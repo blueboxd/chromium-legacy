@@ -615,6 +615,12 @@ void DisplayLockContext::MarkElementsForWhitespaceReattachment() {
 }
 
 bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
+  if (reattach_layout_tree_was_blocked_) {
+    // We previously blocked a layout tree reattachment on |element_|'s
+    // descendants, so we should mark it for layout tree reattachment now.
+    element_->SetForceReattachLayoutTree();
+    reattach_layout_tree_was_blocked_ = false;
+  }
   if (IsElementDirtyForStyleRecalc()) {
     if (blocked_style_traversal_type_ > kStyleUpdateNotRequired) {
       // We blocked a traversal going to the element previously.

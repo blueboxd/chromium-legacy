@@ -762,7 +762,7 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
 
   bool IsLargeObjectPage() override { return true; }
 
-  void VerifyMarking() override {}
+  void VerifyMarking() override;
 
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
@@ -835,9 +835,11 @@ class PLATFORM_EXPORT BaseArena {
 
   Address AllocateLargeObject(size_t allocation_size, size_t gc_info_index);
 
+  // Resets the allocation point if it exists for an arena.
+  virtual void ResetAllocationPoint() {}
+
+  void VerifyMarking();
   virtual void VerifyObjectStartBitmap() {}
-  virtual void VerifyMarking() {}
-  virtual void ResetAllocationPointForTesting() {}
 
  protected:
   bool SweepingCompleted() const { return unswept_pages_.IsEmpty(); }
@@ -908,11 +910,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void SweepAndCompact();
 
+  void ResetAllocationPoint() override { SetAllocationPoint(nullptr, 0); }
+
   void VerifyObjectStartBitmap() override;
-  void VerifyMarking() override;
-  void ResetAllocationPointForTesting() override {
-    SetAllocationPoint(nullptr, 0);
-  }
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
 
@@ -964,6 +964,7 @@ class LargeObjectArena final : public BaseArena {
   LargeObjectArena(ThreadState*, int index);
   Address AllocateLargeObjectPage(size_t, size_t gc_info_index);
   void FreeLargeObjectPage(LargeObjectPage*);
+
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override { return true; }
 #endif

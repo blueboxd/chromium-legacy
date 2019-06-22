@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -30,7 +31,19 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(this));
+  mojo_ptr_->CreateFileWriter(WTF::Bind(
+      [](ScriptPromiseResolver* resolver, NativeFileSystemFileHandle* handle,
+         mojom::blink::NativeFileSystemErrorPtr result,
+         mojom::blink::NativeFileSystemFileWriterPtr writer) {
+        if (result->error_code == base::File::FILE_OK) {
+          resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
+              handle, std::move(writer)));
+        } else {
+          resolver->Reject(file_error::CreateDOMException(result->error_code));
+        }
+      },
+      WrapPersistent(resolver), WrapPersistent(this)));
+
   return result;
 }
 

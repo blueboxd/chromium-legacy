@@ -572,17 +572,24 @@ void NormalPageArena::VerifyObjectStartBitmap() {
 #endif  // DCHECK_IS_ON()
 }
 
-void NormalPageArena::VerifyMarking() {
+void BaseArena::VerifyMarking() {
 #if DCHECK_IS_ON()
   // We cannot rely on other marking phases to clear the allocation area as
   // for incremental marking the application is running between steps and
-  // might set up a new area.
-  SetAllocationPoint(nullptr, 0);
+  // might set up a new area. For large object arenas this is a no-op.
+  ResetAllocationPoint();
+
   DCHECK(swept_unfinalized_pages_.IsEmpty());
   DCHECK(swept_unfinalized_empty_pages_.IsEmpty());
-  // There may be objects on swept_pages_ as pre-finalizers may allocate.
+  // There may be objects on |swept_pages_| as pre-finalizers may allocate.
+  // These objects may point to other object on |swept_pages_| or marked objects
+  // on |unswept_pages_| but may never point to a dead (unmarked) object in
+  // |unswept_pages_|.
+  for (BasePage* page : swept_pages_) {
+    page->VerifyMarking();
+  }
   for (BasePage* page : unswept_pages_) {
-    static_cast<NormalPage*>(page)->VerifyMarking();
+    page->VerifyMarking();
   }
 #endif  // DCHECK_IS_ON()
 }
@@ -1671,6 +1678,11 @@ void NormalPage::VerifyMarking() {
     verifier.VerifyObject(header);
     header_address += header->size();
   }
+}
+
+void LargeObjectPage::VerifyMarking() {
+  MarkingVerifier verifier(Arena()->GetThreadState());
+  verifier.VerifyObject(ObjectHeader());
 }
 
 Address ObjectStartBitmap::FindHeader(

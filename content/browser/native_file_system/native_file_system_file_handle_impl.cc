@@ -127,6 +127,21 @@ void NativeFileSystemFileHandleImpl::Truncate(uint64_t length,
       std::move(callback));
 }
 
+void NativeFileSystemFileHandleImpl::CreateFileWriter(
+    CreateFileWriterCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  RunWithWritePermission(
+      base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce([](CreateFileWriterCallback callback) {
+        std::move(callback).Run(
+            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+            nullptr);
+      }),
+      std::move(callback));
+}
+
 void NativeFileSystemFileHandleImpl::Transfer(
     blink::mojom::NativeFileSystemTransferTokenRequest token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -258,6 +273,17 @@ void NativeFileSystemFileHandleImpl::TruncateImpl(uint64_t length,
             std::move(callback).Run(NativeFileSystemError::New(result));
           },
           std::move(callback)));
+}
+
+void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
+    CreateFileWriterCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  std::move(callback).Run(
+      NativeFileSystemError::New(base::File::FILE_OK),
+      manager()->CreateFileWriter(context(), url(), handle_state()));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

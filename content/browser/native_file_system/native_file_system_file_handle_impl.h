@@ -55,6 +55,7 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                    mojo::ScopedDataPipeConsumerHandle stream,
                    WriteStreamCallback callback) override;
   void Truncate(uint64_t length, TruncateCallback callback) override;
+  void CreateFileWriter(CreateFileWriterCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
 
@@ -84,6 +85,7 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                 bool complete);
 
   void TruncateImpl(uint64_t length, TruncateCallback callback);
+  void CreateFileWriterImpl(CreateFileWriterCallback callback);
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 

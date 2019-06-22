@@ -24,9 +24,12 @@
 
 namespace blink {
 
-NativeFileSystemWriter::NativeFileSystemWriter(NativeFileSystemFileHandle* file)
-    : file_(file) {
+NativeFileSystemWriter::NativeFileSystemWriter(
+    NativeFileSystemFileHandle* file,
+    mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr)
+    : mojo_ptr_(std::move(mojo_ptr)), file_(file) {
   DCHECK(file_);
+  DCHECK(mojo_ptr_);
 }
 
 ScriptPromise NativeFileSystemWriter::write(
@@ -213,13 +216,18 @@ ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
 }
 
 ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
-  if (!file_) {
+  if (!file_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
   }
-  file_ = nullptr;
-  return ScriptPromise::CastUndefined(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = pending_operation_->Promise();
+  mojo_ptr_->Close(
+      WTF::Bind(&NativeFileSystemWriter::CloseComplete, WrapPersistent(this)));
+
+  return result;
 }
 
 void NativeFileSystemWriter::Trace(Visitor* visitor) {
@@ -251,6 +259,19 @@ void NativeFileSystemWriter::TruncateComplete(
     pending_operation_->Reject(
         file_error::CreateDOMException(result->error_code));
   }
+  pending_operation_ = nullptr;
+}
+
+void NativeFileSystemWriter::CloseComplete(
+    mojom::blink::NativeFileSystemErrorPtr result) {
+  DCHECK(pending_operation_);
+  if (result->error_code == base::File::FILE_OK) {
+    pending_operation_->Resolve();
+  } else {
+    pending_operation_->Reject(
+        file_error::CreateDOMException(result->error_code));
+  }
+  file_ = nullptr;
   pending_operation_ = nullptr;
 }
 

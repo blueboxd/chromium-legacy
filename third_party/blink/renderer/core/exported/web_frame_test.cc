@@ -4080,7 +4080,6 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestZoomToLegibleScaleDisabled) {
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
-  WebRect edit_box_with_text(200, 200, 250, 20);
   WebRect edit_box_with_no_text(200, 250, 250, 20);
 
   // Test scrolling the focused node
@@ -4203,9 +4202,6 @@ TEST_F(WebFrameTest, CharacterIndexAtPointWithPinchZoom) {
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
   web_view_helper.GetWebView()->SetVisualViewportOffset(WebFloatPoint(100, 50));
 
-  WebRect base_rect;
-  WebRect extent_rect;
-
   WebLocalFrame* main_frame =
       web_view_helper.GetWebView()->MainFrame()->ToWebLocalFrame();
 
@@ -4233,9 +4229,6 @@ TEST_F(WebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
   float scale = 2;
   web_view_helper.GetWebView()->SetPageScaleFactor(scale);
   web_view_helper.GetWebView()->SetVisualViewportOffset(visual_offset);
-
-  WebRect base_rect;
-  WebRect extent_rect;
 
   WebRect rect;
   main_frame->FirstRectForCharacterRange(0, 5, rect);

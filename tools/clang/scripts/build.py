@@ -370,7 +370,12 @@ def main():
   if args.skip_build:
     return 0
 
-  cc, cxx = None, None
+  # The variable "lld" is only used on Windows because only there does setting
+  # CMAKE_LINKER have an effect: On Windows, the linker is called directly,
+  # while elsewhere it's called through the compiler driver, and we pass
+  # -fuse-ld=lld there to make the compiler driver call the linker (by setting
+  # LLVM_ENABLE_LLD).
+  cc, cxx, lld = None, None, None
 
   cflags = []
   cxxflags = []
@@ -430,9 +435,7 @@ def main():
     if args.pgo:
       # Need libclang_rt.profile
       projects += ';compiler-rt'
-    if (sys.platform.startswith('linux') and args.pgo) or args.lto_lld:
-      # Old gnu ld doesn't handle libclang_rt.profile well.
-      # TODO(crbug.com/958852): Always use lld for later stages.
+    if sys.platform != 'darwin' or args.lto_lld:
       projects += ';lld'
     if sys.platform == 'darwin':
       # Need libc++ and compiler-rt for the bootstrap compiler on mac.
@@ -469,6 +472,7 @@ def main():
           ])
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+    if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)
     RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
@@ -481,13 +485,17 @@ def main():
     if sys.platform == 'win32':
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang-cl.exe')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang-cl.exe')
+      lld = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'lld-link.exe')
       # CMake has a hard time with backslashes in compiler paths:
       # https://stackoverflow.com/questions/13050827
       cc = cc.replace('\\', '/')
       cxx = cxx.replace('\\', '/')
+      lld = lld.replace('\\', '/')
     else:
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
+    if sys.platform.startswith('linux'):
+      base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
 
     print('Bootstrap compiler installed.')
 
@@ -507,16 +515,13 @@ def main():
         '-DLLVM_ENABLE_PROJECTS=' + projects,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
-        # Build with the bootstrap compiler.
-        '-DCMAKE_C_COMPILER=' + cc,
-        '-DCMAKE_CXX_COMPILER=' + cxx,
         # Build with instrumentation.
         '-DLLVM_BUILD_INSTRUMENTED=IR',
         ]
-
-    if sys.platform.startswith('linux'):
-      # Ubuntu 16's ld doesn't generate __start__ section, so link with lld.
-      instrument_args.append('-DLLVM_ENABLE_LLD=ON')
+    # Build with the bootstrap compiler.
+    if cc is not None:  instrument_args.append('-DCMAKE_C_COMPILER=' + cc)
+    if cxx is not None: instrument_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+    if lld is not None: instrument_args.append('-DCMAKE_LINKER=' + lld)
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
@@ -556,8 +561,6 @@ def main():
                 glob.glob(os.path.join(LLVM_INSTRUMENTED_DIR, 'profiles',
                                        '*.profraw')), msvc_arch='x64')
     print('Profile generated.')
-
-
 
   compiler_rt_args = [
     "-DCOMPILER_RT_BUILD_CRT=OFF",
@@ -638,6 +641,8 @@ def main():
     threads_enabled_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
   if cxx is not None:
     threads_enabled_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+  if lld is not None:
+    threads_enabled_cmake_args.append('-DCMAKE_LINKER=' + lld)
 
   if args.lto_lld:
     # Build lld with LTO. That speeds up the linker by ~10%.
@@ -653,7 +658,7 @@ def main():
         '-DCMAKE_AR=' + ar,
         '-DCMAKE_RANLIB=' + ranlib,
         '-DLLVM_ENABLE_LTO=thin',
-        '-DLLVM_USE_LINKER=lld']
+        ]
 
   RunCommand(['cmake'] + threads_enabled_cmake_args +
              [os.path.join(LLVM_DIR, 'llvm')],
@@ -666,6 +671,7 @@ def main():
   chrome_tools = list(set(default_tools + args.extra_tools))
   if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
   if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
+  if lld is not None: base_cmake_args.append('-DCMAKE_LINKER=' + lld)
   cmake_args = base_cmake_args + compiler_rt_args + [
       '-DLLVM_ENABLE_THREADS=OFF',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),

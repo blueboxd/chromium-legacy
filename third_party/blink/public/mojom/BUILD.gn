@@ -76,6 +76,7 @@ mojom("mojom_platform") {
     "native_file_system/native_file_system_directory_handle.mojom",
     "native_file_system/native_file_system_error.mojom",
     "native_file_system/native_file_system_file_handle.mojom",
+    "native_file_system/native_file_system_file_writer.mojom",
     "native_file_system/native_file_system_manager.mojom",
     "native_file_system/native_file_system_transfer_token.mojom",
     "net/ip_address_space.mojom",

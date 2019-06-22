@@ -46,6 +46,7 @@ blink_platform_sources("heap") {
     "heap_stats_collector.cc",
     "heap_stats_collector.h",
     "heap_traits.h",
+    "marking_verifier.cc",
     "marking_verifier.h",
     "marking_visitor.cc",
     "marking_visitor.h",

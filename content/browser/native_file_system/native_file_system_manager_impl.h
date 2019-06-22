@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
@@ -103,6 +104,13 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // the passed in URL is valid and represents a directory.
   blink::mojom::NativeFileSystemDirectoryHandlePtr CreateDirectoryHandle(
       const BindingContext& context,
+      const storage::FileSystemURL& url,
+      const SharedHandleState& handle_state);
+
+  // Creates a new NativeFileSystemFileWriterImpl for a given url. Assumes the
+  // passed in URL is valid and represents a file.
+  blink::mojom::NativeFileSystemFileWriterPtr CreateFileWriter(
+      const BindingContext& binding_context,
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state);
 
@@ -199,6 +207,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       file_bindings_;
   mojo::StrongBindingSet<blink::mojom::NativeFileSystemDirectoryHandle>
       directory_bindings_;
+  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileWriter>
+      writer_bindings_;
 
   // Transfer token bindings are stored in what is effectively a
   // StrongBindingMap. The Binding instances own the implementation, and tokens

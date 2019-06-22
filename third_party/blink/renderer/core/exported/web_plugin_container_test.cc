@@ -1421,7 +1421,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
 }
 
 TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
-  static WebRect topmost_rect(10, 10, 40, 40);
+  static constexpr WebRect kTopmostRect(10, 10, 40, 40);
 
   // Plugin that checks isRectTopmost in destroy().
   class TopmostPlugin : public FakeWebPlugin {
@@ -1429,11 +1429,11 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
     explicit TopmostPlugin(const WebPluginParams& params)
         : FakeWebPlugin(params) {}
 
-    bool IsRectTopmost() { return Container()->IsRectTopmost(topmost_rect); }
+    bool IsRectTopmost() { return Container()->IsRectTopmost(kTopmostRect); }
 
     void Destroy() override {
       // In destroy, IsRectTopmost is no longer valid.
-      EXPECT_FALSE(Container()->IsRectTopmost(topmost_rect));
+      EXPECT_FALSE(Container()->IsRectTopmost(kTopmostRect));
       FakeWebPlugin::Destroy();
     }
 
@@ -1454,7 +1454,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
           web_view, WebString::FromUTF8("translated-plugin")));
   plugin_container_impl->SetFrameRect(IntRect(0, 0, 300, 300));
 
-  EXPECT_TRUE(plugin_container_impl->IsRectTopmost(topmost_rect));
+  EXPECT_TRUE(plugin_container_impl->IsRectTopmost(kTopmostRect));
 
   TopmostPlugin* test_plugin =
       static_cast<TopmostPlugin*>(plugin_container_impl->Plugin());
@@ -1463,7 +1463,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
   // Cause the plugin's frame to be detached.
   web_view_helper.Reset();
 
-  EXPECT_FALSE(plugin_container_impl->IsRectTopmost(topmost_rect));
+  EXPECT_FALSE(plugin_container_impl->IsRectTopmost(kTopmostRect));
 }
 
 namespace {

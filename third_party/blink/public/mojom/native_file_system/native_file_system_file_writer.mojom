@@ -1,0 +1,18 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom";
+
+// Represents an object to modify a file.
+interface NativeFileSystemFileWriter {
+  // Closes the file writer. This will materialize the writes operations on the
+  // intended file target in the case of atomic writes.
+  // Close() will close the mojo pipe after completion.
+  // If the mojo pipe closes before Close() is invoked, the write operation is deemed
+  // unsuccessful. Any temporary artifacts will be deleted.
+  // Returns whether the operation succeeded.
+  Close() => (NativeFileSystemError result);
+};

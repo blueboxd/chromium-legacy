@@ -164,6 +164,10 @@ class CORE_EXPORT DisplayLockContext final
         std::max(blocked_style_traversal_type_, type);
   }
 
+  void NotifyReattachLayoutTreeWasBlocked() {
+    reattach_layout_tree_was_blocked_ = true;
+  }
+
   // Inform the display lock that it needs a graphics layer collection when it
   // needs to paint.
   void NotifyNeedsGraphicsLayerCollection() {
@@ -316,6 +320,10 @@ class CORE_EXPORT DisplayLockContext final
 
   bool is_locked_after_connect_ = false;
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
+  // Signifies whether we've blocked a layout tree reattachment on |element_|'s
+  // descendants or not, so that we can mark |element_| for reattachment when
+  // needed.
+  bool reattach_layout_tree_was_blocked_ = false;
 
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;

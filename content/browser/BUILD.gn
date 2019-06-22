@@ -1338,6 +1338,8 @@ jumbo_source_set("browser") {
     "native_file_system/native_file_system_directory_handle_impl.h",
     "native_file_system/native_file_system_file_handle_impl.cc",
     "native_file_system/native_file_system_file_handle_impl.h",
+    "native_file_system/native_file_system_file_writer_impl.cc",
+    "native_file_system/native_file_system_file_writer_impl.h",
     "native_file_system/native_file_system_handle_base.cc",
     "native_file_system/native_file_system_handle_base.h",
     "native_file_system/native_file_system_manager_impl.cc",

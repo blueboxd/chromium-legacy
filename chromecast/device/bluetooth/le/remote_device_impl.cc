@@ -545,7 +545,10 @@ void RemoteDeviceImpl::EnqueueOperation(const std::string& name,
 
 void RemoteDeviceImpl::NotifyQueueOperationComplete() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(!command_queue_.empty());
+  if (command_queue_.empty()) {
+    LOG(ERROR) << "Command queue is empty, device might be disconnected";
+    return;
+  }
   command_queue_.pop_front();
   command_timeout_timer_.Stop();
 
@@ -557,7 +560,10 @@ void RemoteDeviceImpl::NotifyQueueOperationComplete() {
 
 void RemoteDeviceImpl::RunNextOperation() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(!command_queue_.empty());
+  if (command_queue_.empty()) {
+    LOG(ERROR) << "Command queue is empty, device might be disconnected";
+    return;
+  }
   auto& front = command_queue_.front();
   command_timeout_timer_.Start(
       FROM_HERE, kCommandTimeout,

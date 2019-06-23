@@ -850,8 +850,12 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    @SmallTest
-    @Feature("AndroidWebView")
+    /**
+     * @SmallTest
+     * @Feature("AndroidWebView")
+     * BUG=977526
+     */
+    @DisabledTest
     public void testScrollOffsetAfterCapturePicture() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =

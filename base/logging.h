@@ -667,6 +667,8 @@ extern template BASE_EXPORT
 std::string* MakeCheckOpString<std::string, std::string>(
     const std::string&, const std::string&, const char* name);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wparentheses-equality"
 // Helper functions for CHECK_OP macro.
 // The (int, int) specialization works around the issue that the compiler
 // will not instantiate the template version of the function on values of
@@ -697,6 +699,7 @@ DEFINE_CHECK_OP_IMPL(LT, < )
 DEFINE_CHECK_OP_IMPL(GE, >=)
 DEFINE_CHECK_OP_IMPL(GT, > )
 #undef DEFINE_CHECK_OP_IMPL
+#pragma clang diagnostic pop
 
 #define CHECK_EQ(val1, val2) CHECK_OP(EQ, ==, val1, val2)
 #define CHECK_NE(val1, val2) CHECK_OP(NE, !=, val1, val2)

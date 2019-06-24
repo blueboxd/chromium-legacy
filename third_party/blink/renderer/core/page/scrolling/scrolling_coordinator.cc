@@ -791,8 +791,10 @@ void ScrollingCoordinator::WillCloseLayerTreeView(
     WebLayerTreeView& layer_tree_view,
     LocalFrameView* view) {
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
-    view->GetCompositorAnimationHost()->RemoveAnimationTimeline(
-        view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
+    if (view->GetCompositorAnimationTimeline()) {
+          view->GetCompositorAnimationHost()->RemoveAnimationTimeline(
+            view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
+	}
     view->GetScrollingContext()->SetAnimationTimeline(nullptr);
     view->GetScrollingContext()->SetAnimationHost(nullptr);
   } else if (programmatic_scroll_animator_timeline_) {

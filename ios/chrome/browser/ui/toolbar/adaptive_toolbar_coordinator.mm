@@ -113,6 +113,8 @@
 
   self.actionHandler = [[ToolbarButtonActionsHandler alloc] init];
   self.actionHandler.dispatcher = self.dispatcher;
+  self.actionHandler.browserState = self.browserState;
+  self.actionHandler.webStateList = self.webStateList;
 
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];

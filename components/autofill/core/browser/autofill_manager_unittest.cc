@@ -713,6 +713,19 @@ std::string SuggestionMatchingTest::MakeLabel(
       parts, l10n_util::GetStringUTF8(IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
 }
 
+class CreditCardSuggestionMatchingTest
+    : public AutofillManagerTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+    features_.InitWithFeatureState(features::kAutofillKeyboardAccessory,
+                                   GetParam());
+  }
+
+  base::test::ScopedFeatureList features_;
+};
+
 // Test that calling OnFormsSeen with an empty set of forms (such as when
 // reloading a page or when the renderer processes a set of forms but detects
 // no changes) does not load the forms again.
@@ -1297,24 +1310,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the credit card suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1331,24 +1343,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1365,24 +1376,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1399,24 +1409,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_InvisibleUnicodeOnly) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1442,17 +1451,16 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kMasterCardSuggestionLabel = std::string("08/17");
+  const std::string master_card_label = std::string("08/17");
 #else
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 08/17");
+  const std::string master_card_label = std::string("Expires on 08/17");
 #endif
 
   // Test that we sent the right value to the external delegate.
   CheckSuggestions(kDefaultPageID,
                    Suggestion(std::string("Mastercard  ") +
                                   test::ObfuscatedCardDigitsAsUTF8("3123"),
-                              kMasterCardSuggestionLabel, kMasterCard,
+                              master_card_label, kMasterCard,
                               autofill_manager_->GetPackedCreditCardID(7)));
 }
 
@@ -1470,22 +1478,22 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
+  const std::string visa_label = std::string("04/99");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
+  const std::string visa_label = std::string("Expires on 04/99");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that we return credit card profile suggestions when the selected form
 // field is not the credit card number field.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
+TEST_P(CreditCardSuggestionMatchingTest, GetCreditCardSuggestions_NonCCNumber) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -1501,27 +1509,32 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
       test::ObfuscatedCardDigitsAsUTF8("8765");
 
 #if defined(OS_ANDROID)
-  const std::string kVisaSuggestionLabel =
-      std::string("Visa  ") + obfuscated_last_four_digits1;
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Mastercard  ") + obfuscated_last_four_digits2;
+  const std::string visa_label =
+      IsKeyboardAccessoryEnabled()
+          ? obfuscated_last_four_digits1
+          : std::string("Visa  ") + obfuscated_last_four_digits1;
+  const std::string master_card_label =
+      IsKeyboardAccessoryEnabled()
+          ? obfuscated_last_four_digits2
+          : std::string("Mastercard  ") + obfuscated_last_four_digits2;
+
 #elif defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = obfuscated_last_four_digits1;
-  const std::string kMasterCardSuggestionLabel = obfuscated_last_four_digits2;
+  const std::string visa_label = obfuscated_last_four_digits1;
+  const std::string master_card_label = obfuscated_last_four_digits2;
+
 #else
-  const std::string kVisaSuggestionLabel = base::JoinString(
+  const std::string visa_label = base::JoinString(
       {"Visa  ", obfuscated_last_four_digits1, ", expires on 04/99"}, "");
-  const std::string kMasterCardSuggestionLabel = base::JoinString(
+  const std::string master_card_label = base::JoinString(
       {"Mastercard  ", obfuscated_last_four_digits2, ", expires on 10/98"}, "");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis Presley", kVisaSuggestionLabel, kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("Buddy Holly", kMasterCardSuggestionLabel, kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis Presley", visa_label, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(4)),
+                   Suggestion("Buddy Holly", master_card_label, kMasterCard,
+                              autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we will eventually return the credit card signin promo when there
@@ -1601,24 +1614,23 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return credit card suggestions for secure pages that have a
@@ -1637,24 +1649,23 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card suggestions in the case that two cards
@@ -1681,31 +1692,29 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel1 = std::string("10/98");
-  const std::string kMasterCardSuggestionLabel2 = std::string("05/99");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label1 = std::string("10/98");
+  const std::string master_card_label2 = std::string("05/99");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel1 =
-      std::string("Expires on 10/98");
-  const std::string kMasterCardSuggestionLabel2 =
-      std::string("Expires on 05/99");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label1 = std::string("Expires on 10/98");
+  const std::string master_card_label2 = std::string("Expires on 05/99");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel1, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kMasterCardSuggestionLabel2, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(7)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label1, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("3456"),
+                 master_card_label2, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(7)));
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
@@ -1748,24 +1757,23 @@ TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
   GetAutofillSuggestions(kPageID2, form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the credit card suggestions to the external delegate.
-  CheckSuggestions(kPageID2,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kPageID2,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that for non-https forms with both address and credit card fields, we
@@ -5623,19 +5631,18 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, number_field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that inputs detected to be CVC inputs are forced to
@@ -5887,7 +5894,8 @@ TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
 // Verify that typing "dre" matches "Nancy Drew" when substring matching is
 // enabled.
-TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
+TEST_P(CreditCardSuggestionMatchingTest,
+       DisplayCreditCardSuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5910,20 +5918,23 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
   personal_data_.AddCreditCard(credit_card);
 
 #if defined(OS_ANDROID)
-  const std::string kVisaSuggestionLabel =
-      std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("7777");
+  const std::string visa_label =
+      IsKeyboardAccessoryEnabled()
+          ? test::ObfuscatedCardDigitsAsUTF8("7777")
+          : std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("7777");
+
 #elif defined(OS_IOS)
-  const std::string kVisaSuggestionLabel =
-      test::ObfuscatedCardDigitsAsUTF8("7777");
+  const std::string visa_label = test::ObfuscatedCardDigitsAsUTF8("7777");
+
 #else
-  const std::string kVisaSuggestionLabel = base::UTF16ToUTF8(
+  const std::string visa_label = base::UTF16ToUTF8(
       credit_card.NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
           "en-US"));
 #endif
 
   GetAutofillSuggestions(form, field);
   CheckSuggestions(kDefaultPageID,
-                   Suggestion("Nancy Drew", kVisaSuggestionLabel, kVisaCard,
+                   Suggestion("Nancy Drew", visa_label, kVisaCard,
                               MakeFrontendID(guid, std::string())));
 }
 
@@ -7452,5 +7463,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(All, OnFocusOnFormFieldTest, testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(, SuggestionMatchingTest, testing::Bool());
+
+INSTANTIATE_TEST_SUITE_P(, CreditCardSuggestionMatchingTest, testing::Bool());
 
 }  // namespace autofill

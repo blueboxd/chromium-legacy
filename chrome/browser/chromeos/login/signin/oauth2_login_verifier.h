@@ -41,7 +41,7 @@ class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
                       identity::IdentityManager* identity_manager,
-                      const std::string& primary_account_id,
+                      const CoreAccountId& primary_account_id,
                       const std::string& oauthlogin_access_token);
   ~OAuth2LoginVerifier() override;
 
@@ -58,12 +58,12 @@ class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
-  void OnAddAccountToCookieCompleted(const std::string& account_id,
+  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
                                      const GoogleServiceAuthError& error);
 
   OAuth2LoginVerifier::Delegate* delegate_;
   identity::IdentityManager* identity_manager_;
-  const std::string primary_account_id_;
+  const CoreAccountId primary_account_id_;
   const std::string access_token_;
 
   base::WeakPtrFactory<OAuth2LoginVerifier> weak_ptr_factory_;

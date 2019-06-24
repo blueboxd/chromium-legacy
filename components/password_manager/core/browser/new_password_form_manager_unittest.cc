@@ -38,9 +38,9 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
-using autofill::NewPasswordFormGenerationData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
+using autofill::PasswordFormGenerationData;
 using autofill::ServerFieldType;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
@@ -78,7 +78,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
   MOCK_METHOD1(FormEligibleForGenerationFound,
-               void(const autofill::NewPasswordFormGenerationData&));
+               void(const autofill::PasswordFormGenerationData&));
 };
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
@@ -483,7 +483,7 @@ TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
 
-  NewPasswordFormGenerationData generation_data;
+  PasswordFormGenerationData generation_data;
   EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
       .WillOnce(SaveArg<0>(&generation_data));
 
@@ -521,7 +521,7 @@ TEST_F(NewPasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
   field.autocomplete_attribute = "new-password";
   observed_form_.fields.push_back(field);
 
-  NewPasswordFormGenerationData generation_data;
+  PasswordFormGenerationData generation_data;
   EXPECT_CALL(driver_, FormEligibleForGenerationFound(_))
       .WillOnce(SaveArg<0>(&generation_data));
 

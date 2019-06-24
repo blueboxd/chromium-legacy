@@ -270,9 +270,10 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
   ASSERT_TRUE(extension);
 
   extensions::ResultCatcher catcher;
-  AppLaunchParams params(
-      browser()->profile(), extension->id(), extensions::LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+  AppLaunchParams params(browser()->profile(), extension->id(),
+                         extensions::LaunchContainer::kLaunchContainerNone,
+                         WindowOpenDisposition::NEW_WINDOW,
+                         extensions::AppLaunchSource::kSourceTest);
   params.command_line = *base::CommandLine::ForCurrentProcess();
   OpenApplication(params);
 

@@ -151,8 +151,9 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
         &process_control_.remote_interfaces());
     test_api.SetBinderForName(
         "cloud_print.mojom.CloudPrint",
-        base::Bind(&TestCloudPrintProxyService::HandleCloudPrintProxyRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &TestCloudPrintProxyService::HandleCloudPrintProxyRequest,
+            base::Unretained(this)));
     service_manager::mojom::InterfaceProviderPtr handle;
     mojo::MakeRequest(&handle);
     process_control_.SetMojoHandle(std::move(handle));

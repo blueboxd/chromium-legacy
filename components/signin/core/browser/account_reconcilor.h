@@ -301,7 +301,7 @@ class AccountReconcilor : public KeyedService,
       const std::vector<std::string>& chrome_accounts,
       std::vector<gaia::ListedAccount>&& gaia_accounts);
 
-  void OnAddAccountToCookieCompleted(const std::string& account_id,
+  void OnAddAccountToCookieCompleted(const CoreAccountId& account_id,
                                      const GoogleServiceAuthError& error);
   void OnSetAccountsInCookieCompleted(signin::SetAccountsInCookieResult result);
 

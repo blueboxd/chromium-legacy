@@ -5,11 +5,11 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_FUZZED_DATA_PROVIDER_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_FUZZED_DATA_PROVIDER_IMPL_H_
 
-#include "base/test/fuzzed_data_provider.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace quic {
 
-using QuicFuzzedDataProviderImpl = base::FuzzedDataProvider;
+using QuicFuzzedDataProviderImpl = FuzzedDataProvider;
 
 }  // namespace quic
 

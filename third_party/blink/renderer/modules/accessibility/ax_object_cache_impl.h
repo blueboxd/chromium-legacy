@@ -193,7 +193,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAriaExpandedChangeWithCleanLayout(Node*);
   void HandleAriaSelectedChangedWithCleanLayout(Node*);
 
-  bool AccessibilityEnabled();
   bool InlineTextBoxAccessibilityEnabled();
 
   void RemoveAXID(AXObject*);

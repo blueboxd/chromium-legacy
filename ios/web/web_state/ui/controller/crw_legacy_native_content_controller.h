@@ -73,10 +73,6 @@ class GURL;
 // Notifies the CRWNativeContent that it has been hidden.
 - (void)wasHidden;
 
-// Dismisses any outstanding modal interaction elements (e.g. modal view
-// controllers, context menus, etc).
-- (void)dismissModals;
-
 // A native content controller should do any clean up at this time when
 // WebController closes.
 - (void)close;

@@ -240,13 +240,15 @@ void CameraDeviceDelegate::StopAndDeAllocate(
 
   device_close_callback_ = std::move(device_close_callback);
   device_context_->SetState(CameraDeviceContext::State::kStopping);
-  if (!device_ops_.is_bound()) {
-    // The device delegate is in the process of opening the camera device.
-    return;
+  if (device_ops_.is_bound()) {
+    device_ops_->Close(
+        base::BindOnce(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
   }
-  request_manager_->StopPreview(base::NullCallback());
-  device_ops_->Close(
-      base::BindOnce(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
+  // |request_manager_| might be still uninitialized if StopAndDeAllocate() is
+  // called before the device is opened.
+  if (request_manager_) {
+    request_manager_->StopPreview(base::NullCallback());
+  }
 }
 
 void CameraDeviceDelegate::TakePhoto(

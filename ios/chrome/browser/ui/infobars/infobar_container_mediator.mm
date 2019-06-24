@@ -97,47 +97,50 @@
 
 #pragma mark - InfobarBadgeUIDelegate
 
-- (void)infobarBannerWasDismissed {
+- (void)infobarBannerWasDismissed:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
+    // TODO(crbug.com/977340): When switching tabs, GetActiveWebState() does not
+    // return the correct WebState associated with the InfobarBadgeTabHelper
+    // that manages the infobar.
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed();
+    infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed(infobarType);
   }
 }
 
-- (void)infobarModalWasPresented {
+- (void)infobarModalWasPresented:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
+    infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented(infobarType);
   }
 }
 
-- (void)infobarModalWillDismiss {
+- (void)infobarModalWillDismiss:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
+    infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed(infobarType);
   }
 }
 
-- (void)infobarWasAccepted {
+- (void)infobarWasAccepted:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted();
+    infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
   }
 }
 

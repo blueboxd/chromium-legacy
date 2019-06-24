@@ -265,7 +265,9 @@ class HeapCompact::MovableObjectFixups final {
       MovableReference object = it.first;
       MovableReference* slot = it.second;
       // Record name on stack.
-      const char* name = fixup_names_.find(slot)->second;
+      auto name_it = fixup_names_.find(slot);
+      CHECK(fixup_names_.end() != name_it);
+      const char* name = name_it->second;
       size_t len = strlen(name);
       if (len > kMaxNameLen)
         len = kMaxNameLen;
@@ -399,10 +401,11 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
 }
 
 void HeapCompact::Initialize(ThreadState* state) {
-  DCHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
+  CHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
+  CHECK(!do_compact_);
+  CHECK(!fixups_);
   LOG_HEAP_COMPACTION() << "Compacting: free=" << free_list_size_;
   do_compact_ = true;
-  fixups_.reset();
   gc_count_since_last_compaction_ = 0;
   force_for_next_gc_ = false;
 }

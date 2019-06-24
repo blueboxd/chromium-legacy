@@ -109,9 +109,8 @@ void OfflinePageShareHelper::OnPageGetForPublish(
     return;
   // Publish the page.
   model_->PublishInternalArchive(
-      pages[0], std::make_unique<OfflinePageMHTMLArchiver>(),
-      base::BindOnce(&OfflinePageShareHelper::OnPagePublished,
-                     weak_ptr_factory_.GetWeakPtr()));
+      pages[0], base::BindOnce(&OfflinePageShareHelper::OnPagePublished,
+                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageShareHelper::OnPagePublished(const base::FilePath& file_path,

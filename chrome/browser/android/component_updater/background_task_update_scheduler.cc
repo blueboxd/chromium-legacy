@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "jni/UpdateScheduler_jni.h"
+#include "chrome/android/chrome_jni_headers/UpdateScheduler_jni.h"
 
 namespace component_updater {
 

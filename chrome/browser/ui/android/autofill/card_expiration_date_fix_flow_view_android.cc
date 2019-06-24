@@ -6,10 +6,11 @@
 #include <utility>
 
 #include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
+
+#include "chrome/android/chrome_jni_headers/AutofillExpirationDateFixFlowBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AutofillExpirationDateFixFlowBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 

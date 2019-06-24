@@ -356,7 +356,7 @@ bool AccountTrackerService::IsMigrationDone() const {
     return false;
 
   for (const auto& pair : accounts_) {
-    if (pair.first != pair.second.gaia)
+    if (pair.first.id != pair.second.gaia)
       return false;
   }
 
@@ -377,7 +377,7 @@ AccountTrackerService::ComputeNewMigrationState() const {
 
     // Migration is required if at least one account is not keyed to its
     // gaia id.
-    migration_required |= (pair.first != pair.second.gaia);
+    migration_required |= (pair.first.id != pair.second.gaia);
   }
 
   return migration_required ? MIGRATION_IN_PROGRESS : MIGRATION_DONE;

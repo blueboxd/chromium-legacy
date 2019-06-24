@@ -14,6 +14,7 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
@@ -59,6 +60,7 @@ void InitializeDBus() {
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
   InitializeDBusClient<CrasAudioClient>(bus);
+  InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeClient>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
   InitializeDBusClient<KerberosClient>(bus);
@@ -98,6 +100,7 @@ void ShutdownDBus() {
   KerberosClient::Shutdown();
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
+  CrosHealthdClient::Shutdown();
   CrasAudioClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();

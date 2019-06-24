@@ -120,9 +120,9 @@ HeadlessContentBrowserClient::~HeadlessContentBrowserClient() = default;
 
 std::unique_ptr<content::BrowserMainParts>
 HeadlessContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams&) {
+    const content::MainFunctionParams& parameters) {
   auto browser_main_parts =
-      std::make_unique<HeadlessBrowserMainParts>(browser_);
+      std::make_unique<HeadlessBrowserMainParts>(parameters, browser_);
 
   browser_->set_browser_main_parts(browser_main_parts.get());
 

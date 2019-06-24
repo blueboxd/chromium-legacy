@@ -448,12 +448,6 @@
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="1750315445671978749">Block all downloads</translation>
-<translation id="1762072363876276024">
-      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Enable App Recommendations in Zero State of Search Box</translation>
 <translation id="17719159826324007">
       This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
@@ -3691,22 +3685,6 @@
 
           Note: allowed values for <ph name="MINUTE_FIELD_NAME" /> field in <ph name="CHARGE_START_TIME_FIELD_NAME" /> and <ph name="CHARGE_END_TIME_FIELD_NAME" /> are 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
-<translation id="7724994675283793633">This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
-
-      This policy is disabled by default and, if enabled, leaves users open to the security issue https://crbug.com/600352.
-
-      This policy is intended to give enterprises a chance to migrate existing servers off HTTP/0.9, and will be removed in the future.
-
-      If this policy is not set, HTTP/0.9 will be disabled on non-default ports.</translation>
-<translation id="7726421241038987229">
-      This setting, SitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to opt out of site isolation
-      (e.g. using 'Disable site isolation' entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-
-      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
-      </translation>
 <translation id="7747447585227954402">Allow devices to use a <ph name="PLUGIN_VM_NAME" /> on <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 

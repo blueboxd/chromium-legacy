@@ -5,7 +5,7 @@
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 
 #include "base/android/jni_android.h"
-#include "jni/SigninPromoUtil_jni.h"
+#include "chrome/android/chrome_jni_headers/SigninPromoUtil_jni.h"
 #include "ui/android/window_android.h"
 
 namespace chrome {

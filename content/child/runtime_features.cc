@@ -66,9 +66,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(
       base::FeatureList::IsEnabled(features::kBlinkHeapIncrementalMarking));
 
-  WebRuntimeFeatures::EnableBlinkHeapUnifiedGCScheduling(
-      base::FeatureList::IsEnabled(features::kBlinkHeapUnifiedGCScheduling));
-
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
 
@@ -541,6 +538,12 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableConsolidatedMovementXY(
       base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
+
+  WebRuntimeFeatures::EnableStreamsNative(
+      base::FeatureList::IsEnabled(blink::features::kStreamsNative));
+
+  WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(
+      base::FeatureList::IsEnabled(features::kMouseSubframeNoImplicitCapture));
 }
 
 }  // namespace

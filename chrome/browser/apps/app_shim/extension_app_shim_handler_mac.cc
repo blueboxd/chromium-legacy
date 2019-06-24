@@ -322,12 +322,12 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   if (extension->is_hosted_app()) {
     OpenApplication(CreateAppLaunchParamsUserContainer(
         profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        extensions::SOURCE_COMMAND_LINE));
+        extensions::AppLaunchSource::kSourceCommandLine));
     return;
   }
   if (files.empty()) {
-    apps::LaunchPlatformApp(
-        profile, extension, extensions::SOURCE_COMMAND_LINE);
+    apps::LaunchPlatformApp(profile, extension,
+                            extensions::AppLaunchSource::kSourceCommandLine);
   } else {
     for (std::vector<base::FilePath>::const_iterator it = files.begin();
          it != files.end(); ++it) {

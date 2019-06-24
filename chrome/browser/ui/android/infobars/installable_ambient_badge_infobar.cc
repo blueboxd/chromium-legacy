@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/InstallableAmbientBadgeInfoBar_jni.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
-#include "jni/InstallableAmbientBadgeInfoBar_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 InstallableAmbientBadgeInfoBar::InstallableAmbientBadgeInfoBar(

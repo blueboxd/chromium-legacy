@@ -59,7 +59,7 @@ public class PaymentRequestFieldTrialTest implements MainActivityStartCallback {
     public void testAbortIfNoCard_Enabled_NoApp() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"The payment method", "not supported"});
+                new String[] {"Payment method not supported"});
     }
 
     /**

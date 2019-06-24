@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/test_support_jni_headers/PrefetchTestBridge_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
@@ -20,7 +21,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "jni/PrefetchTestBridge_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

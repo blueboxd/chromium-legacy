@@ -732,6 +732,9 @@ extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
+extern const char kMouseSubframeNoImplicitCaptureName[];
+extern const char kMouseSubframeNoImplicitCaptureDescription[];
+
 extern const char kNativeFileSystemAPIName[];
 extern const char kNativeFileSystemAPIDescription[];
 

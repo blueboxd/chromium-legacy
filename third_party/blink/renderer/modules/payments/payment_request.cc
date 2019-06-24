@@ -1040,6 +1040,12 @@ void PaymentRequest::OnUpdatePaymentDetailsTimeoutForTesting() {
   OnUpdatePaymentDetailsTimeout(nullptr);
 }
 
+void PaymentRequest::OnConnectionError() {
+  OnError(PaymentErrorReason::UNKNOWN,
+          "Renderer process could not establish or lost IPC connection to the "
+          "PaymentRequest service in the browser process.");
+}
+
 PaymentRequest::PaymentRequest(
     ExecutionContext* execution_context,
     const HeapVector<Member<PaymentMethodData>>& method_data,
@@ -1105,8 +1111,7 @@ PaymentRequest::PaymentRequest(
   GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&payment_provider_, task_runner));
   payment_provider_.set_connection_error_handler(
-      WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
-                PaymentErrorReason::UNKNOWN));
+      WTF::Bind(&PaymentRequest::OnConnectionError, WrapWeakPersistent(this)));
 
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
   payments::mojom::blink::PaymentRequestClientPtr client;
@@ -1286,55 +1291,27 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
   }
 }
 
-void PaymentRequest::OnError(PaymentErrorReason error) {
+void PaymentRequest::OnError(PaymentErrorReason error,
+                             const String& error_message) {
+  DCHECK(!error_message.IsEmpty());
   DOMExceptionCode exception_code = DOMExceptionCode::kUnknownError;
-  String message;
 
   switch (error) {
-    case PaymentErrorReason::USER_CANCEL: {
+    case PaymentErrorReason::USER_CANCEL:
       exception_code = DOMExceptionCode::kAbortError;
-      message = "Request cancelled";
       break;
-    }
 
-    case PaymentErrorReason::NOT_SUPPORTED: {
+    case PaymentErrorReason::NOT_SUPPORTED:
       exception_code = DOMExceptionCode::kNotSupportedError;
-      DCHECK_LE(1U, method_names_.size());
-      auto it = method_names_.begin();
-      if (method_names_.size() == 1U) {
-        message = "The payment method \"" + *it + "\" is not supported";
-      } else {
-        StringBuilder sb;
-        sb.Append("The payment methods \"");
-        sb.Append(*it);
-        sb.Append("\"");
-        while (++it != method_names_.end()) {
-          sb.Append(", \"");
-          sb.Append(*it);
-          sb.Append("\"");
-        }
-        sb.Append(" are not supported");
-        message = sb.ToString();
-      }
       break;
-    }
 
-    case PaymentErrorReason::ALREADY_SHOWING: {
+    case PaymentErrorReason::ALREADY_SHOWING:
       exception_code = DOMExceptionCode::kAbortError;
-      message =
-          "Another PaymentRequest UI is already showing in a different tab or "
-          "window";
       break;
-    }
 
-    case PaymentErrorReason::UNKNOWN: {
-      exception_code = DOMExceptionCode::kUnknownError;
-      message = "Request failed";
+    case PaymentErrorReason::UNKNOWN:
       break;
-    }
   }
-
-  DCHECK(!message.IsEmpty());
 
   // If the user closes PaymentRequest UI after PaymentResponse.complete() has
   // been called, the PaymentResponse.complete() promise should be resolved with
@@ -1348,22 +1325,22 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
   ScriptPromiseResolver* resolver = GetPendingAcceptPromiseResolver();
   if (resolver) {
     resolver->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (abort_resolver_) {
     abort_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (can_make_payment_resolver_) {
     can_make_payment_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   if (has_enrolled_instrument_resolver_) {
     has_enrolled_instrument_resolver_->Reject(
-        MakeGarbageCollected<DOMException>(exception_code, message));
+        MakeGarbageCollected<DOMException>(exception_code, error_message));
   }
 
   ClearResolversAndCloseMojoConnection();

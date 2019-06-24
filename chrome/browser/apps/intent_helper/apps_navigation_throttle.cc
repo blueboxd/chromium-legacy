@@ -309,7 +309,7 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
   const extensions::Extension* extension =
       extensions::util::GetInstalledPwaForUrl(
           web_contents->GetBrowserContext(), url,
-          extensions::LAUNCH_CONTAINER_WINDOW);
+          extensions::LaunchContainer::kLaunchContainerWindow);
 
   if (extension) {
     auto* menu_manager =

@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 
@@ -21,7 +19,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -185,19 +183,13 @@ public class WebappDirectoryManager {
      * @return File for storing information about the web app.
      */
     File getWebappDirectory(Context context, String webappId) {
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            long timeMs = SystemClock.elapsedRealtime();
+        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             File webappDirectory = new File(getBaseWebappDirectory(context), webappId);
             if (!webappDirectory.exists() && !webappDirectory.mkdir()) {
                 Log.e(TAG, "Failed to create web app directory.");
             }
-            RecordHistogram.recordTimesHistogram(
-                    "Android.StrictMode.WebappDir", SystemClock.elapsedRealtime() - timeMs);
             return webappDirectory;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 

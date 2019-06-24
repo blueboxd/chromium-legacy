@@ -296,33 +296,33 @@ class IdentityManager : public AccessTokenDiagnosticsObserver,
     DiagnosticsObserver& operator=(const DiagnosticsObserver&) = delete;
 
     // Called when receiving request for access token.
-    virtual void OnAccessTokenRequested(const std::string& account_id,
+    virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
                                         const std::string& consumer_id,
                                         const ScopeSet& scopes) {}
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
-    virtual void OnAccessTokenRequestCompleted(const std::string& account_id,
+    virtual void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                                const std::string& consumer_id,
                                                const ScopeSet& scopes,
                                                GoogleServiceAuthError error,
                                                base::Time expiration_time) {}
 
     // Called when an access token was removed.
-    virtual void OnAccessTokenRemovedFromCache(const std::string& account_id,
+    virtual void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
                                                const ScopeSet& scopes) {}
 
     // Called when a new refresh token is available. Contains diagnostic
     // information about the source of the operation.
     virtual void OnRefreshTokenUpdatedForAccountFromSource(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         bool is_refresh_token_valid,
         const std::string& source) {}
 
     // Called when a refresh token is removed. Contains diagnostic information
     // about the source that initiated the revokation operation.
     virtual void OnRefreshTokenRemovedForAccountFromSource(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         const std::string& source) {}
   };
 
@@ -386,7 +386,7 @@ class IdentityManager : public AccessTokenDiagnosticsObserver,
   // TODO(https://crbug.com/860492): Remove this method when supervised users
   // support is eliminated.
   void DeprecatedLoadCredentialsForSupervisedUser(
-      const std::string& primary_account_id);
+      const CoreAccountId& primary_account_id);
 #endif
 
   // Returns pointer to the object used to obtain diagnostics about the internal

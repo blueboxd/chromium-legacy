@@ -997,9 +997,10 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   content::WebContents* app_contents = nullptr;
   {
     content::WebContentsAddedObserver new_contents_observer;
-    OpenApplication(AppLaunchParams(
-        browser()->profile(), app->id(), LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+    OpenApplication(AppLaunchParams(browser()->profile(), app->id(),
+                                    LaunchContainer::kLaunchContainerNone,
+                                    WindowOpenDisposition::NEW_WINDOW,
+                                    extensions::AppLaunchSource::kSourceTest));
     app_contents = new_contents_observer.GetWebContents();
   }
   ASSERT_TRUE(content::WaitForLoadStop(app_contents));

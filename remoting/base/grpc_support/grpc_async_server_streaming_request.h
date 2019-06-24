@@ -33,6 +33,7 @@ using GrpcAsyncServerStreamingRpcFunction =
 class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
  public:
   GrpcAsyncServerStreamingRequestBase(
+      base::OnceClosure on_channel_ready,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
       std::unique_ptr<ScopedGrpcServerStream>* scoped_stream);
   ~GrpcAsyncServerStreamingRequestBase() override;
@@ -40,6 +41,7 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
  protected:
   enum class State {
     STARTING,
+    PENDING_INITIAL_METADATA,
     STREAMING,
 
     // Server has closed the stream and we are getting back the reason.
@@ -56,6 +58,7 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
   // has been deleted right before it is being executed.
   void RunTask(base::OnceClosure task);
 
+  virtual void ReadInitialMetadata(void* event_tag) = 0;
   virtual void ResolveIncomingMessage() = 0;
   virtual void WaitForIncomingMessage(void* event_tag) = 0;
   virtual void FinishStream(void* event_tag) = 0;
@@ -66,8 +69,10 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
   void Reenqueue(void* event_tag) override;
   void OnRequestCanceled() override;
   bool CanStartRequest() const override;
+  void ResolveChannelReady();
   void ResolveChannelClosed();
 
+  base::OnceClosure on_channel_ready_;
   base::OnceCallback<void(const grpc::Status&)> on_channel_closed_;
   State state_ = State::STARTING;
 
@@ -99,15 +104,18 @@ class GrpcAsyncServerStreamingRequest
   CreateGrpcAsyncServerStreamingRequest(
       GrpcAsyncServerStreamingRpcFunction<Req, Res> rpc_function,
       const Req& request,
+      base::OnceClosure on_channel_ready,
       const base::RepeatingCallback<void(const Res&)>& on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
       std::unique_ptr<ScopedGrpcServerStream>* scoped_stream);
 
   GrpcAsyncServerStreamingRequest(
+      base::OnceClosure on_channel_ready,
       const OnIncomingMessageCallback& on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
       std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
-      : GrpcAsyncServerStreamingRequestBase(std::move(on_channel_closed),
+      : GrpcAsyncServerStreamingRequestBase(std::move(on_channel_ready),
+                                            std::move(on_channel_closed),
                                             scoped_stream) {
     on_incoming_msg_ = on_incoming_msg;
   }
@@ -127,6 +135,11 @@ class GrpcAsyncServerStreamingRequest
   }
 
   // GrpcAsyncServerStreamingRequestBase implementations.
+  void ReadInitialMetadata(void* event_tag) override {
+    DCHECK(reader_);
+    reader_->ReadInitialMetadata(event_tag);
+  }
+
   void ResolveIncomingMessage() override {
     RunTask(base::BindOnce(on_incoming_msg_, response_));
   }
@@ -161,13 +174,15 @@ std::unique_ptr<GrpcAsyncServerStreamingRequest<ResponseType>>
 CreateGrpcAsyncServerStreamingRequest(
     GrpcAsyncServerStreamingRpcFunction<RequestType, ResponseType> rpc_function,
     const RequestType& request,
+    base::OnceClosure on_channel_ready,
     const base::RepeatingCallback<void(const ResponseType&)>& on_incoming_msg,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
     std::unique_ptr<ScopedGrpcServerStream>* scoped_stream) {
   // Cannot use make_unique because the constructor is private.
   std::unique_ptr<GrpcAsyncServerStreamingRequest<ResponseType>> grpc_request(
       new GrpcAsyncServerStreamingRequest<ResponseType>(
-          on_incoming_msg, std::move(on_channel_closed), scoped_stream));
+          std::move(on_channel_ready), on_incoming_msg,
+          std::move(on_channel_closed), scoped_stream));
   grpc_request->SetCreateReaderCallback(base::BindOnce(
       std::move(rpc_function), grpc_request->context(), request));
   return grpc_request;

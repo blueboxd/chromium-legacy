@@ -150,6 +150,4 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
     "java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   ]
-
-  jni_package = "vr"
 }

@@ -11,9 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
@@ -166,11 +168,9 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
 // static
 SelectFileDialogExtension::RoutingID
 SelectFileDialogExtension::GetRoutingIDFromWebContents(
-    const content::WebContents* web_contents) {
-  // Use the raw pointer value as the identifier. Previously we have used the
-  // tab ID for the purpose, but some web_contents, especially those of the
-  // packaged apps, don't have tab IDs assigned.
-  return web_contents;
+    content::WebContents* web_contents) {
+  return base::StringPrintf("web.%d",
+                            web_contents->GetMainFrame()->GetFrameTreeNodeId());
 }
 
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
@@ -399,6 +399,9 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     LOG(ERROR) << "Unable to create extension dialog";
     return;
   }
+
+  SelectFileDialogExtensionUserData::SetRoutingIdForWebContents(
+      dialog->host()->host_contents(), routing_id);
 
   // Connect our listener to FileDialogFunction's per-tab callbacks.
   AddPending(routing_id);

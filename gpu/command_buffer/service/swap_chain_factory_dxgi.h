@@ -28,7 +28,7 @@ class GPU_GLES2_EXPORT SwapChainFactoryDXGI {
   explicit SwapChainFactoryDXGI(bool use_passthrough);
   ~SwapChainFactoryDXGI();
 
-  struct GPU_GLES2_EXPORT SwapChainBackings {
+  struct SwapChainBackings {
     SwapChainBackings(std::unique_ptr<SharedImageBacking> front_buffer,
                       std::unique_ptr<SharedImageBacking> back_buffer);
     ~SwapChainBackings();

@@ -62,6 +62,11 @@ class SurfaceTreeHost : public SurfaceDelegate,
   }
 
   using PresentationCallbacks = std::list<Surface::PresentationCallback>;
+
+  const PresentationCallbacks& presentation_callbacks() const {
+    return presentation_callbacks_;
+  }
+
   base::flat_map<uint32_t, PresentationCallbacks>&
   GetActivePresentationCallbacksForTesting() {
     return active_presentation_callbacks_;
@@ -90,8 +95,10 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // need to be released back to the client.
   void SubmitEmptyCompositorFrame();
 
- private:
+  // Update the host window's size to cover entire surfaces.
   void UpdateHostWindowBounds();
+
+ private:
   viz::CompositorFrame PrepareToSubmitCompositorFrame();
 
   Surface* root_surface_ = nullptr;

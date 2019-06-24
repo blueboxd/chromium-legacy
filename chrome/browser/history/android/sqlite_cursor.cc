@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "chrome/android/chrome_jni_headers/SQLiteCursor_jni.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/SQLiteCursor_jni.h"
 #include "sql/statement.h"
 
 using base::android::ConvertUTF8ToJavaString;

@@ -100,6 +100,8 @@
 <translation id="1679068421605151609">开发者工具</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
+<translation id="1697480839793160072">电话</translation>
+<translation id="1698058317516161971">电子邮件</translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 更新时间：<ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1014,6 +1016,7 @@
 <translation id="8266862848225348053">下载内容保存位置</translation>
 <translation id="8274165955039650276">查看下载内容</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8284326494547611709">字幕</translation>
 <translation id="8300705686683892304">由应用管理</translation>
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="8313455859591948645">修改启动页</translation>

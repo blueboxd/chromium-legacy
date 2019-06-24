@@ -19,11 +19,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/android/chrome_jni_headers/TestSubresourceFilterPublisher_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/TestSubresourceFilterPublisher_jni.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 // TODO(csharrison): This whole file is a hack, because Android cannot use

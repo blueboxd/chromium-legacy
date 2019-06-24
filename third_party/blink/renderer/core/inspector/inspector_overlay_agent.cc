@@ -31,7 +31,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "build/build_config.h"
@@ -114,8 +113,8 @@ void InspectTool::Init(InspectorOverlayAgent* overlay,
   DoInit();
 }
 
-std::string InspectTool::GetDataResourceName() {
-  return std::string("inspect_tool_highlight.html");
+String InspectTool::GetDataResourceName() {
+  return String("inspect_tool_highlight.html");
 }
 
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
@@ -409,7 +408,7 @@ Response InspectorOverlayAgent::disable() {
   resize_timer_.Stop();
   resize_timer_active_ = false;
   frame_overlay_.reset();
-  frame_resource_name_ = std::string();
+  frame_resource_name_ = String();
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
@@ -740,9 +739,9 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
       return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
           mouse_event,
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       std::vector<const WebInputEvent*>()),
+                                       WebVector<const WebInputEvent*>()),
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       std::vector<const WebInputEvent*>()));
+                                       WebVector<const WebInputEvent*>()));
     }
     if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
       return OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
@@ -898,8 +897,8 @@ void InspectorOverlayAgent::LoadFrameForTool() {
   data->Append("<script>", static_cast<size_t>(8));
   data->Append(Platform::Current()->GetDataResource("inspect_tool_common.js"));
   data->Append("</script>", static_cast<size_t>(9));
-  data->Append(
-      Platform::Current()->GetDataResource(frame_resource_name_.c_str()));
+  data->Append(Platform::Current()->GetDataResource(
+      frame_resource_name_.Utf8().c_str()));
 
   frame->ForceSynchronousDocumentInstall("text/html", data);
 

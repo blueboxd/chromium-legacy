@@ -67,12 +67,7 @@ void SetTooltipAndAccessibleName(views::Button* parent,
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
-    : views::MenuButton(text, this),
-      title_(nullptr),
-      subtitle_(nullptr),
-      icon_view_(nullptr),
-      secondary_view_(nullptr),
-      listener_(button_listener) {
+    : views::MenuButton(text, this), listener_(button_listener) {
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -146,7 +141,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   taken_width_ = GetInsets().width() + icon_view->GetPreferredSize().width() +
                  icon_label_spacing;
 
-  icon_view_ = icon_view.get();
   // Make sure hovering over the icon also hovers the |HoverButton|.
   icon_view->set_can_process_events_within_subtree(false);
   // Don't cover |icon_view| when the ink drops are being painted. |MenuButton|
@@ -158,36 +152,36 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       (total_height - remaining_vert_spacing * 2) / num_labels;
   grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId,
                         row_height);
-  grid_layout->AddView(icon_view.release(), 1, num_labels);
+  icon_view_ = grid_layout->AddView(std::move(icon_view), 1, num_labels);
 
-  title_ = new views::StyledLabel(title, nullptr);
+  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
   // Size without a maximum width to get a single line label.
-  title_->SizeToFit(0);
+  title_label->SizeToFit(0);
   // |views::StyledLabel|s are all multi-line. With a layout manager,
   // |StyledLabel| will try use the available space to size itself, and long
   // titles will wrap to the next line (for smaller |HoverButton|s, this will
   // also cover up |subtitle_|). Wrap it in a parent view with no layout manager
   // to ensure it keeps its original size set by SizeToFit() above. Long titles
   // will then be truncated.
-  views::View* title_wrapper = new views::View;
-  title_wrapper->AddChildView(title_);
+  auto title_wrapper = std::make_unique<views::View>();
+  title_ = title_wrapper->AddChildView(std::move(title_label));
   // Hover the whole button when hovering |title_|. This is OK because |title_|
   // will never have a link in it.
   title_wrapper->set_can_process_events_within_subtree(false);
-  grid_layout->AddView(title_wrapper);
+  grid_layout->AddView(std::move(title_wrapper));
 
   if (secondary_view) {
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                        views::GridLayout::kFixedSize,
                        views::GridLayout::USE_PREF, 0, 0);
-    secondary_view_ = secondary_view.get();
     secondary_view->set_can_process_events_within_subtree(
         secondary_view_can_process_events);
     // |secondary_view| needs a layer otherwise it's obscured by the layer
     // used in drawing ink drops.
     secondary_view->SetPaintToLayer();
     secondary_view->layer()->SetFillsBoundsOpaquely(false);
-    grid_layout->AddView(secondary_view.release(), 1, num_labels);
+    secondary_view_ =
+        grid_layout->AddView(std::move(secondary_view), 1, num_labels);
 
     if (!resize_row_for_secondary_view) {
       insets_ = views::MenuButton::GetInsets();
@@ -206,12 +200,12 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   if (!subtitle.empty()) {
     grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId,
                           row_height);
-    subtitle_ = new views::Label(subtitle, views::style::CONTEXT_BUTTON,
-                                 STYLE_SECONDARY);
-    subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    subtitle_->SetAutoColorReadabilityEnabled(false);
+    auto subtitle_label = std::make_unique<views::Label>(
+        subtitle, views::style::CONTEXT_BUTTON, STYLE_SECONDARY);
+    subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    subtitle_label->SetAutoColorReadabilityEnabled(false);
     grid_layout->SkipColumns(1);
-    grid_layout->AddView(subtitle_);
+    subtitle_ = grid_layout->AddView(std::move(subtitle_label));
   }
 
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),

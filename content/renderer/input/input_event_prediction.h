@@ -44,7 +44,7 @@ class CONTENT_EXPORT InputEventPrediction {
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, PredictorType);
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, ResamplingDisabled);
 
-  enum class PredictorType { kEmpty, kLsq, kKalman };
+  enum class PredictorType { kEmpty, kLsq, kKalman, kKalmanTimeFiltered };
 
   // Initialize selected_predictor_type_ from field trial parameters of
   // kResamplingInputEvent flag if resampling is enable. Otherwise set it

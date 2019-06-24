@@ -386,12 +386,6 @@
 
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet l'etiquetatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
-<translation id="1762072363876276024">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que s'aplica a la sessió de l'usuari. Es recomana que les dues polítiques tinguin el mateix valor. Si els valors no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
-      Aquesta configuració, DeviceLoginScreenSitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política DeviceLoginScreenIsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
-      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
-      Si la política no es configura o es desactiva, l'usuari podrà canviar aquesta configuració (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Activa les recomanacions d'aplicacions quan el quadre de cerca no mostri cap resultat.</translation>
 <translation id="17719159826324007">
       Si aquesta política s'estableix en ArcSession, obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
@@ -3283,21 +3277,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Nota: els valors que s'admeten al camp <ph name="MINUTE_FIELD_NAME" /> corresponent a <ph name="CHARGE_START_TIME_FIELD_NAME" /> i a <ph name="CHARGE_END_TIME_FIELD_NAME" /> són 0, 15, 30 i 45.</translation>
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Aquesta política activa la compatibilitat amb HTTP/0.9 als ports que no són 80 per a HTTP ni 443 per a HTTPS.
-
-      Està desactivada de manera predeterminada i, si s'activa, els usuaris es poden trobar amb el problema de seguretat https://crbug.com/600352.
-
-      Aquesta política està dissenyada perquè les empreses puguin migrar els servidors que ja tenen a HTTP/0.9. Se suprimirà en el futur.
-
-      Si no s'estableix cap valor, es desactivarà la compatibilitat amb HTTP/0.9 en tots els ports no predeterminats.</translation>
-<translation id="7726421241038987229">
-      Aquesta configuració, SitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política IsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
-      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
-      Si la política no es configura o es desactiva, l'usuari podrà desactivar l'aïllament de lloc web (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).  Si la política es desactiva o no es configura, l'aïllament de lloc web no es desactivarà.
-      A <ph name="PRODUCT_OS_NAME" />, també es recomana establir la política <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> del dispositiu en el mateix valor. Si els valors especificats per les dues polítiques no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
-
-      NOTA: aquesta política no s'aplica a Android. Per activar SitePerProcess a Android, fes servir la configuració de la política SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Permet que els dispositius utilitzin un connector <ph name="PLUGIN_VM_NAME" /> a <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Activa l'autenticació de dos factors per als amfitrions d'accés remot en lloc d'un PIN especificat per l'usuari.
 

@@ -72,14 +72,14 @@ bool OpenExtensionApplicationWindow(Profile* profile,
   if (!GetAppLaunchContainer(profile, app_id, &app, &launch_container))
     return false;
 
-  if (launch_container == extensions::LAUNCH_CONTAINER_TAB)
+  if (launch_container == extensions::LaunchContainer::kLaunchContainerTab)
     return false;
 
   RecordCmdLineAppHistogram(app->GetType());
 
   ::AppLaunchParams params(profile, app_id, launch_container,
                            WindowOpenDisposition::NEW_WINDOW,
-                           extensions::SOURCE_COMMAND_LINE);
+                           extensions::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
   content::WebContents* tab_in_app_window = ::OpenApplication(params);
@@ -95,15 +95,15 @@ bool OpenExtensionApplicationTab(Profile* profile, const std::string& app_id) {
     return false;
 
   // If the user doesn't want to open a tab, fail.
-  if (launch_container != extensions::LAUNCH_CONTAINER_TAB)
+  if (launch_container != extensions::LaunchContainer::kLaunchContainerTab)
     return false;
 
   RecordCmdLineAppHistogram(app->GetType());
 
-  content::WebContents* app_tab = ::OpenApplication(
-      ::AppLaunchParams(profile, app_id, extensions::LAUNCH_CONTAINER_TAB,
-                        WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                        extensions::SOURCE_COMMAND_LINE));
+  content::WebContents* app_tab = ::OpenApplication(::AppLaunchParams(
+      profile, app_id, extensions::LaunchContainer::kLaunchContainerTab,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::AppLaunchSource::kSourceCommandLine));
   return app_tab != nullptr;
 }
 
@@ -116,9 +116,10 @@ bool OpenExtensionApplicationWithReenablePrompt(
     return false;
 
   RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
-  ::AppLaunchParams params(profile, app_id, extensions::LAUNCH_CONTAINER_NONE,
+  ::AppLaunchParams params(profile, app_id,
+                           extensions::LaunchContainer::kLaunchContainerNone,
                            WindowOpenDisposition::NEW_WINDOW,
-                           extensions::SOURCE_COMMAND_LINE);
+                           extensions::AppLaunchSource::kSourceCommandLine);
   params.command_line = command_line;
   params.current_directory = current_directory;
   ::OpenApplicationWithReenablePrompt(params);

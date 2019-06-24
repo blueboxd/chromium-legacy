@@ -17,7 +17,6 @@ import logging
 import os
 import subprocess
 import sys
-import tempfile
 
 import merge_lib as coverage_merger
 
@@ -83,24 +82,6 @@ def main():
         '--output-json',
         params.output_json,
     ]
-
-    # TODO(crbug.com/960994): Without specifying an output directory, the layout
-    # merge script will use the CWD as the output directory and then tries to
-    # wipe out the content in that directory, and unfortunately, the CWD is a
-    # temporary directory that has been used to hold the coverage profdata, so
-    # without the following hack, the merge script will deletes all the profdata
-    # files and lead to build failures.
-    #
-    # This temporary workaround is only used for evaluating the stability of the
-    # linux-coverage-rel trybot, it should be removed before merging into
-    # linxu-rel as it's not reliable enough, for example, things could break if
-    # the name or arguments of the script are changed.
-    if params.additional_merge_script.endswith('merge_web_test_results.py'):
-      new_args.extend([
-        '--output-directory',
-        tempfile.mkdtemp(),
-        '--allow-existing-output-directory',
-      ])
 
     if params.additional_merge_script_args:
       new_args += json.loads(params.additional_merge_script_args)

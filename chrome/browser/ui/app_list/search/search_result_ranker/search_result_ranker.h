@@ -47,10 +47,13 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   void Rank(Mixer::SortedResults* results);
 
   // Forwards the given training signal to the relevant models contained within
-  // the SearchResultRanker. |id| is the string ID of an item that is launched
-  // from the launcher, eg. an app ID or a filepath, and is derived from the
-  // relevant ChromeSearchResult's ID.
-  void Train(const std::string& id, RankingItemType type);
+  // the SearchResultRanker. |query| is the user's search string, which may be
+  // empty. |id| is the string ID of an item that is launched from the launcher,
+  // eg. an app ID or a filepath, and is derived from the relevant
+  // ChromeSearchResult's ID.
+  void Train(const std::string& query,
+             const std::string& id,
+             RankingItemType type);
 
   // file_manager::file_tasks::FileTaskObserver:
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;

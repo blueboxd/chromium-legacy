@@ -78,6 +78,8 @@ namespace wayland_fuzzer {
             if (!{{arg.name}})
 	      return;
           {% endif %}
+	{% elif arg.type == 'fd' %}
+	  int {{arg.name}} = harness->GetFileDescriptor(action.{{arg.name}}());
         {% endif %}
       {% endfor %}
       {% if request.is_constructor %}
@@ -85,7 +87,7 @@ namespace wayland_fuzzer {
       {% endif %}
       {{interface.name}}_{{request.name}}(receiver
         {% for arg in request.args %}
-          {% if arg.type == 'object' %}
+          {% if arg.type == 'object' or arg.type == 'fd' %}
             , {{arg.name}}
           {% elif arg.type != 'new_id' %}
             , action.{{arg.name}}(){% if arg.type == 'string' %}.c_str(){% endif %}
@@ -179,6 +181,16 @@ void Harness::Run(const actions::action& current_step) {
       {% endfor %}
     {% endfor %}
   }
+}
+
+int Harness::GetFileDescriptor(int id) {
+  if (shared_memory_map_.count(id) == 0) {
+    auto shared_mem = std::make_unique<base::SharedMemory>();
+    shared_mem->CreateAndMapAnonymous(1);
+    shared_memory_map_.emplace(id, std::move(shared_mem));
+  }
+  return base::SharedMemory::GetFdFromSharedMemoryHandle(
+    base::SharedMemory::DuplicateHandle(shared_memory_map_[id]->handle()));
 }
 
 }  // namespace wayland_fuzzer

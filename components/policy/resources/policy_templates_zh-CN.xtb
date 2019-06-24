@@ -415,12 +415,6 @@
 
       该政策的值应设置为供 <ph name="PRODUCT_OS_NAME" />下载服务条款的网址。该服务条款必须是纯文本，以 MIME 纯文本形式提供，不允许进行任何标记。</translation>
 <translation id="1750315445671978749">拦截所有下载内容</translation>
-<translation id="1762072363876276024">
-      此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建议将这两项政策设为相同的值。如果这两项政策的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-      DeviceLoginScreenSitePerProcess 设置可用于禁止用户停用隔离所有网站的默认行为。请注意，还可以使用 DeviceLoginScreenIsolateOrigins 政策以更精细的方式隔离其他来源。
-      如果启用了此政策，则用户无法停用让每个网站在自己的进程中运行的默认行为。
-      如果未配置或停用了此政策，则用户可以更改此设置（例如，使用 chrome://flags 中的“停用网站隔离”条目）。
-      </translation>
 <translation id="1767673020408652620">在处于零状态的搜索框内启用应用推荐</translation>
 <translation id="17719159826324007">
       如果将此政策设为 ArcSession，系统会在用户退出后强制设备重新启动（如果 Android 已启动）。
@@ -2409,6 +2403,10 @@
       请注意，我们不建议启用此设置，因为这可能会允许绕过 nameConstraints 扩展项（用于限制可针对哪些主机名授权指定的证书）。
 
       如果此政策未设置或设为 false，系统将不会信任包含 DNS 名称或 IP 地址但缺少 subjectAlternativeName 扩展项的服务器证书。</translation>
+<translation id="5578571772998293651">允许用户提供反馈。
+        如果此政策设为 false，用户无法向 Google 发送反馈。
+
+        如果未设置此政策或将其设为 true，用户可以通过依次点按“菜单”-&gt;“帮助”-&gt;“报告问题”或按下组合键来向 Google 发送反馈。</translation>
 <translation id="5581292529942108810">配置与 Chrome Reporting Extension 相关的政策。
 
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
@@ -3500,21 +3498,6 @@
 
           注意：<ph name="CHARGE_START_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_END_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />辅助功能。</translation>
-<translation id="7724994675283793633">此政策用于在 80 (HTTP) 和 443 (HTTPS) 以外的端口上启用 HTTP/0.9。
-
-      此政策在默认情况下处于停用状态；启用后，会使用户面临安全问题 (https://crbug.com/600352)。
-
-      此政策旨在让企业能够使现有服务器弃用 HTTP/0.9。日后我们将会移除此政策。
-
-      如果此政策未设置，非默认端口上将会停用 HTTP/0.9。</translation>
-<translation id="7726421241038987229">
-      SitePerProcess 设置可用于禁止用户停用隔离所有网站的默认行为。请注意，还可以使用 IsolateOrigins 政策以更精细的方式隔离其他来源。
-      如果启用了此政策，则用户无法停用让每个网站在自己的进程中运行的默认行为。
-      如果未配置或停用了此政策，则用户可以停用网站隔离功能（例如，使用 chrome://flags 中的“停用网站隔离”条目）。将此政策设为停用状态和/或不配置此政策均不会关闭网站隔离功能。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建议将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 也设为相同的值。如果这两项政策指定的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-
-      注意：此政策不适用于 Android 设备。要在 Android 设备上启用 SitePerProcess，请改用 SitePerProcessAndroid 政策设置。
-      </translation>
 <translation id="7747447585227954402">允许设备在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
@@ -3735,6 +3718,7 @@
       如果未设置此策略，来自“URLBlacklist”策略的黑名单就不存在任何例外情况。</translation>
 <translation id="8176035528522326671">只允许企业用户以主用户的身份登录多个人资料会话（企业托管用户的默认行为）</translation>
 <translation id="8183108371184777472">禁止启动浏览器窗口</translation>
+<translation id="8186911565834244165">允许用户提供反馈</translation>
 <translation id="8214600119442850823">配置密码管理器。</translation>
 <translation id="8217516105848565518">此政策已被弃用。请改用 RemoteAccessHostDomainList。</translation>
 <translation id="8244171102276095471">在 TLS 中启用 RC4 加密套件</translation>
@@ -4132,6 +4116,12 @@
 <translation id="9112897538922695510">可让您注册一个协议处理程序列表。此政策只能是推荐的政策。属性|protocol|应设为“mailto”等协议，属性|url|应设为处理该协议的应用采用的网址格式。该格式中可以包含“%s”（如果有，将被替换为所处理的网址）。
 
           通过政策注册的协议处理程序会与用户注册的协议处理程序合并到一起，两种处理程序都可使用。用户可以通过安装新的默认处理程序来覆盖通过政策安装的协议处理程序，但无法卸载通过政策注册的协议处理程序。</translation>
+<translation id="91196902572559194">此政策用于授权 Google 助理听取语音启动词组。
+
+      如果此政策处于启用状态，Google 助理将会听取语音启动词组。
+      如果停用了此政策，Google 助理将不会听取语音启动词组。
+      如果未设置此政策，用户可以决定是否允许 Google 助理听取语音启动词组。
+      </translation>
 <translation id="9123211093995421438">指定 <ph name="PRODUCT_OS_NAME" />随时可从稳定版回滚到的里程碑的数量下限。
 
       对于由消费者注册的设备，默认值为 0；对于由企业注册的设备，默认值为 4（大约半年）。

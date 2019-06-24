@@ -13,7 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -27,10 +26,6 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-
-#if defined(OS_MACOSX)
-#include "base/enterprise_util.h"
-#endif  // defined(OS_MACOSX)
 
 namespace nux {
 
@@ -139,6 +134,12 @@ bool CanExperimentWithVariations(Profile* profile) {
 // Must match study name in configs.
 const char kNuxOnboardingStudyName[] = "NaviOnboarding";
 
+// Get the group for users who onboard in this experiment.
+// Groups are:
+//   - Specified by study
+//   - The same for all experiments in study
+//   - Incremented with each new version
+//   - Not reused
 std::string GetOnboardingGroup(Profile* profile) {
   if (!CanExperimentWithVariations(profile)) {
     // If we cannot run any variations, we bucket the users into a separate
@@ -153,35 +154,22 @@ std::string GetOnboardingGroup(Profile* profile) {
                                        "onboarding-group");
 }
 
-bool IsNuxOnboardingEnabled(Profile* profile) {
-  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
-    return true;
-  }
-
-#if defined(GOOGLE_CHROME_BUILD)
-
-#if defined(OS_MACOSX)
-  return !base::IsMachineExternallyManaged();
-#endif  // defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-  // To avoid diluting data collection, existing users should not be assigned
-  // an onboarding group. So, |prefs::kNaviOnboardGroup| is used to
-  // short-circuit the feature checks below.
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+void JoinOnboardingGroup(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
-  if (!prefs) {
-    return false;
-  }
 
-  std::string onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
+  std::string onboard_group;
+  if (prefs->GetBoolean(prefs::kHasSeenWelcomePage)) {
+    // Get user's original onboarding group.
+    onboard_group = prefs->GetString(prefs::kNaviOnboardGroup);
 
-  if (onboard_group.empty()) {
-    // Users who onboarded before Navi or are part of an enterprise.
-    return false;
-  }
-
-  if (!CanExperimentWithVariations(profile)) {
-    return true;  // Default Navi behavior.
+    // Users who onboarded before Navi won't have an onboarding group.
+    if (onboard_group.empty())
+      return;
+  } else {
+    // Join the latest group if onboarding for the first time!
+    onboard_group = GetOnboardingGroup(profile);
+    profile->GetPrefs()->SetString(prefs::kNaviOnboardGroup, onboard_group);
   }
 
   // User will be tied to their original onboarding group, even after
@@ -199,15 +187,17 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
     base::FeatureList::IsEnabled(kNaviNTPVariationEnabled);
   else if (onboard_group.compare("ShortcutVariationSynthetic-008") == 0)
     base::FeatureList::IsEnabled(kNaviShortcutVariationEnabled);
+}
+#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 
-  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
-    return true;
-  }
-#endif  // defined(OS_WIN)
-
+bool IsNuxOnboardingEnabled(Profile* profile) {
+#if defined(GOOGLE_CHROME_BUILD)
+  return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature) ||
+         base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
+#else
+  // Allow enabling outside official builds for testing purposes.
+  return base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-  return false;
 }
 
 bool IsAppVariationEnabled() {

@@ -31,7 +31,7 @@ namespace signin {
 const int UbertokenFetcherImpl::kMaxRetries = 3;
 
 UbertokenFetcherImpl::UbertokenFetcherImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     OAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
     gaia::GaiaSource source,
@@ -47,7 +47,7 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
                            is_bound_to_channel_id) {}
 
 UbertokenFetcherImpl::UbertokenFetcherImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& access_token,
     OAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,

@@ -129,7 +129,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     }
 
     AccountId account_id;
-    if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    bool is_user_logged_in = user_manager::UserManager::Get()->IsUserLoggedIn();
+    if (is_user_logged_in) {
       account_id =
           user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
     }
@@ -137,7 +138,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
         account_id,
         base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
                             weak_factory_.GetWeakPtr()),
-        ash::ParentAccessRequestReason::kChangeTime);
+        ash::ParentAccessRequestReason::kChangeTime,
+        !is_user_logged_in /* extra_dimmer */);
   }
 
   void OnParentAccessValidation(bool success) {

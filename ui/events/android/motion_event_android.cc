@@ -9,10 +9,10 @@
 #include <cmath>
 
 #include "base/android/jni_android.h"
-#include "jni/MotionEvent_jni.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/motionevent_jni_headers/MotionEvent_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

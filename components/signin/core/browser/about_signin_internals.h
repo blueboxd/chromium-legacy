@@ -131,7 +131,7 @@ class AboutSigninInternals : public KeyedService,
     std::string GetTypeAsString() const;
 
     const base::Time timestamp;
-    std::string account_id;
+    CoreAccountId account_id;
     RefreshTokenEventType type;
     std::string source;
   };
@@ -143,7 +143,7 @@ class AboutSigninInternals : public KeyedService,
     std::vector<TimedSigninStatusValue> timed_signin_fields;
 
     // Map account id to tokens associated to the account.
-    std::map<std::string, std::vector<std::unique_ptr<TokenInfo>>>
+    std::map<CoreAccountId, std::vector<std::unique_ptr<TokenInfo>>>
         token_info_map;
 
     // All the events that affected the refresh tokens.
@@ -152,7 +152,7 @@ class AboutSigninInternals : public KeyedService,
     SigninStatus();
     ~SigninStatus();
 
-    TokenInfo* FindToken(const std::string& account_id,
+    TokenInfo* FindToken(const CoreAccountId& account_id,
                          const std::string& consumer_id,
                          const identity::ScopeSet& scopes);
 
@@ -183,22 +183,22 @@ class AboutSigninInternals : public KeyedService,
   };
 
   // IdentityManager::DiagnosticsObserver implementations.
-  void OnAccessTokenRequested(const std::string& account_id,
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override;
-  void OnAccessTokenRequestCompleted(const std::string& account_id,
+  void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                      const std::string& consumer_id,
                                      const identity::ScopeSet& scopes,
                                      GoogleServiceAuthError error,
                                      base::Time expiration_time) override;
-  void OnAccessTokenRemovedFromCache(const std::string& account_id,
+  void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
                                      const identity::ScopeSet& scopes) override;
   void OnRefreshTokenUpdatedForAccountFromSource(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       bool is_refresh_token_valid,
       const std::string& source) override;
   void OnRefreshTokenRemovedForAccountFromSource(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& source) override;
 
   // IdentityManager::Observer implementations.

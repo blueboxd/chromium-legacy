@@ -193,15 +193,20 @@ void Pointer::SetCursorType(ui::CursorType cursor_type) {
 }
 
 void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
+  // For the |pinch_delegate_| (and |relative_pointer_delegate_| below) it is
+  // possible to bind multiple extensions to the same pointer interface (not
+  // that this is a particularly reasonable thing to do). When that happens we
+  // choose to only keep a single binding alive, so we simulate pointer
+  // destruction for the previous binding.
+  if (pinch_delegate_)
+    pinch_delegate_->OnPointerDestroying(this);
   pinch_delegate_ = delegate;
 }
 
 void Pointer::RegisterRelativePointerDelegate(
     RelativePointerDelegate* delegate) {
-  // It does not seem that wayland forbids multiple relative pointer interfaces
-  // being registered against the same pointer, though that is not really
-  // reasonable behaviour.
-  DCHECK(!relative_pointer_delegate_);
+  if (relative_pointer_delegate_)
+    relative_pointer_delegate_->OnPointerDestroying(this);
   relative_pointer_delegate_ = delegate;
 }
 
@@ -334,8 +339,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
   TRACE_EXO_INPUT_EVENT(event);
 
-  if (event->IsMouseEvent() &&
-      event->type() != ui::ET_MOUSE_EXITED &&
+  if (event->IsMouseEvent() && event->type() != ui::ET_MOUSE_EXITED &&
       event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
     // Generate motion event if location changed. We need to check location
     // here as mouse movement can generate both "moved" and "entered" events

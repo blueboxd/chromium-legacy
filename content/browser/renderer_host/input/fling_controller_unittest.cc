@@ -531,6 +531,34 @@ TEST_P(FlingControllerTest, ControllerBoostsTouchscreenFling) {
   EXPECT_GT(fling_controller_->CurrentFlingVelocity().x(), 1000);
 }
 
+// Ensure that once a fling finishes, the next fling doesn't get boosted.
+TEST_P(FlingControllerTest, ControllerDoesntBoostFinishedFling) {
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(1000, 0));
+  EXPECT_TRUE(FlingInProgress());
+  AdvanceTime();
+  ProgressFling(NowTicks());
+
+  // Fast forward so that the fling ends.
+  double time_to_advance_ms = 1000.0;
+  AdvanceTime(time_to_advance_ms);
+  ProgressFling(NowTicks());
+  ASSERT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType())
+      << "Unexpected Last Sent Gesture: "
+      << WebInputEvent::GetName(last_sent_gesture_.GetType());
+  EXPECT_EQ(fling_controller_->CurrentFlingVelocity().x(), 0);
+  EXPECT_FALSE(FlingInProgress());
+
+  // Now send a new fling that would have been boosted had it occurred during
+  // the previous fling. Ensure it isn't boosted.
+  AdvanceTime();
+  SimulateFlingCancel(blink::WebGestureDevice::kTouchscreen);
+  SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
+                     gfx::Vector2dF(1000, 0), /*wait_before_processing=*/false);
+  EXPECT_TRUE(FlingInProgress());
+  EXPECT_EQ(fling_controller_->CurrentFlingVelocity().x(), 1000);
+}
+
 TEST_P(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
   SimulateFlingStart(blink::WebGestureDevice::kTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -562,8 +590,7 @@ TEST_P(FlingControllerTest, MiddleClickAutoScrollFling) {
   EXPECT_TRUE(FlingInProgress());
   EXPECT_EQ(fling_controller_->CurrentFlingVelocity().x(), 2000);
 
-  // Now cancel the fling. The GFC won't get suppressed by fling booster since
-  // autoscroll fling doesn't have boosting.
+  // Now cancel the fling.
   SimulateFlingCancel(blink::WebGestureDevice::kSyntheticAutoscroll);
   EXPECT_FALSE(FlingInProgress());
 }

@@ -9,13 +9,11 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.system.Os;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.File;
@@ -200,26 +198,18 @@ public abstract class PathUtils {
     @SuppressWarnings("unused")
     @CalledByNative
     private static String getDownloadsDirectory() {
-        // Temporarily allowing disk access while fixing. TODO: http://crbug.com/508615
+        // TODO(crbug.com/508615): Temporarily allowing disk access until more permanent fix is in.
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            long time = SystemClock.elapsedRealtime();
-            String downloadsPath;
             if (BuildInfo.isAtLeastQ()) {
                 // https://developer.android.com/preview/privacy/scoped-storage
                 // In Q+, Android has bugun sandboxing external storage. Chrome may not have
                 // permission to write to Environment.getExternalStoragePublicDirectory(). Instead
                 // using Context.getExternalFilesDir() will return a path to sandboxed external
                 // storage for which no additional permissions are required.
-                downloadsPath = getAllPrivateDownloadsDirectories()[0];
-            } else {
-                downloadsPath =
-                        Environment
-                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                                .getPath();
+                return getAllPrivateDownloadsDirectories()[0];
             }
-            RecordHistogram.recordTimesHistogram(
-                    "Android.StrictMode.DownloadsDir", SystemClock.elapsedRealtime() - time);
-            return downloadsPath;
+            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    .getPath();
         }
     }
 

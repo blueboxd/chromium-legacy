@@ -37,16 +37,16 @@ void FakeOAuth2TokenService::FetchOAuth2Token(
   pending_requests_.push_back(pending_request);
 }
 
-void FakeOAuth2TokenService::AddAccount(const std::string& account_id) {
+void FakeOAuth2TokenService::AddAccount(const CoreAccountId& account_id) {
   GetDelegate()->UpdateCredentials(account_id, "fake_refresh_token");
 }
 
-void FakeOAuth2TokenService::RemoveAccount(const std::string& account_id) {
+void FakeOAuth2TokenService::RemoveAccount(const CoreAccountId& account_id) {
   GetDelegate()->RevokeCredentials(account_id);
 }
 
 void FakeOAuth2TokenService::IssueAllTokensForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   // Walk the requests and notify the callbacks.
   // Using a copy of pending requests to make sure a new token request triggered
@@ -63,7 +63,7 @@ void FakeOAuth2TokenService::IssueAllTokensForAccount(
 }
 
 void FakeOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& auth_error) {
   // Walk the requests and notify the callbacks.
   // Using a copy of pending requests to make sure retrying a request in

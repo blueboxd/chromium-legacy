@@ -21,8 +21,40 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_features.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "net/base/url_util.h"
+#endif
 
 namespace web_app {
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+const char kChromeOsPlayPlatform[] = "chromeos_play";
+const char kPlayIntentPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+const char kPlayStorePackage[] = "com.android.vending";
+
+std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == name)
+      return it.GetValue();
+  }
+  return std::string();
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
@@ -256,6 +288,92 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   // If the manifest specified icons, don't use the page icons.
   const bool skip_page_favicons = !manifest.icons.empty();
+
+  CheckForPlayStoreIntentOrGetIcons(manifest, std::move(web_app_info),
+                                    std::move(icon_urls), for_installable_site,
+                                    skip_page_favicons);
+}
+
+void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
+    const blink::Manifest& manifest,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    std::vector<GURL> icon_urls,
+    ForInstallableSite for_installable_site,
+    bool skip_page_favicons) {
+#if defined(OS_CHROMEOS)
+  // If we have install options, this is not a user-triggered install, and thus
+  // cannot be sent to the store.
+  if (base::FeatureList::IsEnabled(features::kApkWebAppInstalls) &&
+      for_installable_site == ForInstallableSite::kYes && !install_options_) {
+    for (const auto& application : manifest.related_applications) {
+      std::string id = base::UTF16ToUTF8(application.id.string());
+      if (!base::EqualsASCII(application.platform.string(),
+                             kChromeOsPlayPlatform)) {
+        continue;
+      }
+
+      std::string id_from_app_url =
+          ExtractQueryValueForName(application.url, "id");
+
+      if (id.empty()) {
+        if (id_from_app_url.empty())
+          continue;
+        id = id_from_app_url;
+      }
+
+      auto* arc_service_manager = arc::ArcServiceManager::Get();
+      if (arc_service_manager) {
+        auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+            arc_service_manager->arc_bridge_service()->app(), IsInstallable);
+        if (instance) {
+          // Attach the referrer value.
+          std::string referrer =
+              ExtractQueryValueForName(application.url, "referrer");
+          if (!referrer.empty())
+            referrer = "&referrer=" + referrer;
+
+          std::string intent = kPlayIntentPrefix + id + referrer;
+          instance->IsInstallable(
+              id,
+              base::BindOnce(&WebAppInstallTask::OnDidCheckForIntentToPlayStore,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(web_app_info), std::move(icon_urls),
+                             for_installable_site, skip_page_favicons, intent));
+          return;
+        }
+      }
+    }
+  }
+
+#endif  // defined(OS_CHROMEOS)
+  OnDidCheckForIntentToPlayStore(std::move(web_app_info), std::move(icon_urls),
+                                 for_installable_site, skip_page_favicons,
+                                 /*intent=*/"",
+                                 /*should_intent_to_store=*/false);
+}
+
+void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    std::vector<GURL> icon_urls,
+    ForInstallableSite for_installable_site,
+    bool skip_page_favicons,
+    const std::string& intent,
+    bool should_intent_to_store) {
+#if defined(OS_CHROMEOS)
+  if (should_intent_to_store && !intent.empty()) {
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (arc_service_manager) {
+      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleUrl);
+      if (instance) {
+        instance->HandleUrl(intent, kPlayStorePackage);
+        CallInstallCallback(AppId(), InstallResultCode::kIntentToPlayStore);
+        return;
+      }
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
 
   data_retriever_->GetIcons(
       web_contents(), icon_urls, skip_page_favicons, install_source_,

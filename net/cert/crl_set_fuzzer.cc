@@ -5,14 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/test/fuzzed_data_provider.h"
 #include "net/cert/crl_set.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 32 + 32 + 20)
     return 0;
 
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   std::string spki_hash = data_provider.ConsumeBytesAsString(32);
   std::string issuer_hash = data_provider.ConsumeBytesAsString(32);
   size_t serial_length = data_provider.ConsumeIntegralInRange(4, 19);

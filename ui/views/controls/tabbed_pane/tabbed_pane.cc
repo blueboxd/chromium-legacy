@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -126,18 +126,20 @@ const char Tab::kViewClassName[] = "Tab";
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
-      title_(new Label(title, style::CONTEXT_LABEL, style::STYLE_TAB_ACTIVE)),
       state_(State::kActive),
       contents_(contents) {
   // Calculate the size while the font list is bold.
-  preferred_title_size_ = title_->GetPreferredSize();
+  auto title_label = std::make_unique<Label>(title, style::CONTEXT_LABEL,
+                                             style::STYLE_TAB_ACTIVE);
+  title_ = title_label.get();
+  preferred_title_size_ = title_label->GetPreferredSize();
   const bool is_vertical =
       tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical;
   const bool is_highlight_style =
       tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight;
 
   if (is_vertical)
-    title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   if (is_highlight_style && is_vertical) {
     constexpr int kTabVerticalPadding = 8;
@@ -153,8 +155,8 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   SetLayoutManager(std::make_unique<FillLayout>());
   SetState(State::kInactive);
   // Calculate the size while the font list is normal and set the max size.
-  preferred_title_size_.SetToMax(title_->GetPreferredSize());
-  AddChildView(title_);
+  preferred_title_size_.SetToMax(title_label->GetPreferredSize());
+  AddChildView(std::move(title_label));
 
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
@@ -172,6 +174,25 @@ void Tab::SetSelected(bool selected) {
 #else
   SetFocusBehavior(selected ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
 #endif
+}
+
+const base::string16& Tab::GetTitleText() const {
+  return title_->text();
+}
+
+void Tab::SetTitleText(const base::string16& text) {
+  title_->SetText(text);
+
+  // Active and inactive states use different font sizes. Find the largest size
+  // and reserve that amount of space.
+  State old_state = state_;
+  SetState(State::kActive);
+  preferred_title_size_ = GetPreferredSize();
+  SetState(State::kInactive);
+  preferred_title_size_.SetToMax(GetPreferredSize());
+  SetState(old_state);
+
+  InvalidateLayout();
 }
 
 void Tab::OnStateChanged() {
@@ -684,13 +705,11 @@ void MdTabStrip::AnimationEnded(const gfx::Animation* animation) {
 }
 
 TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
-                       TabbedPane::TabStripStyle style)
-    : contents_(new View()) {
+                       TabbedPane::TabStripStyle style) {
   DCHECK(orientation != TabbedPane::Orientation::kHorizontal ||
          style != TabbedPane::TabStripStyle::kHighlight);
-  tab_strip_ = new MdTabStrip(orientation, style);
-  AddChildView(tab_strip_);
-  AddChildView(contents_);
+  tab_strip_ = AddChildView(std::make_unique<MdTabStrip>(orientation, style));
+  contents_ = AddChildView(std::make_unique<View>());
 }
 
 TabbedPane::~TabbedPane() = default;
@@ -704,19 +723,16 @@ size_t TabbedPane::GetTabCount() {
   return contents_->children().size();
 }
 
-void TabbedPane::AddTab(const base::string16& title, View* contents) {
-  AddTabAtIndex(tab_strip_->children().size(), title, contents);
-}
-
-void TabbedPane::AddTabAtIndex(size_t index,
-                               const base::string16& title,
-                               View* contents) {
+void TabbedPane::AddTabInternal(size_t index,
+                                const base::string16& title,
+                                std::unique_ptr<View> contents) {
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
 
-  tab_strip_->AddChildViewAt(new MdTab(this, title, contents),
-                             static_cast<int>(index));
-  contents_->AddChildViewAt(contents, static_cast<int>(index));
+  tab_strip_->AddChildViewAt(
+      std::make_unique<MdTab>(this, title, contents.get()),
+      static_cast<int>(index));
+  contents_->AddChildViewAt(std::move(contents), static_cast<int>(index));
   if (!GetSelectedTab())
     SelectTabAt(index);
 
@@ -772,6 +788,10 @@ TabbedPane::Orientation TabbedPane::GetOrientation() const {
 
 TabbedPane::TabStripStyle TabbedPane::GetStyle() const {
   return tab_strip_->style();
+}
+
+Tab* TabbedPane::GetTabAt(size_t index) {
+  return tab_strip_->GetTabAtIndex(index);
 }
 
 Tab* TabbedPane::GetSelectedTab() {

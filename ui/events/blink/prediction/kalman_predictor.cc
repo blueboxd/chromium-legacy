@@ -18,7 +18,8 @@ namespace ui {
 constexpr base::TimeDelta InputPredictor::kMaxTimeDelta;
 constexpr base::TimeDelta InputPredictor::kMaxResampleTime;
 
-KalmanPredictor::KalmanPredictor() = default;
+KalmanPredictor::KalmanPredictor(const bool enable_time_filtering)
+    : enable_time_filtering_(enable_time_filtering) {}
 
 KalmanPredictor::~KalmanPredictor() = default;
 
@@ -30,6 +31,7 @@ void KalmanPredictor::Reset() {
   x_predictor_.Reset();
   y_predictor_.Reset();
   last_point_.time_stamp = base::TimeTicks();
+  time_filter_.Reset();
 }
 
 void KalmanPredictor::Update(const InputData& cur_input) {
@@ -39,9 +41,12 @@ void KalmanPredictor::Update(const InputData& cur_input) {
     dt = cur_input.time_stamp - last_point_.time_stamp;
     if (dt > kMaxTimeDelta)
       Reset();
+    else if (enable_time_filtering_)
+      time_filter_.Update(dt.InMillisecondsF(), 0);
   }
 
-  double dt_ms = dt.InMillisecondsF();
+  double dt_ms = enable_time_filtering_ ? time_filter_.GetPosition()
+                                        : dt.InMillisecondsF();
   last_point_ = cur_input;
   x_predictor_.Update(cur_input.pos.x(), dt_ms);
   y_predictor_.Update(cur_input.pos.y(), dt_ms);

@@ -306,6 +306,7 @@ void FlingController::GenerateAndSendFlingProgressEvents(
           << "Fling controller doesn't handle flings with source device:"
           << static_cast<int>(current_fling_parameters_.source_device);
   }
+  fling_booster_.ObserveProgressFling(current_fling_parameters_.velocity);
 }
 
 void FlingController::GenerateAndSendFlingEndEvents() {

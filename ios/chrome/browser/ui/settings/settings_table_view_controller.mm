@@ -69,6 +69,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -723,14 +724,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         LOG(ERROR) << "Save passwords cell was disabled as the password store"
                       " cannot be created.";
         [detailCell setUserInteractionEnabled:NO];
-        detailCell.textLabel.textColor =
-            UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+        detailCell.textLabel.textColor = UIColor.cr_secondaryLabelColor;
         return cell;
       }
     }
 
     [detailCell setUserInteractionEnabled:YES];
-    detailCell.textLabel.textColor = UIColor.blackColor;
+    detailCell.textLabel.textColor = UIColor.cr_labelColor;
   }
 
   switch (itemType) {

@@ -108,6 +108,10 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
     private int mLibraryProcessType;
 
+    // Tests may inject a method to be run instead of calling ContentMain() in order for them to
+    // initialize the C++ system via another means.
+    private Runnable mContentMainCallbackForTests;
+
     // Browser start up type. If the type is |BROWSER_START_TYPE_SERVICE_MANAGER_ONLY|, start up
     // will be paused after ServiceManager is launched. Additional request to launch the full
     // browser process is needed to fully complete the startup process. Callbacks will executed
@@ -276,13 +280,27 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
      * Start the browser process by calling ContentMain.start().
      */
     int contentStart() {
-        boolean startServiceManagerOnly =
-                mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY;
-        int result = contentMainStart(startServiceManagerOnly);
+        int result = 0;
+        if (mContentMainCallbackForTests == null) {
+            boolean startServiceManagerOnly =
+                    mCurrentBrowserStartType == BrowserStartType.SERVICE_MANAGER_ONLY;
+            result = contentMainStart(startServiceManagerOnly);
+            // No need to launch the full browser again if we are launching full browser now.
+            if (!startServiceManagerOnly) mLaunchFullBrowserAfterServiceManagerStart = false;
+        } else {
+            assert mCurrentBrowserStartType == BrowserStartType.FULL_BROWSER;
+            // Run the injected Runnable instead of ContentMain().
+            mContentMainCallbackForTests.run();
+            mLaunchFullBrowserAfterServiceManagerStart = false;
+        }
         mHasCalledContentStart = true;
-        // No need to launch the full browser again if we are launching full browser now.
-        if (!startServiceManagerOnly) mLaunchFullBrowserAfterServiceManagerStart = false;
         return result;
+    }
+
+    @Override
+    public void setContentMainCallbackForTests(Runnable r) {
+        assert !mHasCalledContentStart;
+        mContentMainCallbackForTests = r;
     }
 
     /**

@@ -72,19 +72,22 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
   }
 
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
-  std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
+  auto archive_manager = std::make_unique<DownloadArchiveManager>(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile_key->GetPrefs()));
+      profile_key->GetPrefs());
   auto clock = std::make_unique<base::DefaultClock>();
 
-  std::unique_ptr<SystemDownloadManager> download_manager(
-      new android::OfflinePagesDownloadManagerBridge());
+  auto download_manager =
+      std::make_unique<android::OfflinePagesDownloadManagerBridge>();
+  auto publisher = std::make_unique<OfflinePageArchivePublisher>(
+      archive_manager.get(), download_manager.get());
 
   std::unique_ptr<OfflinePageModelTaskified> model =
       std::make_unique<OfflinePageModelTaskified>(
           std::move(metadata_store), std::move(archive_manager),
-          std::move(download_manager), background_task_runner);
+          std::move(download_manager), std::move(publisher),
+          background_task_runner);
 
   CctOriginObserver::AttachToOfflinePageModel(model.get());
 

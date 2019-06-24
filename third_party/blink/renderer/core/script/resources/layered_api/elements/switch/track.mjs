@@ -104,9 +104,9 @@ export class SwitchTrack {
    */
   _addSlot() {
     if (this[_value]) {
-      this[_trackElement].appendChild(this[_slotElement]);
-    } else {
       this[_fillElement].appendChild(this[_slotElement]);
+    } else {
+      this[_trackElement].appendChild(this[_slotElement]);
     }
   }
 }

@@ -1145,17 +1145,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_device_login_screen_site_per_process()) {
-    const em::DeviceLoginScreenSitePerProcessProto& container(
-        policy.device_login_screen_site_per_process());
-    if (container.has_site_per_process()) {
-      policies->Set(
-          key::kDeviceLoginScreenSitePerProcess, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(container.site_per_process()), nullptr);
-    }
-  }
-
   if (policy.has_virtual_machines_allowed()) {
     const em::VirtualMachinesAllowedProto& container(
         policy.virtual_machines_allowed());

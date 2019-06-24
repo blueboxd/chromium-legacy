@@ -4,12 +4,14 @@
 
 #include "components/payments/content/payment_request.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_details_converter.h"
@@ -44,6 +46,27 @@ using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 bool IsGooglePaymentMethodInstrumentSelected(const std::string& method_name) {
   return method_name == kGooglePayMethodName ||
          method_name == kAndroidPayMethodName;
+}
+
+std::string GetNotSupportedErrorMessage(PaymentRequestSpec* spec) {
+  if (!spec || spec->payment_method_identifiers_set().empty())
+    return errors::kGenericPaymentMethodNotSupportedMessage;
+
+  std::vector<std::string> method_names(
+      spec->payment_method_identifiers_set().size());
+  std::transform(
+      spec->payment_method_identifiers_set().begin(),
+      spec->payment_method_identifiers_set().end(), method_names.begin(),
+      [](const std::string& method_name) { return "\"" + method_name + "\""; });
+
+  std::string output;
+  bool replaced = base::ReplaceChars(
+      method_names.size() == 1
+          ? errors::kSinglePaymentMethodNotSupportedFormat
+          : errors::kMultiplePaymentMethodsNotSupportedFormat,
+      "$", base::JoinString(method_names, ", "), &output);
+  DCHECK(replaced);
+  return output;
 }
 
 }  // namespace
@@ -191,7 +214,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
-    client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING);
+    client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING,
+                     errors::kAnotherUiShowing);
     OnConnectionTerminated();
     return;
   }
@@ -201,7 +225,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     DCHECK(!has_recorded_completion_);
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(JourneyLogger::NOT_SHOWN_REASON_OTHER);
-    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
+                     errors::kCannotShowInBackgroundTab);
     OnConnectionTerminated();
     return;
   }
@@ -245,7 +270,7 @@ void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
   if (!PaymentsValidators::IsValidPaymentValidationErrorsFormat(errors,
                                                                 &error)) {
     log_.Error(error);
-    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL, error);
     OnConnectionTerminated();
     return;
   }
@@ -458,7 +483,8 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
-    client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
+    client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
+                     GetNotSupportedErrorMessage(spec_.get()));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
     OnConnectionTerminated();
@@ -573,7 +599,8 @@ void PaymentRequest::UserCancelled() {
   RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   // This sends an error to the renderer, which informs the API user.
-  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
+                   errors::kUserCancelled);
 
   // We close all bindings and ask to be destroyed.
   client_.reset();

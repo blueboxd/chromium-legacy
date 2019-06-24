@@ -13,6 +13,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/android/chrome_jni_headers/ExploreSitesBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/ExploreSitesCategory_jni.h"
+#include "chrome/android/chrome_jni_headers/ExploreSitesSite_jni.h"
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
@@ -22,9 +25,6 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "jni/ExploreSitesBridge_jni.h"
-#include "jni/ExploreSitesCategory_jni.h"
-#include "jni/ExploreSitesSite_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace explore_sites {

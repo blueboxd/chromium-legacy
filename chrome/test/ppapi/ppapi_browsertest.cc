@@ -2182,9 +2182,9 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     ASSERT_TRUE(extension);
 
     AppLaunchParams params(browser()->profile(), extension->id(),
-                           extensions::LAUNCH_CONTAINER_NONE,
+                           extensions::LaunchContainer::kLaunchContainerNone,
                            WindowOpenDisposition::NEW_WINDOW,
-                           extensions::SOURCE_TEST);
+                           extensions::AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

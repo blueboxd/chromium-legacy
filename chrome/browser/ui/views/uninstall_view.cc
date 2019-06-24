@@ -54,10 +54,10 @@ void UninstallView::SetupControls() {
                         views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-  confirm_label_ = new views::Label(
+  auto confirm_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY));
-  confirm_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(confirm_label_);
+  confirm_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  confirm_label_ = layout->AddView(std::move(confirm_label));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -83,9 +83,8 @@ void UninstallView::SetupControls() {
                         views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-  delete_profile_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE));
-  layout->AddView(delete_profile_);
+  delete_profile_ = layout->AddView(std::make_unique<views::Checkbox>(
+      l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE)));
 
   // Set default browser combo box. If the default should not or cannot be
   // changed, widgets are not shown. We assume here that if Chrome cannot
@@ -112,11 +111,12 @@ void UninstallView::SetupControls() {
           views::GridLayout::LEADING, views::GridLayout::CENTER,
           views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
       layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-      change_default_browser_ = new views::Checkbox(
-          l10n_util::GetStringUTF16(IDS_UNINSTALL_SET_DEFAULT_BROWSER), this);
-      layout->AddView(change_default_browser_);
-      browsers_combo_ = new views::Combobox(this);
-      layout->AddView(browsers_combo_);
+      change_default_browser_ =
+          layout->AddView(std::make_unique<views::Checkbox>(
+              l10n_util::GetStringUTF16(IDS_UNINSTALL_SET_DEFAULT_BROWSER),
+              this));
+      browsers_combo_ =
+          layout->AddView(std::make_unique<views::Combobox>(this));
       browsers_combo_->SetEnabled(false);
     }
   }

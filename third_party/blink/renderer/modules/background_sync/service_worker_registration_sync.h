@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class PeriodicSyncManager;
 class SyncManager;
 class ServiceWorkerRegistration;
 
@@ -23,11 +24,18 @@ class ServiceWorkerRegistrationSync final
  public:
   static const char kSupplementName[];
 
-  explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
-  virtual ~ServiceWorkerRegistrationSync();
-  static ServiceWorkerRegistrationSync& From(ServiceWorkerRegistration&);
+  static ServiceWorkerRegistrationSync& From(
+      ServiceWorkerRegistration& registration);
 
-  static SyncManager* sync(ServiceWorkerRegistration&);
+  static PeriodicSyncManager* periodicSync(
+      ServiceWorkerRegistration& registration);
+  static SyncManager* sync(ServiceWorkerRegistration& registration);
+
+  explicit ServiceWorkerRegistrationSync(
+      ServiceWorkerRegistration* registration);
+  virtual ~ServiceWorkerRegistrationSync();
+
+  PeriodicSyncManager* periodicSync();
   SyncManager* sync();
 
   void Trace(blink::Visitor*) override;
@@ -35,6 +43,7 @@ class ServiceWorkerRegistrationSync final
  private:
   Member<ServiceWorkerRegistration> registration_;
   Member<SyncManager> sync_manager_;
+  Member<PeriodicSyncManager> periodic_sync_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationSync);
 };

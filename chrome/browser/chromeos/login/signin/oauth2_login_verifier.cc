@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
@@ -18,7 +17,7 @@ namespace chromeos {
 OAuth2LoginVerifier::OAuth2LoginVerifier(
     OAuth2LoginVerifier::Delegate* delegate,
     identity::IdentityManager* identity_manager,
-    const std::string& primary_account_id,
+    const CoreAccountId& primary_account_id,
     const std::string& oauthlogin_access_token)
     : delegate_(delegate),
       identity_manager_(identity_manager),
@@ -50,7 +49,7 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 void OAuth2LoginVerifier::VerifyProfileTokens() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GaiaCookieManagerService::AddAccountToCookieCompletedCallback
+  identity::AccountsCookieMutator::AddAccountToCookieCompletedCallback
       completion_callback =
           base::BindOnce(&OAuth2LoginVerifier::OnAddAccountToCookieCompleted,
                          weak_ptr_factory_.GetWeakPtr());
@@ -66,7 +65,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens() {
 }
 
 void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   if (account_id != primary_account_id_)
     return;

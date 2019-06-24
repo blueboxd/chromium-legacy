@@ -759,7 +759,6 @@ if (is_android) {
       "../android/java/src/org/chromium/ui/base/SelectFileDialog.java",
       "../android/java/src/org/chromium/ui/base/TouchDevice.java",
     ]
-    jni_package = "base"
   }
 
   java_cpp_enum("ui_base_cursor_type_java_enums_srcjar") {

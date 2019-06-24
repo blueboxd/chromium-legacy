@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Agent Equality Test</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+// This test checks whether the JavaScript agent is created in a proper
+// granularity. See:
+// https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-formalism
+
+async_test(t => {
+  var iframe = document.createElement('iframe');
+  iframe.src =
+    'http://127.0.0.1:8000/security/resources/agent-equality-same-origin.html';
+
+  window.addEventListener(
+    'message',
+    t.step_func(evt => {
+      t.add_cleanup(() => { document.body.removeChild(iframe); });
+      assert_equals(evt.data.length, 3);
+      assert_equals(evt.data[0], evt.data[1]);
+      assert_equals(evt.data[0], evt.data[2]);
+      t.done();
+    }),
+    {'once': true});
+
+  document.body.appendChild(iframe);
+}, 'Same-origin documents must share the same agent.');
+
+// TODO(yutak): Add more tests.
+</script>
+</body>
+</html>

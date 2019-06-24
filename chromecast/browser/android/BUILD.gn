@@ -184,7 +184,6 @@ if (is_android_things_non_public && !build_for_android_things_n) {
     deps = [
       "//chromecast/internal/android/prebuilt/things:support_lib_java",
     ]
-    jni_package = "chromecast"
   }
 }
 

@@ -815,7 +815,7 @@ class GetAuthTokenFunctionTest
 
  private:
   // identity::IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(const std::string& account_id,
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override {
     if (on_access_token_requested_.is_null())

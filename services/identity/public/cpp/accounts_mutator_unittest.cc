@@ -57,7 +57,7 @@ class TestIdentityManagerDiagnosticsObserver
  private:
   // identity::IdentityManager::DiagnosticsObserver:
   void OnRefreshTokenUpdatedForAccountFromSource(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       bool is_refresh_token_valid,
       const std::string& source) override {
     token_updator_account_id_ = account_id;
@@ -66,7 +66,7 @@ class TestIdentityManagerDiagnosticsObserver
   }
 
   void OnRefreshTokenRemovedForAccountFromSource(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& source) override {
     token_remover_account_id_ = account_id;
     token_remover_source_ = source;

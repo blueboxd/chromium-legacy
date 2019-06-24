@@ -62,8 +62,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('on-add-or-edit-cups-printer',
-                          this.onAddOrEditPrinter_.bind(this));
     this.addWebUIListener(
         'on-printers-changed', this.printersChanged_.bind(this));
     this.networksChangedListener_ = this.refreshNetworks_.bind(this);
@@ -111,17 +109,8 @@ Polymer({
     * @private
     */
    openResultToast_: function(event) {
-     this.onAddOrEditPrinter_(event.detail.resultCode,
-                              event.detail.printerName);
-   },
-
-  /**
-   * @param {PrinterSetupResult} result_code
-   * @param {string} printerName
-   * @private
-   */
-  onAddOrEditPrinter_: function(result_code, printerName) {
-    switch (result_code) {
+    const printerName = event.detail.printerName;
+    switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
         this.updateCupsPrintersList_();
         this.addPrinterResultText_ =

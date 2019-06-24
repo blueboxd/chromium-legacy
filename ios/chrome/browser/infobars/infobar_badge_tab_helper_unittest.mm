@@ -51,17 +51,17 @@
 @end
 
 @implementation InfobarBadgeUITestDelegate
-- (void)infobarBannerWasDismissed {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed();
+- (void)infobarBannerWasDismissed:(InfobarType)infobarType {
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed(infobarType);
 }
-- (void)infobarModalWasPresented {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
+- (void)infobarModalWasPresented:(InfobarType)infobarType {
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented(infobarType);
 }
-- (void)infobarModalWillDismiss {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
+- (void)infobarModalWillDismiss:(InfobarType)infobarType {
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed(infobarType);
 }
-- (void)infobarWasAccepted {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted();
+- (void)infobarWasAccepted:(InfobarType)infobarType {
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
 }
 @end
 
@@ -202,19 +202,23 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
 // Test each UpdateBadge public method individually.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStates) {
   // Test that dismissing the Banner unselects the badge.
-  tab_helper()->UpdateBadgeForInfobarBannerDismissed();
+  tab_helper()->UpdateBadgeForInfobarBannerDismissed(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
                InfobarBadgeStateSelected);
   // Test that dismissing the Modal unselects the badge.
-  tab_helper()->UpdateBadgeForInfobarModalDismissed();
+  tab_helper()->UpdateBadgeForInfobarModalDismissed(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
                InfobarBadgeStateSelected);
   // Test that presenting the Modal selects the badge.
-  tab_helper()->UpdateBadgeForInfobarModalPresented();
+  tab_helper()->UpdateBadgeForInfobarModalPresented(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateSelected);
   // Test that accepting the Infobar sets the badge to accepted state.
-  tab_helper()->UpdateBadgeForInfobarAccepted();
+  tab_helper()->UpdateBadgeForInfobarAccepted(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateAccepted);
 }
@@ -223,17 +227,20 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStates) {
 // accepted state.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeAcceptedState) {
   // Accept the Infobar.
-  tab_helper()->UpdateBadgeForInfobarAccepted();
+  tab_helper()->UpdateBadgeForInfobarAccepted(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateAccepted);
   // Test badge is still "accepted" after Modal presentation.
-  tab_helper()->UpdateBadgeForInfobarModalPresented();
+  tab_helper()->UpdateBadgeForInfobarModalPresented(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateAccepted);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateSelected);
   // Test badge is still "accepted" after Modal dismissal.
-  tab_helper()->UpdateBadgeForInfobarModalDismissed();
+  tab_helper()->UpdateBadgeForInfobarModalDismissed(
+      InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateAccepted);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
@@ -284,7 +291,8 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerDismissal) {
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerAccepted) {
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
                InfobarBadgeStateAccepted);
-  tab_helper()->UpdateBadgeForInfobarAccepted();
+  tab_helper()->UpdateBadgeForInfobarAccepted(
+      InfobarType::kInfobarTypePasswordSave);
   [infobar_container_coordinator_ dismissBanner];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {

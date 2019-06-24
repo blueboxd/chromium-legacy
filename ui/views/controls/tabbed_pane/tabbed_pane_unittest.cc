@@ -96,10 +96,12 @@ TEST_F(TabbedPaneTest, TabStripHighlightStyle) {
 // width of horizontal tab strips for preferred size calculations. Tab titles
 // are elided to fit the actual width.
 TEST_F(TabbedPaneTest, SizeAndLayout) {
-  View* child1 = new StaticSizedView(gfx::Size(20, 10));
-  tabbed_pane_->AddTab(ASCIIToUTF16("tab1 with very long text"), child1);
-  View* child2 = new StaticSizedView(gfx::Size(5, 5));
-  tabbed_pane_->AddTab(ASCIIToUTF16("tab2 with very long text"), child2);
+  View* child1 = tabbed_pane_->AddTab(
+      ASCIIToUTF16("tab1 with very long text"),
+      std::make_unique<StaticSizedView>(gfx::Size(20, 10)));
+  View* child2 =
+      tabbed_pane_->AddTab(ASCIIToUTF16("tab2 with very long text"),
+                           std::make_unique<StaticSizedView>(gfx::Size(5, 5)));
   tabbed_pane_->SelectTabAt(0);
 
   // |tabbed_pane_| width should match the largest child in horizontal mode.
@@ -127,10 +129,11 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
 TEST_F(TabbedPaneTest, SizeAndLayoutInVerticalOrientation) {
   MakeTabbedPane(TabbedPane::Orientation::kVertical,
                  TabbedPane::TabStripStyle::kBorder);
-  View* child1 = new StaticSizedView(gfx::Size(20, 10));
-  tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
-  View* child2 = new StaticSizedView(gfx::Size(5, 5));
-  tabbed_pane_->AddTab(ASCIIToUTF16("tab2"), child2);
+  View* child1 = tabbed_pane_->AddTab(
+      ASCIIToUTF16("tab1"),
+      std::make_unique<StaticSizedView>(gfx::Size(20, 10)));
+  View* child2 = tabbed_pane_->AddTab(
+      ASCIIToUTF16("tab2"), std::make_unique<StaticSizedView>(gfx::Size(5, 5)));
   tabbed_pane_->SelectTabAt(0);
 
   // |tabbed_pane_| reserves extra width for the tab strip in vertical mode.
@@ -157,8 +160,7 @@ TEST_F(TabbedPaneTest, SizeAndLayoutInVerticalOrientation) {
 TEST_F(TabbedPaneTest, AddAndSelect) {
   // Add several tabs; only the first should be selected automatically.
   for (size_t i = 0; i < 3; ++i) {
-    View* tab = new View();
-    tabbed_pane_->AddTab(DefaultTabTitle(), tab);
+    tabbed_pane_->AddTab(DefaultTabTitle(), std::make_unique<View>());
     EXPECT_EQ(i + 1, tabbed_pane_->GetTabCount());
     EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
   }
@@ -170,8 +172,8 @@ TEST_F(TabbedPaneTest, AddAndSelect) {
   }
 
   // Add a tab at index 0, it should not be selected automatically.
-  View* tab0 = new View();
-  tabbed_pane_->AddTabAtIndex(0, ASCIIToUTF16("tab0"), tab0);
+  View* tab0 = tabbed_pane_->AddTabAtIndex(0, ASCIIToUTF16("tab0"),
+                                           std::make_unique<View>());
   EXPECT_NE(tab0, GetSelectedTabContentView());
   EXPECT_NE(0u, tabbed_pane_->GetSelectedTabIndex());
 }
@@ -179,8 +181,7 @@ TEST_F(TabbedPaneTest, AddAndSelect) {
 TEST_F(TabbedPaneTest, ArrowKeyBindings) {
   // Add several tabs; only the first should be selected automatically.
   for (size_t i = 0; i < 3; ++i) {
-    View* tab = new View();
-    tabbed_pane_->AddTab(DefaultTabTitle(), tab);
+    tabbed_pane_->AddTab(DefaultTabTitle(), std::make_unique<View>());
     EXPECT_EQ(i + 1, tabbed_pane_->GetTabCount());
   }
 
@@ -215,7 +216,7 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
 
   constexpr size_t kNumTabs = 3;
   for (size_t i = 0; i < kNumTabs; ++i) {
-    tabbed_pane_->AddTab(DefaultTabTitle(), new View());
+    tabbed_pane_->AddTab(DefaultTabTitle(), std::make_unique<View>());
   }
   // Check the first tab is selected.
   EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());

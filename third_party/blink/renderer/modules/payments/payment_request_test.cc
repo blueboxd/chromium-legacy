@@ -311,7 +311,8 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorPaymentMethodNotSupported) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
-      payments::mojom::blink::PaymentErrorReason::NOT_SUPPORTED);
+      payments::mojom::blink::PaymentErrorReason::NOT_SUPPORTED,
+      "The payment method \"foo\" is not supported");
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("NotSupportedError: The payment method \"foo\" is not supported",
@@ -331,7 +332,8 @@ TEST(PaymentRequestTest, RejectShowPromiseOnErrorCancelled) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
-      payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
+      payments::mojom::blink::PaymentErrorReason::USER_CANCEL,
+      "Request cancelled");
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
   EXPECT_EQ("AbortError: Request cancelled", error_message);
@@ -403,12 +405,11 @@ TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnShippingAddressChange(BuildPaymentAddressForTest());
-  request->OnUpdatePaymentDetails(
-      ScriptValue::From(
-          scope.GetScriptState(),
-          FromJSONString(scope.GetScriptState()->GetIsolate(),
-                         scope.GetScriptState()->GetContext(),
-                         "{\"total\": {}}", scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(ScriptValue::From(
+      scope.GetScriptState(),
+      FromJSONString(scope.GetScriptState()->GetIsolate(),
+                     scope.GetScriptState()->GetContext(), "{\"total\": {}}",
+                     scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 }
 
@@ -435,12 +436,11 @@ TEST(PaymentRequestTest,
       "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": "
       "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
       "\"5.00\"}, \"selected\": true}]}";
-  request->OnUpdatePaymentDetails(
-      ScriptValue::From(scope.GetScriptState(),
-                        FromJSONString(scope.GetScriptState()->GetIsolate(),
-                                       scope.GetScriptState()->GetContext(),
-                                       detail_with_shipping_options,
-                                       scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(ScriptValue::From(
+      scope.GetScriptState(),
+      FromJSONString(scope.GetScriptState()->GetIsolate(),
+                     scope.GetScriptState()->GetContext(),
+                     detail_with_shipping_options, scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ("standardShippingOption", request->shippingOption());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
@@ -537,12 +537,11 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
       "\"value\": \"5.00\"}},"
       "\"error\": \"This is an error message.\"}";
 
-  request->OnUpdatePaymentDetails(
-      ScriptValue::From(
-          scope.GetScriptState(),
-          FromJSONString(scope.GetScriptState()->GetIsolate(),
-                         scope.GetScriptState()->GetContext(),
-                         detail_with_error_msg, scope.GetExceptionState())));
+  request->OnUpdatePaymentDetails(ScriptValue::From(
+      scope.GetScriptState(),
+      FromJSONString(scope.GetScriptState()->GetIsolate(),
+                     scope.GetScriptState()->GetContext(),
+                     detail_with_error_msg, scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 }
 

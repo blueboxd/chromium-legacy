@@ -779,8 +779,12 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     // If we couldn't fit the tile into our current memory limit, then we're
     // done.
     if (!memory_usage_is_within_limit) {
-      if (tile_is_needed_now)
+      if (tile_is_needed_now) {
+        LOG(ERROR) << "WARNING: tile memory limits exceeded, some content may "
+                      "not draw";
+
         had_enough_memory_to_schedule_tiles_needed_now = false;
+      }
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
     }

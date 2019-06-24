@@ -90,7 +90,7 @@ def RunOnce(device, url, speculated_url, parallel_url, warmup,
                 'delay_to_may_launch_url': delay_to_may_launch_url,
                 'delay_to_launch_url': delay_to_launch_url,
                 'timeout': timeout_s})
-    result_line_re = re.compile(r'CUSTOMTABSBENCH.*: (.*)')
+    result_line_re = re.compile(r'CUSTOMTABSBENCHCSV.*: (.*)')
     logcat_monitor = device.GetLogcatMonitor(clear=True)
     logcat_monitor.Start()
     device.ForceStop(_CHROME_PACKAGE)

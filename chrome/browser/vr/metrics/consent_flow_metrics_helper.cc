@@ -8,7 +8,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "jni/ConsentFlowMetrics_jni.h"
+#include "chrome/android/features/vr/jni_headers/ConsentFlowMetrics_jni.h"
 
 using base::android::JavaParamRef;
 #endif

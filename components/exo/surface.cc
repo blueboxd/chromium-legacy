@@ -804,6 +804,11 @@ void Surface::SetOcclusionTracking(bool tracking) {
     window()->TrackOcclusionState();
 }
 
+void Surface::SetSurfaceHierarchyContentBoundsForTest(
+    const gfx::Rect& content_bounds) {
+  surface_hierarchy_content_bounds_ = content_bounds;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer, private:
 

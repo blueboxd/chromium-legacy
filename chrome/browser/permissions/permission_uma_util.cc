@@ -28,7 +28,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "jni/PermissionUmaUtil_jni.h"
+#include "chrome/android/chrome_jni_headers/PermissionUmaUtil_jni.h"
 #endif
 
 // UMA keys need to be statically initialized so plain function would not

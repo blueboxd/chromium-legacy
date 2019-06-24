@@ -26,7 +26,7 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
 
   // PrimaryAccountMutator implementation.
 #if !defined(OS_CHROMEOS)
-  bool SetPrimaryAccount(const std::string& account_id) override;
+  bool SetPrimaryAccount(const CoreAccountId& account_id) override;
   bool ClearPrimaryAccount(
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,

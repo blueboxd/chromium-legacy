@@ -11,7 +11,7 @@
 
 namespace identity {
 
-AccessTokenFetcher::AccessTokenFetcher(const std::string& account_id,
+AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string& oauth_consumer_name,
                                        OAuth2TokenService* token_service,
                                        const identity::ScopeSet& scopes,
@@ -26,7 +26,7 @@ AccessTokenFetcher::AccessTokenFetcher(const std::string& account_id,
                          mode) {}
 
 AccessTokenFetcher::AccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
     OAuth2TokenService* token_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -43,7 +43,7 @@ AccessTokenFetcher::AccessTokenFetcher(
                          std::move(callback),
                          mode) {}
 
-AccessTokenFetcher::AccessTokenFetcher(const std::string& account_id,
+AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string client_id,
                                        const std::string client_secret,
                                        const std::string& oauth_consumer_name,
@@ -62,7 +62,7 @@ AccessTokenFetcher::AccessTokenFetcher(const std::string& account_id,
                          mode) {}
 
 AccessTokenFetcher::AccessTokenFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string client_id,
     const std::string client_secret,
     const std::string& oauth_consumer_name,

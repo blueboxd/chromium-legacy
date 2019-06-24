@@ -88,7 +88,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
   mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback_;
 
   // Will be true if we started a fetch at <origin>/well-known/origin-policy
-  // which will redirect to the latest origin policy.
+  // which must redirect to the latest origin policy.
   bool must_redirect_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyFetcher);

@@ -40,6 +40,13 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
      * @private {PrinterSetupResult}
      */
     this.getPrinterInfoResult_ = null;
+
+    /**
+     * If set, 'addDiscoveredPrinter' will fail and the promise will be
+     * rejected with this printer.
+     * @private {CupsPrinterInfo}
+     */
+    this.addDiscoveredFailedPrinter_ = null;
   }
 
   /** @override */
@@ -51,6 +58,10 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @override */
   addDiscoveredPrinter(printerId) {
     this.methodCalled('addDiscoveredPrinter', printerId);
+    if (this.addDiscoveredFailedPrinter_ != null) {
+      return Promise.reject(this.addDiscoveredFailedPrinter_);
+    }
+    return Promise.resolve(PrinterSetupResult.SUCCESS);
   }
 
   /** @override */
@@ -127,6 +138,11 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   /** @param {PrinterSetupResult} result */
   setGetPrinterInfoResult(result) {
     this.getPrinterInfoResult_ = result;
+  }
+
+  /** @param {!CupsPrinterInfo} printer */
+  setAddDiscoveredPrinterFailure(printer) {
+    this.addDiscoveredFailedPrinter_ = printer;
   }
 }
 
@@ -544,6 +560,9 @@ suite('CupsAddPrinterDialogTests', function() {
 
     dialog.fire('open-discovery-printers-dialog');
 
+    // Make 'addDiscoveredPrinter' fail so we get sent to the make/model dialog.
+    cupsPrintersBrowserProxy.setAddDiscoveredPrinterFailure(newPrinter);
+
     return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
         .then(function() {
           // Select the printer.
@@ -558,8 +577,6 @@ suite('CupsAddPrinterDialogTests', function() {
         .then(function(printerId) {
           assertEquals(expectedPrinter, printerId);
 
-          cr.webUIListenerCallback(
-              'on-manually-add-discovered-printer', newPrinter);
           return cupsPrintersBrowserProxy.whenCalled(
               'getCupsPrinterManufacturersList');
         })

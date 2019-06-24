@@ -442,6 +442,18 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return actionMode;
     }
 
+    private void dismissTextHandles() {
+        if (mWebContents.getRenderWidgetHostView() != null) {
+            mWebContents.getRenderWidgetHostView().dismissTextHandles();
+        }
+    }
+
+    private void showContextMenuAtTouchHandle(int left, int bottom) {
+        if (mWebContents.getRenderWidgetHostView() != null) {
+            mWebContents.getRenderWidgetHostView().showContextMenuAtTouchHandle(left, bottom);
+        }
+    }
+
     private void createAndShowPastePopup() {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
@@ -454,13 +466,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                     @Override
                     public void paste() {
                         SelectionPopupControllerImpl.this.paste();
-                        mWebContents.dismissTextHandles();
+                        dismissTextHandles();
                     }
 
                     @Override
                     public void pasteAsPlainText() {
                         SelectionPopupControllerImpl.this.pasteAsPlainText();
-                        mWebContents.dismissTextHandles();
+                        dismissTextHandles();
                     }
 
                     @Override
@@ -606,7 +618,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             } else {
                 // Hide popups and clear selection.
                 destroyActionModeAndUnselect();
-                mWebContents.dismissTextHandles();
+                dismissTextHandles();
                 PopupController.hideAll(mWebContents);
                 // Clear the selection. The selection is cleared on destroying IME
                 // and also here since we may receive destroy first, for example
@@ -1256,7 +1268,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                mWebContents.showContextMenuAtTouchHandle(left, bottom);
+                showContextMenuAtTouchHandle(left, bottom);
                 if (mHandleObserver != null) {
                     mHandleObserver.handleDragStopped();
                 }
@@ -1284,8 +1296,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     destroyPastePopup();
                 } else {
-                    mWebContents.showContextMenuAtTouchHandle(
-                            mSelectionRect.left, mSelectionRect.bottom);
+                    showContextMenuAtTouchHandle(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -1304,8 +1315,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    mWebContents.showContextMenuAtTouchHandle(
-                            mSelectionRect.left, mSelectionRect.bottom);
+                    showContextMenuAtTouchHandle(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 if (mHandleObserver != null) {

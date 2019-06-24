@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/modules/permissions/permission_status.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -177,45 +176,6 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   return nullptr;
 }
 
-base::Optional<SchedulingPolicy::Feature> PermissionToSchedulingFeature(
-    PermissionName permission) {
-  switch (permission) {
-    case PermissionName::GEOLOCATION:
-      return SchedulingPolicy::Feature::kRequestedGeolocationPermission;
-    case PermissionName::NOTIFICATIONS:
-      return SchedulingPolicy::Feature::kRequestedNotificationsPermission;
-    case PermissionName::MIDI:
-      return SchedulingPolicy::Feature::kRequestedMIDIPermission;
-    case PermissionName::AUDIO_CAPTURE:
-      return SchedulingPolicy::Feature::kRequestedAudioCapturePermission;
-    case PermissionName::VIDEO_CAPTURE:
-      return SchedulingPolicy::Feature::kRequestedVideoCapturePermission;
-    case PermissionName::SENSORS:
-      return SchedulingPolicy::Feature::kRequestedSensorsPermission;
-    case PermissionName::BACKGROUND_SYNC:
-    case PermissionName::BACKGROUND_FETCH:
-    case PermissionName::PERIODIC_BACKGROUND_SYNC:
-      return SchedulingPolicy::Feature::kRequestedBackgroundWorkPermission;
-    default:
-      return base::nullopt;
-  }
-}
-
-void NotifySchedulerAboutPermissionRequest(ExecutionContext* context,
-                                           PermissionName permission) {
-  if (!context)
-    return;
-
-  base::Optional<SchedulingPolicy::Feature> feature =
-      PermissionToSchedulingFeature(permission);
-
-  if (!feature)
-    return;
-
-  context->GetScheduler()->RegisterStickyFeature(
-      feature.value(), {SchedulingPolicy::RecordMetricsForBackForwardCache()});
-}
-
 }  // anonymous namespace
 
 ScriptPromise Permissions::query(ScriptState* script_state,
@@ -251,8 +211,6 @@ ScriptPromise Permissions::request(ScriptState* script_state,
     return ScriptPromise();
 
   ExecutionContext* context = ExecutionContext::From(script_state);
-
-  NotifySchedulerAboutPermissionRequest(context, descriptor->name);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -309,8 +267,6 @@ ScriptPromise Permissions::requestAll(
         ParsePermission(script_state, raw_permission, exception_state);
     if (exception_state.HadException())
       return ScriptPromise();
-
-    NotifySchedulerAboutPermissionRequest(context, descriptor->name);
 
     // Only append permissions types that are not already present in the vector.
     wtf_size_t internal_index = kNotFound;

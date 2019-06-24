@@ -73,6 +73,16 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Whether pressing the "Enter" key within the password field should start a
+     * connection attempt. If this field is false, pressing "Enter" saves the
+     * current configuration but does not connect.
+     */
+    connectOnEnter: {
+      type: Boolean,
+      value: false,
+    },
+
     /** Set to any error from the last configuration result. */
     error: {
       type: String,
@@ -445,11 +455,16 @@ Polymer({
   },
 
   /** @private */
-  connectIfConfigured_: function() {
+  onEnterPressedInPasswordInput_: function() {
     if (!this.isConfigured_) {
       return;
     }
-    this.connect();
+
+    if (this.connectOnEnter) {
+      this.connect();
+    } else {
+      this.save();
+    }
   },
 
   /** @private */

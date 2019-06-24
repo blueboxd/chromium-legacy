@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
-#include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -179,7 +178,6 @@ class WizardController {
   void ShowHIDDetectionScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
-  void ShowSupervisionOnboardingScreen();
   void ShowSupervisionTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
@@ -228,8 +226,6 @@ class WizardController {
   void OnMultiDeviceSetupScreenExit();
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
-  void OnSupervisionOnboardingScreenExit(
-      SupervisionOnboardingScreen::Result result);
   void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
 

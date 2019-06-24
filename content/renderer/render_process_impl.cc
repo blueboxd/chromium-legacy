@@ -154,9 +154,6 @@ RenderProcessImpl::RenderProcessImpl()
                           "--no-harmony-sharedarraybuffer");
   }
 
-  SetV8FlagIfFeature(features::kBlinkHeapUnifiedGCScheduling,
-                     "--global-gc-scheduling");
-
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)

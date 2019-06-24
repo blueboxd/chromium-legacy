@@ -5,8 +5,8 @@
 #include "chrome/browser/android/feedback/process_id_feedback_source.h"
 
 #include "base/task/post_task.h"
+#include "chrome/android/chrome_jni_headers/ProcessIdFeedbackSource_jni.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "jni/ProcessIdFeedbackSource_jni.h"
 
 #include "base/android/jni_array.h"
 #include "base/bind.h"

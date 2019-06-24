@@ -20,6 +20,7 @@
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
@@ -101,8 +102,10 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
       scoped_refptr<HostContentSettingsMap> content_setting_map)
       : MockPasswordProtectionService(database_manager,
                                       url_loader_factory,
-                                      nullptr,
-                                      content_setting_map.get()) {}
+                                      nullptr),
+        cache_manager_(
+            std::make_unique<VerdictCacheManager>(nullptr,
+                                                  content_setting_map.get())) {}
 
   void RequestFinished(
       PasswordProtectionRequest* request,
@@ -139,11 +142,46 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     test_api.ClearBinderForName(mojom::PhishingDetector::Name_);
   }
 
+  void CacheVerdict(const GURL& url,
+                    LoginReputationClientRequest::TriggerType trigger_type,
+                    ReusedPasswordType password_type,
+                    const LoginReputationClientResponse& verdict,
+                    const base::Time& receive_time) override {
+    if (!CanGetReputationOfURL(url) || IsIncognito())
+      return;
+
+    cache_manager_->CachePhishGuardVerdict(url, trigger_type, password_type,
+                                           verdict, receive_time);
+  }
+
+  LoginReputationClientResponse::VerdictType GetCachedVerdict(
+      const GURL& url,
+      LoginReputationClientRequest::TriggerType trigger_type,
+      LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType
+          password_type,
+      LoginReputationClientResponse* out_response) override {
+    if (!url.is_valid() || !CanGetReputationOfURL(url))
+      return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+
+    return cache_manager_->GetCachedPhishGuardVerdict(
+        url, trigger_type, password_type, out_response);
+  }
+
+  int GetStoredVerdictCount(
+      LoginReputationClientRequest::TriggerType trigger_type) override {
+    return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
+  }
+
  private:
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
   TestPhishingDetector test_phishing_detector_;
+
+  // The TestPasswordProtectionService manages its own cache, rather than using
+  // the global one.
+  std::unique_ptr<VerdictCacheManager> cache_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -190,7 +228,10 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     url_ = PasswordProtectionService::GetPasswordProtectionRequestUrl();
   }
 
-  void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
+  void TearDown() override {
+    password_protection_service_.reset();
+    content_setting_map_->ShutdownOnUIThread();
+  }
 
   // Sets up |database_manager_| and |pending_requests_| as needed.
   void InitializeAndStartPasswordOnFocusRequest(
@@ -228,15 +269,6 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     request_->Start();
   }
 
-  bool PathVariantsMatchCacheExpression(const GURL& url,
-                                        const std::string& cache_expression) {
-    std::vector<std::string> paths;
-    PasswordProtectionService::GeneratePathVariantsWithoutQuery(url, &paths);
-    return PasswordProtectionService::PathVariantsMatchCacheExpression(
-        paths,
-        PasswordProtectionService::GetCacheExpressionPath(cache_expression));
-  }
-
   void CacheVerdict(const GURL& url,
                     LoginReputationClientRequest::TriggerType trigger,
                     ReusedPasswordType password_type,
@@ -247,8 +279,8 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
     ASSERT_FALSE(cache_expression.empty());
     LoginReputationClientResponse response(
         CreateVerdictProto(verdict, cache_duration_sec, cache_expression));
-    password_protection_service_->CacheVerdict(
-        url, trigger, password_type, &response, verdict_received_time);
+    password_protection_service_->CacheVerdict(url, trigger, password_type,
+                                               response, verdict_received_time);
   }
 
   void CacheInvalidVerdict(ReusedPasswordType password_type) {
@@ -310,80 +342,6 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   content::TestBrowserContext browser_context_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
-
-TEST_P(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
-  std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
-      std::make_unique<base::DictionaryValue>();
-  invalid_verdict_entry->SetString("cache_creation_time", "invalid_time");
-
-  int cache_creation_time;
-  LoginReputationClientResponse response;
-  // ParseVerdictEntry fails if input is empty.
-  EXPECT_FALSE(PasswordProtectionService::ParseVerdictEntry(
-      nullptr, &cache_creation_time, &response));
-
-  // ParseVerdictEntry fails if the input dict value is invalid.
-  EXPECT_FALSE(PasswordProtectionService::ParseVerdictEntry(
-      invalid_verdict_entry.get(), &cache_creation_time, &response));
-}
-
-TEST_P(PasswordProtectionServiceTest, TestParseValidVerdictEntry) {
-  base::Time expected_creation_time = base::Time::Now();
-  LoginReputationClientResponse expected_verdict(CreateVerdictProto(
-      LoginReputationClientResponse::SAFE, 10 * kMinute, "test.com/foo"));
-  std::unique_ptr<base::DictionaryValue> valid_verdict_entry =
-      PasswordProtectionService::CreateDictionaryFromVerdict(
-          &expected_verdict, expected_creation_time);
-
-  int actual_cache_creation_time;
-  LoginReputationClientResponse actual_verdict;
-  ASSERT_TRUE(PasswordProtectionService::ParseVerdictEntry(
-      valid_verdict_entry.get(), &actual_cache_creation_time, &actual_verdict));
-
-  EXPECT_EQ(static_cast<int>(expected_creation_time.ToDoubleT()),
-            actual_cache_creation_time);
-  EXPECT_EQ(expected_verdict.cache_duration_sec(),
-            actual_verdict.cache_duration_sec());
-  EXPECT_EQ(expected_verdict.verdict_type(), actual_verdict.verdict_type());
-  EXPECT_EQ(expected_verdict.cache_expression(),
-            actual_verdict.cache_expression());
-}
-
-TEST_P(PasswordProtectionServiceTest, TestPathVariantsMatchCacheExpression) {
-  // Cache expression without path.
-  std::string cache_expression_with_slash("google.com/");
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("https://www.google.com"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("https://www.google.com"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("https://www.google.com/"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("https://www.google.com/"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("https://www.google.com/maps/local/"), cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("https://www.google.com/maps/local/"), cache_expression_with_slash));
-
-  // Cache expression with path.
-  cache_expression_with_slash = "evil.com/bad/";
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("http://evil.com/bad/"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(GURL("http://evil.com/bad/"),
-                                               cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/bad/index.html"), cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/bad/index.html"), cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/bad/foo/index.html"), cache_expression_with_slash));
-  EXPECT_TRUE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/bad/foo/index.html"), cache_expression_with_slash));
-  EXPECT_FALSE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/worse/index.html"), cache_expression_with_slash));
-  EXPECT_FALSE(PathVariantsMatchCacheExpression(
-      GURL("http://evil.com/worse/index.html"), cache_expression_with_slash));
-}
 
 TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
@@ -664,84 +622,6 @@ TEST_P(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
           PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &actual_verdict));
 }
 
-TEST_P(PasswordProtectionServiceTest, TestRemoveCachedVerdictOnURLsDeleted) {
-  ASSERT_EQ(0U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-  ASSERT_EQ(0U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-  // Prepare 5 verdicts. Three are for origin "http://foo.com", and the others
-  // are for "http://bar.com".
-  base::Time now = base::Time::Now();
-  CacheVerdict(GURL("http://foo.com/abc/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
-               "foo.com/abc/", now);
-  CacheVerdict(GURL("http://foo.com/abc/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::ENTERPRISE_PASSWORD,
-               LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
-               "foo.com/abc/", now);
-  CacheVerdict(GURL("http://bar.com/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::PHISHING, 10 * kMinute, "bar.com",
-               now);
-  ASSERT_EQ(3U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-
-  CacheVerdict(GURL("http://foo.com/abc/index.jsp"),
-               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
-               LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
-               "foo.com/abc/", now);
-  CacheVerdict(GURL("http://bar.com/index.jsp"),
-               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
-               LoginReputationClientResponse::PHISHING, 10 * kMinute, "bar.com",
-               now);
-  ASSERT_EQ(2U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-
-  // Delete a bar.com URL. Corresponding content setting keyed on
-  // origin "http://bar.com" should be removed,
-  history::URLRows deleted_urls;
-  deleted_urls.push_back(history::URLRow(GURL("http://bar.com")));
-
-  // Delete an arbitrary data URL, to ensure the service is robust against
-  // filtering only http/s URLs. See crbug.com/709758.
-  deleted_urls.push_back(history::URLRow(GURL("data:text/html, <p>hellow")));
-
-  password_protection_service_->RemoveContentSettingsOnURLsDeleted(
-      false /* all_history */, deleted_urls);
-  EXPECT_EQ(2U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-  EXPECT_EQ(1U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-
-  LoginReputationClientResponse actual_verdict;
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://bar.com"),
-                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordReuseEvent::SIGN_IN_PASSWORD, &actual_verdict));
-  EXPECT_EQ(
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-      password_protection_service_->GetCachedVerdict(
-          GURL("http://bar.com"),
-          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-          PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &actual_verdict));
-
-  // If delete all history. All password protection content settings should be
-  // gone.
-  password_protection_service_->RemoveContentSettingsOnURLsDeleted(
-      true /* all_history */, history::URLRows());
-  EXPECT_EQ(0U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-  EXPECT_EQ(0U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-}
-
 TEST_P(PasswordProtectionServiceTest, TestDoesNotCacheAboutBlank) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
@@ -993,115 +873,6 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       IsEmpty());
-}
-
-TEST_P(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {
-  // Prepare 4 verdicts for PASSWORD_REUSE_EVENT with SIGN_IN_PASSWORD type:
-  // (1) "foo.com/abc/" valid
-  // (2) "foo.com/def/" expired
-  // (3) "bar.com/abc/" expired
-  // (4) "bar.com/def/" expired
-  base::Time now = base::Time::Now();
-  CacheVerdict(GURL("https://foo.com/abc/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
-               "foo.com/abc/", now);
-  CacheVerdict(GURL("https://foo.com/def/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::LOW_REPUTATION, 0, "foo.com/def/",
-               now);
-  CacheVerdict(GURL("https://bar.com/abc/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::PHISHING, 0, "bar.com/abc/", now);
-  CacheVerdict(GURL("https://bar.com/def/index.jsp"),
-               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-               PasswordReuseEvent::SIGN_IN_PASSWORD,
-               LoginReputationClientResponse::PHISHING, 0, "bar.com/def/", now);
-  ASSERT_EQ(4U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-
-  // Prepare 2 verdicts for UNFAMILIAR_LOGIN_PAGE:
-  // (1) "bar.com/def/" valid
-  // (2) "bar.com/xyz/" expired
-  CacheVerdict(GURL("https://bar.com/def/index.jsp"),
-               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
-               LoginReputationClientResponse::SAFE, 10 * kMinute,
-               "bar.com/def/", now);
-  CacheVerdict(GURL("https://bar.com/xyz/index.jsp"),
-               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
-               LoginReputationClientResponse::PHISHING, 0, "bar.com/xyz/", now);
-  ASSERT_EQ(2U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-
-  password_protection_service_->CleanUpExpiredVerdicts();
-
-  ASSERT_EQ(1U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
-  ASSERT_EQ(1U, GetStoredVerdictCount(
-                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
-  LoginReputationClientResponse actual_verdict;
-  // Has cached PASSWORD_REUSE_EVENT verdict for foo.com/abc/.
-  EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
-            password_protection_service_->GetCachedVerdict(
-                GURL("https://foo.com/abc/test.jsp"),
-                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordReuseEvent::SIGN_IN_PASSWORD, &actual_verdict));
-  // No cached PASSWORD_REUSE_EVENT verdict for foo.com/def.
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-            password_protection_service_->GetCachedVerdict(
-                GURL("https://foo.com/def/index.jsp"),
-                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordReuseEvent::SIGN_IN_PASSWORD, &actual_verdict));
-  // No cached PASSWORD_REUSE_EVENT verdict for bar.com/abc.
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-            password_protection_service_->GetCachedVerdict(
-                GURL("https://bar.com/abc/index.jsp"),
-                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordReuseEvent::SIGN_IN_PASSWORD, &actual_verdict));
-  // No cached PASSWORD_REUSE_EVENT verdict for bar.com/def.
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-            password_protection_service_->GetCachedVerdict(
-                GURL("https://bar.com/def/index.jsp"),
-                LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                PasswordReuseEvent::SIGN_IN_PASSWORD, &actual_verdict));
-
-  // Has cached UNFAMILIAR_LOGIN_PAGE verdict for bar.com/def.
-  EXPECT_EQ(
-      LoginReputationClientResponse::SAFE,
-      password_protection_service_->GetCachedVerdict(
-          GURL("https://bar.com/def/index.jsp"),
-          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-          PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &actual_verdict));
-
-  // No cached UNFAMILIAR_LOGIN_PAGE verdict for bar.com/xyz.
-  EXPECT_EQ(
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-      password_protection_service_->GetCachedVerdict(
-          GURL("https://bar.com/xyz/index.jsp"),
-          LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-          PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, &actual_verdict));
-}
-
-TEST_P(PasswordProtectionServiceTest,
-       TestCleanUpExpiredVerdictWithInvalidEntry) {
-  CacheInvalidVerdict(PasswordReuseEvent::SIGN_IN_PASSWORD);
-  ContentSettingsForOneType password_protection_settings;
-  content_setting_map_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-      &password_protection_settings);
-  ASSERT_FALSE(password_protection_settings.empty());
-
-  password_protection_service_->CleanUpExpiredVerdicts();
-
-  content_setting_map_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-      &password_protection_settings);
-  EXPECT_TRUE(password_protection_settings.empty());
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {

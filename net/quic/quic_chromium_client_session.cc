@@ -1588,10 +1588,11 @@ void QuicChromiumClientSession::OnRstStream(
 }
 
 void QuicChromiumClientSession::OnConnectionClosed(
-    quic::QuicErrorCode error,
-    const std::string& error_details,
+    const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
+  const quic::QuicErrorCode error = frame.quic_error_code;
+  const std::string& error_details = frame.error_details;
   logger_->OnConnectionClosed(error, error_details, source);
 
   RecordConnectionCloseErrorCode(error, source, session_key_.host(),
@@ -1711,7 +1712,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   base::UmaHistogramSparse("Net.QuicSession.QuicVersion",
                            connection()->transport_version());
   NotifyFactoryOfSessionGoingAway();
-  quic::QuicSession::OnConnectionClosed(error, error_details, source);
+  quic::QuicSession::OnConnectionClosed(frame, source);
 
   if (!callback_.is_null()) {
     std::move(callback_).Run(ERR_QUIC_PROTOCOL_ERROR);

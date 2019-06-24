@@ -461,6 +461,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
   BackForwardCache& back_forward_cache =
       delegate_->GetControllerForRenderManager().back_forward_cache();
   if (back_forward_cache.CanStoreDocument(old_render_frame_host.get())) {
+    back_forward_cache.Freeze(old_render_frame_host.get());
     back_forward_cache.StoreDocument(std::move(old_render_frame_host));
     return;
   }
@@ -538,6 +539,9 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(
     std::unique_ptr<RenderFrameHostImpl> rfh) {
+  delegate_->GetControllerForRenderManager().back_forward_cache().UnFreeze(
+      rfh.get());
+
   rfh->GetProcess()->AddPendingView();  // Matched in CommitPending().
   CommitPending(std::move(rfh));
 }

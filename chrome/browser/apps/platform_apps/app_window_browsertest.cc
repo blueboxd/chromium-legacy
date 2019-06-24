@@ -238,9 +238,11 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("window_api"));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension->id(), extensions::LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(
+      AppLaunchParams(browser()->profile(), extension->id(),
+                      extensions::LaunchContainer::kLaunchContainerNone,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceTest));
 
   ExtensionTestMessageListener geometry_listener("ListenGeometryChange", true);
 

@@ -66,7 +66,7 @@ ProtocolMessage StringUtil::jsonToMessage(const String& message) {
 }
 
 // static
-ProtocolMessage StringUtil::binaryToMessage(std::vector<uint8_t> message) {
+ProtocolMessage StringUtil::binaryToMessage(WebVector<uint8_t> message) {
   ProtocolMessage result;
   result.binary = std::move(message);
   return result;

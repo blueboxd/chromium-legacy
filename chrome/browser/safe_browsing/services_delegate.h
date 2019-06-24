@@ -29,6 +29,7 @@ class TrackedPreferenceValidationDelegate;
 
 namespace safe_browsing {
 
+class VerdictCacheManager;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class IncidentReportingService;
@@ -123,6 +124,11 @@ class ServicesDelegate {
   virtual void CreateTelemetryService(Profile* profile) = 0;
   virtual void RemoveTelemetryService() = 0;
   virtual TelemetryService* GetTelemetryService() const = 0;
+
+  virtual void CreateVerdictCacheManager(Profile* profile) = 0;
+  virtual void RemoveVerdictCacheManager(Profile* profile) = 0;
+  virtual VerdictCacheManager* GetVerdictCacheManager(
+      Profile* profile) const = 0;
 
   virtual std::string GetSafetyNetId() const = 0;
 };

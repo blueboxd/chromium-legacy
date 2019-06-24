@@ -5,7 +5,7 @@
 #include "chrome/browser/android/ssl/mock_cert_verifier_rule_android.h"
 
 #include "base/command_line.h"
-#include "jni/MockCertVerifierRuleAndroid_jni.h"
+#include "chrome/android/test_support_jni_headers/MockCertVerifierRuleAndroid_jni.h"
 
 jlong JNI_MockCertVerifierRuleAndroid_Init(JNIEnv* env, jint result) {
   return reinterpret_cast<intptr_t>(new MockCertVerifierRuleAndroid(result));

@@ -53,6 +53,13 @@ class OriginPolicyFetcherTest : public testing::Test {
 
     manager_ = std::make_unique<OriginPolicyManager>(
         network_context_->CreateUrlLoaderFactoryForNetworkService());
+
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &OriginPolicyFetcherTest::HandleResponse, base::Unretained(this)));
+
+    EXPECT_TRUE(test_server_.Start());
+
+    test_server_origin_ = url::Origin::Create(test_server_.base_url());
   }
 
   const url::Origin& test_server_origin() const { return test_server_origin_; }
@@ -64,16 +71,6 @@ class OriginPolicyFetcherTest : public testing::Test {
   }
 
  protected:
-  // testing::Test implementation.
-  void SetUp() override {
-    test_server_.RegisterRequestHandler(base::BindRepeating(
-        &OriginPolicyFetcherTest::HandleResponse, base::Unretained(this)));
-
-    EXPECT_TRUE(test_server_.Start());
-
-    test_server_origin_ = url::Origin::Create(test_server_.base_url());
-  }
-
   const net::test_server::EmbeddedTestServer& test_server() const {
     return test_server_;
   }

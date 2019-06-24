@@ -55,9 +55,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   }
 
   // From quic::QuicSession.
-  MOCK_METHOD3(OnConnectionClosed,
-               void(quic::QuicErrorCode error,
-                    const std::string& error_details,
+  MOCK_METHOD2(OnConnectionClosed,
+               void(const quic::QuicConnectionCloseFrame& frame,
                     quic::ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));

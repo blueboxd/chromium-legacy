@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "chrome/android/chrome_jni_headers/PrefetchConfiguration_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,7 +13,6 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
-#include "jni/PrefetchConfiguration_jni.h"
 
 using base::android::JavaParamRef;
 

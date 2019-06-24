@@ -2105,10 +2105,14 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         }
       } else {
 #if defined(OS_ANDROID)
-        // E.g. "Visa  ••••1234".
-        suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
+        // On Android devices, the label is formatted as "Visa  ••••1234" when
+        // the keyboard accessory experiment is disabled and as "••••1234" when
+        // it's enabled.
+        suggestion->label =
+            base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
+                ? credit_card->ObfuscatedLastFourDigits()
+                : credit_card->NetworkOrBankNameAndLastFourDigits();
 #elif defined(OS_IOS)
-        // TODO(crbug.com/968267): Use the same format for iOS and Android.
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
 #else

@@ -608,6 +608,8 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     has_incompatible_applications =
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
+
+  nux::JoinOnboardingGroup(profile_);
 #endif
 
   // Presentation of promotional and/or educational tabs may be controlled via
@@ -630,16 +632,17 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
   }
 
+  bool onboarding_enabled = true;
 #if !defined(OS_CHROMEOS)
-  // No promo if we *could* onboard, but have no modules to show.
-  if (nux::IsNuxOnboardingEnabled(profile_))
-    promotional_tabs_enabled &= nux::DoesOnboardingHaveModulesToShow(profile_);
+  onboarding_enabled = nux::IsNuxOnboardingEnabled(profile_) &&
+                       nux::DoesOnboardingHaveModulesToShow(profile_);
 #endif  // !defined(OS_CHROMEOS)
 
-  StartupTabs tabs = DetermineStartupTabs(
-      StartupTabProviderImpl(), cmd_line_tabs, process_startup,
-      is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, promotional_tabs_enabled);
+  StartupTabs tabs =
+      DetermineStartupTabs(StartupTabProviderImpl(), cmd_line_tabs,
+                           process_startup, is_incognito_or_guest,
+                           is_post_crash_launch, has_incompatible_applications,
+                           promotional_tabs_enabled, onboarding_enabled);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -690,7 +693,8 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_incognito_or_guest,
     bool is_post_crash_launch,
     bool has_incompatible_applications,
-    bool promotional_tabs_enabled) {
+    bool promotional_tabs_enabled,
+    bool onboarding_enabled) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -739,11 +743,13 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
         profile_, browser_creator_, process_startup);
     AppendTabs(welcome_back_tabs, &tabs);
 
-    // Policies for onboarding (e.g., first run) may show promotional and
-    // introductory content depending on a number of system status factors,
-    // including OS and whether or not this is First Run.
-    onboarding_tabs = provider.GetOnboardingTabs(profile_);
-    AppendTabs(onboarding_tabs, &tabs);
+    if (onboarding_enabled) {
+      // Policies for onboarding (e.g., first run) may show promotional and
+      // introductory content depending on a number of system status factors,
+      // including OS and whether or not this is First Run.
+      onboarding_tabs = provider.GetOnboardingTabs(profile_);
+      AppendTabs(onboarding_tabs, &tabs);
+    }
   }
 
   // If the user has set the preference indicating URLs to show on opening,

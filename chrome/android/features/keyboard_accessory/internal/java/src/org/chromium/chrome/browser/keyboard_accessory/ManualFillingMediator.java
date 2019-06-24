@@ -583,8 +583,8 @@ class ManualFillingMediator extends EmptyTabObserver
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
         state.notifyObservers();
         KeyboardAccessoryData.Tab[] tabs = state.getTabs();
+        mAccessorySheet.setTabs(tabs); // Set the sheet tabs first to invalidate the tabs properly.
         mKeyboardAccessory.setTabs(tabs);
-        mAccessorySheet.setTabs(tabs);
     }
 
     @VisibleForTesting

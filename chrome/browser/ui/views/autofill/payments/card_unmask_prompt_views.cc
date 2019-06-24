@@ -138,7 +138,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       views::GridLayout* layout = ResetOverlayLayout(overlay_);
 
       // The label of the overlay will now show the error in red.
-      views::Label* error_label = new views::Label(error_message);
+      auto error_label = std::make_unique<views::Label>(error_message);
       const SkColor warning_text_color = views::style::GetColor(
           *error_label, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
       error_label->SetEnabledColor(warning_text_color);
@@ -146,7 +146,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
 
       // Replace the throbber with a warning icon. Since this is a permanent
       // error we do not intend to return to a previous state.
-      views::ImageView* error_icon = new views::ImageView();
+      auto error_icon = std::make_unique<views::ImageView>();
       // The icon doesn't look good with the dark mode warning text color,
       // so use the same color in light mode and dark mode.
       // See https://crbug.com/924507
@@ -154,8 +154,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
           gfx::CreateVectorIcon(kBrowserToolsErrorIcon, gfx::kGoogleRed700));
 
       layout->StartRow(1.0, 0);
-      layout->AddView(error_icon);
-      layout->AddView(error_label);
+      layout->AddView(std::move(error_icon));
+      layout->AddView(std::move(error_label));
     }
     DialogModelChanged();
   }
@@ -468,15 +468,15 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   views::GridLayout* overlay_layout = ResetOverlayLayout(overlay.get());
   overlay->SetVisible(false);
 
-  progress_throbber_ = new views::Throbber();
-  overlay_layout->AddView(progress_throbber_);
+  progress_throbber_ =
+      overlay_layout->AddView(std::make_unique<views::Throbber>());
 
-  overlay_label_ = new views::Label(l10n_util::GetStringUTF16(
+  auto overlay_label = std::make_unique<views::Label>(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS));
-  overlay_label_->SetEnabledColor(
-      overlay_label_->GetNativeTheme()->GetSystemColor(
+  overlay_label->SetEnabledColor(
+      overlay_label->GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_ThrobberSpinningColor));
-  overlay_layout->AddView(overlay_label_);
+  overlay_label_ = overlay_layout->AddView(std::move(overlay_label));
 
   overlay_ = AddChildView(std::move(overlay));
 }

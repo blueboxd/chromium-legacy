@@ -465,13 +465,14 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // |previous_inflow_position| and |BreakToken()|.
   scoped_refptr<const NGInlineBreakToken> previous_inline_break_token;
 
+  NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken());
+
   // If this layout is blocked by a display-lock, then we pretend this node has
-  // no children. Due to this, we skip layout on these children.
-  NGBlockChildIterator child_iterator(
-      Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)
-          ? NGBlockNode(nullptr)
-          : Node().FirstChild(),
-      BreakToken());
+  // no children and that there are no break tokens. Due to this, we skip layout
+  // on these children.
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    child_iterator = NGBlockChildIterator(NGBlockNode(nullptr), nullptr);
+
   for (auto entry = child_iterator.NextChild();
        NGLayoutInputNode child = entry.node;
        entry = child_iterator.NextChild(previous_inline_break_token.get())) {

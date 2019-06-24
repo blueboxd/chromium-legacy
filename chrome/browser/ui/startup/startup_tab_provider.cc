@@ -34,19 +34,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-// Returns false if the in-product default browser UX is suppressed by install
-// mode (e.g., Chrome Canary) or by policy.
-bool SetDefaultBrowserAllowed(PrefService* local_state) {
-  if (!shell_integration::CanSetAsDefaultBrowser())
-    return false;
-  return !local_state ||
-         !local_state->IsManagedPreference(
-             prefs::kDefaultBrowserSettingEnabled) ||
-         local_state->GetBoolean(prefs::kDefaultBrowserSettingEnabled);
-}
-#endif  // defined(OS_WIN)
-
 // Attempts to find an existing, non-empty tabbed browser for this profile.
 bool ProfileHasOtherTabbedBrowser(Profile* profile) {
   BrowserList* browser_list = BrowserList::GetInstance();
@@ -80,33 +67,6 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   standard_params.is_supervised_user = profile->IsSupervised();
   standard_params.is_force_signin_enabled = signin_util::IsForceSigninEnabled();
 
-#if defined(OS_WIN)
-  // Windows 10 has unique onboarding policies and content. However, if
-  // NuxOnboarding is enabled, the standard welcome URL should still
-  // be used.
-  bool is_navi_enabled = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile);
-#endif
-  if (base::win::GetVersion() >= base::win::Version::WIN10 &&
-      !is_navi_enabled) {
-    Win10OnboardingTabsParams win10_params;
-    PrefService* local_state = g_browser_process->local_state();
-    const shell_integration::DefaultWebClientState web_client_state =
-        g_browser_process->CachedDefaultWebClientState();
-    win10_params.has_seen_win10_promo =
-        local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
-    win10_params.set_default_browser_allowed =
-        SetDefaultBrowserAllowed(local_state);
-    // Do not welcome if this Chrome or another side-by-side install was the
-    // default browser at startup.
-    win10_params.is_default_browser =
-        web_client_state == shell_integration::IS_DEFAULT ||
-        web_client_state == shell_integration::OTHER_MODE_IS_DEFAULT;
-    return GetWin10OnboardingTabsForState(standard_params, win10_params);
-  }
-#endif  // defined(OS_WIN)
-
   return GetStandardOnboardingTabsForState(standard_params);
 #endif  // defined(OS_CHROMEOS)
 }
@@ -123,12 +83,7 @@ StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
       break;
 #if defined(OS_WIN)
     case StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10:
-      if (CanShowWin10Welcome(
-              SetDefaultBrowserAllowed(g_browser_process->local_state()),
-              profile->IsSupervised())) {
-        tabs.emplace_back(GetWin10WelcomePageUrl(false), false);
-        break;
-      }
+      // TODO(hcarmona): delete kWelcomeWin10.
       FALLTHROUGH;
 #endif  // defined(OS_WIN)
     case StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard:
@@ -216,37 +171,6 @@ StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
   return tabs;
 }
 
-#if defined(OS_WIN)
-// static
-bool StartupTabProviderImpl::CanShowWin10Welcome(
-    bool set_default_browser_allowed,
-    bool is_supervised_user) {
-  return set_default_browser_allowed && !is_supervised_user;
-}
-
-// static
-bool StartupTabProviderImpl::ShouldShowWin10WelcomeForOnboarding(
-    bool has_seen_win10_promo,
-    bool is_default_browser) {
-  return !has_seen_win10_promo && !is_default_browser;
-}
-
-// static
-StartupTabs StartupTabProviderImpl::GetWin10OnboardingTabsForState(
-    const StandardOnboardingTabsParams& standard_params,
-    const Win10OnboardingTabsParams& win10_params) {
-  if (CanShowWin10Welcome(win10_params.set_default_browser_allowed,
-                          standard_params.is_supervised_user) &&
-      ShouldShowWin10WelcomeForOnboarding(win10_params.has_seen_win10_promo,
-                                          win10_params.is_default_browser)) {
-    return {StartupTab(GetWin10WelcomePageUrl(!standard_params.is_first_run),
-                       false)};
-  }
-
-  return GetStandardOnboardingTabsForState(standard_params);
-}
-#endif  // defined(OS_WIN)
-
 // static
 StartupTabs StartupTabProviderImpl::GetMasterPrefsTabsForState(
     bool is_first_run,
@@ -319,7 +243,7 @@ StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   if (has_incompatible_applications)
     tabs.emplace_back(GetIncompatibleApplicationsUrl(), false);
-#endif
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   return tabs;
 }
 
@@ -331,27 +255,14 @@ GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
              : url;
 }
 
-#if defined(OS_WIN)
-// static
-GURL StartupTabProviderImpl::GetWin10WelcomePageUrl(
-    bool use_later_run_variant) {
-  // Record that the Welcome page was added to the startup url list.
-  UMA_HISTOGRAM_BOOLEAN("Welcome.Win10.NewPromoPageAdded", true);
-  GURL url(chrome::kChromeUIWelcomeWin10URL);
-  return use_later_run_variant
-             ? net::AppendQueryParameter(url, "text", "faster")
-             : url;
-}
-
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // static
 GURL StartupTabProviderImpl::GetIncompatibleApplicationsUrl() {
   UMA_HISTOGRAM_BOOLEAN("IncompatibleApplicationsPage.AddedPostCrash", true);
   GURL url(chrome::kChromeUISettingsURL);
   return url.Resolve("incompatibleApplications");
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 // static
 GURL StartupTabProviderImpl::GetTriggeredResetSettingsUrl() {

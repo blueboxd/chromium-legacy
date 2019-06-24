@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace identity {
 
@@ -48,7 +49,7 @@ class PrimaryAccountMutator {
   //    - the account username is allowed by policy,
   //    - there is not already a primary account set,
   //    - the account is known by the IdentityManager.
-  virtual bool SetPrimaryAccount(const std::string& account_id) = 0;
+  virtual bool SetPrimaryAccount(const CoreAccountId& account_id) = 0;
 
   // Clears the primary account, and returns whether the operation
   // succeeded or not. Depending on |action|, the other accounts

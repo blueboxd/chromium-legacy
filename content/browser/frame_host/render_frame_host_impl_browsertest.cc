@@ -2438,4 +2438,35 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(console_observer.messages()[1], console_observer.messages()[2]);
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       SchedulerTrackedFeatures) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  RenderFrameHostImpl* main_frame = reinterpret_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  // Simulate getting 0b1 as a feature vector from the renderer.
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b1u);
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b1u);
+  // Simulate the browser side reporting a feature usage.
+  main_frame->OnSchedulerTrackedFeatureUsed(
+      static_cast<blink::scheduler::WebSchedulerTrackedFeature>(1));
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b11u);
+  // Simulate a feature vector being updated from the renderer with some
+  // features being activated and some being deactivated.
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b100u);
+  DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b110u);
+
+  // Navigate away and expect that no values persist the navigation.
+  // Note that we are still simulating the renderer call, otherwise features
+  // like "document loaded" will show up here.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+  main_frame = reinterpret_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  static_cast<mojom::FrameHost*>(main_frame)
+      ->UpdateActiveSchedulerTrackedFeatures(0b0u);
+}
+
 }  // namespace content

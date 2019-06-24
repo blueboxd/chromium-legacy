@@ -69,7 +69,8 @@ void ShellExtensionSystem::LaunchApp(const ExtensionId& extension_id) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)
                                    ->enabled_extensions()
                                    .GetByID(extension_id);
-  apps::LaunchPlatformApp(browser_context_, extension, SOURCE_UNTRACKED);
+  apps::LaunchPlatformApp(browser_context_, extension,
+                          AppLaunchSource::kSourceUntracked);
 }
 
 void ShellExtensionSystem::ReloadExtension(const ExtensionId& extension_id) {

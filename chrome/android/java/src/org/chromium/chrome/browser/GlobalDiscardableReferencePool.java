@@ -9,19 +9,12 @@ import org.chromium.base.DiscardableReferencePool;
 /**
  * A global accessor to the DiscardableReferencePool.
  *
- * The application should instantiate this class and keep it alive until shutdown.
- * Then consumers may find the DiscardableReferencePool through the static API.
+ * This DiscardableReferencePool is created upon first access, and lives forever.
  */
 public class GlobalDiscardableReferencePool {
-    private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-    private static GlobalDiscardableReferencePool sInstance;
+    static final DiscardableReferencePool INSTANCE = new DiscardableReferencePool();
 
     public static DiscardableReferencePool getReferencePool() {
-        return sInstance.mReferencePool;
-    }
-
-    public GlobalDiscardableReferencePool() {
-        assert sInstance == null;
-        sInstance = this;
+        return INSTANCE;
     }
 }

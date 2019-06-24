@@ -70,17 +70,6 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   PasswordAutofillManager* GetPasswordAutofillManager() override {
     return &password_autofill_manager_;
   }
-  void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) override {
-    found_forms_eligible_for_generation_.insert(
-        found_forms_eligible_for_generation_.begin(), forms.begin(),
-        forms.end());
-  }
-
-  const std::vector<autofill::PasswordFormGenerationData>&
-  GetFoundEligibleForGenerationForms() {
-    return found_forms_eligible_for_generation_;
-  }
 
   MOCK_METHOD0(AllowToRunFormClassifier, void());
 
@@ -88,8 +77,6 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   PasswordManager password_manager_;
   PasswordGenerationFrameHelper password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
-  std::vector<autofill::PasswordFormGenerationData>
-      found_forms_eligible_for_generation_;
 };
 
 PasswordRequirementsSpec GetDomainWideRequirements() {
@@ -188,11 +175,6 @@ class PasswordGenerationFrameHelperTest : public testing::Test {
 
   bool IsGenerationEnabled() {
     return GetGenerationHelper()->IsGenerationEnabled(true);
-  }
-
-  void DetectFormsEligibleForGeneration(
-      const std::vector<autofill::FormStructure*>& forms) {
-    GetGenerationHelper()->DetectFormsEligibleForGeneration(forms);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -352,117 +334,6 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
     EXPECT_EQ(test.expected_spec_for_unknown_signature.max_length(),
               spec.max_length());
   }
-}
-
-TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
-  // Setup so that IsGenerationEnabled() returns true.
-  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, GetPasswordSyncState())
-      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      /* enabled_features */ {},
-      /*  disabled_features*/ {features::kNewPasswordFormParsing,
-                               features::kNewPasswordFormParsingForSaving,
-                               features::kOnlyNewParser});
-
-  autofill::FormData login_form;
-  login_form.url = GURL("http://www.yahoo.com/login/");
-  autofill::FormFieldData username;
-  username.label = ASCIIToUTF16("username");
-  username.name = ASCIIToUTF16("login");
-  username.form_control_type = "text";
-  login_form.fields.push_back(username);
-  autofill::FormFieldData password;
-  password.label = ASCIIToUTF16("password");
-  password.name = ASCIIToUTF16("password");
-  password.form_control_type = "password";
-  login_form.fields.push_back(password);
-  autofill::FormStructure form1(login_form);
-  std::vector<autofill::FormStructure*> forms;
-  forms.push_back(&form1);
-
-  autofill::FormData account_creation_form;
-  account_creation_form.url = GURL("http://accounts.yahoo.com/");
-  account_creation_form.action = GURL("http://accounts.yahoo.com/signup");
-  account_creation_form.name = ASCIIToUTF16("account_creation_form");
-  account_creation_form.fields.push_back(username);
-  account_creation_form.fields.push_back(password);
-  autofill::FormFieldData confirm_password;
-  confirm_password.label = ASCIIToUTF16("confirm_password");
-  confirm_password.name = ASCIIToUTF16("confirm_password");
-  confirm_password.form_control_type = "password";
-  account_creation_form.fields.push_back(confirm_password);
-  autofill::FormSignature account_creation_form_signature =
-      autofill::CalculateFormSignature(account_creation_form);
-  autofill::FieldSignature account_creation_field_signature =
-      autofill::CalculateFieldSignatureForField(password);
-  autofill::FieldSignature confirmation_field_signature =
-      autofill::CalculateFieldSignatureForField(confirm_password);
-  autofill::FormStructure form2(account_creation_form);
-  forms.push_back(&form2);
-
-  autofill::FormData change_password_form;
-  change_password_form.url = GURL("http://accounts.yahoo.com/");
-  change_password_form.action = GURL("http://accounts.yahoo.com/change");
-  change_password_form.name = ASCIIToUTF16("change_password_form");
-  change_password_form.fields.push_back(password);
-  change_password_form.fields[0].name = ASCIIToUTF16("new_password");
-  change_password_form.fields.push_back(confirm_password);
-  autofill::FormStructure form3(change_password_form);
-  autofill::FormSignature change_password_form_signature =
-      autofill::CalculateFormSignature(change_password_form);
-  autofill::FieldSignature change_password_field_signature =
-      autofill::CalculateFieldSignatureForField(change_password_form.fields[0]);
-  forms.push_back(&form3);
-
-  // Simulate the server response to set the field types.
-  // The server response numbers mean:
-  // EMAIL_ADDRESS = 9
-  // PASSWORD = 75
-  // ACCOUNT_CREATION_PASSWORD = 76
-  // NEW_PASSWORD = 88
-  // CONFIRMATION_PASSWORD = 95
-  autofill::AutofillQueryResponseContents response;
-  response.add_field()->set_overall_type_prediction(9);
-  response.add_field()->set_overall_type_prediction(75);
-  response.add_field()->set_overall_type_prediction(9);
-  response.add_field()->set_overall_type_prediction(76);
-  response.add_field()->set_overall_type_prediction(75);
-  response.add_field()->set_overall_type_prediction(88);
-  response.add_field()->set_overall_type_prediction(95);
-
-  std::string response_string;
-  ASSERT_TRUE(response.SerializeToString(&response_string));
-  autofill::FormStructure::ParseQueryResponse(response_string, forms, nullptr);
-
-  DetectFormsEligibleForGeneration(forms);
-  EXPECT_EQ(2u, GetTestDriver()->GetFoundEligibleForGenerationForms().size());
-  EXPECT_EQ(
-      account_creation_form_signature,
-      GetTestDriver()->GetFoundEligibleForGenerationForms()[0].form_signature);
-  EXPECT_EQ(
-      account_creation_field_signature,
-      GetTestDriver()->GetFoundEligibleForGenerationForms()[0].field_signature);
-  EXPECT_FALSE(GetTestDriver()
-                   ->GetFoundEligibleForGenerationForms()[0]
-                   .confirmation_field_signature.has_value());
-
-  EXPECT_EQ(
-      change_password_form_signature,
-      GetTestDriver()->GetFoundEligibleForGenerationForms()[1].form_signature);
-  EXPECT_EQ(
-      change_password_field_signature,
-      GetTestDriver()->GetFoundEligibleForGenerationForms()[1].field_signature);
-  ASSERT_TRUE(GetTestDriver()
-                  ->GetFoundEligibleForGenerationForms()[1]
-                  .confirmation_field_signature.has_value());
-  EXPECT_EQ(confirmation_field_signature,
-            GetTestDriver()
-                ->GetFoundEligibleForGenerationForms()[1]
-                .confirmation_field_signature.value());
 }
 
 TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {

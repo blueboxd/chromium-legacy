@@ -10,10 +10,10 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/features/vr/jni_headers/TextEditAction_jni.h"
+#include "chrome/android/features/vr/jni_headers/VrInputConnection_jni.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/TextEditAction_jni.h"
-#include "jni/VrInputConnection_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

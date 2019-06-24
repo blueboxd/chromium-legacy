@@ -487,7 +487,7 @@ void FakeAppInstance::RequestAssistStructure(
 
 void FakeAppInstance::IsInstallable(const std::string& package_name,
                                     IsInstallableCallback callback) {
-  std::move(callback).Run(false);
+  std::move(callback).Run(is_installable_);
 }
 
 void FakeAppInstance::LaunchIntentDeprecated(

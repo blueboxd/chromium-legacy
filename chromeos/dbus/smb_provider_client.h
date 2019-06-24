@@ -56,14 +56,25 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
 
   // Optional arguments to pass to Mount().
   struct MountOptions {
+    MountOptions();
+    ~MountOptions();
+
+    std::string original_path;
     std::string username;
     std::string workgroup;
+    std::string account_hash;
 
     // Enable NTLM Authentication.
     bool ntlm_enabled = false;
 
-    // Do no attempt to connect to and authenticate the mounted share.
+    // Do not attempt to connect to and authenticate the mounted share.
     bool skip_connect = false;
+
+    // Save the password for this share if it is successfully mounted.
+    bool save_password = false;
+
+    // Use a saved password for authenticating the share.
+    bool restore_password = false;
   };
 
   ~SmbProviderClient() override;
@@ -83,7 +94,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
-  virtual void Unmount(int32_t mount_id, StatusCallback callback) = 0;
+  virtual void Unmount(int32_t mount_id,
+                       bool remove_password,
+                       StatusCallback callback) = 0;
 
   // Calls ReadDirectory. Using the corresponding mount of |mount_id|, this
   // reads the directory on a given |directory_path| and passes the

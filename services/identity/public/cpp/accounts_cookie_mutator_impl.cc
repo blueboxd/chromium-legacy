@@ -22,7 +22,7 @@ AccountsCookieMutatorImpl::AccountsCookieMutatorImpl(
 AccountsCookieMutatorImpl::~AccountsCookieMutatorImpl() {}
 
 void AccountsCookieMutatorImpl::AddAccountToCookie(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     gaia::GaiaSource source,
     AddAccountToCookieCompletedCallback completion_callback) {
   gaia_cookie_manager_service_->AddAccountToCookie(
@@ -30,7 +30,7 @@ void AccountsCookieMutatorImpl::AddAccountToCookie(
 }
 
 void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& access_token,
     gaia::GaiaSource source,
     AddAccountToCookieCompletedCallback completion_callback) {
@@ -39,13 +39,12 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
 }
 
 void AccountsCookieMutatorImpl::SetAccountsInCookie(
-    const std::vector<std::string>& account_ids,
+    const std::vector<CoreAccountId>& account_ids,
     gaia::GaiaSource source,
     base::OnceCallback<void(signin::SetAccountsInCookieResult)>
         set_accounts_in_cookies_completed_callback) {
-  std::vector<std::pair<CoreAccountId, std::string>> accounts;
-  for (const auto& id : account_ids) {
-    CoreAccountId account_id(id);
+  std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair> accounts;
+  for (const auto& account_id : account_ids) {
     accounts.push_back(make_pair(
         account_id, account_tracker_service_->GetAccountInfo(account_id).gaia));
   }

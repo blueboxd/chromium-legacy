@@ -1035,6 +1035,49 @@ TEST_F(TextFragmentAnchorTest, CaseSensitive) {
   EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
+// Test that the fragment anchor stays centered in view throughout loading.
+TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
+  SimRequest main_request("https://example.com/test.html#targetText=test",
+                          "text/html");
+  SimRequest image_request("https://example.com/image.svg", "image/svg+xml");
+  LoadURL("https://example.com/test.html#targetText=test");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <img src="image.svg">
+    <p id="text">test</p>
+  )HTML");
+  Compositor().PaintFrame();
+  RunAsyncMatchingTasks();
+
+  ScrollOffset first_scroll_offset = LayoutViewport()->GetScrollOffset();
+  ASSERT_NE(ScrollOffset(), first_scroll_offset);
+
+  Element& p = *GetDocument().getElementById("text");
+  IntRect first_bounding_rect = BoundingRectInFrame(p);
+  EXPECT_TRUE(ViewportRect().Contains(first_bounding_rect));
+
+  // Load an image that pushes the target text out of view
+  image_request.Complete(R"SVG(
+    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="2000">
+      <rect fill="green" width="200" height="2000"/>
+    </svg>
+  )SVG");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  // Ensure the target text is still in view and stayed centered
+  ASSERT_NE(first_scroll_offset, LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
+  EXPECT_EQ(first_bounding_rect, BoundingRectInFrame(p));
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
 }  // namespace
 
 }  // namespace blink

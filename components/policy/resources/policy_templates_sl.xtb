@@ -451,12 +451,6 @@
 
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
 <translation id="1750315445671978749">Blokiraj vse prenose</translation>
-<translation id="1762072363876276024">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      To nastavitev, DeviceLoginScreenSitePerProcess, je mogoče uporabljati, da se uporabnikom ne dovoli onemogočanja privzetega delovanja osamitve vseh spletnih mest. Upoštevajte, da je lahko pravilnik DeviceLoginScreenIsolateOrigins uporaben tudi za osamitev dodatnih, podrobnejših izvorov.
-      Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
-      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko spremenil to nastavitev (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Omogočanje priporočil aplikacij v ničelnem stanju iskalnega polja</translation>
 <translation id="17719159826324007">
       Če je ta pravilnik nastavljen na ArcSession, napravo prisili, da se znova zažene ob odjavi uporabnika, če se je zagnal Android.
@@ -3714,22 +3708,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Opomba: dovoljene vrednosti za polje <ph name="MINUTE_FIELD_NAME" /> v poljih<ph name="CHARGE_START_TIME_FIELD_NAME" /> in <ph name="CHARGE_END_TIME_FIELD_NAME" /> so 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfiguriranje funkcij za ljudi s posebnimi potrebami za <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Ta pravilnik omogoča protokol HTTP/0.9 za vrata, ki niso 80 (HTTP) ali 443 (HTTPS).
-
-      Ta pravilnik je privzeto onemogočen. Če je omogočen, so uporabniki izpostavljeni tej varnostni težavi: https://crbug.com/600352.
-
-      Namen tega pravilnika je omogočiti podjetjem, da v obstoječih strežnikih prenehajo uporabljati protokol HTTP/0.9. Pravilnik bo v prihodnosti odstranjen.
-
-      Če ta pravilnik ni nastavljen, bo protokol HTTP/0.9 za vrata, ki niso privzeta, onemogočen.</translation>
-<translation id="7726421241038987229">
-      To nastavitev, SitePerProcess, je mogoče uporabljati, da se uporabnikom ne dovoli onemogočanja privzetega delovanja osamitve vseh spletnih mest. Upoštevajte, da je lahko pravilnik IsolateOrigins uporaben tudi za osamitev dodatnih, podrobnejših izvorov.
-      Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
-      Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko onemogočil osamitev spletnih mest
-      (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).  Če nastavite, da je pravilnik onemogočen, in/ali ga ne konfigurirate, osamitve spletnih mest ne izklopite.
-      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo, da tudi pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> nastavite na enako vrednost. Če se vrednosti, navedene v teh dveh pravilnikih, ne ujemajo, lahko pri vstopu v uporabniško sejo pride do zakasnitve, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-
-      OPOMBA: Ta pravilnik se ne uporablja v sistemu Android. Če želite omogočiti pravilnik SitePerProcess v Androidu, uporabite nastavitev pravilnika SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Omogočanje napravam, da uporabljajo vtičnik <ph name="PLUGIN_VM_NAME" /> v sistemu <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Za gostitelje oddaljenega dostopa omogoča preverjanje pristnosti v dveh korakih namesto z uporabniško določenim PIN-om.
 

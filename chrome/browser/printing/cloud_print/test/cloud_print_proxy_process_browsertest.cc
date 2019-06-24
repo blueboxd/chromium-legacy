@@ -176,8 +176,8 @@ void MockServiceIPCServer::SetServiceEnabledExpectations() {
           WithoutArgs(Invoke(g_service_process, &::ServiceProcess::Shutdown))));
 }
 
-typedef base::Callback<void(MockServiceIPCServer* server)>
-    SetExpectationsCallback;
+using SetExpectationsCallback =
+    base::OnceCallback<void(MockServiceIPCServer* server)>;
 
 // The return value from this routine is used as the exit code for the mock
 // service process. Any non-zero return value will be printed out and can help
@@ -228,11 +228,11 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   MockServiceIPCServer server(&service_process,
                               service_process.io_task_runner(),
                               service_process.GetShutdownEventForTesting());
-  server.binder_registry().AddInterface(base::Bind(
+  server.binder_registry().AddInterface(base::BindRepeating(
       &cloud_print::CloudPrintMessageHandler::Create, &service_process));
 
   // Here is where the expectations/mock responses need to be set up.
-  set_expectations.Run(&server);
+  std::move(set_expectations).Run(&server);
 
   EXPECT_TRUE(server.Init());
   EXPECT_TRUE(state->SignalReady(service_process.io_task_runner().get(),
@@ -273,7 +273,7 @@ void SetServiceEnabledExpectations(MockServiceIPCServer* server) {
 
 MULTIPROCESS_TEST_MAIN(CloudPrintMockService_StartEnabledWaitForQuit) {
   return CloudPrintMockService_Main(
-      base::Bind(&SetServiceEnabledExpectations));
+      base::BindOnce(&SetServiceEnabledExpectations));
 }
 
 class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,

@@ -1014,8 +1014,6 @@ jumbo_split_static_library("browser") {
     "password_manager/password_manager_util_win.h",
     "password_manager/password_store_factory.cc",
     "password_manager/password_store_factory.h",
-    "password_manager/password_store_mac.cc",
-    "password_manager/password_store_mac.h",
     "password_manager/reauth_purpose.h",
     "payments/payment_handler_permission_context.cc",
     "payments/payment_handler_permission_context.h",
@@ -1163,6 +1161,8 @@ jumbo_split_static_library("browser") {
     "policy/chrome_browser_policy_connector.h",
     "policy/cloud/cloud_policy_invalidator.cc",
     "policy/cloud/cloud_policy_invalidator.h",
+    "policy/cloud/policy_invalidation_util.cc",
+    "policy/cloud/policy_invalidation_util.h",
     "policy/cloud/remote_commands_invalidator.cc",
     "policy/cloud/remote_commands_invalidator.h",
     "policy/cloud/remote_commands_invalidator_impl.cc",
@@ -2229,7 +2229,6 @@ jumbo_split_static_library("browser") {
       "android/compositor/navigation_glow.cc",
       "android/compositor/navigation_glow.h",
       "android/compositor/resources/resource_factory.cc",
-      "android/compositor/resources/resource_factory.h",
       "android/compositor/resources/toolbar_resource.cc",
       "android/compositor/resources/toolbar_resource.h",
       "android/compositor/scene_layer/contextual_search_scene_layer.cc",
@@ -5374,6 +5373,8 @@ static_library("test_support") {
       "autofill/mock_address_accessory_controller.h",
       "autofill/mock_manual_filling_view.cc",
       "autofill/mock_manual_filling_view.h",
+      "autofill/mock_password_accessory_controller.cc",
+      "autofill/mock_password_accessory_controller.h",
     ]
     deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {

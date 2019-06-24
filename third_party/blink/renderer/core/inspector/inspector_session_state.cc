@@ -36,11 +36,11 @@ const mojom::blink::DevToolsSessionState* InspectorSessionState::ReattachState()
 }
 
 void InspectorSessionState::EnqueueUpdate(const WTF::String& key,
-                                          const std::vector<uint8_t>* value) {
+                                          const WebVector<uint8_t>* value) {
   base::Optional<WTF::Vector<uint8_t>> updated_value;
   if (value) {
     WTF::Vector<uint8_t> payload;
-    payload.Append(value->data(), value->size());
+    payload.AppendRange(value->begin(), value->end());
     updated_value = std::move(payload);
   }
   updates_->entries.Set(key, std::move(updated_value));
@@ -56,8 +56,8 @@ mojom::blink::DevToolsSessionStatePtr InspectorSessionState::TakeUpdates() {
 // Encoding / Decoding routines.
 //
 /*static*/
-void InspectorAgentState::Serialize(bool v, std::vector<uint8_t>* out) {
-  out->push_back(v ? EncodeTrue() : EncodeFalse());
+void InspectorAgentState::Serialize(bool v, WebVector<uint8_t>* out) {
+  out->emplace_back(v ? EncodeTrue() : EncodeFalse());
 }
 
 /*static*/
@@ -75,8 +75,10 @@ bool InspectorAgentState::Deserialize(span<uint8_t> in, bool* v) {
 }
 
 /*static*/
-void InspectorAgentState::Serialize(int32_t v, std::vector<uint8_t>* out) {
-  ::inspector_protocol_encoding::cbor::EncodeInt32(v, out);
+void InspectorAgentState::Serialize(int32_t v, WebVector<uint8_t>* out) {
+  auto encode = out->ReleaseVector();
+  ::inspector_protocol_encoding::cbor::EncodeInt32(v, &encode);
+  *out = std::move(encode);
 }
 
 /*static*/
@@ -90,8 +92,10 @@ bool InspectorAgentState::Deserialize(span<uint8_t> in, int32_t* v) {
 }
 
 /*static*/
-void InspectorAgentState::Serialize(double v, std::vector<uint8_t>* out) {
-  ::inspector_protocol_encoding::cbor::EncodeDouble(v, out);
+void InspectorAgentState::Serialize(double v, WebVector<uint8_t>* out) {
+  auto encode = out->ReleaseVector();
+  ::inspector_protocol_encoding::cbor::EncodeDouble(v, &encode);
+  *out = std::move(encode);
 }
 
 /*static*/
@@ -106,17 +110,19 @@ bool InspectorAgentState::Deserialize(span<uint8_t> in, double* v) {
 
 /*static*/
 void InspectorAgentState::Serialize(const WTF::String& v,
-                                    std::vector<uint8_t>* out) {
+                                    WebVector<uint8_t>* out) {
+  auto encode = out->ReleaseVector();
   if (v.Is8Bit()) {
     auto span8 = v.Span8();
-    EncodeFromLatin1(span<uint8_t>(span8.data(), span8.size()), out);
+    EncodeFromLatin1(span<uint8_t>(span8.data(), span8.size()), &encode);
   } else {
     auto span16 = v.Span16();
     EncodeFromUTF16(
         span<uint16_t>(reinterpret_cast<const uint16_t*>(span16.data()),
                        span16.size()),
-        out);
+        &encode);
   }
+  *out = std::move(encode);
 }
 
 /*static*/
@@ -139,11 +145,11 @@ bool InspectorAgentState::Deserialize(span<uint8_t> in, WTF::String* v) {
 
 /*static*/
 void InspectorAgentState::Serialize(const std::vector<uint8_t>& v,
-                                    std::vector<uint8_t>* out) {
+                                    WebVector<uint8_t>* out) {
   // We could CBOR encode this, but since we never look at the contents
   // anyway (except for decoding just below), we just cheat and use the
   // blob directly.
-  out->insert(out->end(), v.begin(), v.end());
+  out->Assign(v.data(), v.size());
 }
 
 /*static*/

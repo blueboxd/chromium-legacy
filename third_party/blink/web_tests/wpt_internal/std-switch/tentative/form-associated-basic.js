@@ -12,6 +12,22 @@ function loadScript(src) {
 
 function formAssociatedTests(tag, reflectionDict) {
   test(() => {
+    // TODO(tkent): Move the following checks to idlharness.js?
+    let interface = document.createElement(tag).constructor;
+    assert_not_own_property(interface, 'disabledFeatures');
+    assert_not_own_property(interface, 'formAssociated');
+    assert_not_own_property(interface, 'observedAttributes');
+    assert_not_own_property(interface.prototype, 'adoptedCallback');
+    assert_not_own_property(interface.prototype, 'attributeChangedCallback');
+    assert_not_own_property(interface.prototype, 'connectedCallback');
+    assert_not_own_property(interface.prototype, 'disconnectedCallback');
+    assert_not_own_property(interface.prototype, 'formAssociatedCallback');
+    assert_not_own_property(interface.prototype, 'formDisabledCallback');
+    assert_not_own_property(interface.prototype, 'formResetCallback');
+    assert_not_own_property(interface.prototype, 'formStateRestoreCallback');
+  }, `Interface for ${tag} should not have custom-element-like properties`);
+
+  test(() => {
     let control = document.createElement(tag);
     assert_equals(control.type, tag);
   }, `${tag} supports type property`);

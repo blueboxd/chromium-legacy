@@ -111,6 +111,9 @@ class MODULES_EXPORT PaymentRequest final
   };
 
  private:
+  // Called when the renderer loses the IPC connection to the browser.
+  void OnConnectionError();
+
   // LifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -122,7 +125,8 @@ class MODULES_EXPORT PaymentRequest final
   void OnShippingOptionChange(const String& shipping_option_id) override;
   void OnPayerDetailChange(payments::mojom::blink::PayerDetailPtr) override;
   void OnPaymentResponse(payments::mojom::blink::PaymentResponsePtr) override;
-  void OnError(payments::mojom::blink::PaymentErrorReason) override;
+  void OnError(payments::mojom::blink::PaymentErrorReason,
+               const String& error_message) override;
   void OnComplete() override;
   void OnAbort(bool aborted_successfully) override;
   void OnCanMakePayment(

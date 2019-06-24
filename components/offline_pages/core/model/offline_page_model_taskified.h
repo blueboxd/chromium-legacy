@@ -39,6 +39,7 @@ struct OfflinePageItem;
 
 class ArchiveManager;
 class ClientPolicyController;
+class OfflinePageArchivePublisher;
 class OfflinePageArchiver;
 class OfflinePageMetadataStore;
 class SystemDownloadManager;
@@ -66,6 +67,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       std::unique_ptr<OfflinePageMetadataStore> store,
       std::unique_ptr<ArchiveManager> archive_manager,
       std::unique_ptr<SystemDownloadManager> download_manager,
+      std::unique_ptr<OfflinePageArchivePublisher> archive_publisher,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModelTaskified() override;
 
@@ -109,7 +111,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflineEventLogger* GetLogger() override;
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
-      std::unique_ptr<OfflinePageArchiver> archiver,
       PublishPageCallback publish_done_callback) override;
 
   // Methods for testing only:
@@ -122,7 +123,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   }
 
  private:
-  // TODO(romax): https://crbug.com/791115, remove the friend class usage.
   friend class OfflinePageModelTaskifiedTest;
 
   // Callbacks for saving pages.
@@ -175,15 +175,13 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const std::vector<int64_t>& pages_deleted);
 
   // Callback for when PublishArchive has completd.
-  void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
-                          SavePageCallback save_page_callback,
+  void PublishArchiveDone(SavePageCallback save_page_callback,
                           base::Time publish_start_time,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult publish_results);
 
   // Callback for when publishing an internal archive has completed.
-  void PublishInternalArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
-                                  PublishPageCallback publish_done_callback,
+  void PublishInternalArchiveDone(PublishPageCallback publish_done_callback,
                                   const OfflinePageItem& offline_page,
                                   PublishArchiveResult publish_results);
 
@@ -204,6 +202,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Manages interaction with the OS download manager, if present.
   std::unique_ptr<SystemDownloadManager> download_manager_;
+
+  // Used for moving archives into public storage.
+  std::unique_ptr<OfflinePageArchivePublisher> archive_publisher_;
 
   // Controller of the client policies.
   std::unique_ptr<ClientPolicyController> policy_controller_;

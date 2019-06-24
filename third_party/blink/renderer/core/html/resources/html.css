@@ -532,7 +532,7 @@ input::-internal-input-suggested {
 
 input::-internal-input-suggested,
 textarea::-internal-input-suggested {
-    font-family: system-ui !important;
+    font: -webkit-small-control !important;
 }
 
 input[type="password" i] {

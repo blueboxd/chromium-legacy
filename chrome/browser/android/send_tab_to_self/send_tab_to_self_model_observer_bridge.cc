@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/SendTabToSelfModelObserverBridge_jni.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -18,7 +19,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SendTabToSelfModelObserverBridge_jni.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;

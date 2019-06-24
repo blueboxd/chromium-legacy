@@ -7,9 +7,4 @@
     android:id="@+id/menu_row_text"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textAppearance="@style/TextAppearance.BlackTitle1"
-    android:minHeight="48dp"
-    android:gravity="center_vertical"
-    android:paddingStart="@dimen/revamped_context_menu_list_lateral_padding"
-    android:paddingEnd="@dimen/revamped_context_menu_list_lateral_padding"
-    android:background="?attr/selectableItemBackground"/>
+    style="@style/RevampedContextMenuItemText" />

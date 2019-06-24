@@ -266,7 +266,6 @@ source_set("blink_headers") {
     "platform/web_media_player_client.h",
     "platform/web_media_player_encrypted_media_client.h",
     "platform/web_media_player_source.h",
-    "platform/web_media_recorder_handler_client.h",
     "platform/web_media_source.h",
     "platform/web_media_stream.h",
     "platform/web_media_stream_center.h",

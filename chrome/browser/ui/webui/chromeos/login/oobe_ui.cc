@@ -66,7 +66,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -165,11 +164,6 @@ void AddSyncConsentResources(content::WebUIDataSource* source) {
 #endif
 }
 
-void AddSupervisionOnboardingScreenResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("supervision/onboarding_controller.mojom-lite.js",
-                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_LITE_JS);
-}
-
 // Adds resources for ARC-dependent screens (PlayStore ToS, Assistant, etc...)
 void AddArcScreensResources(content::WebUIDataSource* source) {
   // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
@@ -253,7 +247,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
-  AddSupervisionOnboardingScreenResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(
@@ -420,9 +413,6 @@ void OobeUI::ConfigureOobeDisplay() {
       std::make_unique<DeviceDisabledScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>(
-      js_calls_container_.get()));
-
-  AddScreenHandler(std::make_unique<SupervisionOnboardingScreenHandler>(
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>(

@@ -27,11 +27,13 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {
-  thread_state->Heap().stats_collector()->RegisterObserver(this);
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+    thread_state->Heap().stats_collector()->RegisterObserver(this);
 }
 
 UnifiedHeapController::~UnifiedHeapController() {
-  thread_state_->Heap().stats_collector()->UnregisterObserver(this);
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+    thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
 void UnifiedHeapController::TracePrologue(
@@ -92,11 +94,13 @@ void UnifiedHeapController::TraceEpilogue(
                                               BlinkGC::kLazySweeping);
   }
 
-  ThreadHeapStatsCollector* const stats_collector =
-      thread_state_->Heap().stats_collector();
-  summary->allocated_size =
-      static_cast<size_t>(stats_collector->marked_bytes());
-  summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled()) {
+    ThreadHeapStatsCollector* const stats_collector =
+        thread_state_->Heap().stats_collector();
+    summary->allocated_size =
+        static_cast<size_t>(stats_collector->marked_bytes());
+    summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
+  }
   buffered_allocated_size_ = 0;
 
   if (!thread_state_->IsSweepingInProgress()) {
@@ -181,6 +185,7 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
+  DCHECK(RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled());
   // Reported from a recursive sweeping call.
   if (thread_state()->IsSweepingInProgress() &&
       thread_state()->SweepForbidden()) {

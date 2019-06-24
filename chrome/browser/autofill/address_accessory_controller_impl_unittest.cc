@@ -105,10 +105,8 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
   personal_data_manager()->AddProfile(canadian);
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
-  EXPECT_CALL(mock_manual_filling_controller_,
-              RefreshSuggestionsForField(
-                  mojom::FocusedFieldType::kFillableTextField, _))
-      .WillOnce(SaveArg<1>(&result));
+  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions(_))
+      .WillOnce(SaveArg<0>(&result));
 
   controller()->RefreshSuggestions();
 
@@ -141,10 +139,8 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
 
 TEST_F(AddressAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
-  EXPECT_CALL(mock_manual_filling_controller_,
-              RefreshSuggestionsForField(
-                  mojom::FocusedFieldType::kFillableTextField, _))
-      .WillOnce(SaveArg<1>(&result));
+  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions(_))
+      .WillOnce(SaveArg<0>(&result));
 
   controller()->RefreshSuggestions();
 
@@ -154,10 +150,8 @@ TEST_F(AddressAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
 TEST_F(AddressAccessoryControllerTest, TriggersRefreshWhenDataChanges) {
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
-  EXPECT_CALL(mock_manual_filling_controller_,
-              RefreshSuggestionsForField(
-                  mojom::FocusedFieldType::kFillableTextField, _))
-      .WillRepeatedly(SaveArg<1>(&result));
+  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions(_))
+      .WillRepeatedly(SaveArg<0>(&result));
 
   // A refresh without data stores an empty sheet and registers an observer.
   controller()->RefreshSuggestions();

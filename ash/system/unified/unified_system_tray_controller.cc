@@ -7,6 +7,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -62,6 +63,10 @@ const int kDragThreshold = 200;
 
 }  // namespace
 
+// TODO(amehfooz): Add histograms for pagination metrics in system tray.
+void RecordPageSwitcherSourceByEventType(ui::EventType type,
+                                         bool is_tablet_mode) {}
+
 UnifiedSystemTrayController::UnifiedSystemTrayController(
     UnifiedSystemTrayModel* model,
     UnifiedSystemTrayBubble* bubble)
@@ -75,6 +80,11 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
   model_->pagination_model()->SetTransitionDurations(
       kUnifiedSystemTrayPageTransitionDurationMs,
       kUnifiedSystemTrayOverScrollPageTransitionDurationMs);
+
+  pagination_controller_ = std::make_unique<PaginationController>(
+      model_->pagination_model(), PaginationController::SCROLL_AXIS_HORIZONTAL,
+      base::BindRepeating(&RecordPageSwitcherSourceByEventType),
+      Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SystemTray.IsExpandedOnOpen",

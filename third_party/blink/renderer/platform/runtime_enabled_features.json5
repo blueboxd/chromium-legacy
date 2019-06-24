@@ -698,7 +698,7 @@
       name: "HeapIncrementalMarkingStress"
     },
     {
-      name: "HeapUnifiedGCScheduling"
+      name: "HeapUnifiedGCScheduling",
     },
     {
       name: "HrefTranslate",
@@ -960,6 +960,10 @@
       status: "test",
     },
     {
+      // When enabled, iframes are not capturing mouse events by default.
+      name: "MouseSubframeNoImplicitCapture",
+    },
+    {
       name: "MuteButton",
       depends_on: ["PictureInPictureAPI"],
       origin_trial_feature_name: "MuteButton",
@@ -1166,6 +1170,7 @@
     {
       name: "PeriodicBackgroundSync",
       settable_from_internals: true,
+      status: "test",
     },
     {
       name: "PerMethodCanMakePaymentQuota",
@@ -1477,10 +1482,11 @@
     },
     {
       name: "StreamsNative",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "TextFragmentIdentifiers",
+      origin_trial_feature_name: "TextFragmentIdentifiers",
       status: "experimental",
     },
     {

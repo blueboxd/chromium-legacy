@@ -577,6 +577,12 @@ TEST_F(
       this.runMochaTest(extension_manager_tests.TestNames.ChangePages);
     });
 
+TEST_F(
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
+    'PageTitleUpdate', function() {
+      this.runMochaTest(extension_manager_tests.TestNames.PageTitleUpdate);
+    });
+
 // eslint-disable-next-line no-var
 var CrExtensionsManagerTestWithIdQueryParam =
     class extends CrExtensionsBrowserTestWithInstalledExtension {

@@ -146,6 +146,14 @@ TelemetryService* ServicesDelegateAndroid::GetTelemetryService() const {
   return telemetry_service_.get();
 }
 
+void ServicesDelegateAndroid::CreateVerdictCacheManager(Profile* profile) {}
+void ServicesDelegateAndroid::RemoveVerdictCacheManager(Profile* profile) {}
+VerdictCacheManager* ServicesDelegateAndroid::GetVerdictCacheManager(
+    Profile* profile) const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 std::string ServicesDelegateAndroid::GetSafetyNetId() const {
   return database_manager_->GetSafetyNetId();
 }

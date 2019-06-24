@@ -417,8 +417,8 @@ void CollectedCookiesViews::Init() {
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL);
   base::string16 label_blocked = l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL);
-  tabbed_pane->AddTab(label_allowed, CreateAllowedPane().release());
-  tabbed_pane->AddTab(label_blocked, CreateBlockedPane().release());
+  tabbed_pane->AddTab(label_allowed, CreateAllowedPane());
+  tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
 

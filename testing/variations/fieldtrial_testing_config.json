@@ -563,8 +563,7 @@
         },
         {
             "platforms": [
-                "android",
-                "chromeos"
+                "android"
             ],
             "experiments": [
                 {
@@ -3047,25 +3046,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MirroringService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ModernMediaControls": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "UseModernMediaControls"
                     ]
                 }
             ]

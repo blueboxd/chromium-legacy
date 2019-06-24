@@ -11805,6 +11805,14 @@ should be able to be added at any place in this file.
   <description>User pressed 'History' in the app menu.</description>
 </action>
 
+<action name="MobileMenuIncognitoSearch">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user tapped the &quot;Incognito Search&quot; button in the mobile menu
+    displayed when long pressing the New Tab button.
+  </description>
+</action>
+
 <action name="MobileMenuNewIncognitoTab">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'New incognito tab' in the app menu.</description>
@@ -11889,6 +11897,14 @@ should be able to be added at any place in this file.
 <action name="MobileMenuScanQRCode">
   <owner>gambard@chromium.org</owner>
   <description>User pressed 'Scan QR Code' in the app menu.</description>
+</action>
+
+<action name="MobileMenuSearch">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user tapped the &quot;New Search&quot; button in the mobile menu
+    displayed when long pressing the New Tab button.
+  </description>
 </action>
 
 <action name="MobileMenuSearchCopiedImage">
@@ -13059,6 +13075,13 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarShowMenu">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileToolbarShowNewTabMenu">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user long-pressed on the NewTab button in the toolbar
+  </description>
 </action>
 
 <action name="MobileToolbarShowSearchMenu">

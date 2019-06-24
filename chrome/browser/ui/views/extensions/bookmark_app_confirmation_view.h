@@ -55,10 +55,10 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
   chrome::AppInstallationAcceptanceCallback callback_;
 
   // Checkbox to launch as a window.
-  views::Checkbox* open_as_window_checkbox_;
+  views::Checkbox* open_as_window_checkbox_ = nullptr;
 
   // Textfield showing the title of the app.
-  views::Textfield* title_tf_;
+  views::Textfield* title_tf_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppConfirmationView);
 };

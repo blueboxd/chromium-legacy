@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/origin_policy_throttle.h"
 
+#include <set>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -40,10 +41,8 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
     features_.InitWithFeatureState(features::kOriginPolicy, GetParam());
 
     RenderViewHostTestHarness::SetUp();
-    OriginPolicyThrottle::GetKnownVersionsForTesting().clear();
   }
   void TearDown() override {
-    OriginPolicyThrottle::GetKnownVersionsForTesting().clear();
     nav_handle_.reset();
     RenderViewHostTestHarness::TearDown();
   }
@@ -72,20 +71,28 @@ class TestOriginPolicyManager : public network::mojom::OriginPolicyManager {
                             const std::string& header_value,
                             RetrieveOriginPolicyCallback callback) override {
     auto result = network::mojom::OriginPolicy::New();
-    result->state = network::mojom::OriginPolicyState::kLoaded;
-    result->contents = network::mojom::OriginPolicyContents::New();
-    result->contents->raw_policy = kExampleManifestString;
-    result->policy_url = origin.GetURL();
+
+    if (origin_exceptions_.find(origin) == origin_exceptions_.end()) {
+      result->state = network::mojom::OriginPolicyState::kLoaded;
+      result->contents = network::mojom::OriginPolicyContents::New();
+      result->contents->raw_policy = kExampleManifestString;
+      result->policy_url = origin.GetURL();
+    } else {
+      result->state = network::mojom::OriginPolicyState::kNoPolicyApplies;
+      result->policy_url = origin.GetURL();
+    }
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&TestOriginPolicyManager::RunCallback,
                                   base::Unretained(this), std::move(callback),
                                   std::move(result)));
   }
+
   void RunCallback(RetrieveOriginPolicyCallback callback,
                    network::mojom::OriginPolicyPtr result) {
     std::move(callback).Run(std::move(result));
   }
+
   network::mojom::OriginPolicyManagerPtr GetPtr() {
     network::mojom::OriginPolicyManagerPtr ptr;
     auto request = mojo::MakeRequest(&ptr);
@@ -95,7 +102,14 @@ class TestOriginPolicyManager : public network::mojom::OriginPolicyManager {
 
     return ptr;
   }
+
+  void AddExceptionFor(const url::Origin& origin) override {
+    origin_exceptions_.insert(origin);
+  }
+
+ private:
   std::unique_ptr<mojo::Binding<network::mojom::OriginPolicyManager>> binding_;
+  std::set<url::Origin> origin_exceptions_;
 };
 
 INSTANTIATE_TEST_SUITE_P(OriginPolicyThrottleTests,
@@ -182,24 +196,9 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
       ->ResetOriginPolicyManagerForBrowserProcessForTesting();
 }
 
-TEST_P(OriginPolicyThrottleTest, AddException) {
-  if (!enabled())
-    return;
-
-  GURL url("https://example.org/bla");
-  OriginPolicyThrottle::GetKnownVersionsForTesting()[url::Origin::Create(url)] =
-      "abcd";
-
-  OriginPolicyThrottle::AddExceptionFor(url);
-  EXPECT_TRUE(
-      OriginPolicyThrottle::IsExemptedForTesting(url::Origin::Create(url)));
-}
-
 TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
   if (!enabled())
     return;
-
-  OriginPolicyThrottle::AddExceptionFor(GURL("https://example.org/blubb"));
 
   // Start the navigation.
   auto navigation = NavigationSimulator::CreateBrowserInitiated(
@@ -210,88 +209,47 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
   EXPECT_EQ(NavigationThrottle::PROCEED,
             navigation->GetLastThrottleCheckResult().action());
 
+  // We set a test origin policy manager as during unit tests we can't reach
+  // the network service to retrieve a valid origin policy manager.
+  TestOriginPolicyManager test_origin_policy_manager;
+  test_origin_policy_manager.AddExceptionFor(
+      url::Origin::Create(GURL("https://example.org/blubb")));
+  NavigationHandleImpl* nav_handle =
+      static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
+  SiteInstance* site_instance = nav_handle->GetStartingSiteInstance();
+  static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
+                                          site_instance))
+      ->SetOriginPolicyManagerForBrowserProcessForTesting(
+          test_origin_policy_manager.GetPtr());
+
   // Fake a response with a policy header.
   const char* raw_headers =
       "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_headers));
-  NavigationHandleImpl* nav_handle =
-      static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
   nav_handle->set_response_headers_for_testing(headers);
   navigation->ReadyToCommit();
 
-  // Due to the exception, we expect the policy to not defer.
-  EXPECT_FALSE(navigation->IsDeferred());
+  // The policy manager has to be called even though this is an exception
+  // because the throttle has no way of knowing that.
+  EXPECT_TRUE(navigation->IsDeferred());
+  OriginPolicyThrottle* policy_throttle = static_cast<OriginPolicyThrottle*>(
+      nav_handle->GetDeferringThrottleForTesting());
+  EXPECT_TRUE(policy_throttle);
 
-  // Also check that the header policy did not overwrite the exemption:
-  EXPECT_TRUE(OriginPolicyThrottle::IsExemptedForTesting(
-      url::Origin::Create(GURL("https://example.org/bla"))));
-}
+  // Wait until the navigation has been allowed to proceed.
+  navigation->Wait();
 
-TEST(OriginPolicyThrottleTest, ParseHeaders) {
-  const struct {
-    const char* header;
-    const char* policy_version;
-    const char* report_to;
-  } testcases[] = {
-      // The common cases: We expect >99% of headers to look like these:
-      {"policy=policy", "policy", ""},
-      {"policy=policy, report-to=endpoint", "policy", "endpoint"},
+  // At the end of the navigation, the navigation handle should have no policy
+  // as this origin should be exempted.
+  EXPECT_EQ("",
+            nav_handle->navigation_request()->common_params().origin_policy);
 
-      // Delete a policy. This better work.
-      {"0", "0", ""},
-      {"policy=0", "0", ""},
-      {"policy=\"0\"", "0", ""},
-      {"policy=0, report-to=endpoint", "0", "endpoint"},
-
-      // Order, please!
-      {"policy=policy, report-to=endpoint", "policy", "endpoint"},
-      {"report-to=endpoint, policy=policy", "policy", "endpoint"},
-
-      // Quoting:
-      {"policy=\"policy\"", "policy", ""},
-      {"policy=\"policy\", report-to=endpoint", "policy", "endpoint"},
-      {"policy=\"policy\", report-to=\"endpoint\"", "policy", "endpoint"},
-      {"policy=policy, report-to=\"endpoint\"", "policy", "endpoint"},
-
-      // Whitespace, and funky but valid syntax:
-      {"  policy  =   policy  ", "policy", ""},
-      {" policy = \t policy ", "policy", ""},
-      {" policy \t= \t \"policy\"  ", "policy", ""},
-      {" policy = \" policy \" ", "policy", ""},
-      {" , policy = policy , report-to=endpoint , ", "policy", "endpoint"},
-
-      // Valid policy, invalid report-to:
-      {"policy=policy, report-to endpoint", "", ""},
-      {"policy=policy, report-to=here, report-to=there", "", ""},
-      {"policy=policy, \"report-to\"=endpoint", "", ""},
-
-      // Invalid policy, valid report-to:
-      {"policy=policy1, policy=policy2", "", ""},
-      {"policy, report-to=r", "", ""},
-      {"report-to=endpoint", "", "endpoint"},
-
-      // Invalid everything:
-      {"one two three", "", ""},
-      {"one, two, three", "", ""},
-      {"policy report-to=endpoint", "", ""},
-      {"policy=policy report-to=endpoint", "", ""},
-
-      // Forward compatibility, ignore unknown keywords:
-      {"policy=pol, report-to=endpoint, unknown=keyword", "pol", "endpoint"},
-      {"unknown=keyword, policy=pol, report-to=endpoint", "pol", "endpoint"},
-      {"policy=pol, unknown=keyword", "pol", ""},
-      {"policy=policy, report_to=endpoint", "policy", ""},
-      {"policy=policy, reportto=endpoint", "policy", ""},
-  };
-  for (const auto& testcase : testcases) {
-    SCOPED_TRACE(testcase.header);
-    const auto result = OriginPolicyThrottle::
-        GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
-            testcase.header);
-    EXPECT_EQ(result.policy_version, testcase.policy_version);
-    EXPECT_EQ(result.report_to, testcase.report_to);
-  }
+  static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
+                                          site_instance))
+      ->ResetOriginPolicyManagerForBrowserProcessForTesting();
 }
 
 }  // namespace content

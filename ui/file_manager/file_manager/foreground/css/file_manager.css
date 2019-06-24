@@ -1152,6 +1152,7 @@ body.check-select #read-only-indicator {
   background: -webkit-image-set(
       url(../images/files/ui/close_button_white.png) 1x,
       url(../images/files/ui/2x/close_button_white.png) 2x) no-repeat center;
+  border: 0;
   cursor: pointer;
   display: inline-block;
   height: 40px;

@@ -58,6 +58,7 @@ source_set("cells") {
     "//ios/chrome/common",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui_util:semantic_colors",
     "//ios/third_party/material_components_ios:material_components_ios",
     "//net",
     "//ui/base",

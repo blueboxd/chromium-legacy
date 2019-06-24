@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_ORIGIN_POLICY_ORIGIN_POLICY_MANAGER_H_
 #define SERVICES_NETWORK_ORIGIN_POLICY_ORIGIN_POLICY_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -13,11 +14,13 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/network/origin_policy/origin_policy_fetcher.h"
+#include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
+
+class OriginPolicyFetcher;
 
 // The OriginPolicyManager is the entry point for all Origin Policy related
 // API calls. Spec: https://wicg.github.io/origin-policy/
@@ -44,14 +47,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   // coming through the associated pipe will be served by this object.
   void AddBinding(mojom::OriginPolicyManagerRequest request);
 
-  // mojom::OriginPolicy
+  // mojom::OriginPolicyManager
   void RetrieveOriginPolicy(const url::Origin& origin,
                             const std::string& header_value,
                             RetrieveOriginPolicyCallback callback) override;
+  void AddExceptionFor(const url::Origin& origin) override;
 
   // To be called by fetcher when it has finished its work.
   // This removes the fetcher which results in the fetcher being destroyed.
-  void FetcherDone(OriginPolicyFetcher* fetcher);
+  void FetcherDone(OriginPolicyFetcher* fetcher,
+                   mojom::OriginPolicyPtr origin_policy,
+                   RetrieveOriginPolicyCallback callback);
 
   // Retrieves an origin's default origin policy by attempting to fetch it
   // from "<origin>/.well-known/origin-policy".
@@ -69,17 +75,28 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
     return GetRequestedPolicyAndReportGroupFromHeaderString(header_value);
   }
 
+  // Get the version used for exempted policies. For testing purposes only.
+  static const char* GetExemptedVersionForTesting();
+
  private:
+  using KnownVersionMap = std::map<url::Origin, std::string>;
+
   // Parses a header and returns the result. If a parsed result does not contain
   // a non-empty policy version it means the `header_value` is invalid.
   static OriginPolicyHeaderValues
   GetRequestedPolicyAndReportGroupFromHeaderString(
       const std::string& header_value);
 
-  // Will start a fetch based on the provided origin and info.
-  void StartPolicyFetch(const url::Origin& origin,
-                        const OriginPolicyHeaderValues& header_info,
-                        RetrieveOriginPolicyCallback callback);
+  // Returns an origin policy with the specified state. The contents is empty
+  // and the `policy_url` is the default policy url for the specified origin.
+  static void InvokeCallbackWithPolicyState(
+      const url::Origin& origin,
+      mojom::OriginPolicyState state,
+      RetrieveOriginPolicyCallback callback);
+
+  // In memory cache of current policy version per origin.
+  // TODO(andypaicu): clear this when the disk cache is cleaned.
+  KnownVersionMap latest_version_map_;
 
   // A list of fetchers owned by this object
   std::set<std::unique_ptr<OriginPolicyFetcher>, base::UniquePtrComparator>

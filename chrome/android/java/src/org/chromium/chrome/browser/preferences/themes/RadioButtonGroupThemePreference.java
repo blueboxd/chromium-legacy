@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.preferences.themes;
 
 import android.content.Context;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
-import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -45,13 +45,16 @@ public class RadioButtonGroupThemePreference
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
 
         assert ThemeSetting.NUM_ENTRIES == 3;
-        mButtons.set(ThemeSetting.SYSTEM_DEFAULT, view.findViewById(R.id.system_default));
-        mButtons.set(ThemeSetting.LIGHT, view.findViewById(R.id.light));
-        mButtons.set(ThemeSetting.DARK, view.findViewById(R.id.dark));
+        mButtons.set(ThemeSetting.SYSTEM_DEFAULT,
+                (RadioButtonWithDescription) holder.findViewById(R.id.system_default));
+        mButtons.set(
+                ThemeSetting.LIGHT, (RadioButtonWithDescription) holder.findViewById(R.id.light));
+        mButtons.set(
+                ThemeSetting.DARK, (RadioButtonWithDescription) holder.findViewById(R.id.dark));
 
         for (int i = 0; i < ThemeSetting.NUM_ENTRIES; i++) {
             mButtons.get(i).setRadioButtonGroup(mButtons);

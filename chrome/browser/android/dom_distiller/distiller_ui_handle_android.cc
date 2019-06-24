@@ -5,10 +5,10 @@
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/DomDistillerUIUtils_jni.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/DomDistillerUIUtils_jni.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
 

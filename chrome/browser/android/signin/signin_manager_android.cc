@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
@@ -37,7 +38,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "jni/SigninManager_jni.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 
 using base::android::JavaParamRef;

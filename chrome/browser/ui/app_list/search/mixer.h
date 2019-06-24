@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -59,7 +60,9 @@ class Mixer {
   SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Handle a training signal.
-  void Train(const std::string& id, RankingItemType type);
+  void Train(const std::string& query,
+             const std::string& id,
+             RankingItemType type);
 
   // Used for sorting and mixing results.
   struct SortData {

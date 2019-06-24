@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.permissions;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.support.v7.app.AlertDialog;
+import android.support.annotation.StringRes;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
@@ -17,10 +16,16 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,28 +154,9 @@ public class AndroidPermissionRequester {
                             != -1 : "Invalid combination of missing content settings: "
                                     + deniedContentSettings;
 
-                    View view = activity.getLayoutInflater().inflate(
-                            R.layout.update_permissions_dialog, null);
-                    TextView dialogText = (TextView) view.findViewById(R.id.text);
-                    dialogText.setText(deniedStringId);
-
-                    AlertDialog.Builder builder = new UiUtils.CompatibleAlertDialogBuilder(
-                            activity, R.style.Theme_Chromium_AlertDialog);
-                    builder.setView(view);
-                    builder.setPositiveButton(R.string.infobar_update_permissions_button_text,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    requestAndroidPermissions(tab, contentSettingsTypes, delegate);
-                                }
-                            });
-                    builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            delegate.onAndroidPermissionCanceled();
-                        }
-                    });
-                    builder.create().show();
+                    showMissingPermissionDialog(activity, deniedStringId,
+                            () -> requestAndroidPermissions(tab, contentSettingsTypes, delegate),
+                            delegate::onAndroidPermissionCanceled);
                 } else if (deniedContentSettings.isEmpty()) {
                     delegate.onAndroidPermissionAccepted();
                 } else {
@@ -191,5 +177,58 @@ public class AndroidPermissionRequester {
             WebApkUma.recordAndroidRuntimePermissionPromptInWebApk(permissions);
         }
         return true;
+    }
+
+    /**
+     * Shows a dialog that informs the user about a missing Android permission.
+     * @param activity Current Activity. It should implement {@link ModalDialogManagerHolder}.
+     * @param messageId The message that is shown on the dialog.
+     * @param onPositiveButtonClicked Runnable that is executed on positive button click.
+     * @param onCancelled Runnable that is executed on cancellation.
+     */
+    public static void showMissingPermissionDialog(Activity activity, @StringRes int messageId,
+            Runnable onPositiveButtonClicked, Runnable onCancelled) {
+        assert activity instanceof ModalDialogManagerHolder
+            : "Activity should implement ModalDialogManagerHolder";
+        final ModalDialogManager modalDialogManager =
+                ((ModalDialogManagerHolder) activity).getModalDialogManager();
+        assert modalDialogManager != null : "ModalDialogManager is null";
+
+        ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
+            @Override
+            public void onClick(PropertyModel model, int buttonType) {
+                if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
+                    onPositiveButtonClicked.run();
+                    modalDialogManager.dismissDialog(
+                            model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                }
+            }
+
+            @Override
+            public void onDismiss(PropertyModel model, int dismissalCause) {
+                if (dismissalCause != DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
+                    onCancelled.run();
+                }
+            }
+        };
+        PropertyModel dialogModel;
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            dialogModel = TouchlessDelegate.getMissingPermissionDialogModel(
+                    activity, controller, messageId);
+        } else {
+            View view =
+                    activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
+            TextView dialogText = view.findViewById(R.id.text);
+            dialogText.setText(messageId);
+            dialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                                  .with(ModalDialogProperties.CUSTOM_VIEW, view)
+                                  .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                                  .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                          activity.getString(
+                                                  R.string.infobar_update_permissions_button_text))
+                                  .with(ModalDialogProperties.CONTROLLER, controller)
+                                  .build();
+        }
+        modalDialogManager.showDialog(dialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 }

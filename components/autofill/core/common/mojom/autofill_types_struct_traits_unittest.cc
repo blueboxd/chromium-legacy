@@ -178,17 +178,6 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
   EXPECT_EQ(expected.wait_for_username, actual.wait_for_username);
 }
 
-void CheckEqualPasswordFormGenerationData(
-    const PasswordFormGenerationData& expected,
-    const PasswordFormGenerationData& actual) {
-  EXPECT_EQ(expected.form_signature, actual.form_signature);
-  EXPECT_EQ(expected.field_signature, actual.field_signature);
-  ASSERT_EQ(expected.confirmation_field_signature.has_value(),
-            actual.confirmation_field_signature.has_value());
-  EXPECT_EQ(expected.confirmation_field_signature.value(),
-            actual.confirmation_field_signature.value());
-}
-
 void CheckEqualPassPasswordGenerationUIData(
     const password_generation::PasswordGenerationUIData& expected,
     const password_generation::PasswordGenerationUIData& actual) {
@@ -243,12 +232,6 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   void PassPasswordFormGenerationData(
       const PasswordFormGenerationData& s,
       PassPasswordFormGenerationDataCallback callback) override {
-    std::move(callback).Run(s);
-  }
-
-  void PassNewPasswordFormGenerationData(
-      const NewPasswordFormGenerationData& s,
-      PassNewPasswordFormGenerationDataCallback callback) override {
     std::move(callback).Run(s);
   }
 
@@ -316,14 +299,6 @@ void ExpectPasswordFormGenerationData(
     const PasswordFormGenerationData& expected,
     base::OnceClosure closure,
     const PasswordFormGenerationData& passed) {
-  CheckEqualPasswordFormGenerationData(expected, passed);
-  std::move(closure).Run();
-}
-
-void ExpectNewPasswordFormGenerationData(
-    const NewPasswordFormGenerationData& expected,
-    base::OnceClosure closure,
-    const NewPasswordFormGenerationData& passed) {
   EXPECT_EQ(expected.new_password_renderer_id, passed.new_password_renderer_id);
   EXPECT_EQ(expected.confirmation_password_renderer_id,
             passed.confirmation_password_renderer_id);
@@ -440,34 +415,15 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
   loop.Run();
 }
 
-TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  FormSignature form_signature = CalculateFormSignature(form);
-  FieldSignature field_signature =
-      CalculateFieldSignatureForField(form.fields[0]);
-  FieldSignature confirmation_field_signature =
-      CalculateFieldSignatureForField(form.fields[1]);
-  PasswordFormGenerationData input(form_signature, field_signature);
-  input.confirmation_field_signature.emplace(confirmation_field_signature);
-
-  base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordFormGenerationData(
-      input, base::BindOnce(&ExpectPasswordFormGenerationData, input,
-                            loop.QuitClosure()));
-  loop.Run();
-}
-
-TEST_F(AutofillTypeTraitsTestImpl, NewPasswordFormGenerationData) {
-  NewPasswordFormGenerationData input;
+TEST_F(AutofillTypeTraitsTestImpl, PasswordFormGenerationData) {
+  PasswordFormGenerationData input;
   input.new_password_renderer_id = 1234u,
   input.confirmation_password_renderer_id = 5789u;
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassNewPasswordFormGenerationData(
-      input, base::BindOnce(&ExpectNewPasswordFormGenerationData, input,
+  proxy->PassPasswordFormGenerationData(
+      input, base::BindOnce(&ExpectPasswordFormGenerationData, input,
                             loop.QuitClosure()));
   loop.Run();
 }

@@ -19773,6 +19773,10 @@ Called by update_net_error_codes.py.-->
   <int value="1343" label="DECLARATIVENETREQUEST_GETMATCHEDRULES"/>
   <int value="1344" label="DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT"/>
   <int value="1345" label="BLUETOOTHPRIVATE_RECORDDEVICESELECTION"/>
+  <int value="1346" label="LOGIN_LAUNCHMANAGEDGUESTSESSION"/>
+  <int value="1347" label="LOGIN_EXITCURRENTSESSION"/>
+  <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
+  <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20305,6 +20309,7 @@ Called by update_net_error_codes.py.-->
   <int value="217" label="kLoginScreenUi"/>
   <int value="218" label="kDeclarativeNetRequestFeedback"/>
   <int value="219" label="kTransientBackground"/>
+  <int value="220" label="kLogin"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -23712,6 +23717,8 @@ Called by update_net_error_codes.py.-->
   <int value="2927" label="LargestContentfulPaintExplicitlyRequested"/>
   <int value="2928" label="PageLifecycleTransitionsOptIn"/>
   <int value="2929" label="PageLifecycleTransitionsOptOut"/>
+  <int value="2930" label="PeriodicBackgroundSync"/>
+  <int value="2931" label="PeriodicBackgroundSyncRegister"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29675,6 +29682,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="OpenCleanupBlobJournalFailed">
     Open failed because the blob journal could not be cleaned up.
   </int>
+  <int value="16" label="OpenFailedMetadataSetup">
+    Open failed because the backing store's metadata could not be set up.
+  </int>
 </enum>
 
 <enum name="IdleDeadlineCallbackType">
@@ -34628,6 +34638,7 @@ from previous Chrome versions.
   <int value="-339103761" label="ArcGraphicBuffersVisualizationTool:enabled"/>
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
+  <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
@@ -35843,6 +35854,7 @@ from previous Chrome versions.
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
+  <int value="1486784197" label="MouseSubframeNoImplicitCapture:disabled"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
   <int value="1488193175" label="ChromeOSAssistant:enabled"/>
   <int value="1488700164" label="password-import:disabled"/>
@@ -46830,6 +46842,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PostSubmitNavigation">
+  <obsolete>
+    Deprecated 06/2019.
+  </obsolete>
   <int value="0" label="Same domain"/>
   <int value="1" label="Different domain"/>
 </enum>
@@ -59826,6 +59841,7 @@ Full version information for the fingerprint enum values:
   <int value="8" label="InstallManagerDestroyed"/>
   <int value="9" label="WindowOpened"/>
   <int value="10" label="NotValidManifestForWebApp"/>
+  <int value="11" label="IntentToPlayStore"/>
 </enum>
 
 <enum name="WebAppInstallSource">

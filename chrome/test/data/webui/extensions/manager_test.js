@@ -9,6 +9,7 @@ cr.define('extension_manager_tests', function() {
     ChangePages: 'change pages',
     ItemListVisibility: 'item list visibility',
     SplitItems: 'split items',
+    PageTitleUpdate: 'updates the title based on current route',
     UrlNavigationToDetails: 'url navigation to details',
     UrlNavigationToActivityLogFail:
         'url navigation to activity log without flag set',
@@ -108,6 +109,23 @@ cr.define('extension_manager_tests', function() {
       MockInteractions.tap(manager.$$('#sidebar').$['sections-extensions']);
       Polymer.dom.flush();
       assertViewActive('extensions-item-list');
+    });
+
+    test(assert(TestNames.PageTitleUpdate), function() {
+      expectEquals('Extensions', document.title);
+
+      // Open details view with a valid ID.
+      extensions.navigation.navigateTo({
+        page: Page.DETAILS,
+        extensionId: 'ldnnhddmnhbkjipkidpdiheffobcpfmf'
+      });
+      Polymer.dom.flush();
+      expectEquals('Extensions - My extension 1', document.title);
+
+      // Navigate back to the list view and check the page title.
+      extensions.navigation.navigateTo({page: Page.LIST});
+      Polymer.dom.flush();
+      expectEquals('Extensions', document.title);
     });
 
     test(assert(TestNames.UrlNavigationToDetails), function() {

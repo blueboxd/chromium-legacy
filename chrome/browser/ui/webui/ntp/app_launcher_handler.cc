@@ -182,8 +182,10 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetString("icon_small", small_icon.spec());
   value->SetBoolean("icon_small_exists", has_non_default_small_icon);
 
-  value->SetInteger("launch_container",
-                    extensions::AppLaunchInfo::GetLaunchContainer(extension));
+  value->SetInteger(
+      "launch_container",
+      static_cast<int>(
+          extensions::AppLaunchInfo::GetLaunchContainer(extension)));
   ExtensionPrefs* prefs = ExtensionPrefs::Get(service->profile());
   value->SetInteger("launch_type", extensions::GetLaunchType(prefs, extension));
   value->SetBoolean("is_component",
@@ -521,11 +523,12 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
       disposition == WindowOpenDisposition::NEW_WINDOW) {
     // TODO(jamescook): Proper support for background tabs.
-    AppLaunchParams params(profile, extension_id,
-                           disposition == WindowOpenDisposition::NEW_WINDOW
-                               ? extensions::LAUNCH_CONTAINER_WINDOW
-                               : extensions::LAUNCH_CONTAINER_TAB,
-                           disposition, extensions::SOURCE_NEW_TAB_PAGE);
+    AppLaunchParams params(
+        profile, extension_id,
+        disposition == WindowOpenDisposition::NEW_WINDOW
+            ? extensions::LaunchContainer::kLaunchContainerWindow
+            : extensions::LaunchContainer::kLaunchContainerTab,
+        disposition, extensions::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
     OpenApplication(params);
   } else {
@@ -541,7 +544,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
         profile, extension,
         old_contents ? WindowOpenDisposition::CURRENT_TAB
                      : WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        extensions::SOURCE_NEW_TAB_PAGE);
+        extensions::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
     WebContents* new_contents = OpenApplication(params);
 

@@ -10,10 +10,10 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/PermissionInfoBar_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "jni/PermissionInfoBar_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 

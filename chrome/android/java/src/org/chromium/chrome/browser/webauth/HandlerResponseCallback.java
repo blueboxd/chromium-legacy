@@ -24,6 +24,12 @@ public interface HandlerResponseCallback {
     void onSignResponse(Integer status, GetAssertionAuthenticatorResponse response);
 
     /**
+     * Interface that returns the response from a request to call
+     * isUserVerifyingPlatformAuthenticatorAvailable.
+     */
+    void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA);
+
+    /**
      * Interface that returns any errors from either register or sign requests.
      */
     void onError(Integer status);

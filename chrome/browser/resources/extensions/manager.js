@@ -521,6 +521,9 @@ cr.define('extensions', function() {
         });
       }
 
+      document.title = toPage == Page.DETAILS ?
+          `${loadTimeData.getString('title')} - ${this.detailViewItem_.name}` :
+          loadTimeData.getString('title');
       this.currentPage_ = newPage;
     },
 

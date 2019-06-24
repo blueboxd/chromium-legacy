@@ -117,7 +117,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void ShowParentAccessWidget(
       const AccountId& child_account_id,
       base::RepeatingCallback<void(bool success)> callback,
-      ParentAccessRequestReason reason) override;
+      ParentAccessRequestReason reason,
+      bool extra_dimmer) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
 
   // KioskAppMenu:

@@ -33,9 +33,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Dismisses all modals owned by the tab.
-- (void)dismissModals;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_TABS_TAB_H_

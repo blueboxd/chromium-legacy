@@ -69,11 +69,11 @@ class PanelButton extends HTMLElement {
               }
 
               :host([data-category='expand']) {
-                  animation: setexpand 1s forwards;
+                  animation: setexpand 150ms forwards;
               }
 
               :host([data-category='collapse']) {
-                  animation: setcollapse 1s forwards;
+                  animation: setcollapse 150ms forwards;
               }
             </style>
             <button>

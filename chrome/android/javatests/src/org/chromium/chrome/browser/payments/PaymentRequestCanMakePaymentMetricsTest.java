@@ -78,7 +78,8 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the canMakePayment events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.CAN_MAKE_PAYMENT_TRUE
@@ -244,7 +245,8 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure no canMakePayment events were logged.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_METHOD_BASIC_CARD

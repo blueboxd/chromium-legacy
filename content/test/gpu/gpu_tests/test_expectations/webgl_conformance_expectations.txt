@@ -591,4 +591,5 @@ crbug.com/957807 [ chromeos ] conformance/rendering/clipping-wide-points.html [ 
 crbug.com/957807 [ chromeos ] conformance/rendering/line-rendering-quality.html [ Skip ]
 crbug.com/957807 [ chromeos ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/conversions.html [ Skip ]
+crbug.com/977830 [ chromeos ] deqp/data/gles2/shaders/functions.html [ Failure ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]

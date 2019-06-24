@@ -425,12 +425,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Toto pravidlo byť malo byť nastavené ako webová adresa, z ktorej systém <ph name="PRODUCT_OS_NAME" /> môže Zmluvné podmienky stiahnuť. Zmluvné podmienky musia byť uložené vo formáte čistého textu, zobrazované ako typ MIME „text/plain“. Nie sú povolené žiadne značky.</translation>
 <translation id="1750315445671978749">Blokovať všetky súbory na stiahnutie</translation>
-<translation id="1762072363876276024">
-      Toto pravidlo platí pre prihlasovaciu obrazovku. Prečítajte si aj pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré upravuje reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. Ak sa hodnoty nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
-      Pomocou tohto nastavenia DeviceLoginScreenSitePerProcess môžete zakázať používateľom deaktiváciu predvoleného správania, ktorým je izolovanie všetkých webov. Na izolovanie ďalších, podrobnejších zdrojov môžete použiť aj pravidlo DeviceLoginScreenIsolateOrigins.
-      Ak toto pravidlo povolíte, používateľa nebudú môcť deaktivovať predvolené správanie, v rámci ktorého sa všetky weby spúšťajú vo vlastných procesoch.
-      Ak ho nenakonfigurujete alebo zakážete, používateľ bude môcť toto nastavenie meniť (napr. použiť vstup Zakázať izolovanie webov na adrese chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Povoliť odporúčania aplikácií v nulovom stave vyhľadávacieho poľa</translation>
 <translation id="17719159826324007">
       Keď toto pravidlo nastavíte na hodnotu ArcSession a je spustený Android, zariadenie sa po odhlásení používateľa reštartuje.
@@ -3655,22 +3649,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
           Poznámka: Povolené hodnoty pre pole <ph name="MINUTE_FIELD_NAME" /> v poliach <ph name="CHARGE_START_TIME_FIELD_NAME" /> a <ph name="CHARGE_END_TIME_FIELD_NAME" /> sú 0, 15, 30 a 45.</translation>
 <translation id="7717938661004793600">Konfigurujte funkcie zjednodušenia prístupu v systéme <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Toto pravidlo povoľuje protokol HTTP/0.9 na portoch iných ako 80 (v prípade protokolu HTTP) a 443 (v prípade protokolu HTTPS).
-
-      Toto pravidlo je predvolene zakázané a po povolení vystavuje používateľov problému so zabezpečením – https://crbug.com/600352.
-
-      Jeho cieľom je poskytnúť podnikom možnosť migrovať existujúce servery z protokolu HTTP/0.9. V budúcnosti bude odstránené.
-
-      Ak toto pravidlo nie je nastavené, protokol HTTP/0.9 bude zakázaný na portoch, ktoré nie sú predvolené.</translation>
-<translation id="7726421241038987229">
-      Pomocou tohto nastavenia SitePerProcess môžete zakázať používateľom deaktivovať predvolené správanie, ktorým je izolovanie všetkých webov. Na izolovanie ďalších, podrobnejších zdrojov môžete použiť aj pravidlo IsolateOrigins.
-      Ak toto pravidlo povolíte, používateľa nebudú môcť deaktivovať predvolené správanie, v rámci ktorého sa všetky weby spúšťajú vo vlastných procesoch.
-      Ak ho nenakonfigurujete alebo zakážete, používateľ bude môcť deaktivovať izolovanie webov
-      (napr. pomocou vstupu Zakázať izolovanie webov na adrese chrome://flags).  Ak ho zakážete alebo nenakonfigurujete, izolovanie webov sa nevypne.
-      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu aj pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ak sa hodnoty určené týmito dvoma pravidlami nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
-
-      POZNÁMKA: Toto pravidlo neplatí v Androide. SitePerProcess povoľte v Androide pomocou nastavenia pravidla SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Povoliť zariadeniam používať doplnok <ph name="PLUGIN_VM_NAME" /> v systéme <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Povoľuje dvojfázové overenie totožnosti pre hostiteľov vzdialeného prístupu namiesto kódu PIN zadaného používateľom.
 

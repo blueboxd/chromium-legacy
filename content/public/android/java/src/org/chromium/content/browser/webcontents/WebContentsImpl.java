@@ -17,7 +17,6 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.view.Surface;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.UserData;
@@ -28,6 +27,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinatesImpl;
+import org.chromium.content.browser.RenderWidgetHostViewImpl;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
@@ -365,6 +365,15 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public @Nullable RenderWidgetHostViewImpl getRenderWidgetHostView() {
+        if (mNativeWebContentsAndroid == 0) return null;
+        RenderWidgetHostViewImpl rwhvi = nativeGetRenderWidgetHostView(mNativeWebContentsAndroid);
+        if (rwhvi == null || rwhvi.isDestroyed()) return null;
+
+        return rwhvi;
+    }
+
+    @Override
     public String getTitle() {
         checkNotDestroyed();
         return nativeGetTitle(mNativeWebContentsAndroid);
@@ -517,11 +526,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         return nativeFocusLocationBarByDefault(mNativeWebContentsAndroid);
     }
 
-    @Override
-    public boolean isReady() {
-        checkNotDestroyed();
-        return nativeIsRenderWidgetHostViewReady(mNativeWebContentsAndroid);
-    }
 
     @Override
     public void exitFullscreen() {
@@ -751,13 +755,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void writeContentBitmapToDiskAsync(
-            int width, int height, String path, Callback<String> callback) {
-        checkNotDestroyed();
-        nativeWriteContentBitmapToDisk(mNativeWebContentsAndroid, width, height, path, callback);
-    }
-
-    @Override
     public void reloadLoFiImages() {
         checkNotDestroyed();
         nativeReloadLoFiImages(mNativeWebContentsAndroid);
@@ -775,22 +772,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private void onDownloadImageFinished(ImageDownloadCallback callback, int id, int httpStatusCode,
             String imageUrl, List<Bitmap> bitmaps, List<Rect> sizes) {
         callback.onFinishDownloadImage(id, httpStatusCode, imageUrl, bitmaps, sizes);
-    }
-
-    /**
-     * Removes handles used in text selection.
-     */
-    public void dismissTextHandles() {
-        if (isDestroyed()) return;
-        nativeDismissTextHandles(mNativeWebContentsAndroid);
-    }
-
-    /**
-     * Shows paste popup menu at the touch handle at specified location.
-     */
-    public void showContextMenuAtTouchHandle(int x, int y) {
-        checkNotDestroyed();
-        nativeShowContextMenuAtTouchHandle(mNativeWebContentsAndroid, x, y);
     }
 
     @Override
@@ -988,6 +969,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, WindowAndroid windowAndroid);
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
     private native RenderFrameHost nativeGetFocusedFrame(long nativeWebContentsAndroid);
+    private native RenderWidgetHostViewImpl nativeGetRenderWidgetHostView(
+            long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native String nativeGetEncoding(long nativeWebContentsAndroid);
@@ -1009,7 +992,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
     private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
-    private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);
     private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);
     private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
@@ -1038,15 +1020,10 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
     private native void nativeSetSpatialNavigationDisabled(
             long nativeWebContentsAndroid, boolean disabled);
-    private native void nativeWriteContentBitmapToDisk(long nativeWebContentsAndroid, int width,
-            int height, String path, Callback<String> callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback);
-    private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
-    private native void nativeShowContextMenuAtTouchHandle(
-            long nativeWebContentsAndroid, int x, int y);
     private native void nativeSetHasPersistentVideo(long nativeWebContentsAndroid, boolean value);
     private native boolean nativeHasActiveEffectivelyFullscreenVideo(long nativeWebContentsAndroid);
     private native boolean nativeIsPictureInPictureAllowedForFullscreenVideo(

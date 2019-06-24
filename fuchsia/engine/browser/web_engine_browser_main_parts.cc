@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/main_function_params.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_devtools_socket_factory.h"
@@ -21,8 +23,9 @@
 #include "ui/ozone/public/ozone_platform.h"
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
+    const content::MainFunctionParams& parameters,
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)) {}
+    : parameters_(parameters), request_(std::move(request)) {}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -73,11 +76,25 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   // Context and Frames can implement their own JS injection policy at a higher
   // level.
   content::RenderFrameHost::AllowInjectingJavaScript();
+
+  if (parameters_.ui_task) {
+    // Since the main loop won't run, there is nothing to quit in the
+    // |context_binding_| error handler.
+    quit_closure_ = base::DoNothing::Once();
+
+    parameters_.ui_task->Run();
+    delete parameters_.ui_task;
+    run_message_loop_ = false;
+  }
 }
 
 void WebEngineBrowserMainParts::PreDefaultMainMessageLoopRun(
     base::OnceClosure quit_closure) {
   quit_closure_ = std::move(quit_closure);
+}
+
+bool WebEngineBrowserMainParts::MainMessageLoopRun(int* result_code) {
+  return !run_message_loop_;
 }
 
 void WebEngineBrowserMainParts::PostMainMessageLoopRun() {

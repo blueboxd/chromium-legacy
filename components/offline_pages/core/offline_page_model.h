@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_page_archive_publisher.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_page_visuals.h"
@@ -188,7 +189,6 @@ class OfflinePageModel : public base::SupportsUserData, public KeyedService {
   // take ownership of OfflinePageArchiver.
   virtual void PublishInternalArchive(
       const OfflinePageItem& offline_page,
-      std::unique_ptr<OfflinePageArchiver> archiver,
       PublishPageCallback publish_done_callback) = 0;
 
   // Returns the policy controller.

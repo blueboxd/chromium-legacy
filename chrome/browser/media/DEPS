@@ -10,6 +10,7 @@ include_rules = [
   "+services/data_decoder/data_decoder_service.h",
   "+services/data_decoder/public",
   "+services/device/public/mojom",
+  "+chrome/android/features/media_router/jni_headers",
 ]
 
 specific_include_rules = {

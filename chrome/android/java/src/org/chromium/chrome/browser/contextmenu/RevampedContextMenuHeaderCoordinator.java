@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 class RevampedContextMenuHeaderCoordinator {
     private PropertyModel mModel;
@@ -29,11 +28,11 @@ class RevampedContextMenuHeaderCoordinator {
 
     private Context mContext;
 
-    RevampedContextMenuHeaderCoordinator(
-            Activity activity, ContextMenuParams params, String plainUrl, boolean isImage) {
+    RevampedContextMenuHeaderCoordinator(Activity activity, ContextMenuParams params) {
         mContext = activity;
         mModel = buildModel(getTitle(params), getUrl(activity, params));
-        mMediator = new RevampedContextMenuHeaderMediator(activity, mModel, plainUrl, isImage);
+        mMediator = new RevampedContextMenuHeaderMediator(
+                activity, mModel, params.getUrl(), params.isImage());
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {
@@ -89,12 +88,6 @@ class RevampedContextMenuHeaderCoordinator {
     }
 
     View getView() {
-        View view =
-                LayoutInflater.from(mContext).inflate(R.layout.revamped_context_menu_header, null);
-        // TODO(sinansahin): Remove the work around code when the ModelListAdapter is updated.
-        view.setTag(org.chromium.ui.R.id.view_model, mModel);
-        PropertyModelChangeProcessor.create(
-                mModel, view, RevampedContextMenuHeaderViewBinder::bind);
-        return view;
+        return LayoutInflater.from(mContext).inflate(R.layout.revamped_context_menu_header, null);
     }
 }

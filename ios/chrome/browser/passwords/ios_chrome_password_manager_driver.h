@@ -11,7 +11,6 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
 namespace autofill {
-struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
 
@@ -42,7 +41,7 @@ class PasswordManager;
 
 // Informs delegate of form for password generation found.
 - (void)formEligibleForGenerationFound:
-    (const autofill::NewPasswordFormGenerationData&)form;
+    (const autofill::PasswordFormGenerationData&)form;
 
 @end
 
@@ -58,12 +57,8 @@ class IOSChromePasswordManagerDriver
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
   void InformNoSavedCredentials() override;
-  void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) override;
-  void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) override;
   void FormEligibleForGenerationFound(
-      const autofill::NewPasswordFormGenerationData& form) override;
+      const autofill::PasswordFormGenerationData& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;

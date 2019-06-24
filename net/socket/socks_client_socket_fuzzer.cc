@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -18,6 +17,7 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/socks_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for SocksClientSocket.  Only covers the SOCKS4 handshake.
 //
@@ -27,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
   net::TestNetLog test_net_log;
 
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   // Determine if the DNS lookup returns synchronously or asynchronously,
   // succeeds or fails, and returns an IPv4 or IPv6 address.

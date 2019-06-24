@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -25,6 +24,7 @@
 #include "net/log/test_net_log.h"
 #include "net/socket/fuzzed_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "url/gurl.h"
 
 // Fuzzer for HttpStreamParser.
@@ -33,7 +33,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::TestCompletionCallback callback;
   net::BoundTestNetLog bound_test_net_log;
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   net::FuzzedSocket fuzzed_socket(&data_provider,
                                   bound_test_net_log.bound().net_log());
   CHECK_EQ(net::OK, fuzzed_socket.Connect(callback.callback()));

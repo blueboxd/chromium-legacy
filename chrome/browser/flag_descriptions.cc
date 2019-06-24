@@ -1204,6 +1204,11 @@ const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";
 
+const char kMouseSubframeNoImplicitCaptureName[] =
+    "Disable mouse implicit capture for iframe";
+const char kMouseSubframeNoImplicitCaptureDescription[] =
+    "When enable, mouse down does not implicit capture for iframe.";
+
 const char kNativeFileSystemAPIName[] = "Native File System API";
 const char kNativeFileSystemAPIDescription[] =
     "Enables the experimental Native File System API, giving websites access "

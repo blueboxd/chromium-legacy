@@ -52,8 +52,6 @@ generate_jni("audio_track_jni_headers") {
       "java/src/org/chromium/chromecast/cma/backend/android/VolumeMap.java",
     ]
   }
-
-  jni_package = "audio_track"
 }
 
 android_library("audio_track_java") {

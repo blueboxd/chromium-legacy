@@ -17,9 +17,7 @@
 #include "net/socket/transport_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace base {
 class FuzzedDataProvider;
-}
 
 namespace net {
 
@@ -43,7 +41,7 @@ class FuzzedSocket : public TransportClientSocket {
  public:
   // |data_provider| is used as to determine behavior of the FuzzedSocket. It
   // must remain valid until after the FuzzedSocket is destroyed.
-  FuzzedSocket(base::FuzzedDataProvider* data_provider, net::NetLog* net_log);
+  FuzzedSocket(FuzzedDataProvider* data_provider, net::NetLog* net_log);
   ~FuzzedSocket() override;
 
   // If set to true, the socket will fuzz the result of the Connect() call.
@@ -104,7 +102,7 @@ class FuzzedSocket : public TransportClientSocket {
   // See https://crbug.com/823012
   bool ForceSync() const;
 
-  base::FuzzedDataProvider* data_provider_;
+  FuzzedDataProvider* data_provider_;
 
   // If true, the result of the Connect() call is fuzzed - it can succeed or
   // fail with a variety of connection errors, and it can complete synchronously

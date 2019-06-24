@@ -849,8 +849,6 @@ void AutofillAgent::DidAssociateFormControlsDynamically() {
   // whole page doesn't have to be loaded.
   ProcessForms();
   password_autofill_agent_->OnDynamicFormsSeen();
-  if (password_generation_agent_)
-    password_generation_agent_->OnDynamicFormsSeen();
 }
 
 void AutofillAgent::DidCompleteFocusChangeInFrame() {

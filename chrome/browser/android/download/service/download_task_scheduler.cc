@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/trace_event/trace_event.h"
-#include "jni/DownloadTaskScheduler_jni.h"
+#include "chrome/android/chrome_jni_headers/DownloadTaskScheduler_jni.h"
 
 namespace download {
 namespace android {

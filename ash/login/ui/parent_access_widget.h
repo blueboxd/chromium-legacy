@@ -20,6 +20,8 @@ class Widget;
 
 namespace ash {
 
+class WindowDimmer;
+
 enum class ParentAccessRequestReason;
 
 // Widget to display the Parent Access View in a standalone container.
@@ -34,10 +36,12 @@ class ParentAccessWidget {
   // successful or (b) the back button is pressed. |reason| contains information
   // about why the parent access view is necessary, it is used to modify the
   // widget appearance by changing the title and description strings and
-  // background color
+  // background color. The parent access widget is a modal and already contains
+  // a dimmer, use |extra_dimmer| when another modal needs to instantiate it.
   ParentAccessWidget(const AccountId& account_id,
                      const OnExitCallback& callback,
-                     ParentAccessRequestReason reason);
+                     ParentAccessRequestReason reason,
+                     bool use_extra_dimmer);
 
   ~ParentAccessWidget();
 
@@ -46,6 +50,7 @@ class ParentAccessWidget {
   void OnExit(bool success);
 
   std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<WindowDimmer> dimmer_;
 
   OnExitCallback callback_;
 

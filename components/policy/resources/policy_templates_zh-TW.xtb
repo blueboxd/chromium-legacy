@@ -437,12 +437,6 @@
 
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
-<translation id="1762072363876276024">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-      這項 DeviceLoginScreenSitePerProcess 設定可在系統預設隔離所有網站時，禁止使用者停用這項行為。請注意，DeviceLoginScreenIsolateOrigins 政策也可用於隔離其他更精細的來源。
-      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
-      如果不設定或停用這項政策，使用者可以變更這項設定 (例如使用 chrome://flags 中的「停用網站隔離」選項)。
-      </translation>
 <translation id="1767673020408652620">在零狀態搜尋框中啟用應用程式推薦</translation>
 <translation id="17719159826324007">
       如果將這項政策設為 [ArcSession]，系統會在 Android 已啟動的前提下，於使用者登出時強制裝置重新啟動。
@@ -2448,6 +2442,10 @@
       請注意，這項設定可能會允許略過 nameConstraints 延伸 (用於限制指定的憑證可授權的主機名稱)，因此不建議啟用。
 
       如果未設定這項政策，或是將這項政策設為 false，含有 DNS 名稱或 IP 位址但缺少 subjectAlternativeName 延伸的伺服器憑證將不會受到信任。</translation>
+<translation id="5578571772998293651">允許使用者意見回饋功能。
+        如果將這項政策設為 False，使用者無法將意見回饋傳送給 Google。
+
+        如果將這項政策設為 True 或不設定，使用者可以將意見回饋傳送給 Google，方法是依序按一下「選單」圖示 -&gt; [說明] -&gt; [回報問題]，或是按下按鍵組合。</translation>
 <translation id="5581292529942108810">設定 Chrome 資訊回報擴充功能相關政策。
 
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已透過 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會有作用。</translation>
@@ -3530,22 +3528,6 @@
 
           注意：「<ph name="CHARGE_START_TIME_FIELD_NAME" />」和「<ph name="CHARGE_END_TIME_FIELD_NAME" />」的「<ph name="MINUTE_FIELD_NAME" />」欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 無障礙功能。</translation>
-<translation id="7724994675283793633">這項政策可讓你在 80 (HTTP) 和 443 (HTTPS) 以外的通訊埠啟用 HTTP/0.9。
-
-      這項政策預設為停用，啟用後使用者可能會遇到安全性問題 https://crbug.com/600352。
-
-      這項政策的用意是讓企業自行遷移目前使用 HTTP/0.9 的伺服器，日後我們會移除這項政策。
-
-      如果未設定這項政策，則會在非預設通訊埠停用 HTTP/0.9。</translation>
-<translation id="7726421241038987229">
-      這項 SitePerProcess 設定可在系統預設為隔離所有網站時，禁止使用者停用這項行為。請注意，IsolateOrigins 政策也可用於隔離其他更精細的來源。
-      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
-      如果不設定或停用這項政策，使用者可以選擇停用網站隔離功能
-      (例如，使用 chrome://flags 中的「停用網站隔離」選項)。即使將這項政策設為停用和/或不設定，也不會關閉網站隔離功能。
-      在「<ph name="PRODUCT_OS_NAME" />」上，建議你將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策也設定為相同的值。如果兩個政策指定的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-
-      注意：這項政策不適用於 Android。如果要在 Android 上啟用 SitePerProcess，請使用 SitePerProcessAndroid 政策設定。
-      </translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
@@ -3767,6 +3749,7 @@
       如未設定這項政策，則「URLBlacklist」政策的黑名單不會有例外情況。</translation>
 <translation id="8176035528522326671">僅允許企業使用者成為多重設定檔的主要使用者 (受企業管理的使用者的預設行為)</translation>
 <translation id="8183108371184777472">禁止啟動瀏覽器視窗</translation>
+<translation id="8186911565834244165">允許使用者意見回饋功能</translation>
 <translation id="8214600119442850823">設定密碼管理員</translation>
 <translation id="8217516105848565518">這項政策已遭到淘汰，請改用 RemoteAccessHostDomainList。</translation>
 <translation id="8244171102276095471">在傳輸層安全標準 (TLS) 中啟用 RC4 加密套件</translation>
@@ -4177,6 +4160,12 @@
 <translation id="9112897538922695510">允許你註冊通訊協定處理常式清單 (這是一律建議使用的政策)。屬性 |protocol| 應設定為配置 (例如「mailto」)，而屬性 |url| 則應設定為處理該配置的應用程式的網址模式。模式可包含「%s」(如果有的話，會由受處理的網址取代)。
 
           由政策註冊的通訊協定處理常式會與由使用者註冊的通訊協定處理常式合併，兩者皆可供使用。使用者可以安裝新的預設處理常式來覆寫由政策安裝的通訊協定處理常式，但無法移除由政策註冊的通訊協定處理常式。</translation>
+<translation id="91196902572559194">這項政策可授予 Google 助理聽取語音啟動字詞的權限。
+
+      如果啟用這項政策，Google 助理將會聽取語音啟動字詞。
+      如果停用這項政策，Google 助理將不會聽取語音啟動字詞。
+      如果不設定這項政策，使用者可以決定是否讓 Google 助理聽取語音啟動字詞。
+      </translation>
 <translation id="9123211093995421438">指定隨時可從穩定版復原的最少 <ph name="PRODUCT_OS_NAME" />重要事件數。
 
       一般使用者裝置的預設值為 0，企業註冊裝置的預設值為 4 (約半年)。

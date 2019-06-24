@@ -57,6 +57,10 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+
   const char* GetClassName() const override;
 
  private:
@@ -93,7 +97,7 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   UnifiedSystemTrayController* const controller_;
 
   // Owned by UnifiedSystemTrayModel.
-  PaginationModel* pagination_model_;
+  PaginationModel* const pagination_model_;
 
   // The last |expanded_amount| passed to SetExpandedAmount().
   double expanded_amount_;

@@ -8,10 +8,9 @@ import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI
 
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.widget.ListView;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -24,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Fragment to manage the theme user settings.
  */
-public class ThemePreferences extends PreferenceFragment {
+public class ThemePreferences extends PreferenceFragmentCompat {
     /**
      * Theme preference variations. This is also used for histograms and should therefore be treated
      * as append-only. See DarkThemePreferences in tools/metrics/histograms/enums.xml.
@@ -43,9 +42,7 @@ public class ThemePreferences extends PreferenceFragment {
     static final String PREF_UI_THEME_PREF = "ui_theme_pref";
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.theme_preferences);
         getActivity().setTitle(getResources().getString(R.string.prefs_themes));
 
@@ -72,7 +69,6 @@ public class ThemePreferences extends PreferenceFragment {
                     getResources().getBoolean(R.bool.window_light_navigation_bar));
         }
 
-        ListView listView = getView().findViewById(android.R.id.list);
-        listView.setDivider(null);
+        setDivider(null);
     }
 }

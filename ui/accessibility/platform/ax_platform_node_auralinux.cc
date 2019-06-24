@@ -1769,6 +1769,9 @@ AtkObject* RefChild(AtkObject* atk_object, gint index) {
   if (!obj)
     return nullptr;
 
+  if (index < 0 || index >= obj->GetChildCount())
+    return nullptr;
+
   AtkObject* result = obj->ChildAtIndex(index);
   if (result)
     g_object_ref(result);

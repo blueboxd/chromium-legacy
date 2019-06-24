@@ -573,6 +573,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     InitializeForVulkan();
   else
     InitializeForGL();
+  max_resource_cache_bytes_ = context_state_->max_resource_cache_bytes();
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
@@ -759,13 +760,16 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   PullTextureUpdates(std::move(sync_tokens));
 
   auto& offscreen = offscreen_surfaces_[id];
-  SkSurfaceCharacterization characterization;
-  if (!offscreen.surface() ||
-      !offscreen.surface()->characterize(&characterization) ||
-      characterization != ddl->characterization()) {
+  if (!offscreen.surface()) {
     offscreen.set_surface(SkSurface::MakeRenderTarget(
         gr_context(), ddl->characterization(), SkBudgeted::kNo));
     DCHECK(offscreen.surface());
+  } else {
+#if DCHECK_IS_ON()
+    SkSurfaceCharacterization characterization;
+    DCHECK(offscreen.surface()->characterize(&characterization) &&
+           characterization == ddl->characterization());
+#endif
   }
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;

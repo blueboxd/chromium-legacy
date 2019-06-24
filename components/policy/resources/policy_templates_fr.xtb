@@ -449,12 +449,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
 <translation id="1750315445671978749">Bloquer tous les téléchargements</translation>
-<translation id="1762072363876276024">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter celle applicable à la session utilisateur (<ph name="SITE_PER_PROCESS_POLICY_NAME" />). Nous vous recommandons d'attribuer la même valeur à ces deux règles. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      La règle DeviceLoginScreenSitePerProcess peut être utilisée pour empêcher les utilisateurs de désactiver le paramètre par défaut qui isole tous les sites. Notez que la règle DeviceLoginScreenIsolateOrigins peut également servir à isoler d'autres origines plus précises.
-      Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent modifier ce paramètre (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).
-      </translation>
 <translation id="1767673020408652620">Activer les recommandations d'applications dans le champ de recherche vide</translation>
 <translation id="17719159826324007">
       Lorsque l'option "ArcSession" est activée, cette règle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
@@ -3702,22 +3696,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="CHARGE_START_TIME_FIELD_NAME" /> et <ph name="CHARGE_END_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Cette règle active le protocole HTTP 0.9 sur les ports autres que 80 pour HTTP et 443 pour HTTPS.
-
-      Cette règle est désactivée par défaut. Lorsqu'elle est activée, les utilisateurs sont exposés à la faille de sécurité décrite sur la page https://crbug.com/600352.
-
-      Cette règle est conçue pour permettre aux entreprises de migrer les serveurs pour qu'ils n'utilisent plus HTTP 0.9. Elle sera supprimée à l'avenir.
-
-      Si cette règle n'est pas définie, le protocole HTTP 0.9 est désactivé sur les ports non utilisés par défaut.</translation>
-<translation id="7726421241038987229">
-      La règle SitePerProcess peut être employée pour empêcher les utilisateurs de désactiver le paramètre par défaut qui isole tous les sites. Notez que la règle IsolateOrigins peut également servir à isoler d'autres origines plus précises.
-      Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent désactiver l'isolation de sites
-      (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).  Si cette règle est désactivée et/ou si elle n'est pas configurée, l'isolation de sites n'est pas désactivée.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons d'attribuer également la même valeur à la règle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relative aux appareils. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour l'activer sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Autoriser les appareils à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Active l'authentification forte pour les hôtes d'accès à distance au lieu d'un code d'accès défini par l'utilisateur.
 

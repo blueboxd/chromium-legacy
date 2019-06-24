@@ -9,6 +9,8 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/SendTabToSelfAndroidBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/TargetDeviceInfo_jni.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_infobar.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,8 +24,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SendTabToSelfAndroidBridge_jni.h"
-#include "jni/TargetDeviceInfo_jni.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;

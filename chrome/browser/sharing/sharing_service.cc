@@ -13,11 +13,6 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
 
-// Undefine SendMessage defined in Windows headers.
-#ifdef SendMessage
-#undef SendMessage
-#endif
-
 namespace {
 // TODO(knollr): Should this be configurable or shared between similar features?
 constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
@@ -67,7 +62,7 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
   return device_candidates;
 }
 
-bool SharingService::SendMessage(
+bool SharingService::SendMessageToDevice(
     const std::string& device_guid,
     const chrome_browser_sharing::SharingMessage& message) {
   return true;

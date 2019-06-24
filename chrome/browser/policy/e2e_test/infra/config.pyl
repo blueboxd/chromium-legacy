@@ -1,0 +1,57 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a .pyl, or "Python Literal", file. You can treat it just like a
+# .json file, with the following exceptions:
+# * all keys must be quoted (use single quotes, please);
+# * comments are allowed, using '#' syntax; and
+# * trailing commas are allowed.
+
+{
+  # This is a map of buildbot master names -> buildbot builder names ->
+  # config names (where each config name is a key in the 'configs' dict,
+  # below). MB uses this dict to look up which config to use for a given bot.
+  'masters': {
+    'chromium.win': {
+      'win-celab-builder-rel': 'win-celab',
+    },
+
+    'tryserver.chromium.win': {
+      'win-celab-try-rel': 'win-celab',
+    },
+  },
+
+  # This is the list of configs that you can pass to mb; each config
+  # represents a particular combination of gn args that we must support.
+  'configs': {
+    'win-celab': [
+      'release_bot', 'minimal_symbols'
+    ],
+  },
+
+  # This is a dict mapping a given 'mixin' name to a dict of settings that
+  # mb should use. See //tools/mb/docs/user_guide.md for more information.
+  'mixins':
+  {
+    'goma': {
+      'gn_args': 'use_goma=true strip_absolute_paths_from_debug_symbols=true',
+    },
+
+    'minimal_symbols': {
+      'gn_args': 'symbol_level=1',
+    },
+
+    'release': {
+      'gn_args': 'is_debug=false',
+    },
+
+    'release_bot': {
+      'mixins': ['release', 'static', 'goma'],
+    },
+
+    'static': {
+      'gn_args': 'is_component_build=false',
+    },
+  },
+}

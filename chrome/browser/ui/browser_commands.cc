@@ -597,7 +597,7 @@ void NewWindow(Browser* browser) {
   if (extension && extension->is_hosted_app()) {
     const auto app_launch_params = CreateAppLaunchParamsUserContainer(
         browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
-        extensions::SOURCE_KEYBOARD);
+        extensions::AppLaunchSource::kSourceKeyboard);
     OpenApplicationWindow(
         app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));

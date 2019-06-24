@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -19,6 +18,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
@@ -59,7 +59,7 @@ namespace {
 class FuzzedSocketFactoryWithMockSSLData : public FuzzedSocketFactory {
  public:
   explicit FuzzedSocketFactoryWithMockSSLData(
-      base::FuzzedDataProvider* data_provider);
+      FuzzedDataProvider* data_provider);
 
   void AddSSLSocketDataProvider(SSLSocketDataProvider* socket);
 
@@ -74,7 +74,7 @@ class FuzzedSocketFactoryWithMockSSLData : public FuzzedSocketFactory {
 };
 
 FuzzedSocketFactoryWithMockSSLData::FuzzedSocketFactoryWithMockSSLData(
-    base::FuzzedDataProvider* data_provider)
+    FuzzedDataProvider* data_provider)
     : FuzzedSocketFactory(data_provider) {}
 
 void FuzzedSocketFactoryWithMockSSLData::AddSSLSocketDataProvider(
@@ -102,7 +102,7 @@ FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
 // |data| is used to create a FuzzedServerSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::BoundTestNetLog bound_test_net_log;
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   net::FuzzedSocketFactoryWithMockSSLData socket_factory(&data_provider);
   socket_factory.set_fuzz_connect_result(false);
 

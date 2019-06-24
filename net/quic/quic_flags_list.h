@@ -164,12 +164,6 @@ QUIC_FLAG(bool,
 // ACK frame are sent and processed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 
-// If true, dispatcher passes in a single version when creating a server
-// connection, such that version negotiation is not supported in connection.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation2,
-          true)
-
 // When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
 // CalculateCongestionWindow()
 QUIC_FLAG(
@@ -191,13 +185,6 @@ QUIC_FLAG(bool,
 // If true, QuicEpollClock::Now() will monotonically increase.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 
-// If true, a client connection would be closed when a version negotiation
-// packet is received. It would be the higher layer's responsibility to do the
-// reconnection.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_client_conn_ver_negotiation,
-          true)
-
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 
@@ -218,28 +205,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 
-// If true, use one loss algorithm per encryption level.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, true)
-
-// If true, QuicReceivedPacketManager decides when to send ACKs.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_rpm_decides_when_to_send_acks,
-          true)
-
 // In QUIC, do not close connection if received an in-order ACK with decreased
 // largest_acked.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, true)
-
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_validate_packet_number_post_decryption,
-    true)
-
-// If this flag and quic_rpm_decides_when_to_send_acks is true, use uber
-// received packet manager instead of the single received packet manager.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_uber_received_packet_manager,
-          true)
 
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
@@ -298,9 +266,7 @@ QUIC_FLAG(bool,
 
 // When true, QuicConnectionId will allocate long connection IDs on the heap
 // instead of inline in the object.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_use_allocated_connection_ids,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_allocated_connection_ids, true)
 
 // If enabled, do not call OnStreamFrame() with empty frame after receiving
 // empty or too large headers with FIN.

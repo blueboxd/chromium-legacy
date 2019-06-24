@@ -26,6 +26,9 @@ DOMPointReadOnly* makeNormalizedQuaternion(double x,
                                            double z,
                                            double w);
 
+constexpr char kUnableToNormalizeZeroLength[] =
+    "Unable to normalize vector of length 0.";
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_UTILS_H_

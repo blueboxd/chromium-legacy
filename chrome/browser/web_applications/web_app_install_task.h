@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_TASK_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class GURL;
 class Profile;
 struct WebApplicationInfo;
 
@@ -117,6 +120,26 @@ class WebAppInstallTask : content::WebContentsObserver {
       const blink::Manifest& manifest,
       bool valid_manifest_for_web_app,
       bool is_installable);
+
+  // Either dispatches an asynchronous check for whether this installation
+  // should be stopped and
+  void CheckForPlayStoreIntentOrGetIcons(
+      const blink::Manifest& manifest,
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      std::vector<GURL> icon_urls,
+      ForInstallableSite for_installable_site,
+      bool skip_page_favicons);
+
+  // Called when the asynchronous check for whether an intent to the Play Store
+  // should be made returns.
+  void OnDidCheckForIntentToPlayStore(
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      std::vector<GURL> icon_urls,
+      ForInstallableSite for_installable_site,
+      bool skip_page_favicons,
+      const std::string& intent,
+      bool should_intent_to_store);
+
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
                         bool is_locally_installed,
                         IconsMap icons_map);

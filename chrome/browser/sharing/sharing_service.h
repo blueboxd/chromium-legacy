@@ -35,8 +35,9 @@ class SharingService : public KeyedService {
       int required_capabilities) const;
 
   // Sends a message to the device specified by GUID.
-  bool SendMessage(const std::string& device_guid,
-                   const chrome_browser_sharing::SharingMessage& message);
+  bool SendMessageToDevice(
+      const std::string& device_guid,
+      const chrome_browser_sharing::SharingMessage& message);
 
   // Registers a handler of a given SharingMessage payload type.
   void RegisterHandler(

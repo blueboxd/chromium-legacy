@@ -26,6 +26,8 @@ namespace {
 constexpr char kPredictor[] = "predictor";
 constexpr char kInputEventPredictorTypeLsq[] = "lsq";
 constexpr char kInputEventPredictorTypeEmpty[] = "empty";
+constexpr char kInputEventPredictorTypeKalmanTimeFiltered[] =
+    "kalman_time_filtered";
 
 constexpr uint32_t kPredictEventCount = 3;
 constexpr base::TimeDelta kPredictionInterval =
@@ -54,6 +56,8 @@ void InputEventPrediction::SetUpPredictorType() {
     selected_predictor_type_ = PredictorType::kLsq;
   else if (predictor_type == kInputEventPredictorTypeEmpty)
     selected_predictor_type_ = PredictorType::kEmpty;
+  else if (predictor_type == kInputEventPredictorTypeKalmanTimeFiltered)
+    selected_predictor_type_ = PredictorType::kKalmanTimeFiltered;
   else
     selected_predictor_type_ = PredictorType::kKalman;
 
@@ -107,7 +111,11 @@ std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
     case PredictorType::kLsq:
       return std::make_unique<ui::LeastSquaresPredictor>();
     case PredictorType::kKalman:
-      return std::make_unique<ui::KalmanPredictor>();
+      return std::make_unique<ui::KalmanPredictor>(
+          false /* enable_time_filtering */);
+    case PredictorType::kKalmanTimeFiltered:
+      return std::make_unique<ui::KalmanPredictor>(
+          true /* enable_time_filtering */);
   }
 }
 

@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/android/chrome_jni_headers/DownloadUtils_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,7 +17,6 @@
 #include "components/download/public/common/download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
-#include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

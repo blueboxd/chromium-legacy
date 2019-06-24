@@ -10,7 +10,8 @@
     Constructor(),
     Constructor(DOMPointInit origin),
     Constructor(DOMPointInit origin, DOMPointInit direction),
-    Constructor(XRRigidTransform transform)
+    Constructor(XRRigidTransform transform),
+    RaisesException=Constructor
 ] interface XRRay {
   [SameObject] readonly attribute DOMPointReadOnly origin;
   [SameObject] readonly attribute DOMPointReadOnly direction;

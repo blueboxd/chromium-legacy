@@ -38,6 +38,17 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_app_instance.h"
+#include "components/arc/test/fake_intent_helper_instance.h"
+#endif
+
 namespace web_app {
 
 namespace {
@@ -117,6 +128,33 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), install_finalizer_.get(), std::move(data_retriever));
+
+#if defined(OS_CHROMEOS)
+    arc_test_.SetUp(profile());
+
+    auto* arc_bridge_service =
+        arc_test_.arc_service_manager()->arc_bridge_service();
+    intent_helper_bridge_ = std::make_unique<arc::ArcIntentHelperBridge>(
+        profile(), arc_bridge_service);
+    fake_intent_helper_instance_ =
+        std::make_unique<arc::FakeIntentHelperInstance>();
+    arc_bridge_service->intent_helper()->SetInstance(
+        fake_intent_helper_instance_.get());
+    WaitForInstanceReady(arc_bridge_service->intent_helper());
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    arc_test_.arc_service_manager()
+        ->arc_bridge_service()
+        ->intent_helper()
+        ->CloseInstance(fake_intent_helper_instance_.get());
+    fake_intent_helper_instance_.reset();
+    intent_helper_bridge_.reset();
+    arc_test_.TearDown();
+#endif
+    WebAppTest::TearDown();
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -160,6 +198,11 @@ class WebAppInstallTaskTest : public WebAppTest {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = url;
     manifest->scope = scope;
+    blink::Manifest::RelatedApplication related_app;
+    related_app.platform =
+        base::NullableString16(base::ASCIIToUTF16("chromeos_play"));
+    related_app.id = base::NullableString16(base::ASCIIToUTF16("com.app.id"));
+    manifest->related_applications.push_back(std::move(related_app));
 
     data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
 
@@ -230,6 +273,12 @@ class WebAppInstallTaskTest : public WebAppTest {
   // Owned by install_task_:
   TestFileUtils* file_utils_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
+
+#if defined(OS_CHROMEOS)
+  ArcAppTest arc_test_;
+  std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
+  std::unique_ptr<arc::FakeIntentHelperInstance> fake_intent_helper_instance_;
+#endif
 
  private:
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
@@ -935,5 +984,33 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
 
   run_loop.Run();
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
+  arc_test_.app_instance()->set_is_installable(true);
+
+  const GURL url("https://example.com/scope/path");
+  const std::string name = "Name";
+  const std::string description = "Description";
+  const GURL scope("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+
+  CreateDefaultDataToRetrieve(url, scope);
+  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
+
+  base::RunLoop run_loop;
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), /*force_shortcut_app=*/false,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kIntentToPlayStore, code);
+            EXPECT_EQ(AppId(), installed_app_id);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
+#endif
 
 }  // namespace web_app

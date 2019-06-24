@@ -7,6 +7,7 @@
 
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "base/bind.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller_delegate.h"
@@ -27,6 +28,62 @@ blink::mojom::PermissionStatus GetPermissionOverrideStatus(
   if (permission_overrides.find(permission) == permission_overrides.end())
     return blink::mojom::PermissionStatus::DENIED;
   return blink::mojom::PermissionStatus::GRANTED;
+}
+
+base::Optional<blink::scheduler::WebSchedulerTrackedFeature>
+PermissionToSchedulingFeature(PermissionType permission_name) {
+  switch (permission_name) {
+    case PermissionType::GEOLOCATION:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedGeolocationPermission;
+    case PermissionType::NOTIFICATIONS:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedNotificationsPermission;
+    case PermissionType::MIDI:
+    case PermissionType::MIDI_SYSEX:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedMIDIPermission;
+    case PermissionType::AUDIO_CAPTURE:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedAudioCapturePermission;
+    case PermissionType::VIDEO_CAPTURE:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedVideoCapturePermission;
+    case PermissionType::SENSORS:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedSensorsPermission;
+    case PermissionType::BACKGROUND_SYNC:
+    case PermissionType::BACKGROUND_FETCH:
+    case PermissionType::PERIODIC_BACKGROUND_SYNC:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedBackgroundWorkPermission;
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionType::DURABLE_STORAGE:
+    case PermissionType::FLASH:
+    case PermissionType::ACCESSIBILITY_EVENTS:
+    case PermissionType::CLIPBOARD_READ:
+    case PermissionType::CLIPBOARD_WRITE:
+    case PermissionType::PAYMENT_HANDLER:
+    case PermissionType::IDLE_DETECTION:
+    case PermissionType::WAKE_LOCK_SCREEN:
+    case PermissionType::WAKE_LOCK_SYSTEM:
+    case PermissionType::NUM:
+      return base::nullopt;
+  }
+}
+
+void NotifySchedulerAboutPermissionRequest(RenderFrameHost* render_frame_host,
+                                           PermissionType permission_name) {
+  DCHECK(render_frame_host);
+
+  base::Optional<blink::scheduler::WebSchedulerTrackedFeature> feature =
+      PermissionToSchedulingFeature(permission_name);
+
+  if (!feature)
+    return;
+
+  static_cast<RenderFrameHostImpl*>(render_frame_host)
+      ->OnSchedulerTrackedFeatureUsed(feature.value());
 }
 
 }  // namespace
@@ -121,6 +178,8 @@ int PermissionControllerImpl::RequestPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+  NotifySchedulerAboutPermissionRequest(render_frame_host, permission);
+
   auto it = devtools_permission_overrides_.find(requesting_origin.GetOrigin());
   if (it != devtools_permission_overrides_.end()) {
     callback.Run(GetPermissionOverrideStatus(it->second, permission));
@@ -144,6 +203,9 @@ int PermissionControllerImpl::RequestPermissions(
     bool user_gesture,
     const base::Callback<
         void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+  for (PermissionType permission : permissions)
+    NotifySchedulerAboutPermissionRequest(render_frame_host, permission);
+
   auto it = devtools_permission_overrides_.find(requesting_origin.GetOrigin());
   if (it != devtools_permission_overrides_.end()) {
     std::vector<blink::mojom::PermissionStatus> result;

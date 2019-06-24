@@ -37,7 +37,7 @@ TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUserCancel) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
-      PaymentErrorReason::USER_CANCEL);
+      PaymentErrorReason::USER_CANCEL, "User closed UI.");
 }
 
 TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
@@ -51,7 +51,7 @@ TEST_F(HasEnrolledInstrumentTest, RejectPromiseOnUnknownError) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
-      PaymentErrorReason::UNKNOWN);
+      PaymentErrorReason::UNKNOWN, "Unknown error.");
 }
 
 TEST_F(HasEnrolledInstrumentTest, RejectDuplicateRequest) {
@@ -138,7 +138,7 @@ TEST_P(CanMakePaymentTest, RejectPromiseOnUserCancel) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
-      PaymentErrorReason::USER_CANCEL);
+      PaymentErrorReason::USER_CANCEL, "User closed the UI.");
 }
 
 TEST_P(CanMakePaymentTest, RejectPromiseOnUnknownError) {
@@ -153,7 +153,7 @@ TEST_P(CanMakePaymentTest, RejectPromiseOnUnknownError) {
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
   static_cast<PaymentRequestClient*>(request)->OnError(
-      PaymentErrorReason::UNKNOWN);
+      PaymentErrorReason::UNKNOWN, "Unknown error.");
 }
 
 TEST_P(CanMakePaymentTest, RejectDuplicateRequest) {

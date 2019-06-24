@@ -13,17 +13,12 @@ package app_list;
 // Warning: this cannot contain any map fields, as they cannot be relied upon
 // for a consistent hash.
 message RecurrenceRankerConfigProto {
-  // Fields with IDs 1 (target_limit) and 2 (target_decay_coeff) have been
-  // deleted.
-  reserved 1;
-  reserved 2;
+  required uint32 min_seconds_between_saves = 1;
 
-  required uint32 min_seconds_between_saves = 3;
-
-  required uint32 target_limit = 4;
-  required float target_decay = 5;
-  required uint32 condition_limit = 6;
-  required float condition_decay = 7;
+  required uint32 target_limit = 2;
+  required float target_decay = 3;
+  required uint32 condition_limit = 4;
+  required float condition_decay = 5;
 
   // Config for a fake predictor, used for testing.
   message FakePredictorConfig {}
@@ -34,19 +29,17 @@ message RecurrenceRankerConfigProto {
 
   // Config for a frecency predictor.
   message ZeroStateFrecencyPredictorConfig {
-    // Field 201 (target_limit) has been deleted.
-    reserved 201;
     // The frecency parameter used to control the frequency-recency tradeoff
     // that determines when targets are removed. Must be in [0.5, 1.0], with 0.5
     // meaning only-recency and 1.0 meaning only-frequency.
-    required float decay_coeff = 202;
+    required float decay_coeff = 1;
   }
 
   message ZeroStateHourBinPredictorConfig {
     // The decay coeffficient number that control the decay rate. The decay is
     // once a week.
-    required float weekly_decay_coeff = 301;
-    map<int32, float> bin_weights_map = 302;
+    required float weekly_decay_coeff = 1;
+    map<int32, float> bin_weights_map = 2;
   }
 
   // The choice of which kind of predictor to use, and its configuration.

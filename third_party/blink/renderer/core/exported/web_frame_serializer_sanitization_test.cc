@@ -433,4 +433,20 @@ TEST_F(WebFrameSerializerSanitizationTest, PictureElement) {
             mhtml.Find("Content-Location: http://www.test.com/1x.png"));
 }
 
+TEST_F(WebFrameSerializerSanitizationTest, ImageInPluginElement) {
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/1x.png"),
+                            "frameserialization/1x.png");
+  RegisterMockedFileURLLoad(KURL("http://www.test.com/2x.png"),
+                            "frameserialization/2x.png");
+
+  String mhtml =
+      GenerateMHTMLFromHtml("http://www.test.com", "image_in_plugin.html");
+
+  // Image resources for both object and embed elements should be added.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/1x.png"));
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/2x.png"));
+}
+
 }  // namespace blink

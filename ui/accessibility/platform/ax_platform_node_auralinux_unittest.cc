@@ -475,6 +475,18 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectChildAndParent) {
     EXPECT_TRUE(ATK_IS_OBJECT(result));
     EXPECT_EQ(result, root_obj);
   }
+
+  // Test invalid indices.
+  AtkObject* result = atk_object_ref_accessible_child(root_obj, -1);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, -88);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 3);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 1000);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 828282);
+  EXPECT_EQ(result, nullptr);
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectIndexInParent) {

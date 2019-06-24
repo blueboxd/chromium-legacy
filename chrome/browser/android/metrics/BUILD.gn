@@ -22,7 +22,6 @@ if (is_android) {
     sources = [
       "../../../android/java/src/org/chromium/chrome/browser/metrics/UkmUtilsForTest.java",
     ]
-    jni_package = "chrome"
   }
 
   android_library("ukm_utils_java") {

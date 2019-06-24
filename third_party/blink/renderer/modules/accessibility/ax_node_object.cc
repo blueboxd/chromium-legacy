@@ -1194,9 +1194,9 @@ AXRestriction AXNodeObject::Restriction() const {
   // See ARIA specification regarding grid/treegrid and readonly.
   if (IsTableCellLikeRole()) {
     AXObject* row = ParentObjectUnignored();
-    if (row->IsTableRowLikeRole()) {
+    if (row && row->IsTableRowLikeRole()) {
       AXObject* table = row->ParentObjectUnignored();
-      if (table->IsTableLikeRole() &&
+      if (table && table->IsTableLikeRole() &&
           (table->RoleValue() == ax::mojom::Role::kGrid ||
            table->RoleValue() == ax::mojom::Role::kTreeGrid)) {
         if (table->Restriction() == kRestrictionReadOnly)

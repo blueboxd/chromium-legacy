@@ -58,6 +58,9 @@ extern const char kCannotUpdateWithoutInit[];
 // Mojo call PaymentRequest::Show() must precede PaymentRequest::UpdateWith().
 extern const char kCannotUpdateWithoutShow[];
 
+// A message about unsupported payment method.
+extern const char kGenericPaymentMethodNotSupportedMessage[];
+
 // Chrome refuses to provide any payment information to a website with an
 // invalid SSL certificate.
 extern const char kInvalidSslCertificate[];
@@ -71,6 +74,11 @@ extern const char kMethodDataRequired[];
 
 // Used when non-empty "supportedMethods": "" is required, but not provided.
 extern const char kMethodNameRequired[];
+
+// The format for the message about multiple payment methods that are not
+// supported. This format should be used with base::ReplaceChars() function,
+// where "$" is the character to replace.
+extern const char kMultiplePaymentMethodsNotSupportedFormat[];
 
 // The PaymentRequest API is available only on secure origins.
 extern const char kNotInASecureOrigin[];
@@ -88,9 +96,17 @@ extern const char kProhibitedOrigin[];
 // or kInvalidSslCertificate error.
 extern const char kProhibitedOriginOrInvalidSslExplanation[];
 
+// The format for the message about a single payment method that is not
+// supported. This format should be used with base::ReplaceChars() function,
+// where "$" is the character to replace.
+extern const char kSinglePaymentMethodNotSupportedFormat[];
+
 // Used when "total": {"label": "Total", "amount": {"currency": "USD", "value":
 // "0.01"}} is required, bot not provided.
 extern const char kTotalRequired[];
+
+// Used when user dismissed the Payment Request dialog.
+extern const char kUserCancelled[];
 
 }  // namespace errors
 }  // namespace payments

@@ -4,9 +4,14 @@
 
 #include "content/browser/frame_host/back_forward_cache.h"
 
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/page_messages.h"
 #include "content/public/common/navigation_policy.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+
+#include <unordered_set>
 
 namespace content {
 
@@ -44,6 +49,34 @@ constexpr uint64_t kDisallowedFeatures =
         WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
     ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
     ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection);
+
+void SetPageFrozenImpl(
+    RenderFrameHostImpl* render_frame_host,
+    bool freeze,
+    std::unordered_set<RenderViewHostImpl*>* render_view_hosts) {
+  RenderViewHostImpl* render_view_host = render_frame_host->render_view_host();
+  // (Un)Freeze the root frame's page if it is not (un)frozen yet.
+  if (render_view_hosts->find(render_view_host) == render_view_hosts->end()) {
+    if (freeze) {
+      render_view_host->Send(
+          new PageMsg_WasHidden(render_view_host->GetRoutingID()));
+    } else {
+      render_view_host->Send(
+          new PageMsg_WasShown(render_view_host->GetRoutingID()));
+    }
+
+    render_view_host->Send(
+        new PageMsg_SetPageFrozen(render_view_host->GetRoutingID(), freeze));
+    render_view_hosts->insert(render_view_host);
+  }
+  // Recurse on |render_frame_host|'s children.
+  for (size_t index = 0; index < render_frame_host->child_count(); ++index) {
+    RenderFrameHostImpl* child_frame_host =
+        render_frame_host->child_at(index)->current_frame_host();
+    SetPageFrozenImpl(child_frame_host, freeze, render_view_hosts);
+  }
+}
+
 }  // namespace
 
 BackForwardCache::BackForwardCache() = default;
@@ -80,6 +113,21 @@ void BackForwardCache::StoreDocument(std::unique_ptr<RenderFrameHostImpl> rfh) {
     // TODO(arthursonzogni): Handle RenderFrame deletion appropriately.
     render_frame_hosts_.pop_back();
   }
+}
+
+void BackForwardCache::Freeze(RenderFrameHostImpl* main_rfh) {
+  // Several RenderFrameHost can live under the same RenderViewHost.
+  // |frozen_render_view_hosts| keeps track of the ones that freezing has been
+  // applied to.
+  std::unordered_set<RenderViewHostImpl*> frozen_render_view_hosts;
+  SetPageFrozenImpl(main_rfh, true /*freeze*/, &frozen_render_view_hosts);
+}
+
+void BackForwardCache::UnFreeze(RenderFrameHostImpl* main_rfh) {
+  // |unfrozen_render_view_hosts| keeps track of the ones that unfreezing has
+  // been applied to.
+  std::unordered_set<RenderViewHostImpl*> unfrozen_render_view_hosts;
+  SetPageFrozenImpl(main_rfh, false /*unfreeze*/, &unfrozen_render_view_hosts);
 }
 
 std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(

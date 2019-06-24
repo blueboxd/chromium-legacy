@@ -20,6 +20,7 @@
 #include "base/scoped_observer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "chrome/android/chrome_jni_headers/BrowsingDataBridge_jni.h"
 #include "chrome/browser/browsing_data/browsing_data_important_sites_util.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/engagement/important_sites_util.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "jni/BrowsingDataBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

@@ -49,5 +49,5 @@ void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
           extension_misc::kKioskNextHomeAppId);
   DCHECK(app);
   apps::LaunchPlatformApp(profile, app,
-                          extensions::AppLaunchSource::SOURCE_CHROME_INTERNAL);
+                          extensions::AppLaunchSource::kSourceChromeInternal);
 }

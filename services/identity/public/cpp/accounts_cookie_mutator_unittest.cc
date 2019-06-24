@@ -154,8 +154,9 @@ TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_NonExistingAccount) {
   base::RunLoop run_loop;
   std::string account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_id_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
         run_loop.Quit();
@@ -182,8 +183,9 @@ TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_ExistingAccount) {
   base::RunLoop run_loop;
   std::string account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_id_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
         run_loop.Quit();
@@ -213,8 +215,9 @@ TEST_F(AccountsCookieMutatorTest,
   base::RunLoop run_loop;
   std::string account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_id_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
         run_loop.Quit();
@@ -242,8 +245,9 @@ TEST_F(AccountsCookieMutatorTest,
   base::RunLoop run_loop;
   std::string account_id_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_id_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
         run_loop.Quit();
@@ -268,8 +272,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllNonExistingAccounts) {
       AccountsCookiesMutatorAction::kSetAccountsInCookie);
 
   base::RunLoop run_loop;
-  std::vector<std::string> accounts_ids = {kTestUnavailableAccountId,
-                                           kTestOtherUnavailableAccountId};
+  std::vector<CoreAccountId> accounts_ids = {kTestUnavailableAccountId,
+                                             kTestOtherUnavailableAccountId};
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
@@ -292,8 +296,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
-  std::vector<std::string> accounts_ids = {account_id,
-                                           kTestUnavailableAccountId};
+  std::vector<CoreAccountId> accounts_ids = {account_id,
+                                             kTestUnavailableAccountId};
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
@@ -318,7 +322,7 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
   std::string other_account_id =
       AddAcountWithRefreshToken(kTestOtherAccountEmail);
   base::RunLoop run_loop;
-  std::vector<std::string> accounts_ids = {account_id, other_account_id};
+  std::vector<CoreAccountId> accounts_ids = {account_id, other_account_id};
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(

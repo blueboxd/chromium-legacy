@@ -2194,8 +2194,6 @@ Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-ob
 Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ WontFix ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
-Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
-Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 # -------------------- origin-vs-url in console messages -----------------

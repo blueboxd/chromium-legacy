@@ -539,8 +539,8 @@ Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
     const String& source,
     Maybe<String> world_name,
     String* identifier) {
-  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
-  auto result = std::max_element(
+  Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  auto* result = std::max_element(
       keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
         return Decimal::FromString(a) < Decimal::FromString(b);
       });
@@ -847,7 +847,7 @@ scoped_refptr<DOMWrapperWorld> InspectorPageAgent::EnsureDOMWrapperWorld(
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;
-  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
   std::sort(keys.begin(), keys.end(),
             [](const WTF::String& a, const WTF::String& b) {
               return Decimal::FromString(a) < Decimal::FromString(b);

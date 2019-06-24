@@ -7,7 +7,6 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
-#include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -126,9 +125,6 @@ struct ContextMenuInfo {
 - (void)setDOMElementForLastTouch:(NSDictionary*)element;
 // Called to process a message received from JavaScript.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
-// Logs the time taken to fetch DOM element details.
-- (void)logElementFetchDurationWithStartTime:
-    (base::TimeTicks)elementFetchStartTime;
 // Cancels the display of the context menu and clears associated element fetch
 // request state.
 - (void)cancelContextMenuDisplay;
@@ -388,23 +384,8 @@ struct ContextMenuInfo {
   // this CRWContextMenuController instance.
   if (fetchRequest) {
     [_pendingElementFetchRequests removeObjectForKey:requestID];
-
-    // Only log performance metric if the response is from the main frame in
-    // order to keep metric comparible.
-    if (message.frameInfo.mainFrame) {
-      [self logElementFetchDurationWithStartTime:fetchRequest.creationTime];
-    }
     [fetchRequest runHandlerWithResponse:response];
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "ContextMenu.UnexpectedFindElementResultHandlerMessage", true);
   }
-}
-
-- (void)logElementFetchDurationWithStartTime:
-    (base::TimeTicks)elementFetchStartTime {
-  UMA_HISTOGRAM_TIMES("ContextMenu.DOMElementFetchDuration",
-                      base::TimeTicks::Now() - elementFetchStartTime);
 }
 
 - (void)cancelContextMenuDisplay {

@@ -52,6 +52,7 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
     STARTED,
   };
 
+  void OnReceiveMessagesStreamReady();
   void OnReceiveMessagesStreamClosed(const grpc::Status& status);
   void OnMessageReceived(const ftl::ReceiveMessagesResponse& response);
 

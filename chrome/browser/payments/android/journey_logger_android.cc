@@ -5,9 +5,9 @@
 #include "chrome/browser/payments/android/journey_logger_android.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/JourneyLogger_jni.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/JourneyLogger_jni.h"
 
 namespace payments {
 namespace {

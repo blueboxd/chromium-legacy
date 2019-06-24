@@ -430,7 +430,7 @@ bool ExecuteFileTask(Profile* profile,
       AppLaunchParams params(extension_task_profile, task.app_id,
                              launch_container,
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             extensions::AppLaunchSource::SOURCE_FILE_HANDLER);
+                             extensions::AppLaunchSource::kSourceFileHandler);
       params.override_url = GURL(task.action_id);
       OpenApplication(params);
     }

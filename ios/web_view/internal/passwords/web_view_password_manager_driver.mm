@@ -32,11 +32,6 @@ void WebViewPasswordManagerDriver::InformNoSavedCredentials() {
   [delegate_ informNoSavedCredentials];
 }
 
-void WebViewPasswordManagerDriver::FormsEligibleForGenerationFound(
-    const std::vector<autofill::PasswordFormGenerationData>& forms) {
-  // Password generation is not supported.
-}
-
 void WebViewPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {
   NOTIMPLEMENTED();
@@ -69,9 +64,6 @@ WebViewPasswordManagerDriver::GetPasswordGenerationHelper() {
 PasswordManager* WebViewPasswordManagerDriver::GetPasswordManager() {
   return [delegate_ passwordManager];
 }
-
-void WebViewPasswordManagerDriver::AllowPasswordGenerationForForm(
-    const autofill::PasswordForm& form) {}
 
 PasswordAutofillManager*
 WebViewPasswordManagerDriver::GetPasswordAutofillManager() {

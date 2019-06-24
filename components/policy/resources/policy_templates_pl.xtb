@@ -442,12 +442,6 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
 
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
 <translation id="1750315445671978749">Blokuj pobieranie wszystkich plików</translation>
-<translation id="1762072363876276024">
-      Ta zasada dotyczy ekranu logowania. Zobacz też zasadę <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która dotyczy sesji użytkownika. Zalecane jest, by obie zasady miały tę samą wartość. Jeśli wartości są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
-      To ustawienie, DeviceLoginScreenSitePerProcess, pozwala uniemożliwić użytkownikowi wyłączenie domyślnego zachowania, czyli izolacji wszystkich witryn. Możesz też skorzystać z zasady DeviceLoginScreenIsolateOrigins, by dodatkowo izolować źródła według bardziej szczegółowych kryteriów.
-      Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona lub nieskonfigurowana, użytkownik może zmieniać to ustawienie (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Włącz rekomendacje aplikacji przy pustym polu wyszukiwania</translation>
 <translation id="17719159826324007">
       Gdy ta zasada jest ustawiona na ArcSession i uruchomiono Androida, po wylogowaniu użytkownika wymuszane jest ponowne uruchomienie urządzenia.
@@ -3580,22 +3574,6 @@ Jeśli zasada nie jest skonfigurowana, na wszystkich stronach używany jest domy
 
 Uwaga: dozwolone wartości w polu <ph name="MINUTE_FIELD_NAME" /> w opcjach <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> to: 0, 15, 30 i 45.</translation>
 <translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Ta zasada włącza HTTP/0.9 w portach innych niż 80 dla HTTP i 443 dla HTTPS.
-
-      Domyślnie zasada jest wyłączona. Jeśli zostanie włączona, naraża to użytkowników na problem związany z bezpieczeństwem: https://crbug.com/600352
-
-      Ta zasada ma umożliwić firmom migrację istniejących serwerów z HTTP/0.9 i w przyszłości zostanie usunięta.
-
-      Jeśli zasada nie jest skonfigurowana, w portach innych niż domyślne protokół HTTP/0.9 jest wyłączony.</translation>
-<translation id="7726421241038987229">
-      Ustawienie SitePerProcess pozwala uniemożliwić użytkownikowi wyłączenie domyślnego zachowania, czyli izolowania wszystkich witryn. Możesz jednocześnie użyć zasady IsolateOrigins, aby dodatkowo izolować źródła według bardziej szczegółowych kryteriów.
-      Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona lub nie jest skonfigurowana, użytkownik może wyłączyć izolację witryn
-      (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).  Wyłączenie lub nieskonfigurowanie tej zasady nie wyłącza ustawienia Izolacja witryn.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest również ustawienie tej samej wartości dla zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jeśli wartości tych dwóch zasad są niezgodne, możliwe są opóźnienia przy uruchamianiu sesji użytkownika spowodowane stosowaniem wartości określonej w zasadach dotyczących użytkowników.
-
-      UWAGA: Ta zasada nie działa w Androidzie. Aby włączyć zasadę SitePerProcess w Androidzie, użyj ustawienia zasady SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Zezwól urządzeniom na korzystanie z wtyczki <ph name="PLUGIN_VM_NAME" /> w systemie <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Pozwala włączyć uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu zamiast stosowania PIN-u określanego przez użytkownika.
 

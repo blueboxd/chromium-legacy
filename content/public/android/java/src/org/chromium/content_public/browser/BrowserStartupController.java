@@ -83,7 +83,13 @@ public interface BrowserStartupController {
     void addStartupCompletedObserver(StartupCallback callback);
 
     /**
-     * Initialization needed for tests. Mainly used by content browsertests.
+     * Initialization needed for tests. Mainly used by browsertests.
      */
     void initChromiumBrowserProcessForTests();
+
+    /**
+     * Set a callback that will be run in place of calling ContentMain(). For tests to
+     * define their own way of initializing the C++ system.
+     */
+    void setContentMainCallbackForTests(Runnable r);
 }

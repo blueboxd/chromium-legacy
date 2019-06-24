@@ -222,7 +222,6 @@ if (enable_arcore) {
     sources = [
       "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
     ]
-    jni_package = "vr"
   }
 }
 

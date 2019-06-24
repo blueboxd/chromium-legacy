@@ -174,7 +174,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   if (panes.size() > 1) {
     auto tabbed_pane = std::make_unique<views::TabbedPane>();
     for (auto& pane : panes)
-      tabbed_pane->AddTab(pane.first, pane.second.release());
+      tabbed_pane->AddTab(pane.first, std::move(pane.second));
     tabbed_pane->set_listener(this);
     tabbed_pane->SetFocusBehavior(views::View::FocusBehavior::NEVER);
     tabbed_pane_ = AddChildView(std::move(tabbed_pane));

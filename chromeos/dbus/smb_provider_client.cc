@@ -78,9 +78,13 @@ class SmbProviderClientImpl : public SmbProviderClient {
              MountCallback callback) override {
     smbprovider::MountOptionsProto options_proto;
     options_proto.set_path(share_path.value());
+    options_proto.set_original_path(options.original_path);
     options_proto.set_workgroup(options.workgroup);
     options_proto.set_username(options.username);
     options_proto.set_skip_connect(options.skip_connect);
+    options_proto.set_account_hash(options.account_hash);
+    options_proto.set_save_password(options.save_password);
+    options_proto.set_restore_password(options.restore_password);
 
     std::unique_ptr<smbprovider::MountConfigProto> config =
         CreateMountConfigProto(options.ntlm_enabled);
@@ -95,9 +99,12 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &callback);
   }
 
-  void Unmount(int32_t mount_id, StatusCallback callback) override {
+  void Unmount(int32_t mount_id,
+               bool remove_password,
+               StatusCallback callback) override {
     smbprovider::UnmountOptionsProto options;
     options.set_mount_id(mount_id);
+    options.set_remove_password(remove_password);
     CallDefaultMethod(smbprovider::kUnmountMethod, options, &callback);
   }
 
@@ -700,6 +707,10 @@ class SmbProviderClientImpl : public SmbProviderClient {
 };
 
 }  // namespace
+
+SmbProviderClient::MountOptions::MountOptions() = default;
+
+SmbProviderClient::MountOptions::~MountOptions() = default;
 
 SmbProviderClient::SmbProviderClient() = default;
 

@@ -39,10 +39,6 @@ void WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(bool enable) {
   RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBlinkHeapUnifiedGCScheduling(bool enable) {
-  RuntimeEnabledFeatures::SetHeapUnifiedGCSchedulingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableBloatedRendererDetection(bool enable) {
   RuntimeEnabledFeatures::SetBloatedRendererDetectionEnabled(enable);
 }
@@ -697,6 +693,14 @@ void WebRuntimeFeatures::EnablePauseExecutionContextOnBackgroundFreeze(
 
 void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableStreamsNative(bool enable) {
+  RuntimeEnabledFeatures::SetStreamsNativeEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(bool enable) {
+  RuntimeEnabledFeatures::SetMouseSubframeNoImplicitCaptureEnabled(enable);
 }
 
 }  // namespace blink

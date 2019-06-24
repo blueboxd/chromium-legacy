@@ -42,7 +42,7 @@ const base::Feature kAppCacheIncludePaddingInQuota{
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
   "AudioServiceAudioStreams",
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -75,9 +75,6 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 // collector.
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kBlinkHeapUnifiedGCScheduling{
-    "BlinkHeapUnifiedGCScheduling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable bloated renderer detection.
 const base::Feature kBloatedRendererDetection{
@@ -287,6 +284,10 @@ const base::Feature kMojoVideoCapture{"MojoVideoCapture",
 // via a command-line argument.
 const base::Feature kMojoVideoCaptureSecondary{
     "MojoVideoCaptureSecondary", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enable, iframe does not implicit capture mouse event.
+const base::Feature kMouseSubframeNoImplicitCapture{
+    "MouseSubframeNoImplicitCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {

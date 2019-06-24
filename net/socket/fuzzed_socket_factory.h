@@ -11,9 +11,7 @@
 #include "base/macros.h"
 #include "net/socket/client_socket_factory.h"
 
-namespace base {
 class FuzzedDataProvider;
-}
 
 namespace net {
 
@@ -33,7 +31,7 @@ class FuzzedSocketFactory : public ClientSocketFactory {
   // creates. Other objects can also continue to consume |data_provider|, as
   // long as their calls into it are made on the CLientSocketFactory's thread
   // and the calls are deterministic.
-  explicit FuzzedSocketFactory(base::FuzzedDataProvider* data_provider);
+  explicit FuzzedSocketFactory(FuzzedDataProvider* data_provider);
   ~FuzzedSocketFactory() override;
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
@@ -70,7 +68,7 @@ class FuzzedSocketFactory : public ClientSocketFactory {
   void set_fuzz_connect_result(bool v) { fuzz_connect_result_ = v; }
 
  private:
-  base::FuzzedDataProvider* data_provider_;
+  FuzzedDataProvider* data_provider_;
   bool fuzz_connect_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedSocketFactory);

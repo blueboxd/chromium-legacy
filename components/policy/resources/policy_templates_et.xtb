@@ -454,12 +454,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Reegel tuleb määrata URL-ile, kust <ph name="PRODUCT_OS_NAME" /> saab teenusetingimused alla laadida. Teenusetingimused peavad olema lihtteksti vormingus, esitatud MIME-tüüpi tekstina/lihttekstina. Märgistused pole lubatud.</translation>
 <translation id="1750315445671978749">Blokeeri kõik allalaadimised</translation>
-<translation id="1762072363876276024">
-      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on seada mõlemad reeglid samale väärtusele. Kui väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareeglitega määratud väärtuse rakendamise tõttu.
-      Seade DeviceLoginScreenSitePerProcess abil võib keelata kasutajate jaoks vaikekäitumisest ehk kõigi saitide isoleerimisest loobumise. Pange tähele, et reegel DeviceLoginScreenIsolateOrigins võimaldab isoleerida ka muid, täpsemini määratud lähtekohti.
-      Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
-      Kui reegel on seadistamata või keelatud, saab kasutaja seadet muuta (nt jaotise chrome://flags kirje „Keela saidi isoleerimine” abil).
-      </translation>
 <translation id="1767673020408652620">Rakenduse soovituste lubamine nullolekuga otsingukastis</translation>
 <translation id="17719159826324007">
       Kui selle reegli väärtuseks on määratud ArcSession, taaskäivitab reegel seadme pärast kasutaja väljalogimist, kui Android on käivitunud.
@@ -3706,22 +3700,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
           Märkus. Üksuste <ph name="CHARGE_START_TIME_FIELD_NAME" /> ja <ph name="CHARGE_END_TIME_FIELD_NAME" /> välja <ph name="MINUTE_FIELD_NAME" /> lubatud väärtused on 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Seadistage teenuse <ph name="PRODUCT_OS_NAME" /> juurdepääsufunktsioonid.</translation>
-<translation id="7724994675283793633">See reegel lubab HTTP/0.9 portides, mis ei ole HTTP puhul 80 ja HTTPS-i puhul 443.
-
-      See reegel on vaikimisi keelatud. Kui see on lubatud, võivad kasutajad kokku puutuda turvaprobleemiga https://crbug.com/600352.
-
-      Selle reegli eesmärk on anda ettevõtetele võimalus eemaldada olemasolevad serverid üksusest HTTP/0.9. See reegel eemaldatakse tulevikus.
-
-      Kui see reegel on määramata, keelatakse HTTP/0.9 mittevaikeportides.</translation>
-<translation id="7726421241038987229">
-      Seadega SitePerProcess saab kasutajate jaoks keelata kõigi saitide isoleerimise vaikeseadest loobumise. Pange tähele, et reegel IsolateOrigins võimaldab isoleerida ka muid, täpsemini määratud lähtekohti.
-      Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
-      Kui reegel on seadistamata või keelatud, saab kasutaja loobuda saidi isoleerimisest
-      (nt jaotises chrome://flags kirje „Keela saidi isoleerimine” kasutamisest).  Reegli keelamisel ja/või seadistamata jätmisel ei lülitata saidi isoleerimist välja.
-      Teenuses <ph name="PRODUCT_OS_NAME" /> on soovitatav määrata seadmereegli <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> jaoks sama väärtus. Kui nende kahe reegli jaoks määratud väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareegli jaoks määratud väärtuse rakendamise tõttu.
-
-      MÄRKUS. Reegel ei kehti Androidi puhul. Androidis funktsiooni SitePerProcess lubamiseks kasutage reegli SitePerProcessAndroid seadet.
-      </translation>
 <translation id="7747447585227954402">Seadmetel lubatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> kasutada pistikprogrammi <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">Lubab kaugjuurdepääsu hostide autentimiseks kasutaja määratud PIN-koodi asemel kahetasandilise autentimise.
 

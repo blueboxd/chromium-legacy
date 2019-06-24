@@ -33,6 +33,7 @@ class StartupBrowserCreator {
 #if defined(OS_WIN)
     // chrome://welcome-win10/ if Chrome's default browser UX may be shown;
     // otherwise, see kWelcomeStandard.
+    // TODO(hcarmona): deprecate this enum.
     kWelcomeWin10,
 #endif
     // chrome://welcome/ if sign-in is allowed; otherwise, none.

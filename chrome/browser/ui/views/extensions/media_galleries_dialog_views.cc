@@ -123,7 +123,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   // parameters may differ between platforms.
   const int subtext_height = subtext->GetHeightForWidth(dialog_content_width);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
-  layout->AddView(subtext.release(), 1, 1, views::GridLayout::FILL,
+  layout->AddView(std::move(subtext), 1, 1, views::GridLayout::FILL,
                   views::GridLayout::LEADING, dialog_content_width,
                   subtext_height);
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_padding);
@@ -173,7 +173,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_view->SetContents(std::move(scroll_container));
   layout->StartRowWithPadding(1.0, column_set_id, views::GridLayout::kFixedSize,
                               vertical_padding);
-  layout->AddView(scroll_view.release(), 1.0, 1.0, views::GridLayout::FILL,
+  layout->AddView(std::move(scroll_view), 1.0, 1.0, views::GridLayout::FILL,
                   views::GridLayout::FILL, dialog_content_width,
                   kScrollAreaHeight);
 }

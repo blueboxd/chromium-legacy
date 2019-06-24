@@ -170,6 +170,11 @@ class ManualFillingComponentBridge {
     }
 
     @VisibleForTesting
+    public static void notifyFocusedFieldType(WebContents webContents, int focusedFieldType) {
+        nativeNotifyFocusedFieldTypeForTesting(webContents, focusedFieldType);
+    }
+
+    @VisibleForTesting
     public static void signalAutoGenerationStatus(WebContents webContents, boolean available) {
         nativeSignalAutoGenerationStatusForTesting(webContents, available);
     }
@@ -183,6 +188,8 @@ class ManualFillingComponentBridge {
 
     private static native void nativeCachePasswordSheetDataForTesting(
             WebContents webContents, String[] userNames, String[] passwords);
+    private static native void nativeNotifyFocusedFieldTypeForTesting(
+            WebContents webContents, int focusedFieldType);
     private static native void nativeSignalAutoGenerationStatusForTesting(
             WebContents webContents, boolean available);
 }

@@ -10,8 +10,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Binder;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
@@ -21,9 +19,9 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -43,8 +41,6 @@ public class ExternalAuthUtils {
 
     private final SparseHistogramSample mConnectionResultHistogramSample =
             new SparseHistogramSample("GooglePlayServices.ConnectionResult");
-    private final TimesHistogramSample mRegistrationTimeHistogramSample =
-            new TimesHistogramSample("Android.StrictMode.CheckGooglePlayServicesTime");
 
     /**
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
@@ -267,16 +263,9 @@ public class ExternalAuthUtils {
      * @return The code produced by calling the external code
      */
     protected int checkGooglePlayServicesAvailable(final Context context) {
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577190
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            long time = SystemClock.elapsedRealtime();
-            int isAvailable =
-                    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
-            mRegistrationTimeHistogramSample.record(SystemClock.elapsedRealtime() - time);
-            return isAvailable;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
+        // TODO(crbug.com/577190): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
         }
     }
 

@@ -4,12 +4,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/android/chrome_jni_headers/OfflineContentAggregatorFactory_jni.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
-#include "jni/OfflineContentAggregatorFactory_jni.h"
 
 using base::android::JavaParamRef;
 

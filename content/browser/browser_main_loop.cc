@@ -1514,12 +1514,6 @@ void BrowserMainLoop::MainMessageLoopRun() {
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-  if (parameters_.ui_task) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  *parameters_.ui_task);
-  }
-
   base::RunLoop run_loop;
   parts_->PreDefaultMainMessageLoopRun(run_loop.QuitClosure());
   run_loop.Run();

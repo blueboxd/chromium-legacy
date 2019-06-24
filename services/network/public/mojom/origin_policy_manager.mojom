@@ -81,7 +81,14 @@ struct OriginPolicy {
 interface OriginPolicyManager {
   // Attempts to retrieve the origin policy for an origin and
   // `Sec-Origin-Policy` HTTP header value. Calls back with the result.
+  // The header_value needs to contain a proper policy version or be empty. An
+  // invalid header_value will result in a returned empty policy with the state
+  // of `kCannotLoadPolicy`.
   // https://wicg.github.io/origin-policy/#origin-policy-header
   RetrieveOriginPolicy(url.mojom.Origin origin, string header_value)
       => (OriginPolicy origin_policy);
+
+  // Adds an exception for the specified origin. This means that no policy will
+  // apply for the specified origin from this point forward.
+  AddExceptionFor(url.mojom.Origin origin);
 };

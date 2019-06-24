@@ -2021,9 +2021,9 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
 
     if (request->is_web_view) {
-      // If this is a PlzNavigate request, then we can skip this check. IDs will
+      // If this is a navigation request, then we can skip this check. IDs will
       // be -1 and the request is trusted.
-      if (!request->is_browser_side_navigation &&
+      if (!request->is_navigation_request &&
           (listener->id.render_process_id !=
            request->web_view_embedder_process_id)) {
         continue;

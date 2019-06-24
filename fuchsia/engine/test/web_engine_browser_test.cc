@@ -7,6 +7,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/run_loop.h"
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
@@ -34,13 +35,20 @@ void WebEngineBrowserTest::PreRunTestOnMainThread() {
   }
 }
 
+void WebEngineBrowserTest::TearDownOnMainThread() {
+  navigation_listener_bindings_.CloseAll();
+}
+
 void WebEngineBrowserTest::PostRunTestOnMainThread() {
   // Unbind the Context while the message loops are still alive.
   context_.Unbind();
-}
 
-void WebEngineBrowserTest::TearDownOnMainThread() {
-  navigation_listener_bindings_.CloseAll();
+  // Shutting down the context needs to run connection error handlers
+  // etc which normally are what causes the main loop to exit. Since in
+  // tests we are not running a main loop indefinitely, we want to let those
+  // things run, just as they would in production, before shutting down. This
+  // makes the main loop run until breaking the connection completes.
+  base::RunLoop().RunUntilIdle();
 }
 
 fuchsia::web::FramePtr WebEngineBrowserTest::CreateFrame(

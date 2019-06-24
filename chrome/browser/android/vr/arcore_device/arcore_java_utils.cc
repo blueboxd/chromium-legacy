@@ -6,12 +6,12 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/vr/ar_jni_headers/ArCoreJavaUtils_jni.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
-#include "jni/ArCoreJavaUtils_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

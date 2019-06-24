@@ -110,9 +110,9 @@ class ShortcutsListScrollView : public views::ScrollView {
   DISALLOW_COPY_AND_ASSIGN(ShortcutsListScrollView);
 };
 
-ShortcutsListScrollView* CreateScrollView(
+std::unique_ptr<ShortcutsListScrollView> CreateScrollView(
     std::unique_ptr<views::View> content_view) {
-  ShortcutsListScrollView* const scroller = new ShortcutsListScrollView();
+  auto scroller = std::make_unique<ShortcutsListScrollView>();
   scroller->SetDrawOverflowIndicator(false);
   scroller->ClipHeightTo(0, 0);
   scroller->SetContents(std::move(content_view));
@@ -548,7 +548,7 @@ void KeyboardShortcutView::ShowSearchResults(
     found_items_list_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
     search_container_content_view =
-        CreateScrollView(std::move(found_items_list_view));
+        CreateScrollView(std::move(found_items_list_view)).release();
   }
   replacement_strings.emplace_back(search_query);
   search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(

@@ -5,10 +5,10 @@
 #include <chrome/browser/android/contextualsearch/contextual_search_context.h>
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/ContextualSearchContext_jni.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/ContextualSearchContext_jni.h"
 
 ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
     : can_resolve(false),

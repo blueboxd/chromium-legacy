@@ -585,11 +585,12 @@ void P2PQuicTransportImpl::OnMessageLost(quic::QuicMessageId message_id) {
 }
 
 void P2PQuicTransportImpl::OnConnectionClosed(
-    quic::QuicErrorCode error,
-    const std::string& error_details,
+    const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  quic::QuicSession::OnConnectionClosed(error, error_details, source);
+  const quic::QuicErrorCode error = frame.quic_error_code;
+  const std::string& error_details = frame.error_details;
+  quic::QuicSession::OnConnectionClosed(frame, source);
   if (error != quic::QuicErrorCode::QUIC_CONNECTION_CANCELLED) {
     delegate_->OnConnectionFailed(
         error_details, source == quic::ConnectionCloseSource::FROM_PEER);

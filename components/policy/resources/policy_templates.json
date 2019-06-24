@@ -12733,7 +12733,7 @@
       If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
       If the policy is not configured or disabled, the user will be able to opt out of site isolation
       (e.g. using "Disable site isolation" entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
-      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
 
       NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
       ''',
@@ -12762,7 +12762,7 @@
       'name': 'DeviceLoginScreenSitePerProcess',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:66-76'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
@@ -12774,9 +12774,6 @@
       'tags': ['system-security'],
       'desc': '''
       This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behavior of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behavior where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using "Disable site isolation" entry in chrome://flags).
       ''',
     },
     {
@@ -15353,6 +15350,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': False,
       'id': 532,
       'caption': '''Allows wilco diagnostics and telemetry controller''',
@@ -15402,6 +15400,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': {
         "url": "https://example.com/wilcodtcconfig",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_TRANSLATE_TRANSLATE_BUBBLE_VIEW_H_
 
 #include <map>
+#include <memory>
 #include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -242,7 +244,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // AddTab function requires a view element to be shown below each tab.
   // This function creates an empty view so no extra white space below the tab.
-  views::View* CreateEmptyPane();
+  std::unique_ptr<views::View> CreateEmptyPane();
 
   // Creates the 'translating' view for the existing Button UI. Caller takes
   // ownership of the returned view.

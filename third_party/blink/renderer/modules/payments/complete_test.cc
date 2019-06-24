@@ -48,7 +48,7 @@ TEST(CompleteTest, ResolveCompletePromiseOnUnknownError) {
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
-      payments::mojom::blink::PaymentErrorReason::UNKNOWN);
+      payments::mojom::blink::PaymentErrorReason::UNKNOWN, "Unknown error.");
 }
 
 TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
@@ -68,7 +68,8 @@ TEST(CompleteTest, ResolveCompletePromiseOnUserClosingUI) {
       .Then(funcs.ExpectCall(), funcs.ExpectNoCall());
 
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
-      payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
+      payments::mojom::blink::PaymentErrorReason::USER_CANCEL,
+      "User closed the UI.");
 }
 
 // If user cancels the transaction during processing, the complete() promise
@@ -84,7 +85,8 @@ TEST(CompleteTest, RejectCompletePromiseAfterError) {
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
       ->OnPaymentResponse(BuildPaymentResponseForTest());
   static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnError(
-      payments::mojom::blink::PaymentErrorReason::USER_CANCEL);
+      payments::mojom::blink::PaymentErrorReason::USER_CANCEL,
+      "User closed the UI.");
 
   request
       ->Complete(scope.GetScriptState(),

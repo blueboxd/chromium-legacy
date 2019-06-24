@@ -130,7 +130,7 @@
         Add to My apps
       </message>
       <message name="IDS_DINO_GAME_TITLE" desc="Title for the offline dino game that will appear as an icon in the launcher" translateable="false">
-        Chrome Game
+        Chrome Fun
       </message>
     </messages>
   </release>

@@ -173,10 +173,12 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
     std::unique_ptr<OfflinePageMetadataStore> store,
     std::unique_ptr<ArchiveManager> archive_manager,
     std::unique_ptr<SystemDownloadManager> download_manager,
+    std::unique_ptr<OfflinePageArchivePublisher> archive_publisher,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : store_(std::move(store)),
       archive_manager_(std::move(archive_manager)),
       download_manager_(std::move(download_manager)),
+      archive_publisher_(std::move(archive_publisher)),
       policy_controller_(new ClientPolicyController()),
       task_queue_(this),
       skip_clearing_original_url_for_testing_(false),
@@ -440,15 +442,11 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
   if (policy_controller_->IsPersistent(offline_page.client_id.name_space)) {
     // If the user intentionally downloaded the page (aka it belongs to a
     // persistent namespace), move it to a public place.
-    // Note: Moving the archiver instance into the callback so it won't be
-    // deleted.
-    OfflinePageArchiver* raw_archiver = archiver.get();
-    raw_archiver->PublishArchive(
-        offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
-        download_manager_.get(),
+    archive_publisher_->PublishArchive(
+        offline_page, task_runner_,
         base::BindOnce(&OfflinePageModelTaskified::PublishArchiveDone,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(archiver),
-                       std::move(callback), OfflineTimeNow()));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       OfflineTimeNow()));
     return;
   }
 
@@ -464,7 +462,6 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
 }
 
 void OfflinePageModelTaskified::PublishArchiveDone(
-    std::unique_ptr<OfflinePageArchiver> archiver,
     SavePageCallback save_page_callback,
     base::Time publish_start_time,
     const OfflinePageItem& offline_page,
@@ -496,21 +493,15 @@ void OfflinePageModelTaskified::PublishArchiveDone(
 
 void OfflinePageModelTaskified::PublishInternalArchive(
     const OfflinePageItem& offline_page,
-    std::unique_ptr<OfflinePageArchiver> archiver,
     PublishPageCallback publish_done_callback) {
-  // Note: the archiver instance must be kept alive until the final callback
-  // coming from it takes place.
-  OfflinePageArchiver* raw_archiver = archiver.get();
-  raw_archiver->PublishArchive(
-      offline_page, task_runner_, archive_manager_->GetPublicArchivesDir(),
-      download_manager_.get(),
+  archive_publisher_->PublishArchive(
+      offline_page, task_runner_,
       base::BindOnce(&OfflinePageModelTaskified::PublishInternalArchiveDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(archiver),
+                     weak_ptr_factory_.GetWeakPtr(),
                      std::move(publish_done_callback)));
 }
 
 void OfflinePageModelTaskified::PublishInternalArchiveDone(
-    std::unique_ptr<OfflinePageArchiver> archiver,
     PublishPageCallback publish_done_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult publish_results) {

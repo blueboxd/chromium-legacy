@@ -15,6 +15,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "chrome/android/chrome_jni_headers/TabState_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/TabState_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;

@@ -8,9 +8,6 @@ static_library("crash_handler") {
   sources = [
     "crash_analyzer.cc",
     "crash_analyzer.h",
-    "crash_analyzer_linux.cc",
-    "crash_analyzer_mac.cc",
-    "crash_analyzer_win.cc",
     "crash_handler.cc",
     "crash_handler.h",
   ]

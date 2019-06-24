@@ -1,6 +1,9 @@
 include_rules = [
   "+apps",
   "+cc/paint",
+  "+chrome/android/chrome_jni_headers",
+  "+chrome/android/features/autofill_assistant/jni_headers",
+  "+chrome/android/public/profiles/jni_headers",
   "+chrome/app",
   "+chrome/chrome_watcher",
   "+chrome/credential_provider/common",
@@ -44,7 +47,6 @@ include_rules = [
   "+google_apis",
   "+google_update",
   "+installer_util_strings",  # For generated headers
-  "+jni",
   "+mash/public/mojom",
   "+media/media_buildflags.h",
   "+media/audio", # For media audio hang monitor.

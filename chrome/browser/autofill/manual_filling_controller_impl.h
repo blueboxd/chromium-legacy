@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -29,13 +30,14 @@ class ManualFillingControllerImpl
   ~ManualFillingControllerImpl() override;
 
   // ManualFillingController:
-  void RefreshSuggestionsForField(
-      autofill::mojom::FocusedFieldType focused_field_type,
+  void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) override;
+  void NotifyFocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
-  void ShowWhenKeyboardIsVisible(FillingSource source) override;
+  void UpdateSourceAvailability(FillingSource source,
+                                bool has_suggestions) override;
   void ShowTouchToFillSheet(const autofill::AccessorySheetData& data) override;
-  void DeactivateFillingSource(FillingSource source) override;
   void Hide() override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(autofill::AccessoryTabType type,
@@ -90,6 +92,12 @@ class ManualFillingControllerImpl
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       std::unique_ptr<ManualFillingViewInterface> view);
 
+  // Returns true if the keyboard accessory needs to be shown.
+  bool ShouldShowAccessory() const;
+
+  // Adjusts visibility based on focused field type and available suggestions.
+  void UpdateVisibility();
+
   // Returns the controller that is responsible for a tab of given |type|.
   AccessoryController* GetControllerForTab(autofill::AccessoryTabType type);
 
@@ -101,7 +109,11 @@ class ManualFillingControllerImpl
   content::WebContents* web_contents_;
 
   // This set contains sources to be shown to the user.
-  base::flat_set<FillingSource> visible_sources_;
+  base::flat_set<FillingSource> available_sources_;
+
+  // Type of the last known selected field. Helps to determine UI visibility.
+  autofill::mojom::FocusedFieldType focused_field_type_ =
+      autofill::mojom::FocusedFieldType::kUnknown;
 
   // The password accessory controller object to forward view requests to.
   base::WeakPtr<PasswordAccessoryController> pwd_controller_;

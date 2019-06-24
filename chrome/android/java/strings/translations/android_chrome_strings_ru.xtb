@@ -100,6 +100,8 @@
 <translation id="1679068421605151609">Инструменты разработчика</translation>
 <translation id="1692118695553449118">Синхронизация включена</translation>
 <translation id="169515064810179024">Закрыть сайтам доступ к датчикам движения</translation>
+<translation id="1697480839793160072">Номера телефонов</translation>
+<translation id="1698058317516161971">Адреса эл. почты</translation>
 <translation id="1717218214683051432">Датчики движения</translation>
 <translation id="1718835860248848330">Последний час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />. Обновление <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1014,6 +1016,7 @@
 <translation id="8266862848225348053">Расположение скачиваемых файлов</translation>
 <translation id="8274165955039650276">Показать скачанные файлы</translation>
 <translation id="8283853025636624853">Синхронизация с аккаунтом <ph name="SYNC_ACCOUNT_USER_NAME" />…</translation>
+<translation id="8284326494547611709">Титры</translation>
 <translation id="8300705686683892304">Под управлением приложения</translation>
 <translation id="8310344678080805313">Обычные вкладки</translation>
 <translation id="8313455859591948645">Изменение стартовой страницы</translation>

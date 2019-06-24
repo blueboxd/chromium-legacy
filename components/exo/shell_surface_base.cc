@@ -546,7 +546,8 @@ void ShellSurfaceBase::OnSurfaceCommit() {
   if (shadow_bounds_changed_)
     host_window()->AllocateLocalSurfaceId();
 
-  SurfaceTreeHost::OnSurfaceCommit();
+  DCHECK(presentation_callbacks().empty());
+  root_surface()->CommitSurfaceHierarchy(false);
 
   if (!OnPreWidgetCommit())
     return;
@@ -773,7 +774,12 @@ gfx::Size ShellSurfaceBase::CalculatePreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return host_window()->bounds().size();
+  // The root surface's content bounds should be used instead of the host window
+  // bounds because the host window bounds are not updated until the widget is
+  // committed, meaning that if we need to calculate the preferred size before
+  // then (e.g. in OnPreWidgetCommit()), then we need to use the root surface's
+  // to ensure that we're using the correct bounds' size.
+  return root_surface()->surface_hierarchy_content_bounds().size();
 }
 
 gfx::Size ShellSurfaceBase::GetMinimumSize() const {
@@ -1108,6 +1114,7 @@ void ShellSurfaceBase::CommitWidget() {
   }
 
   UpdateWidgetBounds();
+  SurfaceTreeHost::UpdateHostWindowBounds();
   UpdateShadow();
 
   // System modal container is used by clients to implement overlay

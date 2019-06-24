@@ -109,7 +109,8 @@ void ShellExtensionLoader::FinishExtensionReload(
     // open its first window.
     // Launch the app now.
     if (extension->is_platform_app())
-      apps::LaunchPlatformApp(browser_context_, extension.get(), SOURCE_RELOAD);
+      apps::LaunchPlatformApp(browser_context_, extension.get(),
+                              AppLaunchSource::kSourceReload);
   }
 
   // Whether or not the reload succeeded, we should stop waiting for it.

@@ -46,10 +46,12 @@ class AutoclickMenuButton : public TopShortcutButton {
   AutoclickMenuButton(views::ButtonListener* listener,
                       const gfx::VectorIcon& icon,
                       int accessible_name_id,
-                      int size = kTrayItemSize)
+                      int size = kTrayItemSize,
+                      bool draw_highlight = true)
       : TopShortcutButton(listener, accessible_name_id),
         icon_(&icon),
-        size_(size) {
+        size_(size),
+        draw_highlight_(draw_highlight) {
     EnableCanvasFlippingForRTLUI(false);
     SetPreferredSize(gfx::Size(size_, size_));
     UpdateImage();
@@ -84,13 +86,15 @@ class AutoclickMenuButton : public TopShortcutButton {
 
   // TopShortcutButton:
   void PaintButtonContents(gfx::Canvas* canvas) override {
-    gfx::Rect rect(GetContentsBounds());
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(toggled_ ? kAutoclickMenuButtonColorActive
-                            : kUnifiedMenuButtonColor);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
+    if (draw_highlight_) {
+      gfx::Rect rect(GetContentsBounds());
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setColor(toggled_ ? kAutoclickMenuButtonColorActive
+                              : kUnifiedMenuButtonColor);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
+    }
 
     views::ImageButton::PaintButtonContents(canvas);
   }
@@ -128,6 +132,7 @@ class AutoclickMenuButton : public TopShortcutButton {
   // True if the button is currently toggled.
   bool toggled_ = false;
   int size_;
+  const bool draw_highlight_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickMenuButton);
 };
@@ -176,7 +181,8 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
           new AutoclickMenuButton(this,
                                   kAutoclickPositionBottomLeftIcon,
                                   IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
-                                  kPanelPositionButtonSize)) {
+                                  kPanelPositionButtonSize,
+                                  false /* no highlight */)) {
   // TODO(katie): Initialize scroll above once it launches, target in M77.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalAccessibilityAutoclick)) {

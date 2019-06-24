@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.autofill.mojom.FocusedFieldType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -118,6 +119,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
         loadTestPage(FakeKeyboard::new);
         mHelper.clickNodeAndShowKeyboard("EMAIL_ADDRESS");
         mHelper.waitForKeyboardAccessoryToBeShown();
+        CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null); // Wait for suggestions.
 
         // Scroll to the second position and check it actually happened.
         TestThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollToPosition(2));
@@ -155,7 +157,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
-        mHelper.clickNode("NAME_FIRST");
+        mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);
         mHelper.waitForKeyboardAccessoryToBeShown();
 
         CriteriaHelper.pollUiThread(() -> getFirstSuggestion() != null);
@@ -189,7 +191,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
             throws ExecutionException, InterruptedException, TimeoutException {
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         loadTestPage(MultiWindowKeyboard::new);
-        mHelper.clickNode("NAME_FIRST");
+        mHelper.clickNode("NAME_FIRST", FocusedFieldType.FILLABLE_NON_SEARCH_FIELD);
         mHelper.waitForKeyboardAccessoryToBeShown();
 
         whenDisplayed(withId(R.id.bar_items_view))
@@ -223,6 +225,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     private View getFirstSuggestion() {
         ViewGroup recyclerView = getSuggestionsComponent();
         assert recyclerView != null;
-        return recyclerView.getChildAt(0);
+        View view = recyclerView.getChildAt(0);
+        return isKeyboardAccessoryTabLayout().matches(view) ? null : view;
     }
 }

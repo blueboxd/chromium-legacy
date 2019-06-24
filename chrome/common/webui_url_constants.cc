@@ -166,8 +166,6 @@ const char kChromeUIVersionHost[] = "version";
 const char kChromeUIVersionURL[] = "chrome://version/";
 const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
-const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
-const char kChromeUIWelcomeWin10URL[] = "chrome://welcome-win10/";
 
 #if defined(OS_ANDROID)
 const char kChromeUIExploreSitesInternalsHost[] = "explore-sites-internals";

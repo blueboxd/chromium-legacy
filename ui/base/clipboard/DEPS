@@ -1,6 +1,6 @@
 include_rules = [
   "-ui/ozone/*",
-  "+jni",
+  "+ui/base/ui_base_jni_headers",
   "+third_party/mozilla",
   "+ui/ozone/public/ozone_platform.h",
   "+ui/ozone/public/platform_clipboard.h",

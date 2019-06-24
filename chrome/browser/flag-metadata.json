@@ -483,12 +483,12 @@
   {
     "name": "cookie-deprecation-messages",
     "owners": [ "chlily", "aarontag" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "cros-regions-mode",
@@ -2243,6 +2243,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "mouse-subframe-no-implicit-capture",
+    "owners": [ "eirage", "input-dev" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "native-file-system-api",
     "owners": [ "mek", "pwnall" ],
     "expiry_milestone":  80
@@ -2677,7 +2682,7 @@
   {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "scheduler-configuration",

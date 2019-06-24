@@ -439,12 +439,6 @@
 
       Politikā ir jāiestata vietrādis URL, kur operētājsistēma <ph name="PRODUCT_OS_NAME" /> var lejupielādēt pakalpojumu sniegšanas noteikumus. Tiem ir jābūt rakstītiem kā vienkāršam tekstam, kas jārāda kā MIME veids “teksts/vienkāršs”. Iezīmēšana nav atļauta.</translation>
 <translation id="1750315445671978749">Bloķēt visas lejupielādes</translation>
-<translation id="1762072363876276024">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības nebūs vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
-      Šo politikas DeviceLoginScreenSitePerProcess iestatījumu var izmantot, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika DeviceLoginScreenIsolateOrigins var būt noderīga papildu detalizētāku vietņu izolēšanai.
-      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
-      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs mainīt iestatījumu (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Iespējot lietotņu ieteikumus meklēšanas lodziņa nulles stāvoklī</translation>
 <translation id="17719159826324007">
       Kad šai politikai ir iestatīta vērtība “ArcSession”, tā liek ierīcei veikt atkārtotu palaišanu pēc lietotāja izrakstīšanās, ja operētājsistēma Android ir sākusi darbu.
@@ -3682,22 +3676,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Piezīme. Atļautās vērtības laukam <ph name="MINUTE_FIELD_NAME" /> sadaļās <ph name="CHARGE_START_TIME_FIELD_NAME" /> un <ph name="CHARGE_END_TIME_FIELD_NAME" /> ir 0, 15, 30 un 45.</translation>
 <translation id="7717938661004793600">Konfigurējiet <ph name="PRODUCT_OS_NAME" /> pieejamības funkcijas.</translation>
-<translation id="7724994675283793633">Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
-
-      Šī politika pēc noklusējuma ir atspējota. Ja tā tiek iespējota, lietotājiem var rasties drošības problēma: https://crbug.com/600352.
-
-      Šī politika ir paredzēta uzņēmumiem, kas vēlas migrēt esošos serverus no HTTP/0.9, un tā tiks noņemta.
-
-      Ja šī politika nav iestatīta, protokols HTTP/0.9 tiks atspējots portos, kas nav noklusējuma porti.</translation>
-<translation id="7726421241038987229">
-      Šis politikas SitePerProcess iestatījums var tikt izmantots, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika IsolateOrigins var būt noderīga arī papildu detalizētāku vietņu izolēšanai.
-      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
-      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs atteikties no vietnes izolācijas
-      (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).  Atspējojot politiku un/vai nekonfigurējot politiku, vietnes izolācija netiek izslēgta.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> šādu vērtību ieteicams iestatīt arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abām politikām iestatītās vērtības nav vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
-
-      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai politiku SitePerProcess iespējotu operētājsistēmā Android, izmantojiet politikas SitePerProcessAndroid iestatījumu.
-      </translation>
 <translation id="7747447585227954402">Atļauj ierīcēm izmantot spraudni <ph name="PLUGIN_VM_NAME" /> produktā <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Iespējo divu faktoru autentifikāciju attālās piekļuves saimniekdatoriem, nevis izmanto lietotāja norādītu PIN.
 

@@ -25,7 +25,6 @@ generate_jni("jni_headers") {
     "internal/java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponentBridge.java",
     "public/java/src/org/chromium/chrome/browser/keyboard_accessory/data/UserInfoField.java",
   ]
-  jni_package = "chrome"
 }
 
 android_library("test_java") {
@@ -62,6 +61,7 @@ android_library("test_java") {
     "//chrome/android/public/profiles:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/autofill/android:autofill_java",
+    "//components/autofill/core/common/mojom:mojo_types_java",
     "//components/feature_engagement/public:public_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

@@ -149,7 +149,7 @@ const CGFloat kOmniboxIconSize = 16;
   // The code below mimics that in OmniboxPopupMediator.
   self.faviconLoader->FaviconForPageUrl(
       pageURL, kOmniboxIconSize, kOmniboxIconSize,
-      /*fallback_to_google_server=*/YES, handleFaviconResult);
+      /*fallback_to_google_server=*/false, handleFaviconResult);
 }
 
 // Loads a favicon for the current default search engine.

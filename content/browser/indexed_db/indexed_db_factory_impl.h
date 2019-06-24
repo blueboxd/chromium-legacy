@@ -143,7 +143,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   IndexedDBContextImpl* context() const { return context_; }
 
  private:
-  friend IndexedDBOriginState;
+  friend class IndexedDBBrowserTest;
+  friend class IndexedDBOriginState;
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
                            BackingStoreReleasedOnForcedClose);
@@ -162,6 +163,20 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                            GetDatabaseNamesClosesBackingStore);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest,
                            ForceCloseOpenDatabasesOnCommitFailure);
+
+  // |path_base| is the directory that will contain the database directory, the
+  // blob directory, and any data loss info. |database_path| is the directory
+  // for the leveldb database, and |blob_path| is the directory to store blob
+  // files. If |path_base| is empty, then an in-memory database is opened.
+  std::tuple<std::unique_ptr<IndexedDBBackingStore>,
+             leveldb::Status,
+             IndexedDBDataLossInfo,
+             bool /* is_disk_full */>
+  OpenAndVerifyIndexedDBBackingStore(const url::Origin& origin,
+                                     base::FilePath data_directory,
+                                     base::FilePath database_path,
+                                     base::FilePath blob_path,
+                                     bool is_first_attempt);
 
   void RemoveOriginState(const url::Origin& origin);
 
@@ -182,8 +197,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   SEQUENCE_CHECKER(sequence_checker_);
   IndexedDBContextImpl* context_;
   indexed_db::LevelDBFactory* const leveldb_factory_;
-  IndexedDBClassFactory* indexed_db_class_factory_;
-  base::Clock* clock_;
+  IndexedDBClassFactory* const indexed_db_class_factory_;
+  base::Clock* const clock_;
   base::Time earliest_sweep_;
 
   base::flat_map<url::Origin, std::unique_ptr<IndexedDBOriginState>>

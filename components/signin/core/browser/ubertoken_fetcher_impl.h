@@ -51,7 +51,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   // sequentially for |account_id|. Uses a default GaiaAuthFetcherFactory which
   // returns base GaiaAuthFetcher instances.
   UbertokenFetcherImpl(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       OAuth2TokenService* token_service,
       CompletionCallback ubertoken_callback,
       gaia::GaiaSource source,
@@ -59,13 +59,12 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
       bool is_bound_to_channel_id = true);
 
   // Constructs an instance and starts fetching the ubertoken for |account_id|.
-  UbertokenFetcherImpl(
-      const std::string& account_id,
-      const std::string& access_token,
-      OAuth2TokenService* token_service,
-      CompletionCallback ubertoken_callback,
-      GaiaAuthFetcherFactory factory,
-      bool is_bound_to_channel_id = true);
+  UbertokenFetcherImpl(const CoreAccountId& account_id,
+                       const std::string& access_token,
+                       OAuth2TokenService* token_service,
+                       CompletionCallback ubertoken_callback,
+                       GaiaAuthFetcherFactory factory,
+                       bool is_bound_to_channel_id = true);
   ~UbertokenFetcherImpl() override;
 
   // Overriden from GaiaAuthConsumer
@@ -92,7 +91,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   std::string access_token_;
   int retry_number_;
   base::OneShotTimer retry_timer_;

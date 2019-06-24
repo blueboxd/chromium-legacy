@@ -5,7 +5,7 @@
 #include "ui/android/overscroll_refresh_handler.h"
 
 #include "base/android/jni_android.h"
-#include "jni/OverscrollRefreshHandler_jni.h"
+#include "ui/android/ui_android_jni_headers/OverscrollRefreshHandler_jni.h"
 
 using base::android::AttachCurrentThread;
 

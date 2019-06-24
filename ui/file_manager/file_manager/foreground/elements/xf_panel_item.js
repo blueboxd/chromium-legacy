@@ -41,23 +41,28 @@ class PanelItem extends HTMLElement {
   static get template_() {
     return `<link rel='stylesheet'
               href='foreground/elements/files_xf_elements.css'>
-                <div class='xf-panel-item'>
-                    <xf-circular-progress id='indicator'>
-                    </xf-circular-progress>
-                    <div class='xf-panel-text'>
-                        <span class='xf-panel-label-text'>
-                                Placeholder text
-                        </span>
-                        <br/>
-                    </div>
-                    <div class='xf-padder-24'></div>
-                    <xf-button id='secondary-action' tabindex='-1'>
-                    </xf-button>
-                    <div id='button-gap' class='xf-padder-4'></div>
-                    <xf-button id='primary-action' tabindex='-1'>
-                    </xf-button>
-                    <div class='xf-padder-16'></div>
-                </div>`;
+            <style>
+              :host([panel-type='0']) .xf-panel-item {
+                height: var(--multi-progress-height);
+              }
+            </style>
+            <div class='xf-panel-item'>
+                <xf-circular-progress id='indicator'>
+                </xf-circular-progress>
+                <div class='xf-panel-text'>
+                    <span class='xf-panel-label-text'>
+                            Placeholder text
+                    </span>
+                    <br/>
+                </div>
+                <div class='xf-padder-24'></div>
+                <xf-button id='secondary-action' tabindex='-1'>
+                </xf-button>
+                <div id='button-gap' class='xf-padder-4'></div>
+                <xf-button id='primary-action' tabindex='-1'>
+                </xf-button>
+                <div class='xf-padder-16'></div>
+            </div>`;
   }
 
   /**

@@ -225,7 +225,8 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     EXPECT_TRUE(extension);
 
     OpenApplication(AppLaunchParams(profile(), extension->id(), container,
-                                    disposition, extensions::SOURCE_TEST));
+                                    disposition,
+                                    extensions::AppLaunchSource::kSourceTest));
     return extension;
   }
 
@@ -886,7 +887,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchAppFromDisplayWithoutFocus1) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_FOREGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   ash::ShelfID shortcut_id = CreateShortcut("app1");
@@ -904,7 +906,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchInBackground) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   controller_->LaunchApp(ash::ShelfID(last_loaded_extension_id()),
@@ -1129,9 +1132,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
 // before it was closed.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   // Open an App, maximized its window, and close it.
-  const Extension* extension =
-      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
-                             WindowOpenDisposition::NEW_WINDOW);
+  const Extension* extension = LoadAndLaunchExtension(
+      "app1", extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW);
   Browser* app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   BrowserWindow* window = app_browser->window();
@@ -1141,9 +1144,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   CloseAppBrowserWindow(app_browser);
 
   // Reopen the App. It should start maximized. Un-maximize it and close it.
-  extension =
-      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
-                             WindowOpenDisposition::NEW_WINDOW);
+  extension = LoadAndLaunchExtension(
+      "app1", extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW);
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window();
@@ -1155,9 +1158,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AppWindowRestoreBehaviorTest) {
   CloseAppBrowserWindow(app_browser);
 
   // Reopen the App. It should start un-maximized.
-  extension =
-      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
-                             WindowOpenDisposition::NEW_WINDOW);
+  extension = LoadAndLaunchExtension(
+      "app1", extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW);
   app_browser = FindBrowserForApp(extension->id());
   ASSERT_TRUE(app_browser);
   window = app_browser->window();
@@ -1173,18 +1176,20 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
 
-  const Extension* extension =
-      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
-                             WindowOpenDisposition::NEW_WINDOW);
+  const Extension* extension = LoadAndLaunchExtension(
+      "app1", extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW);
   ASSERT_TRUE(extension);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  OpenApplication(AppLaunchParams(
-      profile(), extension->id(), extensions::LAUNCH_CONTAINER_TAB,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(
+      AppLaunchParams(profile(), extension->id(),
+                      extensions::LaunchContainer::kLaunchContainerTab,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceTest));
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1195,20 +1200,23 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        EnumerateAllBrowsersAndTabs) {
   // Create at least one browser.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_WINDOW);
   size_t browsers = NumberOfDetectedLauncherBrowsers(false);
   size_t tabs = NumberOfDetectedLauncherBrowsers(true);
 
   // Create a second browser.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_WINDOW);
 
   EXPECT_EQ(++browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
 
   // Create only a tab.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
   EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
@@ -1520,7 +1528,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_TRUE(browser1->window()->IsActive());
 
   // Create another app and make sure that none of our browsers is active.
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
+  LoadAndLaunchExtension("app1",
+                         extensions::LaunchContainer::kLaunchContainerTab,
                          WindowOpenDisposition::NEW_WINDOW);
   EXPECT_FALSE(browser1->window()->IsActive());
   EXPECT_FALSE(browser2->window()->IsActive());
@@ -1700,8 +1709,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   // Create a windowed application.
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST);
-  params.container = extensions::LAUNCH_CONTAINER_WINDOW;
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::AppLaunchSource::kSourceTest);
+  params.container = extensions::LaunchContainer::kLaunchContainerWindow;
   OpenApplication(params);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
 

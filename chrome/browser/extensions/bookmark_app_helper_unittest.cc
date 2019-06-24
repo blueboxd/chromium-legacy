@@ -441,19 +441,19 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     const Extension* extension =
         service_->GetInstalledExtension(helper.extension()->id());
     EXPECT_TRUE(extension);
-    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerWindow,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
 
     // Mark the app as not locally installed and check that it now opens in a
     // tab.
     SetBookmarkAppIsLocallyInstalled(profile(), extension, false);
-    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
 
     // Mark the app as locally installed and check that it now opens in a
     // window.
     SetBookmarkAppIsLocallyInstalled(profile(), extension, true);
-    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerWindow,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
@@ -472,7 +472,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     const Extension* extension =
         service_->GetInstalledExtension(helper.extension()->id());
     EXPECT_TRUE(extension);
-    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+    EXPECT_EQ(LaunchContainer::kLaunchContainerTab,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
 }
@@ -502,7 +502,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     content::RunAllTasksUntilIdle();
     ASSERT_TRUE(helper.extension());
     EXPECT_EQ(
-        LAUNCH_CONTAINER_TAB,
+        LaunchContainer::kLaunchContainerTab,
         GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
   }
   {
@@ -518,7 +518,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     content::RunAllTasksUntilIdle();
     ASSERT_TRUE(helper.extension());
     EXPECT_EQ(
-        LAUNCH_CONTAINER_WINDOW,
+        LaunchContainer::kLaunchContainerWindow,
         GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
   }
 }

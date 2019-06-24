@@ -73,7 +73,7 @@ bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile) {
   const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
-      profile, app_url, extensions::LAUNCH_CONTAINER_WINDOW);
+      profile, app_url, extensions::LaunchContainer::kLaunchContainerWindow);
 
   // We don't have a scope, fall back to same origin check.
   if (!app_for_window)
@@ -81,7 +81,8 @@ bool IsSameScope(const GURL& app_url,
 
   return app_for_window ==
          extensions::util::GetInstalledPwaForUrl(
-             profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
+             profile, page_url,
+             extensions::LaunchContainer::kLaunchContainerWindow);
 }
 
 // static

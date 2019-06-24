@@ -50,4 +50,7 @@ public class Fido2ApiHandler {
 
     protected void getAssertion(PublicKeyCredentialRequestOptions options,
             RenderFrameHost frameHost, HandlerResponseCallback callback) {}
+
+    protected void isUserVerifyingPlatformAuthenticatorAvailable(
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {}
 }

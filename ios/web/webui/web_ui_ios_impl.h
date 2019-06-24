@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 
 namespace web {
 class WebStateImpl;
+class WebFrame;
 }
 
 namespace web {
@@ -47,6 +49,12 @@ class WebUIIOSImpl : public web::WebUIIOS,
                                 const base::Value& response) override;
 
  private:
+  bool OnJsMessage(const base::DictionaryValue& message,
+                   const GURL& page_url,
+                   bool has_user_gesture,
+                   bool form_in_main_frame,
+                   web::WebFrame* sender_frame);
+
   // Executes JavaScript asynchronously on the page.
   void ExecuteJavascript(const base::string16& javascript);
 

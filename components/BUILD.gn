@@ -357,10 +357,15 @@ test("components_unittests") {
   if (enable_print_preview) {
     deps += [ "//components/pwg_encoder:unit_tests" ]
   }
-  if (safe_browsing_mode == 1 || safe_browsing_mode == 3) {
-    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
+  if (safe_browsing_mode == 1) {
+    deps += [
+      "//components/safe_browsing:verdict_cache_manager_unittest",
+      "//components/safe_browsing/db:unit_tests_desktop",
+    ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]
+  } else if (safe_browsing_mode == 3) {
+    deps += [ "//components/safe_browsing/db:unit_tests_desktop" ]
   }
 
   if (!is_ios) {

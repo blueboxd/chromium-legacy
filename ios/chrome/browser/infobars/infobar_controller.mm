@@ -23,6 +23,7 @@
 @synthesize infoBarDelegate = _infoBarDelegate;
 @synthesize infobarType = _infobarType;
 @synthesize presented = _presented;
+@synthesize hasBadge = _hasBadge;
 
 #pragma mark - Public
 
@@ -32,6 +33,7 @@
   if (self) {
     _infoBarDelegate = infoBarDelegate;
     _presented = NO;
+    _hasBadge = NO;
   }
   return self;
 }

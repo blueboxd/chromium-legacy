@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/AppBannerUiDelegateAndroid_jni.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
@@ -21,7 +22,6 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AppBannerUiDelegateAndroid_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 

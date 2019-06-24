@@ -296,12 +296,14 @@ class QuickViewController {
     const item = items[0];
     const typeInfo = FileType.getType(entry);
     const type = typeInfo.type;
+    const locationInfo = this.volumeManager_.getLocationInfo(entry);
+    const label = util.getEntryLabel(locationInfo, entry);
 
     /** @type {!QuickViewParams} */
     const params = {
       type: type,
       subtype: typeInfo.subtype,
-      filePath: entry.name,
+      filePath: label,
       hasTask: tasks.length > 0,
     };
 

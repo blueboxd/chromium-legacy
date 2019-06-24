@@ -11,6 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/GeolocationHeader_jni.h"
+#include "chrome/android/chrome_jni_headers/SearchGeolocationDisclosureTabHelper_jni.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -30,8 +32,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/GeolocationHeader_jni.h"
-#include "jni/SearchGeolocationDisclosureTabHelper_jni.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 

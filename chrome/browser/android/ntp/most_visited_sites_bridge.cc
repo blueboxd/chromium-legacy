@@ -16,6 +16,8 @@
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/chrome_jni_headers/MostVisitedSitesBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/MostVisitedSites_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
@@ -27,8 +29,6 @@
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "jni/MostVisitedSitesBridge_jni.h"
-#include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::AttachCurrentThread;

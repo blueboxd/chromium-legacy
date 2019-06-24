@@ -28,8 +28,8 @@ namespace ash {
 
 namespace {
 // Autoclick menu constants.
-const int kAutoclickMenuWidth = 321;
-const int kAutoclickMenuWidthWithScroll = 371;
+const int kAutoclickMenuWidth = 319;
+const int kAutoclickMenuWidthWithScroll = 369;
 const int kAutoclickMenuHeight = 64;
 
 mojom::AutoclickMenuPosition DefaultSystemPosition() {
@@ -177,7 +177,8 @@ void AutoclickMenuBubbleController::SetPosition(
 
   // Un-inset the bounds to get the widget's bounds, which includes the drop
   // shadow.
-  resting_bounds.Inset(-kCollisionWindowWorkAreaInsetsDp,
+  resting_bounds.Inset(-kCollisionWindowWorkAreaInsetsDp, 0,
+                       -kCollisionWindowWorkAreaInsetsDp,
                        -kCollisionWindowWorkAreaInsetsDp);
   if (bubble_widget_->GetWindowBoundsInScreen() == resting_bounds)
     return;

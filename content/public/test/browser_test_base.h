@@ -154,6 +154,12 @@ class BrowserTestBase : public testing::Test {
   void SetInitialWebContents(WebContents* web_contents);
 
  private:
+#if defined(OS_ANDROID)
+  // Android browser tests need to wait for async initialization in Java code.
+  // This waits for those to complete before we can continue with the test.
+  void WaitUntilJavaIsReady(base::OnceClosure quit_closure);
+#endif
+  // Performs a bunch of setup, and then runs the browser test body.
   void ProxyRunTestOnMainThreadLoop();
 
   // When using the network process, update the host resolver rules that were

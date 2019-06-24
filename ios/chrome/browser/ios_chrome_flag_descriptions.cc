@@ -416,6 +416,11 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
+const char kToolbarNewTabButtonName[] =
+    "Enable New Tab button in the bottom toolbar";
+const char kToolbarNewTabButtonDescription[] =
+    "When enabled, the bottom toolbar middle button opens a new tab";
+
 const char kTranslateManualTriggerName[] = "Enable manual translate trigger";
 const char kTranslateManualTriggerDescription[] =
     "Show a menu item in the popup menu that triggers page translation.";

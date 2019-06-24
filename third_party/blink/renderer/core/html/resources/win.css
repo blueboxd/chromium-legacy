@@ -107,3 +107,7 @@ textarea {
     /* Same as native_theme_base. */
     border-color: #a9a9a9;
 }
+
+textarea::-internal-input-suggested {
+    font-family: monospace !important;
+}

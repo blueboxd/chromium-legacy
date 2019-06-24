@@ -311,13 +311,6 @@ bool WebStateImpl::HasWebUI() {
   return !!web_ui_;
 }
 
-void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,
-                                       const std::string& message,
-                                       const base::ListValue& args) {
-  if (web_ui_)
-    web_ui_->ProcessWebUIIOSMessage(source_url, message, args);
-}
-
 const base::string16& WebStateImpl::GetTitle() const {
   // TODO(stuartmorgan): Implement the NavigationManager logic necessary to
   // match the WebContents implementation of this method.

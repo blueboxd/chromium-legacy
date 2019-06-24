@@ -16,24 +16,22 @@ class MockManualFillingController
   MockManualFillingController();
   ~MockManualFillingController() override;
 
-  MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
+  MOCK_METHOD1(RefreshSuggestions, void(const autofill::AccessorySheetData&));
+  MOCK_METHOD1(NotifyFocusedInputChanged,
+               void(autofill::mojom::FocusedFieldType));
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::mojom::FillingStatus));
-  MOCK_METHOD2(RefreshSuggestionsForField,
-               void(autofill::mojom::FocusedFieldType,
-                    const autofill::AccessorySheetData&));
-  MOCK_METHOD1(ShowWhenKeyboardIsVisible,
-               void(ManualFillingController::FillingSource));
+  MOCK_METHOD2(UpdateSourceAvailability,
+               void(ManualFillingController::FillingSource, bool));
   MOCK_METHOD1(ShowTouchToFillSheet, void(const autofill::AccessorySheetData&));
-  MOCK_METHOD1(DeactivateFillingSource,
-               void(ManualFillingController::FillingSource));
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD2(GetFavicon,
-               void(int, base::OnceCallback<void(const gfx::Image&)>));
+  MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD2(OnFillingTriggered,
                void(autofill::AccessoryTabType type,
                     const autofill::UserInfo::Field&));
   MOCK_CONST_METHOD1(OnOptionSelected,
                      void(autofill::AccessoryAction selected_action));
+  MOCK_METHOD2(GetFavicon,
+               void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_CONST_METHOD0(container_view, gfx::NativeView());
 
  private:

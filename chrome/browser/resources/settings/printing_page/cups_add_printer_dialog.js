@@ -521,8 +521,6 @@ Polymer({
 Polymer({
   is: 'settings-cups-add-printer-dialog',
 
-  behaviors: [WebUIListenerBehavior],
-
   properties: {
     /** @type {!CupsPrinterInfo} */
     newPrinter: {
@@ -570,15 +568,6 @@ Polymer({
     'no-detected-printer': 'onNoDetectedPrinter_',
   },
 
-  /** @override */
-  ready: function() {
-    this.addWebUIListener(
-        'on-manually-add-discovered-printer',
-        this.onManuallyAddDiscoveredPrinter_.bind(this));
-    this.addWebUIListener(
-        'on-add-or-edit-cups-printer', this.onAddPrinter_.bind(this));
-  },
-
   /** Opens the Add printer discovery dialog. */
   open: function() {
     this.resetData_();
@@ -623,8 +612,11 @@ Polymer({
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().addDiscoveredPrinter(
-          this.newPrinter.printerId);
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .addDiscoveredPrinter(this.newPrinter.printerId)
+          .then(
+              this.onAddingDiscoveredPrinterSucceeded_.bind(this),
+              this.manuallyAddDiscoveredPrinter_.bind(this));
     } else {
       assertNotReached('Opening configuring dialog from invalid place');
     }
@@ -671,15 +663,27 @@ Polymer({
   },
 
   /**
+   * Handler for addDiscoveredPrinter.
+   * @param {!PrinterSetupResult} result
+   * @private
+   * */
+  onAddingDiscoveredPrinterSucceeded_: function(result) {
+    this.$$('add-printer-configuring-dialog').close();
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: result, printerName: this.newPrinter.printerName});
+  },
+
+  /**
    * Use the given printer as the starting point for a user-driven
    * add of a printer.  This is called if we can't automatically configure
    * the printer, and need more information from the user.
    *
-   * @param {!CupsPrinterInfo} printer
+   * @param {*} printer
    * @private
    */
-  onManuallyAddDiscoveredPrinter_: function(printer) {
-    this.newPrinter = printer;
+  manuallyAddDiscoveredPrinter_: function(printer) {
+    this.newPrinter = /** @type {CupsPrinterInfo} */ (printer);
     this.switchToManufacturerDialog_();
   },
 

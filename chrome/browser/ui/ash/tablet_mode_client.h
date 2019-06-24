@@ -9,10 +9,12 @@
 
 #include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 class BrowserTabStripTracker;
+class TabletModeClientObserver;
 
 // Holds tablet mode state in chrome. Observes ash for changes, then
 // synchronously fires all its observers. This allows all tablet mode code in
@@ -23,6 +25,18 @@ class TabletModeClient : public ash::TabletModeToggleObserver,
  public:
   TabletModeClient();
   ~TabletModeClient() override;
+
+  // Initializes and connects to ash.
+  void Init();
+
+  static TabletModeClient* Get();
+
+  bool tablet_mode_enabled() const { return tablet_mode_enabled_; }
+
+  // Adds the observer and immediately triggers it with the initial state.
+  void AddObserver(TabletModeClientObserver* observer);
+
+  void RemoveObserver(TabletModeClientObserver* observer);
 
   // ash::TabletModeToggleObserver:
   void OnTabletModeToggled(bool enabled) override;
@@ -41,6 +55,8 @@ class TabletModeClient : public ash::TabletModeToggleObserver,
   // well as starts observing new browser pages if |enabled| is true.
   void SetMobileLikeBehaviorEnabled(bool enabled);
 
+  bool tablet_mode_enabled_ = false;
+
   // We only override the WebKit preferences of webcontents that belong to
   // tabstrips in browsers. When a webcontents is newly created, its WebKit
   // preferences are refreshed *before* it's added to any tabstrip, hence
@@ -49,6 +65,9 @@ class TabletModeClient : public ash::TabletModeToggleObserver,
   // to observe webcontents being added to the tabstrips in order to trigger
   // a refresh of its WebKit prefs.
   std::unique_ptr<BrowserTabStripTracker> tab_strip_tracker_;
+
+  base::ObserverList<TabletModeClientObserver,
+                     true /* check_empty */>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeClient);
 };

@@ -55,7 +55,9 @@ void FakeSmbProviderClient::Mount(const base::FilePath& share_path,
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK, 1));
 }
 
-void FakeSmbProviderClient::Unmount(int32_t mount_id, StatusCallback callback) {
+void FakeSmbProviderClient::Unmount(int32_t mount_id,
+                                    bool remove_password,
+                                    StatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));
 }

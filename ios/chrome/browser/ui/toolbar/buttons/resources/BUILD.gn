@@ -4,6 +4,14 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("toolbar_new_tab_page") {
+  sources = [
+    "toolbar_new_tab_page.imageset/Contents.json",
+    "toolbar_new_tab_page.imageset/toolbar_new_tab_page@2x.png",
+    "toolbar_new_tab_page.imageset/toolbar_new_tab_page@3x.png",
+  ]
+}
+
 imageset("toolbar_stop") {
   sources = [
     "toolbar_stop.imageset/Contents.json",

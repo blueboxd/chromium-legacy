@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "jni/OfflinePagesDownloadManagerBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/OfflinePagesDownloadManagerBridge_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

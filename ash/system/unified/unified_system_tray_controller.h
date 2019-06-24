@@ -23,6 +23,7 @@ namespace ash {
 
 class DetailedViewController;
 class FeaturePodControllerBase;
+class PaginationController;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
 class UnifiedSystemTrayBubble;
@@ -113,6 +114,10 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   UnifiedSystemTrayModel* model() { return model_; }
 
+  PaginationController* pagination_controller() {
+    return pagination_controller_.get();
+  }
+
  private:
   friend class UnifiedSystemTrayControllerTest;
 
@@ -170,6 +175,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Controllers of feature pod buttons. Owned by this.
   std::vector<std::unique_ptr<FeaturePodControllerBase>>
       feature_pod_controllers_;
+
+  std::unique_ptr<PaginationController> pagination_controller_;
 
   // Controller of volume slider. Owned.
   std::unique_ptr<UnifiedVolumeSliderController> volume_slider_controller_;

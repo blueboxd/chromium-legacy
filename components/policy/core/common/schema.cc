@@ -1370,7 +1370,11 @@ bool Schema::Normalize(base::Value* value,
     return true;
   } else if (value->is_list()) {
     base::Value::ListStorage& list = value->GetList();
-    std::vector<size_t> drop_list;  // Contains the indexes to drop.
+    // Instead of removing invalid list items afterwards, we push valid items
+    // forward in the list by overriding invalid items. The next free position
+    // is indicated by |write_index|, which gets increased for every valid item.
+    // At the end |list| is resized to |write_index|'s size.
+    size_t write_index = 0;
     for (size_t index = 0; index < list.size(); ++index) {
       base::Value& list_item = list[index];
       std::string new_error;
@@ -1385,13 +1389,15 @@ bool Schema::Normalize(base::Value* value,
         // Invalid list item was detected.
         if (!StrategyAllowInvalidOnTopLevel(strategy))
           return false;
-        drop_list.push_back(index);
+      } else {
+        if (write_index != index)
+          list[write_index] = std::move(list_item);
+        ++write_index;
       }
     }
-    if (changed && !drop_list.empty())
+    if (changed && write_index < list.size())
       *changed = true;
-    for (size_t drop_index : drop_list)
-      list.erase(list.begin() + drop_index);
+    list.resize(write_index);
     return true;
   }
 

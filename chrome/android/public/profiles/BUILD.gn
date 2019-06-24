@@ -28,5 +28,4 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/profiles/ProfileKey.java",
     "java/src/org/chromium/chrome/browser/profiles/ProfileManagerUtils.java",
   ]
-  jni_package = "chrome"
 }

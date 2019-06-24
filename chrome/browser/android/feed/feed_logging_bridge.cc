@@ -10,12 +10,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/FeedLoggingBridge_jni.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_logging_metrics.h"
-#include "jni/FeedLoggingBridge_jni.h"
 
 namespace feed {
 

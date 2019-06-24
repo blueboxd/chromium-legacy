@@ -40,8 +40,8 @@ TEST(OAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
                              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)))
       .Times(0);
 
-  const std::string account_id1 = "account_id1";
-  const std::string account_id2 = "account_id2";
+  const CoreAccountId account_id1("account_id1");
+  const CoreAccountId account_id2("account_id2");
 
   delegate.UpdateCredentials(account_id1, "refresh_token1");
   delegate.UpdateCredentials(account_id2, "refresh_token2");

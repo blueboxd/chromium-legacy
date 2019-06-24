@@ -104,7 +104,8 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Add new payer name, phone number and email address and provide that to the merchant. */
@@ -157,7 +158,8 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Quickly pressing on [X] and then "add contact info" should not crash. */
@@ -184,7 +186,8 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
         });
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Test that going into the editor and cancelling will leave the row checked. */
@@ -257,7 +260,8 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Quickly pressing on "cancel" and then "add contact info" should not crash. */
@@ -284,7 +288,8 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
         });
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
 
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /**

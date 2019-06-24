@@ -487,8 +487,11 @@ TEST_F(FtlMessagingClientTest,
         exit_runloop_when_called_twice.Get().Run();
       });
 
+  base::MockCallback<base::OnceClosure> on_channel_ready;
+  EXPECT_CALL(on_channel_ready, Run()).Times(1);
+
   scoped_stream = mock_message_reception_channel_->stream_opener()->Run(
-      mock_on_incoming_msg.Get(),
+      on_channel_ready.Get(), mock_on_incoming_msg.Get(),
       base::BindOnce([](const grpc::Status&) { NOTREACHED(); }));
 
   run_loop.Run();

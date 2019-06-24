@@ -74,6 +74,6 @@ void ExtensionInstalledNotification::Click(
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile_, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_INSTALLED_NOTIFICATION);
+      extensions::AppLaunchSource::kSourceInstalledNotification);
   OpenApplication(params);
 }

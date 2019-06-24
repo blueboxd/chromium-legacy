@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/test/fuzzed_data_provider.h"
 #include "content/browser/speech/audio_encoder.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 using content::AudioChunk;
 
@@ -17,7 +17,7 @@ const int kAudioSampleRate = 16000;
 const int kAudioPacketIntervalMs = 100;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider provider(data, size);
+  FuzzedDataProvider provider(data, size);
   content::AudioEncoder encoder(kDefaultConfigSampleRate,
                                 kDefaultConfigBitsPerSample);
 

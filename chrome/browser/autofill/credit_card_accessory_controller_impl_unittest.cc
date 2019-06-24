@@ -70,10 +70,8 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
   autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
                                       base::string16());
 
-  EXPECT_CALL(mock_mf_controller_,
-              RefreshSuggestionsForField(
-                  mojom::FocusedFieldType::kFillableTextField, _))
-      .WillOnce(SaveArg<1>(&result));
+  EXPECT_CALL(mock_mf_controller_, RefreshSuggestions(_))
+      .WillOnce(SaveArg<0>(&result));
 
   auto* cc_controller = controller();
   ASSERT_TRUE(cc_controller);

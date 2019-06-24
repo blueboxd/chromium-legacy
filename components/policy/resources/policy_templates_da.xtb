@@ -433,12 +433,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Politikken skal indstilles til en webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade servicevilkårene. Servicevilkårene skal være almindelig tekst vist som MIME-tekst. Markering er ikke tilladt.</translation>
 <translation id="1750315445671978749">Bloker alle downloads</translation>
-<translation id="1762072363876276024">
-      Denne politik gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, der gælder for brugersessionen. Det anbefales at angive samme værdi for begge politikker. Hvis værdierne ikke stemmer overens, kan der opstå en forsinkelse ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Denne indstilling, DeviceLoginScreenSitePerProcess, kan bruges til at forhindre brugerne i at fravælge standardadfærden, hvor alle websites isoleres. Bemærk, at politikken DeviceLoginScreenIsolateOrigins også kan bruges til mere finkornet isolering af websites.
-      Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
-      Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren ændre denne indstilling (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Aktivér appanbefaling ved nultilstand i søgefeltet</translation>
 <translation id="17719159826324007">
       Hvis politikken er angivet som ArcSession, tvinges enheden til at genstarte, når brugeren logger ud og Android er startet.
@@ -1586,7 +1580,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis "Aktivér browserlogin" er angivet for politikken, har brugeren tilladelse til at logge ind i browseren, og brugeren logges automatisk ind i browseren, når vedkommende er logget ind i Google-webtjenester såsom Gmail. Når brugeren er logget ind i browseren, gemmes vedkommendes kontooplysninger i browseren. Det betyder dog ikke, at Chrome-synkronisering som standard aktiveres. Brugeren skal selv tilvælge denne funktion. Aktivering af denne politik forhindrer brugeren i at deaktivere den indstilling, der tillader browserlogin. Brug politikken "SyncDisabled" til at styre tilgængeligheden af Chrome-synkronisering.
 
-      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til administrerede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
+      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til mangerstyrede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
 
       Hvis politikken ikke konfigureres, kan brugeren selv bestemme, om muligheden for browserlogin skal aktiveres, og anvende den efter eget behov.</translation>
 <translation id="3911737181201537215">Denne politik påvirker ikke logføring udført af Android.</translation>
@@ -2782,7 +2776,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6190367314942602985">Rapportér oplysninger om brugeridentifikation</translation>
 <translation id="6197453924249895891">Giver virksomhedsnøgler adgang til udvidelser.
 
-Nøgler er beregnet til virksomhedsbrug, hvis de er genereret ved hjælp af chrome.enterprise.platformKeys API på en administreret konto. Nøgler, der er importeret eller genereret på en anden måde, er ikke beregnet til virksomhedsbrug.
+Nøgler er beregnet til virksomhedsbrug, hvis de er genereret ved hjælp af chrome.enterprise.platformKeys API på en mangerstyret konto. Nøgler, der er importeret eller genereret på en anden måde, er ikke beregnet til virksomhedsbrug.
 
 Adgang til nøgler, der er beregnet til virksomhedsbrug, kontrolleres alene af denne politik. Brugeren kan hverken give udvidelser adgang til virksomhedsnøgler eller fjerne deres adgang.
 
@@ -3588,22 +3582,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
           Bemærk! Tilladte værdier for feltet <ph name="MINUTE_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> og <ph name="CHARGE_END_TIME_FIELD_NAME" /> er 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfigurer hjælpefunktioner for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Denne politik aktiverer HTTP/0.9 på andre porte end 80 for HTTP og 443 for HTTPS.
-
-      Denne politik er som standard deaktiveret. Hvis den aktiveres, kan brugerne blive udsat for sikkerhedsproblemet https://crbug.com/600352.
-
-      Denne politik har til formål at give virksomheder mulighed for at migrere eksisterende servere væk fra HTTP/0.9 og vil blive fjernet på et senere tidspunkt.
-
-      Hvis denne politik ikke er angivet, deaktiveres HTTP/0.9 på ikke-standard-porte.</translation>
-<translation id="7726421241038987229">
-      Denne indstilling, SitePerProcess, kan bruges til at forhindre brugerne i at fravælge standardadfærden, hvor alle websites isoleres. Bemærk, at politikken IsolateOrigins også kan bruges til mere finkornet isolering af websites.
-      Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
-      Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren fravælge isolering af website
-      (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).  Isolering af website slås ikke fra, hvis politikken angives som deaktiveret og/eller ikke angives.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Tillad, at enheder anvender en <ph name="PLUGIN_VM_NAME" /> i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Aktiverer godkendelse med to faktorer for værter med fjernadgang i stedet for en brugerangivet pinkode.
 
@@ -3800,7 +3778,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
           Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke angives, vil høj kontrast være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
-<translation id="815061180603915310">Hvis denne politik er aktiveret, tvinger den profilen til at skifte til engangsbruger. Hvis denne politik er angivet som en OS-politik (f.eks. GPO i Windows), vil den være gældende for alle profiler i systemet. Hvis politikken er angivet som en cloudpolitik, vil den kun være gældende for en profil, der er logget ind med en administreret konto.
+<translation id="815061180603915310">Hvis denne politik er aktiveret, tvinger den profilen til at skifte til engangsbruger. Hvis denne politik er angivet som en OS-politik (f.eks. GPO i Windows), vil den være gældende for alle profiler i systemet. Hvis politikken er angivet som en cloudpolitik, vil den kun være gældende for en profil, der er logget ind med en mangerstyret konto.
 
       I denne tilstand gemmes profildataene kun på harddisken, så længe brugersessionen varer. Funktioner som f.eks. browserhistorik, udvidelser og hertil knyttede webdata som f.eks. cookies og webdatabaser gemmes ikke, når browseren lukkes. Men dette forhindrer ikke brugeren i at downloade eventuelle data til harddisken manuelt, gemme sider eller udskrive dem.
 
@@ -4013,7 +3991,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       (uden citationstegn) til listen over domæner).
 
       Denne indstilling forhindrer brugeren i at logge ind og tilføjer en sekundær
-      konto på en administreret konto, der kræver Google-godkendelse, hvis denne
+      konto på en mangerstyret konto, der kræver Google-godkendelse, hvis denne
       konto ikke tilhører den tidligere nævnte liste over tilladte domæner.
 
       Hvis du undlader at markere/konfigurere denne indstilling, kan brugerne

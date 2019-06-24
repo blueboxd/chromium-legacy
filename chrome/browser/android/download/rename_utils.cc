@@ -4,7 +4,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
-#include "jni/RenameUtils_jni.h"
+#include "chrome/android/chrome_jni_headers/RenameUtils_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;

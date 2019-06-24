@@ -18,6 +18,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/features/keyboard_accessory/jni_headers/ManualFillingComponentBridge_jni.h"
+#include "chrome/android/features/keyboard_accessory/jni_headers/UserInfoField_jni.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
@@ -25,8 +27,6 @@
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "jni/ManualFillingComponentBridge_jni.h"
-#include "jni/UserInfoField_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -224,6 +224,17 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     credentials[password_forms[i].username_value] = &password_forms[i];
   }
   pwd_controller->SavePasswordsForOrigin(credentials, origin);
+}
+
+// static
+void JNI_ManualFillingComponentBridge_NotifyFocusedFieldTypeForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    jint j_available) {
+  ManualFillingControllerImpl::GetOrCreate(
+      content::WebContents::FromJavaWebContents(j_web_contents))
+      ->NotifyFocusedInputChanged(
+          static_cast<autofill::mojom::FocusedFieldType>(j_available));
 }
 
 // static

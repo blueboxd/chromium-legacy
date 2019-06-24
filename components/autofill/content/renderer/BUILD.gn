@@ -66,8 +66,6 @@ jumbo_static_library("test_support") {
   sources = [
     "test_password_autofill_agent.cc",
     "test_password_autofill_agent.h",
-    "test_password_generation_agent.cc",
-    "test_password_generation_agent.h",
   ]
 
   public_deps = [

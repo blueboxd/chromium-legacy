@@ -6,8 +6,10 @@
 #define COMPONENTS_EXO_WAYLAND_FUZZER_HARNESS_H_
 
 #include <memory>
+#include <map>
 
 #include "base/macros.h"
+#include "base/memory/shared_memory.h"
 #include "components/exo/wayland/fuzzer/actions.pb.h"
 
 // Forwards declarations for the wayland-defined structs.
@@ -54,7 +56,11 @@ class Harness {
     {% endif %}
   {% endfor %}
 
+  int GetFileDescriptor(int id);
+
  private:
+  std::map<int, std::unique_ptr<base::SharedMemory>> shared_memory_map_;
+
   DISALLOW_COPY_AND_ASSIGN(Harness);
 };
 

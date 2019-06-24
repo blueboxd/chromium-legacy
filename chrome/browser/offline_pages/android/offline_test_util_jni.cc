@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
+#include "chrome/android/test_support_jni_headers/OfflineTestUtil_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -25,7 +26,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "jni/OfflineTestUtil_jni.h"
 
 // Below is the native implementation of OfflineTestUtil.java.
 

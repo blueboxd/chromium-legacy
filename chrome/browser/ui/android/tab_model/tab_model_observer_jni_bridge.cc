@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/android/tab_model/tab_model_observer_jni_bridge.h"
 
+#include "chrome/android/chrome_jni_headers/TabModelObserverJniBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_observer.h"
-#include "jni/TabModelObserverJniBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaObjectArrayReader;

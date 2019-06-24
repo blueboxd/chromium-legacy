@@ -368,45 +368,18 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 template <>
 struct StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
                     autofill::PasswordFormGenerationData> {
-  static uint64_t form_signature(
-      const autofill::PasswordFormGenerationData& r) {
-    return r.form_signature;
-  }
-
-  static uint32_t field_signature(
-      const autofill::PasswordFormGenerationData& r) {
-    return r.field_signature;
-  }
-
-  static bool has_confirmation_field(
-      const autofill::PasswordFormGenerationData& r) {
-    return r.confirmation_field_signature.has_value();
-  }
-
-  static uint32_t confirmation_field_signature(
-      const autofill::PasswordFormGenerationData& r) {
-    return r.confirmation_field_signature.value_or(0);
-  }
-
-  static bool Read(autofill::mojom::PasswordFormGenerationDataDataView data,
-                   autofill::PasswordFormGenerationData* out);
-};
-
-template <>
-struct StructTraits<autofill::mojom::NewPasswordFormGenerationDataDataView,
-                    autofill::NewPasswordFormGenerationData> {
   static uint32_t new_password_renderer_id(
-      const autofill::NewPasswordFormGenerationData& r) {
+      const autofill::PasswordFormGenerationData& r) {
     return r.new_password_renderer_id;
   }
 
   static uint32_t confirmation_password_renderer_id(
-      const autofill::NewPasswordFormGenerationData& r) {
+      const autofill::PasswordFormGenerationData& r) {
     return r.confirmation_password_renderer_id;
   }
 
-  static bool Read(autofill::mojom::NewPasswordFormGenerationDataDataView data,
-                   autofill::NewPasswordFormGenerationData* out);
+  static bool Read(autofill::mojom::PasswordFormGenerationDataDataView data,
+                   autofill::PasswordFormGenerationData* out);
 };
 
 template <>

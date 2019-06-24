@@ -5,8 +5,8 @@
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
@@ -98,7 +98,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
  private:
   ScopedStubInstallAttributes install_attributes_;
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClientTest);
 };

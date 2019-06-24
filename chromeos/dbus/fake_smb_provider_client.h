@@ -35,7 +35,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
              base::ScopedFD password_fd,
              MountCallback callback) override;
 
-  void Unmount(int32_t mount_id, StatusCallback callback) override;
+  void Unmount(int32_t mount_id,
+               bool remove_password,
+               StatusCallback callback) override;
   void ReadDirectory(int32_t mount_id,
                      const base::FilePath& directory_path,
                      ReadDirectoryCallback callback) override;

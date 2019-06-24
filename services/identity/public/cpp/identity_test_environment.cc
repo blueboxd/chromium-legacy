@@ -295,23 +295,23 @@ AccountInfo IdentityTestEnvironment::MakeAccountAvailable(
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   return identity::SetRefreshTokenForAccount(identity_manager(), account_id);
 }
 
 void IdentityTestEnvironment::SetInvalidRefreshTokenForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   return identity::SetInvalidRefreshTokenForAccount(identity_manager(),
                                                     account_id);
 }
 
 void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   return identity::RemoveRefreshTokenForAccount(identity_manager(), account_id);
 }
 
 void IdentityTestEnvironment::UpdatePersistentErrorOfRefreshTokenForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& auth_error) {
   return identity::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), account_id, auth_error);
@@ -341,7 +341,7 @@ void IdentityTestEnvironment::
 
 void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         const std::string& token,
         const base::Time& expiration,
         const std::string& id_token) {
@@ -372,7 +372,7 @@ void IdentityTestEnvironment::
 
 void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         const GoogleServiceAuthError& error) {
   WaitForAccessTokenRequestIfNecessary(account_id);
   fake_token_service()->IssueErrorForAllPendingRequestsForAccount(account_id,
@@ -395,7 +395,7 @@ IdentityTestEnvironment::AccessTokenRequestState::operator=(
     AccessTokenRequestState&& other) = default;
 
 void IdentityTestEnvironment::OnAccessTokenRequested(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& consumer_id,
     const identity::ScopeSet& scopes) {
   // Post a task to handle this access token request in order to support the
@@ -410,7 +410,7 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
 }
 
 void IdentityTestEnvironment::HandleOnAccessTokenRequested(
-    std::string account_id) {
+    CoreAccountId account_id) {
   if (on_access_token_requested_callback_) {
     std::move(on_access_token_requested_callback_).Run();
     return;
@@ -435,7 +435,7 @@ void IdentityTestEnvironment::HandleOnAccessTokenRequested(
 }
 
 void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
-    base::Optional<std::string> account_id) {
+    base::Optional<CoreAccountId> account_id) {
   // Handle HandleOnAccessTokenRequested getting called before
   // WaitForAccessTokenRequestIfNecessary.
   if (account_id) {
@@ -500,7 +500,7 @@ void IdentityTestEnvironment::EnableRemovalOfExtendedAccountInfo() {
 }
 
 void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& email,
     const std::string& gaia,
     const std::string& hosted_domain,

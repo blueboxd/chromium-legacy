@@ -69,3 +69,11 @@ android_library("java") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
   ]
 }
+
+java_cpp_strings("error_strings_generated_srcjar") {
+  sources = [
+    "//components/payments/core/error_strings.cc",
+  ]
+
+  template = "java_templates/ErrorStrings.java.tmpl"
+}

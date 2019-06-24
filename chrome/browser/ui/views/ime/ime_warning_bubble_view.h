@@ -77,15 +77,15 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
   Browser* const browser_;
 
   // True if bubble anchors to the action of the extension.
-  bool anchor_to_action_;
+  bool anchor_to_action_ = false;
 
   // The check box on the bubble view.
-  views::Checkbox* never_show_checkbox_;
+  views::Checkbox* never_show_checkbox_ = nullptr;
 
   ImeWarningBubbleResponseCallback response_callback_;
 
   // True if the warning bubble has been shown.
-  bool bubble_has_shown_;
+  bool bubble_has_shown_ = false;
 
   BrowserActionsContainer* container_;
 

@@ -257,20 +257,11 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   bool has_suggestions = !info_to_add.empty();
 
-  GetManualFillingController()->RefreshSuggestionsForField(
-      focused_field_type,
+  GetManualFillingController()->RefreshSuggestions(
       autofill::CreateAccessorySheetData(autofill::AccessoryTabType::PASSWORDS,
                                          GetTitle(has_suggestions, origin),
                                          std::move(info_to_add),
                                          std::move(footer_commands_to_add)));
-
-  if (is_password_field) {
-    GetManualFillingController()->ShowWhenKeyboardIsVisible(
-        FillingSource::PASSWORD_FALLBACKS);
-  } else {
-    GetManualFillingController()->DeactivateFillingSource(
-        FillingSource::PASSWORD_FALLBACKS);
-  }
 }
 
 void PasswordAccessoryControllerImpl::OnGenerationRequested(bool manual) {

@@ -294,8 +294,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD0(InformNoSavedCredentials, void());
   MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,
                void(const autofill::PasswordFormFillData&));
-  MOCK_METHOD1(AllowPasswordGenerationForForm,
-               void(const autofill::PasswordForm&));
 
   MockAutofillManager* mock_autofill_manager() {
     return &mock_autofill_manager_;
@@ -1450,8 +1448,6 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
 // user chooses the main one, then the other possible usernames are dropped on
 // update.
 TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
-  EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
-
   PasswordForm saved_form = *saved_match();
   saved_form.other_possible_usernames.push_back(
       ValueElementPair(ASCIIToUTF16("other_possible@gmail.com"),
@@ -1482,22 +1478,6 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
   EXPECT_TRUE(saved_result.other_possible_usernames.empty());
 }
 
-TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_NoCredentials) {
-  // First time sign-up attempt. Password store does not contain matching
-  // credentials. AllowPasswordGenerationForForm should be called to send the
-  // "not blacklisted" message.
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-  fake_form_fetcher()->NotifyFetchCompleted();
-}
-
-TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage_Credentials) {
-  // Signing up on a previously visited site. Credentials are found in the
-  // password store, and are not blacklisted. AllowPasswordGenerationForForm
-  // should be called to send the "not blacklisted" message.
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-  PasswordForm simulated_result = CreateSavedMatch(false);
-  SetNonFederatedAndNotifyFetchCompleted({&simulated_result});
-}
 
 TEST_F(PasswordFormManagerTest,
        TestSendNotBlacklistedMessage_DroppedCredentials) {
@@ -1513,7 +1493,6 @@ TEST_F(PasswordFormManagerTest,
                                    client()->driver(), signup_form,
                                    std::make_unique<MockFormSaver>(), &fetcher);
   form_manager.Init(nullptr);
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
   PasswordForm simulated_result = CreateSavedMatch(false);
   SetNonFederatedAndNotifyFetchCompleted(&fetcher, {&simulated_result});
 }
@@ -1651,8 +1630,6 @@ TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
 // Test that public-suffix-matched credentials score lower than same-origin
 // ones.
 TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-
   PasswordForm base_match = CreateSavedMatch(false);
   base_match.origin = GURL("http://accounts.google.com/a/ServiceLoginAuth");
   base_match.action = GURL("http://accounts.google.com/a/ServiceLogin");
@@ -1677,8 +1654,6 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
 }
 
 TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-
   // Although Android-based credentials are treated similarly to PSL-matched
   // credentials in some respects, they should be autofilled as opposed to be
   // filled on username-select.
@@ -1733,8 +1708,6 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreProtected) {
   const char kTestWebPassword[] = "web-password";
   const char kTestAndroidPassword1[] = "android-password-alpha";
   const char kTestAndroidPassword2[] = "android-password-beta";
-
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
 
   // Suppose there is one login saved through the website, and two other coming
   // from Android: the first has the same username as the web-based credential,
@@ -1923,8 +1896,6 @@ TEST_F(PasswordFormManagerTest, FormWithEmptyActionAndNameMatchesItself) {
 // user updates the password, then all of the stored passwords get updated as
 // long as they have the same password value.
 TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
-  EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
-
   PasswordForm first(*saved_match());
   first.action = observed_form()->action;
   first.password_value = ASCIIToUTF16("first");
@@ -2065,8 +2036,6 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
 }
 
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
-  EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
-
   fake_form_fetcher()->NotifyFetchCompleted();
 
   PasswordForm login(*observed_form());
@@ -3984,18 +3953,6 @@ TEST_F(PasswordFormManagerTest, TestUkmContextMetrics) {
   EXPECT_THAT(
       std::vector<int64_t>({*metric1, *metric2}),
       ::testing::UnorderedElementsAre(form_signature_1, form_signature_2));
-}
-
-TEST_F(PasswordFormManagerTest,
-       TestNotSendNotBlacklistedMessage_BlacklistedCredentials) {
-  // Signing up on a previously visited site. Credentials are found in the
-  // password store, but they are blacklisted. AllowPasswordGenerationForForm
-  // is not called.
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
-      .Times(0);
-  PasswordForm simulated_result = CreateSavedMatch(true);
-  fake_form_fetcher()->SetBlacklisted({&simulated_result});
-  fake_form_fetcher()->NotifyFetchCompleted();
 }
 
 TEST_F(PasswordFormManagerTest, FirstLoginVote) {

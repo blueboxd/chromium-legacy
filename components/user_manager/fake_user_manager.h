@@ -34,6 +34,11 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   const User* AddUserWithAffiliation(const AccountId& account_id,
                                      bool is_affiliated);
 
+  // Create and add a new public account. Created user is not affiliated with
+  // the domain, that owns the device.
+  virtual const user_manager::User* AddPublicAccountUser(
+      const AccountId& account_id);
+
   void set_local_state(PrefService* local_state) { local_state_ = local_state; }
 
   // UserManager overrides.

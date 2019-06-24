@@ -9,6 +9,8 @@
 
 #include "base/feature_list.h"
 
+extern const base::Feature kToolbarNewTabButton;
+
 // Enum for the different icons for the search button.
 typedef NS_ENUM(NSUInteger, ToolbarSearchButtonIcon) {
   ToolbarSearchButtonIconGrey,

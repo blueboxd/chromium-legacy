@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -40,11 +39,13 @@ class TabletModePageBehaviorTest : public InProcessBrowserTest {
   }
 
   void ToggleTabletMode() {
-    ash::ShellTestApi().SetTabletModeEnabledForTest(!GetTabletModeEnabled());
+    auto* tablet_mode_client = TabletModeClient::Get();
+    tablet_mode_client->OnTabletModeToggled(
+        !tablet_mode_client->tablet_mode_enabled());
   }
 
   bool GetTabletModeEnabled() const {
-    return ash::TabletMode::Get()->InTabletMode();
+    return TabletModeClient::Get()->tablet_mode_enabled();
   }
 
   content::WebContents* GetActiveWebContents(Browser* browser) const {

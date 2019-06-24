@@ -449,10 +449,8 @@ bool ShouldShowWelcomePage() {
 }
 
 bool IsOnWelcomePage(content::WebContents* contents) {
-  const GURL welcome_page(chrome::kChromeUIWelcomeURL);
-  const GURL welcome_page_win10(chrome::kChromeUIWelcomeWin10URL);
-  const GURL current = contents->GetURL().GetWithEmptyPath();
-  return current == welcome_page || current == welcome_page_win10;
+  return contents->GetURL().GetWithEmptyPath() ==
+         GURL(chrome::kChromeUIWelcomeURL);
 }
 
 void SetShouldDoPersonalDataManagerFirstRun() {

@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
-#include "jni/DownloadMediaData_jni.h"
-#include "jni/DownloadMediaParserBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/DownloadMediaData_jni.h"
+#include "chrome/android/chrome_jni_headers/DownloadMediaParserBridge_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 

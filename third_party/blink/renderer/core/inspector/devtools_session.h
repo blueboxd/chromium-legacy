@@ -61,7 +61,7 @@ class CORE_EXPORT DevToolsSession
       mojom::blink::DevToolsMessagePtr message) override;
   void DispatchProtocolCommandImpl(int call_id,
                                    const String& method,
-                                   std::vector<uint8_t> message);
+                                   Vector<uint8_t> message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(

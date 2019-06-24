@@ -135,7 +135,7 @@ class SkiaOutputSurfaceImplOnGpu {
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
-
+  size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ImageContext>> image_contexts);
 
@@ -202,6 +202,7 @@ class SkiaOutputSurfaceImplOnGpu {
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
+  size_t max_resource_cache_bytes_ = 0u;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
 

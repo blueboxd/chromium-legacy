@@ -2599,8 +2599,10 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
     return;
 
   AppLaunchParams launch_params(
-      GetProfile(), pwa->id(), extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_CONTEXT_MENU);
+      GetProfile(), pwa->id(),
+      extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      extensions::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;
   OpenApplication(launch_params);
 }

@@ -54,12 +54,8 @@ class ContentPasswordManagerDriver
   // PasswordManagerDriver implementation.
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) override;
-  void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) override;
   void FormEligibleForGenerationFound(
-      const autofill::NewPasswordFormGenerationData& form) override;
+      const autofill::PasswordFormGenerationData& form) override;
   void AutofillDataReceived(
       const std::map<autofill::FormData,
                      autofill::PasswordFormFieldPredictionMap>& predictions)

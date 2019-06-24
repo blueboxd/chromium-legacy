@@ -139,24 +139,24 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // are loaded. After updating the token, blocks until the update is processed
   // by |identity_manager|. NOTE: See disclaimer at top of file re: direct
   // usage.
-  void SetRefreshTokenForAccount(const std::string& account_id);
+  void SetRefreshTokenForAccount(const CoreAccountId& account_id);
 
   // Sets a special invalid refresh token for the given account (which must
   // already be available). Before updating the refresh token, blocks until
   // refresh tokens are loaded. After updating the token, blocks until the
   // update is processed by |identity_manager|. NOTE: See disclaimer at top of
   // file re: direct usage.
-  void SetInvalidRefreshTokenForAccount(const std::string& account_id);
+  void SetInvalidRefreshTokenForAccount(const CoreAccountId& account_id);
 
   // Removes any refresh token that is present for the given account. Blocks
   // until the refresh token is removed.
   // NOTE: See disclaimer at top of file re: direct usage.
-  void RemoveRefreshTokenForAccount(const std::string& account_id);
+  void RemoveRefreshTokenForAccount(const CoreAccountId& account_id);
 
   // Updates the persistent auth error set on |account_id| which must be a known
   // account, i.e., an account with a refresh token.
   void UpdatePersistentErrorOfRefreshTokenForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& auth_error);
 
   // Puts the given accounts into the Gaia cookie, replacing any previous
@@ -197,7 +197,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // requests are handled synchronously or asynchronously in the production
   // code.
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& token,
       const base::Time& expiration,
       const std::string& id_token = std::string());
@@ -233,7 +233,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // requests are handled synchronously or asynchronously in the production
   // code.
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& error);
 
   // Sets a callback that will be invoked on the next incoming access token
@@ -268,7 +268,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Simulate account fetching using AccountTrackerService without sending
   // network requests.
-  void SimulateSuccessfulFetchOfAccountInfo(const std::string& account_id,
+  void SimulateSuccessfulFetchOfAccountInfo(const CoreAccountId& account_id,
                                             const std::string& email,
                                             const std::string& gaia,
                                             const std::string& hosted_domain,
@@ -318,7 +318,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(IdentityManager* identity_manager);
 
   // IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(const std::string& account_id,
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override;
 
@@ -326,14 +326,14 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // |account_id|. Invokes |on_access_token_request_callback_| if the latter
   // is non-null *and* either |*pending_access_token_requester_| equals
   // |account_id| or |pending_access_token_requester_| is empty.
-  void HandleOnAccessTokenRequested(std::string account_id);
+  void HandleOnAccessTokenRequested(CoreAccountId account_id);
 
   // If a token request for |account_id| (or any account if nullopt) has already
   // been made and not matched by a different call, returns immediately.
   // Otherwise and runs a nested runloop until a matching access token request
   // is observed.
   void WaitForAccessTokenRequestIfNecessary(
-      base::Optional<std::string> account_id);
+      base::Optional<CoreAccountId> account_id);
 
   // Returns the FakeProfileOAuth2TokenService owned by IdentityManager.
   FakeProfileOAuth2TokenService* fake_token_service();

@@ -310,5 +310,10 @@ bool IsPlzDedicatedWorkerEnabled() {
 const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use the new C++ implementation of WHATWG Streams. See
+// https://crbug.com/977500.
+const base::Feature kStreamsNative{"StreamsNative",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

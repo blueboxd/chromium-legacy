@@ -18,8 +18,6 @@
 namespace autofill {
 class AutofillDriver;
 struct FormData;
-struct NewPasswordFormGenerationData;
-struct PasswordForm;
 struct PasswordFormGenerationData;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -35,8 +33,8 @@ class PasswordManager;
 class PasswordManagerDriver
     : public base::SupportsWeakPtr<PasswordManagerDriver> {
  public:
-  PasswordManagerDriver() {}
-  virtual ~PasswordManagerDriver() {}
+  PasswordManagerDriver() = default;
+  virtual ~PasswordManagerDriver() = default;
 
   // Fills forms matching |form_data|.
   virtual void FillPasswordForm(
@@ -47,19 +45,10 @@ class PasswordManagerDriver
   // TODO(https://crbug.com/621355): Remove and observe FormFetcher instead.
   virtual void InformNoSavedCredentials() {}
 
-  // Informs the driver that |form| can be used for password generation.
-  virtual void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) = 0;
-
-  // Notifies the driver that |forms| were found on which password can be
-  // generated.
-  virtual void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) = 0;
-
   // Notifies the driver that a password can be generated on the fields
   // identified by |form|.
   virtual void FormEligibleForGenerationFound(
-      const autofill::NewPasswordFormGenerationData& form) {}
+      const autofill::PasswordFormGenerationData& form) {}
 
   // Notifies the driver that username and password predictions from autofill
   // have been received.

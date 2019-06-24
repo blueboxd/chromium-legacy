@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_MEDIA_RECORDER_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_options.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -23,7 +23,7 @@ class ExceptionState;
 
 class MODULES_EXPORT MediaRecorder final
     : public EventTargetWithInlineData,
-      public WebMediaRecorderHandlerClient,
+      public MediaRecorderHandlerClient,
       public ActiveScriptWrappable<MediaRecorder>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
@@ -78,12 +78,12 @@ class MODULES_EXPORT MediaRecorder final
   // ScriptWrappable
   bool HasPendingActivity() const final { return !stopped_; }
 
-  // WebMediaRecorderHandlerClient
+  // MediaRecorderHandlerClient
   void WriteData(const char* data,
                  size_t length,
                  bool last_in_slice,
                  double timecode) override;
-  void OnError(const WebString& message) override;
+  void OnError(const String& message) override;
 
   void Trace(blink::Visitor* visitor) override;
 

@@ -100,6 +100,8 @@
 <translation id="1679068421605151609">開發人員工具</translation>
 <translation id="1692118695553449118">同步功能已啟用</translation>
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
+<translation id="1697480839793160072">電話</translation>
+<translation id="1698058317516161971">電子郵件</translation>
 <translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 上次更新時間：<ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1014,6 +1016,7 @@
 <translation id="8266862848225348053">下載位置</translation>
 <translation id="8274165955039650276">查看已下載的內容</translation>
 <translation id="8283853025636624853">同步的帳戶：<ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8284326494547611709">字幕</translation>
 <translation id="8300705686683892304">由應用程式管理</translation>
 <translation id="8310344678080805313">標準分頁</translation>
 <translation id="8313455859591948645">編輯起始網頁</translation>

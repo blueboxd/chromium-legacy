@@ -5,7 +5,7 @@
 #include "ui/android/event_forwarder.h"
 
 #include "base/android/jni_array.h"
-#include "jni/EventForwarder_jni.h"
+#include "ui/android/ui_android_jni_headers/EventForwarder_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/drag_event_android.h"

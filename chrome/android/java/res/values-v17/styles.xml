@@ -1005,4 +1005,15 @@
         <item name="android:layout_height">@dimen/omnibox_suggestion_edit_url_min_height</item>
         <item name="tint">@color/default_icon_color</item>
     </style>
+
+    <!-- Revamped context menu -->
+    <style name="RevampedContextMenuItemText">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:minHeight">@dimen/min_touch_target_size</item>
+        <item name="android:paddingStart">@dimen/revamped_context_menu_list_lateral_padding</item>
+        <item name="android:paddingEnd">@dimen/revamped_context_menu_list_lateral_padding</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
+    </style>
 </resources>

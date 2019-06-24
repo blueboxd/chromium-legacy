@@ -162,7 +162,8 @@ void OpenChromeCameraApp(Profile* profile, int event_flags) {
   if (extension) {
     AppListClientImpl* controller = AppListClientImpl::GetInstance();
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
+        profile, extension, event_flags,
+        extensions::AppLaunchSource::kSourceAppLauncher,
         controller->GetAppListDisplayId());
     params.launch_id = ash::ShelfID(extension->id()).launch_id;
     OpenApplication(params);

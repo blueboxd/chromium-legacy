@@ -1,7 +1,10 @@
 include_rules = [
+  "+components/content_settings/core/browser",
+  "+components/history/core/browser",
   "+components/security_interstitials/content",
   "+components/security_interstitials/core",
   "+components/sync/protocol",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
   "+content/public/browser",
   "+content/public/common",
   "+content/public/test",

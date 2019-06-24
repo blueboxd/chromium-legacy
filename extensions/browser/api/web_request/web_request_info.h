@@ -65,7 +65,7 @@ struct WebRequestInfoInitParams {
   int routing_id = MSG_ROUTING_NONE;
   int frame_id = -1;
   std::string method;
-  bool is_browser_side_navigation = false;
+  bool is_navigation_request = false;
   base::Optional<url::Origin> initiator;
   base::Optional<content::ResourceType> type;
   WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
@@ -119,7 +119,7 @@ struct WebRequestInfo {
   const std::string method;
 
   // Indicates whether the request is for a browser-side navigation.
-  const bool is_browser_side_navigation;
+  const bool is_navigation_request;
 
   // The origin of the context which initiated the request. May be null for
   // browser-initiated requests such as navigations.

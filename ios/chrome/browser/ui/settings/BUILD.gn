@@ -177,6 +177,7 @@ source_set("settings") {
     "//ios/chrome/common",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui_util:semantic_colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/mailto",

@@ -249,7 +249,7 @@
       other {Update within # seconds}}
   </message>
   <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    Your company or organization requires an update to this device
+    Your organization requires an update to this device
   </message>
 
   <message name="IDS_RELAUNCH_RECOMMENDED_TITLE" desc="The title of a dialog that tells users that a device restart is recommended for an update.">
@@ -259,10 +259,10 @@
     Update overdue
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users the device must be restarted.">
-    Your company or organization asks that you update this device
+    Your organization asks that you update this device
   </message>
   <message name="IDS_RELAUNCH_RECOMMENDED_OVERDUE_BODY" desc="The body text of a dialog that tells users the device must be restarted right now.">
-    Your company or organization requires an update to this device right away
+    Your organization requires an update to this device right away
   </message>
 
   <!-- Chrome OS Strings -->

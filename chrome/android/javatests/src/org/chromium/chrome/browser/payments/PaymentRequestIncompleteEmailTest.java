@@ -81,7 +81,8 @@ public class PaymentRequestIncompleteEmailTest implements MainActivityStartCallb
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Attempt to add an invalid email alongside the already invalid data and cancel. */
@@ -112,7 +113,8 @@ public class PaymentRequestIncompleteEmailTest implements MainActivityStartCallb
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Update the email with valid data and provide that to the merchant. */

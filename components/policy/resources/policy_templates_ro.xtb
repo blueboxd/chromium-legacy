@@ -436,12 +436,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Politica trebuie setată la o adresă URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca Termenii și condițiile. Termenii și condițiile trebuie să fie în format de text simplu, de tip MIME text/plain. Nu se permite limbajul de markup.</translation>
 <translation id="1750315445671978749">Blochează toate descărcările</translation>
-<translation id="1762072363876276024">
-      Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica de utilizator.
-      Setarea DeviceLoginScreenSitePerProcess poate fi folosită pentru a nu mai permite utilizatorilor să renunțe la comportamentul prestabilit de izolare a tuturor site-urilor. Reține că politica DeviceLoginScreenIsolateOrigins poate fi utilă și pentru izolarea unor origini suplimentare, mai exacte.
-      Dacă politica este activată, utilizatorii nu vor putea să renunțe la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
-      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare (de exemplu, folosind intrarea „Dezactivează izolarea site-ului” în chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Activează recomandările de aplicații în starea zero a casetei de căutare</translation>
 <translation id="17719159826324007">
       Când politica este setată la ArcSession, forțează dispozitivul să repornească la deconectarea utilizatorului dacă Android a pornit.
@@ -2481,6 +2475,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că acest lucru nu este recomandat, deoarece astfel se poate permite evitarea extensiei nameConstraints care limitează numele de gazdă pentru care poate fi autorizat un anumit certificat.
 
       Dacă politica nu este configurată sau dacă este dezactivată, certificatele de server din care lipsește extensia subjectAlternativeName cu un nume DNS sau o adresă IP nu vor fi considerate de încredere.</translation>
+<translation id="5578571772998293651">Permite feedbackul de la utilizatori.
+        Dacă politica este dezactivată, utilizatorii nu pot trimite feedback la Google.
+
+        Dacă politica nu este configurată sau este activată, utilizatorii pot trimite feedback la Google din Meniu-&gt;Ajutor-&gt;Raportează o problemă sau o combinație de taste.</translation>
 <translation id="5581292529942108810">Configurează politicile privind Chrome Reporting Extension.
 
       Această politică se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3603,22 +3601,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Notă: valorile permise pentru câmpul <ph name="MINUTE_FIELD_NAME" /> în <ph name="CHARGE_START_TIME_FIELD_NAME" /> și <ph name="CHARGE_END_TIME_FIELD_NAME" /> sunt: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Configurați funcțiile de accesibilitate pentru <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Această politică activează compatibilitatea cu HTTP/0.9 pentru HTTP pentru alte porturi decât 80 și pentru HTTPS pentru alte porturi decât 443.
-
-      Această politică este dezactivată în mod prestabilit și, dacă este activată, utilizatorii sunt expuși la problema de securitate prezentată aici https://crbug.com/600352.
-
-      Această politică a fost concepută pentru a oferi companiilor ocazia de a migra serverele existente de la HTTP/0.9 și va fi eliminată în viitor.
-
-      Dacă politica nu este configurată, HTTP/0.9 se va dezactiva pentru porturile care nu sunt prestabilite.</translation>
-<translation id="7726421241038987229">
-      Această setare, SitePerProcess, poate fi folosită pentru a nu permite utilizatorilor să renunțe la comportamentul prestabilit de a izola toate site-urile. Reține că politica IsolateOrigins poate fi utilă și pentru a izola origini suplimentare, mai exacte.
-      Dacă politica este activată, utilizatorii nu vor putea să renunțe la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
-      Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să renunțe la izolarea site-ului
-      (de exemplu, să folosească intrarea „Dezactivează izolarea site-ului” în in chrome://flags).  Dacă dezactivezi și/sau nu configurezi politica, izolarea site-ului nu va fi dezactivată.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă să setezi și politica privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate de cele două politici nu se potrivesc, poate avea loc o întârziere când intri într-o sesiune de utilizator în timp ce se aplică valoarea specificată de politica privind utilizatorii.
-
-      NOTĂ: Această politică nu se aplică în Android. Pentru a activa SitePerProcess în Android, folosește setarea politicii SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Permite dispozitivelor să folosească un <ph name="PLUGIN_VM_NAME" /> pe <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Activează autentificarea cu doi factori pentru gazdele de acces la distanță, în locul unui PIN specificat de utilizator.
 
@@ -3841,6 +3823,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă această politică nu este setată, nu vor exista excepții de la lista neagră din politica „URLBlacklist”.</translation>
 <translation id="8176035528522326671">Permiteți ca utilizatorul din companie să fie doar utilizatorul principal într-o sesiune cu mai multe profiluri (comportamentul prestabilit pentru utilizatorii gestionați de companie)</translation>
 <translation id="8183108371184777472">Suprimă lansarea unei ferestre de browser</translation>
+<translation id="8186911565834244165">Permite feedbackul de la utilizatori</translation>
 <translation id="8214600119442850823">Configurează managerul de parole.</translation>
 <translation id="8217516105848565518">Această politică este învechită. Folosește RemoteAccessHostDomainList în schimb.</translation>
 <translation id="8244171102276095471">Activează suitele de codificare RC4 în TLS</translation>
@@ -4258,6 +4241,12 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 
           Handlerele de protocol înregistrate de politică sunt combinate cu cele înregistrate de utilizator și ambele sunt disponibile pentru a fi utilizate. Utilizatorul poate înlocui handlerele de protocol instalate de politică instalând un nou handler prestabilit, dar nu poate elimina un handler de protocol înregistrat de politică.</translation>
+<translation id="91196902572559194">Politica oferă Asistentului Google permisiunea de a asculta expresia de activare vocală.
+
+      Dacă politica este activată, Asistentul Google va asculta expresia de activare vocală.
+      Dacă politica este dezactivată, Asistentul Google nu va asculta expresia de activare vocală.
+      Dacă politica nu este setată, utilizatorii pot decide dacă permit Asistentului Google să asculte expresia de activare vocală.
+      </translation>
 <translation id="9123211093995421438">Specifică numărul minim de repere <ph name="PRODUCT_OS_NAME" /> pentru care ar trebui să fie permisă revenirea la versiunea anterioară începând de la versiunea stabilă, în orice moment.
 
       Valoarea prestabilită este 0 pentru consumator, 4 (aproximativ 6 luni) pentru dispozitivele înregistrate de întreprindere.

@@ -23,6 +23,17 @@ source_set("native_test_support") {
   ]
 }
 
+source_set("native_browser_test_support") {
+  testonly = true
+  sources = [
+    "native_browser_test_support.cc",
+    "native_browser_test_support.h",
+  ]
+  deps = [
+    ":native_browser_test_jni_headers",
+  ]
+}
+
 source_set("native_test_native_code") {
   testonly = true
   sources = [
@@ -69,4 +80,11 @@ generate_jni("native_test_jni_headers") {
     "java/src/org/chromium/native_test/MainRunner.java",
     "java/src/org/chromium/native_test/NativeTest.java",
   ]
+}
+
+generate_jni("native_browser_test_jni_headers") {
+  sources = [
+    "java/src/org/chromium/native_test/NativeBrowserTest.java",
+  ]
+  jni_package = "native_browser_test"
 }

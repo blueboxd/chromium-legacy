@@ -2941,7 +2941,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
   SetBrowserClientForTesting(old_client);
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetPageFrozen) {
+// DISABLED: frquent timeout crbug.com/978028
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_SetPageFrozen) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/pause_schedule_task.html");

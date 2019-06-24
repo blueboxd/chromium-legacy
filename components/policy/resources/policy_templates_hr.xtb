@@ -436,12 +436,6 @@
 
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta "text/plain" protokola MIME. Jezik za označavanje nije dopušten.</translation>
 <translation id="1750315445671978749">Blokiranje svih preuzimanja</translation>
-<translation id="1762072363876276024">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučuje se postaviti oba pravila na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost navedena korisničkim pravilima.
-      Ova postavka, DeviceLoginScreenSitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo DeviceLoginScreenIsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
-      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
-      Ako se to pravilo ne konfigurira ili se onemogući, korisnik će moći promijeniti tu postavku (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Omogući preporuke aplikacije u nultom stanju okvira za pretraživanje</translation>
 <translation id="17719159826324007">
       Kada se postavi na ArcSession, to pravilo prisilno ponovo pokreće uređaj nakon što se korisnik odjavi, a Android je pokrenut.
@@ -3596,22 +3590,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Napomena: dopuštene vrijednosti za polje <ph name="MINUTE_FIELD_NAME" /> u <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> jesu 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfiguriranje značajki pristupačnosti proizvoda <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">To pravilo omogućuje HTTP/0.9 na priključcima osim priključka 80 za HTTP i 443 za HTTPS.
-
-      To je pravilo onemogućeno prema zadanim postavkama. Ako se omogući, korisnici mogu biti izloženi sigurnosnoj poteškoći https://crbug.com/600352.
-
-      Tim se pravilom organizacijama želi pružiti prilika da premjeste postojeće poslužitelje s HTTP-a/0.9. Pravilo će se ukloniti u budućnosti.
-
-      Ako se to pravilo ne postavi, HTTP/0.9 onemogućit će se na priključcima koji nisu zadani.</translation>
-<translation id="7726421241038987229">
-      Ova postavka, SitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo IsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
-      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
-      Ako se pravilo ne konfigurira ili se onemogući, korisnik će se moći isključiti iz izolacije web-lokacije
-      (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).  Ako se to pravilo postavi na onemogućeno i/ili ne konfigurira, ono ne isključuje izolaciju web-lokacije.
-      Na proizvodu <ph name="PRODUCT_OS_NAME" /> preporučuje se postaviti pravila za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost koju navode korisnička pravila.
-
-      NAPOMENA: To se pravilo ne primjenjuje na Androidu. Da biste omogućili SitePerProcess na Androidu, postavite pravilo SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Dopusti uređajima da upotrebljavaju <ph name="PLUGIN_VM_NAME" /> na proizvodu <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 

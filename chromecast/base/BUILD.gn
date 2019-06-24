@@ -353,8 +353,6 @@ if (is_android) {
       "java/src/org/chromium/chromecast/base/DumpstateWriter.java",
       "java/src/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
-
-    jni_package = "chromecast"
   }
 
   android_library("base_java") {

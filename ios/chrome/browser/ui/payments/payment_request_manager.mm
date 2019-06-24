@@ -97,7 +97,7 @@ const NSTimeInterval kNoopInterval = 0.1;
 const NSTimeInterval kTimeoutInterval = 60.0;
 
 // Error messages used in Payment Request API.
-NSString* const kCancelErrorMessage = @"Request cancelled";
+NSString* const kCancelErrorMessage = @"User closed the Payment Request UI.";
 
 struct PendingPaymentResponse {
   std::string methodName;

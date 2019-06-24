@@ -135,4 +135,9 @@ specific_include_rules = {
     # (it is part of //components/variations:test_support target).
     "+components/variations/variations_params_manager.h",
   ],
+
+    # Dependencies specific for fuzz targets and other fuzzing-related code.
+  ".*fuzz.*": [
+    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
+  ]
 }

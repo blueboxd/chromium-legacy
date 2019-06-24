@@ -107,6 +107,11 @@ class ShellSurface : public ShellSurfaceBase,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // Overridden from ShellSurfaceBase:
+  void SetWidgetBounds(const gfx::Rect& bounds) override;
+  bool OnPreWidgetCommit() override;
+  void OnPostWidgetCommit() override;
+
  private:
   class ScopedAnimationsDisabled;
   struct Config;
@@ -131,11 +136,6 @@ class ShellSurface : public ShellSurfaceBase,
 
     DISALLOW_COPY_AND_ASSIGN(ScopedConfigure);
   };
-
-  // Overridden from ShellSurfaceBase:
-  void SetWidgetBounds(const gfx::Rect& bounds) override;
-  bool OnPreWidgetCommit() override;
-  void OnPostWidgetCommit() override;
 
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);

@@ -5,18 +5,18 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
 #include "net/server/http_server.h"
 #include "net/socket/fuzzed_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
 class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
  public:
-  WaitTillHttpCloseDelegate(base::FuzzedDataProvider* data_provider,
+  WaitTillHttpCloseDelegate(FuzzedDataProvider* data_provider,
                             const base::Closure& done_closure)
       : server_(nullptr),
         data_provider_(data_provider),
@@ -81,7 +81,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
   };
 
   net::HttpServer* server_;
-  base::FuzzedDataProvider* const data_provider_;
+  FuzzedDataProvider* const data_provider_;
   base::Closure done_closure_;
   const uint8_t action_flags_;
 
@@ -95,7 +95,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
 // |data| is used to create a FuzzedServerSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::TestNetLog test_net_log;
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   std::unique_ptr<net::ServerSocket> server_socket(
       std::make_unique<net::FuzzedServerSocket>(&data_provider, &test_net_log));

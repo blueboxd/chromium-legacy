@@ -31,7 +31,7 @@ namespace blink {
 
 struct WebMediaCapabilitiesInfo;
 struct WebMediaConfiguration;
-class WebMediaRecorderHandlerClient;
+class MediaRecorderHandlerClient;
 
 // MediaRecorderHandler orchestrates the creation, lifetime management and
 // mapping between:
@@ -59,7 +59,7 @@ class MODULES_EXPORT MediaRecorderHandler {
   // encoding."
   // [1] https://w3c.github.io/mediacapture-record/MediaRecorder.html#methods
   bool CanSupportMimeType(const String& type, const String& web_codecs);
-  bool Initialize(WebMediaRecorderHandlerClient* client,
+  bool Initialize(MediaRecorderHandlerClient* client,
                   const WebMediaStream& media_stream,
                   const String& type,
                   const String& codecs,
@@ -127,7 +127,7 @@ class MODULES_EXPORT MediaRecorderHandler {
   WebVector<WebMediaStreamTrack> audio_tracks_;
 
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
-  WebMediaRecorderHandlerClient* client_;
+  MediaRecorderHandlerClient* client_;
 
   Vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
   Vector<std::unique_ptr<AudioTrackRecorder>> audio_recorders_;

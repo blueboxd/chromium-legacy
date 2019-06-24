@@ -541,6 +541,10 @@
     "dependencies": ["permission:launcherSearchProvider"],
     "contexts": ["blessed_extension"]
   },
+  "login": {
+    "dependencies": ["permission:login"],
+    "contexts": ["blessed_extension"]
+  },
   "loginScreenUi": {
     "dependencies": ["permission:loginScreenUi"],
     "contexts": ["blessed_extension"]

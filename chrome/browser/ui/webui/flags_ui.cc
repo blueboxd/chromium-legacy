@@ -248,9 +248,9 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
                                       &user_flags,
                                       flags_ui::kAddSentinels);
 
-  // Apply additional switches from policy that should not be dropped when
-  // applying flags..
-  chromeos::UserSessionManager::MaybeAppendPolicySwitches(
+  // Adhere to policy-enforced command-line switch handling when
+  // applying modified flags..
+  chromeos::UserSessionManager::ApplyUserPolicyToSwitches(
       Profile::FromWebUI(web_ui())->GetPrefs(), &user_flags);
 
   base::CommandLine::StringVector flags;

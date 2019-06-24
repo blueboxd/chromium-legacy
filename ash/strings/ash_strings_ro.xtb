@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">Comută conexiunea la rețea. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Derulează la dreapta</translation>
 <translation id="1812997170047690955">Ce este pe ecranul meu?</translation>
+<translation id="1820355135508821526">Funcția <ph name="FEATURE_NAME" /> a fost dezactivată de o politică aplicată acestui dispozitiv. Discută cu administratorul pentru a solicita modificări.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (se încarcă...)</translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">Repornește pentru a actualiza</translation>
 <translation id="2597972630681408282">Lumină de noapte: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Cardul SIM este blocat</translation>
+<translation id="2651765386227849097">Asistentul Google este dezactivat pe acest dispozitiv.</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2658778018866295321">Dă clic și trage</translation>
 <translation id="2700493154570097719">Setează tastatura</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">Bateria este încărcată complet.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Comanda rapidă pentru comutarea modului Contrast ridicat s-a modificat. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Nivelul bateriei: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Repornește și resetează</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">Mufă pentru microfon</translation>
 <translation id="5669267381087807207">Se activează</translation>
 <translation id="5673434351075758678">Din „<ph name="FROM_LOCALE" />” în „<ph name="TO_LOCALE" />” după sincronizarea setărilor.</translation>
+<translation id="5682642926269496722">Asistentul Google nu este disponibil pentru contul de utilizator actual.</translation>
 <translation id="5691772641933328258">Amprenta nu a fost recunoscută</translation>
 <translation id="5710450975648804523">Funcția Nu deranja este activată</translation>
 <translation id="574392208103952083">Medie</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">Ne pare rău, parola nu a putut fi confirmată. Încearcă din nou.</translation>
 <translation id="607652042414456612">Computerul poate fi detectat de dispozitivele Bluetooth din apropiere și va apărea ca „<ph name="NAME" />” cu adresa <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Se încarcă <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Asistentul Google nu este disponibil într-o sesiune publică.</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6164005077879661055">Toate fișierele și datele locale asociate acestui utilizator monitorizat vor fi șterse definitiv după eliminarea acestui utilizator monitorizat. Site-urile web accesate și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru manager la <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>
 <translation id="6715542151869432661">Nu s-au găsit dispozitive mobile.</translation>
 <translation id="6723839937902243910">Alimentare</translation>
+<translation id="6727969043791803658">Conectat, nivelul bateriei: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Urmărirea performanțelor este activată</translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>

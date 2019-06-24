@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "base/i18n/string_compare.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
@@ -848,8 +849,8 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   return view;
 }
 
-views::View* TranslateBubbleView::CreateEmptyPane() {
-  views::View* pane = new views::View();
+std::unique_ptr<views::View> TranslateBubbleView::CreateEmptyPane() {
+  auto pane = std::make_unique<views::View>();
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));

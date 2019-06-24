@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -55,8 +56,13 @@ const CGFloat kSpotlightHeight = 38.0f;
   AddSameCenterConstraints(self, spotlightView);
   [spotlightView.heightAnchor constraintEqualToConstant:kSpotlightHeight]
       .active = YES;
-  [self.widthAnchor constraintEqualToAnchor:spotlightView.widthAnchor].active =
-      YES;
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    [spotlightView.widthAnchor constraintEqualToConstant:kSpotlightHeight]
+        .active = YES;
+  } else {
+    [self.widthAnchor constraintEqualToAnchor:spotlightView.widthAnchor]
+        .active = YES;
+  }
   self.spotlightView = spotlightView;
 }
 

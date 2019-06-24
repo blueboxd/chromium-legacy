@@ -11,6 +11,7 @@
 #include "build/buildflag.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
 class AccountTrackerService;
@@ -30,18 +31,18 @@ class AccountsMutatorImpl : public AccountsMutator {
   ~AccountsMutatorImpl() override;
 
   // AccountsMutator:
-  std::string AddOrUpdateAccount(
+  CoreAccountId AddOrUpdateAccount(
       const std::string& gaia_id,
       const std::string& email,
       const std::string& refresh_token,
       bool is_under_advanced_protection,
       signin_metrics::SourceForRefreshTokenOperation source) override;
   void UpdateAccountInfo(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       base::Optional<bool> is_child_account,
       base::Optional<bool> is_under_advanced_protection) override;
   void RemoveAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       signin_metrics::SourceForRefreshTokenOperation source) override;
   void RemoveAllAccounts(
       signin_metrics::SourceForRefreshTokenOperation source) override;
@@ -50,7 +51,7 @@ class AccountsMutatorImpl : public AccountsMutator {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void MoveAccount(AccountsMutator* target,
-                   const std::string& account_id) override;
+                   const CoreAccountId& account_id) override;
 #endif
 
   void LegacySetRefreshTokenForSupervisedUser(

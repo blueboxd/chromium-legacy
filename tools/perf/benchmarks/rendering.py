@@ -39,7 +39,9 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(category_filter)
     options.config.chrome_trace_config.EnableUMAHistograms(
         'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
+        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
+        'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
+        'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4')
     options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 

@@ -52,6 +52,8 @@ source_set("web_applications") {
     deps += [
       "//ash/public/cpp:cpp",
       "//chromeos/constants",
+      "//components/arc:arc_base",
+      "//components/arc/common",
     ]
   }
 
@@ -128,7 +130,12 @@ source_set("web_applications_unit_tests") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chrome/browser/chromeos" ]
+    deps += [
+      "//chrome/browser/chromeos",
+      "//components/arc:arc",
+      "//components/arc:arc_test_support",
+      "//components/arc/common",
+    ]
   }
 }
 

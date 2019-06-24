@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
 
 import java.io.File;
@@ -105,6 +106,11 @@ public class ChromeBrowserTestsActivity extends NativeBrowserTestActivity {
                 assert false;
             }
 
+            @Override
+            public void setContentMainCallbackForTests(Runnable completionCallback) {
+                assert false;
+            }
+
             private boolean mStartupCompleted;
         };
         ChromeBrowserInitializer.setBrowserStartupControllerForTesting(startupController);
@@ -119,6 +125,10 @@ public class ChromeBrowserTestsActivity extends NativeBrowserTestActivity {
         wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+        // TODO(danakj): Make startup async and inherit from ChromeTabbedActivity.
+        NativeBrowserTest.javaStartupTasksComplete();
+        runTests();
     }
 
     @Override

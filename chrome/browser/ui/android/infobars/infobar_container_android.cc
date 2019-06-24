@@ -7,12 +7,12 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/android/chrome_jni_headers/InfoBarContainer_jni.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/InfoBarContainer_jni.h"
 
 using base::android::JavaParamRef;
 

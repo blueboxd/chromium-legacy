@@ -26,7 +26,6 @@ PaintRenderingContext2D::PaintRenderingContext2D(
   Canvas()->clear(context_settings->alpha() ? SK_ColorTRANSPARENT
                                             : SK_ColorBLACK);
   did_record_draw_commands_in_paint_recorder_ = true;
-  Canvas()->scale(zoom, zoom);
 }
 
 void PaintRenderingContext2D::InitializePaintRecorder() {
@@ -37,6 +36,7 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
+  canvas->scale(effective_zoom_, effective_zoom_);
   canvas->save();
 
   did_record_draw_commands_in_paint_recorder_ = false;

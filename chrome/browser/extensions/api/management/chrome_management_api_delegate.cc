@@ -258,10 +258,10 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   // returned.
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
-  OpenApplication(AppLaunchParams(Profile::FromBrowserContext(context),
-                                  extension->id(), launch_container,
-                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                  extensions::SOURCE_MANAGEMENT_API));
+  OpenApplication(AppLaunchParams(
+      Profile::FromBrowserContext(context), extension->id(), launch_container,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::AppLaunchSource::kSourceManagementApi));
 
 #if defined(OS_CHROMEOS)
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(

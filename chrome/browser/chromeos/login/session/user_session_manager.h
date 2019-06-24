@@ -162,9 +162,10 @@ class UserSessionManager
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Appends additional command switches to the given command line if
-  // SitePerProcess/IsolateOrigins policy is present.
-  static void MaybeAppendPolicySwitches(PrefService* user_profile_prefs,
+  // Applies user policies to |user_flags| .
+  // This could mean removing command-line switchis that have been added by the
+  // flag handling logic or appending additional switches due to policy.
+  static void ApplyUserPolicyToSwitches(PrefService* user_profile_prefs,
                                         base::CommandLine* user_flags);
 
   // Invoked after the tmpfs is successfully mounted.

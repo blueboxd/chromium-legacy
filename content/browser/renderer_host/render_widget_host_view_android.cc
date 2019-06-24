@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/android/build_info.h"
+#include "base/android/callback_android.h"
+#include "base/android/jni_string.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -21,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
@@ -74,6 +77,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -92,6 +96,7 @@
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/android/view_configuration.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/touch_selection/touch_selection_controller.h"
@@ -152,6 +157,44 @@ void WakeUpGpu(GpuProcessHost* host) {
   if (host && host->gpu_host()->wake_up_gpu_before_drawing()) {
     host->gpu_service()->WakeUpGpu();
   }
+}
+
+std::string CompressAndSaveBitmap(const std::string& dir,
+                                  const SkBitmap& bitmap) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  std::vector<unsigned char> data;
+  if (!gfx::JPEGCodec::Encode(bitmap, 85, &data)) {
+    LOG(ERROR) << "Failed to encode bitmap to JPEG";
+    return std::string();
+  }
+
+  base::FilePath screenshot_dir(dir);
+  if (!base::DirectoryExists(screenshot_dir)) {
+    if (!base::CreateDirectory(screenshot_dir)) {
+      LOG(ERROR) << "Failed to create screenshot directory";
+      return std::string();
+    }
+  }
+
+  base::FilePath screenshot_path;
+  base::ScopedFILE out_file(
+      base::CreateAndOpenTemporaryFileInDir(screenshot_dir, &screenshot_path));
+  if (!out_file) {
+    LOG(ERROR) << "Failed to create temporary screenshot file";
+    return std::string();
+  }
+  unsigned int bytes_written =
+      fwrite(reinterpret_cast<const char*>(data.data()), 1, data.size(),
+             out_file.get());
+
+  // If there were errors, don't leave a partial file around.
+  if (bytes_written != data.size()) {
+    base::DeleteFile(screenshot_path, false);
+    LOG(ERROR) << "Error writing screenshot file to disk";
+    return std::string();
+  }
+  return screenshot_path.value();
 }
 
 }  // namespace
@@ -244,6 +287,11 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   view_.set_event_handler(nullptr);
   DCHECK(!ime_adapter_android_);
   DCHECK(!delegated_frame_host_);
+  if (obj_) {
+    Java_RenderWidgetHostViewImpl_clearNativePtr(
+        base::android::AttachCurrentThread(), obj_);
+    obj_.Reset();
+  }
 }
 
 void RenderWidgetHostViewAndroid::AddDestructionObserver(
@@ -442,6 +490,68 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   // change. We must still call UpdateWebViewBackgroundColorIfNecessary to
   // maintain the associated background color changes.
   UpdateWebViewBackgroundColorIfNecessary();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+RenderWidgetHostViewAndroid::GetJavaObject() {
+  if (!obj_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    obj_.Reset(env, Java_RenderWidgetHostViewImpl_create(
+                        env, reinterpret_cast<intptr_t>(this))
+                        .obj());
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+bool RenderWidgetHostViewAndroid::IsReady(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return HasValidFrame();
+}
+
+void RenderWidgetHostViewAndroid::DismissTextHandles(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DismissTextHandles();
+}
+
+jint RenderWidgetHostViewAndroid::GetBackgroundColor(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  base::Optional<SkColor> color =
+      RenderWidgetHostViewAndroid::GetCachedBackgroundColor();
+  if (!color)
+    return SK_ColorTRANSPARENT;
+  return *color;
+}
+
+void RenderWidgetHostViewAndroid::ShowContextMenuAtTouchHandle(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint x,
+    jint y) {
+  if (host()) {
+    host()->ShowContextMenuAtPoint(gfx::Point(x, y),
+                                   ui::MENU_SOURCE_TOUCH_HANDLE);
+  }
+}
+
+void RenderWidgetHostViewAndroid::WriteContentBitmapToDiskAsync(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint width,
+    jint height,
+    const base::android::JavaParamRef<jstring>& jpath,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  base::OnceCallback<void(const SkBitmap&)> result_callback = base::BindOnce(
+      &RenderWidgetHostViewAndroid::OnFinishGetContentBitmap,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::android::ScopedJavaGlobalRef<jobject>(env, obj),
+      base::android::ScopedJavaGlobalRef<jobject>(env, jcallback),
+      base::android::ConvertJavaStringToUTF8(env, jpath));
+
+  CopyFromSurface(gfx::Rect(), gfx::Size(width, height),
+                  std::move(result_callback));
 }
 
 void RenderWidgetHostViewAndroid::Focus() {
@@ -1404,6 +1514,27 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
   EvictFrameIfNecessary();
 }
 
+void RenderWidgetHostViewAndroid::OnFinishGetContentBitmap(
+    const base::android::JavaRef<jobject>& obj,
+    const base::android::JavaRef<jobject>& callback,
+    const std::string& path,
+    const SkBitmap& bitmap) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!bitmap.drawsNothing()) {
+    auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    base::PostTaskAndReplyWithResult(
+        task_runner.get(), FROM_HERE,
+        base::BindOnce(&CompressAndSaveBitmap, path, bitmap),
+        base::BindOnce(
+            &base::android::RunStringCallbackAndroid,
+            base::android::ScopedJavaGlobalRef<jobject>(env, callback.obj())));
+    return;
+  }
+  // If readback failed, call empty callback
+  base::android::RunStringCallbackAndroid(callback, std::string());
+}
+
 void RenderWidgetHostViewAndroid::ShowInternal() {
   bool show = is_showing_ && is_window_activity_started_ && is_window_visible_;
   if (!show)
@@ -1929,13 +2060,6 @@ bool RenderWidgetHostViewAndroid::ShowSelectionMenu(
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host() && host()->delegate())
     host()->delegate()->MoveCaret(point);
-}
-
-void RenderWidgetHostViewAndroid::ShowContextMenuAtPoint(
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  if (host())
-    host()->ShowContextMenuAtPoint(point, source_type);
 }
 
 void RenderWidgetHostViewAndroid::DismissTextHandles() {

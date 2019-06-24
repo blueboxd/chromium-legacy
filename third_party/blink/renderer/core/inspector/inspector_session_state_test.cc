@@ -55,7 +55,7 @@ struct AgentWithSimpleFields {
         multiplier_(&agent_state_, /*default_value=*/1.0),
         counter_(&agent_state_, /*default_value=*/1),
         message_(&agent_state_, /*default_value=*/WTF::String()),
-        bytes_(&agent_state_, /*default_value=*/std::vector<uint8_t>()) {}
+        bytes_(&agent_state_, /*default_value=*/{}) {}
 
   InspectorAgentState agent_state_;
   InspectorAgentState::Boolean enabled_;
@@ -230,7 +230,7 @@ TEST(InspectorSessionStateTest, MultipleAgents) {
   // Show that the keys for the field values are prefixed with the domain name
   // passed to AgentState so that the stored values won't collide.
   DevToolsSessionStatePtr cookie = dev_tools_session.CloneCookie();
-  std::vector<WTF::String> keys;
+  Vector<WTF::String> keys;
   for (const WTF::String& k : cookie->entries.Keys())
     keys.push_back(k);
 

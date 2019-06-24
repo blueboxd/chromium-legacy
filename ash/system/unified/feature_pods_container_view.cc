@@ -339,4 +339,21 @@ void FeaturePodsContainerView::TransitionChanged() {
     Layout();
 }
 
+void FeaturePodsContainerView::OnGestureEvent(ui::GestureEvent* event) {
+  if (controller_->pagination_controller()->OnGestureEvent(*event,
+                                                           GetContentsBounds()))
+    event->SetHandled();
+}
+
+void FeaturePodsContainerView::OnScrollEvent(ui::ScrollEvent* event) {
+  controller_->pagination_controller()->OnScroll(
+      gfx::Vector2d(event->x_offset(), event->y_offset()), event->type());
+  event->SetHandled();
+}
+
+bool FeaturePodsContainerView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  return controller_->pagination_controller()->OnScroll(event.offset(),
+                                                        event.type());
+}
+
 }  // namespace ash

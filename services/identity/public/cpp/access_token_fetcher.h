@@ -50,7 +50,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   // OAuth2 access token for |account_id| and |scopes|. The |callback| is called
   // once the request completes (successful or not). If the AccessTokenFetcher
   // is destroyed before the process completes, the callback is not called.
-  AccessTokenFetcher(const std::string& account_id,
+  AccessTokenFetcher(const CoreAccountId& account_id,
                      const std::string& oauth_consumer_name,
                      OAuth2TokenService* token_service,
                      const identity::ScopeSet& scopes,
@@ -63,7 +63,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   // once the request completes (successful or not). If the AccessTokenFetcher
   // is destroyed before the process completes, the callback is not called.
   AccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
       OAuth2TokenService* token_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -74,7 +74,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   // Instantiates a fetcher and immediately starts the process of obtaining an
   // OAuth2 access token for |account_id| and |scopes| using both the
   // |client_id| and |client_secret| to identify the OAuth client app.
-  AccessTokenFetcher(const std::string& account_id,
+  AccessTokenFetcher(const CoreAccountId& account_id,
                      const std::string client_id,
                      const std::string client_secret,
                      const std::string& oauth_consumer_name,
@@ -87,7 +87,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
 
  private:
   AccessTokenFetcher(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string client_id,
       const std::string client_secret,
       const std::string& oauth_consumer_name,
@@ -120,7 +120,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   void RunCallbackAndMaybeDie(GoogleServiceAuthError error,
                               AccessTokenInfo access_token_info);
 
-  const std::string account_id_;
+  const CoreAccountId account_id_;
   const std::string client_id_;
   const std::string client_secret_;
   OAuth2TokenService* token_service_;

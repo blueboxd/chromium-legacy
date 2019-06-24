@@ -69,9 +69,10 @@ specific_include_rules = {
     "+base/i18n",
   ],
 
-  # Needed for fuzz targets written using libprotobuf-mutator library.
+  # Dependencies specific for fuzz targets and other fuzzing-related code.
   ".*fuzz.*": [
-    "+third_party/libprotobuf-mutator",
+    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
+    "+third_party/libprotobuf-mutator",  # This is needed for LPM-based fuzzers.
   ]
 }
 

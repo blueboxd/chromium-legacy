@@ -60,6 +60,12 @@ extern NSString* const kToolsMenuSiteInformation;
 extern NSString* const kToolsMenuPasteAndGo;
 // Voice Search item accessibility Identifier.
 extern NSString* const kToolsMenuVoiceSearch;
+// TODO(crbug.com/974751): Check if this is still used.
+// Search item accessibility Identifier.
+extern NSString* const kToolsMenuSearch;
+// TODO(crbug.com/974751): Check if this is still used.
+// Incognito Search item accessibility Identifier.
+extern NSString* const kToolsMenuIncognitoSearch;
 // QR Code Search item accessibility Identifier.
 extern NSString* const kToolsMenuQRCodeSearch;
 // Copied Image Search item accessibility Identifier.

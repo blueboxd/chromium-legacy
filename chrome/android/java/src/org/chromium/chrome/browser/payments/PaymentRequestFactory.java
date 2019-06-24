@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
@@ -40,7 +41,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         @Override
         public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
             if (mClient != null) {
-                mClient.onError(PaymentErrorReason.USER_CANCEL);
+                mClient.onError(
+                        PaymentErrorReason.USER_CANCEL, ErrorStrings.WEB_PAYMENT_API_DISABLED);
                 mClient.close();
             }
         }

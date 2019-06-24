@@ -13,6 +13,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "chrome/android/chrome_jni_headers/HistoryReportJniBridge_jni.h"
 #include "chrome/browser/android/history_report/data_observer.h"
 #include "chrome/browser/android/history_report/data_provider.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
@@ -27,7 +28,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/HistoryReportJniBridge_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

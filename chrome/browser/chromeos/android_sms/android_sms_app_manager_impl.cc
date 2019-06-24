@@ -232,8 +232,9 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
       setup_controller_
           ->GetPwa(GetAndroidMessagesURL(true /* use_install_url */, *domain))
           ->id(),
-      extensions::LAUNCH_CONTAINER_WINDOW, WindowOpenDisposition::NEW_WINDOW,
-      extensions::SOURCE_CHROME_INTERNAL));
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void AndroidSmsAppManagerImpl::SetPwaDelegateForTesting(

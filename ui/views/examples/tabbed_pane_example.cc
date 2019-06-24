@@ -61,7 +61,8 @@ void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
     AddButton("Added");
   } else if (sender == add_at_) {
     const base::string16 label = ASCIIToUTF16("Added at 1");
-    tabbed_pane_->AddTabAtIndex(1, label, new LabelButton(nullptr, label));
+    tabbed_pane_->AddTabAtIndex(1, label,
+                                std::make_unique<LabelButton>(nullptr, label));
   } else if (sender == select_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
       tabbed_pane_->SelectTabAt(1);
@@ -81,8 +82,8 @@ void TabbedPaneExample::PrintStatus() {
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  LabelButton* button = new LabelButton(nullptr, ASCIIToUTF16(label));
-  tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
+  tabbed_pane_->AddTab(ASCIIToUTF16(label), std::make_unique<LabelButton>(
+                                                nullptr, ASCIIToUTF16(label)));
 }
 
 }  // namespace examples

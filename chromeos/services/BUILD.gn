@@ -19,6 +19,7 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     "//chromeos/services/cellular_setup:unit_tests",
+    "//chromeos/services/cros_healthd/public/cpp:unit_tests",
     "//chromeos/services/device_sync:unit_tests",
     "//chromeos/services/ime:services_unittests",
     "//chromeos/services/ime:unit_tests",

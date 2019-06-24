@@ -315,7 +315,6 @@ int HeadlessContentMainDelegate::RunProcess(
   DCHECK_LT(exit_code, 0) << "content::BrowserMainRunner::Initialize failed in "
                              "HeadlessContentMainDelegate::RunProcess";
 
-  browser_->RunOnStartCallback();
   browser_runner->Run();
   browser_runner->Shutdown();
   browser_.reset();

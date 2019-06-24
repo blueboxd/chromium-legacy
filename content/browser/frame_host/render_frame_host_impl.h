@@ -935,7 +935,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Scheduler-relevant features this frame is using, for use in metrics.
   // See comments at |scheduler_tracked_features_|.
   uint64_t scheduler_tracked_features() const {
-    return scheduler_tracked_features_;
+    return renderer_reported_scheduler_tracked_features_ |
+           browser_reported_scheduler_tracked_features_;
   }
 
   // Returns a PrefetchedSignedExchangeCache which is attached to |this| iff
@@ -955,6 +956,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AddSameSiteCookieDeprecationMessage(
       const std::string& cookie_url,
       net::CanonicalCookie::CookieInclusionStatus status);
+
+  // Notify the scheduler that this frame used a feature which impacts the
+  // scheduling policy (e.g. whether the frame can be frozen or put into the
+  // back-forward cache).
+  void OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature feature);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2162,8 +2169,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Mask of the active features tracked by the scheduler used by this frame.
   // This is used only for metrics.
   // See blink::SchedulingPolicy::Feature for the meaning.
-  // This value should be cleared on document commit.
-  uint64_t scheduler_tracked_features_ = 0;
+  // These values should be cleared on document commit.
+  // Both are needed as some features are tracked in the renderer process and
+  // some in the browser process, depending on the design of each individual
+  // feature. They are tracked separately, because when the renderer updates the
+  // set of features, the browser ones should persist.
+  uint64_t renderer_reported_scheduler_tracked_features_ = 0;
+  uint64_t browser_reported_scheduler_tracked_features_ = 0;
 
   // Holds prefetched signed exchanges for SignedExchangeSubresourcePrefetch.
   // They will be passed to the next navigation.

@@ -403,9 +403,9 @@ void AutofillPopupItemView::CreateContent() {
       all_labels->SetLayoutManager(std::make_unique<views::GridLayout>());
   BuildColumnSet(grid_layout);
   grid_layout->StartRow(0, 0);
-  grid_layout->AddView(value_label.release());
+  grid_layout->AddView(std::move(value_label));
   if (description_label)
-    grid_layout->AddView(description_label.release());
+    grid_layout->AddView(std::move(description_label));
   else
     grid_layout->SkipColumns(1);
 
@@ -415,7 +415,7 @@ void AutofillPopupItemView::CreateContent() {
     layout_manager->set_minimum_cross_axis_size(
         kStandardRowHeight + kAutofillPopupAdditionalDoubleRowHeight);
     grid_layout->StartRowWithPadding(0, 0, 0, kAdjacentLabelsVerticalSpacing);
-    grid_layout->AddView(lower_value_label.release());
+    grid_layout->AddView(std::move(lower_value_label));
     grid_layout->SkipColumns(1);
   } else {
     layout_manager->set_minimum_cross_axis_size(kStandardRowHeight);

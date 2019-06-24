@@ -5,6 +5,7 @@
 #include "base/android/callback_android.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "chrome/android/chrome_jni_headers/DownloadBackgroundTask_jni.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -12,7 +13,6 @@
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/common/auto_resumption_handler.h"
 #include "content/public/browser/browser_context.h"
-#include "jni/DownloadBackgroundTask_jni.h"
 
 using base::android::JavaParamRef;
 

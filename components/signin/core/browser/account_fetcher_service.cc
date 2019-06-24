@@ -34,12 +34,12 @@ namespace {
 const base::TimeDelta kRefreshFromTokenServiceDelay =
     base::TimeDelta::FromHours(24);
 
-bool AccountSupportsUserInfo(const std::string& account_id) {
+bool AccountSupportsUserInfo(const CoreAccountId& account_id) {
   // Supervised users use a specially scoped token which when used for general
   // purposes causes the token service to raise spurious auth errors.
   // TODO(treib): this string is also used in supervised_user_constants.cc.
   // Should put in a common place.
-  return account_id != "managed_user@localhost";
+  return account_id.id != "managed_user@localhost";
 }
 
 }  // namespace

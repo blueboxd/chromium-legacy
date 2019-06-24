@@ -9,7 +9,6 @@
 
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -17,6 +16,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
@@ -43,7 +43,7 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   }
 
   int CreateAndReadFromDataURLRequest(const uint8_t* data, size_t size) {
-    base::FuzzedDataProvider provider(data, size);
+    FuzzedDataProvider provider(data, size);
     read_lengths_.clear();
 
     // Allocate an IOBuffer with fuzzed size.

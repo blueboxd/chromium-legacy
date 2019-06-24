@@ -9,6 +9,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
@@ -20,22 +21,57 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/material_design/material_design_controller.h"
 
+namespace {
+
+TabletModeClient* g_tablet_mode_client_instance = nullptr;
+
+}  // namespace
+
 TabletModeClient::TabletModeClient() {
-  ash::TabletMode::Get()->AddObserver(this);
-  OnTabletModeToggled(ash::TabletMode::Get()->InTabletMode());
+  DCHECK(!g_tablet_mode_client_instance);
+  g_tablet_mode_client_instance = this;
 }
 
 TabletModeClient::~TabletModeClient() {
-  ash::TabletMode::Get()->RemoveObserver(this);
+  DCHECK_EQ(this, g_tablet_mode_client_instance);
+  g_tablet_mode_client_instance = nullptr;
+  // The Ash Shell and TabletMode instance should have been destroyed by now.
+  DCHECK(!ash::TabletMode::Get());
+}
+
+void TabletModeClient::Init() {
+  ash::TabletMode::Get()->SetTabletModeToggleObserver(this);
+  OnTabletModeToggled(ash::TabletMode::Get()->InTabletMode());
+}
+
+// static
+TabletModeClient* TabletModeClient::Get() {
+  return g_tablet_mode_client_instance;
+}
+
+void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TabletModeClient::RemoveObserver(TabletModeClientObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void TabletModeClient::OnTabletModeToggled(bool enabled) {
+  if (tablet_mode_enabled_ == enabled)
+    return;
+
+  tablet_mode_enabled_ = enabled;
+
   SetMobileLikeBehaviorEnabled(enabled);
+
   ui::MaterialDesignController::OnTabletModeToggled(enabled);
+  for (auto& observer : observers_)
+    observer.OnTabletModeToggled(enabled);
 }
 
 bool TabletModeClient::ShouldTrackBrowser(Browser* browser) {
-  return ash::TabletMode::Get()->InTabletMode();
+  return tablet_mode_enabled_;
 }
 
 void TabletModeClient::OnTabStripModelChanged(

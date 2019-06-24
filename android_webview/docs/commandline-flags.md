@@ -8,43 +8,68 @@ check with `adb shell getprop ro.build.type`). Flags cannot be enabled on
 production builds of Android.
 ***
 
-WebView reads flags from a specific file during startup. To enable flags, write
-to the file with:
+WebView reads flags from a specific file on the device as part of the startup
+sequence. Therefore, it's important to always **kill the WebView-based app**
+you're examining after modifying commandline flags, to ensure the flags are
+picked up during the next app restart.
+
+WebView always looks for the same file on the device
+(`/data/local/tmp/webview-command-line`), regardless of which package is the
+[the WebView provider](prerelease.md).
+
+### Python script
+
+The simplest way to set WebView flags is with the dedicated python script. This
+works regardless of which package is the WebView provider:
 
 ```sh
 # Overwrite flags (supports multiple)
-build/android/adb_system_webview_command_line \
-    --show-composited-layer-borders \
-    --log-net-log=foo.json
+build/android/adb_system_webview_command_line --show-composited-layer-borders --webview-log-js-console-messages
 # Clear flags
 build/android/adb_system_webview_command_line ""
 # Print flags
 build/android/adb_system_webview_command_line
 ```
 
-Or, for a locally compiled APK:
+### Generated Wrapper Script
+
+If you have a locally compiled APK, you may instead set flags using the
+Generated Wrapper Script like so:
 
 ```sh
 autoninja -C out/Default system_webview_apk
 # Overwrite flags (supports multiple)
-out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --log-net-log=foo.json'
+out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --webview-log-js-console-messages'
 # Clear flags
 out/Default/bin/system_webview_apk argv --args=''
 # Print flags
 out/Default/bin/system_webview_apk argv
 ```
 
+*** note
+**Note:** be careful if using a `monochrome_*` target, as the Generated Wrapper
+Script writes to Chrome browser's flags file, and WebView **will not pick up
+these flags**. If using Monochrome, you can set flags with the
+`system_webview_*` Generated Wrapper Scripts, or use one of the other methods
+in this doc.
+***
+
+### Manual
+
 Or, you can use the `adb` in your `$PATH` like so:
 
 ```sh
 FLAG_FILE=/data/local/tmp/webview-command-line
-# Overwrite flags
-adb shell "echo '_ --show-composited-layer-borders' > ${FLAG_FILE}"
-# The first token is ignored. We use '_' as a convenient placeholder, but any
-# token is acceptable.
+# Overwrite flags (supports multiple). The first token is ignored. We use '_'
+# as a convenient placeholder, but any token is acceptable.
+adb shell "echo '_ --show-composited-layer-borders --webview-log-js-console-messages' > ${FLAG_FILE}"
+# Clear flags
+adb shell "rm ${FLAG_FILE}"
+# Print flags
+adb shell "cat ${FLAG_FILE}"
 ```
 
-### Applying Features with flags
+## Applying Features with flags
 
 WebView supports the same `--enable-features=feature1,feature2` and
 `--disable-features=feature3,feature4` syntax as the rest of Chromium. You can
@@ -59,7 +84,7 @@ Some interesting flags and Features:
 
  * `--show-composited-layer-borders`
  * `--enable-features=NetworkService,NetworkServiceInProcess`
- * `--log-net-log=<filename.json>`
+ * `--webview-log-js-console-messages`
 
 WebView also defines its own flags and Features:
 

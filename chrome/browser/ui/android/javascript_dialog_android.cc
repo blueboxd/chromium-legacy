@@ -8,11 +8,11 @@
 #include "base/android/jni_string.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/android/chrome_jni_headers/JavascriptTabModalDialog_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "jni/JavascriptTabModalDialog_jni.h"
 #include "ui/android/window_android.h"
 
 using base::android::AttachCurrentThread;

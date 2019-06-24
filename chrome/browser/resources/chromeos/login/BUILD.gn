@@ -52,20 +52,6 @@ js_type_check("closure_compile") {
   ]
 }
 
-# We need to keep the supervision_onboarding compilation separate from the main
-# target since they depend on incompatible extern files.
-#
-# The main compilation target bundles the networking_private.js externs, it
-# gets that transitively from its :network_select_login dep.
-#
-# Supervision needs the chrome_extensions.js extern, but they end up declaring
-# the same types, so compilation fails.
-js_type_check("closure_compile_supervision") {
-  deps = [
-    ":supervision_onboarding",
-  ]
-}
-
 js2gtest("login_unitjs_tests") {
   # These could be unit tests, except they need a browser context in order
   # to construct a DOMParser object - so they are webui tests.
@@ -156,20 +142,6 @@ js_library("multidevice_setup_first_run") {
     "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
-  ]
-}
-
-js_library("supervision_onboarding") {
-  deps = [
-    ":login_screen_behavior",
-    ":oobe_dialog_host_behavior",
-    "//chrome/browser/chromeos/supervision/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/js:cr",
-  ]
-
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "$externs_path/webview_tag.js",
   ]
 }
 

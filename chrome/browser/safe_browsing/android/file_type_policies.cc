@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
-#include "jni/FileTypePolicies_jni.h"
+#include "chrome/android/chrome_jni_headers/FileTypePolicies_jni.h"
 
 namespace safe_browsing {
 

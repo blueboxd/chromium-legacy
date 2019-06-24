@@ -51,7 +51,6 @@
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/libvda_service_provider.h"
-#include "chrome/browser/chromeos/dbus/machine_learning_decision_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
@@ -91,6 +90,7 @@
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_manager.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
@@ -294,9 +294,6 @@ class DBusServices {
                                 ? nullptr
                                 : DBusThreadManager::Get()->GetSystemBus();
 
-    // See also PostBrowserStart() where machine_learning_decision_service_ is
-    // initialized.
-
     proxy_resolution_service_ = CrosDBusService::Create(
         system_bus, kNetworkProxyServiceName,
         dbus::ObjectPath(kNetworkProxyServicePath),
@@ -389,19 +386,6 @@ class DBusServices {
         OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil());
   }
 
-  void CreateMachineLearningDecisionProvider() {
-    dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
-                                ? nullptr
-                                : DBusThreadManager::Get()->GetSystemBus();
-    // TODO(alanlxl): update Ml here to MachineLearning after powerd is
-    // uprevved.
-    machine_learning_decision_service_ = CrosDBusService::Create(
-        system_bus, machine_learning::kMlDecisionServiceName,
-        dbus::ObjectPath(machine_learning::kMlDecisionServicePath),
-        CrosDBusService::CreateServiceProviderList(
-            std::make_unique<MachineLearningDecisionServiceProvider>()));
-  }
-
   ~DBusServices() {
     NetworkHandler::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
@@ -418,7 +402,6 @@ class DBusServices {
     chrome_features_service_.reset();
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
-    machine_learning_decision_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
@@ -437,7 +420,6 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
   std::unique_ptr<CrosDBusService> libvda_service_;
-  std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -1044,10 +1026,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
   if (base::FeatureList::IsEnabled(::features::kUserActivityEventLogging)) {
-    // MachineLearningDecisionServiceProvider needs to be created after
-    // UserActivityController which depends on UserActivityDetector, not
-    // available until PostBrowserStart.
-    dbus_services_->CreateMachineLearningDecisionProvider();
+    user_activity_controller_ =
+        std::make_unique<power::ml::UserActivityController>();
   }
 
   auto_screen_brightness_controller_ =
@@ -1118,6 +1098,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();
   demo_mode_resources_remover_.reset();
+  user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
   scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();

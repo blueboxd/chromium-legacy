@@ -529,19 +529,15 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
     bool mipmap,
     sk_sp<SkColorSpace> color_space) {
   auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
-  constexpr uint32_t flags = 0;
+  auto cache_max_resource_bytes = impl_on_gpu_->max_resource_cache_bytes();
   // LegacyFontHost will get LCD text and skia figures out what type to use.
-  SkSurfaceProps surface_props(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-  int msaa_sample_count = 0;
+  SkSurfaceProps surface_props(0 /*flags */,
+                               SkSurfaceProps::kLegacyFontHost_InitType);
   SkColorType color_type =
       ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
   SkImageInfo image_info =
       SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
                         kPremul_SkAlphaType, std::move(color_space));
-
-  // TODO(penghuang): Figure out how to choose the right size.
-  constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
-
   GrBackendFormat backend_format;
   if (!is_using_vulkan_) {
     const auto* version_info = impl_on_gpu_->gl_version_info();
@@ -557,7 +553,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
 #endif
   }
   auto characterization = gr_context_thread_safe->createCharacterization(
-      kCacheMaxResourceBytes, image_info, backend_format, msaa_sample_count,
+      cache_max_resource_bytes, image_info, backend_format, 0 /* sampleCount */,
       kTopLeft_GrSurfaceOrigin, surface_props, mipmap);
   DCHECK(characterization.isValid());
   return characterization;

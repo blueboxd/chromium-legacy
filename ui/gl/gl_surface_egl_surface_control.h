@@ -196,6 +196,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   EGLSurface offscreen_surface_ = nullptr;
   base::CancelableOnceClosure check_pending_presentation_callback_queue_task_;
 
+  // Set if a swap failed and the surface is no longer usable.
+  bool surface_lost_ = false;
+
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;
 };

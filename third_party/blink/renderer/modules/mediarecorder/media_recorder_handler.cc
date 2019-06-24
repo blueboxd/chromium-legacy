@@ -21,9 +21,9 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
-#include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -180,7 +180,7 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   return true;
 }
 
-bool MediaRecorderHandler::Initialize(WebMediaRecorderHandlerClient* client,
+bool MediaRecorderHandler::Initialize(MediaRecorderHandlerClient* client,
                                       const WebMediaStream& media_stream,
                                       const String& type,
                                       const String& codecs,

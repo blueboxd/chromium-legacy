@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
@@ -39,18 +38,19 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
 #include "net/socket/fuzzed_socket_factory.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
 namespace {
 
 // Returns a fuzzed non-zero port number.
-uint16_t FuzzPort(base::FuzzedDataProvider* data_provider) {
+uint16_t FuzzPort(FuzzedDataProvider* data_provider) {
   return data_provider->ConsumeIntegral<uint16_t>();
 }
 
 // Returns a fuzzed IPv4 address.  Can return invalid / reserved addresses.
-IPAddress FuzzIPv4Address(base::FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPv4Address(FuzzedDataProvider* data_provider) {
   return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
                    data_provider->ConsumeIntegral<uint8_t>(),
                    data_provider->ConsumeIntegral<uint8_t>(),
@@ -58,7 +58,7 @@ IPAddress FuzzIPv4Address(base::FuzzedDataProvider* data_provider) {
 }
 
 // Returns a fuzzed IPv6 address.  Can return invalid / reserved addresses.
-IPAddress FuzzIPv6Address(base::FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPv6Address(FuzzedDataProvider* data_provider) {
   return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
                    data_provider->ConsumeIntegral<uint8_t>(),
                    data_provider->ConsumeIntegral<uint8_t>(),
@@ -79,7 +79,7 @@ IPAddress FuzzIPv6Address(base::FuzzedDataProvider* data_provider) {
 
 // Returns a fuzzed address, which can be either IPv4 or IPv6.  Can return
 // invalid / reserved addresses.
-IPAddress FuzzIPAddress(base::FuzzedDataProvider* data_provider) {
+IPAddress FuzzIPAddress(FuzzedDataProvider* data_provider) {
   if (data_provider->ConsumeBool())
     return FuzzIPv4Address(data_provider);
   return FuzzIPv6Address(data_provider);
@@ -93,7 +93,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
   // happen if a request is issued but the code never waits for the result
   // before the test ends.
   explicit FuzzedHostResolverProc(
-      base::WeakPtr<base::FuzzedDataProvider> data_provider)
+      base::WeakPtr<FuzzedDataProvider> data_provider)
       : HostResolverProc(nullptr),
         data_provider_(data_provider),
         network_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
@@ -151,7 +151,7 @@ class FuzzedHostResolverProc : public HostResolverProc {
  private:
   ~FuzzedHostResolverProc() override = default;
 
-  base::WeakPtr<base::FuzzedDataProvider> data_provider_;
+  base::WeakPtr<FuzzedDataProvider> data_provider_;
 
   // Just used for thread-safety checks.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -172,7 +172,7 @@ const Error kMdnsErrors[] = {ERR_FAILED,
 // RecvFrom calls.
 class FuzzedMdnsSocket : public DatagramServerSocket {
  public:
-  explicit FuzzedMdnsSocket(base::FuzzedDataProvider* data_provider)
+  explicit FuzzedMdnsSocket(FuzzedDataProvider* data_provider)
       : data_provider_(data_provider),
         local_address_(FuzzIPAddress(data_provider_), 5353),
         weak_factory_(this) {}
@@ -277,7 +277,7 @@ class FuzzedMdnsSocket : public DatagramServerSocket {
       std::move(callback).Run(data_provider_->PickValueInArray(kMdnsErrors));
   }
 
-  base::FuzzedDataProvider* const data_provider_;
+  FuzzedDataProvider* const data_provider_;
   const IPEndPoint local_address_;
   const NetLogWithSource net_log_;
 
@@ -286,7 +286,7 @@ class FuzzedMdnsSocket : public DatagramServerSocket {
 
 class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
  public:
-  explicit FuzzedMdnsSocketFactory(base::FuzzedDataProvider* data_provider)
+  explicit FuzzedMdnsSocketFactory(FuzzedDataProvider* data_provider)
       : data_provider_(data_provider) {}
 
   void CreateSockets(
@@ -297,7 +297,7 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
   }
 
  private:
-  base::FuzzedDataProvider* const data_provider_;
+  FuzzedDataProvider* const data_provider_;
 };
 
 class FuzzedHostResolverManager : public HostResolverManager {
@@ -305,7 +305,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
   // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
   FuzzedHostResolverManager(const HostResolver::ManagerOptions& options,
                             NetLog* net_log,
-                            base::FuzzedDataProvider* data_provider)
+                            FuzzedDataProvider* data_provider)
       : HostResolverManager(options, net_log),
         data_provider_(data_provider),
         is_ipv6_reachable_(data_provider->ConsumeBool()),
@@ -348,7 +348,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
     SetHaveOnlyLoopbackAddresses(data_provider_->ConsumeBool());
   }
 
-  base::FuzzedDataProvider* const data_provider_;
+  FuzzedDataProvider* const data_provider_;
 
   // Fixed value to be returned by IsIPv6Reachable.
   const bool is_ipv6_reachable_;
@@ -358,7 +358,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
 
   NetLog* const net_log_;
 
-  base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
+  base::WeakPtrFactory<FuzzedDataProvider> data_provider_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverManager);
 };
@@ -424,7 +424,7 @@ void FuzzedHostResolverManager::SetDnsClientEnabled(bool enabled) {
 
   std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
       net_log_, &socket_factory_,
-      base::Bind(&base::FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
+      base::Bind(&FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
   HostResolverManager::SetDnsClientForTesting(std::move(dns_client));
@@ -435,7 +435,7 @@ void FuzzedHostResolverManager::SetDnsClientEnabled(bool enabled) {
 std::unique_ptr<ContextHostResolver> CreateFuzzedContextHostResolver(
     const HostResolver::ManagerOptions& options,
     NetLog* net_log,
-    base::FuzzedDataProvider* data_provider,
+    FuzzedDataProvider* data_provider,
     bool enable_caching) {
   // FuzzedHostResolverManager only handles fuzzing DnsClient when enabled
   // through SetDnsClientEnabled().

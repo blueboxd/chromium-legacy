@@ -21,6 +21,9 @@ class Profile;
 class NotificationHandler {
  public:
   // Type of notifications that a handler can be responsible for.
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.notifications
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotificationType
   enum class Type {
     WEB_PERSISTENT = 0,
     WEB_NON_PERSISTENT = 1,

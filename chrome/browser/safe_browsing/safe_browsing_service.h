@@ -61,6 +61,7 @@ class SafeBrowsingPrivateApiUnitTest;
 
 namespace safe_browsing {
 class PingManager;
+class VerdictCacheManager;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
@@ -174,6 +175,9 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Create the default v4 protocol config struct.
   virtual V4ProtocolConfig GetV4ProtocolConfig() const;
+
+  // Get the cache manager by profile.
+  VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.

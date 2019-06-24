@@ -652,12 +652,10 @@ if (!is_ios) {
 
 if (is_android) {
   generate_jar_jni("motionevent_jni_headers") {
-    jni_package = "ui"
     classes = [ "android/view/MotionEvent.class" ]
   }
 
   generate_jar_jni("keyevent_jni_headers") {
-    jni_package = "ui"
     classes = [ "android/view/KeyEvent.class" ]
   }
 }

@@ -4,6 +4,8 @@
 
 #include "ui/events/blink/fling_booster.h"
 
+#include "base/trace_event/trace_event.h"
+
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
@@ -31,21 +33,29 @@ gfx::Vector2dF FlingBooster::GetVelocityForFlingStart(
   DCHECK_EQ(blink::WebInputEvent::kGestureFlingStart, fling_start.GetType());
   gfx::Vector2dF velocity(fling_start.data.fling_start.velocity_x,
                           fling_start.data.fling_start.velocity_y);
+  TRACE_EVENT2("input", "FlingBooster::GetVelocityForFlingStart", "vx",
+               velocity.x(), "vy", velocity.y());
 
-  if (ShouldBoostFling(fling_start))
-    velocity += current_fling_velocity_;
+  if (ShouldBoostFling(fling_start)) {
+    velocity += previous_fling_starting_velocity_;
+    TRACE_EVENT_INSTANT2("input", "Boosted", TRACE_EVENT_SCOPE_THREAD, "vx",
+                         velocity.x(), "vy", velocity.y());
+  }
 
   Reset();
 
+  previous_fling_starting_velocity_ = velocity;
   current_fling_velocity_ = velocity;
   source_device_ = fling_start.SourceDevice();
   modifiers_ = fling_start.GetModifiers();
 
-  return current_fling_velocity_;
+  return previous_fling_starting_velocity_;
 }
 
 void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
-  if (current_fling_velocity_.IsZero())
+  TRACE_EVENT1("input", "FlingBooster::ObserveGestureEvent", "type",
+               WebInputEvent::GetName(gesture_event.GetType()));
+  if (previous_fling_starting_velocity_.IsZero())
     return;
 
   // Gestures from a different source should prevent boosting.
@@ -68,6 +78,7 @@ void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
         return;
 
       if (gesture_event.TimeStamp() > cutoff_time_for_boost_) {
+        TRACE_EVENT_INSTANT0("input", "Timeout", TRACE_EVENT_SCOPE_THREAD);
         Reset();
         return;
       }
@@ -76,7 +87,8 @@ void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
       // boost.
       gfx::Vector2dF delta(gesture_event.data.scroll_update.delta_x,
                            gesture_event.data.scroll_update.delta_y);
-      if (gfx::DotProduct(current_fling_velocity_, delta) <= 0) {
+      if (gfx::DotProduct(previous_fling_starting_velocity_, delta) <= 0) {
+        TRACE_EVENT_INSTANT0("input", "Direction", TRACE_EVENT_SCOPE_THREAD);
         Reset();
         return;
       }
@@ -94,6 +106,7 @@ void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
               gfx::ScaleVector2d(delta, 1. / time_since_last_boost_event);
           if (scroll_velocity.LengthSquared() <
               kMinBoostTouchScrollSpeedSquare) {
+            TRACE_EVENT_INSTANT0("input", "Velocity", TRACE_EVENT_SCOPE_THREAD);
             Reset();
             return;
           }
@@ -111,6 +124,8 @@ void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
     }
     case WebInputEvent::kGestureFlingCancel: {
       if (gesture_event.data.fling_cancel.prevent_boosting) {
+        TRACE_EVENT_INSTANT0("input", "GFC PreventBoosting",
+                             TRACE_EVENT_SCOPE_THREAD);
         Reset();
         return;
       }
@@ -125,36 +140,66 @@ void FlingBooster::ObserveGestureEvent(const WebGestureEvent& gesture_event) {
   }
 }
 
+void FlingBooster::ObserveProgressFling(
+    const gfx::Vector2dF& current_velocity) {
+  TRACE_EVENT2("input", "FlingBooster::ObserveProgressFling", "vx",
+               current_velocity.x(), "vy", current_velocity.y());
+  DCHECK(!previous_fling_starting_velocity_.IsZero());
+  current_fling_velocity_ = current_velocity;
+}
+
 bool FlingBooster::ShouldBoostFling(const WebGestureEvent& fling_start_event) {
   DCHECK_EQ(WebInputEvent::kGestureFlingStart, fling_start_event.GetType());
-  if (current_fling_velocity_.IsZero())
+  if (previous_fling_starting_velocity_.IsZero()) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - NoActiveFling",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
-  if (source_device_ != fling_start_event.SourceDevice())
+  if (source_device_ != fling_start_event.SourceDevice()) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - SourceDevice",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
-  if (modifiers_ != fling_start_event.GetModifiers())
+  if (modifiers_ != fling_start_event.GetModifiers()) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - Modifiers",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
-  if (cutoff_time_for_boost_.is_null())
+  if (cutoff_time_for_boost_.is_null()) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - CutoffTimeUnset",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
-  if (fling_start_event.TimeStamp() > cutoff_time_for_boost_)
+  if (fling_start_event.TimeStamp() > cutoff_time_for_boost_) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - Timeout",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   gfx::Vector2dF new_fling_velocity(
       fling_start_event.data.fling_start.velocity_x,
       fling_start_event.data.fling_start.velocity_y);
 
-  if (gfx::DotProduct(current_fling_velocity_, new_fling_velocity) <= 0) {
+  if (gfx::DotProduct(previous_fling_starting_velocity_, new_fling_velocity) <=
+      0) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - Direction",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
   if (current_fling_velocity_.LengthSquared() < kMinBoostFlingSpeedSquare) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - CurrentVelocity",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
   if (new_fling_velocity.LengthSquared() < kMinBoostFlingSpeedSquare) {
+    TRACE_EVENT_INSTANT0("input", "No Boost - NewVelocity",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
@@ -162,7 +207,9 @@ bool FlingBooster::ShouldBoostFling(const WebGestureEvent& fling_start_event) {
 }
 
 void FlingBooster::Reset() {
+  TRACE_EVENT0("input", "FlingBooster::Reset");
   cutoff_time_for_boost_ = base::TimeTicks();
+  previous_fling_starting_velocity_ = gfx::Vector2dF();
   current_fling_velocity_ = gfx::Vector2dF();
   source_device_ = blink::WebGestureDevice::kUninitialized;
   modifiers_ = 0;

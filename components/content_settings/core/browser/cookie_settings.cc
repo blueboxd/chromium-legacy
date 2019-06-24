@@ -183,10 +183,12 @@ void CookieSettings::OnCookiePreferencesChanged() {
            prefs::kCookieControlsEnabled));
 
   if (block_third_party_cookies_ != new_block_third_party_cookies) {
-    base::AutoLock auto_lock(lock_);
-    block_third_party_cookies_ = new_block_third_party_cookies;
+    {
+      base::AutoLock auto_lock(lock_);
+      block_third_party_cookies_ = new_block_third_party_cookies;
+    }
     for (Observer& obs : observers_)
-      obs.OnThirdPartyCookieBlockingChanged(block_third_party_cookies_);
+      obs.OnThirdPartyCookieBlockingChanged(new_block_third_party_cookies);
   }
 }
 

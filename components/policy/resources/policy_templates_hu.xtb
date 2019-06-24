@@ -446,12 +446,6 @@
 
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME" /> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
 <translation id="1750315445671978749">Az összes letöltés letiltása</translation>
-<translation id="1762072363876276024">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Lásd még a <ph name="SITE_PER_PROCESS_POLICY_NAME" /> házirendet is, amely a felhasználói munkamenetre vonatkozik. Javasolt mindkét házirendet ugyanarra az értékre állítani. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      Ez a DeviceLoginScreenSitePerProcess beállítás használható annak letiltására, hogy a felhasználók kikapcsolhassák az összes webhelyet elszigetelő alapértelmezett viselkedést. Ne feledje, hogy a DeviceLoginScreenIsolateOrigins házirend is hasznos lehet további, pontosabb eredetek elszigetelésére.
-      Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely a saját folyamatában fut.
-      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).
-      </translation>
 <translation id="1767673020408652620">Alkalmazásjavaslatok engedélyezése a keresőmező alapállapotában</translation>
 <translation id="17719159826324007">
       Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
@@ -3610,22 +3604,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Megjegyzés: A <ph name="MINUTE_FIELD_NAME" /> mező megengedett értékei a <ph name="CHARGE_START_TIME_FIELD_NAME" /> és <ph name="CHARGE_END_TIME_FIELD_NAME" /> beállításokban a következők: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
-<translation id="7724994675283793633">Ez a házirend a HTTP/0.9 protokoll használatát más portokon is engedélyezi a HTTP 80-as és a HTTPS 443-as portja mellett.
-
-      Ez a házirend alapértelmezés szerint le van tiltva, és engedélyezése esetén a felhasználók ki lesznek téve a következő biztonsági problémának: https://crbug.com/600352.
-
-      A házirend célja, hogy lehetőséget adjon a vállalatoknak arra, hogy a  meglévő szervereiket áttelepítsék HTTP/0.9-ről. A házirendet a jövőben eltávolítjuk.
-
-      Ha nem állítja be ezt a házirendet, akkor a HTTP/0.9 le lesz tiltva a nem alapértelmezett portokon.</translation>
-<translation id="7726421241038987229">
-      Ez a SitePerProcess beállítás használható annak letiltására, hogy a felhasználók kikapcsolhassák az összes webhelyet elszigetelő alapértelmezett viselkedést. Ne feledje, hogy az IsolateOrigins házirend is hasznos lehet további, pontosabb eredetek elszigetelésére.
-      Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely a saját folyamatában fut.
-      Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók kikapcsolhatják a webhely-elszigetelést
-      (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).  A házirend letiltása és/vagy beállításának mellőzése nem kapcsolja ki a webhely-elszigetelést.
-      A <ph name="PRODUCT_OS_NAME" /> rendszeren ajánlott a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirendet is ugyanerre az értékre állítani. Ha a két házirend által megadott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-
-      MEGJEGYZÉS: Ez a házirend nem alkalmazható Android rendszeren. Ha engedélyezni szeretné a SitePerProcess házirendet Androidon, használja a SitePerProcessAndroid házirend-beállítást.
-      </translation>
 <translation id="7747447585227954402"><ph name="PLUGIN_VM_NAME" /> használatának engedélyezése az eszközök számára <ph name="PRODUCT_OS_NAME" /> rendszeren</translation>
 <translation id="7749402620209366169">Engedélyezi a kétlépcsős azonosítást a távoli hozzáférésű gazdagépekhez a felhasználóspecifikus PIN-kód helyett.
 

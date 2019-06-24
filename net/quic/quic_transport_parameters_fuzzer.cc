@@ -7,16 +7,17 @@
 
 #include <vector>
 
-#include "base/test/fuzzed_data_provider.h"
 #include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   auto perspective = data_provider.ConsumeBool() ? quic::Perspective::IS_CLIENT
                                                  : quic::Perspective::IS_SERVER;
   quic::TransportParameters transport_parameters;
-  std::vector<uint8_t> remaining_bytes = data_provider.ConsumeRemainingBytes();
+  std::vector<uint8_t> remaining_bytes =
+      data_provider.ConsumeRemainingBytes<uint8_t>();
   quic::ParseTransportParameters(remaining_bytes.data(), remaining_bytes.size(),
                                  perspective, &transport_parameters);
   return 0;

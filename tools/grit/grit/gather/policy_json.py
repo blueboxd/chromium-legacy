@@ -174,8 +174,10 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
       for item in obj:
         self._AddSchemaKeys(item, depth + 1)
       self._AddIndentedNontranslateableChunk(depth, '],\n')
-    elif obj_type in (bool, int, str):
+    elif obj_type == str:
       self._AddIndentedNontranslateableChunk(depth, "'%s',\n" % obj)
+    elif obj_type in (bool, int):
+      self._AddIndentedNontranslateableChunk(depth, "%s,\n" % obj)
     else:
       raise Exception('Invalid schema object: %s' % obj)
 

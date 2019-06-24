@@ -1533,8 +1533,6 @@ component("net") {
       "third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder.h",
       "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.cc",
       "third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h",
-      "third_party/quiche/src/quic/core/qpack/qpack_progressive_encoder.cc",
-      "third_party/quiche/src/quic/core/qpack/qpack_progressive_encoder.h",
       "third_party/quiche/src/quic/core/qpack/qpack_receive_stream.cc",
       "third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h",
       "third_party/quiche/src/quic/core/qpack/qpack_send_stream.cc",

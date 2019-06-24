@@ -9,10 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ const Error kReadErrors[] = {OK, ERR_FAILED, ERR_CONTENT_DECODING_FAILED};
 
 }  // namespace
 
-FuzzedSourceStream::FuzzedSourceStream(base::FuzzedDataProvider* data_provider)
+FuzzedSourceStream::FuzzedSourceStream(FuzzedDataProvider* data_provider)
     : SourceStream(SourceStream::TYPE_NONE),
       data_provider_(data_provider),
       read_pending_(false),

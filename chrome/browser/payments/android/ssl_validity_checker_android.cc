@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/android/scoped_java_ref.h"
+#include "chrome/android/chrome_jni_headers/SslValidityChecker_jni.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SslValidityChecker_jni.h"
 
 namespace payments {
 

@@ -137,8 +137,7 @@ void AddressAccessoryControllerImpl::RefreshSuggestions() {
   if (profiles.empty())
     title_or_empty_message =
         l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SHEET_EMPTY_MESSAGE);
-  GetManualFillingController()->RefreshSuggestionsForField(
-      mojom::FocusedFieldType::kFillableTextField,
+  GetManualFillingController()->RefreshSuggestions(
       autofill::CreateAccessorySheetData(
           autofill::AccessoryTabType::ADDRESSES, title_or_empty_message,
           UserInfosForProfiles(profiles), CreateManageAddressesFooter()));

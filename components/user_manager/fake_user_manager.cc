@@ -65,6 +65,14 @@ const User* FakeUserManager::AddUserWithAffiliation(const AccountId& account_id,
   return user;
 }
 
+const user_manager::User* FakeUserManager::AddPublicAccountUser(
+    const AccountId& account_id) {
+  user_manager::User* user =
+      user_manager::User::CreatePublicAccountUserForTesting(account_id);
+  users_.push_back(user);
+  return user;
+}
+
 void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
   const UserList::iterator it = std::find_if(
       users_.begin(), users_.end(), [&account_id](const User* user) {

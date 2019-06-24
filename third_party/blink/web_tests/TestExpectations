@@ -367,8 +367,6 @@ crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-sc
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
 
-# LayoutNG fixes this
-
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -705,11 +703,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
-
-# Tests for LayoutNG to pass, but not planned to fix for pre-LayoutNG.
-crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-links.html [ Pass Failure ]
-
-# ====== LayoutNG ======
 
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
@@ -3214,6 +3207,7 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-HTMLVideoElement-invalid-state.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
@@ -4767,9 +4761,8 @@ crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditiona
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
+crbug.com/798572 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel-success.html [ Failure Timeout ]
 
-crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
-crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ]
 
@@ -5811,7 +5804,6 @@ crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 
 # Sheriff 2019-02-27
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
-crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pass ]
 
 
 # Sheriff 2019-02-28
@@ -6044,6 +6036,9 @@ crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin
 # Workaround for bug; should be removed soon.
 crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.https.html [ Timeout ]
 
+# Allow failure until its appearance gets stable.
+crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
+
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
@@ -6126,9 +6121,6 @@ crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Fa
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
 # Flaky on Linux
-crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
-
-# Flaky on Linux
 crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
 
 # Sheriff 2019-06-19
@@ -6145,3 +6137,6 @@ crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listen
 crbug.com/974710 [ Win7 ] http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/974710 [ Win7 ] virtual/blink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/974710 [ Win7 ] virtual/isolated_world_csp/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+
+# Sheriff 2019-06-24
+crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Pass Timeout ]

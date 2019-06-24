@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/TranslateBridge_jni.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -14,7 +15,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/TranslateBridge_jni.h"
 
 static ChromeTranslateClient* GetTranslateClient(
     const base::android::JavaParamRef<jobject>& j_web_contents) {

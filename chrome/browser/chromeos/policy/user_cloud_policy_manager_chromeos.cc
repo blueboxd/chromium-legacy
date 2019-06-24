@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
@@ -121,6 +122,11 @@ class UserCloudPolicyManagerChromeOSNotifierFactory
   UserCloudPolicyManagerChromeOSNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "UserRemoteCommandsInvalidator") {
+    if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
+      DependsOn(
+          invalidation::ProfileInvalidationProviderFactory::GetInstance());
+      return;
+    }
     DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
                   GetInstance());
   }
@@ -740,9 +746,17 @@ void UserCloudPolicyManagerChromeOS::Observe(
   registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_ADDED,
                     content::Source<Profile>(profile_));
 
+  // If true FCMInvalidationService will be used as invalidation service and
+  // TiclInvalidationService otherwise.
+  const bool is_fcm_enabled =
+      base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations);
+
   invalidation::ProfileInvalidationProvider* const invalidation_provider =
-      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
-          profile_);
+      is_fcm_enabled
+          ? invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+                profile_)
+          : invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetForProfile(profile_);
 
   if (!invalidation_provider)
     return;
@@ -750,7 +764,12 @@ void UserCloudPolicyManagerChromeOS::Observe(
   core()->StartRemoteCommandsService(
       std::make_unique<UserCommandsFactoryChromeOS>(profile_));
   invalidator_ = std::make_unique<RemoteCommandsInvalidatorImpl>(core());
-  invalidator_->Initialize(invalidation_provider->GetInvalidationService());
+
+  invalidator_->Initialize(
+      is_fcm_enabled
+          ? invalidation_provider->GetInvalidationServiceForCustomSender(
+                policy::kPolicyFCMInvalidationSenderID)
+          : invalidation_provider->GetInvalidationService());
 
   shutdown_notifier_ =
       UserCloudPolicyManagerChromeOSNotifierFactory::GetInstance()

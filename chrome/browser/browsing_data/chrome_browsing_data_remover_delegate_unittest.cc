@@ -83,6 +83,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -108,7 +109,6 @@
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "components/feed/buildflags.h"
 #else  // !defined(OS_ANDROID)
-#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "content/public/browser/host_zoom_map.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -2844,13 +2844,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 #if !defined(OS_ANDROID)
   auto* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-  // Create a PasswordProtectionService that will handle deletion of
-  // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries. The mock is sufficient
-  // as we don't need to rely any functionality of the Chrome* implementation.
-  safe_browsing::MockPasswordProtectionService password_protection_service(
-      nullptr, nullptr, history_service, map);
-  EXPECT_CALL(password_protection_service,
-              RemoveUnhandledSyncPasswordReuseOnURLsDeleted(true, _));
+  // Create a safe_browsing::VerdictCacheManager that will handle deletion of
+  // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries.
+  safe_browsing::VerdictCacheManager sb_cache_manager(history_service, map);
 #endif  // !defined(OS_ANDROID)
 
   GURL url("https://example.com");

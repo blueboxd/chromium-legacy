@@ -111,7 +111,6 @@ generate_jni("ui_android_jni_headers") {
     "java/src/org/chromium/ui/resources/ResourceFactory.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
   ]
-  jni_package = "ui_android"
 }
 
 java_cpp_enum("java_enums_srcjar") {
@@ -275,6 +274,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/interpolators/BakedBezierInterpolator.java",
     "java/src/org/chromium/ui/modaldialog/DialogDismissalCause.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogManager.java",
+    "java/src/org/chromium/ui/modaldialog/ModalDialogManagerHolder.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogProperties.java",
     "java/src/org/chromium/ui/modelutil/ForwardingListObservable.java",
     "java/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcp.java",

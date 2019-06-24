@@ -14,6 +14,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -22,12 +23,16 @@ namespace content {
 
 namespace {
 
-constexpr int kPageShowFeature = static_cast<int>(
+constexpr uint64_t kPageShowFeature = static_cast<uint64_t>(
     blink::scheduler::WebSchedulerTrackedFeature::kPageShowEventListener);
 
-constexpr int kHasScriptableFramesInMultipleTabsFeature =
-    static_cast<int>(blink::scheduler::WebSchedulerTrackedFeature::
-                         kHasScriptableFramesInMultipleTabs);
+constexpr uint64_t kHasScriptableFramesInMultipleTabsFeature =
+    static_cast<uint64_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                              kHasScriptableFramesInMultipleTabs);
+
+constexpr uint64_t kRequestedGeolocationPermissionFeature =
+    static_cast<uint64_t>(blink::scheduler::WebSchedulerTrackedFeature::
+                              kRequestedGeolocationPermission);
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
   return ukm::ConvertToSourceId(navigation_id,
@@ -80,6 +85,12 @@ std::vector<UkmMetrics> GetMetrics(ukm::TestUkmRecorder* recorder,
 
 class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
                                            public WebContentsObserver {
+ public:
+  BackForwardCacheMetricsBrowserTest() {
+    geolocation_override_ =
+        std::make_unique<device::ScopedGeolocationOverrider>(1.0, 1.0);
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -92,8 +103,10 @@ class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
     navigation_ids_.push_back(navigation_handle->GetNavigationId());
   }
 
- protected:
   std::vector<int64_t> navigation_ids_;
+
+ private:
+  std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
@@ -596,6 +609,23 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
   EXPECT_THAT(GetFeatureUsageMetrics(&recorder),
               testing::ElementsAre(FeatureUsage{
                   id3, 1 << kHasScriptableFramesInMultipleTabsFeature, 0, 0}));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, Geolocation) {
+  const GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  EXPECT_EQ("success", EvalJs(main_frame, R"(
+    new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        resolve.bind(this, "success"),
+        resolve.bind(this, "failure"))
+      });
+  )"));
+  EXPECT_TRUE(main_frame->scheduler_tracked_features() &
+              (1 << kRequestedGeolocationPermissionFeature));
 }
 
 }  // namespace content

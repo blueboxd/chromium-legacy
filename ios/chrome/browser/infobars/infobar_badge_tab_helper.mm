@@ -31,19 +31,23 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed() {
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
+    InfobarType infobarType) {
   delegate_.badgeState &= ~InfobarBadgeStateSelected;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented() {
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented(
+    InfobarType infobarType) {
   delegate_.badgeState |= InfobarBadgeStateSelected;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed() {
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed(
+    InfobarType infobarType) {
   delegate_.badgeState &= ~InfobarBadgeStateSelected;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
+    InfobarType infobarType) {
   delegate_.badgeState |= InfobarBadgeStateAccepted;
   is_badge_accepted_ = true;
 }
@@ -98,7 +102,7 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
                                                   bool display) {
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   id<InfobarUIDelegate> controller_ = infobar_ios->InfobarUIDelegate();
-  if (IsInfobarUIRebootEnabled() && [controller_ isPresented]) {
+  if (IsInfobarUIRebootEnabled() && controller_.hasBadge) {
     is_infobar_displaying_ = display;
     infobar_type_ = controller_.infobarType;
     [delegate_ displayBadge:display type:infobar_type_];

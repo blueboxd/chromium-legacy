@@ -11,6 +11,7 @@ include_rules = [
   "+services/audio/public/mojom",
   "+services/network",
   "+services/service_manager",
+  "+testing/android/native_test/native_browser_test_support.h",
   "+ui/ozone/public",
   "+ui/views/test",
   "+v8/include/v8.h",

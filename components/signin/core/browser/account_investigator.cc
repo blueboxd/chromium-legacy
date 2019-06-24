@@ -135,12 +135,12 @@ std::string AccountInvestigator::HashAccounts(
   std::transform(std::begin(signed_in_accounts), std::end(signed_in_accounts),
                  std::back_inserter(sorted_ids),
                  [](const ListedAccount& account) {
-                   return std::string(kSignedInHashPrefix) + account.id;
+                   return std::string(kSignedInHashPrefix) + account.id.id;
                  });
   std::transform(std::begin(signed_out_accounts), std::end(signed_out_accounts),
                  std::back_inserter(sorted_ids),
                  [](const ListedAccount& account) {
-                   return std::string(kSignedOutHashPrefix) + account.id;
+                   return std::string(kSignedOutHashPrefix) + account.id.id;
                  });
   std::sort(sorted_ids.begin(), sorted_ids.end());
   std::ostringstream stream;

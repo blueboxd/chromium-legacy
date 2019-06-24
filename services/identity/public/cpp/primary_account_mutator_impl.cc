@@ -29,7 +29,7 @@ PrimaryAccountMutatorImpl::~PrimaryAccountMutatorImpl() {}
 
 #if !defined(OS_CHROMEOS)
 bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if (!pref_service_->GetBoolean(prefs::kSigninAllowed))
     return false;
 

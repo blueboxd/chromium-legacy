@@ -7,9 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+namespace ios {
+class ChromeBrowserState;
+}
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OmniboxFocuser;
+class WebStateList;
 
 // Handler for the actions associated with the different toolbar buttons.
 @interface ToolbarButtonActionsHandler : NSObject
@@ -18,6 +22,12 @@
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
         dispatcher;
+
+// WebStateList used to insert new tab.
+@property(nonatomic, assign) WebStateList* webStateList;
+
+// BrowserState used to create new tab.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
 // Action when the back button is tapped.
 - (void)backAction;

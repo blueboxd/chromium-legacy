@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/features/media_router/jni_headers/ChromeMediaRouterDialogController_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/router/media_router.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "device/vr/buildflags/buildflags.h"
-#include "jni/ChromeMediaRouterDialogController_jni.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 using base::android::ConvertJavaStringToUTF8;

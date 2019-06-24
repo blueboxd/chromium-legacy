@@ -8,11 +8,8 @@
 #include "base/strings/strcat.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
-#include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
 
@@ -89,7 +86,6 @@ void OriginPolicyFetcher::OnPolicyRedirect(
     std::vector<std::string>* to_be_removed_headers) {
   if (IsValidRedirect(redirect_info)) {
     must_redirect_ = false;
-    // TODO(andypaicu): should we callback with the original url or the new url?
     fetch_url_ = redirect_info.new_url;
     return;
   }
@@ -147,20 +143,17 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
 
 void OriginPolicyFetcher::WorkDone(std::unique_ptr<std::string> policy_content,
                                    mojom::OriginPolicyState state) {
-  if (callback_) {
-    auto result = mojom::OriginPolicy::New();
-    result->state = state;
-    if (policy_content) {
-      result->contents = mojom::OriginPolicyContents::New();
-      result->contents->raw_policy = *policy_content;
-    }
-    result->policy_url = fetch_url_;
-
-    std::move(callback_).Run(std::move(result));
+  auto result = mojom::OriginPolicy::New();
+  result->state = state;
+  if (policy_content) {
+    result->contents = mojom::OriginPolicyContents::New();
+    result->contents->raw_policy = *policy_content;
   }
+  result->policy_url = fetch_url_;
 
   // Do not add code after this call as it will destroy this object.
-  owner_policy_manager_->FetcherDone(this);
+  owner_policy_manager_->FetcherDone(this, std::move(result),
+                                     std::move(callback_));
 }
 
 bool OriginPolicyFetcher::IsValidRedirect(

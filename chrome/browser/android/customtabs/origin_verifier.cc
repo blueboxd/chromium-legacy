@@ -9,13 +9,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "chrome/android/chrome_jni_headers/OriginVerifier_jni.h"
 #include "chrome/browser/android/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "jni/OriginVerifier_jni.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 using base::android::ConvertJavaStringToUTF16;

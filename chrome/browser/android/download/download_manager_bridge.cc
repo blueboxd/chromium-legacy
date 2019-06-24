@@ -10,9 +10,9 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/feature_list.h"
+#include "chrome/android/chrome_jni_headers/DownloadManagerBridge_jni.h"
 #include "components/download/public/common/download_features.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/DownloadManagerBridge_jni.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;

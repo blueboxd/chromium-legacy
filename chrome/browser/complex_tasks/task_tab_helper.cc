@@ -16,8 +16,8 @@
 #include "content/public/browser/navigation_entry.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/android/chrome_jni_headers/TaskTabHelper_jni.h"
 #include "chrome/browser/android/tab_android.h"
-#include "jni/TaskTabHelper_jni.h"
 
 using base::android::JavaParamRef;
 #endif  // defined(OS_ANDROID)

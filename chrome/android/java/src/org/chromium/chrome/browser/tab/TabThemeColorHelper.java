@@ -12,6 +12,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.RenderWidgetHostView;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Manages theme color used for {@link Tab}. Destroyed together with the tab.
@@ -165,9 +167,15 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     public int getBackgroundColor() {
         if (mTab.isNativePage()) return mTab.getNativePage().getBackgroundColor();
 
-        final int backgroundColor = mTab.getWebContents() != null
-                ? mTab.getWebContents().getBackgroundColor()
-                : Color.TRANSPARENT;
+        WebContents tabWebContents = mTab.getWebContents();
+        RenderWidgetHostView rwhv =
+                tabWebContents == null ? null : tabWebContents.getRenderWidgetHostView();
+        final int backgroundColor = rwhv != null ? rwhv.getBackgroundColor() : Color.TRANSPARENT;
+        // TODO(donnd): remove this and support for WebContents#getBackgroundColor when
+        // addressing https://crbug.com/968150.
+        assert backgroundColor
+                == (mTab.getWebContents() != null ? mTab.getWebContents().getBackgroundColor()
+                                                  : Color.TRANSPARENT);
         return backgroundColor == Color.TRANSPARENT ? mDefaultBackgroundColor : backgroundColor;
     }
 

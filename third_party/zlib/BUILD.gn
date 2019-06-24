@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
+
 if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
 }
@@ -102,7 +104,7 @@ if (use_arm_neon_optimizations) {
           assert(false, "CPU detection requires the Android NDK")
         }
       } else if (!is_win && !is_clang) {
-        assert(!thin_lto_enable_optimizations,
+        assert(!use_thin_lto,
                "ThinLTO fails mixing different module-level targets")
         cflags_c = [ "-march=armv8-a+crc" ]
       }

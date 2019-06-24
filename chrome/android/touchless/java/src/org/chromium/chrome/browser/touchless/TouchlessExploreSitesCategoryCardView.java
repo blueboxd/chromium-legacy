@@ -44,8 +44,7 @@ class TouchlessExploreSitesCategoryCardView extends ExploreSitesCategoryCardView
 
         @Override
         public boolean isItemSupported(int menuItemId) {
-            return menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS
-                    || menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
+            return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
         }
     }
 

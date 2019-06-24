@@ -49,15 +49,16 @@ class TabbedPaneAccessibilityMacTest : public WidgetTest {
     WidgetTest::SetUp();
     widget_ = CreateTopLevelPlatformWidget();
     widget_->SetBounds(gfx::Rect(50, 50, 100, 100));
-    tabbed_pane_ = new TabbedPane();
-    tabbed_pane_->SetSize(gfx::Size(100, 100));
+    auto tabbed_pane = std::make_unique<TabbedPane>();
+    tabbed_pane->SetSize(gfx::Size(100, 100));
 
     // Create two tabs and position/size them.
-    tabbed_pane_->AddTab(base::ASCIIToUTF16("Tab 1"), new View());
-    tabbed_pane_->AddTab(base::ASCIIToUTF16("Tab 2"), new View());
-    tabbed_pane_->Layout();
+    tabbed_pane->AddTab(base::ASCIIToUTF16("Tab 1"), std::make_unique<View>());
+    tabbed_pane->AddTab(base::ASCIIToUTF16("Tab 2"), std::make_unique<View>());
+    tabbed_pane->Layout();
 
-    widget_->GetContentsView()->AddChildView(tabbed_pane_);
+    tabbed_pane_ =
+        widget_->GetContentsView()->AddChildView(std::move(tabbed_pane));
     widget_->Show();
   }
 

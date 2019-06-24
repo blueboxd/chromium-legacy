@@ -68,6 +68,7 @@ class FtlMessagingClient final : public MessagingClient {
                              const ftl::AckMessagesResponse& response);
 
   std::unique_ptr<ScopedGrpcServerStream> OpenReceiveMessagesStream(
+      base::OnceClosure on_channel_ready,
       const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
           on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed);

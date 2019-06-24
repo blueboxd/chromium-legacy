@@ -807,7 +807,9 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
 
     private void onImeEvent() {
         for (ImeEventObserver observer : mEventObservers) observer.onImeEvent();
-        if (mNodeEditable) mWebContents.dismissTextHandles();
+        if (mNodeEditable && mWebContents.getRenderWidgetHostView() != null) {
+            mWebContents.getRenderWidgetHostView().dismissTextHandles();
+        }
     }
 
     boolean sendCompositionToNative(

@@ -29,6 +29,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -107,13 +108,13 @@ class MockChromePasswordProtectionService
  public:
   explicit MockChromePasswordProtectionService(
       Profile* profile,
-      scoped_refptr<HostContentSettingsMap> content_setting_map,
       scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      StringProvider sync_password_hash_provider)
+      StringProvider sync_password_hash_provider,
+      VerdictCacheManager* cache_manager)
       : ChromePasswordProtectionService(profile,
-                                        content_setting_map,
                                         ui_manager,
-                                        sync_password_hash_provider),
+                                        sync_password_hash_provider,
+                                        cache_manager),
         is_incognito_(false),
         is_extended_reporting_(false) {}
   bool IsExtendedReporting() override { return is_extended_reporting_; }
@@ -154,6 +155,9 @@ class ChromePasswordProtectionServiceTest
         false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
 
+    cache_manager_ = std::make_unique<VerdictCacheManager>(
+        nullptr, content_setting_map_.get());
+
     service_ = NewMockPasswordProtectionService();
     fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
         browser_sync::UserEventServiceFactory::GetInstance()
@@ -175,6 +179,7 @@ class ChromePasswordProtectionServiceTest
     service_.reset();
     request_ = nullptr;
     identity_test_env_profile_adaptor_.reset();
+    cache_manager_.reset();
     content_setting_map_->ShutdownOnUIThread();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -191,11 +196,11 @@ class ChromePasswordProtectionServiceTest
     // to use the interface in components/safe_browsing, and remove this
     // cast.
     return std::make_unique<MockChromePasswordProtectionService>(
-        profile(), content_setting_map_,
+        profile(),
         new SafeBrowsingUIManager(
             static_cast<safe_browsing::SafeBrowsingService*>(
                 SafeBrowsingService::CreateSafeBrowsingService())),
-        sync_password_hash_provider);
+        sync_password_hash_provider, cache_manager_.get());
   }
 
   content::BrowserContext* CreateBrowserContext() override {
@@ -290,6 +295,7 @@ class ChromePasswordProtectionServiceTest
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
   extensions::TestEventRouter* test_event_router_;
+  std::unique_ptr<VerdictCacheManager> cache_manager_;
 };
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -518,7 +524,7 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   verdict_proto.set_cache_expression("password_reuse_url.com/");
   service_->CacheVerdict(
       url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordReuseEvent::SIGN_IN_PASSWORD, &verdict_proto, base::Time::Now());
+      PasswordReuseEvent::SIGN_IN_PASSWORD, verdict_proto, base::Time::Now());
 
   service_->UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
                                 PasswordReuseEvent::SIGN_IN_PASSWORD,

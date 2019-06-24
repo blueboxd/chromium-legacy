@@ -9,10 +9,10 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/android/features/vr/jni_headers/VrConsentDialog_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/VrConsentDialog_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

@@ -11,6 +11,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 
 import static org.hamcrest.core.AllOf.allOf;
 
+import static org.chromium.autofill.mojom.FocusedFieldType.FILLABLE_NON_SEARCH_FIELD;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
@@ -168,12 +169,22 @@ public class ManualFillingTestHelper {
 
     public void clickNodeAndShowKeyboard(String node)
             throws TimeoutException, InterruptedException {
-        clickNode(node);
+        clickNodeAndShowKeyboard(node, FILLABLE_NON_SEARCH_FIELD);
+    }
+
+    public void clickNodeAndShowKeyboard(String node, int focusedFieldType)
+            throws TimeoutException, InterruptedException {
+        clickNode(node, focusedFieldType);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
-    public void clickNode(String node) throws TimeoutException, InterruptedException {
+    public void clickNode(String node, int focusedFieldType)
+            throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mWebContentsRef.get(), node);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ManualFillingComponentBridge.notifyFocusedFieldType(
+                    mActivityTestRule.getWebContents(), focusedFieldType);
+        });
     }
 
     /**

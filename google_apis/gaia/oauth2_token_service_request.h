@@ -70,7 +70,7 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request {
   // may be populated with the fetched results.
   static std::unique_ptr<OAuth2TokenServiceRequest> CreateAndStart(
       const scoped_refptr<TokenServiceProvider>& provider,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenService::Consumer* consumer);
 
@@ -83,21 +83,21 @@ class OAuth2TokenServiceRequest : public OAuth2TokenService::Request {
   // |scopes| must not be empty.
   static void InvalidateToken(
       const scoped_refptr<TokenServiceProvider>& provider,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       const std::string& access_token);
 
   ~OAuth2TokenServiceRequest() override;
 
   // OAuth2TokenService::Request.
-  std::string GetAccountId() const override;
+  CoreAccountId GetAccountId() const override;
 
  private:
-  OAuth2TokenServiceRequest(const std::string& account_id);
+  OAuth2TokenServiceRequest(const CoreAccountId& account_id);
 
   void StartWithCore(const scoped_refptr<Core>& core);
 
-  const std::string account_id_;
+  const CoreAccountId account_id_;
   scoped_refptr<Core> core_;
 
   SEQUENCE_CHECKER(sequence_checker_);

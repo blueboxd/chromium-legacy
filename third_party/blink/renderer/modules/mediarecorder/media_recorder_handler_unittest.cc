@@ -15,9 +15,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -71,11 +71,11 @@ static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
 };
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
-                                 public blink::WebMediaRecorderHandlerClient {
+                                 public MediaRecorderHandlerClient {
  public:
   MediaRecorderHandlerTest()
       : media_recorder_handler_(new MediaRecorderHandler(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting())),
+            scheduler::GetSingleThreadTaskRunnerForTesting())),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,
                       kTestAudioSampleRate) {
@@ -90,7 +90,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   }
 
   MOCK_METHOD4(WriteData, void(const char*, size_t, bool, double));
-  MOCK_METHOD1(OnError, void(const WebString& message));
+  MOCK_METHOD1(OnError, void(const String& message));
 
   bool recording() const { return media_recorder_handler_->recording_; }
   bool hasVideoRecorders() const {
@@ -135,7 +135,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
-  blink::MockMediaStreamRegistry registry_;
+  MockMediaStreamRegistry registry_;
 
   // The Class under test. Needs to be scoped_ptr to force its destruction.
   std::unique_ptr<MediaRecorderHandler> media_recorder_handler_;

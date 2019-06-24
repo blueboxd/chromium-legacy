@@ -127,14 +127,14 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, LocalNTPRequests) {
   auto create_request_params =
       [&example_com](const url::Origin& initiator, content::ResourceType type,
                      extensions::WebRequestResourceType web_request_type,
-                     bool is_browser_side_navigation) {
+                     bool is_navigation_request) {
         WebRequestInfoInitParams info_params;
         info_params.url = example_com;
         info_params.initiator = initiator;
         info_params.render_process_id = -1;
         info_params.type = type;
         info_params.web_request_type = web_request_type;
-        info_params.is_browser_side_navigation = is_browser_side_navigation;
+        info_params.is_navigation_request = is_navigation_request;
         return info_params;
       };
 

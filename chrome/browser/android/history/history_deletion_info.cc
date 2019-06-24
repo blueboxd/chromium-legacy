@@ -5,8 +5,8 @@
 #include "chrome/browser/android/history/history_deletion_info.h"
 
 #include "base/android/jni_array.h"
+#include "chrome/android/chrome_jni_headers/HistoryDeletionInfo_jni.h"
 #include "components/history/core/browser/history_types.h"
-#include "jni/HistoryDeletionInfo_jni.h"
 
 using base::android::ScopedJavaLocalRef;
 

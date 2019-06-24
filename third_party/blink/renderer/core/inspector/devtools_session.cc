@@ -26,6 +26,7 @@
 namespace blink {
 
 namespace {
+using ::inspector_protocol_encoding::span;
 using ::inspector_protocol_encoding::SpanFrom;
 using ::inspector_protocol_encoding::cbor::IsCBORMessage;
 const char kV8StateKey[] = "v8";
@@ -42,10 +43,10 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Emulation.setScriptExecutionDisabled";
 }
 
-std::vector<uint8_t> UnwrapMessage(
-    const mojom::blink::DevToolsMessagePtr& message) {
-  return std::vector<uint8_t>(message->data.data(),
-                              message->data.data() + message->data.size());
+Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
+  Vector<uint8_t> unwrap_message;
+  unwrap_message.Append(message->data.data(), message->data.size());
+  return unwrap_message;
 }
 
 mojom::blink::DevToolsMessagePtr WrapMessage(
@@ -53,7 +54,7 @@ mojom::blink::DevToolsMessagePtr WrapMessage(
   auto result = mojom::blink::DevToolsMessage::New();
 
   if (message.json.IsEmpty()) {
-    result->data = std::move(message.binary);
+    result->data = message.binary.ReleaseVector();
   } else {
     WTF::StringUTF8Adaptor adaptor(message.json);
     result->data =
@@ -68,8 +69,7 @@ protocol::ProtocolMessage ToProtocolMessage(
   const auto& string = buffer->string();
   DCHECK(string.is8Bit());
   // TODO: add StringBuffer::takeBytes().
-  message.binary = std::vector<uint8_t>(string.characters8(),
-                                        string.characters8() + string.length());
+  message.binary = WebVector<uint8_t>(string.characters8(), string.length());
   return message;
 }
 
@@ -136,7 +136,7 @@ DevToolsSession::DevToolsSession(
       session_state_(std::move(reattach_session_state)),
       v8_session_state_(kV8StateKey),
       v8_session_state_cbor_(&v8_session_state_,
-                             /*default_value=*/std::vector<uint8_t>()) {
+                             /*default_value=*/{}) {
   io_session_ =
       new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
@@ -161,7 +161,7 @@ DevToolsSession::~DevToolsSession() {
 
 void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
                                   int context_group_id) {
-  const std::vector<uint8_t>& cbor = v8_session_state_cbor_.Get();
+  const auto& cbor = v8_session_state_cbor_.Get();
   v8_session_ =
       inspector->connect(context_group_id, this,
                          v8_inspector::StringView(cbor.data(), cbor.size()));
@@ -208,8 +208,8 @@ void DevToolsSession::DispatchProtocolCommand(
 
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
-                                                  std::vector<uint8_t> data) {
-  DCHECK(IsCBORMessage(SpanFrom(data)));
+                                                  Vector<uint8_t> data) {
+  DCHECK(IsCBORMessage(span<uint8_t>(data.data(), data.size())));
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,

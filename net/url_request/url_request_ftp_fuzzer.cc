@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/request_priority.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
@@ -22,6 +21,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "url/gurl.h"
 
 namespace {
@@ -54,7 +54,7 @@ class FuzzedFtpTransactionFactory : public net::FtpTransactionFactory {
 
 // Integration fuzzer for URLRequestFtpJob.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   net::TestURLRequestContext url_request_context(true);
   net::FuzzedSocketFactory fuzzed_socket_factory(&data_provider);
   url_request_context.set_client_socket_factory(&fuzzed_socket_factory);

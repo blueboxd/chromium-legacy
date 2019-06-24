@@ -445,12 +445,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       In der Richtlinie muss eine URL angegeben werden, von der <ph name="PRODUCT_OS_NAME" /> die Nutzungsbedingungen herunterladen kann. Die Nutzungsbedingungen müssen als unformatierter Text mit dem MIME-Typ "text/plain" vorliegen. Markups sind nicht zulässig.</translation>
 <translation id="1750315445671978749">Alle Downloads blockieren</translation>
-<translation id="1762072363876276024">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-      Mit der Einstellung "DeviceLoginScreenSitePerProcess" können Nutzer daran gehindert werden, die standardmäßige Isolierung sämtlicher Websites zu deaktivieren. Hinweis: Die Richtlinie "DeviceLoginScreenIsolateOrigins" kann auch für die Isolierung zusätzlicher, differenzierterer Ursprünge hilfreich sein.
-      Ist die Richtlinie aktiviert, können Nutzer das Standardverhalten, bei dem jede Website in einem eigenen Prozess ausgeführt wird, nicht deaktivieren.
-      Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern, z. B. mithilfe des Eintrags "Disable site isolation" in chrome://flags.
-      </translation>
 <translation id="1767673020408652620">App-Empfehlungen bei Nullstatus des Suchfelds aktivieren</translation>
 <translation id="17719159826324007">
       Wenn diese Richtlinie auf "ArcSession" gesetzt ist und Android gestartet wurde, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
@@ -3575,21 +3569,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
           Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="CHARGE_START_TIME_FIELD_NAME" />" und "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="7717938661004793600">Hiermit konfigurieren Sie die Zugänglichkeitsfunktionen für <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Diese Richtlinie aktiviert HTTP/0.9 auf allen Ports mit Ausnahme von Port 80 für HTTP und 443 für HTTPS.
-
-      Diese Richtlinie ist standardmäßig deaktiviert. Bei Aktivierung besteht für Nutzer die folgende Sicherheitslücke: https://crbug.com/600352.
-
-      Mit dieser Richtlinie, die demnächst entfernt wird, sollen Unternehmen die Möglichkeit erhalten, vorhandene Server auf eine andere Version als HTTP/0.9 zu migrieren.
-
-      Ist die Richtlinie nicht konfiguriert, wird HTTP/0.9 auf nicht standardmäßigen Ports deaktiviert.</translation>
-<translation id="7726421241038987229">
-      Mit der Einstellung "SitePerProcess" können Nutzer daran gehindert werden, die standardmäßige Isolierung sämtlicher Websites zu deaktivieren. Hinweis: Die Richtlinie "IsolateOrigins" kann auch für die Isolierung zusätzlicher, differenzierterer Ursprünge hilfreich sein.
-      Ist die Richtlinie aktiviert, können Nutzer das Standardverhalten, bei dem jede Website in einem eigenen Prozess ausgeführt wird, nicht deaktivieren.
-      Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, können Nutzer die Website-Isolierung deaktivieren, z. B. mithilfe des Eintrags "Disable site isolation" in chrome://flags.  Die Website-Isolierung wird nicht deaktiviert, wenn Sie die Richtlinie deaktivieren oder nicht konfigurieren.
-      Unter <ph name="PRODUCT_OS_NAME" /> wird empfohlen, die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "SitePerProcess" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "SitePerProcessAndroid" verwendet werden.
-      </translation>
 <translation id="7747447585227954402">Geräten erlauben, <ph name="PLUGIN_VM_NAME" /> auf <ph name="PRODUCT_OS_NAME" /> zu verwenden</translation>
 <translation id="7749402620209366169">Aktiviert die Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts anstelle einer vom Nutzer angegebenen PIN.
 

@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace identity {
 
@@ -23,7 +24,7 @@ class AccountsMutator {
 
   // Updates the information of the account associated with |gaia_id|, first
   // adding that account to the system if it is not known.
-  virtual std::string AddOrUpdateAccount(
+  virtual CoreAccountId AddOrUpdateAccount(
       const std::string& gaia_id,
       const std::string& email,
       const std::string& refresh_token,
@@ -32,14 +33,14 @@ class AccountsMutator {
 
   // Updates the information about account identified by |account_id|.
   virtual void UpdateAccountInfo(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       base::Optional<bool> is_child_account,
       base::Optional<bool> is_under_advanced_protection) = 0;
 
   // Removes the account given by |account_id|. Also revokes the token
   // server-side if needed.
   virtual void RemoveAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       signin_metrics::SourceForRefreshTokenOperation source) = 0;
 
   // Removes all accounts.
@@ -60,7 +61,7 @@ class AccountsMutator {
   // this mutator. The device ID of the current mutator is not moved to the
   // target mutator.
   virtual void MoveAccount(AccountsMutator* target,
-                           const std::string& account_id) = 0;
+                           const CoreAccountId& account_id) = 0;
 #endif
 
   // Updates the refresh token for the supervised user.

@@ -40,6 +40,8 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, GetAssertionAuthenticatorResponse> mGetAssertionCallback;
+    private org.chromium.mojo.bindings.Callbacks
+            .Callback1<Boolean> mIsUserVerifyingPlatformAuthenticatorAvailableCallback;
 
     /**
      * Builds the Authenticator service implementation.
@@ -136,6 +138,13 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     public void onSignResponse(Integer status, GetAssertionAuthenticatorResponse response) {
         assert mGetAssertionCallback != null;
         mGetAssertionCallback.call(status, response);
+        close();
+    }
+
+    @Override
+    public void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA) {
+        assert mIsUserVerifyingPlatformAuthenticatorAvailableCallback != null;
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallback.call(isUVPAA);
         close();
     }
 

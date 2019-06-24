@@ -14,7 +14,6 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -65,7 +64,6 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
@@ -90,6 +88,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
@@ -116,7 +115,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -191,7 +189,7 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
 bool CanShowHIDDetectionScreen() {
-  return !ash::TabletMode::Get()->InTabletMode() &&
+  return !TabletModeClient::Get()->tablet_mode_enabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kDisableHIDDetectionOnOOBE) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -507,10 +505,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<DeviceDisabledScreenHandler>()));
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
-  append(std::make_unique<SupervisionOnboardingScreen>(
-      oobe_ui->GetView<SupervisionOnboardingScreenHandler>(),
-      base::BindRepeating(&WizardController::OnSupervisionOnboardingScreenExit,
-                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<SupervisionTransitionScreen>(
       oobe_ui->GetView<SupervisionTransitionScreenHandler>(),
       base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
@@ -674,10 +668,6 @@ void WizardController::ShowDeviceDisabledScreen() {
 
 void WizardController::ShowEncryptionMigrationScreen() {
   SetCurrentScreen(GetScreen(EncryptionMigrationScreenView::kScreenId));
-}
-
-void WizardController::ShowSupervisionOnboardingScreen() {
-  SetCurrentScreen(GetScreen(SupervisionOnboardingScreenView::kScreenId));
 }
 
 void WizardController::ShowSupervisionTransitionScreen() {
@@ -1078,7 +1068,15 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  ShowSupervisionOnboardingScreen();
+  // If the recommend app screen should be shown, show it after the user
+  // accepted the Arc TOS. Otherwise, advance to the assistant opt-in flow
+  // screen.
+  if (ShouldShowRecommendAppsScreen()) {
+    ShowRecommendAppsScreen();
+    return;
+  }
+
+  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -1136,31 +1134,6 @@ void WizardController::OnDeviceModificationCanceled() {
   } else {
     ShowLoginScreen(LoginScreenContext());
   }
-}
-
-void WizardController::OnSupervisionOnboardingScreenExit(
-    SupervisionOnboardingScreen::Result result) {
-  OnScreenExit(SupervisionOnboardingScreenView::kScreenId,
-               static_cast<int>(result));
-
-  // In this case, the user went through the whole Supervision Onboarding flow
-  // successfully, so we should just finish the OOBE/Login here.
-  // Note: This intentionally skips the other screens like Assistant and
-  // recommended app downloads.
-  if (result == SupervisionOnboardingScreen::Result::kFinished) {
-    OnOobeFlowFinished();
-    return;
-  }
-
-  // If the recommend app screen should be shown, show it after the user
-  // skipped the Supervision Onboarding. Otherwise, advance to the
-  // assistant opt-in flow screen.
-  if (ShouldShowRecommendAppsScreen()) {
-    ShowRecommendAppsScreen();
-    return;
-  }
-
-  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
@@ -1461,8 +1434,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowFingerprintSetupScreen();
   } else if (screen == MarketingOptInScreenView::kScreenId) {
     ShowMarketingOptInScreen();
-  } else if (screen == SupervisionOnboardingScreenView::kScreenId) {
-    ShowSupervisionOnboardingScreen();
   } else if (screen == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {

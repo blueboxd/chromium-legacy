@@ -4,12 +4,12 @@
 
 #include "chrome/browser/android/tab_browser_controls_state.h"
 
+#include "chrome/android/chrome_jni_headers/TabBrowserControlsState_jni.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
-#include "jni/TabBrowserControlsState_jni.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using base::android::AttachCurrentThread;

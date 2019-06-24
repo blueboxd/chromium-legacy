@@ -15,7 +15,7 @@ namespace {
 // IdentityManager and wraps an AccessTokenFetcher internally.
 class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
  public:
-  AccessTokenFetcherAdaptor(const std::string& active_account_id,
+  AccessTokenFetcherAdaptor(const CoreAccountId& active_account_id,
                             const std::string& oauth_consumer_name,
                             identity::IdentityManager* identity_manager,
                             const identity::ScopeSet& scopes,
@@ -35,7 +35,7 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
 };
 
 AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
-    const std::string& active_account_id,
+    const CoreAccountId& active_account_id,
     const std::string& oauth_consumer_name,
     identity::IdentityManager* identity_manager,
     const identity::ScopeSet& scopes,
@@ -68,7 +68,7 @@ ProfileIdentityProvider::~ProfileIdentityProvider() {
   identity_manager_->RemoveObserver(this);
 }
 
-std::string ProfileIdentityProvider::GetActiveAccountId() {
+CoreAccountId ProfileIdentityProvider::GetActiveAccountId() {
   return active_account_id_;
 }
 
@@ -81,7 +81,7 @@ bool ProfileIdentityProvider::IsActiveAccountWithRefreshToken() {
 }
 
 void ProfileIdentityProvider::SetActiveAccountId(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if (account_id == active_account_id_)
     return;
 

@@ -5,9 +5,9 @@
 #include "chrome/browser/android/compositor/navigation_glow.h"
 
 #include "base/android/build_info.h"
+#include "chrome/android/chrome_jni_headers/CompositorNavigationGlow_jni.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/CompositorNavigationGlow_jni.h"
 #include "ui/android/edge_effect.h"
 #include "ui/android/edge_effect_l.h"
 #include "ui/android/resources/resource_manager.h"

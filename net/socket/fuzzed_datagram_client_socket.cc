@@ -11,12 +11,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
@@ -29,7 +29,7 @@ const Error kWriteErrors[] = {ERR_FAILED, ERR_ADDRESS_UNREACHABLE,
                               ERR_MSG_TOO_BIG};
 
 FuzzedDatagramClientSocket::FuzzedDatagramClientSocket(
-    base::FuzzedDataProvider* data_provider)
+    FuzzedDataProvider* data_provider)
     : data_provider_(data_provider), weak_factory_(this) {}
 
 FuzzedDatagramClientSocket::~FuzzedDatagramClientSocket() = default;

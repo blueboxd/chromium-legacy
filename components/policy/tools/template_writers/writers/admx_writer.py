@@ -284,6 +284,8 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter,
         min = schema['minimum']
       if 'maximum' in schema and schema['maximum'] >= 0:
         max = schema['maximum']
+    assert type(min) == int
+    assert type(max) == int
     attributes = {
         'id': policy['name'],
         'valueName': policy['name'],

@@ -23,6 +23,7 @@ class FlingBooster {
   gfx::Vector2dF GetVelocityForFlingStart(
       const blink::WebGestureEvent& gesture_start);
   void ObserveGestureEvent(const blink::WebGestureEvent& gesture_event);
+  void ObserveProgressFling(const gfx::Vector2dF& current_velocity);
 
  private:
   bool ShouldBoostFling(const blink::WebGestureEvent& fling_start_event);
@@ -34,8 +35,13 @@ class FlingBooster {
   // Note, however, that we'll extend this time as we see scroll updates.
   base::TimeTicks cutoff_time_for_boost_;
 
-  // Tracks velocity at fling start of the currently ongoing fling. When a new
-  // fling is started and we decide to boost, we'll add this velocity to it.
+  // Tracks the (possibly boosted) velocity used at the previous FlingStart.
+  // When a new fling is started and we decide to boost, we'll add this
+  // velocity to it.
+  gfx::Vector2dF previous_fling_starting_velocity_;
+
+  // Tracks the current fling's velocity as it decays. We'll prevent boosting
+  // if this crosses the kMinBoostFlingSpeedSquare threshold.
   gfx::Vector2dF current_fling_velocity_;
 
   // These store the current active fling source device and modifier keys (e.g.
@@ -46,7 +52,7 @@ class FlingBooster {
   int modifiers_ = 0;
 
   // Track the last timestamp we've seen a scroll update that we're evaluating
-  // as a boost. This is used to calculate the velocity; if it's to slow we'll
+  // as a boost. This is used to calculate the velocity; if it's too slow we'll
   // avoid boosting.
   base::TimeTicks previous_boosting_scroll_timestamp_;
 

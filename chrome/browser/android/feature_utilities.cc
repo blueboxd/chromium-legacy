@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/feature_utilities.h"
 
-#include "jni/FeatureUtilities_jni.h"
+#include "chrome/android/chrome_jni_headers/FeatureUtilities_jni.h"
 
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"

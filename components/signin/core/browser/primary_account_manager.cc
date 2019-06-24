@@ -203,7 +203,8 @@ void PrimaryAccountManager::SetAuthenticatedAccountId(
   DCHECK(pref_account_id.empty() || pref_account_id == account_id.id)
       << "account_id=" << account_id << " pref_account_id=" << pref_account_id;
   authenticated_account_id_ = account_id;
-  client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId, account_id);
+  client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
+                                 account_id.id);
 
   // This preference is set so that code on I/O thread has access to the
   // Gaia id of the signed in user.
@@ -220,7 +221,7 @@ void PrimaryAccountManager::SetAuthenticatedAccountId(
   // user is signed in the corresponding preferences should match. Doing it here
   // as opposed to on signin allows us to catch the upgrade scenario.
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastAccountId,
-                                 account_id);
+                                 account_id.id);
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
                                  info.email);
 

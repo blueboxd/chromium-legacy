@@ -106,7 +106,7 @@ bool TextFragmentAnchor::Invoke() {
   {
     // FindMatch might cause scrolling and set user_scrolled_ so reset it when
     // it's done.
-    base::AutoReset<bool>(&user_scrolled_, user_scrolled_);
+    base::AutoReset<bool> reset_user_scrolled(&user_scrolled_, user_scrolled_);
 
     metrics_->ResetMatchCount();
     for (auto& finder : text_fragment_finders_)
@@ -173,8 +173,8 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
     PhysicalRect scrolled_bounding_box =
         node.GetLayoutObject()->ScrollRectToVisible(
             bounding_box,
-            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
-                                    ScrollAlignment::kAlignCenterIfNeeded,
+            WebScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
+                                    ScrollAlignment::kAlignCenterAlways,
                                     kProgrammaticScroll));
     did_scroll_into_view_ = true;
     metrics_->DidScroll();

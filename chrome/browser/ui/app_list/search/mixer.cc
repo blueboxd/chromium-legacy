@@ -171,9 +171,11 @@ SearchResultRanker* Mixer::GetNonAppSearchResultRanker() {
   return non_app_ranker_.get();
 }
 
-void Mixer::Train(const std::string& id, RankingItemType type) {
+void Mixer::Train(const std::string& query,
+                  const std::string& id,
+                  RankingItemType type) {
   if (non_app_ranker_)
-    non_app_ranker_->Train(id, type);
+    non_app_ranker_->Train(query, id, type);
 }
 
 }  // namespace app_list

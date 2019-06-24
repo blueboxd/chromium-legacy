@@ -125,7 +125,8 @@ void AutofillPopupControllerImpl::Show(
     }
 
     ManualFillingController::GetOrCreate(web_contents_)
-        ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
+        ->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                   !suggestions.empty());
 #endif
     view_->Show();
     if (autoselect_first_suggestion)
@@ -275,8 +276,11 @@ void AutofillPopupControllerImpl::OnSuggestionsChanged() {
   // should try and move to its desired position.
   layout_model_.UpdatePopupBounds();
 #else
+  // Assume that suggestions are (still) available. If this is wrong, the method
+  // |HideViewAndDie| will be called soon after and will hide all suggestions.
   ManualFillingController::GetOrCreate(web_contents_)
-      ->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
+      ->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                 /*has_suggestions=*/true);
 #endif
 
   // Platform-specific draw call.
@@ -310,6 +314,14 @@ bool AutofillPopupControllerImpl::HasSelection() const {
 
 void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   const autofill::Suggestion& suggestion = suggestions_[index];
+#if defined(OS_ANDROID)
+  auto mf_controller = ManualFillingController::GetOrCreate(web_contents_);
+  // Accepting a suggestion should hide all suggestions. To prevent them from
+  // coming up in Multi-Window mode, mark the source as unavailable.
+  mf_controller->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                          /*has_suggestions=*/false);
+  mf_controller->Hide();
+#endif
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
                                  index);
 }
@@ -554,7 +566,8 @@ void AutofillPopupControllerImpl::ClearState() {
 void AutofillPopupControllerImpl::HideViewAndDie() {
 #if defined(OS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents_)
-      ->DeactivateFillingSource(FillingSource::AUTOFILL);
+      ->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                 /*has_suggestions=*/false);
 #endif
 
   if (view_)

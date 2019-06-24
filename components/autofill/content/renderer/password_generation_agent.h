@@ -25,7 +25,6 @@
 namespace autofill {
 
 struct PasswordForm;
-struct PasswordFormGenerationData;
 class PasswordAutofillAgent;
 
 // This class is responsible for controlling communication for password
@@ -51,12 +50,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void BindRequest(mojom::PasswordGenerationAgentAssociatedRequest request);
 
   // mojom::PasswordGenerationAgent:
-  void FormNotBlacklisted(const PasswordForm& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
-  void FoundFormsEligibleForGeneration(
-      const std::vector<PasswordFormGenerationData>& forms) override;
   void FoundFormEligibleForGeneration(
-      const NewPasswordFormGenerationData& form) override;
+      const PasswordFormGenerationData& form) override;
   // Sets |generation_element_| to the focused password field and responds back
   // if the generation was triggered successfully.
   void UserTriggeredGeneratePassword(
@@ -76,9 +72,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // being called.
   void DidEndTextFieldEditing(const blink::WebInputElement& element);
 
-  // Called when new form controls are inserted.
-  void OnDynamicFormsSeen();
-
   // Called right before PasswordAutofillAgent filled |password_element|.
   void OnFieldAutofilled(const blink::WebInputElement& password_element);
 
@@ -95,44 +88,24 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 #endif
 
  protected:
-  // Returns true if the document for |render_frame()| is one that we should
-  // consider analyzing. Virtual so that it can be overriden during testing.
-  virtual bool ShouldAnalyzeDocument();
-
   // Use to force enable during testing.
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
-  // Contains information about a form for which generation is possible.
-  struct AccountCreationFormData;
   // Contains information about generation status for an element for the
   // lifetime of the possible interaction.
   struct GenerationItemInfo;
-
-  typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
 
   // RenderFrameObserver:
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void DidChangeScrollOffset() override;
-  void DidFinishDocumentLoad() override;
-  void DidFinishLoad() override;
   void OnDestruct() override;
 
   const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
   const mojom::PasswordGenerationDriverAssociatedPtr&
   GetPasswordGenerationDriver();
-
-  // Helper function that will try and populate |password_elements_| and
-  // |possible_account_creation_form_|.
-  void FindPossibleGenerationForm();
-
-  // Helper function to decide if |possible_account_creation_forms_| contains
-  // password fields for an account creation form. Sets
-  // |automatic_generation_element_| to the field that we want to trigger the
-  // generation UI on.
-  void DetermineGenerationElement();
 
   // Helper function which takes care of the form processing and collecting the
   // information which is required to show the generation popup. Returns true if
@@ -185,22 +158,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // If a form creating is failed, returns an empty unique_ptr.
   std::unique_ptr<PasswordForm> CreatePasswordFormToPresave();
 
-  // Stores forms that are candidates for account creation.
-  AccountCreationFormDataList possible_account_creation_forms_;
-
-  // Stores the origins of the password forms confirmed not to be blacklisted
-  // by the browser. A form can be blacklisted if a user chooses "never save
-  // passwords for this site".
-  std::vector<GURL> not_blacklisted_password_form_origins_;
-
-  // Stores each password form for which the Autofill server classifies one of
-  // the form's fields as an ACCOUNT_CREATION_PASSWORD or NEW_PASSWORD. These
-  // forms will not be sent if the feature is disabled.
-  std::vector<autofill::PasswordFormGenerationData> generation_enabled_forms_;
-
-  // Data for form which automatic generation is allowed on.
-  std::unique_ptr<AccountCreationFormData> automatic_generation_form_data_;
-
   // Element where we want to trigger automatic password generation UI on.
   blink::WebInputElement automatic_generation_element_;
 
@@ -215,7 +172,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   // Contains correspondence between generaiton enabled element and data for
   // generation.
-  std::map<uint32_t, NewPasswordFormGenerationData> generation_enabled_fields_;
+  std::map<uint32_t, PasswordFormGenerationData> generation_enabled_fields_;
 
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;

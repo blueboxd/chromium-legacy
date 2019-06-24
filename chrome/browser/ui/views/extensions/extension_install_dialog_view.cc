@@ -310,14 +310,14 @@ void ExtensionInstallDialogView::AddedToWidget() {
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
-  views::ImageView* icon = new views::ImageView();
+  auto icon = std::make_unique<views::ImageView>();
   gfx::Size size(image->width(), image->height());
   size.SetToMin(gfx::Size(icon_size, icon_size));
   icon->SetImageSize(size);
   icon->SetImage(*image);
 
   layout->StartRow(views::GridLayout::kFixedSize, kTitleColumnSetId);
-  layout->AddView(icon);
+  layout->AddView(std::move(icon));
 
   std::unique_ptr<views::Label> title_label =
       views::BubbleFrameView::CreateDefaultTitleLabel(title_);
@@ -341,23 +341,23 @@ void ExtensionInstallDialogView::AddedToWidget() {
     auto rating = std::make_unique<RatingsView>(prompt_->average_rating(),
                                                 prompt_->rating_count());
     prompt_->AppendRatingStars(AddResourceIcon, rating.get());
-    rating_container->AddChildView(rating.release());
+    rating_container->AddChildView(std::move(rating));
     auto rating_count = std::make_unique<RatingLabel>(prompt_->GetRatingCount(),
                                                       CONTEXT_BODY_TEXT_LARGE);
     rating_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    rating_container->AddChildView(rating_count.release());
-    webstore_data_container->AddChildView(rating_container.release());
+    rating_container->AddChildView(std::move(rating_count));
+    webstore_data_container->AddChildView(std::move(rating_container));
 
     auto user_count = std::make_unique<views::Label>(
         prompt_->GetUserCount(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     user_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    webstore_data_container->AddChildView(user_count.release());
+    webstore_data_container->AddChildView(std::move(user_count));
 
-    layout->AddView(webstore_data_container.release());
+    layout->AddView(std::move(webstore_data_container));
   } else {
-    layout->AddView(title_label.release());
+    layout->AddView(std::move(title_label));
   }
 
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
@@ -615,15 +615,14 @@ ExpandableContainerView::ExpandableContainerView(
                         available_width, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  details_view_ = new DetailsView(details);
-  layout->AddView(details_view_);
+  details_view_ = layout->AddView(std::make_unique<DetailsView>(details));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  details_link_ =
-      new views::Link(l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
-  details_link_->set_listener(this);
-  details_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(details_link_);
+  auto details_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
+  details_link->set_listener(this);
+  details_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  details_link_ = layout->AddView(std::move(details_link));
 }
 
 ExpandableContainerView::~ExpandableContainerView() {

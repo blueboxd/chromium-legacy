@@ -34,6 +34,10 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionNavigate,
   PopupMenuActionPasteAndGo,
   PopupMenuActionVoiceSearch,
+  // TODO(crbug.com/974751): Check if this is still used.
+  PopupMenuActionSearch,
+  // TODO(crbug.com/974751): Check if this is still used.
+  PopupMenuActionIncognitoSearch,
   PopupMenuActionQRCodeSearch,
   PopupMenuActionSearchCopiedImage,
   // Language selection popup menu

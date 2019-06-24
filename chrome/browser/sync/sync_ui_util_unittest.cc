@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/unified_consent/feature.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -35,10 +36,11 @@ enum DistinctState {
   STATUS_CASE_SETUP_ERROR,
   STATUS_CASE_AUTH_ERROR,
   STATUS_CASE_PROTOCOL_ERROR,
-  STATUS_CASE_PASSPHRASE_ERROR,
   STATUS_CASE_CONFIRM_SYNC_SETTINGS,
+  STATUS_CASE_PASSPHRASE_ERROR,
   STATUS_CASE_SYNCED,
   STATUS_CASE_SYNC_DISABLED_BY_POLICY,
+  STATUS_CASE_SYNC_RESET_FROM_DASHBOARD,
   NUMBER_OF_STATUS_CASES
 };
 
@@ -52,22 +54,19 @@ class SyncUIUtilTest : public testing::Test {
 };
 
 // Sets up a TestSyncService to emulate one of a number of distinct cases in
-// order to perform tests on the generated messages.
-// Returns the expected value for the output argument |action_type| for each
-// of the distinct cases.
-sync_ui_util::ActionType GetDistinctCase(
-    TestSyncService* service,
-    identity::IdentityManager* identity_manager,
-    int case_number) {
-  // Auth Error object is returned by reference in mock and needs to stay in
-  // scope throughout test, so it is owned by calling method. However it is
-  // immutable so can only be allocated in this method.
+// order to perform tests on the generated messages. Returns the expected values
+// for the MessageType and ActionType that sync_ui_util::GetStatusLabels should
+// return.
+std::pair<sync_ui_util::MessageType, sync_ui_util::ActionType>
+SetUpDistinctCase(TestSyncService* service,
+                  identity::IdentityManager* identity_manager,
+                  int case_number) {
   switch (case_number) {
     case STATUS_CASE_SETUP_IN_PROGRESS: {
       service->SetFirstSetupComplete(false);
       service->SetSetupInProgress(true);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      return sync_ui_util::NO_ACTION;
+      return std::make_tuple(sync_ui_util::PRE_SYNCED, sync_ui_util::NO_ACTION);
     }
     case STATUS_CASE_SETUP_ERROR: {
       service->SetFirstSetupComplete(false);
@@ -75,7 +74,8 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetDisableReasons(
           syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      return sync_ui_util::REAUTHENTICATE;
+      return std::make_tuple(sync_ui_util::SYNC_ERROR,
+                             sync_ui_util::REAUTHENTICATE);
     }
     case STATUS_CASE_AUTH_ERROR: {
       service->SetFirstSetupComplete(true);
@@ -92,7 +92,8 @@ sync_ui_util::ActionType GetDistinctCase(
           identity_manager, account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
-      return sync_ui_util::REAUTHENTICATE;
+      return std::make_tuple(sync_ui_util::SYNC_ERROR,
+                             sync_ui_util::REAUTHENTICATE);
     }
     case STATUS_CASE_PROTOCOL_ERROR: {
       service->SetFirstSetupComplete(true);
@@ -104,13 +105,15 @@ sync_ui_util::ActionType GetDistinctCase(
       status.sync_protocol_error = protocol_error;
       service->SetDetailedSyncStatus(false, status);
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
-      return sync_ui_util::UPGRADE_CLIENT;
+      return std::make_tuple(sync_ui_util::SYNC_ERROR,
+                             sync_ui_util::UPGRADE_CLIENT);
     }
     case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
       service->SetFirstSetupComplete(false);
       service->SetPassphraseRequired(false);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      return sync_ui_util::CONFIRM_SYNC_SETTINGS;
+      return std::make_tuple(sync_ui_util::SYNC_ERROR,
+                             sync_ui_util::CONFIRM_SYNC_SETTINGS);
     }
     case STATUS_CASE_PASSPHRASE_ERROR: {
       service->SetFirstSetupComplete(true);
@@ -119,7 +122,8 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetPassphraseRequired(true);
       service->SetPassphraseRequiredForDecryption(true);
-      return sync_ui_util::ENTER_PASSPHRASE;
+      return std::make_tuple(sync_ui_util::SYNC_ERROR,
+                             sync_ui_util::ENTER_PASSPHRASE);
     }
     case STATUS_CASE_SYNCED: {
       service->SetFirstSetupComplete(true);
@@ -127,7 +131,7 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetPassphraseRequired(false);
-      return sync_ui_util::NO_ACTION;
+      return std::make_tuple(sync_ui_util::SYNCED, sync_ui_util::NO_ACTION);
     }
     case STATUS_CASE_SYNC_DISABLED_BY_POLICY: {
       service->SetDisableReasons(
@@ -136,12 +140,30 @@ sync_ui_util::ActionType GetDistinctCase(
       service->SetTransportState(syncer::SyncService::TransportState::DISABLED);
       service->SetPassphraseRequired(false);
       service->SetDetailedSyncStatus(false, syncer::SyncStatus());
-      return sync_ui_util::NO_ACTION;
+      return std::make_tuple(sync_ui_util::SYNCED, sync_ui_util::NO_ACTION);
+    }
+    case STATUS_CASE_SYNC_RESET_FROM_DASHBOARD: {
+      // Note: On desktop, if there is a primary account, then
+      // DISABLE_REASON_USER_CHOICE can only occur if Sync was reset from the
+      // dashboard, and the UI treats it as such.
+      service->SetDisableReasons(
+          syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+      service->SetFirstSetupComplete(true);
+      service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+      service->SetPassphraseRequired(false);
+      service->SetDetailedSyncStatus(false, syncer::SyncStatus());
+      // This case gets different treatment depending on whether UnifiedConsent
+      // is enabled, see crbug.com/943983 and crbug.com/977980.
+      sync_ui_util::MessageType expected_message_type =
+          unified_consent::IsUnifiedConsentFeatureEnabled()
+              ? sync_ui_util::SYNC_ERROR
+              : sync_ui_util::PRE_SYNCED;
+      return std::make_tuple(expected_message_type, sync_ui_util::NO_ACTION);
     }
     case NUMBER_OF_STATUS_CASES:
       NOTREACHED();
   }
-  return sync_ui_util::NO_ACTION;
+  return std::make_tuple(sync_ui_util::PRE_SYNCED, sync_ui_util::NO_ACTION);
 }
 
 std::unique_ptr<KeyedService> BuildTestSyncService(
@@ -165,7 +187,6 @@ std::unique_ptr<TestingProfile> BuildSignedInTestingProfile() {
 
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
-// Crashes on Win and Mac. https://crbug.com/954365
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
@@ -177,19 +198,23 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     identity::IdentityManager* identity_manager =
         environment->identity_manager();
 
-    // Need a primary account signed in before calling GetDistinctCase().
+    // Need a primary account signed in before calling SetUpDistinctCase().
     environment->MakePrimaryAccountAvailable(kTestUser);
 
     TestSyncService* service = static_cast<TestSyncService*>(
         ProfileSyncServiceFactory::GetForProfile(profile.get()));
-    sync_ui_util::ActionType expected_action_type =
-        GetDistinctCase(service, identity_manager, idx);
+    sync_ui_util::MessageType expected_message_type;
+    sync_ui_util::ActionType expected_action_type;
+    std::tie(expected_message_type, expected_action_type) =
+        SetUpDistinctCase(service, identity_manager, idx);
     base::string16 status_label;
     base::string16 link_label;
     sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-    sync_ui_util::GetStatusLabels(profile.get(), &status_label, &link_label,
-                                  &action_type);
+    sync_ui_util::MessageType message_type = sync_ui_util::GetStatusLabels(
+        profile.get(), &status_label, &link_label, &action_type);
 
+    EXPECT_EQ(expected_message_type, message_type)
+        << "Wrong message type returned for case #" << idx;
     EXPECT_EQ(expected_action_type, action_type)
         << "Wrong action returned for case #" << idx;
     // If the status and link message combination is already present in the set

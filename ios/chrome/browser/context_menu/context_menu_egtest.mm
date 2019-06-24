@@ -273,24 +273,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that the element fetch duration is logged once.
-- (void)testContextMenuElementFetchDurationMetric {
-  chrome_test_util::HistogramTester histogramTester;
-
-  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
-  [ChromeEarlGrey loadURL:pageURL];
-  [ChromeEarlGrey waitForWebStateContainingText:kLogoPageText];
-
-  LongPressElement(kLogoPageChromiumImageId);
-  TapOnContextMenuButton(OpenImageButton());
-  [ChromeEarlGrey waitForPageToFinishLoading];
-
-  histogramTester.ExpectTotalCount("ContextMenu.DOMElementFetchDuration", 1,
-                                   ^(NSString* error) {
-                                     GREYFail(error);
-                                   });
-}
-
 // Tests that system touches are cancelled when the context menu is shown.
 - (void)testContextMenuCancelSystemTouchesMetric {
   chrome_test_util::HistogramTester histogramTester;

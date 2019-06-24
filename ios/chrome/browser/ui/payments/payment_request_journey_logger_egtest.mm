@@ -347,7 +347,7 @@ using payments::JourneyLogger;
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
-  [self waitForWebViewContainingTexts:{"Request cancelled"}];
+  [self waitForWebViewContainingTexts:{"User closed the Payment Request UI."}];
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);
@@ -500,7 +500,7 @@ using payments::JourneyLogger;
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
-  [self waitForWebViewContainingTexts:{"Request cancelled"}];
+  [self waitForWebViewContainingTexts:{"User closed the Payment Request UI."}];
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);
@@ -657,7 +657,7 @@ using payments::JourneyLogger;
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_CANCEL)] performAction:grey_tap()];
-  [self waitForWebViewContainingTexts:{"Request cancelled"}];
+  [self waitForWebViewContainingTexts:{"User closed the Payment Request UI."}];
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);

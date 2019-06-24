@@ -23,7 +23,6 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 
@@ -31,8 +30,6 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-class GoogleServiceAuthError;
-class OAuth2AccessTokenFetcher;
 class OAuth2TokenServiceDelegate;
 class OAuth2AccessTokenManager;
 
@@ -68,7 +65,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   class Request {
    public:
     virtual ~Request();
-    virtual std::string GetAccountId() const = 0;
+    virtual CoreAccountId GetAccountId() const = 0;
+
    protected:
     Request();
   };
@@ -96,7 +94,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // The parameters used to fetch an OAuth2 access token.
   struct RequestParameters {
     RequestParameters(const std::string& client_id,
-                      const std::string& account_id,
+                      const CoreAccountId& account_id,
                       const ScopeSet& scopes);
     RequestParameters(const RequestParameters& other);
     ~RequestParameters();
@@ -105,7 +103,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     // OAuth2 client id.
     std::string client_id;
     // Account id for which the request is made.
-    std::string account_id;
+    CoreAccountId account_id;
     // URL scopes for the requested access token.
     ScopeSet scopes;
   };
@@ -219,8 +217,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   virtual void InvalidateTokenForMultilogin(const CoreAccountId& failed_account,
                                             const std::string& token);
 
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
   // Returns the current number of pending fetchers matching given params.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   size_t GetNumPendingRequestsForTesting(const std::string& client_id,
                                          const CoreAccountId& account_id,
                                          const ScopeSet& scopes) const;
@@ -239,7 +239,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
   // fully manages access tokens independently of OAuth2TokenService.
   friend class OAuth2AccessTokenManager;
-
   // Implements a cancelable |OAuth2TokenService::Request|, which should be
   // operated on the UI thread.
   // TODO(davidroche): move this out of header file.
@@ -247,11 +246,11 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
                       public Request {
    public:
     // |consumer| is required to outlive this.
-    RequestImpl(const std::string& account_id, Consumer* consumer);
+    RequestImpl(const CoreAccountId& account_id, Consumer* consumer);
     ~RequestImpl() override;
 
     // Overridden from Request:
-    std::string GetAccountId() const override;
+    CoreAccountId GetAccountId() const override;
 
     std::string GetConsumerId() const;
 
@@ -262,7 +261,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
    private:
     // |consumer_| to call back when this request completes.
-    const std::string account_id_;
+    const CoreAccountId account_id_;
     Consumer* const consumer_;
 
     SEQUENCE_CHECKER(sequence_checker_);
@@ -304,6 +303,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void FetchOAuth2Token(
       RequestImpl* request,
       const CoreAccountId& account_id,
@@ -311,12 +311,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
       const std::string& client_id,
       const std::string& client_secret,
       const ScopeSet& scopes);
-
-  // Create an access token fetcher for the given account id.
-  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      OAuth2AccessTokenConsumer* consumer) WARN_UNUSED_RESULT;
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|. Virtual so it can be overriden for tests and for platform-
@@ -327,32 +321,13 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
                                          const std::string& access_token);
 
  private:
-  class Fetcher;
-  friend class Fetcher;
   friend class OAuth2TokenServiceDelegate;
 
   // Provide a URLLoaderFactory used for fetching access tokens with the
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
 
-  // Returns a currently valid OAuth2 access token for the given set of scopes,
-  // or NULL if none have been cached. Note the user of this method should
-  // ensure no entry with the same |client_scopes| is added before the usage of
-  // the returned entry is done.
-  const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
-      const RequestParameters& client_scopes);
-
-  // Called when |fetcher| finishes fetching.
-  void OnFetchComplete(Fetcher* fetcher);
-
-  // Called when a number of fetchers need to be canceled.
-  void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
-
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
-
-  // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
-  // token using these parameters.
-  std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;
 
   // The depth of batch changes.
   int batch_change_depth_;
@@ -361,9 +336,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   bool all_credentials_loaded_;
 
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
-
-  // Maximum number of retries in fetching an OAuth2 access token.
-  static int max_fetch_retry_num_;
 
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, RequestParametersOrderTest);
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,

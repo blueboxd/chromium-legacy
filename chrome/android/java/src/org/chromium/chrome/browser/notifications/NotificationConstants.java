@@ -30,6 +30,7 @@ public class NotificationConstants {
      * it *must* also be set in {@link NotificationJobService#getJobExtrasFromIntent(Intent)}
      */
     public static final String EXTRA_NOTIFICATION_ID = "notification_id";
+    static final String EXTRA_NOTIFICATION_TYPE = "notification_type";
     static final String EXTRA_NOTIFICATION_INFO_ORIGIN = "notification_info_origin";
     static final String EXTRA_NOTIFICATION_INFO_SCOPE = "notification_info_scope";
     static final String EXTRA_NOTIFICATION_INFO_PROFILE_ID = "notification_info_profile_id";

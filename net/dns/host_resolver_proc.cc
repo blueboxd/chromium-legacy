@@ -280,9 +280,9 @@ const base::TimeDelta ProcTaskParams::kDnsDefaultUnresponsiveDelay =
     base::TimeDelta::FromSeconds(6);
 
 ProcTaskParams::ProcTaskParams(HostResolverProc* resolver_proc,
-                               size_t max_retry_attempts)
+                               size_t in_max_retry_attempts)
     : resolver_proc(resolver_proc),
-      max_retry_attempts(max_retry_attempts),
+      max_retry_attempts(in_max_retry_attempts),
       unresponsive_delay(kDnsDefaultUnresponsiveDelay),
       retry_factor(2) {
   // Maximum of 4 retry attempts for host resolution.

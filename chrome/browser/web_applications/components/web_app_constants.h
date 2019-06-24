@@ -39,7 +39,11 @@ enum class InstallResultCode {
   kInstallManagerDestroyed = 8,
   kWindowOpened = 9,
   kNotValidManifestForWebApp = 10,
-  kMaxValue = kNotValidManifestForWebApp,
+  // We have terminated the installation pipeline and intented to the Play
+  // Store, where the user still needs to accept the Play installation prompt to
+  // install.
+  kIntentToPlayStore = 11,
+  kMaxValue = kIntentToPlayStore
 };
 
 // Where an app was installed from. This affects what flags will be used when

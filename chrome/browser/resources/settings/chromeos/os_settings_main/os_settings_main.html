@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../os_about_page/os_about_page.html">
 <link rel="import" href="../os_settings_page/os_settings_page.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs.html">
@@ -75,6 +76,15 @@
           in-search-mode="[[inSearchMode_]]"
           advanced-toggle-expanded="{{advancedToggleExpanded}}">
       </os-settings-page>
+    </template>
+    <template is="dom-if" if="[[showPages_.about]]">
+      <os-settings-about-page role="main"
+          in-search-mode="[[inSearchMode_]]"
+          on-subpage-expand="onShowingSubpage_"
+          on-showing-main-page="onShowingMainPage_"
+          prefs="{{prefs}}"
+          show-crostini="[[showCrostini]]">
+      </os-settings-about-page>
     </template>
     <div id="overscroll" style="padding-bottom: [[overscroll_]]px"></div>
   </template>

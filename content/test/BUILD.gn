@@ -38,6 +38,8 @@ jumbo_static_library("test_support") {
     "../browser/accessibility/accessibility_event_recorder_uia_win.cc",
     "../browser/accessibility/accessibility_event_recorder_uia_win.h",
     "../browser/accessibility/accessibility_event_recorder_win.cc",
+    "../browser/accessibility/dump_accessibility_test_helper.cc",
+    "../browser/accessibility/dump_accessibility_test_helper.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
     "../browser/background_fetch/background_fetch_test_base.h",
     "../browser/background_fetch/background_fetch_test_browser_context.cc",
@@ -440,6 +442,7 @@ jumbo_static_library("test_support") {
     deps += [
       "//content/shell:android_shell_descriptors",
       "//mojo/public/java/system:native_support",
+      "//testing/android/native_test:native_browser_test_support",
     ]
   } else {
     sources += [
@@ -1722,6 +1725,7 @@ test("content_unittests") {
     "../browser/scheduler/browser_task_queues_unittest.cc",
     "../browser/scheduler/browser_ui_thread_scheduler_unittest.cc",
     "../browser/scheduler/responsiveness/calculator_unittest.cc",
+    "../browser/scheduler/responsiveness/jank_monitor_unittest.cc",
     "../browser/scheduler/responsiveness/metric_source_unittest.cc",
     "../browser/scheduler/responsiveness/watcher_unittest.cc",
     "../browser/screen_orientation/screen_orientation_provider_unittest.cc",

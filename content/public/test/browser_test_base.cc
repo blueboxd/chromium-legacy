@@ -73,6 +73,7 @@
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_paths.h"
+#include "testing/android/native_test/native_browser_test_support.h"
 #include "ui/base/ui_base_paths.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -351,9 +352,6 @@ void BrowserTestBase::SetUp() {
   // FeatureList::SetInstance, which expects no instance to exist.
   base::FeatureList::ClearInstanceForTesting();
 
-  auto ui_task = std::make_unique<base::Closure>(base::Bind(
-      &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
-
   auto created_main_parts_closure =
       std::make_unique<CreatedMainPartsClosure>(base::Bind(
           &BrowserTestBase::CreatedBrowserMainParts, base::Unretained(this)));
@@ -420,6 +418,18 @@ void BrowserTestBase::SetUp() {
   // to BrowserMain() if it did not run it (or equivalent) itself. On Android,
   // RunProcess() will return 0 so we don't have to fallback to BrowserMain().
   {
+    // This loop will wait until Java completes async initializion and the test
+    // is ready to run. We must allow nestable tasks so that tasks posted to the
+    // UI thread run as well. The loop is created before RunProcess() so that
+    // the StartupTaskRunner tasks will be nested inside this loop and able to
+    // run.
+    base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
+
+    auto ui_task = std::make_unique<base::Closure>(
+        base::Bind(&BrowserTestBase::WaitUntilJavaIsReady,
+                   base::Unretained(this), loop.QuitClosure()));
+
+    // The MainFunctionParams must out-live all the startup tasks running.
     MainFunctionParams params(*command_line);
     params.ui_task = ui_task.release();
     params.created_main_parts_closure = created_main_parts_closure.release();
@@ -427,6 +437,19 @@ void BrowserTestBase::SetUp() {
     // Passing "" as the process type to indicate the browser process.
     int exit_code = delegate->RunProcess("", params);
     DCHECK_EQ(exit_code, 0);
+
+    // Waits for Java to finish initialization, then we can run the test.
+    loop.Run();
+
+    // The BrowserMainLoop startup tasks will call DisallowUnresponsiveTasks().
+    // So when we run the ProxyRunTestOnMainThreadLoop() we no longer can block,
+    // but tests should be allowed to. So we undo that blocking inside here.
+    base::ScopedAllowUnresponsiveTasksForTesting allow_unresponsive;
+    // Runs the test now that the Java setup is complete. This must be called
+    // directly from the same call stack as RUN_ALL_TESTS(), it may not be
+    // inside a posted task, or it would prevent NonNestable tasks from running
+    // inside tests.
+    ProxyRunTestOnMainThreadLoop();
   }
 
   {
@@ -443,6 +466,8 @@ void BrowserTestBase::SetUp() {
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
 #else
+  auto ui_task = std::make_unique<base::Closure>(base::Bind(
+      &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
       created_main_parts_closure.release();
@@ -470,7 +495,7 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
                                       &network_service_test);
 
-  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   network_service_test.set_connection_error_handler(run_loop.QuitClosure());
 
   network_service_test->SimulateCrash();
@@ -483,6 +508,22 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   initialized_network_process_ = false;
   InitializeNetworkProcess();
 }
+
+#if defined(OS_ANDROID)
+void BrowserTestBase::WaitUntilJavaIsReady(base::OnceClosure quit_closure) {
+  if (testing::android::JavaAsyncStartupTasksCompleteForBrowserTests()) {
+    std::move(quit_closure).Run();
+    return;
+  }
+
+  base::PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserTestBase::WaitUntilJavaIsReady,
+                     base::Unretained(this), std::move(quit_closure)),
+      base::TimeDelta::FromMilliseconds(100));
+  return;
+}
+#endif
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 #if defined(OS_POSIX)

@@ -94,8 +94,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         @Override
         public boolean isItemSupported(int menuItemId) {
-            return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE
-                    || menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS;
+            return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
         }
 
         @Override

@@ -174,8 +174,8 @@ void CastExtensionSystem::LaunchApp(const ExtensionId& extension_id) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)
                                    ->enabled_extensions()
                                    .GetByID(extension_id);
-  AppRuntimeEventRouter::DispatchOnLaunchedEvent(browser_context_, extension,
-                                                 SOURCE_UNTRACKED, nullptr);
+  AppRuntimeEventRouter::DispatchOnLaunchedEvent(
+      browser_context_, extension, AppLaunchSource::kSourceUntracked, nullptr);
 }
 
 void CastExtensionSystem::Shutdown() {}

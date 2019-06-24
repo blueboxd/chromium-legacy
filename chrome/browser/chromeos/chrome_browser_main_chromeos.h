@@ -70,6 +70,7 @@ class SystemTokenCertDBInitializer;
 namespace power {
 namespace ml {
 class AdaptiveScreenBrightnessManager;
+class UserActivityController;
 }  // namespace ml
 
 namespace auto_screen_brightness {
@@ -155,6 +156,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
       adaptive_screen_brightness_manager_;
 
+  std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
   std::unique_ptr<power::auto_screen_brightness::Controller>
       auto_screen_brightness_controller_;
 

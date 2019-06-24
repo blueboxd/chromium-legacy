@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,6 +25,14 @@
 #include "third_party/crashpad/crashpad/snapshot/module_snapshot.h"
 #include "third_party/crashpad/crashpad/snapshot/process_snapshot.h"
 #include "third_party/crashpad/crashpad/util/process/process_memory.h"
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include <signal.h>
+#elif defined(OS_MACOSX)
+#include <mach/exception_types.h>
+#elif defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace gwp_asan {
 namespace internal {
@@ -68,6 +77,29 @@ bool CrashAnalyzer::GetExceptionInfo(
   }
 
   return false;
+}
+
+crashpad::VMAddress CrashAnalyzer::GetAccessAddress(
+    const crashpad::ExceptionSnapshot& exception) {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  if (exception.Exception() == SIGSEGV || exception.Exception() == SIGBUS)
+    return exception.ExceptionAddress();
+#elif defined(OS_MACOSX)
+  if (exception.Exception() == EXC_BAD_ACCESS)
+    return exception.ExceptionAddress();
+#elif defined(OS_WIN)
+  if (exception.Exception() == EXCEPTION_ACCESS_VIOLATION) {
+    const std::vector<uint64_t>& codes = exception.Codes();
+    if (codes.size() < 2)
+      DLOG(FATAL) << "Exception array is too small! " << codes.size();
+    else
+      return codes[1];
+  }
+#else
+#error "Unknown platform"
+#endif
+
+  return 0;
 }
 
 crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(

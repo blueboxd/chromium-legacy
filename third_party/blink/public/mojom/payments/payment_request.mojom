@@ -68,7 +68,7 @@ interface PaymentRequestClient {
   OnShippingOptionChange(string shipping_option_id);
   OnPayerDetailChange(PayerDetail detail);
   OnPaymentResponse(PaymentResponse response);
-  OnError(PaymentErrorReason error);
+  OnError(PaymentErrorReason error, string error_message);
   OnComplete();
   OnAbort(bool aborted_successfully);
   OnCanMakePayment(CanMakePaymentQueryResult result);

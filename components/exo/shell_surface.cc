@@ -462,6 +462,23 @@ void ShellSurface::OnPostWindowStateTypeChange(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// wm::ActivationChangeObserver overrides:
+
+void ShellSurface::OnWindowActivated(ActivationReason reason,
+                                     aura::Window* gained_active,
+                                     aura::Window* lost_active) {
+  ShellSurfaceBase::OnWindowActivated(reason, gained_active, lost_active);
+
+  if (!widget_)
+    return;
+
+  if (gained_active == widget_->GetNativeWindow() ||
+      lost_active == widget_->GetNativeWindow()) {
+    Configure();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
 
 void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
@@ -482,7 +499,8 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 bool ShellSurface::OnPreWidgetCommit() {
   if (!widget_ && GetEnabled()) {
     // Defer widget creation and commit until surface has contents.
-    if (host_window()->bounds().IsEmpty()) {
+    if (host_window()->bounds().IsEmpty() &&
+        root_surface()->surface_hierarchy_content_bounds().IsEmpty()) {
       Configure();
       return false;
     }
@@ -502,23 +520,6 @@ bool ShellSurface::OnPreWidgetCommit() {
 }
 
 void ShellSurface::OnPostWidgetCommit() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// wm::ActivationChangeObserver overrides:
-
-void ShellSurface::OnWindowActivated(ActivationReason reason,
-                                     aura::Window* gained_active,
-                                     aura::Window* lost_active) {
-  ShellSurfaceBase::OnWindowActivated(reason, gained_active, lost_active);
-
-  if (!widget_)
-    return;
-
-  if (gained_active == widget_->GetNativeWindow() ||
-      lost_active == widget_->GetNativeWindow()) {
-    Configure();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:

@@ -81,7 +81,7 @@ class ProfileDownloaderTest
   }
 
   // IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(const std::string& account_id,
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override {
     // This flow should be invoked only when a test has explicitly set up

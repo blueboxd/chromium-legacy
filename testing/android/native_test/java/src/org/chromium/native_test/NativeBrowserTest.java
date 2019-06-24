@@ -60,4 +60,14 @@ public class NativeBrowserTest {
             Log.e(TAG, "Failed to remove %s", privateDataDirectory.getAbsolutePath());
         }
     }
+
+    /**
+     * To be called when the browser tests Activity has completed any asynchronous
+     * initialization and is ready for the test to run. This informs C++ to run the test.
+     */
+    public static void javaStartupTasksComplete() {
+        nativeJavaStartupTasksCompleteForBrowserTests();
+    }
+
+    private static native void nativeJavaStartupTasksCompleteForBrowserTests();
 }

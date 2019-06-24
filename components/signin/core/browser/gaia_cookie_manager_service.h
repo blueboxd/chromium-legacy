@@ -81,7 +81,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
 
   typedef base::OnceCallback<void(signin::SetAccountsInCookieResult)>
       SetAccountsInCookieCompletedCallback;
-  typedef base::OnceCallback<void(const std::string&,
+  typedef base::OnceCallback<void(const CoreAccountId&,
                                   const GoogleServiceAuthError&)>
       AddAccountToCookieCompletedCallback;
 
@@ -104,17 +104,17 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
     }
     // For use in the Request of type ADD_ACCOUNT which must have exactly one
     // account_id.
-    const std::string GetAccountID();
+    const CoreAccountId GetAccountID();
     gaia::GaiaSource source() const { return source_; }
 
     void RunSetAccountsInCookieCompletedCallback(
         signin::SetAccountsInCookieResult result);
     void RunAddAccountToCookieCompletedCallback(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         const GoogleServiceAuthError& error);
 
     static GaiaCookieRequest CreateAddAccountRequest(
-        const std::string& account_id,
+        const CoreAccountId& account_id,
         gaia::GaiaSource source,
         AddAccountToCookieCompletedCallback callback);
     static GaiaCookieRequest CreateLogOutRequest(gaia::GaiaSource source);
@@ -132,13 +132,13 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
                       gaia::GaiaSource source,
                       SetAccountsInCookieCompletedCallback callback);
     GaiaCookieRequest(GaiaCookieRequestType request_type,
-                      const std::string& account_id,
+                      const CoreAccountId& account_id,
                       gaia::GaiaSource source,
                       AddAccountToCookieCompletedCallback callback);
 
     GaiaCookieRequestType request_type_;
     // For use in the request of type ADD_ACCOUNT.
-    std::string account_id_;
+    CoreAccountId account_id_;
     // For use in the request of type SET_ACCOUNT.
     std::vector<AccountIdGaiaIdPair> accounts_;
     gaia::GaiaSource source_;
@@ -221,11 +221,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void Shutdown();
 
   void AddAccountToCookie(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       gaia::GaiaSource source,
       AddAccountToCookieCompletedCallback completion_callback);
   void AddAccountToCookieWithToken(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& access_token,
       gaia::GaiaSource source,
       AddAccountToCookieCompletedCallback completion_callback);
@@ -335,7 +335,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
 
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       gaia::GaiaSource source,
       AddAccountToCookieCompletedCallback completion_callback);
 

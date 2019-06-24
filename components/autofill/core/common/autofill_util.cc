@@ -213,7 +213,9 @@ bool ShouldAutoselectFirstSuggestionOnArrowDown() {
 }
 
 bool IsFillable(FocusedFieldType focused_field_type) {
-  return focused_field_type == FocusedFieldType::kFillableTextField ||
+  return focused_field_type == FocusedFieldType::kFillableTextArea ||
+         focused_field_type == FocusedFieldType::kFillableSearchField ||
+         focused_field_type == FocusedFieldType::kFillableNonSearchField ||
          focused_field_type == FocusedFieldType::kFillableUsernameField ||
          focused_field_type == FocusedFieldType::kFillablePasswordField;
 }

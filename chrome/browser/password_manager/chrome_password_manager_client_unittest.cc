@@ -18,6 +18,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/mock_address_accessory_controller.h"
+#include "chrome/browser/autofill/mock_manual_filling_view.h"
+#include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -752,8 +755,12 @@ class ChromePasswordManagerClientAndroidTest
   std::unique_ptr<password_manager::ContentPasswordManagerDriver>
   CreateContentPasswordManagerDriver(content::RenderFrameHost* rfh);
 
+  void CreateManualFillingController(content::WebContents* web_contents);
+
  private:
   autofill::TestAutofillClient test_autofill_client_;
+  NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
+  NiceMock<MockAddressAccessoryController> mock_address_controller_;
 };
 
 std::unique_ptr<password_manager::ContentPasswordManagerDriver>
@@ -763,8 +770,17 @@ ChromePasswordManagerClientAndroidTest::CreateContentPasswordManagerDriver(
       rfh, GetClient(), &test_autofill_client_);
 }
 
+void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
+    content::WebContents* web_contents) {
+  ManualFillingControllerImpl::CreateForWebContentsForTesting(
+      web_contents, mock_pwd_controller_.AsWeakPtr(),
+      mock_address_controller_.AsWeakPtr(),
+      std::make_unique<NiceMock<MockManualFillingView>>());
+}
+
 TEST_F(ChromePasswordManagerClientAndroidTest,
        FocusedInputChangedNoFrameFillableField) {
+  CreateManualFillingController(web_contents());
   ASSERT_FALSE(web_contents()->GetFocusedFrame());
 
   ChromePasswordManagerClient* client = GetClient();
@@ -781,6 +797,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
        FocusedInputChangedNoFrameNoField) {
+  CreateManualFillingController(web_contents());
   std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
       CreateContentPasswordManagerDriver(main_rfh());
 
@@ -792,13 +809,6 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       FocusedFieldType::kFillablePasswordField, driver.get()->AsWeakPtr());
 
   ChromePasswordManagerClient* client = GetClient();
-
-  NiceMock<MockAddressAccessoryController> mock_address_controller_;
-  ManualFillingControllerImpl::CreateForWebContentsForTesting(
-      web_contents(),
-      PasswordAccessoryControllerImpl::GetOrCreate(web_contents())->AsWeakPtr(),
-      mock_address_controller_.AsWeakPtr(),
-      std::make_unique<MockManualFillingView>());
 
   ASSERT_FALSE(web_contents()->GetFocusedFrame());
   ASSERT_TRUE(pwd_generation_controller->GetActiveFrameDriver());
@@ -815,6 +825,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedWrongFrame) {
   // Set up the main frame.
   NavigateAndCommit(GURL("https://example.com"));
   FocusWebContentsOnMainFrame();
+  CreateManualFillingController(web_contents());
 
   content::RenderFrameHost* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
@@ -833,13 +844,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedWrongFrame) {
 
 TEST_F(ChromePasswordManagerClientAndroidTest, FocusedInputChangedGoodFrame) {
   ChromePasswordManagerClient* client = GetClient();
-
-  NiceMock<MockAddressAccessoryController> mock_address_controller_;
-  ManualFillingControllerImpl::CreateForWebContentsForTesting(
-      web_contents(),
-      PasswordAccessoryControllerImpl::GetOrCreate(web_contents())->AsWeakPtr(),
-      mock_address_controller_.AsWeakPtr(),
-      std::make_unique<MockManualFillingView>());
+  CreateManualFillingController(web_contents());
 
   std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
       CreateContentPasswordManagerDriver(main_rfh());

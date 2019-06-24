@@ -53,7 +53,7 @@ const char kRuleId4[] = "rule4";
 WebRequestInfoInitParams CreateRequestParams(const GURL& url) {
   WebRequestInfoInitParams info;
   info.url = url;
-  info.is_browser_side_navigation = true;
+  info.is_navigation_request = true;
   info.type = content::ResourceType::kMainFrame;
   info.web_request_type = WebRequestResourceType::MAIN_FRAME;
   return info;

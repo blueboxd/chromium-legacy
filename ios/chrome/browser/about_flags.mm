@@ -581,6 +581,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfHistoryName,
      flag_descriptions::kSendTabToSelfHistoryDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfHistory)},
+    {"toolbar-new-tab-button", flag_descriptions::kToolbarNewTabButtonName,
+     flag_descriptions::kToolbarNewTabButtonDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kToolbarNewTabButton)},
 };
 
 // Add all switches from experimental flags to |command_line|.

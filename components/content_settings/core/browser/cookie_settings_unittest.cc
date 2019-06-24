@@ -4,6 +4,7 @@
 
 #include "components/content_settings/core/browser/cookie_settings.h"
 
+#include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -18,6 +19,30 @@
 namespace content_settings {
 
 namespace {
+
+class CookieSettingsObserver : public CookieSettings::Observer {
+ public:
+  CookieSettingsObserver(CookieSettings* settings)
+      : settings_(settings), scoped_observer(this) {
+    scoped_observer.Add(settings);
+  }
+
+  void OnThirdPartyCookieBlockingChanged(
+      bool block_third_party_cookies) override {
+    ASSERT_EQ(block_third_party_cookies,
+              settings_->ShouldBlockThirdPartyCookies());
+    last_value_ = block_third_party_cookies;
+  }
+
+  bool last_value() { return last_value_; }
+
+ private:
+  CookieSettings* settings_;
+  bool last_value_ = false;
+  ScopedObserver<CookieSettings, CookieSettingsObserver> scoped_observer;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieSettingsObserver);
+};
 
 class CookieSettingsTest : public testing::Test {
  public:
@@ -383,6 +408,14 @@ TEST_F(CookieSettingsTest, ThirdPartyException) {
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kFirstPartySite));
 }
+
+TEST_F(CookieSettingsTest, ThirdPartySettingObserver) {
+  CookieSettingsObserver observer(cookie_settings_.get());
+  EXPECT_FALSE(observer.last_value());
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_TRUE(observer.last_value());
+}
+
 }  // namespace
 
 }  // namespace content_settings

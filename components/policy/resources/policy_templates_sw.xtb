@@ -428,12 +428,6 @@ SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kusafisha Chrome kita
 
       Sera itawekwa kwenye URL ambapo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua Sheria na masharti. Lazima Sheria na Masharti yawe maandishi matupu, yawe kama maandishi ya kuandika/matupu ya MIME. Markup hairuhusiwi.</translation>
 <translation id="1750315445671978749">Zuia vipakuliwa vyote</translation>
-<translation id="1762072363876276024">
-      Sera hii inatumika kwenye skrini ya kuingia katika akaunti. Tafadhali ona pia sera ya <ph name="SITE_PER_PROCESS_POLICY_NAME" /> inayotumika kwenye kipindi cha mtumiaji. Tunapendekeza uweke sera zote kuwa thamani sawa. Thamani zisipolingana, ucheleweshaji unaweza kutokea wakati wa kuweka kipindi cha mtumiaji wakati thamani inayobainishwa na sera ya mtumiaji inatumika.
-      Mipangilio hii DeviceLoginScreenSitePerProcess, inaweza kutumika kuzuia watumiaji wasijiondoe kwenye utendaji chaguomsingi wa kutenga tovuti zote. Kumbuka kwamba sera ya DeviceLoginScreenIsolateOrigins huenda pia ikatumika kutenga vyanzo laini zaidi vya ziada.
-      Sera ikiwashwa, watumiaji wataweza kujiondoa kwenye utendaji chaguomsingi ambapo kila tovuti hutumia mchakato wake wenyewe.
-      Usipoweka mipangilio ya sera hii au ukiizima, mtumiaji ataweza kubadilisha mipangilio hii (kwa mfano kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Washa sera ya Mapendekezo ya Programu katika Hali Ombwe ya Kisanduku cha Kutafutia</translation>
 <translation id="17719159826324007">
       Sera hii ikiwekwa kuwa ArcSession, hulazimisha kifaa kuwaka tena mtumiaji akiondoka kwenye akaunti ikiwa Android imefunguka.
@@ -3665,22 +3659,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Kumbuka: thamani zinazoruhusiwa za sehemu ya <ph name="MINUTE_FIELD_NAME" /> ya <ph name="CHARGE_START_TIME_FIELD_NAME" /> na<ph name="CHARGE_END_TIME_FIELD_NAME" /> ni 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Sanidi vipengele vya ufikiaji vya <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Sera hii huwasha HTTP/0.9 kwenye milango mbali na 80 ya HTTP na 443 ya HTTPS.
-
-      Sera huzimwa kwa chaguomsingi, na ikiwashwa, huwaacha watumiaji katika hali ambayo wanaweza kupata matatizo ya usalama https://crbug.com/600352.
-
-      Sera hii inadhamiria kuwapa wafanyabiashara nafasi ya kuhamisha seva za sasa kutoka HTTP/0.9, na itaondolewa siku zijazo.
-
-      Sera hii isipowekwa, HTTP/0.9 itazimwa kwenye milango ambayo si chaguomsingi.</translation>
-<translation id="7726421241038987229">
-      Mipangilio hii, SitePerProcess, inaweza kutumika kuwazuia watumiaji wasijiondoe kwenye utendaji chaguomsingi wa kutenga tovuti zote. Kumbuka kwamba sera ya IsolateOrigins huenda pia ikatumika kutenga vyanzo laini vya ziada.
-      Sera ikiwashwa, watumiaji wataweza kujiondoa kwenye utendaji chaguomsingi ambapo kila tovuti hutumia mchakato wake wenyewe.
-      Mipangilio ya sera hii isipowekwa au ikizimwa, mtumiaji ataweza kujiondoa kwenye utengaji wa tovuti
-      (kwa mfano, kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).  Hatua ya kuweka sera hii kuwa imezimwa na/au kukosa kuiweka, haizimi kipengele cha Utengaji wa Tovuti.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, inapendekezwa pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kuwa na thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, ucheleweshaji unaweza kutokea wakati wa kuingia katika kipindi cha mtumiaji wakati thamani inayobainishwa na sera ya mtumiaji inatumika.
-
-      DOKEZO: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Ruhusu vifaa vitumie <ph name="PLUGIN_VM_NAME" /> kwenye<ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Huwezesha matumizi ya uthibitishaji wa hatua mbili badala ya PIN iliyobainishwa na mtumiaji, kwa wapangishaji wa ufikiaji wa mbali.
 

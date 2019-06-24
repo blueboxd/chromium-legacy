@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/bind.h"
+#include "chrome/android/features/vr/jni_headers/VrShellDelegate_jni.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_shell.h"
@@ -24,7 +25,6 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
 using base::android::AttachCurrentThread;

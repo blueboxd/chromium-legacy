@@ -15,6 +15,7 @@
 #include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
+#include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -34,7 +35,6 @@
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/undo_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/BookmarkBridge_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 using base::android::AttachCurrentThread;

@@ -52,7 +52,9 @@ enum SubmissionSource {
 enum FocusedFieldType {
   kUnknown,
   kUnfillableElement,
-  kFillableTextField,
+  kFillableTextArea,
+  kFillableSearchField,
+  kFillableNonSearchField,
   kFillableUsernameField,
   kFillablePasswordField,
 };
@@ -203,14 +205,6 @@ struct PasswordFormFillData {
 
 // autofill::PasswordFormGenerationData
 struct PasswordFormGenerationData {
-  uint64 form_signature;
-  uint32 field_signature;
-  bool has_confirmation_field;
-  uint32 confirmation_field_signature;
-};
-
-// autofill::NewPasswordFormGenerationData
-struct NewPasswordFormGenerationData {
    uint32 new_password_renderer_id;
    uint32 confirmation_password_renderer_id;
 };

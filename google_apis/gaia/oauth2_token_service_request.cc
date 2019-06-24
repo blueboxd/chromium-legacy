@@ -152,12 +152,13 @@ namespace {
 class RequestCore : public OAuth2TokenServiceRequest::Core,
                     public OAuth2TokenService::Consumer {
  public:
-  RequestCore(OAuth2TokenServiceRequest* owner,
-              const scoped_refptr<
-                  OAuth2TokenServiceRequest::TokenServiceProvider>& provider,
-              OAuth2TokenService::Consumer* consumer,
-              const std::string& account_id,
-              const OAuth2TokenService::ScopeSet& scopes);
+  RequestCore(
+      OAuth2TokenServiceRequest* owner,
+      const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
+          provider,
+      OAuth2TokenService::Consumer* consumer,
+      const CoreAccountId& account_id,
+      const OAuth2TokenService::ScopeSet& scopes);
 
   // OAuth2TokenService::Consumer.  Must be called on the token service thread.
   void OnGetTokenSuccess(
@@ -181,7 +182,7 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
   void InformOwnerOnGetTokenFailure(GoogleServiceAuthError error);
 
   OAuth2TokenService::Consumer* const consumer_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   OAuth2TokenService::ScopeSet scopes_;
 
   // OAuth2TokenService request for fetching OAuth2 access token; it should be
@@ -196,7 +197,7 @@ RequestCore::RequestCore(
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         provider,
     OAuth2TokenService::Consumer* consumer,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes)
     : OAuth2TokenServiceRequest::Core(owner, provider),
       OAuth2TokenService::Consumer("oauth2_token_service"),
@@ -260,12 +261,13 @@ void RequestCore::InformOwnerOnGetTokenFailure(GoogleServiceAuthError error) {
 // An implementation of Core for invalidating an access token.
 class InvalidateCore : public OAuth2TokenServiceRequest::Core {
  public:
-  InvalidateCore(OAuth2TokenServiceRequest* owner,
-                 const scoped_refptr<
-                     OAuth2TokenServiceRequest::TokenServiceProvider>& provider,
-                 const std::string& access_token,
-                 const std::string& account_id,
-                 const OAuth2TokenService::ScopeSet& scopes);
+  InvalidateCore(
+      OAuth2TokenServiceRequest* owner,
+      const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
+          provider,
+      const std::string& access_token,
+      const CoreAccountId& account_id,
+      const OAuth2TokenService::ScopeSet& scopes);
 
  private:
   friend class base::RefCountedThreadSafe<InvalidateCore>;
@@ -278,7 +280,7 @@ class InvalidateCore : public OAuth2TokenServiceRequest::Core {
   void StopOnTokenServiceThread() override;
 
   std::string access_token_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   OAuth2TokenService::ScopeSet scopes_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidateCore);
@@ -289,7 +291,7 @@ InvalidateCore::InvalidateCore(
     const scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>&
         provider,
     const std::string& access_token,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes)
     : OAuth2TokenServiceRequest::Core(owner, provider),
       access_token_(access_token),
@@ -319,7 +321,7 @@ void InvalidateCore::StopOnTokenServiceThread() {
 std::unique_ptr<OAuth2TokenServiceRequest>
 OAuth2TokenServiceRequest::CreateAndStart(
     const scoped_refptr<TokenServiceProvider>& provider,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     OAuth2TokenService::Consumer* consumer) {
   std::unique_ptr<OAuth2TokenServiceRequest> request(
@@ -333,7 +335,7 @@ OAuth2TokenServiceRequest::CreateAndStart(
 // static
 void OAuth2TokenServiceRequest::InvalidateToken(
     const scoped_refptr<TokenServiceProvider>& provider,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {
   std::unique_ptr<OAuth2TokenServiceRequest> request(
@@ -348,12 +350,12 @@ OAuth2TokenServiceRequest::~OAuth2TokenServiceRequest() {
   core_->Stop();
 }
 
-std::string OAuth2TokenServiceRequest::GetAccountId() const {
+CoreAccountId OAuth2TokenServiceRequest::GetAccountId() const {
   return account_id_;
 }
 
 OAuth2TokenServiceRequest::OAuth2TokenServiceRequest(
-    const std::string& account_id)
+    const CoreAccountId& account_id)
     : account_id_(account_id) {
   DCHECK(!account_id_.empty());
 }

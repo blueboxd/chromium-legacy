@@ -4,8 +4,6 @@
 
 #include "net/quic/quic_stream_factory.h"
 
-#include "base/test/fuzzed_data_provider.h"
-
 #include "base/stl_util.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
@@ -28,6 +26,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
@@ -83,7 +82,7 @@ struct Env {
 static struct Env* env = new Env();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   std::unique_ptr<ContextHostResolver> host_resolver =
       CreateFuzzedContextHostResolver(HostResolver::ManagerOptions(), nullptr,

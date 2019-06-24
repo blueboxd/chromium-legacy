@@ -166,8 +166,8 @@ void ExtractUnderlines(NSAttributedString* string,
   NSTextCheckingTypes userEnabledTextCheckingTypes_;
   NSTextCheckingTypes userDisabledTextCheckingTypes_;
 }
+@property(readonly) NSTextCheckingType allowedTextCheckingTypes;
 @property(readonly) NSTextCheckingType enabledTextCheckingTypes;
-@property(readonly) BOOL inputAllowsTextSubstitution;
 @property(readonly) NSSpellChecker* spellChecker;
 
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
@@ -254,16 +254,6 @@ void ExtractUnderlines(NSAttributedString* string,
   host_->OnBoundsInWindowChanged(gfxViewBoundsInWindow, true);
 }
 
-- (BOOL)inputAllowsTextSubstitution {
-  if (textInputType_ == ui::TEXT_INPUT_TYPE_NONE)
-    return NO;
-  if (textInputType_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    return NO;
-  if (textInputFlags_ & blink::kWebTextInputFlagSpellcheckOff)
-    return NO;
-  return YES;
-}
-
 - (NSSpellChecker*)spellChecker {
   if (spellCheckerForTesting_)
     return spellCheckerForTesting_;
@@ -271,11 +261,9 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)requestTextSubstitutions {
-  if (!self.inputAllowsTextSubstitution)
-    return;
-
-  NSTextCheckingType enabledTextCheckingTypes = self.enabledTextCheckingTypes;
-  if (!enabledTextCheckingTypes)
+  NSTextCheckingType textCheckingTypes =
+      self.allowedTextCheckingTypes & self.enabledTextCheckingTypes;
+  if (!textCheckingTypes)
     return;
 
   NSString* availableText = base::SysUTF16ToNSString(textSelectionText_);
@@ -286,7 +274,7 @@ void ExtractUnderlines(NSAttributedString* string,
   auto* textCheckingResults =
       [self.spellChecker checkString:availableText
                                range:NSMakeRange(0, availableText.length)
-                               types:enabledTextCheckingTypes
+                               types:textCheckingTypes
                              options:nil
               inSpellDocumentWithTag:0
                          orthography:nullptr
@@ -412,6 +400,19 @@ void ExtractUnderlines(NSAttributedString* string,
                                              inString:selectionText];
                         });
                       }];
+}
+
+- (NSTextCheckingType)allowedTextCheckingTypes {
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_NONE)
+    return 0;
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    return 0;
+  if (textInputFlags_ & blink::kWebTextInputFlagAutocorrectOff)
+    return 0;
+  NSTextCheckingType checkingTypes = NSTextCheckingTypeReplacement;
+  if (!(textInputFlags_ & blink::kWebTextInputFlagSpellcheckOff))
+    checkingTypes |= NSTextCheckingTypeQuote | NSTextCheckingTypeDash;
+  return checkingTypes;
 }
 
 - (NSTextCheckingType)enabledTextCheckingTypes {
@@ -1564,7 +1565,7 @@ void ExtractUnderlines(NSAttributedString* string,
           (self.enabledTextCheckingTypes & representedTextCheckingType)
               ? NSControlStateValueOn
               : NSControlStateValueOff;
-      return self.inputAllowsTextSubstitution;
+      return (self.allowedTextCheckingTypes & representedTextCheckingType) != 0;
     }
   }
 

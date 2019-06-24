@@ -16,6 +16,7 @@ namespace blink {
 
 class DOMPointInit;
 class DOMPointReadOnly;
+class ExceptionState;
 class TransformationMatrix;
 class XRRigidTransform;
 
@@ -23,25 +24,33 @@ class XRRay final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRRay(const TransformationMatrix& matrix);
-  explicit XRRay(XRRigidTransform* transform);
-  XRRay(DOMPointInit* origin, DOMPointInit* direction);
+  explicit XRRay(const TransformationMatrix& matrix,
+                 ExceptionState& exception_state);
+  explicit XRRay(XRRigidTransform* transform, ExceptionState& exception_state);
+  XRRay(DOMPointInit* origin,
+        DOMPointInit* direction,
+        ExceptionState& exception_state);
   ~XRRay() override;
 
   DOMPointReadOnly* origin() const { return origin_; }
   DOMPointReadOnly* direction() const { return direction_; }
   DOMFloat32Array* matrix();
 
-  static XRRay* Create();
-  static XRRay* Create(DOMPointInit* origin);
-  static XRRay* Create(DOMPointInit* origin, DOMPointInit* direction);
-  static XRRay* Create(XRRigidTransform* transform);
+  static XRRay* Create(ExceptionState& exception_state);
+  static XRRay* Create(DOMPointInit* origin, ExceptionState& exception_state);
+  static XRRay* Create(DOMPointInit* origin,
+                       DOMPointInit* direction,
+                       ExceptionState& exception_state);
+  static XRRay* Create(XRRigidTransform* transform,
+                       ExceptionState& exception_state);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  void Set(const TransformationMatrix& matrix);
-  void Set(FloatPoint3D origin, FloatPoint3D direction);
+  void Set(const TransformationMatrix& matrix, ExceptionState& exception_state);
+  void Set(FloatPoint3D origin,
+           FloatPoint3D direction,
+           ExceptionState& exception_state);
 
   Member<DOMPointReadOnly> origin_;
   Member<DOMPointReadOnly> direction_;

@@ -6,9 +6,9 @@
 
 #include "base/callback.h"
 #include "cc/layers/solid_color_layer.h"
+#include "chrome/android/chrome_jni_headers/EphemeralTabSceneLayer_jni.h"
 #include "chrome/browser/android/compositor/layer/ephemeral_tab_layer.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/EphemeralTabSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
 

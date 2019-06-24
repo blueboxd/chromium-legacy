@@ -66,7 +66,7 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
 
   // Creates a view allowing the user to opt-in to reporting information to UMA.
   // Returns nullptr if offer is unavailable.
-  views::View* CreateUmaOptInView();
+  std::unique_ptr<views::View> CreateUmaOptInView();
 
   // Restore previous session after user selects so.
   void RestorePreviousSession();

@@ -5,12 +5,12 @@
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 
 #include "base/android/jni_android.h"
+#include "chrome/android/chrome_jni_headers/InvalidationServiceFactory_jni.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/invalidation/impl/invalidation_service_android.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "jni/InvalidationServiceFactory_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;

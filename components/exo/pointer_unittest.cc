@@ -54,15 +54,9 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_METHOD0(OnPointerFrame, void());
 };
 
-// Flaky on Linux Chromium OS ASan LSan. http://crbug.com/859020.
-#if defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER)
-#define MAYBE_PointerTest DISABLED_PointerTest
-#else
-#define MAYBE_PointerTest PointerTest
-#endif
-class MAYBE_PointerTest : public test::ExoTestBase {
+class PointerTest : public test::ExoTestBase {
  public:
-  MAYBE_PointerTest() = default;
+  PointerTest() = default;
 
   void SetUp() override {
     test::ExoTestBase::SetUp();
@@ -73,10 +67,10 @@ class MAYBE_PointerTest : public test::ExoTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_PointerTest);
+  DISALLOW_COPY_AND_ASSIGN(PointerTest);
 };
 
-TEST_F(MAYBE_PointerTest, SetCursor) {
+TEST_F(PointerTest, SetCursor) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -138,7 +132,7 @@ TEST_F(MAYBE_PointerTest, SetCursor) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, SetCursorNull) {
+TEST_F(PointerTest, SetCursorNull) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -169,7 +163,7 @@ TEST_F(MAYBE_PointerTest, SetCursorNull) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, SetCursorType) {
+TEST_F(PointerTest, SetCursorType) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -227,7 +221,7 @@ TEST_F(MAYBE_PointerTest, SetCursorType) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, SetCursorTypeOutsideOfSurface) {
+TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -259,7 +253,7 @@ TEST_F(MAYBE_PointerTest, SetCursorTypeOutsideOfSurface) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
+TEST_F(PointerTest, SetCursorAndSetCursorType) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -332,7 +326,7 @@ TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, SetCursorNullAndSetCursorType) {
+TEST_F(PointerTest, SetCursorNullAndSetCursorType) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -376,7 +370,7 @@ TEST_F(MAYBE_PointerTest, SetCursorNullAndSetCursorType) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerEnter) {
+TEST_F(PointerTest, OnPointerEnter) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -399,7 +393,7 @@ TEST_F(MAYBE_PointerTest, OnPointerEnter) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerLeave) {
+TEST_F(PointerTest, OnPointerLeave) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -432,7 +426,7 @@ TEST_F(MAYBE_PointerTest, OnPointerLeave) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerMotion) {
+TEST_F(PointerTest, OnPointerMotion) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -505,7 +499,7 @@ TEST_F(MAYBE_PointerTest, OnPointerMotion) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerButton) {
+TEST_F(PointerTest, OnPointerButton) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -535,7 +529,7 @@ TEST_F(MAYBE_PointerTest, OnPointerButton) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerScroll) {
+TEST_F(PointerTest, OnPointerScroll) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -570,7 +564,7 @@ TEST_F(MAYBE_PointerTest, OnPointerScroll) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerScrollWithThreeFinger) {
+TEST_F(PointerTest, OnPointerScrollWithThreeFinger) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -605,7 +599,7 @@ TEST_F(MAYBE_PointerTest, OnPointerScrollWithThreeFinger) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, OnPointerScrollDiscrete) {
+TEST_F(PointerTest, OnPointerScrollDiscrete) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
   gfx::Size buffer_size(10, 10);
@@ -633,7 +627,7 @@ TEST_F(MAYBE_PointerTest, OnPointerScrollDiscrete) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, RegisterPointerEventsOnModal) {
+TEST_F(PointerTest, RegisterPointerEventsOnModal) {
   // Create modal surface.
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(
@@ -683,7 +677,7 @@ TEST_F(MAYBE_PointerTest, RegisterPointerEventsOnModal) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
+TEST_F(PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
   // Create surface for non-modal window.
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
@@ -752,7 +746,7 @@ TEST_F(MAYBE_PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, IgnorePointerLeaveOnModal) {
+TEST_F(PointerTest, IgnorePointerLeaveOnModal) {
   // Create modal surface.
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(
@@ -794,7 +788,7 @@ TEST_F(MAYBE_PointerTest, IgnorePointerLeaveOnModal) {
   pointer.reset();
 }
 
-TEST_F(MAYBE_PointerTest, RegisterPointerEventsOnNonModal) {
+TEST_F(PointerTest, RegisterPointerEventsOnNonModal) {
   // Create surface for non-modal window.
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));

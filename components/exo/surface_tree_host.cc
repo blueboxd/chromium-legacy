@@ -260,9 +260,6 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SurfaceTreeHost, private:
-
 void SurfaceTreeHost::UpdateHostWindowBounds() {
   // This method applies multiple changes to the window tree. Use ScopedPause
   // to ensure that occlusion isn't recomputed before all changes have been
@@ -281,6 +278,9 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   root_surface_->window()->SetBounds(gfx::Rect(
       root_surface_origin_, root_surface_->window()->bounds().size()));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// SurfaceTreeHost, private:
 
 viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
   DCHECK(root_surface_);

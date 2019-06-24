@@ -35,9 +35,9 @@ class SelectFileDialogExtension
  public:
   // Opaque ID type for identifying the tab spawned each dialog, unique for
   // every WebContents.
-  typedef const void* RoutingID;
+  typedef std::string RoutingID;
   static RoutingID GetRoutingIDFromWebContents(
-      const content::WebContents* web_contents);
+      content::WebContents* web_contents);
 
   static SelectFileDialogExtension* Create(
       ui::SelectFileDialog::Listener* listener,

@@ -836,6 +836,8 @@ cr.define('settings_about_page', function() {
 
   return {
     registerTests: function() {
+      // TODO(aee): move CrOS-specific tests to the OS about page tests when
+      // when these parts are removed from the browser about page.
       if (cr.isChromeOS) {
         registerDetailedBuildInfoTests();
         registerChannelSwitcherDialogTests();

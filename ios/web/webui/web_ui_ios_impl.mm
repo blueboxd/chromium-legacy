@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#import "ios/web/public/web_client.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
@@ -20,6 +21,10 @@
 #endif
 
 using web::WebUIIOSController;
+
+namespace {
+const char kCommandPrefix[] = "webui";
+}
 
 namespace web {
 
@@ -42,9 +47,13 @@ base::string16 WebUIIOS::GetJavascriptCall(
 
 WebUIIOSImpl::WebUIIOSImpl(WebStateImpl* web_state) : web_state_(web_state) {
   DCHECK(web_state);
+  web_state->AddScriptCommandCallback(
+      base::BindRepeating(&WebUIIOSImpl::OnJsMessage, base::Unretained(this)),
+      kCommandPrefix);
 }
 
 WebUIIOSImpl::~WebUIIOSImpl() {
+  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   controller_.reset();
 }
 
@@ -92,6 +101,34 @@ void WebUIIOSImpl::RejectJavascriptCallback(const base::Value& callback_id,
 void WebUIIOSImpl::RegisterMessageCallback(const std::string& message,
                                            const MessageCallback& callback) {
   message_callbacks_.insert(std::make_pair(message, callback));
+}
+
+bool WebUIIOSImpl::OnJsMessage(const base::DictionaryValue& message,
+                               const GURL& page_url,
+                               bool has_user_gesture,
+                               bool form_in_main_frame,
+                               web::WebFrame* sender_frame) {
+  // Chrome message are only handled if sent from the main frame.
+  if (!sender_frame->IsMainFrame())
+    return false;
+
+  web::URLVerificationTrustLevel trust_level =
+      web::URLVerificationTrustLevel::kNone;
+  const GURL current_url = web_state_->GetCurrentURL(&trust_level);
+  if (web::GetWebClient()->IsAppSpecificURL(current_url)) {
+    std::string message_content;
+    const base::ListValue* arguments = nullptr;
+    if (!message.GetString("message", &message_content)) {
+      DLOG(WARNING) << "JS message parameter not found: message";
+      return false;
+    }
+    if (!message.GetList("arguments", &arguments)) {
+      DLOG(WARNING) << "JS message parameter not found: arguments";
+      return false;
+    }
+    ProcessWebUIIOSMessage(current_url, message_content, *arguments);
+  }
+  return true;
 }
 
 void WebUIIOSImpl::ProcessWebUIIOSMessage(const GURL& source_url,

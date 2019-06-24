@@ -20,16 +20,16 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
   FakeOAuth2TokenService();
   ~FakeOAuth2TokenService() override;
 
-  void AddAccount(const std::string& account_id);
-  void RemoveAccount(const std::string& account_id);
+  void AddAccount(const CoreAccountId& account_id);
+  void RemoveAccount(const CoreAccountId& account_id);
 
   // Helper routines to issue tokens for pending requests or complete them with
   // error.
   void IssueAllTokensForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
   void IssueErrorForAllPendingRequestsForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& auth_error);
 
   void InvalidateTokenForMultilogin(const CoreAccountId& account_id,
@@ -58,7 +58,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
     PendingRequest(const PendingRequest& other);
     ~PendingRequest();
 
-    std::string account_id;
+    CoreAccountId account_id;
     std::string client_id;
     std::string client_secret;
     ScopeSet scopes;

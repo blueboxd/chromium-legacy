@@ -23,6 +23,7 @@ class MessageReceptionChannel {
  public:
   using StreamOpener =
       base::RepeatingCallback<std::unique_ptr<ScopedGrpcServerStream>(
+          base::OnceClosure on_channel_ready,
           const base::RepeatingCallback<void(
               const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
           base::OnceCallback<void(const grpc::Status&)> on_channel_closed)>;

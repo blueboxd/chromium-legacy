@@ -178,7 +178,18 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     const gfx::Rect& damage_rect,
     SwapCompletionCallback completion_callback,
     PresentationCallback present_callback) {
-  DCHECK(pending_transaction_);
+  // The transaction is initialized on the first ScheduleOverlayPlane call. If
+  // we don't have a transaction at this point, it means the scheduling the
+  // overlay plane failed. Simply report a swap failure to lose the context and
+  // recreate the surface.
+  if (!pending_transaction_ || surface_lost_) {
+    LOG(ERROR) << "CommitPendingTransaction failed because surface is lost";
+
+    surface_lost_ = true;
+    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(present_callback).Run(gfx::PresentationFeedback::Failure());
+    return;
+  }
 
   // Mark the intersection of a surface's rect with the damage rect as the dirty
   // rect for that surface.
@@ -252,6 +263,11 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  if (surface_lost_) {
+    LOG(ERROR) << "ScheduleOverlayPlane failed because surface is lost";
+    return false;
+  }
+
   if (!SurfaceControl::SupportsColorSpace(image->color_space())) {
     LOG(ERROR) << "Not supported color space used with overlay : "
                << image->color_space().ToString();

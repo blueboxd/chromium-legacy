@@ -105,9 +105,6 @@ class WebStateImpl;
 // Please reconsider before using this method.
 - (void)removeWebView;
 
-// Dismisses all modals owned by the web view or native view.
-- (void)dismissModals;
-
 // Call when the CRWWebController needs go away. Caller must reset the delegate
 // before calling.
 - (void)close;

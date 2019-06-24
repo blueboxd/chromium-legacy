@@ -41,9 +41,6 @@ public abstract class NativeBrowserTestActivity extends Activity {
         mStarted = true;
         NativeBrowserTest.deletePrivateDataDirectory(getPrivateDataDirectory());
         initializeBrowserProcess();
-        // TODO(danakj): Move to ContentShellBrowserTestActivity when async
-        // initialization is done there.
-        runTests();
     }
 
     protected void runTests() {

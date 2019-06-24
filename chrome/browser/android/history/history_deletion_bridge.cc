@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "chrome/android/chrome_jni_headers/HistoryDeletionBridge_jni.h"
 #include "chrome/browser/android/history/history_deletion_info.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/history/core/browser/history_service.h"
-#include "jni/HistoryDeletionBridge_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;

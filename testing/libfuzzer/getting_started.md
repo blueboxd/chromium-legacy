@@ -302,8 +302,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 ```
 
-There is [base::FuzzedDataProvider] class that might be helpful for writing
-fuzz targets using that approach.
+There is [FuzzedDataProvider] class that might be helpful for writing fuzz
+targets using that approach. In order to use it, add
+`#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"` to your fuzz
+target source file.
 
 
 ## Submitting Fuzz Target to ClusterFuzz
@@ -335,5 +337,5 @@ performance and for optimization hints.
 [Build Config]: reference.md#Builder-configurations
 [its own documentation]: http://llvm.org/docs/LibFuzzer.html#output
 [Getting Started with libprotobuf-mutator in Chromium]: libprotobuf-mutator.md
-[base::FuzzedDataProvider]: https://cs.chromium.org/chromium/src/base/test/fuzzed_data_provider.h
+[FuzzedDataProvider]: https://cs.chromium.org/chromium/src/third_party/libFuzzer/src/utils/FuzzedDataProvider.h
 [code coverage report]: efficient_fuzzer.md#Code-Coverage

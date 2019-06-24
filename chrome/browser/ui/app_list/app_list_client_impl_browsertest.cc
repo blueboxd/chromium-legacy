@@ -71,9 +71,11 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsExtensionAppOpen) {
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    OpenApplication(AppLaunchParams(
-        profile(), extension_app->id(), extensions::LAUNCH_CONTAINER_WINDOW,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+    OpenApplication(
+        AppLaunchParams(profile(), extension_app->id(),
+                        extensions::LaunchContainer::kLaunchContainerWindow,
+                        WindowOpenDisposition::NEW_WINDOW,
+                        extensions::AppLaunchSource::kSourceTest));
     app_loaded_observer.Wait();
   }
   EXPECT_TRUE(delegate->IsAppOpen(extension_app->id()));

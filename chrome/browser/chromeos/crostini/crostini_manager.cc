@@ -1530,8 +1530,10 @@ GURL CrostiniManager::GenerateVshInCroshUrl(
 AppLaunchParams CrostiniManager::GenerateTerminalAppLaunchParams(
     Profile* profile) {
   AppLaunchParams launch_params(
-      profile, kCrostiniCroshBuiltinAppId, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_APP_LAUNCHER);
+      profile, kCrostiniCroshBuiltinAppId,
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceAppLauncher);
   launch_params.override_app_name =
       AppNameFromCrostiniAppId(kCrostiniTerminalId);
   return launch_params;

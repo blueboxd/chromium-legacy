@@ -62,12 +62,6 @@
   return _webStateImpl;
 }
 
-#pragma mark - Public API
-
-- (void)dismissModals {
-  [self.webController dismissModals];
-}
-
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webStateDestroyed:(web::WebState*)webState {

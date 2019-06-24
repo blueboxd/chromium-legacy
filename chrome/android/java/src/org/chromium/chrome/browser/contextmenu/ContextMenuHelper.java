@@ -133,7 +133,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             }
 
             final RevampedContextMenuCoordinator menuCoordinator =
-                    new RevampedContextMenuCoordinator(topContentOffsetPx);
+                    new RevampedContextMenuCoordinator(
+                            topContentOffsetPx, this::shareImageWithLastShareComponent);
             menuCoordinator.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback,
                     mOnMenuShown, mOnMenuClosed);
             // TODO(sinansahin): This could be pushed in to the header mediator.
@@ -233,6 +234,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      */
     void shareImage() {
         shareImageDirectly(null);
+    }
+
+    /**
+     * Share the image that triggered the current context menu with the last app used to share.
+     */
+    private void shareImageWithLastShareComponent() {
+        shareImageDirectly(ShareHelper.getLastShareComponentName(null));
     }
 
     /**

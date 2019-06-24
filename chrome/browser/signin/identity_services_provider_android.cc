@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "chrome/android/chrome_jni_headers/IdentityServicesProvider_jni.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "jni/IdentityServicesProvider_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 using base::android::JavaParamRef;

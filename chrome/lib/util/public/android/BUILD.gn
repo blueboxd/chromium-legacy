@@ -28,5 +28,4 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   ]
-  jni_package = "chrome"
 }

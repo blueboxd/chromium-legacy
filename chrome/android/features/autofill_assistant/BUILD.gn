@@ -146,7 +146,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
   ]
-  jni_package = "autofill_assistant"
 }
 
 android_library("test_java") {

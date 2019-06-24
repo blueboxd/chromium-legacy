@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -99,7 +99,8 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
       base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
                  base::Unretained(this)));
 
-  ash::TabletMode::Get()->AddObserver(this);
+  TabletModeClient* tablet_mode_client = TabletModeClient::Get();
+  tablet_mode_client->AddObserver(this);
 
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
@@ -112,7 +113,7 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
 
 CoreOobeHandler::~CoreOobeHandler() {
   OobeConfiguration::Get()->RemoveObserver(this);
-  ash::TabletMode::Get()->RemoveObserver(this);
+  TabletModeClient::Get()->RemoveObserver(this);
 }
 
 void CoreOobeHandler::DeclareLocalizedValues(
@@ -178,7 +179,7 @@ void CoreOobeHandler::Initialize() {
 
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
   dict->SetKey("isInTabletMode",
-               base::Value(ash::TabletMode::Get()->InTabletMode()));
+               base::Value(TabletModeClient::Get()->tablet_mode_enabled()));
   dict->SetKey("isDemoModeEnabled",
                base::Value(DemoSetupController::IsDemoModeAllowed()));
   dict->SetKey("showTechnologyBadge",

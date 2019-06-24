@@ -247,6 +247,10 @@ class FakeAppInstance : public mojom::AppInstance {
   void SetAppReinstallCandidates(
       const std::vector<arc::mojom::AppReinstallCandidatePtr>& candidates);
 
+  void set_is_installable(bool is_installable) {
+    is_installable_ = is_installable;
+  }
+
  private:
   using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
   // Mojo endpoints.
@@ -281,6 +285,8 @@ class FakeAppInstance : public mojom::AppInstance {
       IconResponseType::ICON_RESPONSE_SEND_GOOD;
   // Keeps latest generated icons per icon dimension.
   std::map<int, std::string> icon_responses_;
+
+  bool is_installable_ = false;
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.

@@ -6,10 +6,10 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/cookies/parsed_cookie.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
-const std::string GetArbitraryString(base::FuzzedDataProvider* data_provider) {
+const std::string GetArbitraryString(FuzzedDataProvider* data_provider) {
   // Adding a fudge factor to kMaxCookieSize so that both branches of the bounds
   // detection code will be tested.
   return data_provider->ConsumeRandomLengthString(
@@ -18,7 +18,7 @@ const std::string GetArbitraryString(base::FuzzedDataProvider* data_provider) {
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   const std::string cookie_line = GetArbitraryString(&data_provider);
   net::ParsedCookie parsed_cookie(cookie_line);
 

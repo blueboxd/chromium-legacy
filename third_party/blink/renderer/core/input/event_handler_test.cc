@@ -2365,4 +2365,187 @@ TEST_F(EventHandlerSimTest, SelecteTransformedTextWhenCapturing) {
   EXPECT_EQ("Some text to select", GetDocument().GetSelection()->toString());
 }
 
+// Test that with MouseSubframeNoImplicitCapture enable, mouse down at inner
+// frame and move to outer frame does not capture mouse to inner frame.
+TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
+  ScopedMouseSubframeNoImplicitCaptureForTest scoped_feature(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      iframe {
+        width: 200px;
+        height: 200px;
+      }
+      div {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <iframe id='frame' src='frame.html'></iframe>
+    <div id='outside'></div>
+  )HTML");
+
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        margin: 0;
+      }
+      div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='target'></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebMouseEvent mouse_down_inside_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
+      WebPointerProperties::Button::kLeft, 0,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_inside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_inside_event));
+
+  WebMouseEvent mouse_move_inside_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(100, 100),
+      WebFloatPoint(100, 100), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_inside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_inside_event));
+  auto* iframe_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  Document* iframe_doc = iframe_element->contentDocument();
+  Element* target = iframe_doc->getElementById("target");
+
+  EXPECT_EQ(iframe_doc->GetFrame()
+                ->GetEventHandler()
+                .LastKnownMousePositionInRootFrame(),
+            FloatPoint(100, 100));
+  EXPECT_EQ(iframe_doc->HoverElement(), target);
+  EXPECT_FALSE(target->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  // Without capturing, next mouse move will be send to outer frame.
+  WebMouseEvent mouse_move_outside_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(100, 300),
+      WebFloatPoint(100, 300), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_outside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_outside_event));
+
+  // Mouse is hovering the element in outer frame.
+  EXPECT_FALSE(iframe_doc->HoverElement());
+  EXPECT_TRUE(
+      iframe_doc->GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  EXPECT_EQ(GetDocument().HoverElement(),
+            GetDocument().getElementById("outside"));
+}
+
+// Test that with MouseSubframeNoImplicitCapture enable, mouse down at inner
+// frame, set pointer capture and move to outer frame will capture mouse to
+// the capture target in inner frame.
+TEST_F(EventHandlerSimTest,
+       MouseDragWithPointerCaptureAndNoSubframeImplicitCapture) {
+  ScopedMouseSubframeNoImplicitCaptureForTest scoped_feature(true);
+
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      iframe {
+        width: 200px;
+        height: 200px;
+      }
+      div {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <iframe id='frame' src='frame.html'></iframe>
+    <div id='outside'></div>
+  )HTML");
+
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        margin: 0;
+      }
+      div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='target'></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebMouseEvent mouse_down_inside_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(50, 50), WebFloatPoint(50, 50),
+      WebPointerProperties::Button::kLeft, 0,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_inside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_inside_event));
+
+  auto* iframe_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  Document* iframe_doc = iframe_element->contentDocument();
+  Element* target = iframe_doc->getElementById("target");
+
+  ExceptionState exception(nullptr, ExceptionState::kExecutionContext, "", "");
+
+  target->setPointerCapture(PointerEventFactory::kMouseId, exception);
+  EXPECT_TRUE(target->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  // With pointercapture, next mouse move will be send to inner frame.
+  WebMouseEvent mouse_move_event(
+      WebInputEvent::kMouseMove, WebFloatPoint(100, 300),
+      WebFloatPoint(100, 300), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_event));
+
+  EXPECT_EQ(iframe_doc->GetFrame()
+                ->GetEventHandler()
+                .LastKnownMousePositionInRootFrame(),
+            FloatPoint(100, 300));
+  EXPECT_EQ(iframe_doc->HoverElement(), target);
+
+  // Release capture and move event will be send to outer frame.
+  target->releasePointerCapture(PointerEventFactory::kMouseId, exception);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_event));
+
+  // iframe no longer gets mouse move events.
+  EXPECT_FALSE(iframe_doc->HoverElement());
+  EXPECT_TRUE(
+      iframe_doc->GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  // Mouse is hovering the element in outer frame.
+  EXPECT_EQ(GetDocument().HoverElement(),
+            GetDocument().getElementById("outside"));
+}
+
 }  // namespace blink

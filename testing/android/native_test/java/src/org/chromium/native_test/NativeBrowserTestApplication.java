@@ -7,7 +7,9 @@ package org.chromium.native_test;
 import android.app.Application;
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
@@ -19,11 +21,14 @@ public abstract class NativeBrowserTestApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
-
         if (isMainProcess() || isBrowserProcess()) {
             // We need secondary dex in order to run EmbeddedTestServer in a
             // privileged process.
             if (BuildConfig.IS_MULTIDEX_ENABLED) ChromiumMultiDexInstaller.install(this);
+        }
+        if (isBrowserProcess()) {
+            CommandLine.init(new String[] {});
+            ApplicationStatus.initialize(this);
         }
     }
 

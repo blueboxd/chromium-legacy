@@ -82,7 +82,8 @@ public class PaymentRequestIncompleteContactDetailsTest implements MainActivityS
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Attempt to add invalid contact info alongside the already invalid info, and cancel. */
@@ -113,7 +114,8 @@ public class PaymentRequestIncompleteContactDetailsTest implements MainActivityS
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Update the contact information with valid data and provide that to the merchant. */

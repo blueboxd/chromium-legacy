@@ -102,16 +102,17 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
         switches::kDisableDefaultApps));
     return;
   }
-  extensions::AppLaunchSource app_launch_source(extensions::SOURCE_UNTRACKED);
+  extensions::AppLaunchSource app_launch_source(
+      extensions::AppLaunchSource::kSourceUntracked);
   switch (source) {
     case HELP_SOURCE_KEYBOARD:
-      app_launch_source = extensions::SOURCE_KEYBOARD;
+      app_launch_source = extensions::AppLaunchSource::kSourceKeyboard;
       break;
     case HELP_SOURCE_MENU:
-      app_launch_source = extensions::SOURCE_SYSTEM_TRAY;
+      app_launch_source = extensions::AppLaunchSource::kSourceSystemTray;
       break;
     case HELP_SOURCE_WEBUI:
-      app_launch_source = extensions::SOURCE_ABOUT_PAGE;
+      app_launch_source = extensions::AppLaunchSource::kSourceAboutPage;
       break;
     default:
       NOTREACHED() << "Unhandled help source" << source;

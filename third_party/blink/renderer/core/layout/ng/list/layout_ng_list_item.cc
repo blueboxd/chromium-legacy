@@ -132,7 +132,7 @@ void LayoutNGListItem::UpdateMarkerText() {
 
 void LayoutNGListItem::UpdateMarker() {
   const ComputedStyle& style = StyleRef();
-  if (style.ListStyleType() == EListStyleType::kNone) {
+  if (style.ListStyleType() == EListStyleType::kNone && !IsMarkerImage()) {
     DestroyMarker();
     marker_type_ = kStatic;
     is_marker_text_updated_ = true;

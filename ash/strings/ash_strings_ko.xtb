@@ -59,6 +59,7 @@
 <translation id="1761222317188459878">네트워크 연결을 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">오른쪽으로 스크롤</translation>
 <translation id="1812997170047690955">화면에 표시된 내용 찾아보기</translation>
+<translation id="1820355135508821526">기기에 적용된 정책에 따라 <ph name="FEATURE_NAME" />이(가) 사용 중지되었습니다. 설정을 변경하려면 관리자에게 문의하세요.</translation>
 <translation id="1823873187264960516">이더넷: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
@@ -113,6 +114,7 @@
 <translation id="2582112259361606227">업데이트하려면 다시 시작</translation>
 <translation id="2597972630681408282">야간 조명: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
+<translation id="2651765386227849097">기기에서 Google 어시스턴트가 사용 중지되어 있습니다.</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2658778018866295321">클릭하여 드래그</translation>
 <translation id="2700493154570097719">키보드 설정</translation>
@@ -261,6 +263,7 @@
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
 <translation id="490375751687810070">세로</translation>
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
+<translation id="490788395437447240">배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">강력</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="4924411785043111640">다시 시작 및 재설정</translation>
@@ -298,6 +301,7 @@
 <translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5669267381087807207">활성화 중</translation>
 <translation id="5673434351075758678">설정 동기화 후 ‘<ph name="FROM_LOCALE" />’에서 ‘<ph name="TO_LOCALE" />’(으)로 변경합니다.</translation>
+<translation id="5682642926269496722">현재 사용자 계정에서 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="5710450975648804523">방해 금지 모드 사용 중</translation>
 <translation id="574392208103952083">보통</translation>
@@ -331,6 +335,7 @@
 <translation id="6064337552080329342">비밀번호가 일치하지 않습니다. 다시 시도해 주세요.</translation>
 <translation id="607652042414456612">내 컴퓨터가 근처 블루투스 기기에서 검색할 수 있도록 설정되어 있으며 주소(<ph name="ADDRESS" />)와 함께 '<ph name="NAME" />'(으)로 표시됩니다.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> 충전 중</translation>
+<translation id="612734058257491180">게스트 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="615957422585914272">터치 키보드 표시</translation>
 <translation id="6164005077879661055">관리 대상 사용자를 제거하면 해당 관리 대상 사용자와 연결되어 있는 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다. 하지만 관리자는 관리 대상 사용자의 방문한 웹사이트 및 설정을 <ph name="MANAGEMENT_URL" /> 페이지에서 계속 볼 수 있습니다.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
@@ -372,6 +377,7 @@
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6715542151869432661">휴대기기를 찾을 수 없습니다.</translation>
 <translation id="6723839937902243910">전원</translation>
+<translation id="6727969043791803658">연결됨, 배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">성능 추적이 사용 설정되어 있습니다.</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>

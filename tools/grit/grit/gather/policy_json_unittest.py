@@ -100,7 +100,13 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "            'type': 'object',"
                 "            'inner': {"
                 "              'description': 'inner description',"
+                "              'type': 'integer', 'minimum': 0, 'maximum': 100"
+                "            },"
+                "            'inner2': {"
+                "              'description': 'inner2 description',"
                 "              'type': 'integer',"
+                "              'enum': [ 1, 2, 3 ],"
+                "              'sensitiveValue': True"
                 "            },"
                 "          },"
                 "        },"
@@ -113,7 +119,7 @@ class PolicyJsonUnittest(unittest.TestCase):
                 "}")
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
     gatherer.Parse()
-    self.failUnless(len(gatherer.GetCliques()) == 3)
+    self.failUnless(len(gatherer.GetCliques()) == 4)
     expected = self.GetExpectedOutput(original)
     self.failUnless(expected == eval(gatherer.Translate('en')))
 

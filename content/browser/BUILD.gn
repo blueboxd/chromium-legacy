@@ -1714,6 +1714,8 @@ jumbo_source_set("browser") {
     "scheduler/browser_ui_thread_scheduler.h",
     "scheduler/responsiveness/calculator.cc",
     "scheduler/responsiveness/calculator.h",
+    "scheduler/responsiveness/jank_monitor.cc",
+    "scheduler/responsiveness/jank_monitor.h",
     "scheduler/responsiveness/message_loop_observer.cc",
     "scheduler/responsiveness/message_loop_observer.h",
     "scheduler/responsiveness/metric_source.cc",

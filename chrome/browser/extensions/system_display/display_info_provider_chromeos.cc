@@ -7,13 +7,13 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/common/api/system_display.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -604,13 +604,17 @@ void DisplayInfoProviderChromeOS::SetMirrorMode(
 void DisplayInfoProviderChromeOS::StartObserving() {
   DisplayInfoProvider::StartObserving();
 
-  ash::TabletMode::Get()->AddObserver(this);
+  TabletModeClient* client = TabletModeClient::Get();
+  if (client)
+    client->AddObserver(this);
 }
 
 void DisplayInfoProviderChromeOS::StopObserving() {
   DisplayInfoProvider::StopObserving();
 
-  ash::TabletMode::Get()->RemoveObserver(this);
+  TabletModeClient* client = TabletModeClient::Get();
+  if (client)
+    client->RemoveObserver(this);
 }
 
 void DisplayInfoProviderChromeOS::OnTabletModeToggled(bool enabled) {

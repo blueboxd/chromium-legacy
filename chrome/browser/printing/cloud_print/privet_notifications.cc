@@ -116,8 +116,8 @@ void PrivetNotificationsListener::DeviceChanged(
       privet_http_factory_->CreatePrivetHTTP(name);
   device_context->privet_http_resolution->Start(
       description.address,
-      base::Bind(&PrivetNotificationsListener::CreateInfoOperation,
-                 base::Unretained(this)));
+      base::BindOnce(&PrivetNotificationsListener::CreateInfoOperation,
+                     base::Unretained(this)));
 }
 
 void PrivetNotificationsListener::CreateInfoOperation(
@@ -134,9 +134,8 @@ void PrivetNotificationsListener::CreateInfoOperation(
   DeviceContext* device = it->second.get();
   device->privet_http.swap(http_client);
   device->info_operation = device->privet_http->CreateInfoOperation(
-      base::Bind(&PrivetNotificationsListener::OnPrivetInfoDone,
-                 base::Unretained(this),
-                 device));
+      base::BindOnce(&PrivetNotificationsListener::OnPrivetInfoDone,
+                     base::Unretained(this), device));
   device->info_operation->Start();
 }
 
@@ -245,8 +244,8 @@ void PrivetNotificationService::PrivetNotify(int devices_active,
 
   NotificationDisplayService::GetForProfile(
       Profile::FromBrowserContext(profile_))
-      ->GetDisplayed(base::Bind(&PrivetNotificationService::AddNotification,
-                                AsWeakPtr(), devices_active, added));
+      ->GetDisplayed(base::BindOnce(&PrivetNotificationService::AddNotification,
+                                    AsWeakPtr(), devices_active, added));
 }
 
 void PrivetNotificationService::AddNotification(
@@ -318,8 +317,9 @@ void PrivetNotificationService::Start() {
   enable_privet_notification_member_.Init(
       prefs::kLocalDiscoveryNotificationsEnabled,
       Profile::FromBrowserContext(profile_)->GetPrefs(),
-      base::Bind(&PrivetNotificationService::OnNotificationsEnabledChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &PrivetNotificationService::OnNotificationsEnabledChanged,
+          base::Unretained(this)));
   OnNotificationsEnabledChanged();
 }
 

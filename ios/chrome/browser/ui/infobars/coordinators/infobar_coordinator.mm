@@ -57,6 +57,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
 // Property defined in InfobarUIDelegate.
+@synthesize hasBadge = _hasBadge;
+// Property defined in InfobarUIDelegate.
 @synthesize infobarType = _infobarType;
 // Property defined in InfobarUIDelegate.
 @synthesize presented = _presented;
@@ -68,6 +70,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;
+    _hasBadge = YES;
     _infobarType = infobarType;
   }
   return self;
@@ -166,7 +169,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted];
+  [self.badgeDelegate infobarWasAccepted:self.infobarType];
   [self dismissInfobarBanner:sender animated:YES completion:nil];
 }
 
@@ -205,7 +208,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.presentingInfobarBanner = NO;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];
-  [self.badgeDelegate infobarBannerWasDismissed];
+  [self.badgeDelegate infobarBannerWasDismissed:self.infobarType];
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
@@ -244,7 +247,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)modalInfobarButtonWasAccepted:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted];
+  [self.badgeDelegate infobarWasAccepted:self.infobarType];
   [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 
@@ -254,7 +257,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   DCHECK(self.baseViewController);
   if (self.baseViewController.presentedViewController) {
     // Deselect infobar badge in parallel with modal dismissal.
-    [self.badgeDelegate infobarModalWillDismiss];
+    [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
     __weak __typeof(self) weakSelf = self;
 
     // If the Modal is being presented by the Banner, call dismiss on it.
@@ -285,7 +288,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   // infobarModalWillDismiss call is needed, because sometimes the
   // baseViewController will dismiss the modal without going through the
   // coordinator.
-  [self.badgeDelegate infobarModalWillDismiss];
+  [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
   self.modalTransitionDriver = nil;
 
   // If InfobarBanner is being presented it means that this Modal was presented
@@ -346,7 +349,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:nil];
-  [self.badgeDelegate infobarModalWasPresented];
+  [self.badgeDelegate infobarModalWasPresented:self.infobarType];
 }
 
 // Configures the Banner Accessibility in order to give VoiceOver users the

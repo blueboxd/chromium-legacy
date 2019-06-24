@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/CctOfflinePageModelObserver_jni.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "jni/CctOfflinePageModelObserver_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
 

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/window_dimmer.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -17,7 +18,8 @@ namespace ash {
 
 ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
                                        const OnExitCallback& callback,
-                                       ParentAccessRequestReason reason)
+                                       ParentAccessRequestReason reason,
+                                       bool use_extra_dimmer)
     : callback_(callback) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
@@ -41,9 +43,13 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
                                               weak_factory_.GetWeakPtr());
   widget_params.delegate = new ParentAccessView(account_id, callbacks, reason);
 
+  if (use_extra_dimmer) {
+    dimmer_ = std::make_unique<WindowDimmer>(widget_params.parent);
+    dimmer_->window()->Show();
+  }
+
   widget_ = std::make_unique<views::Widget>();
   widget_->Init(widget_params);
-  widget_->CenterWindow(widget_->GetContentsView()->GetPreferredSize());
   widget_->Show();
 }
 
@@ -52,6 +58,7 @@ ParentAccessWidget::~ParentAccessWidget() = default;
 void ParentAccessWidget::OnExit(bool success) {
   callback_.Run(success);
   widget_->Close();
+  dimmer_.reset();
 }
 
 }  // namespace ash

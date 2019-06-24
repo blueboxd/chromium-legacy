@@ -35,6 +35,10 @@
 
 namespace {
 
+const char kAccountId1[] = "acc1@gmail.com";
+const char kAccountId2[] = "acc2@gmail.com";
+const char kAccountId3[] = "acc3@gmail.com";
+
 using MockAddAccountToCookieCompletedCallback = base::MockCallback<
     GaiaCookieManagerService::AddAccountToCookieCompletedCallback>;
 
@@ -112,7 +116,10 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
 class GaiaCookieManagerServiceTest : public testing::Test {
  public:
   GaiaCookieManagerServiceTest()
-      : no_error_(GoogleServiceAuthError::NONE),
+      : account_id1_(kAccountId1),
+        account_id2_(kAccountId2),
+        account_id3_(kAccountId3),
+        no_error_(GoogleServiceAuthError::NONE),
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -215,6 +222,10 @@ class GaiaCookieManagerServiceTest : public testing::Test {
     return signin_client_->GetURLLoaderFactory();
   }
 
+  const CoreAccountId account_id1_;
+  const CoreAccountId account_id2_;
+  const CoreAccountId account_id3_;
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   FakeOAuth2TokenService token_service_;
@@ -236,10 +247,9 @@ TEST_F(GaiaCookieManagerServiceTest, Success) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc1@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionSuccess(&helper, "token");
 }
@@ -252,9 +262,9 @@ TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed, Run("acc1@gmail.com", error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionFailure(&helper, error());
   // Persistent error incurs no further retries.
@@ -269,10 +279,9 @@ TEST_F(GaiaCookieManagerServiceTest, AddAccountCookiesDisabled) {
   signin_client()->set_are_signin_cookies_allowed(false);
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc1@gmail.com", canceled()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, canceled()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
 }
 
@@ -288,10 +297,9 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   EXPECT_CALL(helper, StartFetchingMergeSession());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc1@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
@@ -313,10 +321,9 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc1@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionFailure(&helper, canceled());
   DCHECK(helper.is_running());
@@ -337,9 +344,9 @@ TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed, Run("acc1@gmail.com", error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id1_, error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateUbertokenFailure(&helper, error());
 }
@@ -352,14 +359,12 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterSuccess) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1,
       add_account_to_cookie_completed2;
-  EXPECT_CALL(add_account_to_cookie_completed1,
-              Run("acc1@gmail.com", no_error()));
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateMergeSessionSuccess(&helper, "token2");
@@ -373,13 +378,12 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure1) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1,
       add_account_to_cookie_completed2;
-  EXPECT_CALL(add_account_to_cookie_completed1, Run("acc1@gmail.com", error()));
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   SimulateMergeSessionFailure(&helper, error());
   SimulateMergeSessionSuccess(&helper, "token2");
@@ -393,13 +397,12 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure2) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1,
       add_account_to_cookie_completed2;
-  EXPECT_CALL(add_account_to_cookie_completed1, Run("acc1@gmail.com", error()));
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   SimulateUbertokenFailure(&helper, error());
   SimulateMergeSessionSuccess(&helper, "token2");
@@ -414,14 +417,14 @@ TEST_F(GaiaCookieManagerServiceTest, AllRequestsInMultipleGoes) {
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
   EXPECT_CALL(add_account_to_cookie_completed, Run(_, no_error())).Times(4);
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
 
   SimulateMergeSessionSuccess(&helper, "token1");
 
-  helper.AddAccountToCookie("acc3@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id3_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
 
   SimulateMergeSessionSuccess(&helper, "token2");
@@ -441,10 +444,9 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsNoQueue) {
   EXPECT_CALL(helper, StartFetchingLogOut());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
 
@@ -461,10 +463,9 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsFails) {
   EXPECT_CALL(helper, StartFetchingLogOut());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
 
@@ -482,10 +483,9 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterOneAddInQueue) {
   EXPECT_CALL(helper, StartFetchingLogOut());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
 
@@ -502,15 +502,13 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterTwoAddsInQueue) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1,
       add_account_to_cookie_completed2;
-  EXPECT_CALL(add_account_to_cookie_completed1,
-              Run("acc1@gmail.com", no_error()));
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", canceled()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, canceled()));
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
   // The Log Out should prevent this AddAccount from being fetched.
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
 
@@ -526,10 +524,9 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsTwice) {
   EXPECT_CALL(helper, StartFetchingLogOut());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed;
-  EXPECT_CALL(add_account_to_cookie_completed,
-              Run("acc2@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed, Run(account_id2_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
 
@@ -548,17 +545,15 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed2,
       add_account_to_cookie_completed3;
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", no_error()));
-  EXPECT_CALL(add_account_to_cookie_completed3,
-              Run("acc3@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed3, Run(account_id3_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
 
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
-  helper.AddAccountToCookie("acc3@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id3_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed3.Get());
 
   SimulateLogOutSuccess(&helper);
@@ -575,19 +570,17 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeLogoutAndAdd) {
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed2,
       add_account_to_cookie_completed3;
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", no_error()));
-  EXPECT_CALL(add_account_to_cookie_completed3,
-              Run("acc3@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed3, Run(account_id3_, no_error()));
 
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   SimulateMergeSessionSuccess(&helper, "token1");
 
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
   // Second LogOut will never be fetched.
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
-  helper.AddAccountToCookie("acc3@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id3_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed3.Get());
 
   SimulateLogOutSuccess(&helper);
@@ -601,27 +594,25 @@ TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
 
   // From the first Signin.
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1;
-  EXPECT_CALL(add_account_to_cookie_completed1,
-              Run("acc1@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, no_error()));
 
   // From the sign out and then re-sign in.
   EXPECT_CALL(helper, StartFetchingLogOut());
 
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed3;
-  EXPECT_CALL(add_account_to_cookie_completed3,
-              Run("acc3@gmail.com", no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed3, Run(account_id3_, no_error()));
 
   // Total sign in 2 times, not enforcing ordered sequences.
   EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
 
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateLogOutSuccess(&helper);
 
-  helper.AddAccountToCookie("acc3@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id3_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed3.Get());
   SimulateMergeSessionSuccess(&helper, "token3");
 }
@@ -633,15 +624,13 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
   EXPECT_CALL(helper, StartFetchingUbertoken());
   MockAddAccountToCookieCompletedCallback add_account_to_cookie_completed1,
       add_account_to_cookie_completed2;
-  EXPECT_CALL(add_account_to_cookie_completed1,
-              Run("acc1@gmail.com", no_error()));
-  EXPECT_CALL(add_account_to_cookie_completed2,
-              Run("acc2@gmail.com", canceled()));
+  EXPECT_CALL(add_account_to_cookie_completed1, Run(account_id1_, no_error()));
+  EXPECT_CALL(add_account_to_cookie_completed2, Run(account_id2_, canceled()));
   EXPECT_CALL(helper, StartFetchingLogOut());
 
-  helper.AddAccountToCookie("acc1@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id1_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed1.Get());
-  helper.AddAccountToCookie("acc2@gmail.com", gaia::GaiaSource::kChrome,
+  helper.AddAccountToCookie(account_id2_, gaia::GaiaSource::kChrome,
                             add_account_to_cookie_completed2.Get());
   helper.LogOutAllAccounts(gaia::GaiaSource::kChrome);
 
@@ -889,7 +878,7 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCC) {
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   helper.AddAccountToCookie(
-      "acc1@gmail.com", gaia::GaiaSource::kChrome,
+      account_id1_, gaia::GaiaSource::kChrome,
       GaiaCookieManagerService::AddAccountToCookieCompletedCallback());
 
   ASSERT_FALSE(IsLoadPending());
@@ -915,7 +904,7 @@ TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCCOnce) {
 
   EXPECT_CALL(helper, StartFetchingUbertoken());
   helper.AddAccountToCookie(
-      "acc2@gmail.com", gaia::GaiaSource::kChrome,
+      account_id2_, gaia::GaiaSource::kChrome,
       GaiaCookieManagerService::AddAccountToCookieCompletedCallback());
   // There is already a ExternalCCResultFetch underway. This will trigger
   // StartFetchingMergeSession.

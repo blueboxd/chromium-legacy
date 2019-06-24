@@ -75,7 +75,7 @@
 #endif
 
 using autofill::FormData;
-using autofill::NewPasswordFormGenerationData;
+using autofill::PasswordFormGenerationData;
 using autofill::PasswordForm;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
@@ -201,7 +201,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   std::unique_ptr<autofill::PasswordForm> _pendingAutoSigninPasswordForm;
 
   // Form data for password generation on this page.
-  std::map<base::string16, NewPasswordFormGenerationData> _formGenerationData;
+  std::map<base::string16, PasswordFormGenerationData> _formGenerationData;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -578,8 +578,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   return _passwordGenerationHelper.get();
 }
 
-- (void)formEligibleForGenerationFound:
-    (const NewPasswordFormGenerationData&)form {
+- (void)formEligibleForGenerationFound:(const PasswordFormGenerationData&)form {
   _formGenerationData[form.form_name] = form;
 }
 
@@ -729,7 +728,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
-  const NewPasswordFormGenerationData* generation_data =
+  const PasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
     return NO;
@@ -743,7 +742,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   return NO;
 }
 
-- (const NewPasswordFormGenerationData*)getFormForGenerationFromFormName:
+- (const PasswordFormGenerationData*)getFormForGenerationFromFormName:
     (NSString*)formName {
   const base::string16 name = SysNSStringToUTF16(formName);
   if (_formGenerationData.find(name) != _formGenerationData.end()) {
@@ -854,7 +853,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName
                          generatedPassword:(NSString*)generatedPassword
                          completionHandler:(void (^)())completionHandler {
-  const autofill::NewPasswordFormGenerationData* generation_data =
+  const autofill::PasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
     return;

@@ -201,4 +201,41 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   EXPECT_TRUE(generator->HasAlpha());
 }
 
+class OffThreadPaintWorkletTest : public PageTestBase,
+                                  public ::testing::WithParamInterface<bool> {
+ public:
+  OffThreadPaintWorkletTest() : off_main_thread_css_paint_(GetParam()) {}
+
+ private:
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint_;
+};
+
+INSTANTIATE_TEST_SUITE_P(, OffThreadPaintWorkletTest, ::testing::Bool());
+
+TEST_P(OffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
+  PaintWorklet* paint_worklet_to_test =
+      MakeGarbageCollected<PaintWorklet>(&GetFrame());
+
+  EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
+
+  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
+      base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  Persistent<PaintWorkletProxyClient> proxy_client =
+      MakeGarbageCollected<PaintWorkletProxyClient>(1, paint_worklet_to_test,
+                                                    dispatcher);
+  paint_worklet_to_test->SetProxyClientForTesting(proxy_client);
+
+  while (paint_worklet_to_test->NeedsToCreateGlobalScopeForTesting()) {
+    paint_worklet_to_test->AddGlobalScopeForTesting();
+  }
+
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
+              2 * PaintWorklet::kNumGlobalScopesPerThread);
+  } else {
+    EXPECT_EQ(paint_worklet_to_test->GetGlobalScopesForTesting().size(),
+              PaintWorklet::kNumGlobalScopesPerThread);
+  }
+}
+
 }  // namespace blink

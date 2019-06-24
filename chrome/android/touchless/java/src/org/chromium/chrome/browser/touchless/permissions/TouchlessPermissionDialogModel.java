@@ -4,16 +4,19 @@
 
 package org.chromium.chrome.browser.touchless.permissions;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.permissions.PermissionDialogDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -79,6 +82,42 @@ public class TouchlessPermissionDialogModel {
         model.set(TouchlessDialogProperties.CANCEL_ACTION,
                 (v) -> delegate.getTab().getActivity().getModalDialogManager().dismissDialog(model,
                         DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
+        return model;
+    }
+
+    public static PropertyModel getMissingPermissionDialogModel(Context context,
+            ModalDialogProperties.Controller controller, @StringRes int messageId) {
+        Resources resources = context.getResources();
+        Drawable iconDrawable = UiUtils.getTintedDrawable(
+                context, R.drawable.exclamation_triangle, R.color.default_icon_color);
+        TouchlessDialogProperties.ActionNames names = new TouchlessDialogProperties.ActionNames();
+        names.cancel = R.string.cancel;
+        names.select = R.string.select;
+        names.alt = 0;
+        PropertyModel model = new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
+                                      .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
+                                      .with(TouchlessDialogProperties.PRIORITY,
+                                              TouchlessDialogProperties.Priority.HIGH)
+                                      .with(ModalDialogProperties.CONTROLLER, controller)
+                                      .with(ModalDialogProperties.MESSAGE, resources, messageId)
+                                      .with(ModalDialogProperties.TITLE_ICON, iconDrawable)
+                                      .with(TouchlessDialogProperties.ACTION_NAMES, names)
+                                      .with(TouchlessDialogProperties.ALT_ACTION, null)
+                                      .build();
+        model.set(TouchlessDialogProperties.LIST_MODELS,
+                new PropertyModel[] {
+                        new PropertyModel
+                                .Builder(
+                                        TouchlessDialogProperties.DialogListItemProperties.ALL_KEYS)
+                                .with(TouchlessDialogProperties.DialogListItemProperties.TEXT,
+                                        resources, R.string.infobar_update_permissions_button_text)
+                                .with(TouchlessDialogProperties.DialogListItemProperties.ICON,
+                                        context, R.drawable.ic_check_circle)
+                                .with(TouchlessDialogProperties.DialogListItemProperties
+                                                .CLICK_LISTENER,
+                                        (v) -> controller.onClick(model,
+                                                        ModalDialogProperties.ButtonType.POSITIVE))
+                                .build()});
         return model;
     }
 }

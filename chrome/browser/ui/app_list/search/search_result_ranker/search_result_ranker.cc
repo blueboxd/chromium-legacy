@@ -189,7 +189,8 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   time_of_last_fetch_ = now;
 
   // TODO(931149): The passed |query| should be used to choose between ranking
-  // results with using a zero-state or query-based model.
+  // results with using a zero-state or query-based model. It may also be needed
+  // for rankings from the query model.
 
   if (results_list_group_ranker_) {
     group_ranks_.clear();
@@ -236,7 +237,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
   }
 }
 
-void SearchResultRanker::Train(const std::string& id, RankingItemType type) {
+void SearchResultRanker::Train(const std::string& query,
+                               const std::string& id,
+                               RankingItemType type) {
+  // TODO(931149): Use the passed |query| as part of the training for the query
+  // model if it requires it.
   if (ModelForType(type) == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(

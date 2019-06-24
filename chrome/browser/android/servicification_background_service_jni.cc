@@ -11,8 +11,8 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/system/sys_info.h"
+#include "chrome/android/test_support_jni_headers/ServicificationBackgroundService_jni.h"
 #include "components/metrics/persistent_system_profile.h"
-#include "jni/ServicificationBackgroundService_jni.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 // Verifies that the memory-mapped file for persistent histograms data exists

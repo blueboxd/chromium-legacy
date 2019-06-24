@@ -463,12 +463,6 @@
     "args": ["--force-presentation-receiver-for-testing"]
   },
   {
-    "prefix": "sharedarraybuffer",
-    "base": "external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers",
-    "args": ["--js-flags=--harmony-sharedarraybuffer",
-             "--enable-blink-features=SharedArrayBuffer"]
-  },
-  {
     "prefix": "longtask-v2",
     "base": "http/tests/performance-timing/longtask-v2",
     "args": ["--enable-blink-features=LongTaskV2"]

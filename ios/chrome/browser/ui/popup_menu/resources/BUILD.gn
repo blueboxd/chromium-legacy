@@ -4,6 +4,14 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("popup_menu_search") {
+  sources = [
+    "popup_menu_search.imageset/Contents.json",
+    "popup_menu_search.imageset/popup_menu_search@2x.png",
+    "popup_menu_search.imageset/popup_menu_search@3x.png",
+  ]
+}
+
 imageset("popup_menu_paste_and_go") {
   sources = [
     "popup_menu_paste_and_go.imageset/Contents.json",

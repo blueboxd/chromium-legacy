@@ -54,7 +54,7 @@ class BackgroundProfilingTriggers;
 }
 
 namespace nux {
-bool IsNuxOnboardingEnabled(Profile* profile);
+void JoinOnboardingGroup(Profile* profile);
 }
 
 namespace safe_browsing {
@@ -115,7 +115,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
-  friend bool nux::IsNuxOnboardingEnabled(Profile* profile);
+  friend void nux::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
 
   // Testing related friends.

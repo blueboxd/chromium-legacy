@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -30,6 +31,9 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/browser/indexed_db/indexed_db_origin_state.h"
+#include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -226,6 +230,21 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     return status;
   }
 
+  // Synchronously writes to the IndexedDB database at the given origin by
+  // posting a task to the idb task runner and waiting.
+  void WriteToIndexedDB(const Origin& origin,
+                        std::string key,
+                        std::string value) {
+    base::RunLoop loop;
+    GetContext()->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IndexedDBBrowserTest::WriteToIndexedDBOnIDBSequence,
+                       base::Unretained(this),
+                       base::WrapRefCounted(GetContext()), origin,
+                       std::move(key), std::move(value), loop.QuitClosure()));
+    loop.Run();
+  }
+
  protected:
   static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
     static ::base::LazyInstance<MockBrowserTestIndexedDBClassFactory>::Leaky
@@ -242,6 +261,32 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   }
 
  private:
+  void WriteToIndexedDBOnIDBSequence(
+      scoped_refptr<IndexedDBContextImpl> context,
+      const Origin& origin,
+      std::string key,
+      std::string value,
+      base::OnceClosure done) {
+    base::ScopedClosureRunner done_runner(std::move(done));
+    IndexedDBOriginStateHandle handle;
+    leveldb::Status s;
+    std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+        context->GetIDBFactory()->GetOrOpenOriginFactory(origin,
+                                                         context->data_path());
+    CHECK(s.ok()) << s.ToString();
+    CHECK(handle.IsHeld());
+
+    LevelDBDatabase* db = handle.origin_state()->backing_store()->db();
+    s = db->Put(key, &value);
+    CHECK(s.ok()) << s.ToString();
+
+    // Force close to ensure a cold start on the next database open.
+    handle.origin_state()->ForceClose();
+    handle.Release();
+    CHECK(!context->GetIDBFactory()->IsBackingStoreOpen(origin));
+    context.reset();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
 
@@ -334,6 +379,28 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug941965Test) {
              &incognito_browser);
   ASSERT_TRUE(incognito_browser);
   incognito_browser->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBSchemaVersion) {
+  const GURL database_open_url = GetTestUrl("indexeddb", "database_test.html");
+  const Origin origin = Origin::Create(database_open_url);
+  // Create the database.
+  SimpleTest(database_open_url);
+  std::string value;
+  EncodeInt(-10, &value);
+  WriteToIndexedDB(origin, SchemaVersionKey::Encode(), value);
+  SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBDataVersion) {
+  const GURL database_open_url = GetTestUrl("indexeddb", "database_test.html");
+  const Origin origin = Origin::Create(database_open_url);
+  // Create the database.
+  SimpleTest(database_open_url);
+  std::string value;
+  EncodeInt(-10, &value);
+  WriteToIndexedDB(origin, DataVersionKey::Encode(), value);
+  SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
 }
 
 class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {

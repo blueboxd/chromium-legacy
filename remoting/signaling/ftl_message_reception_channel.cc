@@ -65,6 +65,13 @@ FtlMessageReceptionChannel::GetReconnectRetryBackoffEntryForTesting() const {
   return reconnect_retry_backoff_;
 }
 
+void FtlMessageReceptionChannel::OnReceiveMessagesStreamReady() {
+  DCHECK_EQ(State::STARTING, state_);
+  state_ = State::STARTED;
+  RunStreamReadyCallbacks();
+  BeginStreamTimers();
+}
+
 void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     const grpc::Status& status) {
   if (state_ == State::STOPPED) {
@@ -97,9 +104,7 @@ void FtlMessageReceptionChannel::OnMessageReceived(
       stream_pong_timer_->Reset();
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kStartOfBatch:
-      state_ = State::STARTED;
-      RunStreamReadyCallbacks();
-      BeginStreamTimers();
+      VLOG(1) << "Received start of batch";
       break;
     case ftl::ReceiveMessagesResponse::BodyCase::kEndOfBatch:
       VLOG(1) << "Received end of batch";
@@ -156,6 +161,8 @@ void FtlMessageReceptionChannel::StartReceivingMessagesInternal() {
   DCHECK_EQ(State::STOPPED, state_);
   state_ = State::STARTING;
   receive_messages_stream_ = stream_opener_.Run(
+      base::BindOnce(&FtlMessageReceptionChannel::OnReceiveMessagesStreamReady,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&FtlMessageReceptionChannel::OnMessageReceived,
                           weak_factory_.GetWeakPtr()),
       base::BindOnce(&FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed,

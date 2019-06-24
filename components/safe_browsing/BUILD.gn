@@ -39,6 +39,7 @@ source_set("safe_browsing") {
   deps = [
     ":features",
     ":ping_manager",
+    ":verdict_cache_manager",
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:common",
@@ -107,5 +108,39 @@ source_set("public") {
   deps = [
     "//base:base",
     "//content/public/browser",
+  ]
+}
+
+source_set("verdict_cache_manager") {
+  sources = [
+    "verdict_cache_manager.cc",
+    "verdict_cache_manager.h",
+  ]
+
+  deps = [
+    ":csd_proto",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/history/core/browser",
+    "//components/safe_browsing/db:v4_protocol_manager_util",
+    "//content/public/browser",
+    "//url",
+  ]
+}
+
+source_set("verdict_cache_manager_unittest") {
+  testonly = true
+  sources = [
+    "verdict_cache_manager_unittest.cc",
+  ]
+
+  deps = [
+    ":csd_proto",
+    ":verdict_cache_manager",
+    "//base",
+    "//components/content_settings/core/browser",
+    "//components/sync_preferences:test_support",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

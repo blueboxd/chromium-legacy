@@ -23,8 +23,8 @@ std::unique_ptr<content::BrowserMainParts>
 WebEngineContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(request_);
-  auto browser_main_parts =
-      std::make_unique<WebEngineBrowserMainParts>(std::move(request_));
+  auto browser_main_parts = std::make_unique<WebEngineBrowserMainParts>(
+      parameters, std::move(request_));
 
   main_parts_ = browser_main_parts.get();
 

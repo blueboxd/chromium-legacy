@@ -34,7 +34,7 @@ class PrivetTrafficDetector
  public:
   // Called on the UI thread.
   PrivetTrafficDetector(content::BrowserContext* profile,
-                        const base::RepeatingClosure& on_traffic_detected);
+                        base::RepeatingClosure on_traffic_detected);
   ~PrivetTrafficDetector() override;
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
@@ -46,7 +46,7 @@ class PrivetTrafficDetector
   class Helper : public network::mojom::UDPSocketReceiver {
    public:
     Helper(content::BrowserContext* profile,
-           const base::RepeatingClosure& on_traffic_detected);
+           base::RepeatingClosure on_traffic_detected);
     ~Helper() override;
 
     // network::mojom::UDPSocketReceiver:

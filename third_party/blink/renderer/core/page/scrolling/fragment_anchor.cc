@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -17,7 +18,8 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
 
   anchor = ElementFragmentAnchor::TryCreate(url, frame);
   if (!anchor) {
-    if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled()) {
+    if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
+            frame.GetDocument())) {
       anchor =
           TextFragmentAnchor::TryCreate(url, frame, same_document_navigation);
     }

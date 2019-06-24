@@ -154,16 +154,17 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 }
 
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension->id(), LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                  LaunchContainer::kLaunchContainerNone,
+                                  WindowOpenDisposition::NEW_WINDOW,
+                                  extensions::AppLaunchSource::kSourceTest));
 }
 
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
   OpenApplication(CreateAppLaunchParamsUserContainer(
       browser()->profile(), extension,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_COMMAND_LINE));
+      extensions::AppLaunchSource::kSourceCommandLine));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {

@@ -305,6 +305,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuItemProperties.java",
   "java/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuItemViewBinder.java",
   "java/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuListView.java",
+  "java/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuShareItemProperties.java",
+  "java/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuShareItemViewBinder.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ShareContextMenuItem.java",
   "java/src/org/chromium/chrome/browser/contextmenu/TabularContextMenuListAdapter.java",
   "java/src/org/chromium/chrome/browser/contextmenu/TabularContextMenuPagerAdapter.java",

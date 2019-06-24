@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">தேடல்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="1409544243779336081">ஆப்ஸ் பரிந்துரை</translation>
+<translation id="1498028757988366001">இதை முன்பே தேடியிருக்கிறீர்கள். "<ph name="QUERY" />"யைத் தேடல் வரலாற்றிலிருந்து நீக்கினால் உங்கள் கணக்கு பயன்படுத்தப்படும் அனைத்து சாதனங்களில் இருந்தும் நிரந்தரமாக அகற்றப்படும்.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 நிமிடம், }other{# நிமிடங்கள், }}</translation>
 <translation id="1643823602425662293">அறிவிப்பு</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -169,6 +170,7 @@
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 நிமிடம் முன்பு}other{# நிமிடங்கள் முன்பு}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 நிமிடம் மீதமுள்ளது}other{# நிமிடங்கள் மீதமுள்ளன}}</translation>
+<translation id="7430878839542012341">இதுவரை தேடியவற்றிலிருந்து இந்தத் தேடலை நீக்கவா?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> டெ.பை</translation>
 <translation id="7507604095951736240">ஈமோஜி</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>

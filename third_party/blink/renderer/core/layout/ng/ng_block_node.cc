@@ -1038,8 +1038,16 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
 
     // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
     // |NeedsLayout()| flag should not be cleared.
-    if (needed_layout && layout_result != box_->GetCachedLayoutResult()) {
-      box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+    if (needed_layout) {
+      if (constraint_space.IsIntermediateLayout()) {
+        DCHECK_NE(layout_result, box_->GetCachedLayoutResult());
+        box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+      } else if (layout_result != box_->GetCachedLayoutResult()) {
+        // TODO(kojii): If we failed to update CachedLayoutResult for other
+        // reasons, we'd like to review it.
+        NOTREACHED();
+        box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+      }
     }
   } else if (layout_result) {
     // OOF-positioned nodes have a two-tier cache, and their layout results

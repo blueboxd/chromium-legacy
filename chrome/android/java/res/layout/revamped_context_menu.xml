@@ -8,6 +8,8 @@
     android:layout_height="match_parent"
     android:background="@color/modal_dialog_scrim_color">
 
+    <!-- Setting listSelector to transparent prevents the list items that have
+         selectableItemBackground from having a double highlight effect. -->
     <org.chromium.chrome.browser.contextmenu.RevampedContextMenuListView
         android:id="@+id/context_menu_list_view"
         android:layout_width="match_parent"
@@ -18,5 +20,6 @@
         android:layout_marginTop="@dimen/revamped_context_menu_vertical_margin"
         android:layout_marginBottom="@dimen/revamped_context_menu_vertical_margin"
         android:background="@drawable/popup_bg_tinted"
-        android:divider="@null" />
+        android:divider="@null"
+        android:listSelector="@android:color/transparent"/>
 </FrameLayout>

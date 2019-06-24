@@ -457,8 +457,6 @@ void ChromeAutofillClient::PropagateAutofillPredictions(
           rfh);
   if (driver) {
     driver->GetPasswordGenerationHelper()->ProcessPasswordRequirements(forms);
-    driver->GetPasswordGenerationHelper()->DetectFormsEligibleForGeneration(
-        forms);
     driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms);
   }
 }

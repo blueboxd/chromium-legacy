@@ -38,5 +38,7 @@ NSString* const kToolsMenuEditBookmark = @"kToolsMenuEditBookmark";
 NSString* const kToolsMenuSiteInformation = @"kToolsMenuSiteInformation";
 NSString* const kToolsMenuPasteAndGo = @"kToolsMenuPasteAndGo";
 NSString* const kToolsMenuVoiceSearch = @"kToolsMenuVoiceSearch";
+NSString* const kToolsMenuSearch = @"kToolsMenuSearch";
+NSString* const kToolsMenuIncognitoSearch = @"kToolsMenuIncognitoSearch";
 NSString* const kToolsMenuQRCodeSearch = @"kToolsMenuQRCodeSearch";
 NSString* const kToolsMenuCopiedImageSearch = @"kToolsMenuCopiedImageSearch";

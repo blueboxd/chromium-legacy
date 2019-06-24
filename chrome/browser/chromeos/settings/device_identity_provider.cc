@@ -23,11 +23,12 @@ DeviceIdentityProvider::~DeviceIdentityProvider() {
     token_service_->RemoveObserver(this);
 }
 
-std::string DeviceIdentityProvider::GetActiveAccountId() {
+CoreAccountId DeviceIdentityProvider::GetActiveAccountId() {
   return token_service_->GetRobotAccountId();
 }
 
-void DeviceIdentityProvider::SetActiveAccountId(const std::string& account_id) {
+void DeviceIdentityProvider::SetActiveAccountId(
+    const CoreAccountId& account_id) {
   // On ChromeOs, the account shouldn't change during runtime, so no need to
   // alert observers here.
   if (!account_id.empty()) {

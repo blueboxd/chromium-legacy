@@ -888,9 +888,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
 
   AppLaunchParams params(browser()->profile(), app->id(),
-                         extensions::LaunchContainer::LAUNCH_CONTAINER_WINDOW,
+                         extensions::LaunchContainer::kLaunchContainerWindow,
                          WindowOpenDisposition::NEW_WINDOW,
-                         extensions::AppLaunchSource::SOURCE_FILE_HANDLER);
+                         extensions::AppLaunchSource::kSourceFileHandler);
 
   content::TestNavigationObserver navigation_observer(
       web_app_info.file_handler->action);
@@ -1374,7 +1374,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   // Installed PWAs should launch in their own window.
   EXPECT_EQ(extensions::GetLaunchContainer(
                 extensions::ExtensionPrefs::Get(browser()->profile()), app),
-            extensions::LAUNCH_CONTAINER_WINDOW);
+            extensions::LaunchContainer::kLaunchContainerWindow);
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
@@ -1397,7 +1397,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
   // Bookmark apps to PWAs should launch in a tab.
   EXPECT_EQ(extensions::GetLaunchContainer(
                 extensions::ExtensionPrefs::Get(browser()->profile()), app),
-            extensions::LAUNCH_CONTAINER_TAB);
+            extensions::LaunchContainer::kLaunchContainerTab);
 
   EXPECT_EQ(0, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(1, user_action_tester.GetActionCount("CreateShortcut"));

@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantPaymentRequestDelegate_jni.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "jni/AssistantPaymentRequestDelegate_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

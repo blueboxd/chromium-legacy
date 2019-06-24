@@ -508,6 +508,60 @@ TEST_F(CameraDeviceDelegateTest, AllocateCaptureAndStop) {
   ResetDevice();
 }
 
+// Test that the camera device delegate closes properly when StopAndDeAllocate()
+// is called when the device is opening. The timeline is roughly:
+// 1. AllocateAndStart()
+// 2. Async IPC call OpenDevice() started
+// 3. StopAndDeAllocate()
+// 4. Async IPC call OpenDevice() finished
+TEST_F(CameraDeviceDelegateTest, StopBeforeOpened) {
+  auto* mock_client = ResetDeviceContext();
+  mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
+      &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
+  SetUpExpectationForHalDelegate();
+
+  AllocateDevice();
+
+  device_delegate_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&CameraDeviceDelegate::AllocateAndStart,
+                                camera_device_delegate_->GetWeakPtr(),
+                                GetDefaultCaptureParams(),
+                                base::Unretained(device_context_.get())));
+
+  base::WaitableEvent stop_posted;
+  auto open_device_quit_loop_cb =
+      [&](int32_t camera_id,
+          cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
+          base::OnceCallback<void(int32_t)>& callback) {
+        QuitRunLoop();
+        // Make sure StopAndDeAllocate() is called before the device opened
+        // callback.
+        stop_posted.Wait();
+        OpenMockCameraDevice(camera_id, device_ops_request, callback);
+      };
+  EXPECT_CALL(mock_camera_module_, DoOpenDevice(0, _, _))
+      .Times(1)
+      .WillOnce(Invoke(open_device_quit_loop_cb));
+
+  // Wait until the QuitRunLoop() call in |mock_camera_module_->OpenDevice()|.
+  DoLoop();
+
+  SetUpExpectationForClose();
+
+  base::WaitableEvent device_closed;
+  device_delegate_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CameraDeviceDelegate::StopAndDeAllocate,
+                     camera_device_delegate_->GetWeakPtr(),
+                     base::BindOnce(&base::WaitableEvent::Signal,
+                                    base::Unretained(&device_closed))));
+  stop_posted.Signal();
+  EXPECT_TRUE(device_closed.TimedWait(base::TimeDelta::FromSeconds(3)));
+  EXPECT_EQ(CameraDeviceContext::State::kStopped, GetState());
+
+  ResetDevice();
+}
+
 // Test that the camera device delegate closes properly when StopAndDeAllocate
 // is called right after the device is initialized.
 TEST_F(CameraDeviceDelegateTest, StopAfterInitialized) {

@@ -159,8 +159,8 @@ class KioskNextHomeBrowserTest : public MixinBasedInProcessBrowserTest {
     ASSERT_TRUE(app);
 
     // Launch app and wait for its window.
-    apps::LaunchPlatformApp(
-        profile, app, extensions::AppLaunchSource::SOURCE_CHROME_INTERNAL);
+    apps::LaunchPlatformApp(profile, app,
+                            extensions::AppLaunchSource::kSourceChromeInternal);
     apps::AppWindowWaiter app_waiter(
         extensions::AppWindowRegistry::Get(profile),
         extension_misc::kKioskNextHomeAppId);

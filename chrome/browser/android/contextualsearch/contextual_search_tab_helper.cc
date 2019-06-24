@@ -8,13 +8,13 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "chrome/android/chrome_jni_headers/ContextualSearchTabHelper_jni.h"
 #include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/ContextualSearchTabHelper_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

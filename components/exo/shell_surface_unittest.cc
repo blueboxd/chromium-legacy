@@ -42,7 +42,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
-namespace {
 
 using ShellSurfaceTest = test::ExoTestBase;
 
@@ -230,6 +229,26 @@ TEST_F(ShellSurfaceTest, Restore) {
   EXPECT_EQ(
       buffer_size.ToString(),
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
+}
+
+TEST_F(ShellSurfaceTest, HostWindowBoundsUpdatedAfterCommitWidget) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  shell_surface->SurfaceTreeHost::OnSurfaceCommit();
+  shell_surface->root_surface()->SetSurfaceHierarchyContentBoundsForTest(
+      gfx::Rect(0, 0, 50, 50));
+
+  // Host Window Bounds size before committing.
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), shell_surface->host_window()->bounds());
+  EXPECT_TRUE(shell_surface->OnPreWidgetCommit());
+  shell_surface->CommitWidget();
+  // CommitWidget should update the Host Window Bounds.
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), shell_surface->host_window()->bounds());
 }
 
 TEST_F(ShellSurfaceTest, SetFullscreen) {
@@ -783,5 +802,4 @@ TEST_F(ShellSurfaceTest, Popup) {
   }
 }
 
-}  // namespace
 }  // namespace exo

@@ -123,6 +123,20 @@ class SeparatorBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
 };
 
+base::string16 SpltStringWithNewLineAtPosition(const base::string16& text,
+                                               size_t pos) {
+  base::string16 new_text = text;
+  // This can be a low surrogate codepoint, but u_isUWhiteSpace will
+  // return false and inserting a new line after a surrogate pair
+  // is perfectly ok.
+  base::char16 line_end_char = text[pos - 1];
+  if (u_isUWhiteSpace(line_end_char))
+    new_text.replace(pos - 1, 1, 1, base::char16('\n'));
+  else
+    new_text.insert(pos, 1, base::char16('\n'));
+  return new_text;
+}
+
 }  // namespace
 
 DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
@@ -1002,23 +1016,69 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   bool status = iter.Init();
   DCHECK(status);
 
+  // Create strings with line break position before and after the mid point, and
+  // compare the width to determine whether the best break position is before or
+  // after them.
+  base::string16 prev_text = original_text;
+  std::vector<size_t> break_points;
+
+  while (iter.pos() < original_text.length() / 2) {
+    iter.Advance();
+    break_points.emplace_back(iter.pos());
+  }
+
+  size_t pos = iter.pos();
+  bool searching_backward = false;
+  gfx::Size min_width_size = size;
+  // First add a line break after the mid point. If there is a very long
+  // word in the text, |pos| could reach the end of the text.
+  if (pos < original_text.length()) {
+    searching_backward = true;
+    prev_text = SpltStringWithNewLineAtPosition(original_text, pos);
+    label->SetText(prev_text);
+    min_width_size = label->GetPreferredSize();
+  }
+
+  pos = iter.prev();
+  base::string16 current_text;
+  if (pos != 0) {
+    base::string16 current_text =
+        SpltStringWithNewLineAtPosition(original_text, pos);
+    label->SetText(current_text);
+    size = label->GetPreferredSize();
+
+    if (size.width() == min_width_size.width()) {
+      // We found the best line break position.
+      label->SetText(prev_text);
+      return size;
+    } else if (size.width() > min_width_size.width()) {
+      // The best line break position is after |pos|.
+      label->SetText(prev_text);
+    } else {
+      // The best line break position is before |prev|.
+      searching_backward = false;
+      prev_text = current_text;
+      min_width_size = size;
+      break_points.pop_back();
+    }
+  }
+
   // Go through the string and try each line break (starting with no line break)
   // searching for the optimal line break position. Stop if we find one that
   // yields minimum label width.
-  base::string16 prev_text = original_text;
-  for (gfx::Size min_width_size = size; iter.Advance(); min_width_size = size) {
-    size_t pos = iter.pos();
-    if (pos >= original_text.length())
-      break;
-    base::string16 current_text = original_text;
-    // This can be a low surrogate codepoint, but u_isUWhiteSpace will
-    // return false and inserting a new line after a surrogate pair
-    // is perfectly ok.
-    base::char16 line_end_char = current_text[pos - 1];
-    if (u_isUWhiteSpace(line_end_char))
-      current_text.replace(pos - 1, 1, 1, base::char16('\n'));
-    else
-      current_text.insert(pos, 1, base::char16('\n'));
+  while (true) {
+    if (searching_backward) {
+      iter.Advance();
+      pos = iter.pos();
+      if (pos >= original_text.length())
+        break;
+    } else {
+      break_points.pop_back();
+      if (break_points.empty())
+        break;
+      pos = break_points.back();
+    }
+    current_text = SpltStringWithNewLineAtPosition(original_text, pos);
     label->SetText(current_text);
     size = label->GetPreferredSize();
 
@@ -1028,6 +1088,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
       return min_width_size;
     }
     prev_text = current_text;
+    min_width_size = size;
   }
   return size;
 }

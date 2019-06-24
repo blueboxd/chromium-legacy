@@ -115,11 +115,6 @@ LikelyFormFilling SendFillInformationToRenderer(
   const bool new_parsing_enabled =
       base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
 
-  // No need to inform the renderer about form blacklisting.
-  // NewPasswordFormManager sends all needed information to the renderer.
-  if (!new_parsing_enabled && !is_blacklisted)
-    driver->AllowPasswordGenerationForForm(observed_form);
-
   if (best_matches.empty()) {
     driver->InformNoSavedCredentials();
     metrics_recorder->RecordFillEvent(

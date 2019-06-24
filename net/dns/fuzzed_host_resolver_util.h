@@ -9,9 +9,7 @@
 
 #include "net/dns/host_resolver.h"
 
-namespace base {
 class FuzzedDataProvider;
-}
 
 namespace net {
 
@@ -38,7 +36,7 @@ class NetLog;
 std::unique_ptr<ContextHostResolver> CreateFuzzedContextHostResolver(
     const HostResolver::ManagerOptions& options,
     NetLog* net_log,
-    base::FuzzedDataProvider* data_provider,
+    FuzzedDataProvider* data_provider,
     bool enable_caching);
 
 }  // namespace net

@@ -92,6 +92,8 @@ BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
 
+BLINK_COMMON_EXPORT extern const base::Feature kStreamsNative;
+
 }  // namespace features
 }  // namespace blink
 

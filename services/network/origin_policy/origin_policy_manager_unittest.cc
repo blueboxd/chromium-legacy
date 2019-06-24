@@ -5,13 +5,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/origin_policy/origin_policy_fetcher.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,9 +44,26 @@ class OriginPolicyManagerTest : public testing::Test {
         std::move(context_params));
     manager_ = std::make_unique<OriginPolicyManager>(
         network_context_->CreateUrlLoaderFactoryForNetworkService());
+
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &OriginPolicyManagerTest::HandleResponse, base::Unretained(this)));
+
+    EXPECT_TRUE(test_server_.Start());
+
+    test_server_origin_ = url::Origin::Create(test_server_.base_url());
+
+    test_server_2_.RegisterRequestHandler(base::BindRepeating(
+        &OriginPolicyManagerTest::HandleResponse, base::Unretained(this)));
+
+    EXPECT_TRUE(test_server_2_.Start());
+
+    test_server_origin_2_ = url::Origin::Create(test_server_2_.base_url());
   }
 
   const url::Origin& test_server_origin() const { return test_server_origin_; }
+  const url::Origin& test_server_origin_2() const {
+    return test_server_origin_2_;
+  }
 
   OriginPolicyManager* manager() { return manager_.get(); }
 
@@ -52,23 +72,17 @@ class OriginPolicyManagerTest : public testing::Test {
   void WaitUntilResponseHandled() { response_run_loop.Run(); }
 
  protected:
-  // testing::Test implementation.
-  void SetUp() override {
-    test_server_.RegisterRequestHandler(base::BindRepeating(
-        &OriginPolicyManagerTest::HandleResponse, base::Unretained(this)));
-
-    EXPECT_TRUE(test_server_.Start());
-
-    test_server_origin_ = url::Origin::Create(test_server_.base_url());
-  }
-
   std::unique_ptr<net::test_server::HttpResponse> HandleResponse(
       const net::test_server::HttpRequest& request) {
     response_run_loop.Quit();
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
         std::make_unique<net::test_server::BasicHttpResponse>();
 
-    if (request.relative_url == "/.well-known/origin-policy/policy-1") {
+    if (request.relative_url == "/.well-known/origin-policy") {
+      response->set_code(net::HTTP_FOUND);
+      response->AddCustomHeader("Location",
+                                "/.well-known/origin-policy/policy-1");
+    } else if (request.relative_url == "/.well-known/origin-policy/policy-1") {
       response->set_code(net::HTTP_OK);
       response->set_content("manifest-1");
     } else if (request.relative_url == "/.well-known/origin-policy/policy-2") {
@@ -99,9 +113,11 @@ class OriginPolicyManagerTest : public testing::Test {
   std::unique_ptr<NetworkContext> network_context_;
   mojom::NetworkContextPtr network_context_ptr_;
   std::unique_ptr<OriginPolicyManager> manager_;
-  net::test_server::EmbeddedTestServer test_server_;
-  url::Origin test_server_origin_;
   base::RunLoop response_run_loop;
+  net::test_server::EmbeddedTestServer test_server_;
+  net::test_server::EmbeddedTestServer test_server_2_;
+  url::Origin test_server_origin_;
+  url::Origin test_server_origin_2_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyManagerTest);
 };
@@ -119,8 +135,10 @@ TEST_F(OriginPolicyManagerTest, AddBinding) {
 }
 
 TEST_F(OriginPolicyManagerTest, ParseHeaders) {
+  const std::string kExemptedOriginPolicyVersion =
+      OriginPolicyManager::GetExemptedVersionForTesting();
   const struct {
-    const char* header;
+    const std::string header;
     const char* expected_policy_version;
     const char* expected_report_to;
   } kTests[] = {
@@ -196,6 +214,13 @@ TEST_F(OriginPolicyManagerTest, ParseHeaders) {
       {"policy=, policy=p2, report-to=r1", "", ""},
       {"policy=, policy=, report-to=r1", "", ""},
       {"policy=p1, report-to=r1, report-to=r2", "", ""},
+
+      // kExemptedOriginPolicyVersion is not a valid version
+      {base::StrCat({"policy=", kExemptedOriginPolicyVersion}), "", ""},
+      {base::StrCat({"report-to=r, policy=", kExemptedOriginPolicyVersion}), "",
+       ""},
+      {base::StrCat({"policy=", kExemptedOriginPolicyVersion, ", report-to=r"}),
+       "", ""},
   };
   for (const auto& test : kTests) {
     SCOPED_TRACE(test.header);
@@ -204,17 +229,21 @@ TEST_F(OriginPolicyManagerTest, ParseHeaders) {
     EXPECT_EQ(test.expected_policy_version, result.policy_version);
     EXPECT_EQ(test.expected_report_to, result.report_to);
   }
+
+  EXPECT_FALSE(net::HttpUtil::IsToken(kExemptedOriginPolicyVersion));
 }
 
 // Helper class for starting saving a retrieved policy result
 class TestOriginPolicyManagerResult {
  public:
-  TestOriginPolicyManagerResult() {}
+  TestOriginPolicyManagerResult(OriginPolicyManagerTest* fixture,
+                                OriginPolicyManager* manager = nullptr)
+      : fixture_(fixture), manager_(manager ? manager : fixture->manager()) {}
 
   void RetrieveOriginPolicy(const std::string& header_value,
-                            OriginPolicyManagerTest* fixture) {
-    fixture->manager()->RetrieveOriginPolicy(
-        fixture->test_server_origin(), header_value,
+                            const url::Origin* origin = nullptr) {
+    manager_->RetrieveOriginPolicy(
+        origin ? *origin : fixture_->test_server_origin(), header_value,
         base::BindOnce(&TestOriginPolicyManagerResult::Callback,
                        base::Unretained(this)));
     run_loop_.Run();
@@ -231,6 +260,8 @@ class TestOriginPolicyManagerResult {
   }
 
   base::RunLoop run_loop_;
+  OriginPolicyManagerTest* fixture_;
+  OriginPolicyManager* manager_;
   mojom::OriginPolicyPtr origin_policy_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOriginPolicyManagerResult);
@@ -249,7 +280,7 @@ TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
       {"policy=policy-2, report-to=endpoint", mojom::OriginPolicyState::kLoaded,
        "manifest-2"},
 
-      {"", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
+      {"", mojom::OriginPolicyState::kNoPolicyApplies, ""},
       {"unknown=keyword", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
       {"report_to=endpoint", mojom::OriginPolicyState::kCannotLoadPolicy, ""},
       {"policy=policy/policy-3", mojom::OriginPolicyState::kCannotLoadPolicy,
@@ -266,8 +297,11 @@ TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
   for (const auto& test : kTests) {
     SCOPED_TRACE(test.header);
 
-    TestOriginPolicyManagerResult tester;
-    tester.RetrieveOriginPolicy(test.header, this);
+    OriginPolicyManager manager(
+        network_context()->CreateUrlLoaderFactoryForNetworkService());
+
+    TestOriginPolicyManagerResult tester(this, &manager);
+    tester.RetrieveOriginPolicy(test.header);
     EXPECT_EQ(test.expected_state, tester.origin_policy_result()->state);
     if (test.expected_raw_policy.empty()) {
       EXPECT_FALSE(tester.origin_policy_result()->contents);
@@ -300,6 +334,94 @@ TEST_F(OriginPolicyManagerTest, DestroyWhileCallbackUninvoked) {
   }
   // At this point if we have not hit the DCHECK in OnIsConnectedComplete, then
   // the test has passed.
+}
+
+TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
+  const struct {
+    std::string header;
+    mojom::OriginPolicyState expected_state;
+    std::string expected_raw_policy;
+    const url::Origin& origin;
+  } kTests[] = {
+      // The order of these tests is important as the cache is not cleared in
+      // between tests and some tests rely on the state left over by previous
+      // tests.
+
+      // Nothing in the cache, no policy applies if header unspecified.
+      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin()},
+
+      // An invalid header and nothing in the cache means an error.
+      {"invalid", mojom::OriginPolicyState::kCannotLoadPolicy, "",
+       test_server_origin()},
+
+      // A valid header results in loaded policy.
+      {"policy=policy-1", mojom::OriginPolicyState::kLoaded, "manifest-1",
+       test_server_origin()},
+
+      // With a valid header, we use that version if header unspecified.
+      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+       test_server_origin()},
+
+      // A second valid header results in loaded policy. Changes cached last
+      // version.
+      {"policy=policy-2", mojom::OriginPolicyState::kLoaded, "manifest-2",
+       test_server_origin()},
+
+      // The latest version is correctly uses when header is unspecified.
+      {"", mojom::OriginPolicyState::kLoaded, "manifest-2",
+       test_server_origin()},
+
+      // Same as above for invalid header.
+      {"invalid", mojom::OriginPolicyState::kLoaded, "manifest-2",
+       test_server_origin()},
+
+      // Delete the policy.
+      {base::StrCat({"policy=", kOriginPolicyDeletePolicy}),
+       mojom::OriginPolicyState::kNoPolicyApplies, "", test_server_origin()},
+
+      // We are the back to the initial status quo, no policy applies if header
+      // unspecified.
+      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin()},
+
+      // Load a new policy to have something in the cache.
+      {"policy=policy-1", mojom::OriginPolicyState::kLoaded, "manifest-1",
+       test_server_origin()},
+
+      // Check that the version in the cache is used.
+      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+       test_server_origin()},
+
+      // In a different origin, it should not pick up the initial origin's
+      // cached version.
+      {"", mojom::OriginPolicyState::kNoPolicyApplies, "",
+       test_server_origin_2()},
+
+      // Load a new policy to have something in the cache for the second origin.
+      {"policy=policy-2", mojom::OriginPolicyState::kLoaded, "manifest-2",
+       test_server_origin_2()},
+
+      // Check that the version in the cache is used for the second origin.
+      {"", mojom::OriginPolicyState::kLoaded, "manifest-2",
+       test_server_origin_2()},
+
+      // The initial origins cached state is unaffected.
+      {"", mojom::OriginPolicyState::kLoaded, "manifest-1",
+       test_server_origin()},
+  };
+
+  for (const auto& test : kTests) {
+    TestOriginPolicyManagerResult tester(this);
+    tester.RetrieveOriginPolicy(test.header, &test.origin);
+    EXPECT_EQ(test.expected_state, tester.origin_policy_result()->state);
+    if (test.expected_raw_policy.empty()) {
+      EXPECT_FALSE(tester.origin_policy_result()->contents);
+    } else {
+      EXPECT_EQ(test.expected_raw_policy,
+                tester.origin_policy_result()->contents->raw_policy);
+    }
+  }
 }
 
 }  // namespace network

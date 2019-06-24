@@ -11,8 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromecast/browser/jni_headers/CastContentWindowAndroid_jni.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/CastContentWindowAndroid_jni.h"
 #include "ui/events/keycodes/keyboard_code_conversion_android.h"
 
 namespace chromecast {

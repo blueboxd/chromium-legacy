@@ -16,6 +16,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "chrome/common/chrome_features.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -26,11 +27,6 @@
 #include "components/policy/policy_constants.h"
 
 namespace policy {
-
-namespace {
-
-constexpr char kFcmPolicyPublicTopicPrefix[] = "cs-";
-}  // namespace
 
 const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
 const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 10000;
@@ -140,7 +136,7 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
 std::string CloudPolicyInvalidator::GetOwnerName() const { return "Cloud"; }
 
 bool CloudPolicyInvalidator::IsPublicTopic(const syncer::Topic& topic) const {
-  return base::StringPiece(topic).starts_with(kFcmPolicyPublicTopicPrefix);
+  return IsPublicInvalidationTopic(topic);
 }
 
 void CloudPolicyInvalidator::OnCoreConnected(CloudPolicyCore* core) {}
@@ -286,30 +282,11 @@ void CloudPolicyInvalidator::HandleInvalidation(
 void CloudPolicyInvalidator::UpdateRegistration(
     const enterprise_management::PolicyData* policy) {
   // Create the ObjectId based on the policy data.
-  if (!policy) {
-    Unregister();
-    return;
-  }
-
   // If the policy does not specify an ObjectId, then unregister.
   invalidation::ObjectId object_id;
-  if (base::FeatureList::IsEnabled(features::kPolicyFcmInvalidations)) {
-    if (!policy->has_policy_invalidation_topic() ||
-        policy->policy_invalidation_topic().empty()) {
-      Unregister();
-      return;
-    }
-    object_id = invalidation::ObjectId(syncer::kDeprecatedSourceForFCM,
-                                       policy->policy_invalidation_topic());
-  } else {
-    if (!policy->has_invalidation_source() ||
-        !policy->has_invalidation_name() ||
-        policy->invalidation_name().empty()) {
-      Unregister();
-      return;
-    }
-    object_id = invalidation::ObjectId(policy->invalidation_source(),
-                                       policy->invalidation_name());
+  if (!policy || !GetCloudPolicyObjectIdFromPolicy(*policy, &object_id)) {
+    Unregister();
+    return;
   }
 
   // If the policy object id in the policy data is different from the currently

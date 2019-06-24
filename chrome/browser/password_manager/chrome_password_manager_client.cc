@@ -100,6 +100,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
@@ -1059,6 +1060,8 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     password_manager::PasswordManagerDriver* driver,
     autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
+  ManualFillingController::GetOrCreate(web_contents())
+      ->NotifyFocusedInputChanged(focused_field_type);
   password_manager::ContentPasswordManagerDriver* content_driver =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
   if (!PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(

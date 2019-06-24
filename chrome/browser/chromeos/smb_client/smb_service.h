@@ -76,6 +76,7 @@ class SmbService : public KeyedService,
              const std::string& password,
              bool use_chromad_kerberos,
              bool should_open_file_manager_after_mount,
+             bool save_credentials,
              MountResponse callback);
 
   // Completes the mounting of an SMB file system, passing |options| on to
@@ -86,6 +87,9 @@ class SmbService : public KeyedService,
                        const base::FilePath& share_path,
                        bool is_kerberos_chromad,
                        bool should_open_file_manager_after_mount,
+                       const std::string& username,
+                       const std::string& workgroup,
+                       bool save_credentials,
                        smbprovider::ErrorType error,
                        int32_t mount_id);
 
@@ -131,6 +135,7 @@ class SmbService : public KeyedService,
                  const std::string& password,
                  bool use_chromad_kerberos,
                  bool should_open_file_manager_after_mount,
+                 bool save_credentials,
                  MountResponse callback);
 
   // Retrieves the mount_id for |file_system_info|.

@@ -220,20 +220,20 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
     base::PathService::Get(base::FILE_EXE, &exe_path);
 
     base::CommandLine reconnect_command_line(exe_path);
-    reconnect_command_line.AppendSwitch(switches::kNoStartupWindow);
+    reconnect_command_line.AppendSwitch(::switches::kNoStartupWindow);
     reconnect_command_line.AppendSwitchASCII(
-        switches::kNativeMessagingConnectHost, native_host_name);
+        ::switches::kNativeMessagingConnectHost, native_host_name);
     reconnect_command_line.AppendSwitchASCII(
-        switches::kNativeMessagingConnectExtension, origin.host());
-    reconnect_command_line.AppendSwitchASCII(switches::kEnableFeatures,
+        ::switches::kNativeMessagingConnectExtension, origin.host());
+    reconnect_command_line.AppendSwitchASCII(::switches::kEnableFeatures,
                                              features::kOnConnectNative.name);
-    reconnect_command_line.AppendSwitchPath(switches::kProfileDirectory,
+    reconnect_command_line.AppendSwitchPath(::switches::kProfileDirectory,
                                             profile_directory_.BaseName());
-    reconnect_command_line.AppendSwitchPath(switches::kUserDataDir,
+    reconnect_command_line.AppendSwitchPath(::switches::kUserDataDir,
                                             profile_directory_.DirName());
 #if defined(OS_WIN)
     reconnect_command_line.AppendArg(
-        switches::kPrefetchArgumentBrowserBackground);
+        ::switches::kPrefetchArgumentBrowserBackground);
 #endif
     base::Value args(base::Value::Type::LIST);
     args.GetList().reserve(reconnect_command_line.argv().size());

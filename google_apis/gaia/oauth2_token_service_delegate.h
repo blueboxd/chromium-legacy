@@ -22,6 +22,8 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+class OAuth2AccessTokenFetcher;
+
 // Abstract base class to fetch and maintain refresh tokens from various
 // entities. Concrete subclasses should implement RefreshTokenIsAvailable and
 // CreateAccessTokenFetcher properly.

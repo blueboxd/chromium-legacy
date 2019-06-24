@@ -957,6 +957,11 @@ const char kStartupBrowserWindowLaunchSuppressed[] =
 // be used via the WebUSB API.
 const char kDeviceWebUsbAllowDevicesForUrls[] =
     "device_webusb_allow_devices_for_urls";
+
+// A string pref stored in local state. Set and read by extensions using the
+// chrome.login API.
+const char kLoginExtensionApiDataForNextLoginAttempt[] =
+    "extensions_api.login.data_for_next_login_attempt";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

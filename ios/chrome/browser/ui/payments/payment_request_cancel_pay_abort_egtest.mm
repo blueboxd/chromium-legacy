@@ -125,7 +125,8 @@ const char kNoShippingPage[] =
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_nil()];
 
-  [self waitForWebViewContainingTexts:{"AbortError", "Request cancelled"}];
+  [self waitForWebViewContainingTexts:{"AbortError",
+                                       "User closed the Payment Request UI."}];
 }
 
 // Tests that tapping the link to Chrome Settings closes the Payment Request UI,
@@ -159,7 +160,8 @@ const char kNoShippingPage[] =
                                           kAutofillProfileTableViewID)]
       assertWithMatcher:grey_notNil()];
 
-  [self waitForWebViewContainingTexts:{"AbortError", "Request cancelled"}];
+  [self waitForWebViewContainingTexts:{"AbortError",
+                                       "User closed the Payment Request UI."}];
 }
 
 // Tests that tapping the pay button closes the Payment Request UI, accepts the

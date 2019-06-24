@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/android/toolbar/location_bar_model_android.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/LocationBarModel_jni.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
@@ -12,7 +13,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
-#include "jni/LocationBarModel_jni.h"
 #include "ui/base/device_form_factor.h"
 
 using base::android::JavaParamRef;

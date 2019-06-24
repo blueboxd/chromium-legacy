@@ -8,8 +8,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
+#include "chrome/android/chrome_jni_headers/InstalledWebappBridge_jni.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "jni/InstalledWebappBridge_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaLocalRef;

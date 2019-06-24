@@ -167,7 +167,7 @@ class TestIdentityManagerDiagnosticsObserver
 
  private:
   // IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(const std::string& account_id,
+  void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override {
     token_requestor_account_id_ = account_id;
@@ -178,13 +178,13 @@ class TestIdentityManagerDiagnosticsObserver
       std::move(on_access_token_requested_callback_).Run();
   }
 
-  void OnAccessTokenRemovedFromCache(const std::string& account_id,
+  void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
                                      const ScopeSet& scopes) override {
     token_remover_account_id_ = account_id;
     token_remover_scopes_ = scopes;
   }
 
-  void OnAccessTokenRequestCompleted(const std::string& account_id,
+  void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                      const std::string& consumer_id,
                                      const ScopeSet& scopes,
                                      GoogleServiceAuthError error,
@@ -1766,8 +1766,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnSuccessfulAdditionOfAccountToCookie) {
 
   std::string account_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
       });
@@ -1788,8 +1789,9 @@ TEST_F(IdentityManagerTest, CallbackSentOnFailureAdditionOfAccountToCookie) {
 
   std::string account_from_add_account_to_cookie_completed_callback;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback;
-  auto completion_callback = base::BindLambdaForTesting(
-      [&](const std::string& account_id, const GoogleServiceAuthError& error) {
+  auto completion_callback =
+      base::BindLambdaForTesting([&](const CoreAccountId& account_id,
+                                     const GoogleServiceAuthError& error) {
         account_from_add_account_to_cookie_completed_callback = account_id;
         error_from_add_account_to_cookie_completed_callback = error;
       });

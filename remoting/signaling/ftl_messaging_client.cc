@@ -192,6 +192,7 @@ void FtlMessagingClient::OnAckMessagesResponse(
 
 std::unique_ptr<ScopedGrpcServerStream>
 FtlMessagingClient::OpenReceiveMessagesStream(
+    base::OnceClosure on_channel_ready,
     const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
         on_incoming_msg,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
@@ -202,7 +203,8 @@ FtlMessagingClient::OpenReceiveMessagesStream(
   auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
       base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
                      base::Unretained(messaging_stub_.get())),
-      request, on_incoming_msg, std::move(on_channel_closed), &stream);
+      request, std::move(on_channel_ready), on_incoming_msg,
+      std::move(on_channel_closed), &stream);
   FtlGrpcContext::FillClientContext(grpc_request->context());
   executor_->ExecuteRpc(std::move(grpc_request));
   return stream;

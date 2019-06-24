@@ -79,9 +79,11 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
 
   base::Optional<LaunchContainer> result;
 
-  if (manifest_launch_container == LAUNCH_CONTAINER_PANEL_DEPRECATED) {
+  if (manifest_launch_container ==
+      LaunchContainer::kLaunchContainerPanelDeprecated) {
     result = manifest_launch_container;
-  } else if (manifest_launch_container == LAUNCH_CONTAINER_TAB) {
+  } else if (manifest_launch_container ==
+             LaunchContainer::kLaunchContainerTab) {
     // Look for prefs that indicate the user's choice of launch container. The
     // app's menu on the NTP provides a UI to set this preference.
     LaunchType prefs_launch_type = GetLaunchType(prefs, extension);
@@ -89,31 +91,31 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
     if (prefs_launch_type == LAUNCH_TYPE_WINDOW) {
       // If the pref is set to launch a window (or no pref is set, and
       // window opening is the default), make the container a window.
-      result = LAUNCH_CONTAINER_WINDOW;
+      result = LaunchContainer::kLaunchContainerWindow;
 #if defined(OS_CHROMEOS)
     } else if (prefs_launch_type == LAUNCH_TYPE_FULLSCREEN) {
       // LAUNCH_TYPE_FULLSCREEN launches in a maximized app window in ash.
       // For desktop chrome AURA on all platforms we should open the
       // application in full screen mode in the current tab, on the same
       // lines as non AURA chrome.
-      result = LAUNCH_CONTAINER_WINDOW;
+      result = LaunchContainer::kLaunchContainerWindow;
 #endif
     } else {
       // All other launch types (tab, pinned, fullscreen) are
       // implemented as tabs in a window.
-      result = LAUNCH_CONTAINER_TAB;
+      result = LaunchContainer::kLaunchContainerTab;
     }
   } else {
     // If a new value for app.launch.container is added, logic for it should be
-    // added here. LAUNCH_CONTAINER_WINDOW is not present because there is no
-    // way to set it in a manifest.
+    // added here. LaunchContainer::kLaunchContainerWindow is not present
+    // because there is no way to set it in a manifest.
     NOTREACHED() << manifest_launch_container;
   }
 
   // All paths should set |result|.
   if (!result) {
     DLOG(FATAL) << "Failed to set a launch container.";
-    result = LAUNCH_CONTAINER_TAB;
+    result = LaunchContainer::kLaunchContainerTab;
   }
 
   return *result;
@@ -124,8 +126,8 @@ bool HasPreferredLaunchContainer(const ExtensionPrefs* prefs,
   int value = -1;
   LaunchContainer manifest_launch_container =
       AppLaunchInfo::GetLaunchContainer(extension);
-  return manifest_launch_container == LAUNCH_CONTAINER_TAB &&
-      prefs->ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value);
+  return manifest_launch_container == LaunchContainer::kLaunchContainerTab &&
+         prefs->ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value);
 }
 
 bool LaunchesInWindow(content::BrowserContext* context,

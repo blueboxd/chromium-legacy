@@ -451,12 +451,6 @@
 
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME" /> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
 <translation id="1750315445671978749">Blockera alla nedladdningar</translation>
-<translation id="1762072363876276024">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gäller användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
-      Den här inställningen, DeviceLoginScreenSitePerProcess, kan användas för att förhindra att användarna väljer bort standardbeteendet att isolera alla webbplatser. Observera att det även går att isolera ursprung mer precist med principen DeviceLoginScreenIsolateOrigins.
-      När principen är aktiverad kan användarna inte välja bort standardbeteendet att varje webbplats körs i en egen process.
-      Om principen inte har ställts in eller om den inaktiveras kan användaren ändra inställningen (t.ex. med flaggan Disable site isolation på sidan chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Aktivera apprekommendationer i sökrutan när den är nollställd</translation>
 <translation id="17719159826324007">
       När principen är inställd på ArcSession görs en tvingad omstart när användaren loggar ut om Android har startats.
@@ -3704,22 +3698,6 @@
 
           Obs! Tillåtna värden i fältet <ph name="MINUTE_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> och <ph name="CHARGE_END_TIME_FIELD_NAME" /> är 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfigurera tillgänglighetsfunktioner i <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Den här principen aktiverar HTTP/0.9 på andra portar än 80 för HTTP och 443 för HTTPS.
-
-      Principen är inaktiverad som standard och om den aktiveras löper användare risk att utsättas för säkerhetsbristen https://crbug.com/600352.
-
-      Principen är avsedd att ge företag möjlighet att migrera befintliga servrar från HTTP/0.9. Principen tas bort framöver.
-
-      Om principen inte har angetts, inaktiveras HTTP/0.9 på portar som inte har angetts som standard.</translation>
-<translation id="7726421241038987229">
-      Den här inställningen, SitePerProcess, kan användas för att förhindra att användarna väljer bort standardbeteendet att isolera alla webbplatser. Observera att det även går att isolera ursprung mer precist med principen IsolateOrigins.
-      När principen är aktiverad kan användarna inte välja bort standardbeteendet att varje webbplats körs i en egen process.
-      Om principen inte har ställts in eller om den inaktiveras kan användaren välja bort webbplatsisolering
-      (t.ex. med flaggan Disable site isolation på sidan chrome://flags).  Att principen inaktiveras och/eller saknar inställning innebär inte att webbplatsisolering inaktiveras.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-
-      OBS! Den här principen gäller inte Android. Om du vill aktivera SitePerProcess på Android använder du principen SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Tillåt att <ph name="PLUGIN_VM_NAME" /> används av enheter på <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Aktiverar tvåfaktorsautentisering för värdar för fjärråtkomst istället för en användarangiven PIN-kod.
 

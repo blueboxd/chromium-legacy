@@ -409,6 +409,44 @@ void CertificateProviderService::OnExtensionUnloaded(
   pin_dialog_manager_.ExtensionUnloaded(extension_id);
 }
 
+void CertificateProviderService::RequestSignatureBySpki(
+    const std::string& subject_public_key_info,
+    uint16_t algorithm,
+    base::span<const uint8_t> digest,
+    net::SSLPrivateKey::SignCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool is_currently_provided = false;
+  CertificateInfo info;
+  std::string extension_id;
+  certificate_map_.LookUpCertificateBySpki(
+      subject_public_key_info, &is_currently_provided, &info, &extension_id);
+  if (!is_currently_provided) {
+    LOG(ERROR) << "no certificate with the specified spki was found";
+    std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
+    return;
+  }
+
+  RequestSignatureFromExtension(extension_id, info.certificate, algorithm,
+                                digest, std::move(callback));
+}
+
+bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
+    const std::string& subject_public_key_info,
+    std::vector<uint16_t>* supported_algorithms) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool is_currently_provided = false;
+  CertificateInfo info;
+  std::string extension_id;
+  certificate_map_.LookUpCertificateBySpki(
+      subject_public_key_info, &is_currently_provided, &info, &extension_id);
+  if (!is_currently_provided) {
+    LOG(ERROR) << "no certificate with the specified spki was found";
+    return false;
+  }
+  *supported_algorithms = info.supported_algorithms;
+  return true;
+}
+
 void CertificateProviderService::GetCertificatesFromExtensions(
     base::OnceCallback<void(net::ClientCertIdentityList)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -135,7 +135,7 @@ class SearchResultRankerTest : public testing::Test {
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   auto ranker = MakeRanker(false);
   for (int i = 0; i < 20; ++i)
-    ranker->Train("unused", RankingItemType::kFile);
+    ranker->Train("query", "unused", RankingItemType::kFile);
   ranker->FetchRankings(base::string16());
 
   auto results =
@@ -154,7 +154,7 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
   auto ranker = MakeRanker(
       true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
   for (int i = 0; i < 20; ++i)
-    ranker->Train("unused", RankingItemType::kFile);
+    ranker->Train("query", "unused", RankingItemType::kFile);
   ranker->FetchRankings(base::string16());
 
   auto results =
@@ -174,8 +174,8 @@ TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
 
   for (int i = 0; i < 10; ++i) {
-    ranker->Train("C", RankingItemType::kFile);
-    ranker->Train("D", RankingItemType::kFile);
+    ranker->Train("query", "C", RankingItemType::kFile);
+    ranker->Train("query", "D", RankingItemType::kFile);
   }
   ranker->FetchRankings(base::string16());
 
@@ -205,8 +205,8 @@ TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
 
   for (int i = 0; i < 5; ++i) {
-    ranker->Train(url_1, RankingItemType::kOmniboxHistory);
-    ranker->Train(url_3, RankingItemType::kOmniboxHistory);
+    ranker->Train("query", url_1, RankingItemType::kOmniboxHistory);
+    ranker->Train("query", url_3, RankingItemType::kOmniboxHistory);
   }
   ranker->FetchRankings(base::string16());
 

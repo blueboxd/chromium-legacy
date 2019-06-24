@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "base/android/jni_android.h"
+#include "chrome/android/chrome_jni_headers/UkmRecorder_jni.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/UkmRecorder_jni.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace browserservices {
 

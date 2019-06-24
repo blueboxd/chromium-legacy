@@ -146,7 +146,8 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (params.open_pwa_window_if_possible) {
     const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
-        profile, params.url, extensions::LAUNCH_CONTAINER_WINDOW);
+        profile, params.url,
+        extensions::LaunchContainer::kLaunchContainerWindow);
     if (app) {
       std::string app_name =
           web_app::GenerateApplicationNameFromAppId(app->id());

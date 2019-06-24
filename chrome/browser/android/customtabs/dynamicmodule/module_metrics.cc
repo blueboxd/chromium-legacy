@@ -11,7 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/process/process_handle.h"
-#include "jni/ModuleMetrics_jni.h"
+#include "chrome/android/chrome_jni_headers/ModuleMetrics_jni.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 

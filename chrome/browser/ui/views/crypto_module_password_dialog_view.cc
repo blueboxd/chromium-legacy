@@ -113,15 +113,15 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
     default:
       NOTREACHED();
   }
-  reason_label_ = new views::Label(base::UTF8ToUTF16(text));
-  reason_label_->SetMultiLine(true);
+  auto reason_label = std::make_unique<views::Label>(base::UTF8ToUTF16(text));
+  reason_label->SetMultiLine(true);
 
-  password_label_ = new views::Label(l10n_util::GetStringUTF16(
-      IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD));
+  auto password_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD));
 
-  password_entry_ = new views::Textfield();
-  password_entry_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  password_entry_->set_controller(this);
+  auto password_entry = std::make_unique<views::Textfield>();
+  password_entry->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  password_entry->set_controller(this);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -144,14 +144,14 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
-  layout->AddView(reason_label_);
+  reason_label_ = layout->AddView(std::move(reason_label));
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, 1);
-  layout->AddView(password_label_);
-  layout->AddView(password_entry_);
+  password_label_ = layout->AddView(std::move(password_label));
+  password_entry_ = layout->AddView(std::move(password_entry));
 }
 
 void ShowCryptoModulePasswordDialog(

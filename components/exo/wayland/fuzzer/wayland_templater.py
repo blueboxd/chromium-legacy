@@ -21,7 +21,7 @@ proto_type_conversions = {
     'int': 'int32',
     'uint': 'uint32',
     'string': 'string',
-    'fd': 'uint32',
+    'fd': 'small_value',
 }
 
 cpp_type_conversions = {
@@ -30,7 +30,7 @@ cpp_type_conversions = {
     'fixed': 'wl_fixed_t',
     'string': 'const char*',
     'array': 'struct wl_array*',
-    'fd': 'int32_t',
+    'fd': 'int',
 }
 
 

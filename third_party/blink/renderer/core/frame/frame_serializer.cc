@@ -50,8 +50,10 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_image_loader.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -383,6 +385,13 @@ void FrameSerializer::AddResourceForElement(Document& document,
   } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
     if (CSSStyleSheet* sheet = style->sheet())
       SerializeCSSStyleSheet(*sheet, NullURL());
+  } else if (IsHTMLPlugInElement(element)) {
+    const auto* plugin = ToHTMLPlugInElement(&element);
+    if (plugin->IsImageType() && plugin->ImageLoader()) {
+      KURL image_url = document.CompleteURL(plugin->Url());
+      ImageResourceContent* cached_image = plugin->ImageLoader()->GetContent();
+      AddImageToResources(cached_image, image_url);
+    }
   }
 }
 

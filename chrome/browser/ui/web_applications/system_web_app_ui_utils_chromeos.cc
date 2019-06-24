@@ -65,7 +65,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   // TODO(calamity): Plumb through better launch sources from callsites.
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-      profile, extension, 0, extensions::SOURCE_CHROME_INTERNAL,
+      profile, extension, 0, extensions::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId);
   params.override_url = url;
 

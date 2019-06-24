@@ -317,7 +317,7 @@ base::CommandLine CreatePerSessionCommandLine(Profile* profile) {
   about_flags::ConvertFlagsToSwitches(&flags_storage, &user_flags,
                                       flags_ui::kAddSentinels);
 
-  UserSessionManager::MaybeAppendPolicySwitches(profile->GetPrefs(),
+  UserSessionManager::ApplyUserPolicyToSwitches(profile->GetPrefs(),
                                                 &user_flags);
 
   return user_flags;
@@ -448,31 +448,27 @@ void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void UserSessionManager::MaybeAppendPolicySwitches(
+void UserSessionManager::ApplyUserPolicyToSwitches(
     PrefService* user_profile_prefs,
     base::CommandLine* user_flags) {
   // Get target value for --site-per-process for the user session according to
-  // policy. Values from command-line flags should not be honored at this point,
-  // so check |IsManaged()|.
+  // policy. If it is supposed to be enabled, make sure it can not be disabled
+  // using flags-induced command-line switches.
   const PrefService::Preference* site_per_process_pref =
       user_profile_prefs->FindPreference(prefs::kSitePerProcess);
-  bool site_per_process = site_per_process_pref->IsManaged() &&
-                          site_per_process_pref->GetValue()->GetBool();
+  if (site_per_process_pref->IsManaged() &&
+      site_per_process_pref->GetValue()->GetBool()) {
+    user_flags->RemoveSwitch(::switches::kDisableSiteIsolation);
+  }
 
-  // Append sentinels indicating that these values originate from policy.
+  // Note: If a user policy is introduced again which translates to command-line
+  // switches, make sure to wrap the policy-added command-line switches in
+  // |"--policy-switches-begin"| / |"--policy-switches-end"| sentinels.
   // This is important, because only command-line switches between the
   // |"--policy-switches-begin"| / |"--policy-switches-end"| and the
   // |"--flag-switches-begin"| / |"--flag-switches-end"| sentinels will be
   // compared when comparing the current command line and the user session
   // command line in order to decide if chrome should be restarted.
-  // We use the policy-style sentinels because these values originate from
-  // policy, and because login_manager uses the same sentinels when adding the
-  // login-screen site isolation flags.
-  if (site_per_process) {
-    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
-    user_flags->AppendSwitch(::switches::kSitePerProcess);
-    user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesEnd);
-  }
 }
 
 UserSessionManager::UserSessionManager()

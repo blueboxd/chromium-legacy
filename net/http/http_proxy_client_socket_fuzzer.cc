@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
@@ -26,6 +25,7 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/next_proto.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for HttpProxyClientSocket only tests establishing a connection when
 // using the proxy as a tunnel.
@@ -36,7 +36,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Use a test NetLog, to exercise logging code.
   net::TestNetLog test_net_log;
 
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
 
   net::TestCompletionCallback callback;
   std::unique_ptr<net::FuzzedSocket> fuzzed_socket(

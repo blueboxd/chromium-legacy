@@ -597,6 +597,8 @@ class Internals final : public ScriptWrappable {
 
   void setDeviceEmulationScale(float scale, ExceptionState&);
 
+  String getDocumentAgentId(Document*);
+
  private:
   Document* ContextDocument() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;

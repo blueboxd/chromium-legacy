@@ -345,7 +345,8 @@ class PlatformAppPathLauncher
   // not kept as the extension may be unloaded and deleted during the course of
   // the launch.
   const std::string extension_id;
-  extensions::AppLaunchSource launch_source_ = extensions::SOURCE_FILE_HANDLER;
+  extensions::AppLaunchSource launch_source_ =
+      extensions::AppLaunchSource::kSourceFileHandler;
   std::unique_ptr<app_runtime::ActionData> action_data_;
   // A list of files and directories to be passed through to the app.
   std::vector<base::FilePath> entry_paths_;
@@ -446,7 +447,7 @@ void LaunchPlatformAppWithAction(
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(context, app, file_path);
   launcher->set_action_data(std::move(action_data));
-  launcher->set_launch_source(extensions::AppLaunchSource::SOURCE_UNTRACKED);
+  launcher->set_launch_source(extensions::AppLaunchSource::kSourceUntracked);
   launcher->Launch();
 }
 
@@ -488,7 +489,7 @@ void RestartPlatformApp(content::BrowserContext* context,
 
   if (listening_to_launch && had_windows) {
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-        context, app, extensions::SOURCE_RESTART, nullptr);
+        context, app, extensions::AppLaunchSource::kSourceRestart, nullptr);
   }
 }
 

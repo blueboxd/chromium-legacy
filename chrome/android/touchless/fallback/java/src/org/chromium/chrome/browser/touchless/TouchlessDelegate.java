@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.content.Context;
+import android.support.annotation.StringRes;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -39,8 +42,13 @@ public class TouchlessDelegate {
         return null;
     }
 
-    public static PropertyModel getTouchlessPermissionDialogModel(
+    public static PropertyModel getPermissionDialogModel(
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
+        return null;
+    }
+
+    public static PropertyModel getMissingPermissionDialogModel(Context context,
+            ModalDialogProperties.Controller controller, @StringRes int messageId) {
         return null;
     }
 

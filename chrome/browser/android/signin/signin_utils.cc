@@ -7,10 +7,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/android/chrome_jni_headers/SigninUtils_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "jni/SigninUtils_jni.h"
 #include "ui/android/window_android.h"
 
 using base::android::JavaParamRef;

@@ -160,7 +160,8 @@ ui::WindowShowState DetermineWindowShowState(
     Profile* profile,
     extensions::LaunchContainer container,
     const Extension* extension) {
-  if (!extension || container != extensions::LAUNCH_CONTAINER_WINDOW)
+  if (!extension ||
+      container != extensions::LaunchContainer::kLaunchContainerWindow)
     return ui::SHOW_STATE_DEFAULT;
 
   if (chrome::IsRunningInForcedAppMode())
@@ -287,8 +288,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   }
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
-                            params.container,
-                            extensions::NUM_LAUNCH_CONTAINERS);
+                            params.container);
 
   GURL url = UrlForExtension(extension, params.override_url);
 
@@ -297,16 +297,16 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
 
   switch (params.container) {
-    case extensions::LAUNCH_CONTAINER_NONE: {
+    case extensions::LaunchContainer::kLaunchContainerNone: {
       NOTREACHED();
       break;
     }
     // Panels are deprecated. Launch a normal window instead.
-    case extensions::LAUNCH_CONTAINER_PANEL_DEPRECATED:
-    case extensions::LAUNCH_CONTAINER_WINDOW:
+    case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
+    case extensions::LaunchContainer::kLaunchContainerWindow:
       tab = OpenApplicationWindow(params, url);
       break;
-    case extensions::LAUNCH_CONTAINER_TAB: {
+    case extensions::LaunchContainer::kLaunchContainerTab: {
       tab = OpenApplicationTab(params, url);
       break;
     }
@@ -317,11 +317,9 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
   if (extension->from_bookmark()) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
-                              params.source,
-                              extensions::NUM_APP_LAUNCH_SOURCES);
+                              params.source);
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
-                              params.container,
-                              extensions::NUM_LAUNCH_CONTAINERS);
+                              params.container);
 
     // Record the launch time in the site engagement service. A recent bookmark
     // app launch will provide an engagement boost to the origin.
@@ -465,11 +463,12 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
 
 WebContents* OpenAppShortcutWindow(Profile* profile,
                                    const GURL& url) {
-  AppLaunchParams launch_params(profile,
-                                std::string(),  // this is a URL app. No app id.
-                                extensions::LAUNCH_CONTAINER_WINDOW,
-                                WindowOpenDisposition::NEW_WINDOW,
-                                extensions::SOURCE_COMMAND_LINE);
+  AppLaunchParams launch_params(
+      profile,
+      std::string(),  // this is a URL app. No app id.
+      extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      extensions::AppLaunchSource::kSourceCommandLine);
   launch_params.override_url = url;
 
   WebContents* tab = OpenApplicationWindow(launch_params, url);

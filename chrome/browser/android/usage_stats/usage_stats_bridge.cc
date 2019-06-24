@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/UsageStatsBridge_jni.h"
 #include "chrome/browser/android/usage_stats/usage_stats_database.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -18,7 +19,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "jni/UsageStatsBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;

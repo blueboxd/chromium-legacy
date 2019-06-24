@@ -166,11 +166,11 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   // Pre-select the first app on the list.
   size_t selected_app_tag_ = 0;
 
-  views::ScrollView* scroll_view_;
+  views::ScrollView* scroll_view_ = nullptr;
 
   std::vector<AppInfo> app_info_;
 
-  views::Checkbox* remember_selection_checkbox_;
+  views::Checkbox* remember_selection_checkbox_ = nullptr;
 
   // Tells whether or not 'Stay in Chrome' should be enabled as an option.
   const bool show_stay_in_chrome_;

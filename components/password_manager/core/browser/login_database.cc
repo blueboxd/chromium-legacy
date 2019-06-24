@@ -54,7 +54,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 23;
+const int kCurrentVersionNumber = 24;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -516,6 +516,11 @@ void InitializeBuilders(SQLTableBuilders builders) {
   // start clean from scratch.
   SealVersion(builders, /*expected_version=*/23u);
 
+  // Version 24. Version 23 could have some corruption in Sync metadata and
+  // hence we are migrating users on it by clearing their metadata to make Sync
+  // start clean from scratch.
+  SealVersion(builders, /*expected_version=*/24u);
+
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
          "here.";
@@ -557,7 +562,7 @@ bool MigrateLogins(unsigned current_version,
 
   // Sync Metadata tables have been introduced in version 21. It is enough to
   // drop all data because Sync would populate the tables properly at startup.
-  if (current_version == 21 || current_version == 22) {
+  if (current_version == 21 || current_version == 22 || current_version == 23) {
     if (!ClearAllSyncMetadata(db))
       return false;
   }

@@ -16,9 +16,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace base {
 class FuzzedDataProvider;
-}
 
 namespace net {
 
@@ -30,7 +28,7 @@ class IOBuffer;
 class FuzzedDatagramClientSocket : public DatagramClientSocket {
  public:
   // |data_provider| must outlive the created socket.
-  explicit FuzzedDatagramClientSocket(base::FuzzedDataProvider* data_provider);
+  explicit FuzzedDatagramClientSocket(FuzzedDataProvider* data_provider);
   ~FuzzedDatagramClientSocket() override;
 
   // DatagramClientSocket implementation:
@@ -83,7 +81,7 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
   void OnReadComplete(net::CompletionOnceCallback callback, int result);
   void OnWriteComplete(net::CompletionOnceCallback callback, int result);
 
-  base::FuzzedDataProvider* data_provider_;
+  FuzzedDataProvider* data_provider_;
 
   bool connected_ = false;
   bool read_pending_ = false;

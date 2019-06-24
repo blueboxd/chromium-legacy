@@ -2254,8 +2254,17 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
 
 void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
-  scheduler_tracked_features_ = features_mask;
+  TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
+  renderer_reported_scheduler_tracked_features_ = features_mask;
 }
+
+void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
+    blink::scheduler::WebSchedulerTrackedFeature feature) {
+  TRACE_EVENT0("toplevel", "OnSchedulerTrackedFeatureUsed");
+  browser_reported_scheduler_tracked_features_ |=
+      1 << static_cast<uint64_t>(feature);
+}
+
 void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
     const GURL& url,
     int error_code,
@@ -6741,9 +6750,10 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                               is_same_document_navigation);
 
   if (!is_same_document_navigation) {
-    scheduler_tracked_features_ = 0;
     cookie_no_samesite_deprecation_url_hashes_.clear();
     cookie_samesite_none_insecure_deprecation_url_hashes_.clear();
+    renderer_reported_scheduler_tracked_features_ = 0;
+    browser_reported_scheduler_tracked_features_ = 0;
   }
 
   return true;

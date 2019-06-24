@@ -10,15 +10,15 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTaskScheduler_jni.h"
+#include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTask_jni.h"
+#include "chrome/android/chrome_jni_headers/BackgroundSyncLauncher_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "jni/BackgroundSyncBackgroundTaskScheduler_jni.h"
-#include "jni/BackgroundSyncBackgroundTask_jni.h"
-#include "jni/BackgroundSyncLauncher_jni.h"
 
 using content::BrowserThread;
 

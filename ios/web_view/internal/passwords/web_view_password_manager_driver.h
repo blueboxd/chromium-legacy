@@ -11,7 +11,6 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
 namespace autofill {
-struct PasswordForm;
 struct PasswordFormFillData;
 }  // namespace autofill
 
@@ -49,10 +48,6 @@ class WebViewPasswordManagerDriver
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
   void InformNoSavedCredentials() override;
-  void AllowPasswordGenerationForForm(
-      const autofill::PasswordForm& form) override;
-  void FormsEligibleForGenerationFound(
-      const std::vector<autofill::PasswordFormGenerationData>& forms) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;

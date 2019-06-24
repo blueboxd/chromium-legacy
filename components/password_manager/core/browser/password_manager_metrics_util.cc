@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
@@ -33,103 +33,102 @@ void LogUMAHistogramBoolean(const std::string& name, bool sample) {
 }
 
 void LogGeneralUIDismissalReason(UIDismissalReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UIDismissalReason",
-                            reason,
-                            NUM_UI_RESPONSES);
+  base::UmaHistogramEnumeration("PasswordManager.UIDismissalReason", reason,
+                                NUM_UI_RESPONSES);
 }
 
 void LogSaveUIDismissalReason(UIDismissalReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SaveUIDismissalReason", reason,
-                            NUM_UI_RESPONSES);
+  base::UmaHistogramEnumeration("PasswordManager.SaveUIDismissalReason", reason,
+                                NUM_UI_RESPONSES);
 }
 
 void LogUpdateUIDismissalReason(UIDismissalReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UpdateUIDismissalReason", reason,
-                            NUM_UI_RESPONSES);
+  base::UmaHistogramEnumeration("PasswordManager.UpdateUIDismissalReason",
+                                reason, NUM_UI_RESPONSES);
 }
 
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordBubble.DisplayDisposition",
-                            disposition,
-                            NUM_DISPLAY_DISPOSITIONS);
+  base::UmaHistogramEnumeration("PasswordBubble.DisplayDisposition",
+                                disposition, NUM_DISPLAY_DISPOSITIONS);
 }
 
 void LogFormDataDeserializationStatus(FormDeserializationStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.FormDataDeserializationStatus",
-                            status, NUM_DESERIALIZATION_STATUSES);
+  base::UmaHistogramEnumeration("PasswordManager.FormDataDeserializationStatus",
+                                status, NUM_DESERIALIZATION_STATUSES);
 }
 
 void LogFilledCredentialIsFromAndroidApp(bool from_android) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.FilledCredentialWasFromAndroidApp",
-      from_android);
+  base::UmaHistogramBoolean("PasswordManager.FilledCredentialWasFromAndroidApp",
+                            from_android);
 }
 
 void LogPasswordSyncState(PasswordSyncState state) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordSyncState", state,
-                            NUM_SYNC_STATES);
+  base::UmaHistogramEnumeration("PasswordManager.PasswordSyncState", state,
+                                NUM_SYNC_STATES);
 }
 
 void LogApplySyncChangesState(ApplySyncChangesState state) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ApplySyncChangesState", state);
+  base::UmaHistogramEnumeration("PasswordManager.ApplySyncChangesState", state);
 }
 
 void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent", event,
-                            SUBMISSION_EVENT_ENUM_COUNT);
+  base::UmaHistogramEnumeration("PasswordGeneration.SubmissionEvent", event,
+                                SUBMISSION_EVENT_ENUM_COUNT);
 }
 
 void LogPasswordGenerationAvailableSubmissionEvent(
     PasswordSubmissionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionAvailableEvent",
-                            event, SUBMISSION_EVENT_ENUM_COUNT);
+  base::UmaHistogramEnumeration("PasswordGeneration.SubmissionAvailableEvent",
+                                event, SUBMISSION_EVENT_ENUM_COUNT);
 }
 
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AutoSigninFirstRunDialog", action,
-                            AUTO_SIGNIN_PROMO_ACTION_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.AutoSigninFirstRunDialog",
+                                action, AUTO_SIGNIN_PROMO_ACTION_COUNT);
 }
 
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogOneAccount",
-                            action, ACCOUNT_CHOOSER_ACTION_COUNT);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountChooserDialogOneAccount", action,
+      ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.AccountChooserDialogMultipleAccounts", action,
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
-  UMA_HISTOGRAM_BOOLEAN(
+  base::UmaHistogramBoolean(
       "PasswordManager.ShouldBlockPasswordForSameOriginButDifferentScheme",
       should_block);
 }
 
 void LogCountHttpMigratedPasswords(int count) {
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.HttpPasswordMigrationCount", count);
+  base::UmaHistogramCounts100("PasswordManager.HttpPasswordMigrationCount",
+                              count);
 }
 
 void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.HttpPasswordMigrationMode", mode,
-                            HTTP_PASSWORD_MIGRATION_MODE_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.HttpPasswordMigrationMode",
+                                mode, HTTP_PASSWORD_MIGRATION_MODE_COUNT);
 }
 
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
                                    CredentialMediationRequirement mediation) {
   switch (mediation) {
     case CredentialMediationRequirement::kSilent:
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.MediationSilent", result,
-                                CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationSilent", result,
+                                    CREDENTIAL_MANAGER_GET_COUNT);
       break;
     case CredentialMediationRequirement::kOptional:
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.MediationOptional", result,
-                                CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationOptional", result,
+                                    CREDENTIAL_MANAGER_GET_COUNT);
       break;
     case CredentialMediationRequirement::kRequired:
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.MediationRequired", result,
-                                CREDENTIAL_MANAGER_GET_COUNT);
+      base::UmaHistogramEnumeration("PasswordManager.MediationRequired", result,
+                                    CREDENTIAL_MANAGER_GET_COUNT);
       break;
   }
 }
@@ -139,85 +138,93 @@ void LogPasswordReuse(int password_length,
                       int number_matches,
                       bool password_field_detected,
                       PasswordType reused_password_type) {
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.PasswordReuse.PasswordLength",
-                           password_length);
-  UMA_HISTOGRAM_COUNTS_1000("PasswordManager.PasswordReuse.TotalPasswords",
-                            saved_passwords);
-  UMA_HISTOGRAM_COUNTS_1000("PasswordManager.PasswordReuse.NumberOfMatches",
-                            number_matches);
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramCounts100("PasswordManager.PasswordReuse.PasswordLength",
+                              password_length);
+  base::UmaHistogramCounts1000("PasswordManager.PasswordReuse.TotalPasswords",
+                               saved_passwords);
+  base::UmaHistogramCounts1000("PasswordManager.PasswordReuse.NumberOfMatches",
+                               number_matches);
+  base::UmaHistogramEnumeration(
       "PasswordManager.PasswordReuse.PasswordFieldDetected",
       password_field_detected ? HAS_PASSWORD_FIELD : NO_PASSWORD_FIELD,
       PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT);
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ReusedPasswordType",
-                            reused_password_type,
-                            PasswordType::PASSWORD_TYPE_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.ReusedPasswordType",
+                                reused_password_type,
+                                PasswordType::PASSWORD_TYPE_COUNT);
 }
 
 void LogContextOfShowAllSavedPasswordsShown(
     ShowAllSavedPasswordsContext context) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ShowAllSavedPasswordsShownContext",
-                            context, SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ShowAllSavedPasswordsShownContext", context,
+      SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT);
 }
 
 void LogContextOfShowAllSavedPasswordsAccepted(
     ShowAllSavedPasswordsContext context) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.ShowAllSavedPasswordsAcceptedContext", context,
       SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT);
 }
 
-void LogPasswordDropdownShown(PasswordDropdownState state) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordDropdownShown", state);
+void LogPasswordDropdownShown(PasswordDropdownState state,
+                              bool off_the_record) {
+  base::UmaHistogramEnumeration("PasswordManager.PasswordDropdownShown", state);
+
+  base::UmaHistogramBoolean("PasswordManager.DropdownShown.OffTheRecord",
+                            off_the_record);
 }
 
-void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordDropdownItemSelected",
-                            type);
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type,
+                                     bool off_the_record) {
+  base::UmaHistogramEnumeration("PasswordManager.PasswordDropdownItemSelected",
+                                type);
+  base::UmaHistogramBoolean("PasswordManager.ItemSelected.OffTheRecord",
+                            off_the_record);
 }
 
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
     autofill::mojom::SubmissionIndicatorEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.SuccessfulSubmissionIndicatorEvent", event);
 }
 
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
     autofill::mojom::SubmissionIndicatorEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent", event);
 }
 
 void LogSubmittedFormFrame(SubmittedFormFrame frame) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormFrame", frame,
-                            SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.SubmittedFormFrame", frame,
+                                SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
 void LogDeleteUndecryptableLoginsReturnValue(
     DeleteCorruptedPasswordsResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.DeleteUndecryptableLoginsReturnValue", result);
 }
 
 void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.DeleteCorruptedPasswordsResult",
-                            result);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.DeleteCorruptedPasswordsResult", result);
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.SyncPasswordHashChange", event,
       SyncPasswordHashChange::SAVED_SYNC_PASSWORD_CHANGE_COUNT);
 }
 
 void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
                                 bool is_under_advanced_protection) {
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "PasswordManager.IsSyncPasswordHashSaved", state,
       IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
   if (is_under_advanced_protection) {
-    UMA_HISTOGRAM_ENUMERATION(
+    base::UmaHistogramEnumeration(
         "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser",
         state, IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
   }
@@ -225,10 +232,11 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
                                     size_t enterprise_hash_count) {
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.SavedGaiaPasswordHashCount",
-                           static_cast<int>(gaia_hash_count));
-  UMA_HISTOGRAM_COUNTS_100("PasswordManager.SavedEnterprisePasswordHashCount",
-                           static_cast<int>(enterprise_hash_count));
+  base::UmaHistogramCounts100("PasswordManager.SavedGaiaPasswordHashCount",
+                              static_cast<int>(gaia_hash_count));
+  base::UmaHistogramCounts100(
+      "PasswordManager.SavedEnterprisePasswordHashCount",
+      static_cast<int>(enterprise_hash_count));
 }
 
 void LogProtectedPasswordReuse(PasswordType reused_password_type) {}

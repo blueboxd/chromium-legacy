@@ -127,3 +127,34 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
 TEST_F('OSSettingsPeoplePageTest', 'MAYBE_All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_about_page/os_about_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_about_page_browser_proxy.js',
+      'os_about_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAboutPageTest', 'AboutPage', function() {
+  settings_about_page.registerTests();
+  mocha.run();
+});
+
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
+  settings_about_page.registerOfficialBuildTests();
+  mocha.run();
+});
+GEN('#endif');

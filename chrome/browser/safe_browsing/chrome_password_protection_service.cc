@@ -46,7 +46,9 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
@@ -205,18 +207,17 @@ std::unique_ptr<UserEventSpecifics> GetUserEventSpecifics(
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : PasswordProtectionService(
-          sb_service->database_manager(),
-          sb_service->GetURLLoaderFactory(),
-          HistoryServiceFactory::GetForProfile(
-              profile,
-              ServiceAccessType::EXPLICIT_ACCESS),
-          HostContentSettingsMapFactory::GetForProfile(profile)),
+    : PasswordProtectionService(sb_service->database_manager(),
+                                sb_service->GetURLLoaderFactory(),
+                                HistoryServiceFactory::GetForProfile(
+                                    profile,
+                                    ServiceAccessType::EXPLICIT_ACCESS)),
       ui_manager_(sb_service->ui_manager()),
       trigger_manager_(sb_service->trigger_manager()),
       profile_(profile),
       navigation_observer_manager_(sb_service->navigation_observer_manager()),
-      pref_change_registrar_(new PrefChangeRegistrar) {
+      pref_change_registrar_(new PrefChangeRegistrar),
+      cache_manager_(sb_service->GetVerdictCacheManager(profile)) {
   pref_change_registrar_->Init(profile_->GetPrefs());
   pref_change_registrar_->Add(
       password_manager::prefs::kPasswordHashDataList,
@@ -270,9 +271,6 @@ void ChromePasswordProtectionService::Init() {
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
-  if (content_settings())
-    CleanUpExpiredVerdicts();
-
   if (pref_change_registrar_)
     pref_change_registrar_->RemoveAll();
 }
@@ -877,7 +875,7 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     verdict.set_verdict_type(LoginReputationClientResponse::SAFE);
     verdict.set_cache_duration_sec(kOverrideVerdictCacheDurationSec);
     CacheVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 password_type, &verdict, base::Time::Now());
+                 password_type, verdict, base::Time::Now());
     return;
   }
 
@@ -1125,16 +1123,14 @@ void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     Profile* profile,
-    scoped_refptr<HostContentSettingsMap> content_setting_map,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    StringProvider sync_password_hash_provider)
-    : PasswordProtectionService(nullptr,
-                                nullptr,
-                                nullptr,
-                                content_setting_map.get()),
+    StringProvider sync_password_hash_provider,
+    VerdictCacheManager* cache_manager)
+    : PasswordProtectionService(nullptr, nullptr, nullptr),
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
       profile_(profile),
+      cache_manager_(cache_manager),
       sync_password_hash_provider_for_testing_(sync_password_hash_provider) {
   Init();
 }
@@ -1275,6 +1271,42 @@ bool ChromePasswordProtectionService::HasUnhandledEnterprisePasswordReuse(
     content::WebContents* web_contents) const {
   return web_contents_with_unhandled_enterprise_reuses_.find(web_contents) !=
          web_contents_with_unhandled_enterprise_reuses_.end();
+}
+
+// Stores |verdict| in |settings| based on its |trigger_type|, |url|,
+// reused |password_type|, |verdict| and |receive_time|.
+void ChromePasswordProtectionService::CacheVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordType password_type,
+    const LoginReputationClientResponse& verdict,
+    const base::Time& receive_time) {
+  if (!CanGetReputationOfURL(url) || IsIncognito())
+    return;
+
+  cache_manager_->CachePhishGuardVerdict(url, trigger_type, password_type,
+                                         verdict, receive_time);
+}
+
+// Looks up |settings| to find the cached verdict response. If verdict is not
+// available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
+// any thread.
+LoginReputationClientResponse::VerdictType
+ChromePasswordProtectionService::GetCachedVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordType password_type,
+    LoginReputationClientResponse* out_response) {
+  if (!url.is_valid() || !CanGetReputationOfURL(url))
+    return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+
+  return cache_manager_->GetCachedPhishGuardVerdict(
+      url, trigger_type, password_type, out_response);
+}
+
+int ChromePasswordProtectionService::GetStoredVerdictCount(
+    LoginReputationClientRequest::TriggerType trigger_type) {
+  return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
 }
 
 void ChromePasswordProtectionService::OnWarningTriggerChanged() {

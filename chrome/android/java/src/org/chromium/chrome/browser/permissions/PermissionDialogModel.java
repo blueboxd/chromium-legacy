@@ -24,7 +24,7 @@ class PermissionDialogModel {
     public static PropertyModel getModel(
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
         if (FeatureUtilities.isNoTouchModeEnabled()) {
-            return TouchlessDelegate.getTouchlessPermissionDialogModel(controller, delegate);
+            return TouchlessDelegate.getPermissionDialogModel(controller, delegate);
         }
 
         Context context = delegate.getTab().getActivity();

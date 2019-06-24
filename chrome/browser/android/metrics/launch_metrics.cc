@@ -5,6 +5,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/LaunchMetrics_jni.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -14,7 +15,6 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/LaunchMetrics_jni.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "url/gurl.h"
 

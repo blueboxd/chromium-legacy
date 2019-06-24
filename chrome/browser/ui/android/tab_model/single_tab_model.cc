@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
+#include "chrome/android/chrome_jni_headers/SingleTabModel_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SingleTabModel_jni.h"
 
 using base::android::JavaParamRef;
 

@@ -53,7 +53,6 @@ class StubOfflinePageModel : public OfflinePageModel {
       base::OnceCallback<void(VisualsAvailability)> callback) override;
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
-      std::unique_ptr<OfflinePageArchiver> archiver,
       PublishPageCallback publish_done_callback) override;
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;

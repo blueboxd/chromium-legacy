@@ -266,6 +266,9 @@ class Surface final : public ui::PropertyHandler {
   // True if the window for this surface has its occlusion tracked.
   bool is_tracking_occlusion() const { return is_tracking_occlusion_; }
 
+  // Sets the |surface_hierarchy_content_bounds_|.
+  void SetSurfaceHierarchyContentBoundsForTest(const gfx::Rect& content_bounds);
+
  private:
   struct State {
     State();

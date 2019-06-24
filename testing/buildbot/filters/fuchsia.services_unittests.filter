@@ -23,3 +23,6 @@
 
 # https://crbug.com/925653 - Unexpected address-in-use.
 -TCPBoundSocketTest.ListenError
+
+# https://crbug.com/976319 - Flakily times-out due to virtualization overhead.
+-SimpleURLLoaderTest.OnUploadProgressCallback/*

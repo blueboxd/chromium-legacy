@@ -214,7 +214,7 @@ void SessionCrashedBubbleView::Init() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Description text label.
-  views::Label* text_label = new views::Label(
+  auto text_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
@@ -223,13 +223,13 @@ void SessionCrashedBubbleView::Init() {
       provider->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
       margins().width());
-  AddChildView(text_label);
+  AddChildView(std::move(text_label));
 
   if (offer_uma_optin_)
     AddChildView(CreateUmaOptInView());
 }
 
-views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
+std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
 
   // The text to the right of the checkbox.
@@ -240,7 +240,7 @@ views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
       IDS_SESSION_CRASHED_VIEW_UMA_OPTIN,
       link_text,
       &offset);
-  views::StyledLabel* uma_label = new views::StyledLabel(uma_text, this);
+  auto uma_label = std::make_unique<views::StyledLabel>(uma_text, this);
   uma_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
                            views::StyledLabel::RangeStyleInfo::CreateForLink());
   views::StyledLabel::RangeStyleInfo uma_style;
@@ -255,12 +255,12 @@ views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
   uma_label->SetBorder(views::CreateEmptyBorder(1, 0, 0, 0));
 
   // Checkbox for metric reporting setting.
-  uma_option_ = new views::Checkbox(base::string16());
-  uma_option_->SetChecked(false);
-  uma_option_->SetAssociatedLabel(uma_label);
+  auto uma_option = std::make_unique<views::Checkbox>(base::string16());
+  uma_option->SetChecked(false);
+  uma_option->SetAssociatedLabel(uma_label.get());
 
   // Create a view to hold the checkbox and the text.
-  views::View* uma_view = new views::View();
+  auto uma_view = std::make_unique<views::View>();
   views::GridLayout* uma_layout =
       uma_view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
@@ -276,8 +276,8 @@ views::View* SessionCrashedBubbleView::CreateUmaOptInView() {
                 views::GridLayout::USE_PREF, 0, 0);
 
   uma_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
-  uma_layout->AddView(uma_option_);
-  uma_layout->AddView(uma_label);
+  uma_option_ = uma_layout->AddView(std::move(uma_option));
+  uma_layout->AddView(std::move(uma_label));
 
   return uma_view;
 }

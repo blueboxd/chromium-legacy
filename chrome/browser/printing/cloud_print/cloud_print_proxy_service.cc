@@ -81,7 +81,7 @@ void CloudPrintProxyService::Initialize() {
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kCloudPrintProxyEnabled,
-      base::Bind(
+      base::BindRepeating(
           base::IgnoreResult(
               &CloudPrintProxyService::ApplyCloudPrintConnectorPolicy),
           base::Unretained(this)));
@@ -90,8 +90,8 @@ void CloudPrintProxyService::Initialize() {
 void CloudPrintProxyService::RefreshStatusFromService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InvokeServiceTask(
-      base::Bind(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CloudPrintProxyService::RefreshCloudPrintProxyStatus,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CloudPrintProxyService::EnableForUserWithRobot(
@@ -117,8 +117,8 @@ void CloudPrintProxyService::DisableForUser() {
                             ServiceProcessControl::SERVICE_EVENT_DISABLE,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
   InvokeServiceTask(
-      base::Bind(&CloudPrintProxyService::DisableCloudPrintProxy,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CloudPrintProxyService::DisableCloudPrintProxy,
+                     weak_factory_.GetWeakPtr()));
 }
 
 bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {

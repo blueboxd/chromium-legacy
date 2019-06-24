@@ -21,11 +21,13 @@ void RunTaskIfScopedStreamIsAlive(
 }  // namespace
 
 GrpcAsyncServerStreamingRequestBase::GrpcAsyncServerStreamingRequestBase(
+    base::OnceClosure on_channel_ready,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
     std::unique_ptr<ScopedGrpcServerStream>* scoped_stream)
     : weak_factory_(this) {
   DCHECK(on_channel_closed);
   DCHECK_NE(nullptr, scoped_stream);
+  on_channel_ready_ = std::move(on_channel_ready);
   on_channel_closed_ = std::move(on_channel_closed);
   *scoped_stream =
       std::make_unique<ScopedGrpcServerStream>(weak_factory_.GetWeakPtr());
@@ -61,7 +63,13 @@ bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
   }
   if (state_ == State::STARTING) {
     VLOG(1) << "Streaming call started: " << this;
+    state_ = State::PENDING_INITIAL_METADATA;
+    return true;
+  }
+  if (state_ == State::PENDING_INITIAL_METADATA) {
+    VLOG(1) << "Received initial metadata: " << this;
     state_ = State::STREAMING;
+    ResolveChannelReady();
     return true;
   }
   if (state_ == State::STREAMING) {
@@ -76,6 +84,9 @@ bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
 void GrpcAsyncServerStreamingRequestBase::Reenqueue(void* event_tag) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state_) {
+    case State::PENDING_INITIAL_METADATA:
+      ReadInitialMetadata(event_tag);
+      break;
     case State::STREAMING:
       WaitForIncomingMessage(event_tag);
       break;
@@ -98,6 +109,11 @@ void GrpcAsyncServerStreamingRequestBase::OnRequestCanceled() {
 bool GrpcAsyncServerStreamingRequestBase::CanStartRequest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_ == State::STARTING;
+}
+
+void GrpcAsyncServerStreamingRequestBase::ResolveChannelReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RunTask(std::move(on_channel_ready_));
 }
 
 void GrpcAsyncServerStreamingRequestBase::ResolveChannelClosed() {

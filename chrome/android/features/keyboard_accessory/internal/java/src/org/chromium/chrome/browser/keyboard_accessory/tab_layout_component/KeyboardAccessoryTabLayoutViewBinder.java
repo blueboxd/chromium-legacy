@@ -27,33 +27,31 @@ class KeyboardAccessoryTabLayoutViewBinder
     @Override
     public void onItemsInserted(ListModel<KeyboardAccessoryData.Tab> model,
             KeyboardAccessoryTabLayoutView view, int index, int count) {
-        assert count > 0 : "Tried to insert invalid amount of tabs - must be at least one.";
-        for (int i = index; i < index + count; i++) {
-            KeyboardAccessoryData.Tab tab = model.get(i);
-            view.addTabAt(i, tab.getIcon(), tab.getContentDescription());
-        }
+        // More fine-grained implementations showed artifacts when adding in quick succession.
+        updateAllTabs(view, model);
     }
 
     @Override
     public void onItemsRemoved(ListModel<KeyboardAccessoryData.Tab> model,
             KeyboardAccessoryTabLayoutView view, int index, int count) {
-        assert count > 0 : "Tried to remove invalid amount of tabs - must be at least one.";
-        while (count-- > 0) {
-            view.tryToRemoveTabAt(index++);
-        }
+        // More fine-grained implementations showed artifacts when removing in quick succession.
+        updateAllTabs(view, model);
     }
 
     @Override
     public void onItemsChanged(ListModel<KeyboardAccessoryData.Tab> model,
             KeyboardAccessoryTabLayoutView view, int index, int count) {
-        // TODO(fhorschig): Implement fine-grained, ranged changes should the need arise.
         updateAllTabs(view, model);
     }
 
     private void updateAllTabs(
             KeyboardAccessoryTabLayoutView view, ListModel<KeyboardAccessoryData.Tab> model) {
         view.removeAllTabs();
-        if (model.size() > 0) onItemsInserted(model, view, 0, model.size());
+        if (model.size() <= 0) return;
+        for (int i = 0; i < model.size(); i++) {
+            KeyboardAccessoryData.Tab tab = model.get(i);
+            view.addTabAt(i, tab.getIcon(), tab.getContentDescription());
+        }
     }
 
     protected static void bind(

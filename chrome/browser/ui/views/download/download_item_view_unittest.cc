@@ -38,4 +38,34 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
   label.SetText(label_text);
   DownloadItemView::AdjustTextAndGetSize(&label);
   EXPECT_EQ(label_text, label.text());
+
+  // Two lines have the same length.
+  label_text =
+      base::ASCIIToUTF16("aaaa aaaa aaaa aaaa bb bb aaaa aaaa aaaa aaaa");
+  expected_text = base::ASCIIToUTF16(
+      "aaaa aaaa aaaa aaaa bb\n"
+      "bb aaaa aaaa aaaa aaaa");
+  label.SetText(label_text);
+  DownloadItemView::AdjustTextAndGetSize(&label);
+  EXPECT_EQ(expected_text, label.text());
+
+  // Text begins with a very long word.
+  label_text = base::ASCIIToUTF16(
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaa aaaa");
+  expected_text = base::ASCIIToUTF16(
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+      "aaaa aaaa");
+  label.SetText(label_text);
+  DownloadItemView::AdjustTextAndGetSize(&label);
+  EXPECT_EQ(expected_text, label.text());
+
+  // Text ends with a very long word.
+  label_text = base::ASCIIToUTF16(
+      "aaa aaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  expected_text = base::ASCIIToUTF16(
+      "aaa aaaa\n"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  label.SetText(label_text);
+  DownloadItemView::AdjustTextAndGetSize(&label);
+  EXPECT_EQ(expected_text, label.text());
 }

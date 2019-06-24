@@ -175,6 +175,7 @@ cr.define('settings', function() {
 
     /**
      * @param{string} printerId
+     * @return {!Promise<!PrinterSetupResult>}
      */
     addDiscoveredPrinter(printerId) {}
 
@@ -259,7 +260,7 @@ cr.define('settings', function() {
 
     /** @override */
     addDiscoveredPrinter(printerId) {
-      chrome.send('addDiscoveredPrinter', [printerId]);
+      return cr.sendWithPromise('addDiscoveredPrinter', printerId);
     }
 
     /** @override */

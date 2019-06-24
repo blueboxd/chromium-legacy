@@ -89,27 +89,16 @@ class TabListRecyclerView extends RecyclerView {
     }
 
     private class TabListOnScrollListener extends RecyclerView.OnScrollListener {
-        // TODO(mattsimmons): Remove state from this class. This is here to prevent scroll signals
-        //  from showing the toolbar shadow after the show/hide of the GTS has already triggered the
-        //  shadow being hidden. Due to this view's visibility being updated asynchronously after
-        //  animating off-screen, checking View.getVisibility() can't be used as the guard condition
-        //  here. Removing/Adding the listener from the view also happens asynchronously and has
-        //  similar undesirable effects.
-        private boolean mIsActive;
-
-        public void pause() {
-            mIsActive = false;
-        }
-
-        public void resume() {
-            mIsActive = true;
-        }
-
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            if (!mIsActive) return;
-
             final int yOffset = recyclerView.computeVerticalScrollOffset();
+            if (yOffset == 0) {
+                setShadowVisibility(false);
+                return;
+            }
+
+            if (dy == 0 || recyclerView.getScrollState() == SCROLL_STATE_SETTLING) return;
+
             setShadowVisibility(yOffset > 0);
         }
     }
@@ -176,7 +165,6 @@ class TabListRecyclerView extends RecyclerView {
                 mListener.finishedShowing();
                 // Restore the original value.
                 setItemAnimator(mOriginalAnimator);
-                mScrollListener.resume();
                 setShadowVisibility(computeVerticalScrollOffset() > 0);
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();
@@ -335,7 +323,6 @@ class TabListRecyclerView extends RecyclerView {
                 mListener.finishedHiding();
             }
         });
-        mScrollListener.pause();
         setShadowVisibility(false);
         mFadeOutAnimator.start();
         if (!animate) mFadeOutAnimator.end();

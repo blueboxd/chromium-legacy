@@ -9,8 +9,6 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -22,6 +20,8 @@
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/common/ime_struct_traits.h"
@@ -194,13 +194,12 @@ class ArcInputMethodManagerService::InputMethodObserver
 };
 
 class ArcInputMethodManagerService::TabletModeObserver
-    : public ash::TabletModeToggleObserver {
+    : public TabletModeClientObserver {
  public:
   explicit TabletModeObserver(ArcInputMethodManagerService* owner)
       : owner_(owner) {}
   ~TabletModeObserver() override = default;
 
-  // ash::TabletModeToggleObserver overrides:
   void OnTabletModeToggled(bool enabled) override {
     owner_->UpdateArcIMEAllowed();
     owner_->NotifyInputMethodManagerObservers(enabled);
@@ -254,7 +253,10 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
       std::make_unique<InputMethodEngineObserver>(this),
       proxy_ime_extension_id_.c_str(), profile_);
 
-  ash::TabletMode::Get()->AddObserver(tablet_mode_observer_.get());
+  // TabletModeClient should be already created here because it's created in
+  // PreProfileInit() and this service is created in PostProfileInit().
+  DCHECK(TabletModeClient::Get());
+  TabletModeClient::Get()->AddObserver(tablet_mode_observer_.get());
 
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();
@@ -302,7 +304,8 @@ void ArcInputMethodManagerService::Shutdown() {
   if (ui::IMEBridge::Get())
     ui::IMEBridge::Get()->RemoveObserver(this);
 
-  ash::TabletMode::Get()->RemoveObserver(tablet_mode_observer_.get());
+  if (TabletModeClient::Get())
+    TabletModeClient::Get()->RemoveObserver(tablet_mode_observer_.get());
 
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->RemoveImeMenuObserver(this);
@@ -740,7 +743,7 @@ bool ArcInputMethodManagerService::ShouldArcIMEAllowed() const {
   const bool is_normal_vk_enabled =
       !profile_->GetPrefs()->GetBoolean(
           ash::prefs::kAccessibilityVirtualKeyboardEnabled) &&
-      ash::TabletMode::Get()->InTabletMode();
+      TabletModeClient::Get()->tablet_mode_enabled();
   return is_command_line_flag_enabled || is_normal_vk_enabled;
 }
 

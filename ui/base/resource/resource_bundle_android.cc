@@ -9,10 +9,10 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "jni/ResourceBundle_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_jni_headers/ResourceBundle_jni.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace ui {

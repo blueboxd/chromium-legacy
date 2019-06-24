@@ -42,6 +42,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -267,6 +268,13 @@ V4ProtocolConfig SafeBrowsingService::GetV4ProtocolConfig() const {
       cmdline->HasSwitch(::switches::kDisableBackgroundNetworking));
 }
 
+VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
+    Profile* profile) const {
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return services_delegate_->GetVerdictCacheManager(profile);
+  return nullptr;
+}
+
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   std::string client_name;
   // On Windows, get the safe browsing client name from the browser
@@ -351,6 +359,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      services_delegate_->CreateVerdictCacheManager(profile);
       services_delegate_->CreatePasswordProtectionService(profile);
       services_delegate_->CreateTelemetryService(profile);
       if (!profile->IsOffTheRecord())
@@ -360,6 +369,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      services_delegate_->RemoveVerdictCacheManager(profile);
       services_delegate_->RemovePasswordProtectionService(profile);
       services_delegate_->RemoveTelemetryService();
       if (!profile->IsOffTheRecord())

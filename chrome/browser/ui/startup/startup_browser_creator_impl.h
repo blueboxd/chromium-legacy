@@ -149,7 +149,8 @@ class StartupBrowserCreatorImpl {
                                    bool is_ephemeral_profile,
                                    bool is_post_crash_launch,
                                    bool has_incompatible_applications,
-                                   bool promotional_tabs_enabled);
+                                   bool promotional_tabs_enabled,
+                                   bool onboarding_enabled);
 
   // Begins an asynchronous session restore if current state allows it (e.g.,
   // this is not process startup) and SessionService indicates that one is

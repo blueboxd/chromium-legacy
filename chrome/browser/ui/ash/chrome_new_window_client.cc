@@ -362,7 +362,7 @@ void ChromeNewWindowClient::OpenFileManager() {
       service->GetInstalledExtension(kFileManagerAppId);
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_KEYBOARD));
+      extensions::AppLaunchSource::kSourceKeyboard));
 }
 
 void ChromeNewWindowClient::OpenCrosh() {
@@ -460,7 +460,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   const extensions::Extension* extension =
       extensions::util::GetInstalledPwaForUrl(
-          profile, url, extensions::LAUNCH_CONTAINER_WINDOW);
+          profile, url, extensions::LaunchContainer::kLaunchContainerWindow);
   if (!extension) {
     OpenUrlFromArc(url);
     return;
@@ -468,7 +468,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::SOURCE_ARC);
+      extensions::AppLaunchSource::kSourceArc);
   params.override_url = url;
   content::WebContents* tab = OpenApplication(params);
   if (!tab)

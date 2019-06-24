@@ -8,15 +8,20 @@
 #include <set>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -526,6 +531,55 @@ TEST_F(CertificateProviderServiceTest, UnloadExtensionDuringSign) {
 
   task_runner_->RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, error);
+}
+
+// Try to sign data using key; using the Subject Public Key Info (SPKI) to
+// identify the key.
+TEST_F(CertificateProviderServiceTest, SignUsingSpkiAsIdentification) {
+  base::StringPiece client1_spki_piece;
+  ASSERT_TRUE(net::asn1::ExtractSPKIFromDERCert(
+      net::x509_util::CryptoBufferAsStringPiece(
+          cert_info1_.certificate->cert_buffer()),
+      &client1_spki_piece));
+  std::string client1_spki = client1_spki_piece.as_string();
+
+  std::unique_ptr<net::ClientCertIdentity> cert(ProvideDefaultCert());
+  ASSERT_TRUE(cert);
+
+  std::vector<uint16_t> supported_algorithms;
+  // If this fails, try to regenerate kClient1SpkiBase64 using the command shown
+  // above.
+  EXPECT_TRUE(service_->GetSupportedAlgorithmsBySpki(client1_spki,
+                                                     &supported_algorithms));
+  EXPECT_THAT(supported_algorithms,
+              testing::UnorderedElementsAre(SSL_SIGN_RSA_PKCS1_SHA256));
+
+  test_delegate_->ClearAndExpectRequest(TestDelegate::RequestType::SIGN);
+  std::vector<uint8_t> input{'d', 'a', 't', 'a'};
+  std::vector<uint8_t> received_signature;
+  service_->RequestSignatureBySpki(
+      client1_spki, SSL_SIGN_RSA_PKCS1_SHA256, input,
+      base::BindOnce(&ExpectOKAndStoreSignature, &received_signature));
+
+  task_runner_->RunUntilIdle();
+
+  const int sign_request_id = test_delegate_->last_sign_request_id_;
+  EXPECT_EQ(TestDelegate::RequestType::NONE,
+            test_delegate_->expected_request_type_);
+  EXPECT_TRUE(cert_info1_.certificate->EqualsExcludingChain(
+      test_delegate_->last_certificate_.get()));
+
+  // No signature received until the extension replied to the service.
+  EXPECT_TRUE(received_signature.empty());
+
+  std::vector<uint8_t> signature_reply;
+  signature_reply.push_back(5);
+  signature_reply.push_back(7);
+  signature_reply.push_back(8);
+  service_->ReplyToSignRequest(kExtension1, sign_request_id, signature_reply);
+
+  task_runner_->RunUntilIdle();
+  EXPECT_EQ(signature_reply, received_signature);
 }
 
 }  // namespace chromeos

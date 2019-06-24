@@ -76,6 +76,10 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   void RemoveTelemetryService() override;
   TelemetryService* GetTelemetryService() const override;
 
+  void CreateVerdictCacheManager(Profile* profile) override;
+  void RemoveVerdictCacheManager(Profile* profile) override;
+  VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const override;
+
   std::string GetSafetyNetId() const override;
 
   std::unique_ptr<ClientSideDetectionService> csd_service_;
@@ -98,6 +102,10 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   // Accessed on UI thread.
   std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
+
+  // Tracks existing Profiles, and their corresponding VerdictCacheManager
+  // instances. Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<VerdictCacheManager>> cache_manager_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicesDelegateDesktop);
 };

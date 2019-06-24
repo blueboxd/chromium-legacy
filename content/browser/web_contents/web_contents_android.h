@@ -109,9 +109,6 @@ class CONTENT_EXPORT WebContentsAndroid {
   jboolean FocusLocationBarByDefault(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsRenderWidgetHostViewReady(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   void ExitFullscreen(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
   void ScrollFocusedEditableNodeIntoView(
@@ -189,15 +186,6 @@ class CONTENT_EXPORT WebContentsAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       bool disabled);
 
-  // Relay the access from Java layer to RWHV::CopyFromSurface() through JNI.
-  void WriteContentBitmapToDisk(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint width,
-      jint height,
-      const base::android::JavaParamRef<jstring>& jpath,
-      const base::android::JavaParamRef<jobject>& jcallback);
-
   void ReloadLoFiImages(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
@@ -208,13 +196,6 @@ class CONTENT_EXPORT WebContentsAndroid {
                     jint max_bitmap_size,
                     jboolean bypass_cache,
                     const base::android::JavaParamRef<jobject>& jcallback);
-  void DismissTextHandles(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
-  void ShowContextMenuAtTouchHandle(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      int x,
-      int y);
   void SetHasPersistentVideo(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              jboolean value);
@@ -265,6 +246,10 @@ class CONTENT_EXPORT WebContentsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  base::android::ScopedJavaLocalRef<jobject> GetRenderWidgetHostView(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
   class DestructionObserver : public base::CheckedObserver {
@@ -278,11 +263,6 @@ class CONTENT_EXPORT WebContentsAndroid {
   void RemoveDestructionObserver(DestructionObserver* observer);
 
  private:
-  void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
-                                const base::android::JavaRef<jobject>& callback,
-                                const std::string& path,
-                                const SkBitmap& bitmap);
-
   void OnFinishDownloadImage(const base::android::JavaRef<jobject>& obj,
                              const base::android::JavaRef<jobject>& callback,
                              int id,

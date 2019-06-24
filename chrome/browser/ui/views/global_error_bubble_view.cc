@@ -117,12 +117,12 @@ void GlobalErrorBubbleView::Init() {
   // returns.
 
   std::vector<base::string16> message_strings(error_->GetBubbleViewMessages());
-  std::vector<views::Label*> message_labels;
-  for (size_t i = 0; i < message_strings.size(); ++i) {
-    views::Label* message_label = new views::Label(message_strings[i]);
+  std::vector<std::unique_ptr<views::Label>> message_labels;
+  for (const auto& message_string : message_strings) {
+    auto message_label = std::make_unique<views::Label>(message_string);
     message_label->SetMultiLine(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    message_labels.push_back(message_label);
+    message_labels.push_back(std::move(message_label));
   }
 
   views::GridLayout* layout =
@@ -135,7 +135,7 @@ void GlobalErrorBubbleView::Init() {
 
   for (size_t i = 0; i < message_labels.size(); ++i) {
     layout->StartRow(1.0, 0);
-    layout->AddView(message_labels[i]);
+    layout->AddView(std::move(message_labels[i]));
     if (i < message_labels.size() - 1)
       layout->AddPaddingRow(views::GridLayout::kFixedSize,
                             ChromeLayoutProvider::Get()->GetDistanceMetric(

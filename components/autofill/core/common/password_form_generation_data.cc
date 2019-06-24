@@ -11,28 +11,16 @@ namespace autofill {
 PasswordFormGenerationData::PasswordFormGenerationData() = default;
 
 PasswordFormGenerationData::PasswordFormGenerationData(
-    FormSignature form_signature,
-    FieldSignature field_signature)
-    : form_signature(form_signature), field_signature(field_signature) {}
-
-PasswordFormGenerationData::PasswordFormGenerationData(
     const PasswordFormGenerationData& other) = default;
 
-PasswordFormGenerationData::~PasswordFormGenerationData() = default;
-
-NewPasswordFormGenerationData::NewPasswordFormGenerationData() = default;
-
-NewPasswordFormGenerationData::NewPasswordFormGenerationData(
-    const NewPasswordFormGenerationData& other) = default;
-
-NewPasswordFormGenerationData::NewPasswordFormGenerationData(
+PasswordFormGenerationData::PasswordFormGenerationData(
     uint32_t new_password_renderer_id,
     uint32_t confirmation_password_renderer_id)
     : new_password_renderer_id(new_password_renderer_id),
       confirmation_password_renderer_id(confirmation_password_renderer_id) {}
 
 #if defined(OS_IOS)
-NewPasswordFormGenerationData::NewPasswordFormGenerationData(
+PasswordFormGenerationData::PasswordFormGenerationData(
     base::string16 form_name,
     base::string16 new_password_element,
     base::string16 confirmation_password_element)

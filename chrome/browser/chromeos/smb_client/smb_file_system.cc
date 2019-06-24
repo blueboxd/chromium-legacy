@@ -185,9 +185,14 @@ AbortCallback SmbFileSystem::RequestUnmount(
     storage::AsyncFileUtil::StatusCallback callback) {
   auto reply = base::BindOnce(&SmbFileSystem::HandleRequestUnmountCallback,
                               AsWeakPtr(), std::move(callback));
-  SmbTask task =
-      base::BindOnce(&SmbProviderClient::Unmount, GetWeakSmbProviderClient(),
-                     GetMountId(), std::move(reply));
+
+  // RequestUnmount() is called as a result of the user removing the mount from
+  // the Files app. In this case, remove any stored password to clean up state
+  // and prevent the password from being used the next time the user adds the
+  // same share.
+  SmbTask task = base::BindOnce(&SmbProviderClient::Unmount,
+                                GetWeakSmbProviderClient(), GetMountId(),
+                                true /* remove_password */, std::move(reply));
 
   return EnqueueTaskAndGetCallback(std::move(task));
 }

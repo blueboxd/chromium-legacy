@@ -448,12 +448,6 @@
 
       Tämän käytännön arvoksi määritetään URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata käyttöehdot. Käyttöehtojen täytyy olla tavallista tekstiä (MIME-tyyppi text/plain). Muotoilua ei sallita.</translation>
 <translation id="1750315445671978749">Estä kaikki lataukset</translation>
-<translation id="1762072363876276024">
-      Tämä käytäntö koskee kirjautumisnäyttöä. Tutustu myös <ph name="SITE_PER_PROCESS_POLICY_NAME" /> -käytäntöön, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
-      Tällä asetuksella (DeviceLoginScreenSitePerProcess) voidaan estää käyttäjiä lopettamasta oletuskäytös, kaikkien sivustojen erilläänpito. Huomaa, että DeviceLoginScreenIsolateOrigins voi myös olla hyödyllinen eristettäessä muita, tarkemmin määritettyjä alkuperiä.
-      Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
-      Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi muuttaa tätä asetusta (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).
-      </translation>
 <translation id="1767673020408652620">Ota käyttöön sovellussuositukset hakukentän nollatilassa</translation>
 <translation id="17719159826324007">
       Kun käytännön arvoksi asetetaan ArcSession, se pakottaa laitteen käynnistymään uudelleen käyttäjän uloskirjautumisen yhteydessä, jos Android on käynnistynyt.
@@ -2489,6 +2483,10 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
       Huom. Tämän asetuksen käyttöä ei suositella, sillä se voi mahdollistaa nameConstraints-laajennuksen ohittamisen. Kyseinen laajennus rajoittaa isäntänimiä, joiden käyttöön varmenne voidaan valtuuttaa.
 
       Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, DNS-nimen tai IP-osoitteen sisältäviä palvelinvarmenteita ei pidetä luotettavina, jos niistä puuttuu subjectAlternativeName-laajennus.</translation>
+<translation id="5578571772998293651">Salli käyttäjäpalaute.
+        Jos käytännön arvo on epätosi, käyttäjät eivät voi lähettää palautetta Googlelle.
+
+        Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, käyttäjät voivat lähettää Googlelle palautetta valitsemalla Valikko-&gt;Ohje-&gt;Ilmoita ongelmasta tai näppäinyhdistelmällä.</translation>
 <translation id="5581292529942108810">Määritä Chromen ilmoituslaajennukseen liittyvät käytännöt.
 
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3607,22 +3605,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Huom. Kentän <ph name="MINUTE_FIELD_NAME" /> sallitut arvot kohdissa<ph name="CHARGE_START_TIME_FIELD_NAME" /> ja <ph name="CHARGE_END_TIME_FIELD_NAME" /> ovat 0, 15, 30 ja 45.</translation>
 <translation id="7717938661004793600">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> käytettävyysominaisuudet.</translation>
-<translation id="7724994675283793633">Tämä käytäntö sallii HTTP/0.9:n myös muille porteille kuin 80 (HTTP) ja 443 (HTTPS).
-
-      Käytäntö on oletuksena poissa käytöstä. Jos se otetaan käyttöön, käyttäjät altistuvat tälle tietoturvaongelmalle: https://crbug.com/600352.
-
-      Käytännön tarkoitus on antaa yrityksille tilaisuus jättää HTTP/0.9 pois käytöstä olemassa olevilla palvelimilla, ja se poistetaan tulevaisuudessa.
-
-      Jos käytäntöä ei ole määritetty, HTTP/0.9 ei ole käytössä muilla kuin oletusarvoisilla porteilla.</translation>
-<translation id="7726421241038987229">
-      Tällä asetuksella (SitePerProcess) voidaan estää käyttäjiä lopettamasta oletuskäytös, kaikkien sivustojen erilläänpito. Huomaa, että IsolateOrigins voi myös olla hyödyllinen eristettäessä muita, tarkemmin määritettyjä alkuperiä.
-      Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
-      Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi poistaa sivustojen erilläänpidon käytöstä
-      (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).  Sivustojen erilläänpito ei poistu käytöstä, vaikka käytäntö poistetaan käytöstä tai sitä ei määritetä.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
-
-      HUOMIOITAVAA: Tämä käytäntö ei koske Androidia. Jos haluat ottaa SitePerProcess-asetuksen käyttöön Androidilla, käytä SitePerProcessAndroid-käytännön asetusta.
-      </translation>
 <translation id="7747447585227954402">Salli laitteiden käyttää laajennusta <ph name="PLUGIN_VM_NAME" /> tuotteessa <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Ottaa etäisännille käyttöön kahden tekijän todennuksen käyttäjän määrittämän PIN-koodin sijaan.
 
@@ -3845,6 +3827,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tätä käytäntöä ei ole määritetty, URLBlacklist-käytännön luettelossa oleviin kiellettyihin osoitteisiin ei tehdä poikkeuksia.</translation>
 <translation id="8176035528522326671">Anna yrityskäyttäjän olla vain ensisijainen käyttäjä usean profiilin käyttökerralla (oletuskäyttäytyminen yrityksen hallinnoimille käyttäjille)</translation>
 <translation id="8183108371184777472">Estä selainikkunan avaaminen</translation>
+<translation id="8186911565834244165">Salli käyttäjäpalaute</translation>
 <translation id="8214600119442850823">Määrittää salasanan hallinnan.</translation>
 <translation id="8217516105848565518">Tämä käytäntö on poistettu käytöstä. Käytä tämän sijaan RemoteAccessHostDomainList-käytäntöä.</translation>
 <translation id="8244171102276095471">Ota käyttöön TLS:n RC4-salaustekniikat</translation>
@@ -4278,6 +4261,12 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="9112897538922695510">Tämän käytännön avulla voit rekisteröidä luettelon protokollan käsittelijöitä. Tämä voi olla vain suositeltu käytäntö. |protocol|-ominaisuudeksi tulee asettaa malli, kuten "mailto", ja |url|-ominaisuudeksi tulee asettaa kyseistä mallia käsittelevän sovelluksen URL-osoitemalli. Osoitemalli voi sisältää merkin %s, joka korvataan käsiteltävällä URL-osoitteella.
 
           Käytännön avulla rekisteröidyt protokollan käsittelijät yhdistetään käyttäjän rekisteröimien käsittelijöiden kanssa, ja molemmat ovat käytettävissä. Käyttäjä voi ohittaa käytännön määrittämät protokollan käsittelijät asentamalla uuden oletuskäsittelijän. Käyttäjä ei kuitenkaan voi poistaa käytännön avulla rekisteröityjä protokollan käsittelijöitä.</translation>
+<translation id="91196902572559194">Tämä käytäntö antaa Google Assistantille luvan kuunnella äänikomennon.
+
+      Jos käytäntö on käytössä, Google Assistant kuuntelee äänikomennon.
+      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele äänikomentoa.
+      Jos käytäntöä ei ole määritetty, käyttäjä voi päättää, saako Google Assistant kuunnella äänikomennon.
+      </translation>
 <translation id="9123211093995421438">Määritä <ph name="PRODUCT_OS_NAME" /> ‑virstanpylväiden palauttamisten sallittu vähimmäismäärä, joka lasketaan aina vakaasta versiosta alkaen.
 
       Kuluttajalaitteissa oletusmäärä on 0 ja yritysten rekisteröimissä laitteissa 4 (noin puolen vuoden välein).

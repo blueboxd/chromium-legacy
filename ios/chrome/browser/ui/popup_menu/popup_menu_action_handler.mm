@@ -156,6 +156,20 @@ using base::UserMetricsAction;
       RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
       [self.dispatcher startVoiceSearch];
       break;
+    case PopupMenuActionSearch: {
+      RecordAction(UserMetricsAction("MobileMenuSearch"));
+      OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:NO];
+      command.shouldFocusOmnibox = YES;
+      [self.dispatcher openURLInNewTab:command];
+      break;
+    }
+    case PopupMenuActionIncognitoSearch: {
+      RecordAction(UserMetricsAction("MobileMenuIncognitoSearch"));
+      OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:YES];
+      command.shouldFocusOmnibox = YES;
+      [self.dispatcher openURLInNewTab:command];
+      break;
+    }
     case PopupMenuActionQRCodeSearch:
       RecordAction(UserMetricsAction("MobileMenuScanQRCode"));
       [self.dispatcher showQRScanner];

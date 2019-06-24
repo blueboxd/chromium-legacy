@@ -44,7 +44,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/password_manager/password_store_mac.h"
+// Use default store.
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
 #elif defined(USE_X11)
@@ -178,9 +178,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
-#elif defined(OS_MACOSX)
-  ps = new PasswordStoreMac(std::move(login_db), profile->GetPrefs());
-#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));

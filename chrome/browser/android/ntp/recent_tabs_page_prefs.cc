@@ -7,12 +7,12 @@
 #include <jni.h>
 
 #include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/RecentTabsPagePrefs_jni.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "jni/RecentTabsPagePrefs_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;

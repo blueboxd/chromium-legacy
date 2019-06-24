@@ -60,12 +60,10 @@ using ReusedPasswordType =
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
-
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      history::HistoryService* history_service,
-      HostContentSettingsMap* host_content_settings_map);
+      history::HistoryService* history_service);
 
   ~PasswordProtectionService() override;
 
@@ -76,7 +74,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Looks up |settings| to find the cached verdict response. If verdict is not
   // available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
   // any thread.
-  LoginReputationClientResponse::VerdictType GetCachedVerdict(
+  virtual LoginReputationClientResponse::VerdictType GetCachedVerdict(
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
       ReusedPasswordType password_type,
@@ -88,11 +86,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
       ReusedPasswordType password_type,
-      LoginReputationClientResponse* verdict,
+      const LoginReputationClientResponse& verdict,
       const base::Time& receive_time);
-
-  // Removes all the expired verdicts from cache.
-  void CleanUpExpiredVerdicts();
 
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
@@ -290,8 +285,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
-  HostContentSettingsMap* content_settings() const { return content_settings_; }
-
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
@@ -323,50 +316,15 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
-  // Posted to UI thread by OnURLsDeleted(..). This function cleans up password
-  // protection content settings related to deleted URLs.
-  void RemoveContentSettingsOnURLsDeleted(bool all_history,
-                                          const history::URLRows& deleted_rows);
-
   // Posted to UI thread by OnURLsDeleted(...). This function remove the related
   // entries in kSafeBrowsingUnhandledSyncPasswordReuses.
   virtual void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
       bool all_history,
       const history::URLRows& deleted_rows) = 0;
 
-  // Helper function called by RemoveContentSettingsOnURLsDeleted(..). It
-  // calculate the number of verdicts of |type| that associate with |url|.
-  int GetVerdictCountForURL(const GURL& url,
-                            LoginReputationClientRequest::TriggerType type);
-
-  // Remove verdict of |type| from |cache_dictionary|. Return false if no
-  // verdict removed, true otherwise.
-  bool RemoveExpiredVerdicts(LoginReputationClientRequest::TriggerType type,
-                             base::DictionaryValue* cache_dictionary);
-
-  // Helper function called by RemoveExpiredVerdicts(..). Returns the number of
-  // expired entries removed.
-  size_t RemoveExpiredEntries(base::Value* verdict_dictionary);
-
-  static bool ParseVerdictEntry(base::Value* verdict_entry,
-                                int* out_verdict_received_time,
-                                LoginReputationClientResponse* out_verdict);
-
   static bool PathVariantsMatchCacheExpression(
       const std::vector<std::string>& generated_paths,
       const std::string& cache_expression_path);
-
-  static bool IsCacheExpired(int cache_creation_time, int cache_duration);
-
-  static void GeneratePathVariantsWithoutQuery(const GURL& url,
-                                               std::vector<std::string>* paths);
-
-  static std::string GetCacheExpressionPath(
-      const std::string& cache_expression);
-
-  static std::unique_ptr<base::DictionaryValue> CreateDictionaryFromVerdict(
-      const LoginReputationClientResponse* verdict,
-      const base::Time& receive_time);
 
   void RecordNoPingingReason(
       LoginReputationClientRequest::TriggerType trigger_type,
@@ -381,13 +339,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
       mojom::PhishingDetectorPtr* phishing_detector);
-
-  // Number of verdict stored for this profile for password on focus pings.
-  int stored_verdict_count_password_on_focus_;
-
-  // Number of verdict stored for this profile for protected password entry
-  // pings.
-  int stored_verdict_count_password_entry_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
@@ -405,9 +356,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
-
-  // Content settings map associated with this instance.
-  HostContentSettingsMap* content_settings_;
 
   // Weakptr can only cancel task if it is posted to the same thread. Therefore,
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.

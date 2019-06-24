@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 
+#include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/queue.h"
@@ -353,6 +354,33 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetWebContentsAccessibility(
       WebContentsAccessibilityAndroid* web_contents_accessibility);
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
+  // Methods called from Java
+  bool IsReady(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  void DismissTextHandles(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+
+  // Returns an int equivalent to an Optional<SKColor>, with a value of 0
+  // indicating SKTransparent for not set.
+  jint GetBackgroundColor(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
+
+  void ShowContextMenuAtTouchHandle(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint x,
+      jint y);
+
+  void WriteContentBitmapToDiskAsync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint width,
+      jint height,
+      const base::android::JavaParamRef<jstring>& jpath,
+      const base::android::JavaParamRef<jobject>& jcallback);
+
   ui::DelegatedFrameHostAndroid* delegated_frame_host_for_testing() {
     return delegated_frame_host_.get();
   }
@@ -388,6 +416,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                       float bottom_controls_shown_ratio);
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
+
+  void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
+                                const base::android::JavaRef<jobject>& callback,
+                                const std::string& path,
+                                const SkBitmap& bitmap);
 
   void ShowInternal();
   void HideInternal();
@@ -556,6 +589,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
 
   WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
+
+  base::android::ScopedJavaGlobalRef<jobject> obj_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

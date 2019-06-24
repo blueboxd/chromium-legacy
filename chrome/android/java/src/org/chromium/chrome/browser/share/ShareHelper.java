@@ -47,6 +47,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
@@ -417,10 +418,12 @@ public class ShareHelper {
      */
     public static void captureScreenshotForContents(
             WebContents contents, int width, int height, Callback<Uri> callback) {
+        RenderWidgetHostView rwhv = contents.getRenderWidgetHostView();
+        if (rwhv == null) callback.onResult(null);
         try {
             String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
                     + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
-            contents.writeContentBitmapToDiskAsync(
+            rwhv.writeContentBitmapToDiskAsync(
                     width, height, path, new ExternallyVisibleUriCallback(callback));
         } catch (IOException e) {
             Log.e(TAG, "Error getting content bitmap: ", e);

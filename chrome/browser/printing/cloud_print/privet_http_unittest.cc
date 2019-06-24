@@ -373,8 +373,8 @@ class MockJSONCallback{
 
   const base::DictionaryValue* value() { return value_.get(); }
   PrivetJSONOperation::ResultCallback callback() {
-    return base::Bind(&MockJSONCallback::OnPrivetJSONDone,
-                      base::Unretained(this));
+    return base::BindOnce(&MockJSONCallback::OnPrivetJSONDone,
+                          base::Unretained(this));
   }
  protected:
   std::unique_ptr<base::DictionaryValue> value_;
@@ -1008,7 +1008,6 @@ class PrivetHttpWithServerTest : public ::testing::Test {
   std::unique_ptr<EmbeddedTestServer> server_;
   std::unique_ptr<PrivetHTTPClientImpl> client_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
-  base::Closure quit_;
 };
 
 class MockPrivetURLLoaderDelegate : public PrivetURLLoader::Delegate {

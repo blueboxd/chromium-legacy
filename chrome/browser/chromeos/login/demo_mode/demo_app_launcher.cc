@@ -92,10 +92,11 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
       NetworkTypePattern::Physical(), false,
       chromeos::network_handler::ErrorCallback());
 
-  OpenApplication(AppLaunchParams(profile, extension_id,
-                                  extensions::LAUNCH_CONTAINER_WINDOW,
-                                  WindowOpenDisposition::NEW_WINDOW,
-                                  extensions::SOURCE_CHROME_INTERNAL, true));
+  OpenApplication(AppLaunchParams(
+      profile, extension_id,
+      extensions::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      extensions::AppLaunchSource::kSourceChromeInternal, true));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   session_manager::SessionManager::Get()->SessionStarted();

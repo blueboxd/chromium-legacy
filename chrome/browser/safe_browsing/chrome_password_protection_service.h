@@ -38,6 +38,7 @@ class SafeBrowsingService;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingUIManager;
 class ChromePasswordProtectionService;
+class VerdictCacheManager;
 
 using OnWarningDone = base::OnceCallback<void(WarningAction)>;
 using StringProvider = base::RepeatingCallback<std::string()>;
@@ -192,6 +193,26 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // in modal warning dialog.
   bool HasUnhandledEnterprisePasswordReuse(
       content::WebContents* web_contents) const;
+
+  // Stores |verdict| in the cache based on its |trigger_type|, |url|,
+  // reused |password_type|, |verdict| and |receive_time|.
+  void CacheVerdict(const GURL& url,
+                    LoginReputationClientRequest::TriggerType trigger_type,
+                    ReusedPasswordType password_type,
+                    const LoginReputationClientResponse& verdict,
+                    const base::Time& receive_time) override;
+
+  // Returns the number of saved verdicts for the given |trigger_type|.
+  int GetStoredVerdictCount(
+      LoginReputationClientRequest::TriggerType trigger_type) override;
+
+  // Looks up the cached verdict response. If verdict is not available or is
+  // expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on any thread.
+  LoginReputationClientResponse::VerdictType GetCachedVerdict(
+      const GURL& url,
+      LoginReputationClientRequest::TriggerType trigger_type,
+      ReusedPasswordType password_type,
+      LoginReputationClientResponse* out_response) override;
 
  protected:
   // PasswordProtectionService overrides.
@@ -363,9 +384,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Constructor used for tests only.
   ChromePasswordProtectionService(
       Profile* profile,
-      scoped_refptr<HostContentSettingsMap> content_setting_map,
       scoped_refptr<SafeBrowsingUIManager> ui_manager,
-      StringProvider sync_password_hash_provider);
+      StringProvider sync_password_hash_provider,
+      VerdictCacheManager* cache_manager);
 
   // Code shared by both ctors.
   void Init();
@@ -393,6 +414,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::set<content::WebContents*>
       web_contents_with_unhandled_enterprise_reuses_;
+
+  // Reference to the current profile's VerdictCacheManager. This is unowned.
+  VerdictCacheManager* cache_manager_;
 
   // Schedules the next time to log the PasswordCaptured event.
   base::OneShotTimer log_password_capture_timer_;

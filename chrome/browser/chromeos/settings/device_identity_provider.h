@@ -21,7 +21,7 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider,
   ~DeviceIdentityProvider() override;
 
   // IdentityProvider:
-  std::string GetActiveAccountId() override;
+  CoreAccountId GetActiveAccountId() override;
   bool IsActiveAccountWithRefreshToken() override;
   std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
   FetchAccessToken(
@@ -30,7 +30,7 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider,
       invalidation::ActiveAccountAccessTokenCallback callback) override;
   void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
-  void SetActiveAccountId(const std::string& account_id) override;
+  void SetActiveAccountId(const CoreAccountId& account_id) override;
 
   // OAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;

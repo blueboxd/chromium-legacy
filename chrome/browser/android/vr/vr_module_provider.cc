@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "chrome/android/features/vr/jni_headers/VrModuleProvider_jni.h"
 #include "chrome/browser/android/vr/gvr_consent_helper_impl.h"
 #include "chrome/browser/android/vr/register_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/android/gvr/vr_module_delegate.h"
-#include "jni/VrModuleProvider_jni.h"
 
 namespace vr {
 

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -166,13 +167,32 @@
 }
 
 - (ToolbarButton*)searchButton {
-  ToolbarSearchButton* searchButton = [ToolbarSearchButton
-      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
+  UIImage* buttonImage = nil;
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
+  } else {
+    buttonImage = [UIImage imageNamed:@"toolbar_search"];
+  }
+  ToolbarSearchButton* searchButton =
+      [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
 
-  [self configureButton:searchButton width:kSearchButtonWidth];
   [searchButton addTarget:self.actionHandler
                    action:@selector(searchAction)
          forControlEvents:UIControlEventTouchUpInside];
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    BOOL isIncognito = self.style == INCOGNITO;
+
+    [self configureButton:searchButton width:kAdaptiveToolbarButtonWidth];
+
+    searchButton.accessibilityLabel = l10n_util::GetNSString(
+        isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
+                    : IDS_IOS_TOOLS_MENU_NEW_TAB);
+  } else {
+    [self configureButton:searchButton width:kSearchButtonWidth];
+
+    searchButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
+  }
 
   searchButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);

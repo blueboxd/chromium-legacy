@@ -5,6 +5,7 @@
 #include "ash/system/unified/feature_pods_container_view.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
@@ -74,6 +75,8 @@ class FeaturePodsContainerViewTest : public NoSessionAshTestBase,
   FeaturePodsContainerView* container() { return container_.get(); }
 
   PaginationModel* pagination_model() { return model_->pagination_model(); }
+
+  UnifiedSystemTrayController* controller() { return controller_.get(); }
 
   int preferred_size_changed_count() const {
     return preferred_size_changed_count_;
@@ -243,6 +246,166 @@ TEST_F(FeaturePodsContainerViewTest, PaginationTransition) {
   pagination_model()->SelectPage(1, false);
   container()->Layout();
   EXPECT_EQ(final_bounds, buttons_[0]->bounds());
+}
+
+TEST_F(FeaturePodsContainerViewTest, PaginationGestureHandling) {
+  const int kNumberOfPages = 8;
+
+  EnablePagination();
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+             kNumberOfPages);
+
+  gfx::Point container_origin = container()->GetBoundsInScreen().origin();
+  ui::GestureEvent swipe_left_begin(
+      container_origin.x(), container_origin.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, -1, 0));
+  ui::GestureEvent swipe_left_update(
+      container_origin.x(), container_origin.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, -1000, 0));
+  ui::GestureEvent swipe_right_begin(
+      container_origin.x(), container_origin.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 1, 0));
+  ui::GestureEvent swipe_right_update(
+      container_origin.x(), container_origin.y(), 0, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 1000, 0));
+  ui::GestureEvent swipe_end(container_origin.x(), container_origin.y(), 0,
+                             base::TimeTicks(),
+                             ui::GestureEventDetails(ui::ET_GESTURE_END));
+
+  int previous_page = pagination_model()->selected_page();
+
+  // Swipe left takes to next page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate swipe left
+    container()->OnGestureEvent(&swipe_left_begin);
+    container()->OnGestureEvent(&swipe_left_update);
+    container()->OnGestureEvent(&swipe_end);
+
+    int current_page = pagination_model()->selected_page();
+    // Expect next page
+    EXPECT_EQ(previous_page + 1, current_page);
+    previous_page = current_page;
+  }
+
+  // Swipe left on last page does nothing
+  container()->OnGestureEvent(&swipe_left_begin);
+  container()->OnGestureEvent(&swipe_left_update);
+  container()->OnGestureEvent(&swipe_end);
+
+  EXPECT_EQ(previous_page, pagination_model()->selected_page());
+
+  // Swipe right takes to previous page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate swipe right
+    container()->OnGestureEvent(&swipe_right_begin);
+    container()->OnGestureEvent(&swipe_right_update);
+    container()->OnGestureEvent(&swipe_end);
+
+    int current_page = pagination_model()->selected_page();
+    // Expect previous page
+    EXPECT_EQ(previous_page - 1, current_page);
+    previous_page = current_page;
+  }
+
+  // Swipe right on first page does nothing
+  container()->OnGestureEvent(&swipe_right_begin);
+  container()->OnGestureEvent(&swipe_right_update);
+  container()->OnGestureEvent(&swipe_end);
+
+  EXPECT_EQ(previous_page, pagination_model()->selected_page());
+}
+
+TEST_F(FeaturePodsContainerViewTest, PaginationScrollHandling) {
+  const int kNumberOfPages = 8;
+  const int num_fingers = 2;
+
+  EnablePagination();
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+             kNumberOfPages);
+
+  EXPECT_EQ(kNumberOfPages, pagination_model()->total_pages());
+
+  gfx::Point container_origin = container()->GetBoundsInScreen().origin();
+
+  ui::ScrollEvent fling_up_start(ui::ET_SCROLL_FLING_START, container_origin,
+                                 base::TimeTicks(), 0, 0, 100, 0, 10,
+                                 num_fingers);
+
+  ui::ScrollEvent fling_down_start(ui::ET_SCROLL_FLING_START, container_origin,
+                                   base::TimeTicks(), 0, 0, -100, 0, 10,
+                                   num_fingers);
+
+  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, container_origin,
+                               base::TimeTicks(), 0, 0, 0, 0, 0, num_fingers);
+
+  int previous_page = pagination_model()->selected_page();
+
+  // Scroll down takes to next page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate Scroll left
+    container()->OnScrollEvent(&fling_down_start);
+    container()->OnScrollEvent(&fling_cancel);
+    pagination_model()->FinishAnimation();
+
+    int current_page = pagination_model()->selected_page();
+    // Expect next page
+    EXPECT_EQ(previous_page + 1, current_page);
+    previous_page = current_page;
+  }
+
+  // Scroll up takes to previous page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate Scroll up
+    container()->OnScrollEvent(&fling_up_start);
+    container()->OnScrollEvent(&fling_cancel);
+    pagination_model()->FinishAnimation();
+
+    int current_page = pagination_model()->selected_page();
+    // Expect previous page
+    EXPECT_EQ(previous_page - 1, current_page);
+    previous_page = current_page;
+  }
+}
+
+TEST_F(FeaturePodsContainerViewTest, PaginationMouseWheelHandling) {
+  const int kNumberOfPages = 8;
+
+  EnablePagination();
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+             kNumberOfPages);
+
+  gfx::Point container_origin = container()->GetBoundsInScreen().origin();
+  ui::MouseWheelEvent wheel_up(gfx::Vector2d(0, 1000), container_origin,
+                               container_origin, base::TimeTicks(), 0, 0);
+
+  ui::MouseWheelEvent wheel_down(gfx::Vector2d(0, -1000), container_origin,
+                                 container_origin, base::TimeTicks(), 0, 0);
+
+  int previous_page = pagination_model()->selected_page();
+
+  // Mouse wheel down takes to next page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate mouse wheel down
+    container()->OnMouseWheel(wheel_down);
+    pagination_model()->FinishAnimation();
+
+    int current_page = pagination_model()->selected_page();
+    // Expect next page
+    EXPECT_EQ(previous_page + 1, current_page);
+    previous_page = current_page;
+  }
+
+  // Mouse wheel up takes to previous page
+  for (int i = 0; i < kNumberOfPages - 1; i++) {
+    // Simulate mouse wheel up
+    container()->OnMouseWheel(wheel_up);
+    pagination_model()->FinishAnimation();
+
+    int current_page = pagination_model()->selected_page();
+    // Expect previous page
+    EXPECT_EQ(previous_page - 1, current_page);
+    previous_page = current_page;
+  }
 }
 
 }  // namespace ash

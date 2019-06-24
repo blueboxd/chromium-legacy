@@ -42,7 +42,12 @@ class ManualFillingController {
  public:
   // The controller checks if at least one of these sources needs the accessory
   // to be displayed.
-  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS, ADDRESS_FALLBACKS };
+  enum class FillingSource {
+    AUTOFILL,
+    PASSWORD_FALLBACKS,
+    CREDIT_CARD_FALLBACKS,
+    ADDRESS_FALLBACKS
+  };
 
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
@@ -58,33 +63,33 @@ class ManualFillingController {
   // Methods called by type-specific controllers.
   // --------------------------------------------
 
-  // Forwards |accessory_sheet_data| to the view provided by a type-specific
-  // controller to be shown on the accessory sheet.
-  virtual void RefreshSuggestionsForField(
-      autofill::mojom::FocusedFieldType focused_field_type,
+  // Depending on the type of the given |accessory_sheet_data|, this updates a
+  // accessory sheet. Controllers to handle touch events are determined by the
+  // type of the sheet.
+  virtual void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) = 0;
+
+  // Notifies that the focused field changed which allows the controller to
+  // update the UI visibility.
+  virtual void NotifyFocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
   virtual void OnFilledIntoFocusedField(
       autofill::mojom::FillingStatus status) = 0;
 
-  // Requests to show the accessory bar. The accessory will only be shown
-  // when the keyboard becomes visible.
-  // TODO(crbug.com/965478): Rename method to reflect latest logic changes.
-  virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
+  // Reports for a source whether it provides suggestions or just default
+  // options. The controller then updates the UI visibility accordingly.
+  virtual void UpdateSourceAvailability(FillingSource source,
+                                        bool has_suggestions) = 0;
 
   // Requests to show the touch to fill sheet.
   virtual void ShowTouchToFillSheet(
       const autofill::AccessorySheetData& data) = 0;
 
-  // This signals that the accessory data corresponding to |source| doesn't
-  // need to be shown anymore. If no FillingSource needs to be shown, the
-  // accessory sheet and bar will be hidden.
-  virtual void DeactivateFillingSource(FillingSource source) = 0;
-
-  // Requests to hide the accessory. This hides both the accessory sheet
-  // (if open) and the accessory bar.
+  // Explicitly hides all manual filling UI without checking any filling source.
+  // E.g. after autofilling suggestions, or generating a password.
   virtual void Hide() = 0;
 
   // Notifies the view that automatic password generation status changed.

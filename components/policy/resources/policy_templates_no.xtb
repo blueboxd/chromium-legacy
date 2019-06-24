@@ -433,12 +433,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
-<translation id="1762072363876276024">
-      Denne regelen gjelder påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder brukerøkten. Det anbefales å sette begge reglene til samme verdi. Hvis reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
-      Denne innstillingen (DeviceLoginScreenSitePerProcess) kan brukes til å nekte brukere å velge bort standardfunksjonaliteten, som er å isolere alle nettsteder. Merk at DeviceLoginScreenIsolateOrigins-regelen også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
-      Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
-      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Slå på appanbefalinger i nulltilstanden for søkefeltet</translation>
 <translation id="17719159826324007">
       Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
@@ -2502,6 +2496,10 @@ Verdiene for denne regelen og DeviceWebUsbAllowDevicesForUrls-regelen slås samm
       Vær oppmerksom på at dette ikke anbefales, ettersom det gjør det mulig å omgå nameConstraints-utvidelsen som begrenser vertsnavnene et gitt sertifikat kan autoriseres for
 
       Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
+<translation id="5578571772998293651">Tillat brukertilbakemeldinger.
+        Hvis regelen er satt til «false» (usann), kan brukere ikke sende tilbakemeldinger til Google.
+
+        Hvis regelen er satt til «true» (sann) eller ikke er angitt, kan brukere sende tilbakemeldinger til Google via Meny-&gt;Hjelp-&gt;Rapportér et problem eller en tastekombinasjon.</translation>
 <translation id="5581292529942108810">Konfigurer regler knyttet til Chrome Reporting Extension.
 
       Disse reglene gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -3642,21 +3640,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Merk: Tillatte verdier for <ph name="MINUTE_FIELD_NAME" />-feltet i <ph name="CHARGE_START_TIME_FIELD_NAME" /> og <ph name="CHARGE_END_TIME_FIELD_NAME" /> er 0, 15, 30 og 45.</translation>
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Denne regelen slår på HTTP/0.9 for andre porter enn 80 for HTTP og 443 for HTTPS.
-
-      Denne regelen er slått av som standard. Hvis den slås på, kan brukere bli eksponert for følgende sikkerhetsproblem: https://crbug.com/600352.
-
-      Denne regelen åpner for at bedrifter kan migrere eksisterende tjenere fra HTTP/0.9, og kommer til å bli fjernet i fremtiden.
-
-      Hvis regelen ikke er angitt, slås HTTP/0.9 av for andre porter enn standardportene.</translation>
-<translation id="7726421241038987229">
-      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at regelen IsolateOrigins også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
-      Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
-      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).  Nettstedsisolering slås ikke av selv om du slår av regelen og/eller ikke konfigurerer den.
-      På <ph name="PRODUCT_OS_NAME" /> anbefales det også å sette enhetsregelen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
-
-      MERK: Denne regelen gjelder ikke på Android. For å slå på SitePerProcess på Android, bruk regelinnstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">La enheter bruke en <ph name="PLUGIN_VM_NAME" /> på <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
@@ -3877,6 +3860,7 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
 <translation id="8176035528522326671">Tillat at bedriftsbrukeren bare er primær flerprofilbruker (standardatferd for bedriftsadministrerte brukere)</translation>
 <translation id="8183108371184777472">Hindre åpning av nettleservinduet</translation>
+<translation id="8186911565834244165">Tillat brukertilbakemeldinger</translation>
 <translation id="8214600119442850823">Konfigurerer passordlagring.</translation>
 <translation id="8217516105848565518">Denne regelen er avviklet. Bruk RemoteAccessHostDomainList i stedet.</translation>
 <translation id="8244171102276095471">Slå på RC4-chifferserier i TLS</translation>
@@ -4299,6 +4283,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
+<translation id="91196902572559194">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
+
+      Hvis regelen er slått på, lytter Google-assistenten etter frasen for taleaktivering.
+      Hvis regelen er slått av, lytter ikke Google-assistenten etter frasen for taleaktivering.
+      Hvis regelen ikke er angitt, kan brukerne velge om Google-assistenten skal lytte etter frasen for taleaktivering.
+      </translation>
 <translation id="9123211093995421438">Angir det laveste antallet <ph name="PRODUCT_OS_NAME" />-milepæler rollback skal tillates for, med start i den til enhver tid stabile versjonen.
 
       Standarden er 0 for forbrukerregistrerte enheter og 4 (ca. et halvt år) for bedriftsregistrerte enheter.

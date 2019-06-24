@@ -9,9 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "extensions/common/constants.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
@@ -29,10 +27,10 @@ class Extension;
 
 struct AppLaunchParams {
   AppLaunchParams(Profile* profile,
-                  const web_app::AppId& app_id,
-                  extensions::LaunchContainer container,
+                  const std::string& app_id,
+                  apps::mojom::LaunchContainer container,
                   WindowOpenDisposition disposition,
-                  extensions::AppLaunchSource source,
+                  apps::mojom::AppLaunchSource source,
                   int64_t display_id = display::kInvalidDisplayId);
 
   AppLaunchParams(const AppLaunchParams& other);
@@ -43,14 +41,14 @@ struct AppLaunchParams {
   Profile* profile;
 
   // The app to launch.
-  web_app::AppId app_id;
+  std::string app_id;
 
   // An id that can be passed to an app when launched in order to support
   // multiple shelf items per app.
   std::string launch_id;
 
   // The container type to launch the application in.
-  extensions::LaunchContainer container;
+  apps::mojom::LaunchContainer container;
 
   // If container is TAB, this field controls how the tab is opened.
   WindowOpenDisposition disposition;
@@ -75,7 +73,7 @@ struct AppLaunchParams {
 
   // Record where the app is launched from for tracking purpose.
   // Different app may have their own enumeration of sources.
-  extensions::AppLaunchSource source;
+  apps::mojom::AppLaunchSource source;
 
   // The id of the display from which the app is launched.
   // display::kInvalidDisplayId means that the display does not exist or is not
@@ -93,7 +91,7 @@ AppLaunchParams CreateAppLaunchParamsUserContainer(
     Profile* profile,
     const extensions::Extension* extension,
     WindowOpenDisposition disposition,
-    extensions::AppLaunchSource source);
+    apps::mojom::AppLaunchSource source);
 
 // Helper to create AppLaunchParams using event flags that allows user to
 // override the user-configured container using modifier keys, falling back to
@@ -103,7 +101,7 @@ AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,
     int event_flags,
-    extensions::AppLaunchSource source,
+    apps::mojom::AppLaunchSource source,
     int64_t display_id);
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_LAUNCH_PARAMS_H_

@@ -138,27 +138,28 @@ class BulletedPermissionsList : public views::View {
                             std::vector<base::string16> submessages,
                             gfx::ElideBehavior elide_behavior_for_submessages,
                             const base::Closure& revoke_callback) {
-    RevokeButton* revoke_button = NULL;
+    std::unique_ptr<RevokeButton> revoke_button;
     if (!revoke_callback.is_null())
-      revoke_button = new RevokeButton(revoke_callback, message);
+      revoke_button = std::make_unique<RevokeButton>(revoke_callback, message);
 
-    views::Label* permission_label = new views::Label(message);
+    auto permission_label = std::make_unique<views::Label>(message);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     permission_label->SetMultiLine(true);
-    AddSinglePermissionBullet(false, permission_label, revoke_button);
+    AddSinglePermissionBullet(false, std::move(permission_label),
+                              std::move(revoke_button));
 
     for (const auto& submessage : submessages) {
-      views::Label* sub_permission_label = new views::Label(submessage);
+      auto sub_permission_label = std::make_unique<views::Label>(submessage);
       sub_permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       sub_permission_label->SetElideBehavior(elide_behavior_for_submessages);
-      AddSinglePermissionBullet(true, sub_permission_label, NULL);
+      AddSinglePermissionBullet(true, std::move(sub_permission_label), nullptr);
     }
   }
 
  private:
   void AddSinglePermissionBullet(bool is_nested,
-                                 views::Label* permission_label,
-                                 RevokeButton* revoke_button) {
+                                 std::unique_ptr<views::Label> permission_label,
+                                 std::unique_ptr<RevokeButton> revoke_button) {
     // Add a padding row before every item except the first.
     if (!children().empty()) {
       layout_->AddPaddingRow(views::GridLayout::kFixedSize,
@@ -167,15 +168,16 @@ class BulletedPermissionsList : public views::View {
     }
 
     const base::char16 bullet_point[] = {0x2022, 0};
-    views::Label* bullet_label = new views::Label(base::string16(bullet_point));
+    auto bullet_label =
+        std::make_unique<views::Label>(base::string16(bullet_point));
 
     layout_->StartRow(
         1.0, is_nested ? kNestedBulletColumnSetId : kBulletColumnSetId);
-    layout_->AddView(bullet_label);
-    layout_->AddView(permission_label);
+    layout_->AddView(std::move(bullet_label));
+    layout_->AddView(std::move(permission_label));
 
-    if (revoke_button != NULL)
-      layout_->AddView(revoke_button);
+    if (revoke_button)
+      layout_->AddView(std::move(revoke_button));
     else
       layout_->SkipColumns(1);
   }

@@ -1315,7 +1315,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _voiceSearchController->DismissMicPermissionsHelp();
 
   web::WebState* webState = self.currentWebState;
-  [self.tabModel.currentTab dismissModals];
 
   if (webState) {
     if (self.isNTPActiveForCurrentWebState) {

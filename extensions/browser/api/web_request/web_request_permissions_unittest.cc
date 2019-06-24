@@ -113,9 +113,8 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
     request.render_process_id = render_process_id;
 
     request.web_request_type = ToWebRequestResourceType(type);
-    request.is_browser_side_navigation =
-        type == content::ResourceType::kMainFrame ||
-        type == content::ResourceType::kSubFrame;
+    request.is_navigation_request = type == content::ResourceType::kMainFrame ||
+                                    type == content::ResourceType::kSubFrame;
     return request;
   };
 

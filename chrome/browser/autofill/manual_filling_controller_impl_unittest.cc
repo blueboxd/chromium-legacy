@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
+#include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -24,6 +25,8 @@
 
 namespace {
 using autofill::AccessoryAction;
+using autofill::AccessorySheetData;
+using autofill::AccessoryTabType;
 using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using testing::_;
@@ -34,27 +37,17 @@ using FillingSource = ManualFillingController::FillingSource;
 
 constexpr char kExampleSite[] = "https://example.com";
 
-class MockPasswordAccessoryController : public PasswordAccessoryController {
- public:
-  MOCK_METHOD2(
-      SavePasswordsForOrigin,
-      void(const std::map<base::string16, const autofill::PasswordForm*>&,
-           const url::Origin&));
-  MOCK_METHOD1(OnFilledIntoFocusedField, void(FillingStatus));
-  MOCK_METHOD2(RefreshSuggestionsForField, void(FocusedFieldType, bool));
-  MOCK_METHOD1(OnGenerationRequested, void(bool));
-  MOCK_METHOD0(DidNavigateMainFrame, void());
-  MOCK_METHOD2(GetFavicon,
-               void(int, base::OnceCallback<void(const gfx::Image&)>));
-  MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
-  MOCK_METHOD1(OnOptionSelected, void(AccessoryAction selected_action));
-};
+AccessorySheetData empty_passwords_sheet() {
+  constexpr char kTitle[] = "Example title";
+  return AccessorySheetData(AccessoryTabType::PASSWORDS,
+                            base::ASCIIToUTF16(kTitle));
+}
 
-autofill::AccessorySheetData dummy_accessory_sheet_data() {
-  constexpr char kExampleAccessorySheetDataTitle[] = "Example title";
-  return autofill::AccessorySheetData(
-      autofill::AccessoryTabType::PASSWORDS,
-      base::ASCIIToUTF16(kExampleAccessorySheetDataTitle));
+AccessorySheetData populate_sheet(AccessoryTabType type) {
+  constexpr char kTitle[] = "Suggestions available!";
+  return AccessorySheetData::Builder(type, base::ASCIIToUTF16(kTitle))
+      .AddUserInfo()
+      .Build();
 }
 
 }  // namespace
@@ -69,8 +62,22 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_pwd_controller_.AsWeakPtr(),
         mock_address_controller_.AsWeakPtr(),
-        std::make_unique<StrictMock<MockManualFillingView>>());
+        std::make_unique<NiceMock<MockManualFillingView>>());
     NavigateAndCommit(GURL(kExampleSite));
+  }
+
+  void FocusFieldAndClearExpectations(FocusedFieldType fieldType) {
+    // Depending on |fieldType|, different calls can be expected. All of them
+    // are irrelevant during setup.
+    controller()->NotifyFocusedInputChanged(fieldType);
+    testing::Mock::VerifyAndClearExpectations(view());
+  }
+
+  void SetSuggestionsAndClearExpectations(AccessorySheetData sheet) {
+    // Depending on |sheet| and last set field type, different calls can be
+    // expected. All of them are irrelevant during setup.
+    controller()->RefreshSuggestions(std::move(sheet));
+    testing::Mock::VerifyAndClearExpectations(view());
   }
 
   ManualFillingControllerImpl* controller() {
@@ -95,28 +102,102 @@ TEST_F(ManualFillingControllerTest, IsNotRecreatedForSameWebContents) {
             initial_controller);
 }
 
-// TODO(fhorschig): Check for recorded metrics here or similar to this.
-TEST_F(ManualFillingControllerTest, ClosesViewWhenRefreshingSuggestions) {
-  // Ignore Items - only the closing calls are interesting here.
-  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(AnyNumber());
+TEST_F(ManualFillingControllerTest, ClosesSheetWhenFocusingUnfillableField) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
 
   EXPECT_CALL(*view(), CloseAccessorySheet());
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard())
-      .Times(0);  // Don't touch the keyboard!
-  controller()->RefreshSuggestionsForField(FocusedFieldType::kUnfillableElement,
-                                           dummy_accessory_sheet_data());
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
+  controller()->NotifyFocusedInputChanged(FocusedFieldType::kUnfillableElement);
 }
 
-// TODO(fhorschig): Check for recorded metrics here or similar to this.
-TEST_F(ManualFillingControllerTest,
-       SwapSheetWithKeyboardWhenRefreshingSuggestions) {
-  // Ignore Items - only the closing calls are interesting here.
-  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(AnyNumber());
+TEST_F(ManualFillingControllerTest, ClosesSheetWhenFocusingFillableField) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
 
   EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
   EXPECT_CALL(*view(), SwapSheetWithKeyboard());
-  controller()->RefreshSuggestionsForField(FocusedFieldType::kFillableTextField,
-                                           dummy_accessory_sheet_data());
+  controller()->NotifyFocusedInputChanged(
+      FocusedFieldType::kFillablePasswordField);
+}
+
+TEST_F(ManualFillingControllerTest, ClosesSheetWhenFocusingSearchField) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
+
+  EXPECT_CALL(*view(), CloseAccessorySheet());
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
+  controller()->NotifyFocusedInputChanged(
+      FocusedFieldType::kFillableSearchField);
+}
+
+TEST_F(ManualFillingControllerTest, ClosesSheetWhenFocusingTextArea) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
+
+  EXPECT_CALL(*view(), CloseAccessorySheet());
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
+  controller()->NotifyFocusedInputChanged(FocusedFieldType::kFillableTextArea);
+}
+
+TEST_F(ManualFillingControllerTest, AlwaysShowsAccessoryForPasswordFields) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
+
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->RefreshSuggestions(empty_passwords_sheet());
+}
+
+TEST_F(ManualFillingControllerTest,
+       HidesAccessoryWithoutSuggestionsOnNonPasswordFields) {
+  SetSuggestionsAndClearExpectations(
+      populate_sheet(AccessoryTabType::PASSWORDS));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillKeyboardAccessory);
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
+
+  EXPECT_CALL(*view(), Hide());
+  controller()->RefreshSuggestions(empty_passwords_sheet());
+}
+
+TEST_F(ManualFillingControllerTest, ShowsAccessoryWithSuggestions) {
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
+
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
+}
+
+TEST_F(ManualFillingControllerTest, DoesntShowFallbacksOutsideUsernameInV1) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{
+          autofill::features::kAutofillKeyboardAccessory,
+          autofill::features::kAutofillManualFallbackAndroid});
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableNonSearchField);
+
+  EXPECT_CALL(*view(), Hide());
+  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
+}
+
+TEST_F(ManualFillingControllerTest, ShowsFallbacksOutsideUsernameInV2) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillKeyboardAccessory);
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableNonSearchField);
+
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
+}
+
+// TODO(fhorschig): Check for recorded metrics here or similar to this.
+TEST_F(ManualFillingControllerTest, ShowsAccessoryWhenRefreshingSuggestions) {
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
+
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
 }
 
 // TODO(fhorschig): Check for recorded metrics here or similar to this.
@@ -132,37 +213,51 @@ TEST_F(ManualFillingControllerTest, ClosesViewOnSuccessfullFillingOnly) {
   controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }
 
-TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {
+TEST_F(ManualFillingControllerTest, ShowsAndHidesAccessoryForPasswords) {
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
+
   EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+  controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
+                                         /*has_suggestions=*/true);
+
   EXPECT_CALL(*view(), Hide());
-  controller()->DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS);
+  controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
+                                         /*has_suggestions=*/false);
 }
 
 TEST_F(ManualFillingControllerTest, RelaysShowTouchToFillSheet) {
-  EXPECT_CALL(*view(), OnItemsAvailable(dummy_accessory_sheet_data()));
+  EXPECT_CALL(*view(), OnItemsAvailable(empty_passwords_sheet()));
   EXPECT_CALL(*view(), ShowTouchToFillSheet);
-  controller()->ShowTouchToFillSheet(dummy_accessory_sheet_data());
+  controller()->ShowTouchToFillSheet(empty_passwords_sheet());
 }
 
-TEST_F(ManualFillingControllerTest, HidesAccessoryWhenAllSourcesRequestedIt) {
+TEST_F(ManualFillingControllerTest, HidesAccessoryWithoutAvailableSources) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       autofill::features::kAutofillKeyboardAccessory);
-  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible()).Times(3);
-  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
-  controller()->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
-  // This duplicate call accounts for a single, visible source.
-  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableNonSearchField);
+
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible()).Times(2);
+  controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
+                                         /*has_suggestions=*/true);
+  controller()->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                         /*has_suggestions=*/true);
+  // This duplicate call is a noop.
+  controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
+                                         /*has_suggestions=*/true);
+  testing::Mock::VerifyAndClearExpectations(view());
 
   // Hiding just one of two active filling sources won't have any effect.
   EXPECT_CALL(*view(), Hide()).Times(0);
-  controller()->DeactivateFillingSource(FillingSource::PASSWORD_FALLBACKS);
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
+                                         /*has_suggestions=*/false);
   testing::Mock::VerifyAndClearExpectations(view());
 
   // Hiding the remaining second source will result in the view being hidden.
   EXPECT_CALL(*view(), Hide()).Times(1);
-  controller()->DeactivateFillingSource(FillingSource::AUTOFILL);
+  controller()->UpdateSourceAvailability(FillingSource::AUTOFILL,
+                                         /*has_suggestions=*/false);
 }
 
 TEST_F(ManualFillingControllerTest, OnAutomaticGenerationStatusChanged) {
@@ -180,8 +275,7 @@ TEST_F(ManualFillingControllerTest, OnFillingTriggered) {
                                         true);
 
   EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(field));
-  controller()->OnFillingTriggered(autofill::AccessoryTabType::PASSWORDS,
-                                   field);
+  controller()->OnFillingTriggered(AccessoryTabType::PASSWORDS, field);
 }
 
 TEST_F(ManualFillingControllerTest, ForwardsPasswordManagingToController) {

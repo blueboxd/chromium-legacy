@@ -11,7 +11,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SingleTabActivity;
@@ -39,8 +39,9 @@ public class DinoActivity extends SingleTabActivity {
         mSplashView = LayoutInflater.from(this).inflate(R.layout.dino_splash_view, null);
         mSplashView.addOnLayoutChangeListener(
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    ImageView dinoImage = v.findViewById(R.id.dino_animation_image);
-                    AnimationDrawable dinoAnimation = (AnimationDrawable) dinoImage.getDrawable();
+                    TextView dinoImage = v.findViewById(R.id.dino_splash_text_image);
+                    AnimationDrawable dinoAnimation =
+                            (AnimationDrawable) dinoImage.getCompoundDrawables()[1];
                     dinoAnimation.start();
                 });
         ViewGroup coordinatorLayout = (ViewGroup) findViewById(R.id.coordinator);

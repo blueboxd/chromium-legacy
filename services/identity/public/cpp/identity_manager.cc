@@ -402,7 +402,7 @@ IdentityManager::GetAccountIdMigrationState() const {
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 void IdentityManager::DeprecatedLoadCredentialsForSupervisedUser(
-    const std::string& primary_account_id) {
+    const CoreAccountId& primary_account_id) {
   token_service_->LoadCredentials(primary_account_id);
 }
 #endif

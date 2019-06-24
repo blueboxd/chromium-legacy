@@ -12,7 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros_local.h"
-#include "jni/MinidumpUploadService_jni.h"
+#include "chrome/android/chrome_jni_headers/MinidumpUploadService_jni.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace {

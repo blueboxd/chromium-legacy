@@ -5,11 +5,9 @@
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 
 #include "base/optional.h"
-#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
-#include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/generation/password_generator.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -19,7 +17,6 @@
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
-using autofill::AutofillField;
 using autofill::FieldSignature;
 using autofill::FormSignature;
 using autofill::FormStructure;
@@ -78,44 +75,6 @@ void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
       }
     }
   }
-}
-
-void PasswordGenerationFrameHelper::DetectFormsEligibleForGeneration(
-    const std::vector<autofill::FormStructure*>& forms) {
-  if (base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
-    // NewPasswordFormManager sends this information to the renderer.
-    return;
-  }
-  // IsGenerationEnabled is called multiple times and it is sufficient to
-  // log debug data once. This is it!
-  if (!IsGenerationEnabled(/*log_debug_data=*/true))
-    return;
-
-  std::vector<autofill::PasswordFormGenerationData>
-      forms_eligible_for_generation;
-  for (const FormStructure* form : forms) {
-    const AutofillField* generation_field = nullptr;
-    const AutofillField* confirmation_field = nullptr;
-    for (const std::unique_ptr<AutofillField>& field : *form) {
-      if (field->server_type() == autofill::ACCOUNT_CREATION_PASSWORD ||
-          field->server_type() == autofill::NEW_PASSWORD) {
-        generation_field = field.get();
-      } else if (field->server_type() == autofill::CONFIRMATION_PASSWORD) {
-        confirmation_field = field.get();
-      }
-    }
-    if (generation_field) {
-      autofill::PasswordFormGenerationData data(
-          form->form_signature(), generation_field->GetFieldSignature());
-      if (confirmation_field != nullptr) {
-        data.confirmation_field_signature.emplace(
-            confirmation_field->GetFieldSignature());
-      }
-      forms_eligible_for_generation.push_back(data);
-    }
-  }
-  if (!forms_eligible_for_generation.empty())
-    driver_->FormsEligibleForGenerationFound(forms_eligible_for_generation);
 }
 
 // In order for password generation to be enabled, we need to make sure:

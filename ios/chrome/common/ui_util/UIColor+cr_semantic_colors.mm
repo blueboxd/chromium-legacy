@@ -10,6 +10,28 @@
 
 @implementation UIColor (CRSemanticColors)
 
+#pragma mark - System Background Colors
+
++ (UIColor*)cr_systemBackgroundColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.systemBackgroundColor;
+  }
+#endif
+  return UIColor.whiteColor;
+}
+
+#pragma mark - System Grouped Background Colors
+
++ (UIColor*)cr_systemGroupedBackgroundColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.systemGroupedBackgroundColor;
+  }
+#endif
+  return UIColor.groupTableViewBackgroundColor;
+}
+
 + (UIColor*)cr_secondarySystemGroupedBackgroundColor {
 #if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
@@ -17,6 +39,30 @@
   }
 #endif
   return UIColor.whiteColor;
+}
+
+#pragma mark - Label Colors
+
++ (UIColor*)cr_labelColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.labelColor;
+  }
+#endif
+  return UIColor.blackColor;
+}
+
++ (UIColor*)cr_secondaryLabelColor {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return UIColor.secondaryLabelColor;
+  }
+#endif
+  // This is the value for UIColor.secondaryLabelColor in light mode.
+  return [UIColor colorWithRed:0x3C / (CGFloat)0xFF
+                         green:0x3C / (CGFloat)0xFF
+                          blue:0x43 / (CGFloat)0xFF
+                         alpha:0.6];
 }
 
 @end

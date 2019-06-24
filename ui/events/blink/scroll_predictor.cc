@@ -22,6 +22,8 @@ namespace {
 constexpr char kPredictor[] = "predictor";
 constexpr char kScrollPredictorTypeLsq[] = "lsq";
 constexpr char kScrollPredictorTypeKalman[] = "kalman";
+constexpr char kScrollPredictorTypeKalmanTimeFiltered[] =
+    "kalman_time_filtered";
 
 }  // namespace
 
@@ -39,7 +41,11 @@ ScrollPredictor::ScrollPredictor(bool enable_resampling)
   if (predictor_type == kScrollPredictorTypeLsq)
     predictor_ = std::make_unique<LeastSquaresPredictor>();
   else if (predictor_type == kScrollPredictorTypeKalman)
-    predictor_ = std::make_unique<KalmanPredictor>();
+    predictor_ =
+        std::make_unique<KalmanPredictor>(false /* enable_time_filtering */);
+  else if (predictor_type == kScrollPredictorTypeKalmanTimeFiltered)
+    predictor_ =
+        std::make_unique<KalmanPredictor>(true /* enable_time_filtering */);
   else
     predictor_ = std::make_unique<EmptyPredictor>();
 }

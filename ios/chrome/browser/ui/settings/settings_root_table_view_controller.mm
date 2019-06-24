@@ -113,10 +113,10 @@ NSString* const kSettingsToolbarDeleteButtonId =
 
 - (void)viewDidLoad {
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-    self.styler.tableViewBackgroundColor = UIColor.whiteColor;
+    self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
   } else {
     self.styler.tableViewBackgroundColor =
-        [UIColor groupTableViewBackgroundColor];
+        UIColor.cr_systemGroupedBackgroundColor;
   }
   self.styler.tableViewSectionHeaderBlurEffect = nil;
   [super viewDidLoad];
@@ -125,7 +125,7 @@ NSString* const kSettingsToolbarDeleteButtonId =
   }
   self.styler.cellBackgroundColor =
       UIColor.cr_secondarySystemGroupedBackgroundColor;
-  self.styler.cellTitleColor = [UIColor blackColor];
+  self.styler.cellTitleColor = UIColor.cr_labelColor;
   self.tableView.estimatedSectionHeaderHeight = kEstimatedHeaderFooterHeight;
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
   self.tableView.estimatedSectionFooterHeight = kEstimatedHeaderFooterHeight;

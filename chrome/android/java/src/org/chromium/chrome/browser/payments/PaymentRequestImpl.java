@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
@@ -402,13 +403,13 @@ public class PaymentRequestImpl
             PaymentDetails details, PaymentOptions options) {
         if (mClient != null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ATTEMPTED_INITIALIZATION_TWICE);
             return;
         }
 
         if (client == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Invalid mojo client");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
         }
 
@@ -417,7 +418,7 @@ public class PaymentRequestImpl
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Not in a secure context");
+            disconnectFromClientWithDebugMessage(ErrorStrings.NOT_IN_A_SECURE_ORIGIN);
             return;
         }
 
@@ -428,7 +429,8 @@ public class PaymentRequestImpl
         mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
 
         if (!UrlUtil.isOriginAllowedToUseWebPaymentApis(mWebContents.getLastCommittedUrl())) {
-            Log.d(TAG, "Only localhost, file://, and cryptographic scheme origins allowed");
+            Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN);
+            Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
             onAllPaymentAppsCreated();
@@ -440,7 +442,8 @@ public class PaymentRequestImpl
 
         if (OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
                 && !SslValidityChecker.isSslCertificateValid(mWebContents)) {
-            Log.d(TAG, "SSL certificate is not valid");
+            Log.d(TAG, ErrorStrings.INVALID_SSL_CERTIFICATE);
+            Log.d(TAG, ErrorStrings.PROHIBITED_ORIGIN_OR_INVALID_SSL_EXPLANATION);
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
             onAllPaymentAppsCreated();
@@ -450,7 +453,7 @@ public class PaymentRequestImpl
         mMethodData = getValidatedMethodData(methodData, mCardEditor);
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Invalid payment methods or data");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return;
         }
 
@@ -458,7 +461,7 @@ public class PaymentRequestImpl
 
         if (mRawTotal == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Missing total");
+            disconnectFromClientWithDebugMessage(ErrorStrings.TOTAL_REQUIRED);
             return;
         }
         mId = details.id;
@@ -530,8 +533,7 @@ public class PaymentRequestImpl
         // Only the currently selected tab is allowed to show the payment UI.
         if (TabModelUtils.getCurrentWebContents(mObservedTabModel) != mWebContents) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "Background tab is not allowed to show PaymentRequest UI");
+            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_SHOW_IN_BACKGROUND_TAB);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return false;
         }
@@ -541,7 +543,7 @@ public class PaymentRequestImpl
             mOverviewModeBehavior = ((ChromeTabbedActivity) activity).getOverviewModeBehavior();
             if (mOverviewModeBehavior.overviewVisible()) {
                 mJourneyLogger.setNotShown(NotShownReason.OTHER);
-                disconnectFromClientWithDebugMessage("In tab overview mode");
+                disconnectFromClientWithDebugMessage(ErrorStrings.TAB_OVERVIEW_MODE);
                 if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
                 return false;
             }
@@ -658,7 +660,7 @@ public class PaymentRequestImpl
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Renderer should never invoke show() twice");
+            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_SHOW_TWICE);
             return;
         }
 
@@ -668,7 +670,7 @@ public class PaymentRequestImpl
             // from showing PaymentRequest UI at the same time.
             mJourneyLogger.setNotShown(NotShownReason.CONCURRENT_REQUESTS);
             disconnectFromClientWithDebugMessage(
-                    "A PaymentRequest UI is already showing", PaymentErrorReason.ALREADY_SHOWING);
+                    ErrorStrings.ANOTHER_UI_SHOWING, PaymentErrorReason.ALREADY_SHOWING);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
@@ -679,7 +681,7 @@ public class PaymentRequestImpl
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
@@ -907,8 +909,7 @@ public class PaymentRequestImpl
 
         if (mUI == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
+            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
             return;
         }
 
@@ -916,10 +917,7 @@ public class PaymentRequestImpl
                 && (mInvokedPaymentInstrument == null
                         || !mInvokedPaymentInstrument.isChangingPaymentMethod())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
-                    + "PaymentRequest.show(), without a payment method change event, and without"
-                    + "payment options (e.g. requestShipping: true)");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
         }
 
@@ -958,7 +956,7 @@ public class PaymentRequestImpl
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
             return;
         }
 
@@ -966,9 +964,7 @@ public class PaymentRequestImpl
 
         if (!TextUtils.isEmpty(details.error)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called with an error when resolving "
-                    + "the promise passed into PaymentRequest.show()");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
         }
 
@@ -997,8 +993,7 @@ public class PaymentRequestImpl
 
         if (mUI == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent fired without PaymentRequest.show()");
+            disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
             return;
         }
 
@@ -1034,7 +1029,7 @@ public class PaymentRequestImpl
     private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
         if (!PaymentValidator.validatePaymentDetails(details)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Invalid payment details");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_DETAILS);
             return false;
         }
 
@@ -1597,7 +1592,7 @@ public class PaymentRequestImpl
     @Override
     public void onDismiss() {
         mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
-        disconnectFromClientWithDebugMessage("Dialog dismissed");
+        disconnectFromClientWithDebugMessage(ErrorStrings.USER_CANCELLED);
     }
 
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
@@ -1606,7 +1601,7 @@ public class PaymentRequestImpl
 
     private void disconnectFromClientWithDebugMessage(String debugMessage, int reason) {
         Log.d(TAG, debugMessage);
-        if (mClient != null) mClient.onError(reason);
+        if (mClient != null) mClient.onError(reason, debugMessage);
         closeClient();
         closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
     }
@@ -1668,7 +1663,7 @@ public class PaymentRequestImpl
 
         if (!PaymentValidator.validatePaymentValidationErrors(errors)) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage("Invalid payment validation errors");
+            disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_VALIDATION_ERRORS);
             return;
         }
 
@@ -1725,7 +1720,7 @@ public class PaymentRequestImpl
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (context == null) {
             mJourneyLogger.setAborted(AbortReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
             return;
         }
 
@@ -2000,7 +1995,7 @@ public class PaymentRequestImpl
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
@@ -2051,7 +2046,9 @@ public class PaymentRequestImpl
             mJourneyLogger.setNotShown(mArePaymentMethodsSupported
                             ? NotShownReason.NO_MATCHING_PAYMENT_METHOD
                             : NotShownReason.NO_SUPPORTED_PAYMENT_METHOD);
-            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
+            disconnectFromClientWithDebugMessage(mIsIncognito
+                            ? ErrorStrings.USER_CANCELLED
+                            : ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE,
                     mIsIncognito ? PaymentErrorReason.USER_CANCEL
                                  : PaymentErrorReason.NOT_SUPPORTED);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
@@ -2142,7 +2139,7 @@ public class PaymentRequestImpl
         // Can happen if the tab is closed during the normalization process.
         if (chromeActivity == null) {
             mJourneyLogger.setAborted(AbortReason.OTHER);
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            disconnectFromClientWithDebugMessage(ErrorStrings.ACTIVITY_NOT_FOUND);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }

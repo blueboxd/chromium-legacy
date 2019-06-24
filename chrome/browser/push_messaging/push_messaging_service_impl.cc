@@ -68,7 +68,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "jni/PushMessagingServiceObserver_jni.h"
+#include "chrome/android/chrome_jni_headers/PushMessagingServiceObserver_jni.h"
 #endif
 
 using instance_id::InstanceID;

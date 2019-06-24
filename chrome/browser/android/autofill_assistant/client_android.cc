@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
-#include "jni/AutofillAssistantClient_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 

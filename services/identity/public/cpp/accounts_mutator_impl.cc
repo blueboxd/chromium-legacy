@@ -35,13 +35,13 @@ AccountsMutatorImpl::AccountsMutatorImpl(
 
 AccountsMutatorImpl::~AccountsMutatorImpl() {}
 
-std::string AccountsMutatorImpl::AddOrUpdateAccount(
+CoreAccountId AccountsMutatorImpl::AddOrUpdateAccount(
     const std::string& gaia_id,
     const std::string& email,
     const std::string& refresh_token,
     bool is_under_advanced_protection,
     signin_metrics::SourceForRefreshTokenOperation source) {
-  std::string account_id =
+  CoreAccountId account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   account_tracker_service_->SetIsAdvancedProtectionAccount(
       account_id, is_under_advanced_protection);
@@ -51,7 +51,7 @@ std::string AccountsMutatorImpl::AddOrUpdateAccount(
 }
 
 void AccountsMutatorImpl::UpdateAccountInfo(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     base::Optional<bool> is_child_account,
     base::Optional<bool> is_under_advanced_protection) {
   if (is_child_account.has_value()) {
@@ -66,7 +66,7 @@ void AccountsMutatorImpl::UpdateAccountInfo(
 }
 
 void AccountsMutatorImpl::RemoveAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     signin_metrics::SourceForRefreshTokenOperation source) {
   token_service_->RevokeCredentials(account_id, source);
 }
@@ -88,7 +88,7 @@ void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
-                                      const std::string& account_id) {
+                                      const CoreAccountId& account_id) {
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
   DCHECK(!account_info.account_id.empty());
@@ -108,7 +108,7 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
 void AccountsMutatorImpl::LegacySetRefreshTokenForSupervisedUser(
     const std::string& refresh_token) {
   token_service_->UpdateCredentials(
-      "managed_user@localhost", refresh_token,
+      CoreAccountId("managed_user@localhost"), refresh_token,
       signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
 }
 

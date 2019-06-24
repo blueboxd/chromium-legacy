@@ -64,7 +64,6 @@ class Banners extends cr.EventTarget {
     this.volumeManager_ = volumeManager;
     this.document_ = assert(document);
     this.showWelcome_ = showWelcome;
-    this.driveEnabled_ = false;
 
     /** @private {boolean} */
     this.previousDirWasOnDrive_ = false;
@@ -214,7 +213,10 @@ class Banners extends cr.EventTarget {
       util.createChild(wrapper, 'banner-people');
     }
 
-    const close = util.createChild(wrapper, 'banner-close');
+    const close = util.createChild(wrapper, 'banner-close', 'button');
+    close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
+    close.id = 'welcome-dismiss';
+    close.tabIndex = 22;
     close.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
     const message = util.createChild(wrapper, 'drive-welcome-message');
@@ -233,11 +235,6 @@ class Banners extends cr.EventTarget {
     more.tabIndex = 21;  // See: go/filesapp-tabindex.
     more.id = 'drive-welcome-link';
     more.target = '_blank';
-
-    const dismiss = util.createChild(links, 'plain-link');
-    dismiss.classList.add('drive-welcome-dismiss');
-    dismiss.textContent = str('DRIVE_WELCOME_DISMISS');
-    dismiss.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
     this.previousDirWasOnDrive_ = false;
   }
@@ -298,17 +295,19 @@ class Banners extends cr.EventTarget {
       link.appendChild(button);
       box.appendChild(link);
 
-      const close = this.document_.createElement('div');
+      const close = this.document_.createElement('button');
+      close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
+      close.id = 'welcome-dismiss';
       close.className = 'banner-close';
       box.appendChild(close);
-      close.addEventListener('click', ((total) => {
-                                        const values = {};
-                                        values[DRIVE_WARNING_DISMISSED_KEY] =
-                                            total;
-                                        chrome.storage.local.set(values);
-                                        box.hidden = true;
-                                        this.requestRelayout_(100);
-                                      }).bind(null, opt_sizeStats.totalSize));
+      const totalSize = opt_sizeStats.totalSize;
+      close.addEventListener('click', () => {
+        const values = {};
+        values[DRIVE_WARNING_DISMISSED_KEY] = totalSize;
+        chrome.storage.local.set(values);
+        box.hidden = true;
+        this.requestRelayout_(100);
+      });
     }
 
     if (box.hidden != !show) {
@@ -604,9 +603,10 @@ class Banners extends cr.EventTarget {
         e.preventDefault();
       });
 
-      const close = this.document_.createElement('div');
+      const close = this.document_.createElement('button');
       close.className = 'banner-close';
-      close.tabIndex = 0;
+      close.setAttribute('aria-label', str('DRIVE_WELCOME_DISMISS'));
+      close.id = 'welcome-dismiss';
       box.appendChild(close);
       close.addEventListener('click', () => {
         const values = {};

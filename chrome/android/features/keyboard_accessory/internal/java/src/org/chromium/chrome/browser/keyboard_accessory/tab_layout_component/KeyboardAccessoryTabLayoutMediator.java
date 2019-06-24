@@ -75,7 +75,11 @@ class KeyboardAccessoryTabLayoutMediator
             }
             return;
         }
-        if (propertyKey == TABS || propertyKey == TAB_SELECTION_CALLBACKS) {
+        if (propertyKey == TABS) {
+            closeActiveTab(); // Make sure the active tab is reset for a modified tab list.
+            return;
+        }
+        if (propertyKey == TAB_SELECTION_CALLBACKS) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

@@ -193,11 +193,6 @@
   }
 }
 
-- (void)dismissModals {
-  if ([self.nativeController respondsToSelector:@selector(dismissModals)])
-    [self.nativeController dismissModals];
-}
-
 - (void)close {
   self.nativeProvider = nil;
   if ([self.nativeController respondsToSelector:@selector(close)])

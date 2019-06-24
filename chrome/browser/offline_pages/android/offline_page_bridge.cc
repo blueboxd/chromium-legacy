@@ -23,6 +23,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/OfflinePageBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/SavePageRequest_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -47,8 +49,6 @@
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/OfflinePageBridge_jni.h"
-#include "jni/SavePageRequest_jni.h"
 #include "net/base/filename_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -758,9 +758,8 @@ void OfflinePageBridge::PublishInternalArchive(
     return;
   }
 
-  std::unique_ptr<OfflinePageArchiver> archiver(new OfflinePageMHTMLArchiver());
   offline_page_model->PublishInternalArchive(
-      *offline_page, std::move(archiver),
+      *offline_page,
       base::BindOnce(&PublishPageDone, std::move(j_callback_obj)));
 }
 

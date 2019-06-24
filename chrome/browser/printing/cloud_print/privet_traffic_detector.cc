@@ -80,7 +80,7 @@ namespace cloud_print {
 
 PrivetTrafficDetector::PrivetTrafficDetector(
     content::BrowserContext* profile,
-    const base::RepeatingClosure& on_traffic_detected)
+    base::RepeatingClosure on_traffic_detected)
     : helper_(new Helper(profile, on_traffic_detected)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
@@ -108,7 +108,7 @@ void PrivetTrafficDetector::OnConnectionChanged(
 
 PrivetTrafficDetector::Helper::Helper(
     content::BrowserContext* profile,
-    const base::RepeatingClosure& on_traffic_detected)
+    base::RepeatingClosure on_traffic_detected)
     : profile_(profile),
       on_traffic_detected_(on_traffic_detected),
       restart_attempts_(kMaxRestartAttempts),

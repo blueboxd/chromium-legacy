@@ -62,6 +62,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -622,6 +623,12 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_content_browser_client_->CreateGeneralAudienceBrowsingService();
 
   cast_browser_process_->cast_service()->Start();
+
+  if (parameters_.ui_task) {
+    parameters_.ui_task->Run();
+    delete parameters_.ui_task;
+    run_message_loop_ = false;
+  }
 }
 
 #if defined(OS_ANDROID)
@@ -648,23 +655,17 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
   NOTREACHED();
   return true;
 #else
-  base::RunLoop run_loop;
-  base::Closure quit_closure(run_loop.QuitClosure());
+  if (run_message_loop_) {
+    base::RunLoop run_loop;
+    base::Closure quit_closure(run_loop.QuitClosure());
 
 #if !defined(OS_FUCHSIA)
-  // Fuchsia doesn't have signals.
-  RegisterClosureOnSignal(quit_closure);
+    // Fuchsia doesn't have signals.
+    RegisterClosureOnSignal(quit_closure);
 #endif  // !defined(OS_FUCHSIA)
 
-  // If parameters_.ui_task is not NULL, we are running browser tests.
-  if (parameters_.ui_task) {
-    base::MessageLoopCurrent message_loop =
-        base::MessageLoopCurrentForUI::Get();
-    message_loop->task_runner()->PostTask(FROM_HERE, *parameters_.ui_task);
-    message_loop->task_runner()->PostTask(FROM_HERE, quit_closure);
+    run_loop.Run();
   }
-
-  run_loop.Run();
 
 #if !defined(OS_FUCHSIA)
   // Once the main loop has stopped running, we give the browser process a few

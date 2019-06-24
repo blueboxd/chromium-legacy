@@ -43,6 +43,6 @@ public class PaymentRequestShowPromiseUnsupportedTest implements MainActivitySta
     public void testReject() throws InterruptedException, TimeoutException {
         mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
         mRule.expectResultContains(
-                new String[] {"NotSupportedError: The payment method \"foo\" is not supported"});
+                new String[] {"NotSupportedError: Payment method not supported"});
     }
 }

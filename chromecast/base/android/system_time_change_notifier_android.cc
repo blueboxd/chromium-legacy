@@ -4,7 +4,7 @@
 
 #include "chromecast/base/android/system_time_change_notifier_android.h"
 
-#include "jni/SystemTimeChangeNotifierAndroid_jni.h"
+#include "chromecast/base/jni_headers/SystemTimeChangeNotifierAndroid_jni.h"
 
 using base::android::JavaParamRef;
 

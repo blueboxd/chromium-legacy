@@ -75,11 +75,6 @@ void PrepareBrowserCommandLineForBrowserTests(base::CommandLine* command_line,
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, "browser");
 
-  // Some browser tests produce pixel results and compare them. Use an sRGB
-  // color profile to ensure that the machine's color profile does not affect
-  // the results.
-  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
-
   if (open_about_blank_on_launch && command_line->GetArgs().empty())
     command_line->AppendArg(url::kAboutBlankURL);
 }

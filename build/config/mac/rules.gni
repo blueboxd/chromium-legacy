@@ -632,7 +632,7 @@ template("mac_plugin_bundle") {
 
     if (enable_dsyms) {
       data = [
-        "$root_out_dir/$_output_name.dSYM/",
+        "$root_out_dir/$_output_name.so.dSYM/",
       ]
     }
 

@@ -7,8 +7,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/android/chrome_jni_headers/DownloadLocationDialogBridge_jni.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "jni/DownloadLocationDialogBridge_jni.h"
 #include "ui/android/window_android.h"
 
 DownloadLocationDialogBridgeImpl::DownloadLocationDialogBridgeImpl()

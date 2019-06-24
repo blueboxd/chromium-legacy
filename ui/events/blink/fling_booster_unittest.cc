@@ -74,6 +74,12 @@ class FlingBoosterTest : public testing::Test {
     return scroll_update;
   }
 
+  WebGestureEvent CreateScrollEnd(
+      WebGestureDevice source_device = WebGestureDevice::kTouchscreen) {
+    return WebGestureEvent(WebInputEvent::kGestureScrollEnd, 0, event_time_,
+                           source_device);
+  }
+
   Vector2dF DeltaFromVelocity(Vector2dF velocity, TimeDelta delta) {
     float delta_seconds = static_cast<float>(delta.InSecondsF());
     Vector2dF out = velocity;
@@ -95,6 +101,7 @@ class FlingBoosterTest : public testing::Test {
   void SimulateBoostingScroll() {
     event_time_ += kEventDelta;
     fling_booster_.ObserveGestureEvent(CreateFlingCancel());
+    fling_booster_.ObserveGestureEvent(CreateScrollEnd());
     fling_booster_.ObserveGestureEvent(CreateScrollBegin(Vector2dF(0, 1)));
 
     // GestureScrollUpdates in the same direction and at sufficient speed should
@@ -105,6 +112,12 @@ class FlingBoosterTest : public testing::Test {
     event_time_ += kEventDelta;
     fling_booster_.ObserveGestureEvent(CreateScrollUpdate(
         DeltaFromVelocity(Vector2dF(0, kMinBoostScrollSpeed), kEventDelta)));
+  }
+
+  void ProgressFling(const Vector2dF& current_velocity,
+                     const Vector2dF& delta) {
+    fling_booster_.ObserveGestureEvent(CreateScrollUpdate(delta));
+    fling_booster_.ObserveProgressFling(current_velocity);
   }
 
  protected:
@@ -125,6 +138,21 @@ TEST_F(FlingBoosterTest, FlingBoostBasic) {
   fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 2000)));
   EXPECT_EQ(Vector2dF(0, 3000), fling_velocity)
       << "FlingStart with ongoing fling should be boosted";
+}
+
+TEST_F(FlingBoosterTest, FlingBoostProgressedFling) {
+  Vector2dF fling_velocity;
+
+  fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 1000)));
+
+  event_time_ += kEventDelta;
+  ProgressFling(Vector2dF(0, kMinBoostFlingSpeed), Vector2dF(0, 20));
+
+  SimulateBoostingScroll();
+
+  fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 1100)));
+
+  EXPECT_EQ(Vector2dF(0, 2100), fling_velocity) << "Fling should be boosted";
 }
 
 TEST_F(FlingBoosterTest, NoFlingBoostIfScrollDelayed) {
@@ -155,7 +183,7 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfBoostTooSlow) {
       << "Boosting FlingStart too slow; fling shouldn't be boosted.";
 }
 
-TEST_F(FlingBoosterTest, NoFlingBoostIfCurrentVelocityTooSlow) {
+TEST_F(FlingBoosterTest, NoFlingBoostIfPreviousStartVelocityTooSlow) {
   Vector2dF fling_velocity;
 
   fling_velocity =
@@ -164,6 +192,20 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfCurrentVelocityTooSlow) {
   SimulateBoostingScroll();
   fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 2000)));
   EXPECT_EQ(Vector2dF(0, 2000), fling_velocity)
+      << "Previous fling too slow and shouldn't be boosted.";
+}
+
+TEST_F(FlingBoosterTest, NoFlingBoostIfCurrentVelocityTooSlow) {
+  Vector2dF fling_velocity;
+
+  fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 1000)));
+
+  event_time_ += kEventDelta;
+  ProgressFling(Vector2dF(0, kMinBoostFlingSpeed - 1), Vector2dF(0, 20));
+
+  fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 1100)));
+
+  EXPECT_EQ(Vector2dF(0, 1100), fling_velocity)
       << "Existing fling too slow and shouldn't be boosted.";
 }
 

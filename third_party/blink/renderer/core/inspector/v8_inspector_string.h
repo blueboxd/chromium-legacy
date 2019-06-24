@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_V8_INSPECTOR_STRING_H_
 
 #include <memory>
-#include <vector>
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -41,7 +41,7 @@ using StringBuilder = WTF::StringBuilder;
 
 struct ProtocolMessage {
   String json;
-  std::vector<uint8_t> binary;
+  WebVector<uint8_t> binary;
 };
 
 class CORE_EXPORT StringUtil {
@@ -84,7 +84,7 @@ class CORE_EXPORT StringUtil {
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
   static ProtocolMessage jsonToMessage(const String& message);
-  static ProtocolMessage binaryToMessage(std::vector<uint8_t> message);
+  static ProtocolMessage binaryToMessage(WebVector<uint8_t> message);
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);

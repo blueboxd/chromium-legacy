@@ -23,7 +23,7 @@
 namespace {
 
 const char kAccessToken[] = "access_token";
-const char kAccountId[] = "test_user@gmail.com";
+const char kAccountIdString[] = "test_user@gmail.com";
 const char kScope[] = "SCOPE";
 
 class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
@@ -158,6 +158,7 @@ void MockOAuth2TokenService::InvalidateAccessTokenImpl(
 
 class OAuth2TokenServiceRequestTest : public testing::Test {
  public:
+  OAuth2TokenServiceRequestTest() : kAccountId_(kAccountIdString) {}
   void SetUp() override;
   void TearDown() override;
 
@@ -178,6 +179,7 @@ class OAuth2TokenServiceRequestTest : public testing::Test {
     OAuth2TokenService* token_service_;
   };
 
+  const CoreAccountId kAccountId_;
   base::MessageLoop ui_loop_;
   OAuth2TokenService::ScopeSet scopes_;
   std::unique_ptr<MockOAuth2TokenService> oauth2_service_;
@@ -188,7 +190,7 @@ class OAuth2TokenServiceRequestTest : public testing::Test {
 void OAuth2TokenServiceRequestTest::SetUp() {
   scopes_.insert(kScope);
   oauth2_service_.reset(new MockOAuth2TokenService);
-  oauth2_service_->AddAccount(kAccountId);
+  oauth2_service_->AddAccount(kAccountId_);
   provider_ =
       new Provider(base::ThreadTaskRunnerHandle::Get(), oauth2_service_.get());
 }
@@ -221,7 +223,7 @@ TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Failure) {
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
       std::string(), base::Time(), std::string());
   std::unique_ptr<OAuth2TokenServiceRequest> request(
-      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId,
+      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId_,
                                                 scopes_, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer_.num_get_token_success_);
@@ -233,7 +235,7 @@ TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Failure) {
 
 TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Success) {
   std::unique_ptr<OAuth2TokenServiceRequest> request(
-      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId,
+      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId_,
                                                 scopes_, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.num_get_token_success_);
@@ -245,7 +247,7 @@ TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Success) {
 TEST_F(OAuth2TokenServiceRequestTest,
        CreateAndStart_DestroyRequestBeforeCompletes) {
   std::unique_ptr<OAuth2TokenServiceRequest> request(
-      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId,
+      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId_,
                                                 scopes_, &consumer_));
   request.reset();
   base::RunLoop().RunUntilIdle();
@@ -257,7 +259,7 @@ TEST_F(OAuth2TokenServiceRequestTest,
 TEST_F(OAuth2TokenServiceRequestTest,
        CreateAndStart_DestroyRequestAfterCompletes) {
   std::unique_ptr<OAuth2TokenServiceRequest> request(
-      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId,
+      OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId_,
                                                 scopes_, &consumer_));
   base::RunLoop().RunUntilIdle();
   request.reset();
@@ -268,8 +270,8 @@ TEST_F(OAuth2TokenServiceRequestTest,
 }
 
 TEST_F(OAuth2TokenServiceRequestTest, InvalidateToken) {
-  OAuth2TokenServiceRequest::InvalidateToken(
-      provider_.get(), kAccountId, scopes_, kAccessToken);
+  OAuth2TokenServiceRequest::InvalidateToken(provider_.get(), kAccountId_,
+                                             scopes_, kAccessToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, consumer_.num_get_token_success_);
   EXPECT_EQ(0, consumer_.num_get_token_failure_);

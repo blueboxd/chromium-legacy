@@ -60,7 +60,7 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-  auto* icon_view = new views::ImageView();
+  auto icon_view = std::make_unique<views::ImageView>();
 #if defined(GOOGLE_CHROME_BUILD)
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
@@ -77,24 +77,24 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
                                 ui::NativeTheme::kColorId_DefaultIconColor));
 #endif
   icon_view->SetImage(image);
-  layout->AddView(icon_view);
+  auto* icon_view_ptr = layout->AddView(std::move(icon_view));
 
-  auto* separator = new views::Separator();
+  auto separator = std::make_unique<views::Separator>();
   separator->SetColor(kTitleSeparatorColor);
   separator->SetPreferredHeight(kGooglePayLogoSeparatorHeight);
-  layout->AddView(separator);
+  auto* separator_ptr = layout->AddView(std::move(separator));
 
-  auto* title_label =
-      new views::Label(window_title, views::style::CONTEXT_DIALOG_TITLE);
+  auto title_label = std::make_unique<views::Label>(
+      window_title, views::style::CONTEXT_DIALOG_TITLE);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetMultiLine(true);
-  layout->AddView(title_label);
+  auto* title_label_ptr = layout->AddView(std::move(title_label));
 
   // Add vertical padding to the icon and the separator so they are aligned with
   // the first line of title label. This needs to be done after we create the
   // title label, so that we can use its preferred size.
-  const int title_label_height = title_label->GetPreferredSize().height();
-  icon_view->SetBorder(views::CreateEmptyBorder(
+  const int title_label_height = title_label_ptr->GetPreferredSize().height();
+  icon_view_ptr->SetBorder(views::CreateEmptyBorder(
       /*top=*/(title_label_height - kGooglePayLogoHeight) / 2,
       /*left=*/0, /*bottom=*/0, /*right=*/0));
   // TODO(crbug.com/873140): DISTANCE_RELATED_BUTTON_HORIZONTAL isn't the right
@@ -103,7 +103,7 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   const int separator_horizontal_padding =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
-  separator->SetBorder(views::CreateEmptyBorder(
+  separator_ptr->SetBorder(views::CreateEmptyBorder(
       /*top=*/(title_label_height - kGooglePayLogoSeparatorHeight) / 2,
       /*left=*/separator_horizontal_padding, /*bottom=*/0,
       /*right=*/separator_horizontal_padding));

@@ -104,21 +104,8 @@ void ContentPasswordManagerDriver::FillPasswordForm(
       autofill::MaybeClearPasswordValues(form_data));
 }
 
-void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
-    const autofill::PasswordForm& form) {
-  if (GetPasswordGenerationHelper()->IsGenerationEnabled(
-          /*log_debug_data=*/true)) {
-    GetPasswordGenerationAgent()->FormNotBlacklisted(form);
-  }
-}
-
-void ContentPasswordManagerDriver::FormsEligibleForGenerationFound(
-    const std::vector<autofill::PasswordFormGenerationData>& forms) {
-  GetPasswordGenerationAgent()->FoundFormsEligibleForGeneration(forms);
-}
-
 void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
-    const autofill::NewPasswordFormGenerationData& form) {
+    const autofill::PasswordFormGenerationData& form) {
   if (GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data=*/true)) {
     GetPasswordGenerationAgent()->FoundFormEligibleForGeneration(form);

@@ -6,12 +6,12 @@
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "chrome/android/chrome_jni_headers/DisplayAgent_jni.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "jni/DisplayAgent_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::ConvertUTF8ToJavaString;

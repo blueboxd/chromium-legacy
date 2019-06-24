@@ -7,13 +7,19 @@ xf-display-panel {
     max-width: 400px;
 }
 
+.feedback-panels {
+    align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+}
+
 .xf-panel-item {
     align-items: center;
     background-color: #FFF;
     display: flex;
     flex-direction: row;
-    height: 68px;
     max-width: 400px;
+    min-height: 68px;
 }
 
 .xf-button {
@@ -49,6 +55,10 @@ xf-display-panel {
 .xf-padder-24 {
     flex-grow: 16;
     width: 24px;
+}
+
+.xf-vertical-padder-8 {
+    height: 8px;
 }
 
 xf-circular-progress {

@@ -18,7 +18,8 @@ const HashSet<OriginTrialFeature>& GetNavigationOriginTrialFeatures() {
       HashSet<OriginTrialFeature>, navigation_origin_trial_features,
       ({// Enable the kOriginTrialsSampleAPINavigation feature as a navigation
         // feature, for tests.
-        OriginTrialFeature::kOriginTrialsSampleAPINavigation}));
+        OriginTrialFeature::kOriginTrialsSampleAPINavigation,
+        OriginTrialFeature::kTextFragmentIdentifiers}));
   return navigation_origin_trial_features;
 }
 

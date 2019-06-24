@@ -405,8 +405,13 @@ void AccountReconcilor::PerformSetCookiesAction(
   //
   // Using Unretained is safe here because the CookieManagerService outlives
   // the AccountReconcilor.
+  // TODO(triploblastic): Remove this vector once account_reconcilor and
+  // related classes has been refactored to use CoreAccountId.
+  std::vector<CoreAccountId> accounts_to_send;
+  for (const auto& account : parameters.accounts_to_send)
+    accounts_to_send.push_back(CoreAccountId(account));
   identity_manager_->GetAccountsCookieMutator()->SetAccountsInCookie(
-      parameters.accounts_to_send, delegate_->GetGaiaApiSource(),
+      accounts_to_send, delegate_->GetGaiaApiSource(),
       base::BindOnce(&AccountReconcilor::OnSetAccountsInCookieCompleted,
                      base::Unretained(this)));
 }
@@ -885,7 +890,7 @@ void AccountReconcilor::OnSetAccountsInCookieCompleted(
 }
 
 void AccountReconcilor::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "AccountReconcilor::OnAddAccountToCookieCompleted: "
           << "Account added: " << account_id << ", "

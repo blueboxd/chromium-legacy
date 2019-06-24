@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/android_metrics_provider.h"
 
-#include "jni/NotificationSystemStatusUtil_jni.h"
+#include "chrome/android/chrome_jni_headers/NotificationSystemStatusUtil_jni.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"

@@ -100,6 +100,8 @@
 <translation id="1679068421605151609">डेवलपर टूल</translation>
 <translation id="1692118695553449118">समन्वयन चालू है</translation>
 <translation id="169515064810179024">साइटों को हलचल पकड़ने वाले सेंसर एक्सेस करने से रोकें</translation>
+<translation id="1697480839793160072">टेलीफ़ोन</translation>
+<translation id="1698058317516161971">ईमेल</translation>
 <translation id="1717218214683051432">मोशन सेंसर</translation>
 <translation id="1718835860248848330">अंतिम घंटा</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया</translation>
@@ -227,7 +229,7 @@
 <translation id="257931822824936280">बड़ा किया गया - छोटा करने के लिए क्‍लिक करें.</translation>
 <translation id="2581165646603367611">यह साइट की कुकी, कैश और अन्य डेटा निकाल देगा जो Chrome के विचार में महत्वपूर्ण नहीं है.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
-<translation id="2587052924345400782">ज़्यादा नया वर्शन उपलब्ध है</translation>
+<translation id="2587052924345400782">नया वर्शन उपलब्ध है</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
 <translation id="2612676031748830579">कार्ड संख्या</translation>
 <translation id="2613747923081026172">समूह बनाएं</translation>
@@ -1014,6 +1016,7 @@
 <translation id="8266862848225348053">डाउनलोड सेव करने की जगह</translation>
 <translation id="8274165955039650276">डाउनलोड देखें</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> से समन्वयित हो रहा है</translation>
+<translation id="8284326494547611709">कैप्शन</translation>
 <translation id="8300705686683892304">ऐप्लिकेशन प्रबंधित करता है</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
 <translation id="8313455859591948645">शुरुआती पन्ने में बदलाव करें</translation>

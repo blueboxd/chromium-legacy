@@ -11,13 +11,13 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -209,7 +209,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
     : controller_(controller),
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {
   display_observer_.Add(display::Screen::GetScreen());
-  tablet_mode_observer_.Add(ash::TabletMode::Get());
+  tablet_mode_observer_.Add(TabletModeClient::Get());
   keyboard_observer_.Add(ChromeKeyboardControllerClient::Get());
 
   accel_map_[ui::Accelerator(

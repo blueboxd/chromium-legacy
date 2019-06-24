@@ -120,8 +120,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       const quic::ProofVerifyDetails& verify_details) override {}
 
   // quic::QuicConnectionVisitorInterface overrides.
-  void OnConnectionClosed(quic::QuicErrorCode error,
-                          const std::string& error_details,
+  void OnConnectionClosed(const quic::QuicConnectionCloseFrame& frame,
                           quic::ConnectionCloseSource source) override;
   bool ShouldKeepConnectionAlive() const override;
 

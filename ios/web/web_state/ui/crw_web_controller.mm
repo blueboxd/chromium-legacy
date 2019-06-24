@@ -616,10 +616,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [_containerView clearTransientContentView];
 }
 
-- (void)dismissModals {
-  [self.legacyNativeController dismissModals];
-}
-
 // Caller must reset the delegate before calling.
 - (void)close {
   self.webStateImpl->CancelDialogs();
@@ -1432,7 +1428,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     handlers = new std::map<std::string, SEL>();
-    (*handlers)["chrome.send"] = @selector(handleChromeSendMessage:context:);
     (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
   });
   DCHECK(handlers);
@@ -1551,41 +1546,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
 // about web view state needed for some handlers.
-
-// Handles 'chrome.send' message.
-- (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
-                        context:(NSDictionary*)context {
-  // Chrome message are only handled if sent from the main frame.
-  if (![context[kIsMainFrame] boolValue])
-    return NO;
-  if (self.webStateImpl->HasWebUI()) {
-    const GURL currentURL([self currentURL]);
-    if (web::GetWebClient()->IsAppSpecificURL(currentURL)) {
-      std::string messageContent;
-      base::ListValue* arguments = nullptr;
-      if (!message->GetString("message", &messageContent)) {
-        DLOG(WARNING) << "JS message parameter not found: message";
-        return NO;
-      }
-      if (!message->GetList("arguments", &arguments)) {
-        DLOG(WARNING) << "JS message parameter not found: arguments";
-        return NO;
-      }
-      // WebFrame messaging is not supported in WebUI (as window.isSecureContext
-      // is false. Pass nullptr as sender_frame.
-      self.webStateImpl->OnScriptCommandReceived(
-          messageContent, *message, currentURL, context[kUserIsInteractingKey],
-          [context[kIsMainFrame] boolValue], nullptr);
-      self.webStateImpl->ProcessWebUIMessage(currentURL, messageContent,
-                                             *arguments);
-      return YES;
-    }
-  }
-
-  DLOG(WARNING)
-      << "chrome.send message not handled because WebUI was not found.";
-  return NO;
-}
 
 // Handles 'window.error' message.
 - (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message

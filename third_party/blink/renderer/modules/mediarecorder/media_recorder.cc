@@ -352,7 +352,7 @@ void MediaRecorder::WriteData(const char* data,
                   timecode);
 }
 
-void MediaRecorder::OnError(const WebString& message) {
+void MediaRecorder::OnError(const String& message) {
   DLOG(ERROR) << message.Ascii();
   StopRecording();
   ScheduleDispatchEvent(Event::Create(event_type_names::kError));

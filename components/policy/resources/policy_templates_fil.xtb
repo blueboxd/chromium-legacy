@@ -449,12 +449,6 @@
 
       Dapat itakda ang patakaran sa isang URL kung saan maaaring i-download ng <ph name="PRODUCT_OS_NAME" /> ang Mga Tuntunin ng Serbisyo. Dapat ay plain text ang Mga Tuntunin ng Serbisyo, na ihahatid bilang MIME type text/plain. Hindi pinapayagan ang markup.</translation>
 <translation id="1750315445671978749">I-block ang lahat ng pag-download</translation>
-<translation id="1762072363876276024">
-      Nalalapat ang patakarang ito sa screen sa pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa parehong value. Kung hindi magkatugma ang mga value, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Ang setting na ito, DeviceLoginScreenSitePerProcess, ay magagamit para huwag payagan ang mga user na mag-opt out sa default na gawi ng pag-isolate ng lahat ng site. Tandaang puwede ring maging kapaki-pakinabang ang patakarang DeviceLoginScreenIsolateOrigins sa pag-isolate ng karagdagang mas mahuhusay na pinagmulan.
-      Kung naka-enable ang patakaran, hindi makakapag-opt out ang mga user sa default na gawi kung saan tumatakbo ang bawat site sa sarili nitong proseso.
-      Kung hindi naka-configure o naka-disable ang patakaran, mababago ng user ang setting na ito (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).
-      </translation>
 <translation id="1767673020408652620">I-enable ang Mga Rekomendasyon sa App sa Zero State ng Box para sa Paghahanap</translation>
 <translation id="17719159826324007">
       Pupuwersahin ng patakarang ito, kapag nakatakda sa ArcSession, na mag-reboot ang device kapag may user na nag-sign out kung nagsimula ang Android.
@@ -2548,6 +2542,10 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaan na hindi ito inirerekomenda, dahil maaari itong maging daan sa pag-bypass sa nameConstraints na extension na naghihigpit sa mga hostname kung saan maaaring awtorisahan ang isang certificate.
 
       Kung hindi naitakda ang patakarang ito, o kung naitakda ito sa false, hindi pagkakatiwalaan ang mga certificate ng server na walang subjectAlternativeName na extension na naglalaman ng DNS name o IP address.</translation>
+<translation id="5578571772998293651">Payagan ang feedback ng user.
+        Kung nakatakda sa false ang patakaran, hindi makakapagpadala ang mga user ng feedback sa Google.
+
+        Kung hindi nakatakda o nakatakda sa true ang patakaran, makakapagpadala ang mga user ng feedback sa Google sa pamamagitan ng Menu-&gt;Tulong-&gt;Mag-ulat ng Isyu o kumbinasyon ng key.</translation>
 <translation id="5581292529942108810">I-configure ang mga patakarang nauugnay sa Chrome Reporting Extension.
 
       May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
@@ -3702,22 +3700,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Tandaan: ang mga pinapayagang value para sa field na <ph name="MINUTE_FIELD_NAME" /> sa <ph name="CHARGE_START_TIME_FIELD_NAME" /> at <ph name="CHARGE_END_TIME_FIELD_NAME" /> ay 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">I-configure ang mga tampok sa accessibility ng <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Ini-enable ng patakarang ito ang HTTP/0.9 sa mga port maliban sa 80 para sa HTTP at 443 para sa HTTPS.
-
-      Naka-disable ang patakarang ito bilang default, at kung naka-enable, nagiging dahilan ito na maaaring maapektuhan ang mga user ng panseguridad na isyu https://crbug.com/600352.
-
-      Layunin ng patakarang ito na bigyan ang mga enterprise ng pagkakataong alisin ang mga kasalukuyang server sa HTTP/0.9 at aalisin ito sa hinaharap.
-
-      Kung hindi itatakda ang patakarang ito, idi-disable ang HTTP/0.9 sa mga hindi default na port.</translation>
-<translation id="7726421241038987229">
-      Ang setting na ito, SitePerProcess, ay magagamit para huwag payagan ang mga user na mag-opt out sa default na gawi ng pag-isolate ng lahat ng site. Tandaang puwede ring maging kapaki-pakinabang ang patakarang IsolateOrigins sa pag-isolate ng karagdagang mas mahuhusay na pinagmulan.
-      Kung naka-enable ang patakaran, hindi makakapag-opt out ang mga user sa default na gawi kung saan tumatakbo ang bawat site sa sarili nitong proseso.
-      Kung hindi naka-configure o naka-disable ang patakaran, makakapag-opt out ang user sa pag-isolate ng site
-      (hal. paggamit ng entry na "I-disable ang pag-isolate ng site" sa chrome://flags).  Ang pagtakda ng patakaran sa naka-disable at/o hindi pag-configure ng patakaran ay hindi mag-o-off sa Pag-isolate ng Site.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magkatugma ang mga value na tinukoy ng dalawang patakaran, puwedeng magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-
-      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para i-enable ang SitePerProcess sa Android, gamitin ang setting ng patakarang SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Payagan ang mga device na gumamit ng <ph name="PLUGIN_VM_NAME" /> sa <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Pinapagana ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access sa halip na isang PIN na tinukoy ng user.
 
@@ -3945,6 +3927,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi nakatakda ang patakarang ito, hindi magkakaroon ng mga pagbubukod sa blacklist mula sa patakarang 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Payagan ang user ng enterprise na maging pangunahing multiprofile na user lang (Default na pag-uugali para sa mga user na pinamamahalaan ng enterprise)</translation>
 <translation id="8183108371184777472">Pigilan ang paglunsad ng window ng browser</translation>
+<translation id="8186911565834244165">Payagan ang feedback ng user</translation>
 <translation id="8214600119442850823">Kino-configure ang password manager.</translation>
 <translation id="8217516105848565518">Hindi na ginagamit ang patakarang ito. Pakigamit na lang ang RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">I-enable ang mga RC4 cipher suite sa TLS</translation>
@@ -4388,6 +4371,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
           Ang mga tagapangasiwa ng protocol na irerehistro ng patakaran ay isasama sa mga inirehistro ng user, at available gamitin ang dalawang ito. Maaaring i-override ng user ang mga tagapangasiwa ng protocol na na-install ng patakaran sa pamamagitan ng pag-i-install ng bagong default na tagapangasiwa, ngunit hindi nila maaalis ang isang tagapangasiwa ng protocol na inirehistro ng patakaran.</translation>
+<translation id="91196902572559194">Ang patakarang ito ay nagbibigay ng pahintulot sa Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses.
+
+      Kung naka-enable ang patakaran, makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
+      Kung naka-disable ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
+      Kung hindi nakatakda ang patakaran, makakapagpasya ang mga user kung papayagang makinig sa parirala para sa pag-activate gamit ang boses.
+      </translation>
 <translation id="9123211093995421438">Tumutukoy sa minimum na bilang ng pag-rollback ng mga milestone ng <ph name="PRODUCT_OS_NAME" /> na dapat payagan simula sa stable na bersyon anumang oras.
 
       Ang default ay 0 para sa consumer, 4 (tinatayang kalahating taon) para sa mga device na na-enroll ng enterprise.

@@ -81,7 +81,8 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Attempt to add an invalid phone alongside the already invalid data and cancel. */
@@ -112,7 +113,8 @@ public class PaymentRequestIncompletePhoneTest implements MainActivityStartCallb
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
     }
 
     /** Update the phone with valid data and provide that to the merchant. */

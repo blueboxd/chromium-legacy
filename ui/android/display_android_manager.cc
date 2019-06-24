@@ -9,8 +9,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/stl_util.h"
-#include "jni/DisplayAndroidManager_jni.h"
 #include "ui/android/screen_android.h"
+#include "ui/android/ui_android_jni_headers/DisplayAndroidManager_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
 #include "ui/gfx/icc_profile.h"

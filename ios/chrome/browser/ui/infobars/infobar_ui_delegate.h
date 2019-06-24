@@ -27,6 +27,9 @@ class InfoBarControllerDelegate;
 // YES if the container should modally present the Infobar.
 @property(nonatomic, assign, getter=isPresented) BOOL presented;
 
+// YES if a badge should be displayed for this Infobar.
+@property(nonatomic, assign, readonly) BOOL hasBadge;
+
 // The InfobarType for this Infobar.
 @property(nonatomic, assign) InfobarType infobarType;
 

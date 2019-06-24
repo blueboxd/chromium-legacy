@@ -294,8 +294,9 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
       ui_test_utils::NavigateToURL(browser(), url);
   } else if (launch_platform_app) {
     AppLaunchParams params(browser()->profile(), extension->id(),
-                           LAUNCH_CONTAINER_NONE,
-                           WindowOpenDisposition::NEW_WINDOW, SOURCE_TEST);
+                           LaunchContainer::kLaunchContainerNone,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

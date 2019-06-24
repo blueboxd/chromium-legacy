@@ -217,6 +217,8 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 }
 
 - (void)setSearchIcon:(UIImage*)searchIcon {
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton))
+    return;
   [self.view.searchButton setImage:searchIcon forState:UIControlStateNormal];
 }
 

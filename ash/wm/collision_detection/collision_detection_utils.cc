@@ -48,11 +48,14 @@ bool ShouldIgnoreWindowForCollision(
 }
 
 gfx::Rect ComputeCollisionRectFromBounds(const gfx::Rect& bounds,
-                                         const aura::Window* parent) {
+                                         const aura::Window* parent,
+                                         bool inset = true) {
   gfx::Rect collision_rect = bounds;
   ::wm::ConvertRectToScreen(parent, &collision_rect);
-  collision_rect.Inset(-kCollisionWindowWorkAreaInsetsDp,
-                       -kCollisionWindowWorkAreaInsetsDp);
+  if (inset) {
+    collision_rect.Inset(-kCollisionWindowWorkAreaInsetsDp,
+                         -kCollisionWindowWorkAreaInsetsDp);
+  }
   return collision_rect;
 }
 
@@ -97,8 +100,22 @@ std::vector<gfx::Rect> CollectCollisionRects(
       if (ShouldIgnoreWindowForCollision(window, priority))
         continue;
       // Use the target bounds in case an animation is in progress.
-      rects.push_back(ComputeCollisionRectFromBounds(window->GetTargetBounds(),
-                                                     window->parent()));
+      if (priority ==
+              CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu &&
+          window->GetProperty(kCollisionDetectionRelativePriority) ==
+              CollisionDetectionUtils::RelativePriority::
+                  kAutomaticClicksScrollMenu) {
+        // The autoclick menu widget and autoclick scroll menu widget are 0dip
+        // apart because they must be drawn at 8dips apart including drop
+        // shadow. This special case means we should not add an inset if we
+        // are calculating collision rects for the autoclick menu.
+        rects.push_back(ComputeCollisionRectFromBounds(
+            window->GetTargetBounds(), window->parent(),
+            false /* do not inset */));
+      } else {
+        rects.push_back(ComputeCollisionRectFromBounds(
+            window->GetTargetBounds(), window->parent()));
+      }
     }
   }
 

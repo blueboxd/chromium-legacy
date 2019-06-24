@@ -9,11 +9,10 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/arc_service_manager.h"
@@ -21,7 +20,6 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_function_dispatcher.h"
 #include "net/base/mime_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -31,29 +29,11 @@ namespace extensions {
 
 namespace {
 
-// TODO(https://crbug.com/844654): This should be using something more
-// deterministic.
-content::WebContents* GetAssociatedWebContentsDeprecated(
-    UIThreadExtensionFunction* function) {
-  if (function->dispatcher()) {
-    content::WebContents* web_contents =
-        function->dispatcher()->GetAssociatedWebContents();
-    if (web_contents)
-      return web_contents;
-  }
-
-  Browser* browser =
-      ChromeExtensionFunctionDetails(function).GetCurrentBrowser();
-  if (!browser)
-    return nullptr;
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
-
 // Computes the routing ID for SelectFileDialogExtension from the |function|.
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
     UIThreadExtensionFunction* function) {
-  return SelectFileDialogExtension::GetRoutingIDFromWebContents(
-      GetAssociatedWebContentsDeprecated(function));
+  return SelectFileDialogExtensionUserData::GetRoutingIdForWebContents(
+      function->GetSenderWebContents());
 }
 
 }  // namespace

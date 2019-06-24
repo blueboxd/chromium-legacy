@@ -12,8 +12,17 @@
 // to this file. Custom dynamic colors should go in ColorSets.
 @interface UIColor (CRSemanticColors)
 
+// System Background Color
+@property(class, nonatomic, readonly) UIColor* cr_systemBackgroundColor;
+
+// System Grouped Background Colors
+@property(class, nonatomic, readonly) UIColor* cr_systemGroupedBackgroundColor;
 @property(class, nonatomic, readonly)
     UIColor* cr_secondarySystemGroupedBackgroundColor;
+
+// Label Colors
+@property(class, nonatomic, readonly) UIColor* cr_labelColor;
+@property(class, nonatomic, readonly) UIColor* cr_secondaryLabelColor;
 
 @end
 

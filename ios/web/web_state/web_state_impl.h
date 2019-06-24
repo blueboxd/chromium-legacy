@@ -128,10 +128,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ClearWebUI();
   // Returns true if there is a WebUI active.
   bool HasWebUI();
-  // Processes a message from a WebUI displayed at the given URL.
-  void ProcessWebUIMessage(const GURL& source_url,
-                           const std::string& message,
-                           const base::ListValue& args);
 
   // Gets the HTTP response headers associated with the current page.
   // NOTE: For a WKWebView-based WebState, these headers are generated via

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,7 +35,7 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewDetailIconCell class];
-    _cellBackgroundColor = [UIColor whiteColor];
+    _cellBackgroundColor = UIColor.cr_secondarySystemGroupedBackgroundColor;
   }
   return self;
 }
@@ -103,8 +104,8 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _textLabel.adjustsFontForContentSizeCategory = YES;
-    _textLabel.textColor = [UIColor blackColor];
-    _textLabel.backgroundColor = [UIColor clearColor];
+    _textLabel.textColor = UIColor.cr_labelColor;
+    _textLabel.backgroundColor = UIColor.clearColor;
     [contentView addSubview:_textLabel];
 
     _detailTextLabel = [[UILabel alloc] init];
@@ -112,8 +113,8 @@ const CGFloat kCellLabelsWidthProportion = 3.0f;
     _detailTextLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
-    _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
-    _detailTextLabel.backgroundColor = [UIColor clearColor];
+    _detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
+    _detailTextLabel.backgroundColor = UIColor.clearColor;
     [contentView addSubview:_detailTextLabel];
 
     // Set up the constraints for when the icon is visible and hidden.  One of

@@ -37,6 +37,8 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
+#include "components/offline_pages/core/offline_page_test_archive_publisher.h"
+#include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -144,53 +146,6 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   bool online_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifier);
-};
-
-// TODO(jianli, carlosk): This should be removed in favor of using with
-// OfflinePageTestArchiver.
-class TestOfflinePageArchiver : public OfflinePageArchiver {
- public:
-  TestOfflinePageArchiver(const GURL& url,
-                          const base::FilePath& archive_file_path,
-                          int archive_file_size,
-                          const std::string& digest)
-      : url_(url),
-        archive_file_path_(archive_file_path),
-        archive_file_size_(archive_file_size),
-        digest_(digest) {}
-  ~TestOfflinePageArchiver() override {}
-
-  void CreateArchive(const base::FilePath& archives_dir,
-                     const CreateArchiveParams& create_archive_params,
-                     content::WebContents* web_contents,
-                     CreateArchiveCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  ArchiverResult::SUCCESSFULLY_CREATED, url_,
-                                  archive_file_path_, base::string16(),
-                                  archive_file_size_, digest_));
-  }
-
-  void PublishArchive(
-      const OfflinePageItem& offline_page,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      const base::FilePath& new_file_path,
-      SystemDownloadManager* download_manager,
-      PublishArchiveDoneCallback publish_done_callback) override {
-    publish_archive_result_.move_result = SavePageResult::SUCCESS;
-    publish_archive_result_.new_file_path = offline_page.file_path;
-    publish_archive_result_.download_id = 0;
-    std::move(publish_done_callback).Run(offline_page, publish_archive_result_);
-  }
-
- private:
-  const GURL url_;
-  const base::FilePath archive_file_path_;
-  const int archive_file_size_;
-  const std::string digest_;
-  PublishArchiveResult publish_archive_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOfflinePageArchiver);
 };
 
 class TestURLLoaderClient : public network::mojom::URLLoaderClient {
@@ -900,8 +855,10 @@ int64_t OfflinePageRequestHandlerTest::SavePage(const GURL& url,
   static int item_counter = 0;
   ++item_counter;
 
-  std::unique_ptr<TestOfflinePageArchiver> archiver(
-      new TestOfflinePageArchiver(url, file_path, file_size, digest));
+  auto archiver = std::make_unique<OfflinePageTestArchiver>(
+      nullptr, url, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
+      base::string16(), file_size, digest, base::ThreadTaskRunnerHandle::Get());
+  archiver->set_filename(file_path);
 
   async_operation_completed_ = false;
   OfflinePageModel::SavePageParams save_page_params;
@@ -928,18 +885,23 @@ OfflinePageRequestHandlerTest::BuildTestOfflinePageModel(
       key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
-  std::unique_ptr<SystemDownloadManager> download_manager(
-      new StubSystemDownloadManager(kDownloadId, true));
+  auto download_manager =
+      std::make_unique<StubSystemDownloadManager>(kDownloadId, true);
 
   // Since we're not saving page into temporary dir, it's set the same as the
   // private dir.
-  std::unique_ptr<ArchiveManager> archive_manager(
-      new ArchiveManager(private_archives_dir_, private_archives_dir_,
-                         public_archives_dir_, task_runner));
+  auto archive_manager = std::make_unique<ArchiveManager>(
+      private_archives_dir_, private_archives_dir_, public_archives_dir_,
+      task_runner);
+
+  auto archive_publisher = std::make_unique<OfflinePageTestArchivePublisher>(
+      archive_manager.get(), download_manager.get());
+  // TODO(iwells): Figure out how to make use_verbatim_archive_path go away.
+  archive_publisher->use_verbatim_archive_path(true);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), task_runner));
+      std::move(download_manager), std::move(archive_publisher), task_runner));
 }
 
 // static

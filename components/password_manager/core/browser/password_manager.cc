@@ -24,7 +24,6 @@
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
-#include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -111,16 +110,6 @@ bool IsPasswordFormReappeared(const PasswordForm& observed_form,
   }
 
   return false;
-}
-
-// Helper UMA reporting function for differences in URLs during form submission.
-void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
-  bool target_domain_differs =
-      !net::registry_controlled_domains::SameDomainOrHost(
-          src, target,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SubmitNavigatesToDifferentDomain",
-                        target_domain_differs);
 }
 
 bool IsSignupForm(const PasswordForm& form) {
@@ -374,9 +363,8 @@ void PasswordManager::RegisterProfilePrefs(
                                0.0);
 
 #if defined(OS_MACOSX)
-  registry->RegisterIntegerPref(
-      prefs::kKeychainMigrationStatus,
-      static_cast<int>(MigrationStatus::MIGRATED_DELETED));
+  registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
+                                4 /* MIGRATED_DELETED */);
 #endif
   registry->RegisterListPref(prefs::kPasswordHashDataList,
                              PrefRegistry::NO_REGISTRATION_FLAGS);
@@ -1185,7 +1173,6 @@ void PasswordManager::OnLoginSuccessful() {
 
   submitted_manager->GetMetricsRecorder()->LogSubmitPassed();
 
-  RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.SuccessfulLoginHappened",
       submitted_manager->GetSubmittedForm()->origin.SchemeIsCryptographic());

@@ -51,6 +51,8 @@ SharedContextState::SharedContextState(
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       weak_ptr_factory_(this) {
+  raster::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes_, &glyph_cache_max_texture_bytes_);
   if (GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     gr_context_ = vk_context_provider_->GetGrContext();
@@ -143,23 +145,21 @@ void SharedContextState::InitializeGrContext(
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
     options.fDisableCoverageCountingPaths = true;
-    size_t max_resource_cache_bytes = 0u;
-    raster::DetermineGrCacheLimitsFromAvailableMemory(
-        &max_resource_cache_bytes, &glyph_cache_max_texture_bytes_);
     options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     options.fDisallowGLSLBinaryCaching = workarounds.disable_program_disk_cache;
     owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
-    if (!gr_context_) {
-      LOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                    "failed.";
-    } else {
-      constexpr int kMaxGaneshResourceCacheCount = 16384;
-      gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                          max_resource_cache_bytes);
-    }
+  }
+
+  if (!gr_context_) {
+    LOG(ERROR) << "OOP raster support disabled: GrContext creation "
+                  "failed.";
+  } else {
+    constexpr int kMaxGaneshResourceCacheCount = 16384;
+    gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                        max_resource_cache_bytes_);
   }
   transfer_cache_ = std::make_unique<ServiceTransferCache>();
 }

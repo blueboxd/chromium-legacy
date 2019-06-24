@@ -344,7 +344,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
     const Extension* extension) {
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::SOURCE_BACKGROUND));
+      extensions::AppLaunchSource::kSourceBackground));
 }
 
 // static

@@ -173,6 +173,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -3467,6 +3468,19 @@ void Internals::setDeviceEmulationScale(float scale,
 void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
                                         int resource_load_priority) {
   resolver->Resolve(resource_load_priority);
+}
+
+String Internals::getDocumentAgentId(Document* document) {
+  // Sounds like there's no notion of "process ID" in Blink, but the main
+  // thread's thread ID serves for that purpose.
+  PlatformThreadId process_id = Thread::MainThread()->ThreadId();
+
+  uintptr_t agent_address = reinterpret_cast<uintptr_t>(document->GetAgent());
+
+  // This serializes a pointer as a decimal number, which is a bit ugly, but
+  // it works. Is there any utility to dump a number in a hexadecimal form?
+  // I couldn't find one in WTF.
+  return String::Number(process_id) + ":" + String::Number(agent_address);
 }
 
 }  // namespace blink

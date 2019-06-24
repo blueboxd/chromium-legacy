@@ -57,9 +57,6 @@ public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
 
-    private final GlobalDiscardableReferencePool mReferencePool =
-            new GlobalDiscardableReferencePool();
-
     /** Lock on creation of sComponent. */
     private static final Object sLock = new Object();
     @Nullable

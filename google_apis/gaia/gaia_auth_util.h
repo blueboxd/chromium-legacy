@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "google_apis/gaia/core_account_id.h"
+
 class GURL;
 
 namespace gaia {
@@ -16,7 +18,8 @@ namespace gaia {
 struct ListedAccount {
   // The account's ID, as per Chrome, will be determined in the
   // CookieManagerService.
-  std::string id;
+  // TODO(triploblastic): Rename the id field to account_id.
+  CoreAccountId id;
   std::string email;
   std::string gaia_id;
   std::string raw_email;

@@ -13,8 +13,8 @@
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
-#include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -124,7 +124,7 @@ void ChromeRenderViewTest::SetUp() {
   // create another set.
   password_autofill_agent_ = new autofill::TestPasswordAutofillAgent(
       view_->GetMainRenderFrame(), &associated_interfaces_);
-  password_generation_ = new autofill::TestPasswordGenerationAgent(
+  password_generation_ = new autofill::PasswordGenerationAgent(
       view_->GetMainRenderFrame(), password_autofill_agent_,
       &associated_interfaces_);
   autofill_agent_ = new NiceMock<MockAutofillAgent>(

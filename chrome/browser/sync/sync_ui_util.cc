@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -140,7 +141,7 @@ MessageType GetStatusLabelsImpl(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     if (status_label) {
       *status_label =
-          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
+          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY);
     }
     // TODO(crbug.com/911153): Is SYNCED correct for this case?
     return SYNCED;
@@ -150,10 +151,14 @@ MessageType GetStatusLabelsImpl(
   // set up once again.
   if (!service->GetUserSettings()->IsSyncRequested()) {
     if (status_label) {
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+      *status_label = l10n_util::GetStringUTF16(
+          IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD);
     }
-    return SYNC_ERROR;
+    // Note: The pre-UnifiedConsent UI handles this case differently and does
+    // *not* treat it as an error. If we wanted to treat it as an error, we'd
+    // also have to set |link_label| and |action_type|, see crbug.com/977980.
+    return unified_consent::IsUnifiedConsentFeatureEnabled() ? SYNC_ERROR
+                                                             : PRE_SYNCED;
   }
 
   if (service->GetUserSettings()->IsFirstSetupComplete()) {
@@ -191,7 +196,7 @@ MessageType GetStatusLabelsImpl(
   // If first setup is in progress, show an "in progress" message.
   if (service->IsSetupInProgress()) {
     if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SETUP_IN_PROGRESS);
     }
     return PRE_SYNCED;
   }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -181,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Worker) {
   EXPECT_TRUE(header_map.find("DNT") != header_map.end());
   EXPECT_EQ("1", header_map["DNT"]);
 
-  // Wait until the worker script is loaded.
+  // Wait until the worker script is loaded to stop the test from crashing
+  // during destruction.
   EXPECT_EQ("DONE", EvalJs(shell(), "waitForMessage();"));
 }
 
@@ -212,13 +214,14 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, MAYBE_SharedWorker) {
   EXPECT_TRUE(header_map.find("DNT") != header_map.end());
   EXPECT_EQ("1", header_map["DNT"]);
 
-  // Wait until the worker script is loaded.
+  // Wait until the worker script is loaded to stop the test from crashing
+  // during destruction.
   EXPECT_EQ("DONE", EvalJs(shell(), "waitForMessage();"));
 }
 
 // Checks that the DNT header is sent in a request for a service worker
 // script.
-IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker) {
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker_Register) {
   const std::string kWorkerScript = "// empty";
   net::test_server::HttpRequest::HeaderMap header_map;
   base::RunLoop loop;
@@ -239,6 +242,35 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker) {
   // Service worker doesn't have to wait for onmessage event because
   // navigator.serviceWorker.ready can ensure that the script load has
   // been completed.
+}
+
+// Checks that the DNT header is sent in a request for a service worker
+// script during update checking.
+IN_PROC_BROWSER_TEST_F(DoNotTrackTest, ServiceWorker_Update) {
+  const std::string kWorkerScript = "// empty";
+  net::test_server::HttpRequest::HeaderMap header_map;
+  base::RunLoop loop;
+  // Wait for two requests to capture the request header for updating.
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &CaptureHeaderHandlerAndReturnScript, "/capture", &header_map,
+      kWorkerScript, base::BarrierClosure(2, loop.QuitClosure())));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  if (!EnableDoNotTrack())
+    return;
+
+  // Register a service worker, trigger update, then wait until the handler sees
+  // the second request.
+  NavigateToURL(shell(), GetURL("/service_worker/create_service_worker.html"));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('/capture');"));
+  EXPECT_EQ("DONE", EvalJs(shell(), "update();"));
+  loop.Run();
+
+  EXPECT_TRUE(header_map.find("DNT") != header_map.end());
+  EXPECT_EQ("1", header_map["DNT"]);
+
+  // Service worker doesn't have to wait for onmessage event because
+  // waiting for a promise by registration.update() can ensure that the script
+  // load has been completed.
 }
 
 // Checks that the DNT header is preserved when fetching from a dedicated

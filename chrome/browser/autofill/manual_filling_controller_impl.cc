@@ -24,6 +24,30 @@ using autofill::AddressAccessoryController;
 using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 
+using FillingSource = ManualFillingController::FillingSource;
+
+namespace {
+
+FillingSource GetSourceForTab(const AccessorySheetData& accessory_sheet) {
+  switch (accessory_sheet.get_sheet_type()) {
+    case AccessoryTabType::PASSWORDS:
+      return FillingSource::PASSWORD_FALLBACKS;
+    case AccessoryTabType::CREDIT_CARDS:
+      return FillingSource::CREDIT_CARD_FALLBACKS;
+    case AccessoryTabType::ADDRESSES:
+      return FillingSource::ADDRESS_FALLBACKS;
+    case AccessoryTabType::TOUCH_TO_FILL:
+    case AccessoryTabType::ALL:
+    case AccessoryTabType::COUNT:
+      break;  // Intentional failure.
+  }
+  NOTREACHED() << "Cannot determine filling source for "
+               << accessory_sheet.get_sheet_type();
+  return FillingSource::PASSWORD_FALLBACKS;
+}
+
+}  // namespace
+
 ManualFillingControllerImpl::~ManualFillingControllerImpl() = default;
 
 // static
@@ -72,52 +96,50 @@ void ManualFillingControllerImpl::OnFilledIntoFocusedField(
   view_->SwapSheetWithKeyboard();
 }
 
-void ManualFillingControllerImpl::RefreshSuggestionsForField(
-    FocusedFieldType focused_field_type,
+void ManualFillingControllerImpl::RefreshSuggestions(
     const AccessorySheetData& accessory_sheet_data) {
   view_->OnItemsAvailable(accessory_sheet_data);
+  UpdateSourceAvailability(GetSourceForTab(accessory_sheet_data),
+                           !accessory_sheet_data.user_info_list().empty());
+}
 
-  // TODO(crbug.com/965478): Refresh visibility for non-PWDs in V2.
-  if (accessory_sheet_data.get_sheet_type() != AccessoryTabType::PASSWORDS)
-    return;
-
-  // TODO(crbug.com/905669): The decision for showing the sheet or not will need
-  // to take into account if Autofill suggestions are also available.
-  if (autofill::IsFillable(focused_field_type))
+void ManualFillingControllerImpl::NotifyFocusedInputChanged(
+    autofill::mojom::FocusedFieldType focused_field_type) {
+  focused_field_type_ = focused_field_type;
+  // Whenever the focus changes, reset the accessory.
+  if (ShouldShowAccessory())
     view_->SwapSheetWithKeyboard();
   else
     view_->CloseAccessorySheet();
+
+  UpdateVisibility();
 }
 
-void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(
-    FillingSource source) {
+void ManualFillingControllerImpl::UpdateSourceAvailability(
+    FillingSource source,
+    bool has_suggestions) {
   if (source == FillingSource::AUTOFILL &&
       !base::FeatureList::IsEnabled(
           autofill::features::kAutofillKeyboardAccessory)) {
     // Ignore autofill signals if the feature is disabled.
     return;
   }
-  visible_sources_.insert(source);
-  view_->ShowWhenKeyboardIsVisible();
+
+  if (has_suggestions == available_sources_.contains(source))
+    return;
+
+  if (has_suggestions)
+    available_sources_.insert(source);
+  else
+    available_sources_.erase(source);
+
+  UpdateVisibility();
 }
 
 void ManualFillingControllerImpl::ShowTouchToFillSheet(
     const AccessorySheetData& data) {
   view_->OnItemsAvailable(data);
   view_->ShowTouchToFillSheet();
-}
-
-void ManualFillingControllerImpl::DeactivateFillingSource(
-    FillingSource source) {
-  if (source == FillingSource::AUTOFILL &&
-      !base::FeatureList::IsEnabled(
-          autofill::features::kAutofillKeyboardAccessory)) {
-    // Ignore autofill signals if the feature is disabled.
-    return;
-  }
-  visible_sources_.erase(source);
-  if (visible_sources_.empty())
-    view_->Hide();
 }
 
 void ManualFillingControllerImpl::Hide() {
@@ -189,6 +211,49 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       pwd_controller_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
       view_(std::move(view)) {}
+
+bool ManualFillingControllerImpl::ShouldShowAccessory() const {
+  // If we only provide password fallbacks (== accessory V1), show them for
+  // passwords and username fields only.
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory) &&
+      !base::FeatureList::IsEnabled(
+          autofill::features::kAutofillManualFallbackAndroid)) {
+    return focused_field_type_ == FocusedFieldType::kFillablePasswordField ||
+           (focused_field_type_ == FocusedFieldType::kFillableUsernameField &&
+            available_sources_.contains(FillingSource::PASSWORD_FALLBACKS));
+  }
+  switch (focused_field_type_) {
+    // Always show on password fields to provide management and generation.
+    case FocusedFieldType::kFillablePasswordField:
+      return true;
+
+    // If there are suggestions, show on usual form fields.
+    case FocusedFieldType::kFillableUsernameField:
+    case FocusedFieldType::kFillableNonSearchField:
+      return !available_sources_.empty();
+
+    // Even if there are suggestions, don't show on search fields and textareas.
+    case FocusedFieldType::kFillableSearchField:
+    case FocusedFieldType::kFillableTextArea:
+      return false;  // TODO(https://crbug.com/965478): true on long-press.
+
+    // Never show if the focused field is not explicitly fillable.
+    case FocusedFieldType::kUnfillableElement:
+    case FocusedFieldType::kUnknown:
+      return false;
+  }
+  NOTREACHED() << "Unhandled field type " << focused_field_type_;
+  return false;
+}
+
+void ManualFillingControllerImpl::UpdateVisibility() {
+  if (ShouldShowAccessory()) {
+    view_->ShowWhenKeyboardIsVisible();
+  } else {
+    view_->Hide();
+  }
+}
 
 AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
     AccessoryTabType type) {

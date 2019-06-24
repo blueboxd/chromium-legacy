@@ -359,7 +359,7 @@ std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& consumer_id,
     const identity::ScopeSet& scopes) {
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
@@ -374,7 +374,7 @@ void AboutSigninInternals::OnAccessTokenRequested(
 }
 
 void AboutSigninInternals::OnAccessTokenRequestCompleted(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& consumer_id,
     const identity::ScopeSet& scopes,
     GoogleServiceAuthError error,
@@ -393,7 +393,7 @@ void AboutSigninInternals::OnAccessTokenRequestCompleted(
 }
 
 void AboutSigninInternals::OnRefreshTokenUpdatedForAccountFromSource(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     bool is_refresh_token_valid,
     const std::string& source) {
   RefreshTokenEvent event;
@@ -407,7 +407,7 @@ void AboutSigninInternals::OnRefreshTokenUpdatedForAccountFromSource(
 }
 
 void AboutSigninInternals::OnRefreshTokenRemovedForAccountFromSource(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& source) {
   RefreshTokenEvent event;
   event.account_id = account_id;
@@ -429,7 +429,7 @@ void AboutSigninInternals::OnEndBatchOfRefreshTokenStateChanges() {
 }
 
 void AboutSigninInternals::OnAccessTokenRemovedFromCache(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const identity::ScopeSet& scopes) {
   for (const std::unique_ptr<TokenInfo>& token :
        signin_status_.token_info_map[account_id]) {
@@ -576,7 +576,7 @@ AboutSigninInternals::SigninStatus::SigninStatus()
 AboutSigninInternals::SigninStatus::~SigninStatus() {}
 
 AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& consumer_id,
     const identity::ScopeSet& scopes) {
   for (const std::unique_ptr<TokenInfo>& token : token_info_map[account_id]) {
@@ -738,7 +738,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   auto refresh_token_events_value = std::make_unique<base::ListValue>();
   for (const auto& event : refresh_token_events) {
     auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString("accountId", event.account_id);
+    entry->SetString("accountId", event.account_id.id);
     entry->SetString("timestamp", base::TimeToISO8601(event.timestamp));
     entry->SetString("type", event.GetTypeAsString());
     entry->SetString("source", event.source);

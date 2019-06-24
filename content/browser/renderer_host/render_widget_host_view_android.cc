@@ -1089,9 +1089,7 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
 
 void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
   if (!host()->delegate()->IsFullscreenForCurrentTab() ||
-      current_surface_size_ == view_.GetPhysicalBackingSize() ||
-      !base::FeatureList::IsEnabled(
-          features::kHideIncorrectlySizedFullscreenFrames)) {
+      current_surface_size_ == view_.GetPhysicalBackingSize()) {
     return;
   }
   // When we're in a fullscreen and and doing a resize we show black

@@ -528,6 +528,64 @@ TEST(ParsedCookieTest, SettersInputValidation) {
   EXPECT_FALSE(pc.SetSameSite("\r"));
 }
 
+TEST(ParsedCookieTest, ToCookieLineSpecialTokens) {
+  // Special tokens "secure" and "httponly" should be treated as any other name
+  // when they are in the first position.
+  {
+    ParsedCookie pc("");
+    pc.SetName("secure");
+    EXPECT_EQ(pc.ToCookieLine(), "secure=");
+  }
+  {
+    ParsedCookie pc("secure");
+    EXPECT_EQ(pc.ToCookieLine(), "=secure");
+  }
+  {
+    ParsedCookie pc("secure=foo");
+    EXPECT_EQ(pc.ToCookieLine(), "secure=foo");
+  }
+  {
+    ParsedCookie pc("foo=secure");
+    EXPECT_EQ(pc.ToCookieLine(), "foo=secure");
+  }
+  {
+    ParsedCookie pc("httponly=foo");
+    EXPECT_EQ(pc.ToCookieLine(), "httponly=foo");
+  }
+  {
+    ParsedCookie pc("foo");
+    pc.SetName("secure");
+    EXPECT_EQ(pc.ToCookieLine(), "secure=foo");
+  }
+  {
+    ParsedCookie pc("bar");
+    pc.SetName("httponly");
+    EXPECT_EQ(pc.ToCookieLine(), "httponly=bar");
+  }
+  {
+    ParsedCookie pc("foo=bar; baz=bob");
+    EXPECT_EQ(pc.ToCookieLine(), "foo=bar; baz=bob");
+  }
+  // Outside of the first position, the value associated with a special name
+  // should not be printed.
+  {
+    ParsedCookie pc("name=foo; secure");
+    EXPECT_EQ(pc.ToCookieLine(), "name=foo; secure");
+  }
+  {
+    ParsedCookie pc("name=foo; secure=bar");
+    EXPECT_EQ(pc.ToCookieLine(), "name=foo; secure");
+  }
+  {
+    ParsedCookie pc("name=foo; httponly=baz");
+    EXPECT_EQ(pc.ToCookieLine(), "name=foo; httponly");
+  }
+  {
+    ParsedCookie pc("name=foo; bar=secure");
+    EXPECT_EQ(pc.ToCookieLine(), "name=foo; bar=secure");
+  }
+}
+
 TEST(ParsedCookieTest, SameSiteValues) {
   struct TestCase {
     const char* cookie;

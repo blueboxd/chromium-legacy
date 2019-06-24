@@ -44,9 +44,7 @@ enum AssistantAllowedState {
   // Disallowed because the user's account type is currently not supported.
   DISALLOWED_BY_ACCOUNT_TYPE,
   // Disallowed because the device is in Kiosk mode.
-  DISALLOWED_BY_KIOSK_MODE,
-  // Disallowed because Kiosk Next is enabled.
-  DISALLOWED_BY_KIOSK_NEXT,
+  DISALLOWED_BY_KIOSK_MODE
 };
 
 // Allows observing changes to voice interaction status and settings.

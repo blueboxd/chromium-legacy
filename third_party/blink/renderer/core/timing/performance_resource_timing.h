@@ -53,6 +53,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   // Related doc: https://goo.gl/uNecAj.
   PerformanceResourceTiming(const AtomicString& name,
                             base::TimeTicks time_origin,
+                            bool is_secure_context,
                             const WebVector<WebServerTimingInfo>&);
   PerformanceResourceTiming(const WebResourceTimingInfo&,
                             base::TimeTicks time_origin,

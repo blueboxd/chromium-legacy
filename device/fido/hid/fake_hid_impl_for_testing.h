@@ -69,11 +69,11 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
   DISALLOW_COPY_AND_ASSIGN(MockFidoHidConnection);
 };
 
-class FakeHidConnection : public device::mojom::HidConnection {
+class FakeFidoHidConnection : public device::mojom::HidConnection {
  public:
-  explicit FakeHidConnection(device::mojom::HidDeviceInfoPtr device);
+  explicit FakeFidoHidConnection(device::mojom::HidDeviceInfoPtr device);
 
-  ~FakeHidConnection() override;
+  ~FakeFidoHidConnection() override;
 
   // device::mojom::HidConnection implemenation:
   void Read(ReadCallback callback) override;
@@ -91,13 +91,13 @@ class FakeHidConnection : public device::mojom::HidConnection {
  private:
   device::mojom::HidDeviceInfoPtr device_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeHidConnection);
+  DISALLOW_COPY_AND_ASSIGN(FakeFidoHidConnection);
 };
 
-class FakeHidManager : public device::mojom::HidManager {
+class FakeFidoHidManager : public device::mojom::HidManager {
  public:
-  FakeHidManager();
-  ~FakeHidManager() override;
+  FakeFidoHidManager();
+  ~FakeFidoHidManager() override;
 
   // Invoke AddDevice with a device info struct that mirrors a FIDO USB device.
   void AddFidoHidDevice(std::string guid);
@@ -123,15 +123,15 @@ class FakeHidManager : public device::mojom::HidManager {
   mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
   mojo::BindingSet<device::mojom::HidManager> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeHidManager);
+  DISALLOW_COPY_AND_ASSIGN(FakeFidoHidManager);
 };
 
-// ScopedFakeHidManager automatically binds itself to the device service for the
-// duration of its lifetime.
-class ScopedFakeHidManager : public FakeHidManager {
+// ScopedFakeFidoHidManager automatically binds itself to the device service for
+// the duration of its lifetime.
+class ScopedFakeFidoHidManager : public FakeFidoHidManager {
  public:
-  ScopedFakeHidManager();
-  ~ScopedFakeHidManager() override;
+  ScopedFakeFidoHidManager();
+  ~ScopedFakeFidoHidManager() override;
 
   service_manager::Connector* service_manager_connector() {
     return connector_.get();
@@ -140,7 +140,7 @@ class ScopedFakeHidManager : public FakeHidManager {
  private:
   std::unique_ptr<service_manager::Connector> connector_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedFakeHidManager);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeFidoHidManager);
 };
 
 }  // namespace device

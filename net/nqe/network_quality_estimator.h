@@ -538,7 +538,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // type.
   void ClampKbpsBasedOnEct();
 
-  uint32_t webrtc_active_connections_count_ = 0u;
+  // Current count of active peer to peer connections.
+  uint32_t p2p_connections_count_ = 0u;
+
+  // Earliest timestamp since when there is at least one active peer to peer
+  // connection count. Set to current timestamp when |p2p_connections_count_|
+  // changes from 0 to 1. Reset to null when |p2p_connections_count_| becomes 0.
+  base::Optional<base::TimeTicks> p2p_connections_count_active_timestamp_;
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.

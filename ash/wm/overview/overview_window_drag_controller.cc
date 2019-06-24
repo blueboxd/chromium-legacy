@@ -186,8 +186,10 @@ void OverviewWindowDragController::StartNormalDragMode(
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kNormalDrag;
-  Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
-      item_->root_window());
+  if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+    Shell::Get()->mouse_cursor_filter()->ShowSharedEdgeIndicator(
+        item_->root_window());
+  }
   item_->ScaleUpSelectedItem(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
@@ -255,8 +257,10 @@ void OverviewWindowDragController::ResetGesture() {
   if (current_drag_behavior_ == DragBehavior::kNormalDrag) {
     DCHECK(item_->overview_grid()->drop_target_widget());
 
-    Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
-    item_->DestroyPhantomsForDragging();
+    if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+      Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+      item_->DestroyPhantomsForDragging();
+    }
     item_->overview_grid()->RemoveDropTarget();
     if (should_allow_split_view_) {
       overview_session_->SetSplitViewDragIndicatorsIndicatorState(
@@ -372,7 +376,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
   item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
-  if (display_count_ > 1u) {
+  if (AreMultiDisplayOverviewAndSplitViewEnabled() && display_count_ > 1u) {
     item_->UpdatePhantomsForDragging(location_in_screen,
                                      allow_original_window_opacity_change);
   }
@@ -383,8 +387,10 @@ OverviewWindowDragController::CompleteNormalDrag(
     const gfx::PointF& location_in_screen) {
   DCHECK_EQ(current_drag_behavior_, DragBehavior::kNormalDrag);
   DCHECK(item_->overview_grid()->drop_target_widget());
-  Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
-  item_->DestroyPhantomsForDragging();
+  if (AreMultiDisplayOverviewAndSplitViewEnabled()) {
+    Shell::Get()->mouse_cursor_filter()->HideSharedEdgeIndicator();
+    item_->DestroyPhantomsForDragging();
+  }
   item_->overview_grid()->RemoveDropTarget();
 
   const gfx::Point rounded_screen_point =

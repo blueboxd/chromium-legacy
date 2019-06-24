@@ -1679,12 +1679,29 @@ void NetworkQualityEstimator::RecordSpdyPingLatency(
 void NetworkQualityEstimator::OnPeerToPeerConnectionsCountChange(
     uint32_t count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  webrtc_active_connections_count_ = count;
+
+  if (p2p_connections_count_ == count)
+    return;
+
+  if (p2p_connections_count_ == 0 && count > 0) {
+    DCHECK(!p2p_connections_count_active_timestamp_);
+    p2p_connections_count_active_timestamp_ = tick_clock_->NowTicks();
+  }
+
+  if (p2p_connections_count_ > 0 && count == 0) {
+    DCHECK(p2p_connections_count_active_timestamp_);
+    base::TimeDelta duration = tick_clock_->NowTicks() -
+                               p2p_connections_count_active_timestamp_.value();
+    UMA_HISTOGRAM_LONG_TIMES("NQE.PeerToPeerConnectionsDuration", duration);
+    p2p_connections_count_active_timestamp_ = base::nullopt;
+  }
+
+  p2p_connections_count_ = count;
 }
 
 uint32_t NetworkQualityEstimator::GetPeerToPeerConnectionsCountChange() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return webrtc_active_connections_count_;
+  return p2p_connections_count_;
 }
 
 }  // namespace net

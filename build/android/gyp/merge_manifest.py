@@ -29,20 +29,24 @@ _MANIFEST_MERGER_JARS = [
 
 
 @contextlib.contextmanager
-def _ProcessManifest(manifest_path, allow_uses_sdk):
+def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
+                     manifest_package):
   """Patches an Android manifest to always include the 'tools' namespace
   declaration, as it is not propagated by the manifest merger from the SDK.
 
   See https://issuetracker.google.com/issues/63411481
   """
   doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
-  package = manifest_utils.GetPackage(manifest)
-  if not allow_uses_sdk:
-    manifest_utils.AssertNoUsesSdk(manifest)
+  manifest_utils.AssertUsesSdk(manifest, min_sdk_version, target_sdk_version)
+  assert manifest_utils.GetPackage(manifest) or manifest_package, \
+            'Must set manifest package in GN or in AndroidManifest.xml'
+  manifest_utils.AssertPackage(manifest, manifest_package)
+  if manifest_package:
+    manifest.set('package', manifest_package)
   tmp_prefix = os.path.basename(manifest_path)
   with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as patched_manifest:
     manifest_utils.SaveManifest(doc, patched_manifest.name)
-    yield patched_manifest.name, package
+    yield patched_manifest.name, manifest_utils.GetPackage(manifest)
 
 
 def _BuildManifestMergerClasspath(build_vars):
@@ -76,10 +80,8 @@ def main(argv):
       required=True,
       help='android:targetSdkVersion for merging.')
   parser.add_argument(
-      '--allow-uses-sdk',
-      action='store_true',
-      help='Use only for third party code. '
-      'Don\'t fail if input manifest contains a <uses-sdk> element.')
+      '--manifest-package',
+      help='Package name of the merged AndroidManifest.xml.')
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(
@@ -99,7 +101,9 @@ def main(argv):
     if extras:
       cmd += ['--libs', ':'.join(extras)]
 
-    with _ProcessManifest(args.root_manifest, args.allow_uses_sdk) as tup:
+    with _ProcessManifest(args.root_manifest, args.min_sdk_version,
+                          args.target_sdk_version,
+                          args.manifest_package) as tup:
       root_manifest, package = tup
       cmd += [
           '--main',
@@ -117,18 +121,11 @@ def main(argv):
         fail_func=lambda returncode, stderr: returncode != 0 or
           build_utils.IsTimeStale(output.name, [root_manifest] + extras))
 
-    # Subsequent build system steps expect uses-sdk tag does not exist.
-    # Therefore, check it has the expected attribute values and remove it.
-    doc, manifest, _ = manifest_utils.ParseManifest(output.name)
-    uses_sdk = manifest.find('./uses-sdk')
-    assert uses_sdk.get(
-        '{%s}minSdkVersion' %
-        manifest_utils.ANDROID_NAMESPACE) == args.min_sdk_version
-    assert uses_sdk.get(
-        '{%s}targetSdkVersion' %
-        manifest_utils.ANDROID_NAMESPACE) == args.target_sdk_version
-    manifest.remove(uses_sdk)
-    manifest_utils.SaveManifest(doc, output.name)
+    # Check for correct output.
+    _, manifest, _ = manifest_utils.ParseManifest(output.name)
+    manifest_utils.AssertUsesSdk(manifest, args.min_sdk_version,
+                                 args.target_sdk_version)
+    manifest_utils.AssertPackage(manifest, package)
 
   if args.depfile:
     inputs = extras + classpath.split(':')

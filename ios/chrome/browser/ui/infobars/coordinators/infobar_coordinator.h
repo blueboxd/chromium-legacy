@@ -28,6 +28,8 @@ namespace infobars {
 class InfoBarDelegate;
 }
 
+enum class InfobarBannerPresentationState;
+
 // Must be subclassed. Defines common behavior for all Infobars.
 @interface InfobarCoordinator : ChromeCoordinator <InfobarUIDelegate,
                                                    InfobarBannerDelegate,
@@ -91,9 +93,8 @@ class InfoBarDelegate;
 // The InfobarContainer for this InfobarCoordinator.
 @property(nonatomic, weak) id<InfobarContainer> infobarContainer;
 
-// YES if an InfobarBanner is being presented.
-@property(nonatomic, assign, getter=isPresentingInfobarBanner)
-    BOOL presentingInfobarBanner;
+// The InfobarBanner presentation state.
+@property(nonatomic, assign) InfobarBannerPresentationState infobarBannerState;
 
 // YES if the banner has ever been presented for this Coordinator.
 @property(nonatomic, assign, readonly) BOOL bannerWasPresented;

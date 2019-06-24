@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/NotificationSchedulerTask_jni.h"
@@ -19,12 +20,14 @@ void JNI_NotificationSchedulerTask_OnStartTask(
     const base::android::JavaParamRef<jobject>& j_caller,
     const base::android::JavaParamRef<jobject>& j_profile,
     const base::android::JavaParamRef<jobject>& j_callback) {
-  // TODO(Hesen): Pass task finish callback to the scheduler.
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* service =
       NotificationScheduleServiceFactory::GetForBrowserContext(profile);
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
-  handler->OnStartTask();
+  auto callback =
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback));
+  handler->OnStartTask(std::move(callback));
 }
 
 // static

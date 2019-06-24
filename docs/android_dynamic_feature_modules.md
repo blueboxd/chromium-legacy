@@ -51,8 +51,7 @@ and add:
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    featureSplit="foo"
-    package="{{manifest_package}}">
+    featureSplit="foo">
 
     <!-- dist:onDemand="true" makes this a separately installed module.
          dist:onDemand="false" would always install the module alongside the
@@ -98,17 +97,6 @@ import("//build/config/locales.gni")
 import("//chrome/android/features/dynamic_feature_modules.gni")
 
 template("foo_module_tmpl") {
-  _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
-  _manifest_target = "${target_name}__manifest"
-  jinja_template(_manifest_target) {
-    input = "//chrome/android/features/foo/java/AndroidManifest.xml"
-    output = _manifest
-    variables = [
-      "target_sdk_version=$android_sdk_version",
-      "manifest_package=${invoker.manifest_package}",
-    ]
-  }
-
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
                            [
@@ -118,8 +106,9 @@ template("foo_module_tmpl") {
                              "version_code",
                              "version_name",
                            ])
-    android_manifest = _manifest
-    android_manifest_dep = ":${_manifest_target}"
+    android_manifest = "//chrome/android/features/foo/java/AndroidManifest.xml"
+    min_sdk_version = 21
+    target_sdk_version = android_sdk_version
     proguard_enabled = !is_java_debug
     aapt_locale_whitelist = locales
     package_name = "foo"

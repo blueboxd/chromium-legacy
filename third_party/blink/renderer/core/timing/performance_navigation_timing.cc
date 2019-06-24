@@ -55,10 +55,12 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                      info->FinalResponse().CurrentRequestUrl().GetString())
                : g_empty_atom,
           time_origin,
+          SecurityOrigin::IsSecure(frame->GetDocument()->Url()),
           server_timing),
       ContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);
+  DCHECK(frame->GetDocument());
   DCHECK(info);
 }
 

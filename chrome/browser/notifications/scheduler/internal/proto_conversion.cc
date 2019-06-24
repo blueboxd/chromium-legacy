@@ -176,7 +176,6 @@ void NotificationDataToProto(NotificationData* notification_data,
   proto->set_id(notification_data->id);
   proto->set_title(notification_data->title);
   proto->set_message(notification_data->message);
-  proto->set_icon_uuid(notification_data->icon_uuid);
   proto->set_url(notification_data->url);
 }
 
@@ -186,7 +185,6 @@ void NotificationDataFromProto(proto::NotificationData* proto,
   notification_data->id = proto->id();
   notification_data->title = proto->title();
   notification_data->message = proto->message();
-  notification_data->icon_uuid = proto->icon_uuid();
   notification_data->url = proto->url();
 }
 
@@ -313,6 +311,7 @@ void NotificationEntryToProto(NotificationEntry* entry,
   proto->set_create_time(TimeToMilliseconds(entry->create_time));
   auto* proto_notification_data = proto->mutable_notification_data();
   NotificationDataToProto(&entry->notification_data, proto_notification_data);
+  proto_notification_data->set_icon_uuid(entry->icon_uuid);
   auto* proto_schedule_params = proto->mutable_schedule_params();
   ScheduleParamsToProto(&entry->schedule_params, proto_schedule_params);
 }
@@ -324,6 +323,7 @@ void NotificationEntryFromProto(proto::NotificationEntry* proto,
   entry->create_time = MillisecondsToTime(proto->create_time());
   NotificationDataFromProto(proto->mutable_notification_data(),
                             &entry->notification_data);
+  entry->icon_uuid = proto->mutable_notification_data()->icon_uuid();
   ScheduleParamsFromProto(proto->mutable_schedule_params(),
                           &entry->schedule_params);
 }

@@ -153,6 +153,8 @@ def _ParseArgs(args):
       help="android:targetSdkVersion for APK.")
   input_opts.add_argument(
       '--max-sdk-version', help="android:maxSdkVersion for APK.")
+  input_opts.add_argument(
+      '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
   input_opts.add_argument(
       '--locale-whitelist',
@@ -459,16 +461,10 @@ def _FixManifest(options, temp_dir):
   doc, manifest_node, app_node = manifest_utils.ParseManifest(
       options.android_manifest)
 
-  manifest_utils.AssertNoUsesSdk(manifest_node)
-
-  uses_sdk_attributes = [
-      ('android:minSdkVersion', options.min_sdk_version),
-      ('android:targetSdkVersion', options.target_sdk_version),
-  ]
-  if options.max_sdk_version:
-    uses_sdk_attributes += [('android:maxSdkVersion', options.max_sdk_version)]
-  uses_sdk_node = manifest_utils.MakeElement('uses-sdk', uses_sdk_attributes)
-  manifest_node.insert(0, uses_sdk_node)
+  manifest_utils.AssertUsesSdk(manifest_node, options.min_sdk_version,
+                               options.target_sdk_version,
+                               options.max_sdk_version)
+  manifest_utils.AssertPackage(manifest_node, options.manifest_package)
 
   manifest_node.set('platformBuildVersionCode', version_code)
   manifest_node.set('platformBuildVersionName', version_name)
@@ -727,6 +723,7 @@ def _PackageApk(options, build):
       'link',
       '--auto-add-overlay',
       '--no-version-vectors',
+      # Set SDK versions in case they are not set in the Android manifest.
       '--min-sdk-version',
       options.min_sdk_version,
       '--target-sdk-version',
@@ -741,6 +738,7 @@ def _PackageApk(options, build):
     link_command += ['--version-name', options.version_name]
   if options.proguard_file:
     link_command += ['--proguard', build.proguard_path]
+    link_command += ['--proguard-minimal-keep-rules']
   if options.proguard_file_main_dex:
     link_command += ['--proguard-main-dex', build.proguard_main_dex_path]
   if options.emit_ids_out:

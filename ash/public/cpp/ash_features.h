@@ -54,6 +54,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 
+// Enables multi-display support for overview and split view.
+// TODO(crbug.com/952461): Remove this when the feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
+
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 

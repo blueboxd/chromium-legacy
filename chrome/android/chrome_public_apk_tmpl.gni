@@ -136,7 +136,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
     forward_variables_from(invoker, "*")
 
     if (_is_trichrome) {
-      min_sdk_version = 28
+      # TODO(torne): make minsdk=Q once we no longer build hacky P version
+      min_sdk_version = android_sdk_version
     } else if (_is_monochrome) {
       min_sdk_version = 24
     } else if (_is_modern) {

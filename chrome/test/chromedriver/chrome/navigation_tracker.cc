@@ -34,12 +34,13 @@ Status MakeNavigationCheckFailedStatus(Status command_status) {
 NavigationTracker::NavigationTracker(
     DevToolsClient* client,
     const BrowserInfo* browser_info,
-    const JavaScriptDialogManager* dialog_manager)
+    const JavaScriptDialogManager* dialog_manager,
+    const bool is_eager)
     : client_(client),
       loading_state_(kUnknown),
       top_frame_id_(client->GetId()),
       dialog_manager_(dialog_manager),
-      load_event_fired_(false),
+      is_eager_(is_eager),
       timed_out_(false) {
   client_->AddListener(this);
 }
@@ -48,12 +49,13 @@ NavigationTracker::NavigationTracker(
     DevToolsClient* client,
     LoadingState known_state,
     const BrowserInfo* browser_info,
-    const JavaScriptDialogManager* dialog_manager)
+    const JavaScriptDialogManager* dialog_manager,
+    const bool is_eager)
     : client_(client),
       loading_state_(known_state),
       top_frame_id_(client->GetId()),
       dialog_manager_(dialog_manager),
-      load_event_fired_(false),
+      is_eager_(is_eager),
       timed_out_(false) {
   client_->AddListener(this);
 }
@@ -168,8 +170,9 @@ Status NavigationTracker::OnConnected(DevToolsClient* client) {
 Status NavigationTracker::OnEvent(DevToolsClient* client,
                                   const std::string& method,
                                   const base::DictionaryValue& params) {
-  if (method == "Page.loadEventFired") {
-    load_event_fired_ = true;
+  if (method == "Page.loadEventFired" ||
+      (is_eager_ && method == "Page.domContentEventFired")) {
+    loading_state_ = kNotLoading;
   } else if (method == "Page.frameStartedLoading") {
     // If frame that started loading is the top frame
     // set loading_state_ to loading. If it is a subframe
@@ -179,7 +182,6 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "missing or invalid 'frameId'");
     if (frame_id == top_frame_id_) {
       loading_state_ = kLoading;
-      load_event_fired_ = false;
     }
   } else if (method == "Page.frameStoppedLoading") {
     // Sometimes Page.frameStoppedLoading fires without
@@ -190,12 +192,11 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "missing or invalid 'frameId'");
     if (frame_id == top_frame_id_) {
       loading_state_ = kNotLoading;
-      load_event_fired_ = true;
     }
   } else if (method == "Inspector.targetCrashed") {
     loading_state_ = kNotLoading;
   }
-  if (load_event_fired_ || timed_out_)
+  if (timed_out_)
     loading_state_ = kNotLoading;
   return Status(kOk);
 }

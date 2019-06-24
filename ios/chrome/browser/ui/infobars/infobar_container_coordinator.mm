@@ -157,12 +157,11 @@
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
 }
 
-- (BOOL)isPresentingInfobarBanner {
+- (InfobarBannerPresentationState)infobarBannerState {
   DCHECK(IsInfobarUIRebootEnabled());
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(self.activeChildCoordinator);
-  _presentingInfobarBanner = [infobarCoordinator isPresentingInfobarBanner];
-  return _presentingInfobarBanner;
+  return infobarCoordinator.infobarBannerState;
 }
 
 #pragma mark - InfobarConsumer

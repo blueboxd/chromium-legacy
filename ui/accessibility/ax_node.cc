@@ -629,52 +629,43 @@ base::Optional<int> AXNode::GetSetSize() {
 // Returns false otherwise.
 bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
   ax::mojom::Role item_role = data().role;
-
   // Switch on role of ordered set
   switch (ordered_set->data().role) {
     case ax::mojom::Role::kFeed:
       return item_role == ax::mojom::Role::kArticle;
-
     case ax::mojom::Role::kList:
       return item_role == ax::mojom::Role::kListItem;
-
     case ax::mojom::Role::kGroup:
       return item_role == ax::mojom::Role::kListItem ||
              item_role == ax::mojom::Role::kMenuItem ||
              item_role == ax::mojom::Role::kMenuItemRadio ||
              item_role == ax::mojom::Role::kTreeItem;
-
     case ax::mojom::Role::kMenu:
       return item_role == ax::mojom::Role::kMenuItem ||
              item_role == ax::mojom::Role::kMenuItemRadio ||
              item_role == ax::mojom::Role::kMenuItemCheckBox;
-
     case ax::mojom::Role::kMenuBar:
       return item_role == ax::mojom::Role::kMenuItem ||
              item_role == ax::mojom::Role::kMenuItemRadio ||
              item_role == ax::mojom::Role::kMenuItemCheckBox;
-
     case ax::mojom::Role::kTabList:
       return item_role == ax::mojom::Role::kTab;
-
     case ax::mojom::Role::kTree:
       return item_role == ax::mojom::Role::kTreeItem;
-
     case ax::mojom::Role::kListBox:
       return item_role == ax::mojom::Role::kListBoxOption;
-
     case ax::mojom::Role::kMenuListPopup:
       return item_role == ax::mojom::Role::kMenuListOption;
-
     case ax::mojom::Role::kRadioGroup:
       return item_role == ax::mojom::Role::kRadioButton;
-
     case ax::mojom::Role::kDescriptionList:
       // Only the term for each description list entry should receive posinset
       // and setsize.
       return item_role == ax::mojom::Role::kDescriptionListTerm ||
              item_role == ax::mojom::Role::kTerm;
-
+    case ax::mojom::Role::kPopUpButton:
+      // kPopUpButtons can wrap a kMenuListPopUp.
+      return item_role == ax::mojom::Role::kMenuListPopup;
     default:
       return false;
   }

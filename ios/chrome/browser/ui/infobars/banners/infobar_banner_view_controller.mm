@@ -276,6 +276,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 #pragma mark - Private Methods
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  [self.interactionDelegate infobarBannerStartedInteraction];
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Accepted];
   [self.delegate bannerInfobarButtonWasPressed:sender];
 }
@@ -388,6 +389,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // Animate the Banner being tapped by scaling it down and then to its original
 // state. After the animation it presentd the Infobar Modal.
 - (void)animateBannerTappedAndPresentModal {
+  [self.interactionDelegate infobarBannerStartedInteraction];
   [UIView animateWithDuration:kTappedBannerAnimationDurationInSeconds
       animations:^{
         self.view.superview.transform = CGAffineTransformMakeScale(

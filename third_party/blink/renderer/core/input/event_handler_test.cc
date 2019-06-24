@@ -1779,6 +1779,122 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
 }
 
+// Test that the hover is updated at the next begin frame after the main thread
+// scroll ends in an iframe.
+TEST_F(EventHandlerSimTest,
+       TestUpdateHoverAfterMainThreadScrollInIFrameAtBeginFrame) {
+  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    iframe {
+      width: 800px;
+      height: 600px;
+    }
+    </style>
+    <iframe id='iframe' src='iframe.html'>
+    </iframe>
+  )HTML");
+
+  frame_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body, html {
+        margin: 0;
+        height: 500vh;
+      }
+      div {
+        height: 500px;
+        width: 100%;
+      }
+    </style>
+    <body>
+    <div class="hoverme" id="hoverarea">hover over me</div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* iframe_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+  Document* iframe_doc = iframe_element->contentDocument();
+  FrameView* child_frame_view =
+      iframe_element->GetLayoutEmbeddedContent()->ChildFrameView();
+  auto* local_child_frame_view = DynamicTo<LocalFrameView>(child_frame_view);
+  ScrollableArea* iframe_scrollable_area =
+      local_child_frame_view->GetScrollableArea();
+
+  // Set mouse position and active web view.
+  WebMouseEvent mouse_down_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(100, 100),
+      WebFloatPoint(100, 100), WebPointerProperties::Button::kLeft, 1,
+      WebInputEvent::Modifiers::kLeftButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  WebMouseEvent mouse_up_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(100, 100), WebFloatPoint(100, 100),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
+
+  WebView().MainFrameWidget()->SetFocus(true);
+  WebView().SetIsActive(true);
+
+  Element* element = iframe_doc->getElementById("hoverarea");
+  EXPECT_TRUE(element->IsHovered());
+
+  // Send scroll gesture events which will set
+  // |hover_needs_update_at_scroll_end_| to be true in ScrollManager.
+  constexpr float delta_y = 1000;
+  WebGestureEvent gesture_scroll_begin{
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_begin.SetFrameScale(1);
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+      iframe_scrollable_area->GetCompositorElementId().GetInternalValue();
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(gesture_scroll_begin));
+
+  WebGestureEvent gesture_scroll_update{
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_update.SetFrameScale(1);
+  gesture_scroll_update.data.scroll_update.delta_x = 0;
+  gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
+
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(gesture_scroll_update));
+
+  WebGestureEvent gesture_scroll_end{
+      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests()};
+  gesture_scroll_end.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(gesture_scroll_end));
+
+  LocalFrameView* frame_view = GetDocument().View();
+  ASSERT_EQ(0, frame_view->LayoutViewport()->GetScrollOffset().Height());
+  ASSERT_EQ(1000, iframe_scrollable_area->ScrollOffsetInt().Height());
+  EXPECT_TRUE(element->IsHovered());
+
+  // The fake mouse move event is dispatched at the begin frame to update hover.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(element->IsHovered());
+}
+
 // Test that the hover is updated at the next begin frame after the smooth JS
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
@@ -2546,6 +2662,67 @@ TEST_F(EventHandlerSimTest,
   // Mouse is hovering the element in outer frame.
   EXPECT_EQ(GetDocument().HoverElement(),
             GetDocument().getElementById("outside"));
+}
+
+// Test that mouse right button down and move to an iframe will route the events
+// to iframe correctly.
+TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      width: 200px;
+      height: 200px;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <div></div>
+    <iframe id='frame' src='frame.html'></iframe>
+  )HTML");
+
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+  WebMouseEvent mouse_down_outside_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(300, 29), WebFloatPoint(300, 29),
+      WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_outside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_outside_event));
+
+  WebMouseEvent mouse_move_outside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(300, 29), WebFloatPoint(300, 29),
+      WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_outside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_outside_event));
+
+  WebMouseEvent mouse_move_inside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(100, 229),
+      WebFloatPoint(100, 229), WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_inside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_inside_event));
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
+                   ->GetEventHandler()
+                   .IsMousePositionUnknown());
 }
 
 }  // namespace blink

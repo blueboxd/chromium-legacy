@@ -84,6 +84,9 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
 // clamshell mode.
 ASH_EXPORT bool IsClamshellSplitViewModeEnabled();
 
+// Checks multi-display support for overview and split view.
+ASH_EXPORT bool AreMultiDisplayOverviewAndSplitViewEnabled();
+
 // Returns true if split view mode is supported.
 ASH_EXPORT bool ShouldAllowSplitView();
 

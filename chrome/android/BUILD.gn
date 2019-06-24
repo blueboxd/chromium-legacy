@@ -43,11 +43,12 @@ if (dfmify_devtools) {
   import("//chrome/android/features/devtools/devtools_module_tmpl.gni")
 }
 
-manifest_package = "org.chromium.chrome"
-test_manifest_package = "org.chromium.chrome.tests"
+chrome_public_manifest_package = "org.chromium.chrome"
+chrome_public_test_manifest_package = "org.chromium.chrome.tests"
 
-chrome_public_jinja_variables = default_chrome_public_jinja_variables +
-                                [ "manifest_package=$manifest_package" ]
+chrome_public_jinja_variables =
+    default_chrome_public_jinja_variables +
+    [ "manifest_package=$chrome_public_manifest_package" ]
 chrome_public_android_manifest =
     "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
 chrome_modern_public_android_manifest =
@@ -706,7 +707,7 @@ junit_binary("chrome_junit_tests") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
-  package_name = manifest_package
+  package_name = chrome_public_manifest_package
 }
 
 process_version("chrome_version_constants") {
@@ -1120,7 +1121,7 @@ jinja_template_resources("chrome_public_apk_template_resources") {
     "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
-  variables = [ "manifest_package=$manifest_package" ]
+  variables = [ "manifest_package=$chrome_public_manifest_package" ]
 }
 
 jinja_template_resources("chrome_test_apk_template_resources") {
@@ -1137,7 +1138,7 @@ jinja_template_resources("chrome_test_apk_template_resources") {
   deps = [
     ":chrome_public_apk_template_resources",
   ]
-  variables = [ "manifest_package=$test_manifest_package" ]
+  variables = [ "manifest_package=$chrome_public_test_manifest_package" ]
 }
 
 config("orderfile_config") {
@@ -1764,9 +1765,6 @@ if (public_android_sdk) {
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
 
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
-    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -1792,9 +1790,6 @@ if (public_android_sdk) {
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
 
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
-    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -1848,7 +1843,7 @@ jinja_template("chrome_public_test_apk_manifest") {
   output = chrome_public_test_apk_manifest
   variables = default_chrome_public_jinja_variables
   variables += [
-    "manifest_package=$test_manifest_package",
+    "manifest_package=$chrome_public_test_manifest_package",
     "min_sdk_version=19",
     "target_sdk_version=$android_sdk_version",
   ]
@@ -1878,7 +1873,7 @@ jinja_template("monochrome_public_test_ar_apk_manifest") {
               monochrome_android_manifest_jinja_variables +
               [
                 "target_sdk_version=$android_sdk_version",
-                "test_manifest_package=$test_manifest_package",
+                "test_manifest_package=$chrome_public_test_manifest_package",
                 "webview_library=libmonochrome.so",
                 "include_arcore_manifest_flag=true",
               ]
@@ -2079,13 +2074,14 @@ if (enable_arcore) {
   }
 }
 
-# Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is deigned to
-# be runnable against uninstrumented Chrome apks.
+# Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is
+# designed to be runnable against uninstrumented Chrome apks.
 instrumentation_test_apk("chrome_smoke_test") {
   apk_name = "ChromeSmokeTest"
   apk_under_test = "//chrome/android:chrome_public_apk"
   android_manifest =
       "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest.xml"
+  target_sdk_version = 28
   testonly = true
   java_files =
       [ "javatests/src/org/chromium/chrome/test/smoke/ChromeSmokeTest.java" ]
@@ -2130,7 +2126,7 @@ if (defined(expected_static_initializer_count)) {
 # bundle target template.
 if (enable_vr) {
   vr_module_tmpl("vr_public_bundle_module") {
-    manifest_package = manifest_package
+    manifest_package = chrome_public_manifest_package
     module_name = "VrPublic"
     base_module_target = ":chrome_modern_public_base_bundle_module"
     version_code = chrome_modern_version_code
@@ -2251,7 +2247,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   if (enable_arcore) {
     ar_module_tmpl("${target_name}__ar_bundle_module") {
-      manifest_package = manifest_package
+      manifest_package = chrome_public_manifest_package
       module_name = "Ar" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       native_switches = _native_switches
@@ -2262,7 +2258,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   if (enable_vr) {
     vr_module_tmpl("${target_name}__vr_bundle_module") {
-      manifest_package = manifest_package
+      manifest_package = chrome_public_manifest_package
       module_name = "Vr" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       native_switches = _native_switches
@@ -2274,7 +2270,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   }
 
   tab_ui_module_tmpl("${target_name}__tab_ui_bundle_module") {
-    manifest_package = manifest_package
+    manifest_package = chrome_public_manifest_package
     module_name = "TabUiMonochromePublic"
     base_module_target = ":$_base_module_target_name"
     uncompress_shared_libraries = true
@@ -2284,7 +2280,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   autofill_assistant_module_tmpl(
       "${target_name}__autofill_assistant_bundle_module") {
-    manifest_package = manifest_package
+    manifest_package = chrome_public_manifest_package
     module_name = "AutofillAssistant" + _bundle_name
     base_module_target = ":$_base_module_target_name"
     uncompress_shared_libraries = true
@@ -2294,7 +2290,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
   if (dfmify_devtools) {
     devtools_module_tmpl("${target_name}__devtools_bundle_module") {
-      manifest_package = manifest_package
+      manifest_package = chrome_public_manifest_package
       module_name = "Devtools" + _bundle_name
       base_module_target = ":$_base_module_target_name"
       uncompress_shared_libraries = true

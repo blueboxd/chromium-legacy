@@ -13,11 +13,6 @@
 
 namespace notifications {
 
-struct DisplayData {
-  NotificationData notification_data;
-  SkBitmap icon;
-};
-
 // Does actual work to show notification in the UI surface.
 class DisplayAgent {
  public:
@@ -25,7 +20,8 @@ class DisplayAgent {
   static std::unique_ptr<DisplayAgent> Create();
 
   // Shows the notification in UI.
-  virtual void ShowNotification(std::unique_ptr<DisplayData> display_data) = 0;
+  virtual void ShowNotification(
+      std::unique_ptr<NotificationData> notification_data) = 0;
 
   virtual ~DisplayAgent() = default;
 

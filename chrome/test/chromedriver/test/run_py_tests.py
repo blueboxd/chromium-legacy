@@ -996,6 +996,30 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])
 
+  def testEagerMode(self):
+    send_response = threading.Event()
+    def waitAndRespond():
+        send_response.wait(10)
+        self._sync_server.RespondWithContent('#')
+    thread = threading.Thread(target=waitAndRespond)
+
+    self._http_server.SetDataForPath('/top.html',
+     """
+     <html><body>
+     <div id='top'>
+       <img src='%s'>
+     </div>
+     </body></html>""" % self._sync_server.GetUrl())
+    eager_driver = self.CreateDriver(page_load_strategy='eager')
+    thread.start()
+    start_eager = time.time()
+    eager_driver.Load(self._http_server.GetUrl() + '/top.html')
+    stop_eager = time.time()
+    send_response.set()
+    eager_time = stop_eager - start_eager
+    self.assertTrue(eager_time < 9)
+    thread.join()
+
   def testClearElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     text = self._driver.ExecuteScript(

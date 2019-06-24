@@ -138,7 +138,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask() override {
+  void OnStartTask(TaskFinishedCallback callback) override {
     // Updates the impression data to compute daily notification shown budget.
     context_->impression_tracker()->AnalyzeImpressionHistory();
 
@@ -147,6 +147,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
 
     // Schedule the next background task based on scheduled notifications.
     ScheduleBackgroundTask();
+
+    std::move(callback).Run(false /*need_reschedule*/);
   }
 
   void OnStopTask() override { ScheduleBackgroundTask(); }
@@ -154,6 +156,10 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   // ScheduledNotificationManager::Delegate implementation.
   void DisplayNotification(
       std::unique_ptr<NotificationEntry> notification) override {
+    if (!notification) {
+      DLOG(ERROR) << "Notification entry is null";
+      return;
+    }
     // TODO(xingliu): Inform the clients and show the notification.
     context_->impression_tracker()->AddImpression(notification->type,
                                                   notification->guid);

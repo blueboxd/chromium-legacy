@@ -35,13 +35,15 @@ void InitAwareNotificationScheduler::Schedule(
                                    std::move(params)));
 }
 
-void InitAwareNotificationScheduler::OnStartTask() {
+void InitAwareNotificationScheduler::OnStartTask(
+    TaskFinishedCallback callback) {
   if (IsReady()) {
-    impl_->OnStartTask();
+    impl_->OnStartTask(std::move(callback));
     return;
   }
   MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnStartTask,
-                                   weak_ptr_factory_.GetWeakPtr()));
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(callback)));
 }
 
 void InitAwareNotificationScheduler::OnStopTask() {

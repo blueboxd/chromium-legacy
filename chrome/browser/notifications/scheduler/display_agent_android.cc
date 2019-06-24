@@ -60,20 +60,20 @@ DisplayAgentAndroid::DisplayAgentAndroid() = default;
 DisplayAgentAndroid::~DisplayAgentAndroid() = default;
 
 void DisplayAgentAndroid::ShowNotification(
-    std::unique_ptr<notifications::DisplayData> display_data) {
+    std::unique_ptr<notifications::NotificationData> notification_data) {
   // TODO(xingliu): Refactor and hook to NotificationDisplayService.
-  DCHECK(display_data);
+  DCHECK(notification_data);
   JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(!display_data->icon.empty());
-  DCHECK(!display_data->notification_data.id.empty());
-  DCHECK(!display_data->notification_data.title.empty());
-  DCHECK(!display_data->notification_data.message.empty());
+  DCHECK(!notification_data->icon.empty());
+  DCHECK(!notification_data->id.empty());
+  DCHECK(!notification_data->title.empty());
+  DCHECK(!notification_data->message.empty());
 
-  auto java_display_data = Java_DisplayAgent_Constructor(
-      env, ConvertUTF8ToJavaString(env, display_data->notification_data.id),
-      ConvertUTF8ToJavaString(env, display_data->notification_data.title),
-      ConvertUTF8ToJavaString(env, display_data->notification_data.message),
-      gfx::ConvertToJavaBitmap(&display_data->icon));
+  auto java_notification_data = Java_DisplayAgent_Constructor(
+      env, ConvertUTF8ToJavaString(env, notification_data->id),
+      ConvertUTF8ToJavaString(env, notification_data->title),
+      ConvertUTF8ToJavaString(env, notification_data->message),
+      gfx::ConvertToJavaBitmap(&notification_data->icon));
 
-  Java_DisplayAgent_showNotification(env, java_display_data);
+  Java_DisplayAgent_showNotification(env, java_notification_data);
 }

@@ -1318,78 +1318,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
   }
 }
 
-// Tests that worker ref count increments while extension API function is
-// active.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII("service_worker/api_worker_ref_count"),
-      kFlagNone);
-  ASSERT_TRUE(extension);
-  ui_test_utils::NavigateToURL(browser(),
-                               extension->GetResourceURL("page.html"));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  ExtensionTestMessageListener worker_start_listener("WORKER STARTED", false);
-  worker_start_listener.set_failure_message("FAILURE");
-  ASSERT_TRUE(
-      content::ExecuteScript(web_contents, "window.runServiceWorker()"));
-  ASSERT_TRUE(worker_start_listener.WaitUntilSatisfied());
-
-  // Service worker should have no pending requests because it hasn't peformed
-  // any extension API request yet.
-  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
-
-  ExtensionTestMessageListener worker_listener("CHECK_REF_COUNT", true);
-  worker_listener.set_failure_message("FAILURE");
-  ASSERT_TRUE(content::ExecuteScript(web_contents, "window.testSendMessage()"));
-  ASSERT_TRUE(worker_listener.WaitUntilSatisfied());
-
-  // Service worker should have exactly one pending request because
-  // chrome.test.sendMessage() API call is in-flight.
-  EXPECT_EQ(1u, GetWorkerRefCount(extension->url()));
-
-  // Peform another extension API request while one is ongoing.
-  {
-    ExtensionTestMessageListener listener("CHECK_REF_COUNT", true);
-    listener.set_failure_message("FAILURE");
-    ASSERT_TRUE(
-        content::ExecuteScript(web_contents, "window.testSendMessage()"));
-    ASSERT_TRUE(listener.WaitUntilSatisfied());
-
-    // Service worker currently has two extension API requests in-flight.
-    EXPECT_EQ(2u, GetWorkerRefCount(extension->url()));
-    // Finish executing the nested chrome.test.sendMessage() first.
-    listener.Reply("Hello world");
-  }
-
-  ExtensionTestMessageListener worker_completion_listener("SUCCESS_FROM_WORKER",
-                                                          false);
-  // Finish executing chrome.test.sendMessage().
-  worker_listener.Reply("Hello world");
-  EXPECT_TRUE(worker_completion_listener.WaitUntilSatisfied());
-
-  // The following block makes sure we have received all the IPCs related to
-  // ref-count from the worker.
-  {
-    // The following roundtrip:
-    // browser->extension->worker->extension->browser
-    // will ensure that the worker sent the relevant ref count IPCs.
-    std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents, "window.roundtripToWorker();", &result));
-    EXPECT_EQ("roundtrip-succeeded", result);
-
-    // Ensure IO thread IPCs run.
-    content::RunAllTasksUntilIdle();
-  }
-
-  // The ref count should drop to 0.
-  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
-}
-
 // This test loads a web page that has an iframe pointing to a
 // chrome-extension:// URL. The URL is listed in the extension's
 // web_accessible_resources. Initially the iframe is served from the extension's
@@ -1722,6 +1650,75 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   }
 
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
+}
+
+// Tests that worker ref count increments while extension API function is
+// active.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
+  ExtensionTestMessageListener worker_start_listener("WORKER STARTED", false);
+
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/worker_based_background/worker_ref_count"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(worker_start_listener.WaitUntilSatisfied());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Service worker should have no pending requests because it hasn't performed
+  // any extension API request yet.
+  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
+
+  ExtensionTestMessageListener worker_listener("CHECK_REF_COUNT", true);
+  worker_listener.set_failure_message("FAILURE");
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "window.testSendMessage()"));
+  ASSERT_TRUE(worker_listener.WaitUntilSatisfied());
+
+  // Service worker should have exactly one pending request because
+  // chrome.test.sendMessage() API call is in-flight.
+  EXPECT_EQ(1u, GetWorkerRefCount(extension->url()));
+
+  // Perform another extension API request while one is ongoing.
+  {
+    ExtensionTestMessageListener listener("CHECK_REF_COUNT", true);
+    listener.set_failure_message("FAILURE");
+    ASSERT_TRUE(
+        content::ExecuteScript(web_contents, "window.testSendMessage()"));
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+    // Service worker currently has two extension API requests in-flight.
+    EXPECT_EQ(2u, GetWorkerRefCount(extension->url()));
+    // Finish executing the nested chrome.test.sendMessage() first.
+    listener.Reply("Hello world");
+  }
+
+  ExtensionTestMessageListener worker_completion_listener("SUCCESS_FROM_WORKER",
+                                                          false);
+  // Finish executing chrome.test.sendMessage().
+  worker_listener.Reply("Hello world");
+  EXPECT_TRUE(worker_completion_listener.WaitUntilSatisfied());
+
+  // The following block makes sure we have received all the IPCs related to
+  // ref-count from the worker.
+  {
+    // The following roundtrip:
+    // browser->extension->worker->extension->browser
+    // will ensure that the worker sent the relevant ref count IPCs.
+    std::string result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        web_contents, "window.roundtripToWorker();", &result));
+    EXPECT_EQ("roundtrip-succeeded", result);
+
+    // Ensure IO thread IPCs run.
+    content::RunAllTasksUntilIdle();
+  }
+
+  // The ref count should drop to 0.
+  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UninstallSelf) {

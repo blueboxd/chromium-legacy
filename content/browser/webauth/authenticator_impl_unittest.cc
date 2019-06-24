@@ -405,11 +405,11 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   AuthenticatorPtr ConstructAuthenticatorWithTimer(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     connector_ = service_manager::Connector::Create(&request_);
-    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeHidManager::AddBinding,
+        base::Bind(&device::FakeFidoHidManager::AddBinding,
                    base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
@@ -487,7 +487,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
   std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
+  std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<::testing::NiceMock<device::MockBluetoothAdapter>>
       mock_adapter_;
@@ -2446,11 +2446,11 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     connector_ = service_manager::Connector::Create(&request_);
-    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::Bind(&device::FakeHidManager::AddBinding,
+        base::Bind(&device::FakeFidoHidManager::AddBinding,
                    base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
@@ -3990,11 +3990,11 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
       GURL effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
     connector_ = service_manager::Connector::Create(&request_);
-    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
     connector_->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
         device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeHidManager::AddBinding,
+        base::BindRepeating(&device::FakeFidoHidManager::AddBinding,
                             base::Unretained(fake_hid_manager_.get())));
 
     // Set up a timer for testing.
@@ -4009,7 +4009,7 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
   std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
   std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
+  std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.

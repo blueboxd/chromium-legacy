@@ -38,6 +38,9 @@
 -SupervisionTransitionScreenTest.SuccessfulTransition/0
 -SupervisionTransitionScreenTest.TransitionTimeout/0
 
+# TODO(crbug.com/978051): Enable this.
+-TabManagerTestWithTwoTabs.TabProactiveDiscardAndFocusBeforeFreezeCompletes
+
 # TODO(crbug.com/977749): Enable this.
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1

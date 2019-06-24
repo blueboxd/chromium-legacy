@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e92b5481924cbef72fa1605c2e72719efce7f828',
+  'v8_revision': 'd32b1ad164ec906d80c8d637611852347b8f812a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -217,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'feed_revision': 'd8b173e83ca88bafc9d69339f939604886f4d583',
+  'feed_revision': '5708e2dcfff432c1fe4106b876813a7205e32ea0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'b3523d57461c1460af68dbd6bec1e8dd5c7ce2e7',
+  'shaderc_revision': '16f6e6ab932f4fe99dd96131af8c9cc6af226cdc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -292,7 +292,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:8c7f49102234f4f4b9349dcb258554675475e596',
+  'gn_version': 'git_revision:972ed755f8e6d31cae9ba15fcd08136ae1a7886f',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -633,7 +633,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_build_tools/aapt2',
-              'version': 'j6U3mv7-KG3PSDtVvTwycWzjwvFR1_sSdA540AYxpucC',
+              'version': 'version:3.6.0-alpha03-5516695-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1187,7 +1187,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'a7344dc0fbc749429c3a5253ec825a5f2f1ccecc',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '79519d67783bc8e59cca6a70848c153363883221',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1355,7 +1355,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e9cac4fe833599bf602213bc851ba6d1c12e9a29',
+    Var('webrtc_git') + '/src.git' + '@' + 'f4996d436060f2956549833d9564d680fd68a487',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

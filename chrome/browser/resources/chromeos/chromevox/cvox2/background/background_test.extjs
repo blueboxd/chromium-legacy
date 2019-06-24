@@ -1975,3 +1975,45 @@ TEST_F('ChromeVoxBackgroundTest', 'EventFromUser', function() {
     press(9  /* tab */)();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'PopUpButtonSetSize', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div>
+    <select id="button">
+      <option value="Apple">Apple</option>
+      <option value="Banana">Banana</option>
+    </select>
+    </div>
+    <script>
+      var button = document.getElementById('button');
+      var expanded = false;
+      button.addEventListener('click', function(e) {
+        console.error('Heelooo');
+        if (expanded)
+          button.setAttribute('aria-expanded', false);
+        else
+          button.setAttribute('aria-expanded', true);
+        expanded = !expanded;
+      });
+    </script>
+  */}, function(root) {
+    var button = root.find({role: RoleType.POP_UP_BUTTON});
+    var click = button.doDefault.bind(button);
+    var focus = button.focus.bind(button);
+    mockFeedback.call(focus)
+      .expectSpeech('Apple')
+      .expectSpeech('Button')
+      .expectSpeech('has pop up')
+      .expectSpeech('Press Search+Space to activate.')
+      .call(click)
+      .expectSpeech('Apple')
+      .expectSpeech('Button')
+      .expectSpeech('has pop up')
+      // SetSize is only reported if popup button is expanded.
+      .expectSpeech('with 2 items')
+      .expectSpeech('Expanded')
+      .expectSpeech('Press Search+Space to activate.')
+      .replay();
+  });
+});

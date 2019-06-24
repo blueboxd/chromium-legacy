@@ -118,7 +118,7 @@ device::mojom::HidDeviceInfoPtr TestHidDevice() {
 
 std::unique_ptr<MockFidoHidConnection>
 CreateHidConnectionWithHidInitExpectations(base::span<const uint8_t> channel_id,
-                                           FakeHidManager* fake_hid_manager,
+                                           FakeFidoHidManager* fake_hid_manager,
                                            ::testing::Sequence sequence) {
   auto hid_device = TestHidDevice();
   device::mojom::HidConnectionPtr connection_client;
@@ -185,7 +185,7 @@ using TestDeviceCallbackReceiver =
 class FidoHidDeviceTest : public ::testing::Test {
  public:
   void SetUp() override {
-    fake_hid_manager_ = std::make_unique<FakeHidManager>();
+    fake_hid_manager_ = std::make_unique<FakeFidoHidManager>();
     fake_hid_manager_->AddBinding2(mojo::MakeRequest(&hid_manager_));
   }
 
@@ -193,7 +193,7 @@ class FidoHidDeviceTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   device::mojom::HidManagerPtr hid_manager_;
-  std::unique_ptr<FakeHidManager> fake_hid_manager_;
+  std::unique_ptr<FakeFidoHidManager> fake_hid_manager_;
 };
 
 TEST_F(FidoHidDeviceTest, TestDeviceError) {
@@ -212,7 +212,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
   auto& device = u2f_devices.front();
 
   // Mock connection where writes always fail.
-  FakeHidConnection::mock_connection_error_ = true;
+  FakeFidoHidConnection::mock_connection_error_ = true;
 
   TestDeviceCallbackReceiver receiver_0;
   device->DeviceTransact(GetMockDeviceRequest(), receiver_0.callback());
@@ -229,7 +229,7 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
                                              receiver_2.callback(), 0);
   TestDeviceCallbackReceiver receiver_3;
   device->DeviceTransact(GetMockDeviceRequest(), receiver_3.callback());
-  FakeHidConnection::mock_connection_error_ = false;
+  FakeFidoHidConnection::mock_connection_error_ = false;
 
   EXPECT_EQ(FidoDevice::State::kDeviceError, device->state_);
   EXPECT_FALSE(receiver_1.value());

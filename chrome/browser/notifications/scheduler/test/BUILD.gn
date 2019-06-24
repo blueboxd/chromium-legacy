@@ -23,5 +23,6 @@ source_set("test_lib") {
     "//base",
     "//chrome/browser/notifications/scheduler/internal:lib",
     "//chrome/browser/notifications/scheduler/public",
+    "//skia",
   ]
 }

@@ -2626,8 +2626,20 @@ TEST_P(NavigationManagerTest, CommitNilPendingItem) {
     return;
   }
   ASSERT_EQ(0, navigation_manager()->GetItemCount());
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:nil
+               forwardListURLs:nil];
   navigation_manager()->CommitPendingItem(nullptr);
-  ASSERT_EQ(0, navigation_manager()->GetItemCount());
+
+  EXPECT_EQ(1, navigation_manager()->GetItemCount());
+  ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ("http://www.url.com/0",
+            navigation_manager()->GetLastCommittedItem()->GetURL());
 }
 
 // Tests NavigationManagerImpl::CommitPendingItem() with a valid pending item.
@@ -2665,6 +2677,10 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
 
   ASSERT_EQ(2, navigation_manager()->GetItemCount());
 
+  // Emulate 2 simultanious navigations to verify that pending item index does
+  // not prevent passed item commit.
+  navigation_manager()->SetPendingItemIndex(0);
+
   // Call CommitPendingItem() with a valid pending item.
   auto item = std::make_unique<web::NavigationItemImpl>();
   item->SetURL(GURL("http://www.url.com/new"));
@@ -2679,7 +2695,7 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
     EXPECT_EQ(0, navigation_manager()->GetPreviousItemIndex());
   }
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
-  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_FALSE(
       navigation_manager()->GetLastCommittedItem()->GetTimestamp().is_null());

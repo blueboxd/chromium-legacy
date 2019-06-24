@@ -847,6 +847,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
        event.Event().button != WebPointerProperties::Button::kLeft) ||
       (is_pen && event.Event().button != pen_drag_button)) {
     mouse_pressed_ = false;
+    mouse_down_may_start_drag_ = false;
   }
 
   //  When pressing Esc key while dragging and the object is outside of the

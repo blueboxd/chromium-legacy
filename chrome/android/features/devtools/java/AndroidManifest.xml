@@ -5,8 +5,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    featureSplit="devtools"
-    package="{{manifest_package}}">
+    featureSplit="devtools">
 
     <dist:module
         dist:onDemand="true"

@@ -67,14 +67,18 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      */
     @Override
     public void onFinishNativeInitialization() {
-        mSigninManager = SigninManager.get();
-        mSigninManager.addSignInStateObserver(this);
-
-        mProfileSyncService = ProfileSyncService.get();
-        mProfileSyncService.addSyncStateChangedListener(this);
-
         mActivityLifecycleDispatcher.unregister(this);
         mActivityLifecycleDispatcher = null;
+
+        mProfileSyncService = ProfileSyncService.get();
+        // ProfileSyncService being null means sync is disabled and won't be initialized. This means
+        // Identity Disc will never get shown so we don't need to register for other notifications.
+        if (mProfileSyncService == null) return;
+
+        mProfileSyncService.addSyncStateChangedListener(this);
+
+        mSigninManager = SigninManager.get();
+        mSigninManager.addSignInStateObserver(this);
     }
 
     /**
@@ -82,11 +86,13 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      */
     void updateButtonState(boolean isNTPVisible) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) return;
+        // Sync is disabled. IdentityDisc will never be shown.
+        if (mProfileSyncService == null) return;
 
         mIsNTPVisible = isNTPVisible;
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null
-                && ProfileSyncService.get().canSyncFeatureStart();
+        boolean shouldShowIdentityDisc =
+                isNTPVisible && accountName != null && mProfileSyncService.canSyncFeatureStart();
 
         if (shouldShowIdentityDisc == mIsIdentityDiscVisible) return;
 
@@ -169,6 +175,11 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      * Call to tear down dependencies.
      */
     void destroy() {
+        if (mActivityLifecycleDispatcher != null) {
+            mActivityLifecycleDispatcher.unregister(this);
+            mActivityLifecycleDispatcher = null;
+        }
+
         if (mProfileDataCache != null) {
             mProfileDataCache.removeObserver(this);
             mProfileDataCache = null;

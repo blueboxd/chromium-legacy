@@ -729,10 +729,6 @@ const base::Feature kScriptStreamingOnPreload{
 const base::Feature kAndroidAutofillAccessibility{
     "AndroidAutofillAccessibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables hiding incorrectly-sized frames while in fullscreen.
-const base::Feature kHideIncorrectlySizedFullscreenFrames{
-    "HideIncorrectlySizedFullscreenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Sets moderate binding to background renderers playing media, when enabled.
 // Else the renderer will have strong binding.
 const base::Feature kBackgroundMediaRendererHasModerateBinding{

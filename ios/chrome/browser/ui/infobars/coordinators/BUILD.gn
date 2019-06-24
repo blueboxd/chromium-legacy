@@ -27,6 +27,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/infobars:public",
     "//ios/chrome/browser/ui/infobars/banners",
+    "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/modals",
     "//ios/chrome/browser/ui/infobars/presentation",
     "//ios/chrome/browser/ui/table_view",

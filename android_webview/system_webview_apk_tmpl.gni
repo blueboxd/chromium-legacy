@@ -32,6 +32,8 @@ template("system_webview_apk_tmpl") {
       "//base:base_java",
     ]
 
+    target_sdk_version = android_sdk_version
+
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep
     }

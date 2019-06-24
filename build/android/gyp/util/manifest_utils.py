@@ -56,18 +56,6 @@ def ParseManifest(path):
   return doc, manifest_node, app_node
 
 
-def MakeElement(name, attributes=None):
-  _RegisterElementTreeNamespaces()
-  element = ElementTree.Element(name)
-  if attributes:
-    for attribute_name, attribute_val in attributes:
-      if attribute_name.startswith('android:'):
-        attribute_name = '{%s}%s' % (
-            ANDROID_NAMESPACE, attribute_name[attribute_name.find(':') + 1:])
-      element.set(attribute_name, attribute_val)
-  return element
-
-
 def SaveManifest(doc, path):
   with build_utils.AtomicOutput(path) as f:
     f.write(ElementTree.tostring(doc.getroot(), encoding='UTF-8'))
@@ -77,9 +65,46 @@ def GetPackage(manifest_node):
   return manifest_node.get('package')
 
 
-def AssertNoUsesSdk(manifest_node):
-  """Asserts that manifest has no <uses-sdk> element."""
-  assert manifest_node.find('./uses-sdk') is None, 'Must define uses-sdk in GN'
+def AssertUsesSdk(manifest_node,
+                  min_sdk_version,
+                  target_sdk_version=None,
+                  max_sdk_version=None):
+  """Asserts values of attributes of <uses-sdk> element.
+
+  Will only assert if both the passed value is not None and the value of
+  attribute exist.
+  """
+  # TODO(crbug.com/891996): Activate once all dependency repos have been
+  # updated.
+  # pylint: disable=unreachable
+  return
+
+  uses_sdk_node = manifest_node.find('./uses-sdk')
+  if uses_sdk_node is None:
+    return
+  for prefix, sdk_version in (('min', min_sdk_version), ('target',
+                                                         target_sdk_version),
+                              ('max', max_sdk_version)):
+    value = uses_sdk_node.get('{%s}%sSdkVersion' % (ANDROID_NAMESPACE, prefix))
+    if not value or not sdk_version:
+      continue
+    assert value == sdk_version, (
+        '%sSdkVersion in Android manifest is %s but we expect %s' %
+        (prefix, value, sdk_version))
+
+
+def AssertPackage(manifest_node, package):
+  """Asserts that manifest package has desired value.
+
+  Will only assert if both |package| is not None and the package is set in the
+  manifest.
+  """
+  package_value = GetPackage(manifest_node)
+  if package_value is None or package is None:
+    return
+  assert package_value == package, (
+      'Package in Android manifest is %s but we expect %s' % (package_value,
+                                                              package))
 
 
 def _SortAndStripElementTree(tree, reverse_toplevel=False):

@@ -90,6 +90,12 @@ class GeometryStructTraitsTest
     NOTREACHED();
   }
 
+  void EchoQuaternion(gfx::mojom::blink::QuaternionPtr,
+                      EchoQuaternionCallback) override {
+    // The type map is not specified.
+    NOTREACHED();
+  }
+
   mojo::BindingSet<gfx::mojom::blink::GeometryTraitsTestService>
       traits_test_bindings_;
 

@@ -993,6 +993,9 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
+  // Ignored nodes are not a part of ordered sets.
+  if (original_node.data().HasState(ax::mojom::State::kIgnored))
+    return;
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {
@@ -1081,6 +1084,22 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
   std::vector<const AXNode*> items;
   // Find all items within ordered_set and add to vector.
   PopulateOrderedSetItems(ordered_set, ordered_set, items, node);
+
+  // If ordered_set role is kPopUpButton and it wraps a kMenuListPopUp, then we
+  // would like it to inherit the SetSize from the kMenuListPopUp it wraps. To
+  // do this, we treat the kMenuListPopUp as the ordered_set and eventually
+  // assign its SetSize value to the kPopUpButton.
+  if ((node.data().role == ax::mojom::Role::kPopUpButton) &&
+      (items.size() != 0)) {
+    // kPopUpButtons are only allowed to contain one kMenuListPopUp.
+    // The single element is guaranteed to be a kMenuListPopUp because that is
+    // the only item role that matches the ordered set role of kPopUpButton.
+    // Please see AXNode::SetRoleMatchesItemRole for more details.
+    DCHECK(items.size() == 1);
+    const AXNode* menu_list_popup = items[0];
+    items.clear();
+    PopulateOrderedSetItems(menu_list_popup, menu_list_popup, items, node);
+  }
 
   // Keep track of the number of elements ordered_set has.
   int32_t num_elements = 0;

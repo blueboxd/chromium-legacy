@@ -27,6 +27,8 @@ android_apk("custom_tabs_client_example_apk") {
     "src/Application/src/main/java/org/chromium/customtabsclient/SessionHelper.java",
   ]
   android_manifest = "src/Application/src/main/AndroidManifest.xml"
+  min_sdk_version = 16
+  target_sdk_version = 21
   apk_name = "CustomTabsClientExample"
   deps = [
     ":chrome_tabs_client_example_apk_resources",

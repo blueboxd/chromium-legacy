@@ -3,21 +3,21 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen
+<android.support.v7.preference.PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
         android:key="usage_and_crash_reports_switch"
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off"
         app:drawDivider="true"/>
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
         android:title="@string/usage_and_crash_reports_description_legacy"/>
 
-    <org.chromium.chrome.browser.preferences.LearnMorePreference
+    <org.chromium.chrome.browser.preferences.LearnMorePreferenceCompat
         android:key="usage_and_crash_reports_learn_more"
         app:helpContext="@string/help_context_usage_reports"/>
 
-</PreferenceScreen>
+</android.support.v7.preference.PreferenceScreen>

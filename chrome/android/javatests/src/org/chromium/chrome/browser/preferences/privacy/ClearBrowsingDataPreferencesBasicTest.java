@@ -9,10 +9,10 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import android.content.Context;
-import android.preference.CheckBoxPreference;
-import android.preference.PreferenceScreen;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.PreferenceScreen;
 
 import org.junit.After;
 import org.junit.Before;
@@ -111,7 +111,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -142,7 +142,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -173,7 +173,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,

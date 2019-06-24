@@ -85,3 +85,10 @@ struct ScrollOffset {
   float x;
   float y;
 };
+
+struct Quaternion {
+  double x;
+  double y;
+  double z;
+  double w;
+};

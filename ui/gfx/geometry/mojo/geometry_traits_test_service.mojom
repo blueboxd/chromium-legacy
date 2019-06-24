@@ -44,4 +44,7 @@ interface GeometryTraitsTestService {
 
   [Sync]
   EchoVector3dF(Vector3dF v) => (Vector3dF pass);
+
+  [Sync]
+  EchoQuaternion(Quaternion q) => (Quaternion pass);
 };

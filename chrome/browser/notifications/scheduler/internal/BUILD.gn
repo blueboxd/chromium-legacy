@@ -92,6 +92,7 @@ source_set("unit_tests") {
     "//chrome/browser/notifications/scheduler/public",
     "//chrome/browser/notifications/scheduler/test:test_lib",
     "//components/leveldb_proto:test_support",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
   ]

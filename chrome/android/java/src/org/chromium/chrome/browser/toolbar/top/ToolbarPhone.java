@@ -2320,7 +2320,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     @Override
     public void handleFindLocationBarStateChange(boolean showing) {
-        setVisibility(showing ? View.GONE : View.VISIBLE);
+        setVisibility(showing ? View.GONE
+                              : mTabSwitcherState == STATIC_TAB ? View.VISIBLE : View.INVISIBLE);
     }
 
     private boolean isLocationBarShownInNTP() {

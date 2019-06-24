@@ -379,7 +379,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (void)clearForwardItems {
-  DCHECK_EQ(self.pendingItemIndex, -1);
   [self discardTransientItem];
 
   NSInteger forwardItemStartIndex = _lastCommittedItemIndex + 1;
@@ -445,7 +444,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
   _items.push_back(std::move(item));
   _previousItemIndex = _lastCommittedItemIndex;
   self.lastCommittedItemIndex = self.items.size() - 1;
-  self.pendingItemIndex = -1;
 }
 
 - (void)addTransientItemWithURL:(const GURL&)URL {

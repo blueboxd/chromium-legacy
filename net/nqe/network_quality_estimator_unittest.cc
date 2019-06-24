@@ -2942,4 +2942,26 @@ TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
   }
 }
 
+TEST_F(NetworkQualityEstimatorTest, PeerToPeerConnectionCounts) {
+  TestNetworkQualityEstimator estimator;
+  base::SimpleTestTickClock tick_clock;
+  estimator.SetTickClockForTesting(&tick_clock);
+  base::HistogramTester histogram_tester;
+
+  estimator.OnPeerToPeerConnectionsCountChange(3u);
+  base::TimeDelta advance_1 = base::TimeDelta::FromMinutes(4);
+  tick_clock.Advance(advance_1);
+  histogram_tester.ExpectTotalCount("NQE.PeerToPeerConnectionsDuration", 0);
+
+  estimator.OnPeerToPeerConnectionsCountChange(1u);
+  base::TimeDelta advance_2 = base::TimeDelta::FromMinutes(6);
+  tick_clock.Advance(advance_2);
+  histogram_tester.ExpectTotalCount("NQE.PeerToPeerConnectionsDuration", 0);
+
+  estimator.OnPeerToPeerConnectionsCountChange(0u);
+  histogram_tester.ExpectUniqueSample("NQE.PeerToPeerConnectionsDuration",
+                                      (advance_1 + advance_2).InMilliseconds(),
+                                      1);
+}
+
 }  // namespace net

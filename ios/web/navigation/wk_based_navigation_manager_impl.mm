@@ -263,7 +263,7 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
 void WKBasedNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (!features::StorePendingItemInContext() || pending_item_index_ != -1) {
+  if (!features::StorePendingItemInContext() || !item) {
     CommitPendingItem();
     return;
   }
@@ -325,7 +325,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
     }
   }
 
-  pending_item_index_ = -1;
   // If the last committed item is the empty window open item, then don't update
   // previous item because the new commit replaces the last committed item.
   if (!last_committed_item_was_empty_window_open_item) {

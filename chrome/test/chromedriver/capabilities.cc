@@ -831,16 +831,3 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   }
   return Status(kOk);
 }
-
-Status Capabilities::CheckSupport() const {
-  // TODO(https://crbug.com/chromedriver/1902): pageLoadStrategy=eager not yet
-  // supported.
-  if (page_load_strategy.length() > 0 &&
-      page_load_strategy != PageLoadStrategy::kNormal &&
-      page_load_strategy != PageLoadStrategy::kNone) {
-    return Status(kInvalidArgument, "'pageLoadStrategy=" + page_load_strategy +
-                                        "' not yet supported");
-  }
-
-  return Status(kOk);
-}

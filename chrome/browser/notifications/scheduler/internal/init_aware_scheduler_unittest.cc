@@ -27,7 +27,7 @@ class MockNotificationScheduler : public NotificationScheduler {
 
   MOCK_METHOD1(Init, void(InitCallback));
   MOCK_METHOD1(Schedule, void(std::unique_ptr<NotificationParams>));
-  MOCK_METHOD0(OnStartTask, void());
+  MOCK_METHOD1(OnStartTask, void(TaskFinishedCallback));
   MOCK_METHOD0(OnStopTask, void());
   MOCK_METHOD1(OnClick, void(const std::string&));
   MOCK_METHOD2(OnActionClick, void(const std::string&, ActionButtonType));

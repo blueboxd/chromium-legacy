@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/skia/include/core/SkBitmap.h"
+
 namespace notifications {
 
 // Contains data used to display a scheduled notification. All fields will be
@@ -30,9 +32,8 @@ struct NotificationData {
   // The body text of the notification.
   std::string message;
 
-  // The unique identifier of the icon, which must be loaded asynchronously into
-  // memory.
-  std::string icon_uuid;
+  // The bitmap for the small icon.
+  SkBitmap icon;
 
   // URL of the web site responsible for showing the notification.
   std::string url;

@@ -2319,7 +2319,7 @@ if (enable_java_templates) {
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
     _merge_manifest_target = "${_template_name}__merge_manifests"
     merge_manifests(_merge_manifest_target) {
-      forward_variables_from(invoker, [ "chromium_code" ])
+      forward_variables_from(invoker, [ "manifest_package" ])
       input_manifest = _android_root_manifest
       output_manifest = _android_manifest
       build_config = _build_config
@@ -2378,6 +2378,7 @@ if (enable_java_templates) {
                              [
                                "aapt_locale_whitelist",
                                "app_as_shared_lib",
+                               "manifest_package",
                                "max_sdk_version",
                                "no_xml_namespaces",
                                "package_name",
@@ -2691,11 +2692,13 @@ if (enable_java_templates) {
                                "apk_under_test",
                                "base_module_target",
                                "chromium_code",
-                               "jacoco_never_instrument",
+                               "classpath_deps",
                                "enable_class_deps_output",
+                               "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
                                "loadable_modules",
+                               "manifest_package",
                                "native_lib_placeholders",
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
@@ -3299,6 +3302,7 @@ if (enable_java_templates) {
                                "keystore_path",
                                "load_library_from_apk",
                                "loadable_modules",
+                               "manifest_package",
                                "max_sdk_version",
                                "min_sdk_version",
                                "native_lib_placeholders",
@@ -3416,6 +3420,7 @@ if (enable_java_templates) {
                                "jni_registration_header",
                                "jni_sources_blacklist",
                                "load_library_from_apk",
+                               "manifest_package",
                                "max_sdk_version",
                                "min_sdk_version",
                                "native_lib_version_arg",

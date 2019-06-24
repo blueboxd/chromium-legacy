@@ -1110,7 +1110,6 @@ if (public_android_sdk) {
     deps = upstream_only_webview_deps
     apk_name = "SystemWebView"
     min_sdk_version = 21
-    target_sdk_version = 28
   }
 
   android_resource_sizes_test("resource_sizes_system_webview_apk") {
@@ -1123,6 +1122,10 @@ if (public_android_sdk) {
   system_webview_apk_tmpl("trichrome_webview_apk") {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep = ":trichrome_webview_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
     use_trichrome_library = true
@@ -1137,6 +1140,10 @@ if (public_android_sdk) {
   system_webview_apk_tmpl("trichrome_webview_for_bundle_apk") {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep = ":trichrome_webview_manifest"
+
+    # TODO(torne): make minsdk=Q once we no longer build hacky P version
+    min_sdk_version = android_sdk_version
+
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebViewForBundle"
     use_trichrome_library = true

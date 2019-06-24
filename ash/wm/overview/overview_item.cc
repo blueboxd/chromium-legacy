@@ -705,6 +705,7 @@ void OverviewItem::OnDragAnimationCompleted() {
 void OverviewItem::UpdatePhantomsForDragging(
     const gfx::PointF& location_in_screen,
     bool allow_original_window_opacity_change) {
+  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
 
   aura::Window* window = transform_window_.IsMinimized()
@@ -725,6 +726,7 @@ void OverviewItem::UpdatePhantomsForDragging(
 }
 
 void OverviewItem::DestroyPhantomsForDragging() {
+  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   phantoms_for_dragging_.reset();
   aura::Window* window = transform_window_.IsMinimized()
                              ? item_widget_->GetNativeWindow()

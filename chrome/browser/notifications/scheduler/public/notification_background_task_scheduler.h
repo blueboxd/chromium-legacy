@@ -18,8 +18,9 @@ class NotificationBackgroundTaskScheduler {
   // Interface used to handle background task events.
   class Handler {
    public:
+    using TaskFinishedCallback = base::OnceCallback<void(bool)>;
     // Called when the background task is started.
-    virtual void OnStartTask() = 0;
+    virtual void OnStartTask(TaskFinishedCallback callback) = 0;
 
     // Called when the background task is stopped by the OS when it wants to
     // reallocate resources, our task is not finished yet in this case. The

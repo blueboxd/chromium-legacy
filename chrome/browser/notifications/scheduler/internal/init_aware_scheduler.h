@@ -34,7 +34,7 @@ class InitAwareNotificationScheduler : public NotificationScheduler {
   void Init(InitCallback init_callback) override;
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override;
-  void OnStartTask() override;
+  void OnStartTask(TaskFinishedCallback callback) override;
   void OnStopTask() override;
   void OnClick(const std::string& notification_id) override;
   void OnActionClick(const std::string& notification_id,

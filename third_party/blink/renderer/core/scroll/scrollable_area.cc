@@ -808,7 +808,13 @@ CompositorElementId ScrollableArea::GetScrollbarElementId(
 }
 
 void ScrollableArea::MarkHoverStateDirty() {
-  GetLayoutBox()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
+  if (GetLayoutBox()) {
+    GetLayoutBox()
+        ->GetFrame()
+        ->LocalFrameRoot()
+        .GetEventHandler()
+        .MarkHoverStateDirty();
+  }
 }
 
 void ScrollableArea::Trace(blink::Visitor* visitor) {

@@ -81,9 +81,11 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
+    bool is_secure_context,
     const WebVector<WebServerTimingInfo>& server_timing)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
+      is_secure_context_(is_secure_context),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(server_timing)) {}
 

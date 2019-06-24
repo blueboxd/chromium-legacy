@@ -1143,6 +1143,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)userEnteredTabSwitcher {
+  // TODO(crbug.com/977761): In preparation for dismissing BVC, make sure any
+  // ongoing ViewController presentations are stopped.
+  if (IsInfobarUIRebootEnabled() &&
+      (self.infobarContainerCoordinator.infobarBannerState !=
+       InfobarBannerPresentationState::NotPresented)) {
+    [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
+                                                        completion:nil];
+  }
   [self.bubblePresenter userEnteredTabSwitcher];
 }
 
@@ -1648,7 +1656,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/976411):This should probably move to the BannerVC once/if
   // the dismiss event from BVC is observable.
   if (IsInfobarUIRebootEnabled() &&
-      [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
+      (self.infobarContainerCoordinator.infobarBannerState !=
+       InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
                                                         completion:nil];
   }
@@ -1890,7 +1899,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // presented. Dismiss it in case the user or system has triggered another
   // presentation.
   if (IsInfobarUIRebootEnabled() &&
-      [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
+      (self.infobarContainerCoordinator.infobarBannerState !=
+       InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator
         dismissInfobarBannerAnimated:NO
                           completion:^{
@@ -3404,7 +3414,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // controller that allows interaction with the rest of the App while its being
   // presented. Dismiss it in case the user or system has triggered repost form.
   if (IsInfobarUIRebootEnabled() &&
-      [self.infobarContainerCoordinator isPresentingInfobarBanner]) {
+      (self.infobarContainerCoordinator.infobarBannerState !=
+       InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator
         dismissInfobarBannerAnimated:NO
                           completion:presentDialog];

@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -57,17 +59,40 @@ public abstract class JavascriptModalDialog implements ModalDialogProperties.Con
         mDialogCustomView.setSuppressCheckBoxVisibility(mShouldShowSuppressCheckBox);
 
         Resources resources = activity.getResources();
-        mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                               .with(ModalDialogProperties.CONTROLLER, this)
-                               .with(ModalDialogProperties.TITLE, mTitle)
-                               .with(ModalDialogProperties.MESSAGE, mMessage)
-                               .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
-                               .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                       mPositiveButtonTextId)
-                               .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                       mNegativeButtonTextId)
-                               .with(ModalDialogProperties.TITLE_SCROLLABLE, true)
-                               .build();
+
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            TouchlessDialogProperties.ActionNames names =
+                    new TouchlessDialogProperties.ActionNames();
+            names.cancel = mNegativeButtonTextId;
+            names.select = 0;
+            names.alt = mPositiveButtonTextId;
+            mDialogModel = new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
+                                   .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
+                                   .with(TouchlessDialogProperties.PRIORITY,
+                                           TouchlessDialogProperties.Priority.HIGH)
+                                   .with(TouchlessDialogProperties.ACTION_NAMES, names)
+                                   .with(ModalDialogProperties.MESSAGE, mMessage)
+                                   .with(ModalDialogProperties.TITLE, mTitle)
+                                   .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
+                                   .with(ModalDialogProperties.CONTROLLER, this)
+                                   .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
+                                   .with(ModalDialogProperties.CONTENT_DESCRIPTION, mMessage)
+                                   .build();
+            mDialogModel.set(TouchlessDialogProperties.ALT_ACTION,
+                    (v) -> onDismiss(mDialogModel, DialogDismissalCause.POSITIVE_BUTTON_CLICKED));
+        } else {
+            mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                                   .with(ModalDialogProperties.CONTROLLER, this)
+                                   .with(ModalDialogProperties.TITLE, mTitle)
+                                   .with(ModalDialogProperties.MESSAGE, mMessage)
+                                   .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
+                                   .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                           mPositiveButtonTextId)
+                                   .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                           mNegativeButtonTextId)
+                                   .with(ModalDialogProperties.TITLE_SCROLLABLE, true)
+                                   .build();
+        }
 
         mModalDialogManager = activity.getModalDialogManager();
         mModalDialogManager.showDialog(mDialogModel, dialogType);

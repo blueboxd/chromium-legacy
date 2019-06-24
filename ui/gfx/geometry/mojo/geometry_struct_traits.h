@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -176,6 +177,21 @@ struct StructTraits<gfx::mojom::ScrollOffsetDataView, gfx::ScrollOffset> {
                    gfx::ScrollOffset* out) {
     out->set_x(data.x());
     out->set_y(data.y());
+    return true;
+  }
+};
+
+template <>
+struct StructTraits<gfx::mojom::QuaternionDataView, gfx::Quaternion> {
+  static double x(const gfx::Quaternion& q) { return q.x(); }
+  static double y(const gfx::Quaternion& q) { return q.y(); }
+  static double z(const gfx::Quaternion& q) { return q.z(); }
+  static double w(const gfx::Quaternion& q) { return q.w(); }
+  static bool Read(gfx::mojom::QuaternionDataView data, gfx::Quaternion* out) {
+    out->set_x(data.x());
+    out->set_y(data.y());
+    out->set_z(data.z());
+    out->set_w(data.w());
     return true;
   }
 };

@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
+
 namespace web {
 class WebState;
 }
@@ -50,8 +52,9 @@ class WebStateList;
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
-// Dismisses the InfobarBanner, if none is being presented |completion| will
-// still run.
+// Dismisses the InfobarBanner. If the presentation is taking place it will stop
+// it and dismiss the banner. If none is being presented |completion| will still
+// run.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion;
 
@@ -64,9 +67,10 @@ class WebStateList;
 // The SyncPresenter delegate for this Coordinator.
 @property(nonatomic, weak) id<SyncPresenter> syncPresenter;
 
-// YES if an InfobarBanner is being presented.
-@property(nonatomic, assign, getter=isPresentingInfobarBanner)
-    BOOL presentingInfobarBanner;
+// The current InfobarBanner presentation state (Only one Infobar Banner can be
+// presented at the time).
+@property(nonatomic, assign, readonly)
+    InfobarBannerPresentationState infobarBannerState;
 
 @end
 

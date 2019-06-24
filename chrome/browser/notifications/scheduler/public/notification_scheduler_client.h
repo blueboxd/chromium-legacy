@@ -22,11 +22,6 @@ namespace notifications {
 // The client interface to receive events from notification scheduler.
 class NotificationSchedulerClient {
  public:
-  struct DisplayData {
-    NotificationData notification_data;
-    SkBitmap icon;
-  };
-
   // Defines user actions type.
   enum class UserActionType {
     // The user clicks on the notification body.
@@ -46,17 +41,18 @@ class NotificationSchedulerClient {
     ActionButtonType type = ActionButtonType::kUnknownAction;
   };
 
-  using DisplayCallback =
-      base::OnceCallback<void(std::unique_ptr<DisplayData>)>;
+  using NotificationDataCallback =
+      base::OnceCallback<void(std::unique_ptr<NotificationData>)>;
 
   NotificationSchedulerClient() = default;
   virtual ~NotificationSchedulerClient() = default;
 
   // Called when the notification should be displayed to the user. The clients
-  // can overwrite data in |display_data| and return the updated data in
+  // can overwrite data in |notification_data| and return the updated data in
   // |callback|.
-  virtual void ShowNotification(std::unique_ptr<DisplayData> display_data,
-                                DisplayCallback callback) = 0;
+  virtual void ShowNotification(
+      std::unique_ptr<NotificationData> notification_data,
+      NotificationDataCallback callback) = 0;
 
   // Called when scheduler is initialized, number of notification scheduled for
   // this type is reported if initialization succeeded.

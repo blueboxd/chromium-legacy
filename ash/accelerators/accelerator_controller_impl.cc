@@ -745,8 +745,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE));
       return;
-    // TODO(crbug.com/974228) Add final strings when we have them.
-    case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_NEXT:
     case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(

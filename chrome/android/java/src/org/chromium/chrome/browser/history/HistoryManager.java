@@ -383,7 +383,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public void openClearBrowsingDataPreference() {
         recordUserAction("ClearBrowsingData");
-        PreferencesLauncher.launchSettingsPage(mActivity, ClearBrowsingDataTabsFragment.class);
+        PreferencesLauncher.launchSettingsPageCompat(
+                mActivity, ClearBrowsingDataTabsFragment.class);
     }
 
     @Override

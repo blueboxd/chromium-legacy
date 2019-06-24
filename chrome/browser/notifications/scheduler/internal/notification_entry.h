@@ -32,8 +32,14 @@ struct NotificationEntry {
   // Creation timestamp.
   base::Time create_time;
 
-  // Contains information to construct the notification.
+  // Contains information to construct the notification. The icon data is
+  // persisted to disk and only loads into memory before the notification is
+  // shown.
   NotificationData notification_data;
+
+  // The unique identifier of the icon, which must be loaded asynchronously into
+  // memory.
+  std::string icon_uuid;
 
   // Scheduling details.
   ScheduleParams schedule_params;

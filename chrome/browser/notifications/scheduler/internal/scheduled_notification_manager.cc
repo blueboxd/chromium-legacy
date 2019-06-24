@@ -78,9 +78,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       if (it->second.count(guid))
         entry = std::move(it->second[guid]);
     }
-    // TODO(hesen): Inform delegate failure of finding the data.
-    if (!entry)
-      return;
+
+    DCHECK(entry);
 
     notifications_[entry->type].erase(entry->guid);
     if (notifications_[entry->type].empty())

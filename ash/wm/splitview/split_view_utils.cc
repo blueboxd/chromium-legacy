@@ -233,6 +233,11 @@ bool IsClamshellSplitViewModeEnabled() {
       ash::features::kDragToSnapInClamshellMode);
 }
 
+bool AreMultiDisplayOverviewAndSplitViewEnabled() {
+  return base::FeatureList::IsEnabled(
+      ash::features::kMultiDisplayOverviewAndSplitView);
+}
+
 bool ShouldAllowSplitView() {
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !IsClamshellSplitViewModeEnabled()) {

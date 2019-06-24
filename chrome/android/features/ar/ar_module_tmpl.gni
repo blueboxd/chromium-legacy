@@ -16,25 +16,17 @@ template("ar_module_tmpl") {
   assert(defined(invoker.module_name))
   assert(defined(invoker.base_module_target))
 
-  _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
-  _manifest_target = "${target_name}__manifest"
-  jinja_template(_manifest_target) {
-    input = "//chrome/android/features/ar/AndroidManifest.xml"
-    output = _manifest
-    variables = [ "manifest_package=${invoker.manifest_package}" ]
-  }
-
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
                            [
                              "base_module_target",
+                             "manifest_package",
                              "module_name",
                              "native_switches",
                              "version_code",
                              "version_name",
                            ])
-    android_manifest = _manifest
-    android_manifest_dep = ":$_manifest_target"
+    android_manifest = "//chrome/android/features/ar/AndroidManifest.xml"
     min_sdk_version = 24
     target_sdk_version = android_sdk_version
     deps = [

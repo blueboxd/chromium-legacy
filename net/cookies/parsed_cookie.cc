@@ -221,7 +221,11 @@ std::string ParsedCookie::ToCookieLine() const {
     if (!out.empty())
       out.append("; ");
     out.append(it->first);
-    if (it->first != kSecureTokenName && it->first != kHttpOnlyTokenName) {
+    // Determine whether to emit the pair's value component. We should always
+    // print it for the first pair(see crbug.com/977619). After the first pair,
+    // we need to consider whether the name component is a special token.
+    if (it == pairs_.begin() ||
+        (it->first != kSecureTokenName && it->first != kHttpOnlyTokenName)) {
       out.append("=");
       out.append(it->second);
     }

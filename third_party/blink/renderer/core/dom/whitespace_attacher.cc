@@ -139,6 +139,8 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
                !sibling_layout_object->IsFloatingOrOutOfFlowPositioned()) {
       break;
     }
+    context.next_sibling_valid = false;
+    context.next_sibling = nullptr;
   }
   SetLastTextNode(nullptr);
 }

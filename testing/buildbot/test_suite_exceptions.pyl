@@ -93,7 +93,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
-        'experiment_percentage': 100,
       },
       'linux-chromeos-oobe-code-coverage': {
         'swarming': {
@@ -1504,7 +1503,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
-        'experiment_percentage': 100,
       },
       'linux-chromeos-oobe-code-coverage': {
         'swarming': {

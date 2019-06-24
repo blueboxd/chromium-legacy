@@ -12,8 +12,9 @@ WebUIClient::WebUIClient() = default;
 
 WebUIClient::~WebUIClient() = default;
 
-void WebUIClient::ShowNotification(std::unique_ptr<DisplayData> display_data,
-                                   DisplayCallback callback) {
+void WebUIClient::ShowNotification(
+    std::unique_ptr<NotificationData> notification_data,
+    NotificationDataCallback callback) {
   NOTIMPLEMENTED();
 }
 

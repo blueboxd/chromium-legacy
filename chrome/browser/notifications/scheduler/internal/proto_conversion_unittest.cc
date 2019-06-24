@@ -172,7 +172,7 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   entry.notification_data.id = kGuid;
   entry.notification_data.title = "title";
   entry.notification_data.message = "message";
-  entry.notification_data.icon_uuid = "icon_uuid";
+  entry.icon_uuid = "icon_uuid";
   entry.notification_data.url = "url";
   TestNotificationEntryConversion(&entry);
 

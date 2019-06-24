@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -270,16 +269,6 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_ArcKioskApp) {
                     user_manager::USER_TYPE_ARC_KIOSK_APP);
 
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE,
-            IsAssistantAllowedForProfile(profile()));
-}
-
-TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKioskNext) {
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmailGaiaId(
-                        profile()->GetProfileUserName(), kTestGaiaId));
-  profile()->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEnabled, true);
-
-  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_NEXT,
             IsAssistantAllowedForProfile(profile()));
 }
 

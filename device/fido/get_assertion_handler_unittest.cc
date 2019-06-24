@@ -867,7 +867,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     scoped_fake_win_webauthn_api.set_available(enable_api);
 
     // Simulate a connected HID device.
-    ScopedFakeHidManager fake_hid_manager;
+    ScopedFakeFidoHidManager fake_hid_manager;
     fake_hid_manager.AddFidoHidDevice("guid");
 
     TestGetAssertionRequestCallback cb;

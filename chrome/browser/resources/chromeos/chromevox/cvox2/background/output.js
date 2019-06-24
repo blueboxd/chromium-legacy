@@ -513,7 +513,8 @@ Output.RULES = {
     paragraph: {speak: `$nameOrDescendants`},
     popUpButton: {
       speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
-          $state $restriction $description`
+          $if($expanded, @@list_with_items($setSize)) $state $restriction
+          $description`
     },
     radioButton: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))

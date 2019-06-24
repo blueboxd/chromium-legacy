@@ -43,7 +43,7 @@ MATCHER_P(IdMatches, id, "") {
 class FidoHidDiscoveryTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ScopedFakeHidManager fake_hid_manager_;
+  ScopedFakeFidoHidManager fake_hid_manager_;
 };
 
 TEST_F(FidoHidDiscoveryTest, TestAddRemoveDevice) {

@@ -778,7 +778,6 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -800,7 +799,6 @@
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

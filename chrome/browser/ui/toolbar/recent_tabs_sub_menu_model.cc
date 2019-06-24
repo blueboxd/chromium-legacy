@@ -595,7 +595,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   favicon_request_handler->GetFaviconImageForPageURL(
       url,
       base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                     base::Unretained(this), command_id),
+                     weak_ptr_factory_.GetWeakPtr(), command_id),
       favicon::FaviconRequestOrigin::RECENTLY_CLOSED_TABS,
       open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
       CanSendHistoryDataToServer(is_local_tab, browser_),

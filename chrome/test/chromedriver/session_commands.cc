@@ -254,9 +254,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   Status status = capabilities.Parse(*desired_caps, session->w3c_compliant);
   if (status.IsError())
     return status;
-  status = capabilities.CheckSupport();
-  if (status.IsError())
-    return status;
 
   if (capabilities.unhandled_prompt_behavior.length() > 0) {
     session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;

@@ -35,7 +35,7 @@ class NotificationScheduleServiceImpl
   UserActionHandler* GetUserActionHandler() override;
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
-  void OnStartTask() override;
+  void OnStartTask(TaskFinishedCallback callback) override;
   void OnStopTask() override;
 
   // UserActionHandler implementation.

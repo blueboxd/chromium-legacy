@@ -31,12 +31,14 @@ class NavigationTracker : public DevToolsEventListener,
  public:
   NavigationTracker(DevToolsClient* client,
                     const BrowserInfo* browser_info,
-                    const JavaScriptDialogManager* dialog_manager);
+                    const JavaScriptDialogManager* dialog_manager,
+                    const bool is_eager = false);
 
   NavigationTracker(DevToolsClient* client,
                     LoadingState known_state,
                     const BrowserInfo* browser_info,
-                    const JavaScriptDialogManager* dialog_manager);
+                    const JavaScriptDialogManager* dialog_manager,
+                    const bool is_eager = false);
 
   ~NavigationTracker() override;
 
@@ -67,7 +69,7 @@ class NavigationTracker : public DevToolsEventListener,
   LoadingState loading_state_;
   std::string top_frame_id_;
   const JavaScriptDialogManager* dialog_manager_;
-  bool load_event_fired_;
+  const bool is_eager_;
   bool timed_out_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTracker);

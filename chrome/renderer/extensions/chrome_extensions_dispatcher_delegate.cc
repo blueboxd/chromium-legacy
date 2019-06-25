@@ -111,6 +111,7 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
   // Custom bindings.
+  source_map->RegisterSource("action", IDR_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("declarativeContent",

@@ -3194,6 +3194,18 @@ class PydepsChecker(object):
       return cmd, '\n'.join(difflib.context_diff(old_contents, new_contents))
 
 
+def _ParseGclientArgs():
+  args = {}
+  with open('build/config/gclient_args.gni', 'r') as f:
+    for line in f:
+      line = line.strip()
+      if not line or line.startswith('#'):
+        continue
+      attribute, value = line.split('=')
+      args[attribute.strip()] = value.strip()
+  return args
+
+
 def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   """Checks if a .pydeps file needs to be regenerated."""
   # This check is for Python dependency lists (.pydeps files), and involves
@@ -3201,9 +3213,7 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   # doesn't work on Windows and Mac, so skip it on other platforms.
   if input_api.platform != 'linux2':
     return []
-  # TODO(agrieve): Update when there's a better way to detect
-  # this: crbug.com/570091
-  is_android = input_api.os_path.exists('third_party/android_tools')
+  is_android = _ParseGclientArgs().get('checkout_android', 'false') == 'true'
   pydeps_files = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
   results = []
   # First, check for new / deleted .pydeps.

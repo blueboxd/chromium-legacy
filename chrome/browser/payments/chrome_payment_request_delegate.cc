@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -108,10 +109,6 @@ bool ChromePaymentRequestDelegate::IsIncognito() const {
   return profile && profile->IsIncognitoProfile();
 }
 
-bool ChromePaymentRequestDelegate::IsSslCertificateValid() {
-  return SslValidityChecker::IsSslCertificateValid(web_contents_);
-}
-
 const GURL& ChromePaymentRequestDelegate::GetLastCommittedURL() const {
   return web_contents_->GetLastCommittedURL();
 }
@@ -192,6 +189,12 @@ void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
 
 bool ChromePaymentRequestDelegate::IsInteractive() const {
   return shown_dialog_ && shown_dialog_->IsInteractive();
+}
+
+std::string
+ChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
+  return SslValidityChecker::GetInvalidSslCertificateErrorMessage(
+      web_contents_);
 }
 
 }  // namespace payments

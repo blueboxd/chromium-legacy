@@ -21,6 +21,21 @@
   <message name="IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITHOUT_RESULTS" desc="Accessibility value for the search box without searched results.">
     No search result for <ph name="query">$1<ex>a</ex></ph>
   </message>
+  <message name="IDS_KSV_KEY_PERIOD_ACCESSIBILITY_NAME" desc="Accessibility Name of [.] key">
+    period
+  </message>
+  <message name="IDS_KSV_KEY_COMMA_ACCESSIBILITY_NAME" desc="Accessibility Name of [,] key">
+    comma
+  </message>
+  <message name="IDS_KSV_KEY_HYPHEN_ACCESSIBILITY_NAME" desc="Accessibility Name of [-] key">
+    hyphen
+  </message>
+  <message name="IDS_KSV_KEY_BRACKET_LEFT_ACCESSIBILITY_NAME" desc="Accessibility Name of [ key">
+    bracket left
+  </message>
+  <message name="IDS_KSV_KEY_BRACKET_RIGHT_ACCESSIBILITY_NAME" desc="Accessibility Name of ] key">
+    bracket right
+  </message>
 
   <!-- Search illustration -->
   <message name="IDS_KSV_SEARCH_NO_RESULT" desc="No search results.">

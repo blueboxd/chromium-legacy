@@ -180,10 +180,14 @@ public class TouchlessDialogPresenter extends Presenter {
         ChromeImageView imageView = view.findViewById(R.id.dialog_item_icon);
         TextView textView = view.findViewById(R.id.dialog_item_text);
         if (DialogListItemProperties.ICON == propertyKey) {
-            imageView.setVisibility(View.VISIBLE);
-            Drawable icon = model.get(DialogListItemProperties.ICON).mutate();
-            icon.clearColorFilter();
-            imageView.setImageDrawable(icon);
+            if (model.get(DialogListItemProperties.ICON) == null) {
+                imageView.setImageDrawable(null);
+            } else {
+                imageView.setVisibility(View.VISIBLE);
+                Drawable icon = model.get(DialogListItemProperties.ICON).mutate();
+                icon.clearColorFilter();
+                imageView.setImageDrawable(icon);
+            }
         } else if (DialogListItemProperties.TEXT == propertyKey) {
             textView.setText(model.get(DialogListItemProperties.TEXT));
         } else if (DialogListItemProperties.CLICK_LISTENER == propertyKey) {

@@ -47,10 +47,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="8dp"
+        android:paddingBottom="12dp"
         android:paddingHorizontal="8dp"
         android:divider="@android:color/transparent"
         android:dividerHeight="8dp"
         android:layout_gravity="center"
+        android:clipToPadding="false"
         android:scrollbars="none" />
 
 </LinearLayout>

@@ -223,6 +223,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   // production.
   bool skip_ui_for_non_url_payment_method_identifiers_for_test_ = false;
 
+  // If not empty, use this error message for rejecting PaymentRequest.show().
+  std::string prohibited_origin_or_invalid_ssl_error_message_;
+
   base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);

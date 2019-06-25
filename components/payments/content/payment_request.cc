@@ -128,20 +128,25 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
     return;
   }
 
+  // TODO(crbug.com/978471): Improve architecture for handling prohibited
+  // origins and invalid SSL certificates.
   bool allowed_origin =
       UrlUtil::IsOriginAllowedToUseWebPaymentApis(last_committed_url);
   if (!allowed_origin) {
-    log_.Error(errors::kProhibitedOrigin);
+    prohibited_origin_or_invalid_ssl_error_message_ = errors::kProhibitedOrigin;
   }
 
-  bool invalid_ssl = last_committed_url.SchemeIsCryptographic() &&
-                     !delegate_->IsSslCertificateValid();
-  if (invalid_ssl) {
-    log_.Error(errors::kInvalidSslCertificate);
+  bool invalid_ssl = false;
+  if (last_committed_url.SchemeIsCryptographic()) {
+    DCHECK(prohibited_origin_or_invalid_ssl_error_message_.empty());
+    prohibited_origin_or_invalid_ssl_error_message_ =
+        delegate_->GetInvalidSslCertificateErrorMessage();
+    invalid_ssl = !prohibited_origin_or_invalid_ssl_error_message_.empty();
   }
 
   if (!allowed_origin || invalid_ssl) {
     // Intentionally don't set |spec_| and |state_|, so the UI is never shown.
+    log_.Error(prohibited_origin_or_invalid_ssl_error_message_);
     log_.Error(errors::kProhibitedOriginOrInvalidSslExplanation);
     return;
   }
@@ -484,7 +489,9 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
-                     GetNotSupportedErrorMessage(spec_.get()));
+                     !prohibited_origin_or_invalid_ssl_error_message_.empty()
+                         ? prohibited_origin_or_invalid_ssl_error_message_
+                         : GetNotSupportedErrorMessage(spec_.get()));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
     OnConnectionTerminated();

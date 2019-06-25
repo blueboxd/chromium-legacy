@@ -68,7 +68,6 @@ public class SplashLayout {
             case IconClassification.INVALID:
                 return R.layout.webapp_splash_screen_no_icon;
             case IconClassification.SMALL:
-                return R.layout.webapp_splash_screen_small;
             case IconClassification.LARGE:
             default:
                 return R.layout.webapp_splash_screen_large;

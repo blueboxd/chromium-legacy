@@ -296,9 +296,8 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   mock_wk_list_.currentItem = wk_item0;
   mock_wk_list_.backList = nil;
   mock_wk_list_.forwardList = @[ wk_item1 ];
-  OCMExpect([mock_web_view_ URL])
+  OCMStub([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.0.com"]);
-
   manager_->AddPendingItem(
       GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,

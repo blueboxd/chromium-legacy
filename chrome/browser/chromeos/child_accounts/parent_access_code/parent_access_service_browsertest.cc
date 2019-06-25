@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, InvalidAccountId) {
   auto test_value = test_values_.begin();
   test_clock_.SetNow(test_value->first);
 
-  AccountId other_child = AccountId::FromUserEmail("other.child@gmail.com");
+  AccountId other_child = AccountId::FromUserEmail("otherchild@gmail.com");
   EXPECT_FALSE(ParentAccessService::Get().ValidateParentAccessCode(
       other_child, test_value->second));
 }

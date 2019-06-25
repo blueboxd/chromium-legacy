@@ -30,6 +30,7 @@ BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
       connection_changed_callback_(connection_changed_callback),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(connection_changed_callback_);
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},

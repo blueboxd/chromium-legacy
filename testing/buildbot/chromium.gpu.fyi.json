@@ -11439,6 +11439,7 @@
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
           "--fuzzy-diff",
+          "--skipped=always",
           "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
           "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer"
         ],
@@ -11460,8 +11461,7 @@
               "os": "Ubuntu-14.04",
               "pool": "Chrome-GPU"
             }
-          ],
-          "shards": 2
+          ]
         }
       },
       {
@@ -11515,6 +11515,43 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=swiftshader",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--use-vulkan=swiftshader",
+          "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "vulkan_swift_shader_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "Ubuntu-14.04",
+              "pool": "Chrome-GPU"
+            }
+          ]
         }
       }
     ]

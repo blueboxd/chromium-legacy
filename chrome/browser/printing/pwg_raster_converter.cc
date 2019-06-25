@@ -100,7 +100,7 @@ void PwgRasterConverterHelper::Convert(
   memcpy(memory.mapping.memory(), data->front(), data->size());
   pdf_to_pwg_raster_converter_ptr_->Convert(
       std::move(memory.region), settings_, bitmap_settings_,
-      base::Bind(&PwgRasterConverterHelper::RunCallback, this));
+      base::BindOnce(&PwgRasterConverterHelper::RunCallback, this));
 }
 
 void PwgRasterConverterHelper::RunCallback(

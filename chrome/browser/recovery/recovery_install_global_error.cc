@@ -34,10 +34,8 @@ RecoveryInstallGlobalError::RecoveryInstallGlobalError(Profile* profile)
     elevation_needed_ =
         pref->GetBoolean(prefs::kRecoveryComponentNeedsElevation);
   }
-  if (elevation_needed_) {
-    GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged(
-        this);
-  }
+  if (elevation_needed_)
+    GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged();
 
   pref_registrar_.Init(pref);
   pref_registrar_.Add(
@@ -157,5 +155,5 @@ void RecoveryInstallGlobalError::OnElevationRequirementChanged() {
   if (elevation_needed_)
     has_shown_bubble_view_ = false;
 
-  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged(this);
+  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged();
 }

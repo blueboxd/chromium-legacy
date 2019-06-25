@@ -6,4 +6,5 @@
 <resources>
     <dimen name="webapp_splash_offset">48dp</dimen>
     <dimen name="webapp_splash_large_title_margin_bottom">8dp</dimen>
+    <dimen name="webapp_splash_image_size_minimum">48dp</dimen>
 </resources>

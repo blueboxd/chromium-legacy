@@ -2,31 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
 
-#include <string>
-
-#include "base/bind.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace blink {
-class TrackObserver;
+namespace base {
+class SingleThreadTaskRunner;
 }
 
-namespace content {
+namespace blink {
+
+class TrackObserver;
 
 // Base class used for mapping between webrtc and blink MediaStream tracks.
 // RemoteMediaStreamImpl has a RemoteMediaStreamTrackAdapter per remote audio
 // (RemoteAudioTrackAdapter) and video (RemoteVideoTrackAdapter) track.
+//
+// TODO(crbug.com/704136): Move these classes out of the Blink exposed API
+// when all users of it have been Onion souped.
 template <typename WebRtcMediaStreamTrackType>
-class RemoteMediaStreamTrackAdapter
+class BLINK_MODULES_EXPORT RemoteMediaStreamTrackAdapter
     : public base::RefCountedThreadSafe<
           RemoteMediaStreamTrackAdapter<WebRtcMediaStreamTrackType>> {
  public:
@@ -35,19 +38,19 @@ class RemoteMediaStreamTrackAdapter
       WebRtcMediaStreamTrackType* webrtc_track)
       : main_thread_(main_thread),
         webrtc_track_(webrtc_track),
-        id_(webrtc_track->id()) {}
+        id_(WebString::FromUTF8(webrtc_track->id())) {}
 
   const scoped_refptr<WebRtcMediaStreamTrackType>& observed_track() {
     return webrtc_track_;
   }
 
-  blink::WebMediaStreamTrack* web_track() {
+  WebMediaStreamTrack* web_track() {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(!web_track_.IsNull());
     return &web_track_;
   }
 
-  const std::string& id() const { return id_; }
+  WebString id() const { return id_; }
 
   bool initialized() const {
     DCHECK(main_thread_->BelongsToCurrentThread());
@@ -57,8 +60,7 @@ class RemoteMediaStreamTrackAdapter
   void Initialize() {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(!initialized());
-    web_initialize_.Run();
-    web_initialize_.Reset();
+    std::move(web_initialize_).Run();
     DCHECK(initialized());
   }
 
@@ -70,14 +72,13 @@ class RemoteMediaStreamTrackAdapter
     DCHECK(main_thread_->BelongsToCurrentThread());
   }
 
-  void InitializeWebTrack(blink::WebMediaStreamSource::Type type) {
+  void InitializeWebTrack(WebMediaStreamSource::Type type) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(web_track_.IsNull());
 
-    blink::WebString web_track_id(blink::WebString::FromUTF8(id_));
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(web_track_id, type, web_track_id, true /* remote */);
-    web_track_.Initialize(web_track_id, web_source);
+    WebMediaStreamSource web_source;
+    web_source.Initialize(id_, type, id_, true /* remote */);
+    web_track_.Initialize(id_, web_source);
     DCHECK(!web_track_.IsNull());
   }
 
@@ -86,19 +87,19 @@ class RemoteMediaStreamTrackAdapter
   // The callback is used by derived classes to bind objects that need to be
   // instantiated and initialized on the signaling thread but then moved to
   // and used on the main thread when initializing the web object(s).
-  base::Callback<void()> web_initialize_;
+  base::OnceClosure web_initialize_;
 
  private:
   const scoped_refptr<WebRtcMediaStreamTrackType> webrtc_track_;
-  blink::WebMediaStreamTrack web_track_;
+  WebMediaStreamTrack web_track_;
   // const copy of the webrtc track id that allows us to check it from both the
   // main and signaling threads without incurring a synchronous thread hop.
-  const std::string id_;
+  const WebString id_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackAdapter);
 };
 
-class RemoteVideoTrackAdapter
+class BLINK_MODULES_EXPORT RemoteVideoTrackAdapter
     : public RemoteMediaStreamTrackAdapter<webrtc::VideoTrackInterface> {
  public:
   // Called on the signaling thread.
@@ -110,14 +111,14 @@ class RemoteVideoTrackAdapter
   ~RemoteVideoTrackAdapter() override;
 
  private:
-  void InitializeWebVideoTrack(std::unique_ptr<blink::TrackObserver> observer,
+  void InitializeWebVideoTrack(std::unique_ptr<TrackObserver> observer,
                                bool enabled);
 };
 
 // RemoteAudioTrackAdapter is responsible for listening on state
 // change notifications on a remote webrtc audio MediaStreamTracks and notify
 // Blink.
-class RemoteAudioTrackAdapter
+class BLINK_MODULES_EXPORT RemoteAudioTrackAdapter
     : public RemoteMediaStreamTrackAdapter<webrtc::AudioTrackInterface>,
       public webrtc::ObserverInterface {
  public:
@@ -150,6 +151,6 @@ class RemoteAudioTrackAdapter
   DISALLOW_COPY_AND_ASSIGN(RemoteAudioTrackAdapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_REMOTE_MEDIA_STREAM_TRACK_ADAPTER_H_

@@ -7,6 +7,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -375,6 +376,12 @@ jumbo_static_library("content_shell_lib") {
       "//ppapi:blink_deprecated_test_plugin",
       "//ppapi:blink_test_plugin",
       "//ppapi/shared_impl",
+    ]
+  }
+  if (enable_vulkan) {
+    deps += [
+      "//gpu/vulkan:test_support",
+      "//gpu/vulkan/init",
     ]
   }
   if (mojo_media_host == "browser") {

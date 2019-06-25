@@ -55,10 +55,6 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--system-log-file',
                            help='File to write system logs to. Specify - to '
                                 'log to stdout.')
-  common_args.add_argument('--exclude-system-logs',
-                           action='store_false',
-                           dest='include_system_logs',
-                           help='Do not show system log data.')
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
                            help='Enable debug-level logging.')
@@ -104,7 +100,8 @@ def GetDeploymentTargetForArgs(args):
 
   if not args.device:
     # KVM is required on x64 test bots.
-    require_kvm = args.test_launcher_bot_mode and args.target_cpu == "x64"
+    require_kvm = hasattr(args, "test_launcher_bot_mode") and \
+        args.test_launcher_bot_mode and args.target_cpu == "x64"
 
     return QemuTarget(output_dir=args.output_directory,
                       target_cpu=args.target_cpu,

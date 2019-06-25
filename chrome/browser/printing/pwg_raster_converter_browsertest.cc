@@ -40,11 +40,11 @@ constexpr char kPdfToPwgRasterLongEdgeTestFile[] =
 
 void ResultCallbackImpl(bool* called,
                         base::ReadOnlySharedMemoryRegion* pwg_region_out,
-                        base::Closure quit_closure,
+                        base::OnceClosure quit_closure,
                         base::ReadOnlySharedMemoryRegion pwg_region_in) {
   *called = true;
   *pwg_region_out = std::move(pwg_region_in);
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 void GetPdfData(const char* file_name,

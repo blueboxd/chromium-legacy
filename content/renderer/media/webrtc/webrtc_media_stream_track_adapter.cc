@@ -209,7 +209,8 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
   DCHECK_EQ(webrtc_audio_track->kind(),
             webrtc::MediaStreamTrackInterface::kAudioKind);
   remote_audio_track_adapter_ =
-      new RemoteAudioTrackAdapter(main_thread_, webrtc_audio_track.get());
+      base::MakeRefCounted<blink::RemoteAudioTrackAdapter>(
+          main_thread_, webrtc_audio_track.get());
   webrtc_track_ = webrtc_audio_track;
   // Set the initial volume to zero. When the track is put in an audio tag for
   // playout, its volume is set to that of the tag. Without this, we could end
@@ -231,7 +232,8 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
   DCHECK_EQ(webrtc_video_track->kind(),
             webrtc::MediaStreamTrackInterface::kVideoKind);
   remote_video_track_adapter_ =
-      new RemoteVideoTrackAdapter(main_thread_, webrtc_video_track.get());
+      base::MakeRefCounted<blink::RemoteVideoTrackAdapter>(
+          main_thread_, webrtc_video_track.get());
   webrtc_track_ = webrtc_video_track;
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(

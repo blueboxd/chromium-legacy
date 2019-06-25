@@ -129,16 +129,26 @@ class MultiActionAPITest
   }
 
   // Ensures the |action| is enabled on the tab with the given |tab_id|.
-  void EnsureActionIsEnabled(ExtensionAction* action, int tab_id) const {
-    if (!action->GetIsVisible(tab_id))
-      action->SetIsVisible(tab_id, true);
+  void EnsureActionIsEnabledOnActiveTab(ExtensionAction* action) {
+    const int tab_id = GetActiveTabId();
+    if (action->GetIsVisible(tab_id))
+      return;
+    action->SetIsVisible(tab_id, true);
+    // Just setting the state on the action doesn't update the UI. Ensure
+    // observers are notified.
+    extensions::ExtensionActionAPI* extension_action_api =
+        extensions::ExtensionActionAPI::Get(profile());
+    extension_action_api->NotifyChange(action, GetActiveTab(), profile());
   }
 
   // Returns the id of the currently-active tab.
   int GetActiveTabId() const {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebContents* web_contents = GetActiveTab();
     return SessionTabHelper::IdForTab(web_contents).id();
+  }
+
+  content::WebContents* GetActiveTab() const {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
   // Returns the action associated with |extension|.
@@ -359,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, OnClickedDispatching) {
 
   const int tab_id = GetActiveTabId();
   EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
-  EnsureActionIsEnabled(action, tab_id);
+  EnsureActionIsEnabledOnActiveTab(action);
   EXPECT_FALSE(action->HasPopup(tab_id));
 
   ResultCatcher result_catcher;
@@ -404,7 +414,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
 
   const int tab_id = GetActiveTabId();
   EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
-  EnsureActionIsEnabled(action, tab_id);
+  EnsureActionIsEnabledOnActiveTab(action);
   EXPECT_TRUE(action->HasPopup(tab_id));
 
   ResultCatcher result_catcher;
@@ -429,6 +439,139 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
 
   frames = process_manager->GetRenderFrameHostsForExtension(extension->id());
   EXPECT_EQ(0u, frames.size());
+}
+
+// Tests setting the icon dynamically from the background page.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, DynamicSetIcon) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test Clicking",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {
+             "default_icon": "red_icon.png"
+           },
+           "background": { "scripts": ["background.js"] }
+         })";
+  constexpr char kBackgroundJsTemplate[] =
+      R"(function setIcon(details) {
+           chrome.%s.setIcon(details, () => {
+             chrome.test.assertNoLastError();
+             chrome.test.notifyPass();
+           });
+         })";
+
+  std::string blue_icon;
+  std::string red_icon;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("icon_rgb_255_0_0.png"), &red_icon));
+  }
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      base::StringPrintf(kManifestTemplate, GetManifestKey(GetParam())));
+  test_dir.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      base::StringPrintf(kBackgroundJsTemplate, GetAPIName(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.WriteFile(FILE_PATH_LITERAL("red_icon.png"), red_icon);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabledOnActiveTab(action);
+
+  std::unique_ptr<BrowserActionTestUtil> toolbar_helper =
+      BrowserActionTestUtil::Create(browser());
+
+  ASSERT_EQ(1, toolbar_helper->NumberOfBrowserActions());
+  EXPECT_EQ(extension->id(), toolbar_helper->GetExtensionId(0));
+
+  gfx::Image default_icon = toolbar_helper->GetIcon(0);
+  EXPECT_FALSE(default_icon.IsEmpty());
+
+  // Check the midpoint. All these icons are solid, but the rendered icon
+  // includes padding.
+  const int mid_x = default_icon.Width() / 2;
+  const int mid_y = default_icon.Height() / 2;
+  // Note: We only validate the color here as a quick-and-easy way of validating
+  // the icon is what we expect. Other tests do much more rigorous testing of
+  // the icon's rendering.
+  EXPECT_EQ(SK_ColorRED, default_icon.AsBitmap().getColor(mid_x, mid_y));
+
+  // Create a new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://newtab"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  const int new_tab_id = GetActiveTabId();
+  EXPECT_NE(new_tab_id, tab_id);
+  EXPECT_TRUE(ActionHasDefaultState(*action, new_tab_id));
+  EnsureActionIsEnabledOnActiveTab(action);
+
+  // The new tab should still have the same icon (the default).
+  gfx::Image new_tab_icon = toolbar_helper->GetIcon(0);
+  EXPECT_FALSE(default_icon.IsEmpty());
+  EXPECT_EQ(SK_ColorRED, default_icon.AsBitmap().getColor(mid_x, mid_y));
+
+  // Set the icon for the new tab to a different icon in the extension package.
+  {
+    ResultCatcher result_catcher;
+    browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        profile(), extension->id(),
+        base::StringPrintf("setIcon({tabId: %d, path: 'blue_icon.png'});",
+                           new_tab_id));
+    EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+  }
+
+  new_tab_icon = toolbar_helper->GetIcon(0);
+  EXPECT_FALSE(new_tab_icon.IsEmpty());
+  EXPECT_EQ(SK_ColorBLUE, new_tab_icon.AsBitmap().getColor(mid_x, mid_y));
+
+  // Next, set the icon to a dynamically-generated one (from canvas image data).
+  {
+    ResultCatcher result_catcher;
+    constexpr char kSetIconFromImageData[] =
+        R"({
+             let canvas = document.createElement('canvas');
+             canvas.width = 32;
+             canvas.height = 32;
+             let context = canvas.getContext('2d');
+             context.clearRect(0, 0, 32, 32);
+             context.fillStyle = '#00FF00';  // Green
+             context.fillRect(0, 0, 32, 32);
+             let imageData = context.getImageData(0, 0, 32, 32);
+             setIcon({tabId: %d, imageData: imageData});
+           })";
+    browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        profile(), extension->id(),
+        base::StringPrintf(kSetIconFromImageData, new_tab_id));
+    EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
+  }
+
+  new_tab_icon = toolbar_helper->GetIcon(0);
+  EXPECT_FALSE(new_tab_icon.IsEmpty());
+  EXPECT_EQ(SK_ColorGREEN, new_tab_icon.AsBitmap().getColor(mid_x, mid_y));
+
+  // Switch back to the first tab. The icon should still be red, since the other
+  // changes were for specific tabs.
+  browser()->tab_strip_model()->ActivateTabAt(0);
+  gfx::Image first_tab_icon = toolbar_helper->GetIcon(0);
+  EXPECT_FALSE(first_tab_icon.IsEmpty());
+  EXPECT_EQ(SK_ColorRED, first_tab_icon.AsBitmap().getColor(mid_x, mid_y));
+
+  // TODO(devlin): Add tests for setting icons as a dictionary of
+  // { size -> image_data }.
 }
 
 INSTANTIATE_TEST_SUITE_P(,

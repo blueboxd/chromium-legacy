@@ -146,7 +146,7 @@ class PdfConverterImpl : public PdfConverter {
 
     int page_number() const { return page_number_; }
 
-    const PdfConverter::GetPageCallback& callback() const { return callback_; }
+    PdfConverter::GetPageCallback callback() const { return callback_; }
 
    private:
     int page_number_;
@@ -159,7 +159,7 @@ class PdfConverterImpl : public PdfConverter {
   void Initialize(scoped_refptr<base::RefCountedMemory> data);
 
   void GetPage(int page_number,
-               const PdfConverter::GetPageCallback& get_page_callback) override;
+               PdfConverter::GetPageCallback get_page_callback) override;
 
   void Stop();
 
@@ -305,7 +305,7 @@ void PdfConverterImpl::OnPageCount(mojom::PdfToEmfConverterPtr converter,
 
 void PdfConverterImpl::GetPage(
     int page_number,
-    const PdfConverter::GetPageCallback& get_page_callback) {
+    PdfConverter::GetPageCallback get_page_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(pdf_to_emf_converter_.is_bound());
 

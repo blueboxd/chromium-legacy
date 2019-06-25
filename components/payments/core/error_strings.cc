@@ -25,6 +25,7 @@ const char kCannotShowTwice[] = "Attempted show twice.";
 const char kCannotShowWithoutInit[] = "Attempted show without initialization.";
 const char kCannotUpdateWithoutInit[] = "Attempted updateWith without initialization.";
 const char kCannotUpdateWithoutShow[] = "Attempted updateWith without show.";
+const char kDetailedInvalidSslCertificateMessageFormat[] = "SSL certificate is not valid. Security level: $.";
 const char kGenericPaymentMethodNotSupportedMessage[] = "Payment method not supported.";
 const char kInvalidSslCertificate[] = "SSL certificate is not valid.";
 const char kInvalidState[] = "Invalid state.";

@@ -14,7 +14,7 @@ const service_manager::Manifest& GetXrDeviceServiceManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(device::mojom::kVrIsolatedServiceName)
-          .WithDisplayName(IDS_ISOLATED_XR_PROCESS_NAME)
+          .WithDisplayName("XR Isolated Device Service")
           .WithOptions(
               service_manager::ManifestOptionsBuilder()
                   .WithExecutionMode(service_manager::Manifest::ExecutionMode::

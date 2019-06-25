@@ -176,5 +176,5 @@ void SigninGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
 }
 
 void SigninGlobalError::OnErrorChanged() {
-  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged(this);
+  GlobalErrorServiceFactory::GetForProfile(profile_)->NotifyErrorsChanged();
 }

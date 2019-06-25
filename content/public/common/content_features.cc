@@ -289,6 +289,10 @@ const base::Feature kMojoVideoCaptureSecondary{
 const base::Feature kMouseSubframeNoImplicitCapture{
     "MouseSubframeNoImplicitCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the URLLoaderRequestController lives on the UI thread.
+const base::Feature kNavigationLoaderOnUI{"NavigationLoaderOnUI",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {
   "NetworkServiceInProcess",

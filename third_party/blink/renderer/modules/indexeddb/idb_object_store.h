@@ -59,6 +59,12 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   const IDBObjectStoreMetadata& Metadata() const { return *metadata_; }
   const IDBKeyPath& IdbKeyPath() const { return Metadata().key_path; }
 
+  // Per spec prose, keyPath attribute should return the same object each time
+  // (if it is not just a primitive type). The IDL cannot use [SameObject]
+  // because the key path may not be an 'object'. So use [CachedAttribute],
+  // but never dirty the cache.
+  bool IsKeyPathDirty() const { return false; }
+
   // Implement the IDBObjectStore IDL
   int64_t Id() const { return Metadata().id; }
   const String& name() const { return Metadata().name; }

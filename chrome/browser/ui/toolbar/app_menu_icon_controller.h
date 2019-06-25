@@ -9,12 +9,11 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/global_error/global_error_observer.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -28,9 +27,8 @@ class ThemeProvider;
 
 // AppMenuIconController encapsulates the logic for badging the app menu icon
 // as a result of various events - such as available updates, errors, etc.
-class AppMenuIconController :
-    public content::NotificationObserver,
-    public UpgradeObserver {
+class AppMenuIconController : public GlobalErrorObserver,
+                              public UpgradeObserver {
  public:
   enum class IconType {
     NONE,
@@ -92,10 +90,8 @@ class AppMenuIconController :
       base::Optional<SkColor> promo_highlight_color = base::nullopt) const;
 
  private:
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // GlobalErrorObserver:
+  void OnGlobalErrorsChanged() override;
 
   // UpgradeObserver:
   void OnUpgradeRecommended() override;
@@ -105,7 +101,8 @@ class AppMenuIconController :
   UpgradeDetector* const upgrade_detector_;
   Profile* const profile_;
   Delegate* const delegate_;
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<GlobalErrorService, GlobalErrorObserver>
+      global_error_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuIconController);
 };

@@ -40,10 +40,10 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   // ChromePaymentRequestDelegate.
   void ShowDialog(PaymentRequest* request) override;
   bool IsIncognito() const override;
-  bool IsSslCertificateValid() override;
   autofill::RegionDataLoader* GetRegionDataLoader() override;
   PrefService* GetPrefService() override;
   bool IsBrowserWindowActive() const override;
+  std::string GetInvalidSslCertificateErrorMessage() override;
 
   PaymentRequestDialogView* dialog_view() {
     return static_cast<PaymentRequestDialogView*>(shown_dialog_);

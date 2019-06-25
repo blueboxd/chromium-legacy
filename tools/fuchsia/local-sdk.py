@@ -37,8 +37,7 @@ def BuildForArch(arch):
   Run('scripts/fx', '--dir', build_dir, 'set', 'terminal.' + arch,
       '--with=//topaz/packages/sdk:topaz', '--with-base=//sdk/bundles:tools',
       '--args=is_debug=false', '--args=build_sdk_archives=true')
-  Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk',
-      'sdk:images_archive')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk')
 
 
 def main(args):
@@ -46,30 +45,16 @@ def main(args):
     print """usage: %s <path_to_fuchsia_tree> [architecture]""" % SELF_FILE
     return 1
 
-  original_dir = os.getcwd()
-
-  fuchsia_root = args[0]
-
-  arch = args[1] if len(args) > 1 else 'x64'
-  if arch not in ['x64', 'arm64']:
-    print 'Unknown architecture: ' + arch
-    print 'Must be "x64" or "arm64".'
-    return 1
-
-  # Switch to the Fuchsia tree and build an SDK.
-  os.chdir(fuchsia_root)
-
-  BuildForArch(arch)
-
-  tempdir = tempfile.mkdtemp()
-  sdk_tars = [
-      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
-                   'images.tar.gz'),
-      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
-                   'core.tar.gz'),
-      os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
-                   'fuchsia_dart.tar.gz'),
-  ]
+  target_archs = []
+  if len(args) > 1:
+    arch = args[1]
+    if arch not in ['x64', 'arm64']:
+      print 'Unknown architecture: ' + arch
+      print 'Must be "x64" or "arm64".'
+      return 1
+    target_archs = [arch]
+  else:
+    target_archs = ['x64', 'arm64']
 
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
@@ -78,28 +63,52 @@ def main(args):
                             'sdk')
   EnsureEmptyDir(output_dir)
 
-  # Extract tars merging manifests
-  manifest_path = os.path.join(output_dir, 'meta', 'manifest.json')
+  original_dir = os.getcwd()
+  fuchsia_root = args[0]
   merged_manifest = None
-  parts = set()
-  for sdk_tar in sdk_tars:
-    tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
+  manifest_parts = set()
 
-    # Merge the manifest ensuring that we don't have duplicate entries.
-    if os.path.isfile(manifest_path):
-      manifest = json.load(open(manifest_path))
-      os.remove(manifest_path)
-      if not merged_manifest:
-        merged_manifest = manifest
-      else:
-        for part in manifest['parts']:
-          if part['meta'] not in parts:
-            parts.add(part['meta'])
-            merged_manifest['parts'].append(part)
+  # Switch to the Fuchsia tree and build the SDKs.
+  os.chdir(fuchsia_root)
+
+  for arch in target_archs:
+    BuildForArch(arch)
+
+    sdk_tars = [
+        os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                    'core.tar.gz'),
+        os.path.join(fuchsia_root, 'out', 'release-' + arch, 'sdk', 'archive',
+                    'fuchsia_dart.tar.gz'),
+    ]
+
+    # Extract tars merging manifests
+    manifest_path = os.path.join(output_dir, 'meta', 'manifest.json')
+    for sdk_tar in sdk_tars:
+      with tarfile.open(sdk_tar, mode='r:gz') as tar:
+        for tar_file in tar:
+          try:
+            tar.extract(tar_file, output_dir)
+          except IOError:
+            # Ignore overwrite of read-only files.
+            pass
+
+      # Merge the manifest ensuring that we don't have duplicate entries.
+      if os.path.isfile(manifest_path):
+        manifest = json.load(open(manifest_path))
+        os.remove(manifest_path)
+        if not merged_manifest:
+          merged_manifest = manifest
+          for part in manifest['parts']:
+            manifest_parts.add(part['meta'])
+        else:
+          for part in manifest['parts']:
+            if part['meta'] not in manifest_parts:
+              manifest_parts.add(part['meta'])
+              merged_manifest['parts'].append(part)
 
   # Write merged manifest file.
   with open(manifest_path, 'w') as manifest_file:
-    json.dump(merged_manifest, manifest_file)
+    json.dump(merged_manifest, manifest_file, indent=2)
 
   print 'Hashing sysroot...'
   # Hash the sysroot to catch updates to the headers, but don't hash the whole
@@ -118,7 +127,6 @@ def main(args):
     f.write('locally-built-sdk-' + sysroot_hash)
 
   # Clean up.
-  shutil.rmtree(tempdir)
   os.chdir(original_dir)
 
   subprocess.check_call([os.path.join(REPOSITORY_ROOT, 'third_party',

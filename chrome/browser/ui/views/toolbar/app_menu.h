@@ -11,11 +11,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/ui/global_error/global_error_observer.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
@@ -32,7 +33,7 @@ class MenuRunner;
 // AppMenu adapts the AppMenuModel to view's menu related classes.
 class AppMenu : public views::MenuDelegate,
                 public bookmarks::BaseBookmarkModelObserver,
-                public content::NotificationObserver,
+                public GlobalErrorObserver,
                 public base::SupportsWeakPtr<AppMenu> {
  public:
   AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items);
@@ -97,10 +98,8 @@ class AppMenu : public views::MenuDelegate,
   // bookmarks::BaseBookmarkModelObserver overrides:
   void BookmarkModelChanged() override;
 
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // GlobalErrorObserver:
+  void OnGlobalErrorsChanged() override;
 
   ExtensionToolbarMenuView* extension_toolbar_for_testing() {
     return extension_toolbar_;
@@ -182,7 +181,8 @@ class AppMenu : public views::MenuDelegate,
   // Used for managing "Recent tabs" menu items.
   std::unique_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<GlobalErrorService, GlobalErrorObserver>
+      global_error_observer_{this};
 
   // The bit mask of views::MenuRunner::RunTypes.
   const int run_types_;

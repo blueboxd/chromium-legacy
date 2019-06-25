@@ -2999,6 +2999,7 @@ test("unit_tests") {
     "../browser/previews/previews_lite_page_predictor_unittest.cc",
     "../browser/previews/previews_lite_page_url_loader_interceptor_unittest.cc",
     "../browser/previews/previews_offline_helper_unittest.cc",
+    "../browser/previews/previews_prober_unittest.cc",
     "../browser/previews/previews_service_unittest.cc",
     "../browser/previews/previews_top_host_provider_impl_unittest.cc",
     "../browser/previews/previews_ui_tab_helper_unittest.cc",

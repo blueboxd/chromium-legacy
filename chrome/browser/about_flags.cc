@@ -4002,6 +4002,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kMouseSubframeNoImplicitCapture)},
 
+#if defined(OS_ANDROID)
+    {"touch-to-fill", flag_descriptions::kTouchToFillAndroidName,
+     flag_descriptions::kTouchToFillAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(password_manager::features::kTouchToFillAndroid)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -53,8 +53,8 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
       : WebContentsObserver(dialog) {}
   ~RequestPrintPreviewObserver() override = default;
 
-  void set_quit_closure(const base::Closure& quit_closure) {
-    quit_closure_ = quit_closure;
+  void set_quit_closure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
   }
 
  private:
@@ -71,10 +71,11 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
 
   void OnRequestPrintPreview(
       const PrintHostMsg_RequestPrintPreview_Params& /* params */) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(quit_closure_));
   }
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestPrintPreviewObserver);
 };
@@ -120,9 +121,9 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
 };
 
 void PluginsLoadedCallback(
-    const base::Closure& quit_closure,
+    base::OnceClosure quit_closure,
     const std::vector<content::WebPluginInfo>& /* info */) {
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 bool GetPdfPluginInfo(content::WebPluginInfo* info) {
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   {
     base::RunLoop run_loop;
     content::PluginService::GetInstance()->GetPlugins(
-        base::Bind(&PluginsLoadedCallback, run_loop.QuitClosure()));
+        base::BindOnce(&PluginsLoadedCallback, run_loop.QuitClosure()));
     run_loop.Run();
   }
   // Get the PDF plugin info.

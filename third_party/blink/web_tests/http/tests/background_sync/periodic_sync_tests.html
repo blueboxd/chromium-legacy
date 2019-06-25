@@ -26,4 +26,11 @@
         'register should have thrown an error');
   }, 'register fails when invalid minInterval is provided');
 
+  periodicSyncTest(async (test, periodicSync) => {
+    await periodicSync.register('test');
+    const tags = await periodicSync.getTags();
+    assert_equals(tags.length, 1);
+    assert_equals(tags[0], 'test');
+  }, 'getTags works as expected');
+
 </script>

@@ -47,6 +47,28 @@ ScriptPromise PeriodicSyncManager::registerPeriodicSync(
   return promise;
 }
 
+ScriptPromise PeriodicSyncManager::getTags(ScriptState* script_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // Creating a Periodic Background Sync registration requires an activated
+  // service worker, so if |registration_| has not been activated yet, we can
+  // skip the Mojo roundtrip.
+  if (!registration_->active()) {
+    return ScriptPromise::Cast(script_state,
+                               v8::Array::New(script_state->GetIsolate()));
+  }
+
+  // TODO(crbug.com/932591): Optimize this to only get the tags from the browser
+  // process instead of the registrations themselves.
+  GetBackgroundSyncServicePtr()->GetRegistrations(
+      registration_->RegistrationId(),
+      WTF::Bind(&PeriodicSyncManager::GetRegistrationsCallback,
+                WrapPersistent(this), WrapPersistent(resolver)));
+
+  return promise;
+}
+
 const mojom::blink::PeriodicBackgroundSyncServicePtr&
 PeriodicSyncManager::GetBackgroundSyncServicePtr() {
   if (!background_sync_service_.get()) {
@@ -81,6 +103,37 @@ void PeriodicSyncManager::RegisterCallback(
     case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError, "Permission denied."));
+      break;
+    case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kUnknownError, "No service worker is active."));
+      break;
+  }
+}
+
+void PeriodicSyncManager::GetRegistrationsCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundSyncError error,
+    WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations) {
+  switch (error) {
+    case mojom::blink::BackgroundSyncError::NONE: {
+      Vector<String> tags;
+      for (const auto& registration : registrations)
+        tags.push_back(registration->tag);
+      resolver->Resolve(tags);
+      break;
+    }
+    case mojom::blink::BackgroundSyncError::NOT_FOUND:
+    case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
+    case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
+      // These errors should never be returned from
+      // BackgroundSyncManager::GetPeriodicSyncRegistrations
+      NOTREACHED();
+      break;
+    case mojom::blink::BackgroundSyncError::STORAGE:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kUnknownError,
+          "Periodic Background Sync is disabled."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
       resolver->Reject(MakeGarbageCollected<DOMException>(

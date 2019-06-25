@@ -256,7 +256,7 @@ class PrintJob::PdfConversionState {
                                                  std::move(start_callback));
   }
 
-  void GetMorePages(const PdfConverter::GetPageCallback& get_page_callback) {
+  void GetMorePages(PdfConverter::GetPageCallback get_page_callback) {
     const int kMaxNumberOfTempFilesPerDocument = 3;
     while (pages_in_progress_ < kMaxNumberOfTempFilesPerDocument &&
            current_page_ < page_count_) {
@@ -265,7 +265,7 @@ class PrintJob::PdfConversionState {
     }
   }
 
-  void OnPageProcessed(const PdfConverter::GetPageCallback& get_page_callback) {
+  void OnPageProcessed(PdfConverter::GetPageCallback get_page_callback) {
     --pages_in_progress_;
     GetMorePages(get_page_callback);
     // Release converter if we don't need this any more.
@@ -353,7 +353,7 @@ void PrintJob::OnPdfPageConverted(int page_number,
   }
 
   pdf_conversion_state_->GetMorePages(
-      base::Bind(&PrintJob::OnPdfPageConverted, this));
+      base::BindRepeating(&PrintJob::OnPdfPageConverted, this));
 }
 
 void PrintJob::StartPdfToTextConversion(
@@ -459,7 +459,7 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     case JobEventDetails::PAGE_DONE:
       if (pdf_conversion_state_) {
         pdf_conversion_state_->OnPageProcessed(
-            base::Bind(&PrintJob::OnPdfPageConverted, this));
+            base::BindRepeating(&PrintJob::OnPdfPageConverted, this));
       }
       break;
 #endif  // defined(OS_WIN)

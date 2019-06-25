@@ -37,6 +37,7 @@ class PeriodicSyncManager final : public ScriptWrappable {
   ScriptPromise registerPeriodicSync(ScriptState* script_state,
                                      const String& tag,
                                      const BackgroundSyncOptions* options);
+  ScriptPromise getTags(ScriptState* script_state);
 
   void Trace(blink::Visitor* visitor) override;
 
@@ -51,6 +52,10 @@ class PeriodicSyncManager final : public ScriptWrappable {
   void RegisterCallback(ScriptPromiseResolver* resolver,
                         mojom::blink::BackgroundSyncError error,
                         mojom::blink::SyncRegistrationOptionsPtr options);
+  void GetRegistrationsCallback(
+      ScriptPromiseResolver* resolver,
+      mojom::blink::BackgroundSyncError error,
+      WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations);
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

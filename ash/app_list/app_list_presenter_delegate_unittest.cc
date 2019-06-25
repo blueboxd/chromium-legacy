@@ -1418,7 +1418,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {
                                                ->contents_view()
                                                ->GetAppsContainerView()
                                                ->apps_grid_view();
-  EXPECT_FALSE(apps_grid_view->view_model()->view_at(0)->layer()->visible());
+  EXPECT_FALSE(apps_grid_view->view_model()->view_at(0)->GetVisible());
 
   // Verifies that the AppListView state after mouse drag should be
   // FullscreenAllApps.

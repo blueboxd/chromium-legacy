@@ -137,6 +137,34 @@ INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
                          LauncherAnimationsFullscreenTest,
                          /*reuse_widget=*/::testing::Bool());
 
+class LauncherAnimationsExpandToFullscreenTest
+    : public LauncherAnimationsTestBase {
+ public:
+  LauncherAnimationsExpandToFullscreenTest() = default;
+  ~LauncherAnimationsExpandToFullscreenTest() override = default;
+
+ private:
+  // LauncherAnimationsTestBase:
+  std::string GetAnimationSmoothnessMetricsName() const override {
+    return "FullscreenAllApps.ClamshellMode";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAnimationsExpandToFullscreenTest);
+};
+
+IN_PROC_BROWSER_TEST_P(LauncherAnimationsExpandToFullscreenTest, Run) {
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, false,
+                         ash::AppListViewState::kPeeking);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kFullscreenAllApps);
+  SendKeyAndWaitForState(ui::VKEY_BROWSER_SEARCH, true,
+                         ash::AppListViewState::kClosed);
+}
+
+INSTANTIATE_TEST_SUITE_P(LauncherAnimations,
+                         LauncherAnimationsExpandToFullscreenTest,
+                         /*reuse_widget=*/::testing::Bool());
+
 class LauncherAnimationsPeekingTest : public LauncherAnimationsTestBase {
  public:
   LauncherAnimationsPeekingTest() = default;

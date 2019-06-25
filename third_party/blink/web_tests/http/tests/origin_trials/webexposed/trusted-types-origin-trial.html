@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Trusted types - exposed by origin trial</title>
+<script src="../../../../resources/testharness.js"></script>
+<script src="../../../../resources/testharnessreport.js"></script>
+<script src="../../../../resources/origin-trials-helper.js"></script>
+
+<script>
+// Can only run this test if TrustedDOMTypes is not enabled via a Chrome flag.
+// That is only the case when running this in a virtual test suite (by default,
+// runtime enabled features are on for layout tests).
+// To run in virtual test suite:
+// tools/run_web_tests.py virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed
+if (!self.internals.runtimeFlags.trustedDOMTypesEnabled) {
+  test(t => {
+    assert_not_own_property(window, 'TrustedTypes', 'TrustedTypes is defined on the window');
+  }, 'trusted types in Origin-Trial disabled document.');
+}
+
+// generated with command
+// tools/origin_trials/generate_token.py http://127.0.0.1:8000 TrustedDOMTypes --expire-timestamp=2000000000
+const token = 'AqXgC692H4wuaTLMJ0jzBazq/pN6WCvcllT60HwwZpdNy/vrnklJOcAL7D6wcSDL+FjyR16xxhbcTtB8Mc1Q4wMAAABXeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiVHJ1c3RlZERPTVR5cGVzIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9';
+OriginTrialsHelper.add_token(token);
+test(t => {
+  assert_own_property(window, 'TrustedTypes', 'TrustedTypes is not defined on the window');
+  assert_own_property(window.TrustedTypes, 'createPolicy', 'createPolicy is not defined on TrustedTypes');
+}, 'trusted types in Origin-Trial enabled document.');
+</script>

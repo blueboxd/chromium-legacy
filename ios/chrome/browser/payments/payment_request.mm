@@ -147,11 +147,6 @@ bool PaymentRequest::IsIncognito() const {
   return browser_state_->IsOffTheRecord();
 }
 
-bool PaymentRequest::IsSslCertificateValid() {
-  NOTREACHED() << "Implementation is never used";
-  return false;
-}
-
 const GURL& PaymentRequest::GetLastCommittedURL() const {
   return web_state_->GetLastCommittedURL();
 }

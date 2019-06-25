@@ -1314,6 +1314,8 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_url_loader_interceptor.h",
     "previews/previews_offline_helper.cc",
     "previews/previews_offline_helper.h",
+    "previews/previews_prober.cc",
+    "previews/previews_prober.h",
     "previews/previews_service.cc",
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",

@@ -132,9 +132,9 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&ReadFile, path_to_file),
-      base::Bind(&CreatePrintDialog, browser_context, print_job_title,
-                 print_ticket, file_type));
+      base::BindOnce(&ReadFile, path_to_file),
+      base::BindOnce(&CreatePrintDialog, browser_context, print_job_title,
+                     print_ticket, file_type));
 }
 
 }  // namespace

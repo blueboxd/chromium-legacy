@@ -146,6 +146,9 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("parent_id", parent_id);
   value->SetInteger("stable_id", stable_id);
   value->SetDouble("opacity", opacity);
+  if (!backdrop_filters.IsEmpty()) {
+    value->SetString("backdrop_filters", backdrop_filters.ToString());
+  }
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
   value->SetBoolean("is_fast_rounded_corner", is_fast_rounded_corner);
   if (!rounded_corner_bounds.IsEmpty()) {

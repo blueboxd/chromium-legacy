@@ -66,7 +66,7 @@ MATCHER_P(UserSelectableTypeSetMatches, value, "") {
   return arg == value;
 }
 
-const char kTestUser[] = "chrome.p13n.test@gmail.com";
+const char kTestUser[] = "chrome_p13n_test@gmail.com";
 const char kTestCallbackId[] = "test-callback-id";
 
 // Returns a UserSelectableTypeSet with all types set.

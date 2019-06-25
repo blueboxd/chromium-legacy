@@ -88,8 +88,6 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
 
   bool IsIncognito() const override { return false; }
 
-  bool IsSslCertificateValid() override { return true; }
-
   const GURL& GetLastCommittedURL() const override {
     return last_committed_url_;
   }

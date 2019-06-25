@@ -126,6 +126,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Enables background blur for folder icon if |enabled| is true.
   void SetBackgroundBlurEnabled(bool enabled);
 
+  // Ensures this item view has its own layer.
+  void EnsureLayer();
+
   bool is_folder() const { return is_folder_; }
 
  private:

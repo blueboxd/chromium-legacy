@@ -114,7 +114,6 @@ class PaymentRequest : public PaymentOptionsProvider,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsIncognito() const override;
-  bool IsSslCertificateValid() override;
   const GURL& GetLastCommittedURL() const override;
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,

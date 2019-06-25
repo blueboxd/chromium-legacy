@@ -264,9 +264,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   SetAnimationDuration(0);
 
   preview_circle_radius_ = 0;
-
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
 }
 
 AppListItemView::~AppListItemView() {
@@ -327,6 +324,8 @@ void AppListItemView::SetUIState(UIState ui_state) {
 }
 
 void AppListItemView::ScaleAppIcon(bool scale_up) {
+  if (!layer())
+    return;
   const gfx::Rect bounds(layer()->bounds().size());
   gfx::Transform transform =
       gfx::GetScaleTransform(bounds.CenterPoint(), kDragDropAppIconScale);
@@ -774,6 +773,13 @@ void AppListItemView::SetBackgroundBlurEnabled(bool enabled) {
     icon_->EnsureLayer();
   icon_->layer()->SetBackgroundBlur(
       enabled ? AppListConfig::instance().blur_radius() : 0);
+}
+
+void AppListItemView::EnsureLayer() {
+  if (layer())
+    return;
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {

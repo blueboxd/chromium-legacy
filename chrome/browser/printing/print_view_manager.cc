@@ -33,8 +33,8 @@ namespace {
 
 // Keeps track of pending scripted print preview closures.
 // No locking, only access on the UI thread.
-base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
-    g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::map<content::RenderProcessHost*, base::OnceClosure>>::
+    Leaky g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
@@ -170,7 +170,7 @@ void PrintViewManager::PrintPreviewDone() {
     auto& map = g_scripted_print_preview_closure_map.Get();
     auto it = map.find(scripted_print_preview_rph_);
     CHECK(it != map.end());
-    it->second.Run();
+    std::move(it->second).Run();
     map.erase(it);
 
     // PrintPreviewAlmostDone() usually already calls this. Calling it again
@@ -238,8 +238,8 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
   DCHECK(!print_preview_rfh_);
   print_preview_rfh_ = rfh;
   print_preview_state_ = SCRIPTED_PREVIEW;
-  map[rph] = base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
-                        base::Unretained(this), reply_msg);
+  map[rph] = base::BindOnce(&PrintViewManager::OnScriptedPrintPreviewReply,
+                            base::Unretained(this), reply_msg);
   scripted_print_preview_rph_ = rph;
   DCHECK(!scripted_print_preview_rph_set_blocked_);
   if (!scripted_print_preview_rph_->IsBlocked()) {

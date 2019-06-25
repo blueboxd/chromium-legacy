@@ -115,7 +115,7 @@ class ChromeAshMessageCenterClientTest : public testing::Test,
 // in ChromeOS.
 
 TEST_F(ChromeAshMessageCenterClientTest, NotifierSortOrder) {
-  TestingProfile* profile = CreateProfile("Profile-1");
+  TestingProfile* profile = CreateProfile("profile1@gmail.com");
   extensions::TestExtensionSystem* test_extension_system =
       static_cast<extensions::TestExtensionSystem*>(
           extensions::ExtensionSystem::Get(profile));
@@ -229,7 +229,7 @@ TEST_F(ChromeAshMessageCenterClientTest, NotifierSortOrder) {
 }
 
 TEST_F(ChromeAshMessageCenterClientTest, SetWebPageNotifierEnabled) {
-  Profile* profile = CreateProfile("MyProfile");
+  Profile* profile = CreateProfile("myprofile@gmail.com");
   CreateClient();
 
   GURL origin("https://example.com/");

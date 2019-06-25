@@ -1093,6 +1093,7 @@ interface PeriodicSyncEvent : ExtendableEvent
 interface PeriodicSyncManager
     attribute @@toStringTag
     method constructor
+    method getTags
     method register
 interface PermissionStatus : EventTarget
     attribute @@toStringTag

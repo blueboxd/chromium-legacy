@@ -1122,6 +1122,9 @@ extern const char kTouchSelectionStrategyDescription[];
 extern const char kTouchSelectionStrategyCharacter[];
 extern const char kTouchSelectionStrategyDirection[];
 
+extern const char kTouchToFillAndroidName[];
+extern const char kTouchToFillAndroidDescription[];
+
 extern const char kTraceUploadUrlName[];
 extern const char kTraceUploadUrlDescription[];
 extern const char kTraceUploadUrlChoiceOther[];

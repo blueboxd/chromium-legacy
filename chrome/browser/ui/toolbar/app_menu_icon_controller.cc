@@ -7,10 +7,8 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/channel_info.h"
@@ -113,8 +111,8 @@ AppMenuIconController::AppMenuIconController(UpgradeDetector* upgrade_detector,
   DCHECK(profile_);
   DCHECK(delegate_);
 
-  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(profile_));
+  global_error_observer_.Add(
+      GlobalErrorServiceFactory::GetForProfile(profile_));
 
   upgrade_detector_->AddObserver(this);
 }
@@ -174,11 +172,7 @@ gfx::ImageSkia AppMenuIconController::GetIconImage(
                                         promo_highlight_color));
 }
 
-void AppMenuIconController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED, type);
+void AppMenuIconController::OnGlobalErrorsChanged() {
   UpdateDelegate();
 }
 

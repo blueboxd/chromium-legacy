@@ -123,8 +123,8 @@ class SeparatorBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
 };
 
-base::string16 SpltStringWithNewLineAtPosition(const base::string16& text,
-                                               size_t pos) {
+base::string16 SplitStringWithNewLineAtPosition(const base::string16& text,
+                                                size_t pos) {
   base::string16 new_text = text;
   // This can be a low surrogate codepoint, but u_isUWhiteSpace will
   // return false and inserting a new line after a surrogate pair
@@ -1034,7 +1034,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   // word in the text, |pos| could reach the end of the text.
   if (pos < original_text.length()) {
     searching_backward = true;
-    prev_text = SpltStringWithNewLineAtPosition(original_text, pos);
+    prev_text = SplitStringWithNewLineAtPosition(original_text, pos);
     label->SetText(prev_text);
     min_width_size = label->GetPreferredSize();
   }
@@ -1043,7 +1043,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   base::string16 current_text;
   if (pos != 0) {
     base::string16 current_text =
-        SpltStringWithNewLineAtPosition(original_text, pos);
+        SplitStringWithNewLineAtPosition(original_text, pos);
     label->SetText(current_text);
     size = label->GetPreferredSize();
 
@@ -1078,7 +1078,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
         break;
       pos = break_points.back();
     }
-    current_text = SpltStringWithNewLineAtPosition(original_text, pos);
+    current_text = SplitStringWithNewLineAtPosition(original_text, pos);
     label->SetText(current_text);
     size = label->GetPreferredSize();
 

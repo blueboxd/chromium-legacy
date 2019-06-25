@@ -35,8 +35,7 @@ class PdfConverter {
   // PDF provided in Start() call.
   // Calls |get_page_callback| after conversion. |emf| of callback in not NULL
   // if conversion succeeded.
-  virtual void GetPage(int page_number,
-                       const GetPageCallback& get_page_callback) = 0;
+  virtual void GetPage(int page_number, GetPageCallback get_page_callback) = 0;
 };
 
 // Object used by tests to exercise the temporary file creation failure code

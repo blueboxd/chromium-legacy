@@ -237,7 +237,7 @@ class WebState : public base::SupportsUserData {
   // Returns the WebState view of the current URL. Moreover, this method
   // will set the trustLevel enum to the appropriate level from a security point
   // of view. The caller has to handle the case where |trust_level| is not
-  // appropriate.
+  // appropriate.  Passing |null| will skip the trust check.
   // TODO(stuartmorgan): Figure out a clean API for this.
   // See http://crbug.com/457679
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;

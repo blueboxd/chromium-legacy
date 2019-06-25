@@ -136,6 +136,7 @@ jumbo_source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
     "//components/webdata/common",

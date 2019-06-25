@@ -30,6 +30,7 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
@@ -82,7 +83,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public AppListItemListObserver,
                                      public ash::PaginationModelObserver,
                                      public AppListModelObserver,
-                                     public ui::ImplicitAnimationObserver {
+                                     public ui::ImplicitAnimationObserver,
+                                     public views::BoundsAnimatorObserver {
  public:
   enum Pointer {
     NONE,
@@ -482,6 +484,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
+
+  // views::BoundsAnimatorObserver:
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be

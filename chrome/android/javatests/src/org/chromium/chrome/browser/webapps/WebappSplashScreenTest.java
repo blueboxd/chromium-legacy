@@ -279,40 +279,6 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testSmallSplashScreenAppears() throws Exception {
-        // Register a smaller icon for the splash screen.
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        int thresholdSize = context.getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size_threshold);
-        int size = context.getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size_minimum);
-        Bitmap splashBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        String bitmapString = ShortcutHelper.encodeBitmapAsString(splashBitmap);
-
-        TestFetchStorageCallback callback = new TestFetchStorageCallback();
-        WebappRegistry.getInstance().register(WebappActivityTestRule.WEBAPP_ID, callback);
-        callback.waitForCallback(0);
-        callback.getStorage().updateSplashScreenImage(bitmapString);
-
-        ViewGroup splashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-        Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
-
-        // The icon is centered within a fixed-size area on the splash screen.
-        ImageView splashImage =
-                (ImageView) splashScreen.findViewById(R.id.webapp_splash_screen_icon);
-        Assert.assertEquals(thresholdSize, splashImage.getMeasuredWidth());
-        Assert.assertEquals(thresholdSize, splashImage.getMeasuredHeight());
-
-        // The web app name is anchored to the icon.
-        TextView splashText = (TextView) splashScreen.findViewById(R.id.webapp_splash_screen_name);
-        int[] rules = ((RelativeLayout.LayoutParams) splashText.getLayoutParams()).getRules();
-        Assert.assertEquals(0, rules[RelativeLayout.ALIGN_PARENT_BOTTOM]);
-        Assert.assertEquals(R.id.webapp_splash_screen_icon, rules[RelativeLayout.BELOW]);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
     public void testSplashScreenWithoutImageAppears() throws Exception {
         // Register an image that's too small for the splash screen.
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();

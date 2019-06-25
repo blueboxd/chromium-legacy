@@ -104,6 +104,9 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // the IO thread.
   static GlobalRequestID MakeGlobalRequestID();
 
+  // Returns true if URLLoaderRequestController will be run on the UI thread.
+  static bool IsNavigationLoaderOnUIEnabled();
+
  private:
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);

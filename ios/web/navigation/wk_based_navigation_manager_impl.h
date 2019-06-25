@@ -236,16 +236,16 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
                      std::vector<std::unique_ptr<NavigationItem>> items);
 
   // Returns true if |last_committed_item| matches WKWebView.URL when expected.
-  // WKWebView is more aggressive than Chromium is in updating the visible URL,
-  // and there are cases where, even though WKWebView's URL has updated,
+  // WKWebView is more aggressive than Chromium is in updating the committed
+  // URL, and there are cases where, even though WKWebView's URL has updated,
   // Chromium still wants to display last committed.  Normally this is managed
   // by WKBasedNavigationManagerImpl last committed, but there are short periods
   // during fast navigations where WKWebView.URL has updated and ios/web can't
   // validate what should be shown for the visible item.  More importantly,
   // there are bugs in WkWebView where WKWebView's URL and
   // backForwardList.currentItem can fall out of sync.  In these situations,
-  // return false as a safeguard so visible item is always trusted.
-  bool CanTrustLastCommittedItemForVisibleItem(
+  // return false as a safeguard so committed item is always trusted.
+  bool CanTrustLastCommittedItem(
       const NavigationItem* last_committed_item) const;
 
   // The pending main frame navigation item. This is nullptr if there is no
@@ -276,10 +276,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // The transient item in main frame.
   std::unique_ptr<NavigationItemImpl> transient_item_;
 
-  // A placeholder item used when CanTrustLastCommittedItemForVisibleItem
+  // A placeholder item used when CanTrustLastCommittedItem
   // returns false.  The navigation item returned uses crw_web_controller's
   // documentURL as the URL.
-  mutable std::unique_ptr<NavigationItemImpl> visible_web_view_item_;
+  mutable std::unique_ptr<NavigationItemImpl> last_committed_web_view_item_;
 
   // Time smoother for navigation item timestamps. See comment in
   // navigation_controller_impl.h.

@@ -49,7 +49,7 @@ NavigationItemImpl::NavigationItemImpl()
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
-      is_unsafe_(false) {}
+      is_untrusted_(false) {}
 
 NavigationItemImpl::~NavigationItemImpl() {
 }
@@ -77,7 +77,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       post_data_([item.post_data_ copy]),
       error_retry_state_machine_(item.error_retry_state_machine_),
       navigation_initiation_type_(item.navigation_initiation_type_),
-      is_unsafe_(item.is_unsafe_),
+      is_untrusted_(item.is_untrusted_),
       cached_display_title_(item.cached_display_title_) {}
 
 int NavigationItemImpl::GetUniqueID() const {
@@ -192,6 +192,14 @@ void NavigationItemImpl::SetUserAgentType(UserAgentType type) {
   user_agent_type_ = type;
   DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetVirtualURL()),
             user_agent_type_ == UserAgentType::NONE);
+}
+
+void NavigationItemImpl::SetUntrusted() {
+  is_untrusted_ = true;
+}
+
+bool NavigationItemImpl::IsUntrusted() {
+  return is_untrusted_;
 }
 
 UserAgentType NavigationItemImpl::GetUserAgentType() const {

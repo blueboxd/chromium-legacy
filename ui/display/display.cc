@@ -215,12 +215,9 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()) {
-  gfx::ColorSpace color_space = HasForceDisplayColorProfile()
-                                    ? GetForcedDisplayColorProfile()
-                                    : gfx::ColorSpace::CreateSRGB();
-  float sdr_white_level =
-      color_space.IsHDR() ? 200.f : gfx::ColorSpace::kDefaultSDRWhiteLevel;
-  SetColorSpaceAndDepth(color_space, sdr_white_level);
+  SetColorSpaceAndDepth(HasForceDisplayColorProfile()
+                            ? GetForcedDisplayColorProfile()
+                            : gfx::ColorSpace::CreateSRGB());
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

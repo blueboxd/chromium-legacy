@@ -139,7 +139,7 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
     // Token is loaded. Undo the flagging before token loading.
     DCHECK(!account_info.gaia.empty());
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmailGaiaId(account_info.email, account_info.gaia),
+        AccountIdFromAccountInfo(account_info),
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     VerifySessionCookies();

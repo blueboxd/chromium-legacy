@@ -235,6 +235,7 @@ class TabTest : public BlockCleanupTest,
     if (GetParam() == NavigationManagerChoice::WK_BASED) {
       [fake_wk_list_
           setCurrentURL:base::SysUTF8ToNSString(redirect_url.spec())];
+      OCMStub([mock_web_view_ URL]).andReturn(fake_wk_list_.currentItem.URL);
     }
     web_state_impl_->GetNavigationManagerImpl().CommitPendingItem();
 

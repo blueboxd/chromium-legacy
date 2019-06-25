@@ -300,7 +300,7 @@ WebContents* PrintPreviewDialogController::GetInitiator(
 }
 
 void PrintPreviewDialogController::ForEachPreviewDialog(
-    base::Callback<void(content::WebContents*)> callback) {
+    base::RepeatingCallback<void(content::WebContents*)> callback) {
   for (const auto& it : preview_dialog_map_)
     callback.Run(it.first);
 }

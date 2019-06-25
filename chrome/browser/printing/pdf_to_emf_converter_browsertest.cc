@@ -30,14 +30,14 @@ constexpr gfx::Size k200DpiSize = gfx::Size(200, 200);
 
 constexpr size_t kHeaderSize = sizeof(ENHMETAHEADER);
 
-void StartCallbackImpl(base::Closure quit_closure,
+void StartCallbackImpl(base::OnceClosure quit_closure,
                        int* page_count_out,
                        int page_count_in) {
   *page_count_out = page_count_in;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
-void GetPageCallbackImpl(base::Closure quit_closure,
+void GetPageCallbackImpl(base::OnceClosure quit_closure,
                          int* page_number_out,
                          std::unique_ptr<MetafilePlayer>* file_out,
                          int page_number_in,
@@ -45,7 +45,7 @@ void GetPageCallbackImpl(base::Closure quit_closure,
                          std::unique_ptr<MetafilePlayer> file_in) {
   *page_number_out = page_number_in;
   *file_out = std::move(file_in);
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 // |page_number| is 0-based. Returned result has 1-based page number.
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, FailureNoTempFile) {
   int page_count = -1;
   std::unique_ptr<PdfConverter> pdf_converter = PdfConverter::StartPdfConverter(
       base::MakeRefCounted<base::RefCountedStaticMemory>(), PdfRenderSettings(),
-      base::Bind(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
+      base::BindOnce(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
   run_loop.Run();
   EXPECT_EQ(0, page_count);
 }
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, FailureBadPdf) {
   int page_count = -1;
   std::unique_ptr<PdfConverter> pdf_converter = PdfConverter::StartPdfConverter(
       bad_pdf_data, PdfRenderSettings(),
-      base::Bind(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
+      base::BindOnce(&StartCallbackImpl, run_loop.QuitClosure(), &page_count));
   run_loop.Run();
   EXPECT_EQ(0, page_count);
 }

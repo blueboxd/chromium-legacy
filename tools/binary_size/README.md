@@ -217,11 +217,6 @@ Collect size information and dump it into a `.size` file.
 **Note:** Refer to
 [diagnose_bloat.py](https://cs.chromium.org/search/?q=file:diagnose_bloat.py+gn_args)
 for list of GN args to build a Release binary (or just use the tool with --single).
-
-**Googlers:** If you just want a `.size` for a commit on master:
-
-    GIT_REV="HEAD~200"
-    tools/binary_size/diagnose_bloat.py --single --cloud --unstripped $GIT_REV
 ***
 
 Example Usage:
@@ -327,8 +322,6 @@ and Linux (although Linux symbol diffs have issues, as noted below).
 
 1. Builds multiple revisions using release GN args.
    * Default is to build just two revisions (before & after commit)
-   * Rather than building, can fetch build artifacts and `.size` files from perf
-     bots (`--cloud`)
 1. Measures all outputs using `resource_size.py` and `supersize`.
 1. Saves & displays a breakdown of the difference in binary sizes.
 
@@ -343,12 +336,6 @@ tools/binary_size/diagnose_bloat.py HEAD --enable-chrome-android-internal -v
 
 # Build and diff monochrome_public_apk HEAD^ and HEAD without is_official_build.
 tools/binary_size/diagnose_bloat.py HEAD --gn-args="is_official_build=false" -v
-
-# Diff BEFORE_REV and AFTER_REV using build artifacts downloaded from perf bots.
-tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --cloud -v
-
-# Fetch a .size, libmonochrome.so, and MonochromePublic.apk from perf bots (Googlers only):
-tools/binary_size/diagnose_bloat.py AFTER_REV --cloud --unstripped --single
 
 # Build and diff all contiguous revs in range BEFORE_REV..AFTER_REV for src/v8.
 tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --subrepo v8 --all -v

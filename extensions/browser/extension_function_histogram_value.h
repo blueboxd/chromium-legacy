@@ -1410,6 +1410,7 @@ enum HistogramValue {
   LOGIN_EXITCURRENTSESSION = 1347,
   LOGIN_ISRUNNINGINLOGINPROFILE = 1348,
   LOGIN_FETCHDATAFORNEXTLOGINATTEMPT = 1349,
+  ACTION_SETICON = 1350,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

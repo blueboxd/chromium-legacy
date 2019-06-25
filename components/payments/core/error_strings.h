@@ -58,6 +58,11 @@ extern const char kCannotUpdateWithoutInit[];
 // Mojo call PaymentRequest::Show() must precede PaymentRequest::UpdateWith().
 extern const char kCannotUpdateWithoutShow[];
 
+// The format for a detailed message about invalid SSL certificate. This format
+// should be used with base::ReplaceChars() function, where "$" is the character
+// to replace.
+extern const char kDetailedInvalidSslCertificateMessageFormat[];
+
 // A message about unsupported payment method.
 extern const char kGenericPaymentMethodNotSupportedMessage[];
 

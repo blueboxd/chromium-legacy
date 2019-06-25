@@ -95,6 +95,9 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
   ExtensionFunctionRegistry& registry =
       ExtensionFunctionRegistry::GetInstance();
 
+  // Actions
+  registry.RegisterFunction<ActionSetIconFunction>();
+
   // Browser Actions
   registry.RegisterFunction<BrowserActionSetIconFunction>();
   registry.RegisterFunction<BrowserActionSetTitleFunction>();

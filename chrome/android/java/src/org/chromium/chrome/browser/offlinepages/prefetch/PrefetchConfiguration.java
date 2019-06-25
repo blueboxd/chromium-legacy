@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 
 /**
  * Allows the querying and setting of Offline Prefetch related configurations.
@@ -26,14 +27,14 @@ public class PrefetchConfiguration {
      * user setting to be true. If the current browser Profile is null this method returns false.
      */
     public static boolean isPrefetchingEnabled() {
-        return nativeIsPrefetchingEnabled();
+        return nativeIsPrefetchingEnabled(ProfileKey.getLastUsedProfileKey());
     }
 
     /**
      * Return the value of offline_pages.enabled_by_server pref.
      */
     public static boolean isPrefetchingEnabledByServer() {
-        return nativeIsEnabledByServer();
+        return nativeIsEnabledByServer(ProfileKey.getLastUsedProfileKey());
     }
 
     /**
@@ -42,14 +43,14 @@ public class PrefetchConfiguration {
      * since the last check.
      */
     public static boolean isForbiddenCheckDue() {
-        return nativeIsForbiddenCheckDue();
+        return nativeIsForbiddenCheckDue(ProfileKey.getLastUsedProfileKey());
     }
 
     /**
      * Returns true if the GeneratePageBundle-forbidden check has never run and is due to run.
      */
     public static boolean isEnabledByServerUnknown() {
-        return nativeIsEnabledByServerUnknown();
+        return nativeIsEnabledByServerUnknown(ProfileKey.getLastUsedProfileKey());
     }
 
     /**
@@ -57,7 +58,7 @@ public class PrefetchConfiguration {
      * enabled or disabled. If the current browser Profile is null the setting will not be changed.
      */
     public static void setPrefetchingEnabledInSettings(boolean enabled) {
-        nativeSetPrefetchingEnabledInSettings(enabled);
+        nativeSetPrefetchingEnabledInSettings(ProfileKey.getLastUsedProfileKey(), enabled);
     }
 
     /**
@@ -65,13 +66,14 @@ public class PrefetchConfiguration {
      * enabled or disabled.
      */
     public static boolean isPrefetchingEnabledInSettings() {
-        return nativeIsPrefetchingEnabledInSettings();
+        return nativeIsPrefetchingEnabledInSettings(ProfileKey.getLastUsedProfileKey());
     }
 
-    private static native boolean nativeIsPrefetchingEnabled();
-    private static native boolean nativeIsEnabledByServer();
-    private static native boolean nativeIsForbiddenCheckDue();
-    private static native boolean nativeIsEnabledByServerUnknown();
-    private static native void nativeSetPrefetchingEnabledInSettings(boolean enabled);
-    private static native boolean nativeIsPrefetchingEnabledInSettings();
+    private static native boolean nativeIsPrefetchingEnabled(ProfileKey key);
+    private static native boolean nativeIsEnabledByServer(ProfileKey key);
+    private static native boolean nativeIsForbiddenCheckDue(ProfileKey key);
+    private static native boolean nativeIsEnabledByServerUnknown(ProfileKey key);
+    private static native void nativeSetPrefetchingEnabledInSettings(
+            ProfileKey key, boolean enabled);
+    private static native boolean nativeIsPrefetchingEnabledInSettings(ProfileKey key);
 }

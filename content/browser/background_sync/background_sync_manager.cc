@@ -330,12 +330,8 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  if (options.min_interval < 0 &&
-      options.min_interval != kMinIntervalForOneShotSync) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
-                              std::move(callback));
-    return;
-  }
+  DCHECK(options.min_interval >= 0 ||
+         options.min_interval == kMinIntervalForOneShotSync);
 
   if (GetBackgroundSyncType(options) == BackgroundSyncType::ONE_SHOT) {
     op_scheduler_.ScheduleOperation(
@@ -747,64 +743,68 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   }
 
   if (existing_registration) {
-    DCHECK(existing_registration->options()->Equals(options));
+    DCHECK_EQ(existing_registration->options()->tag, options.tag);
+    if (existing_registration->options()->Equals(options)) {
+      BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
+          AreOptionConditionsMet()
+              ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
+              : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
+      BackgroundSyncMetrics::CountRegisterSuccess(
+          registration_could_fire,
+          BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE);
 
-    BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-        AreOptionConditionsMet()
-            ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
-            : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
-    BackgroundSyncMetrics::CountRegisterSuccess(
-        registration_could_fire,
-        BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE);
+      if (existing_registration->IsFiring()) {
+        existing_registration->set_sync_state(
+            blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING);
+      }
 
-    if (existing_registration->IsFiring()) {
-      existing_registration->set_sync_state(
-          blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+                         std::make_unique<BackgroundSyncRegistration>(
+                             *existing_registration)));
+      return;
     }
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
-                       std::make_unique<BackgroundSyncRegistration>(
-                           *existing_registration)));
-    return;
   }
 
-  BackgroundSyncRegistration new_registration;
+  BackgroundSyncRegistration registration;
 
-  *new_registration.options() = std::move(options);
-  new_registration.set_max_attempts(
+  *registration.options() = std::move(options);
+
+  // TODO(crbug.com/963487): This section below is really confusing. Add a
+  // comment explaining what's going on here, or annotate permission_statuses.
+  registration.set_max_attempts(
       permission_statuses.second == PermissionStatus::GRANTED
           ? parameters_->max_sync_attempts_with_notification_permission
           : parameters_->max_sync_attempts);
 
-  if (new_registration.sync_type() == BackgroundSyncType::PERIODIC) {
+  if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, new_registration,
-            origin, std::make_unique<BackgroundSyncParameters>(*parameters_)),
+            &GetNextEventDelay, service_worker_context_, registration, origin,
+            std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                       new_registration, std::move(callback)));
+                       registration, std::move(callback)));
     return;
   }
 
-  RegisterDidGetDelay(sw_registration_id, new_registration, std::move(callback),
+  RegisterDidGetDelay(sw_registration_id, registration, std::move(callback),
                       base::TimeDelta());
 }
 
 void BackgroundSyncManager::RegisterDidGetDelay(
     int64_t sw_registration_id,
-    BackgroundSyncRegistration new_registration,
+    BackgroundSyncRegistration registration,
     StatusAndRegistrationCallback callback,
     base::TimeDelta delay) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // For one-shot registrations, we let the delay_until be in the past, so that
   // an event is fired at the soonest opportune moment.
-  if (new_registration.sync_type() == BackgroundSyncType::PERIODIC) {
-    new_registration.set_delay_until(clock_->Now() + delay);
+  if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
+    registration.set_delay_until(clock_->Now() + delay);
   }
 
   ServiceWorkerRegistration* sw_registration =
@@ -816,16 +816,15 @@ void BackgroundSyncManager::RegisterDidGetDelay(
     return;
   }
 
-  AddActiveRegistration(
+  AddOrUpdateActiveRegistration(
       sw_registration_id,
-      url::Origin::Create(sw_registration->scope().GetOrigin()),
-      new_registration);
+      url::Origin::Create(sw_registration->scope().GetOrigin()), registration);
 
   StoreRegistrations(
       sw_registration_id,
       base::BindOnce(&BackgroundSyncManager::RegisterDidStore,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     new_registration, std::move(callback)));
+                     registration, std::move(callback)));
 }
 
 void BackgroundSyncManager::UnregisterPeriodicSyncImpl(
@@ -982,7 +981,7 @@ void BackgroundSyncManager::StoreRegistrations(
 
 void BackgroundSyncManager::RegisterDidStore(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistration& new_registration,
+    const BackgroundSyncRegistration& registration,
     StatusAndRegistrationCallback callback,
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1011,12 +1010,15 @@ void BackgroundSyncManager::RegisterDidStore(
       registration_could_fire,
       BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
 
+  // TODO(crbug.com/925297): Schedule or update a wake up task for periodic
+  // Background Sync registrations.
+
   // Tell the client that the registration is ready. We won't fire it until the
   // client has resolved the registration event.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
                                 std::make_unique<BackgroundSyncRegistration>(
-                                    new_registration)));
+                                    registration)));
 }
 
 void BackgroundSyncManager::DidResolveRegistrationImpl(
@@ -1064,7 +1066,7 @@ void BackgroundSyncManager::RemoveActiveRegistration(
       {registration_info.tag, registration_info.sync_type});
 }
 
-void BackgroundSyncManager::AddActiveRegistration(
+void BackgroundSyncManager::AddOrUpdateActiveRegistration(
     int64_t sw_registration_id,
     const url::Origin& origin,
     const BackgroundSyncRegistration& sync_registration) {

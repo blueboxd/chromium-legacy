@@ -94,9 +94,6 @@ public class ChromiumLinkerTestActivity extends Activity {
         // Now, start a new renderer process by creating a new view.
         // This will run the test runner in the renderer process.
 
-        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .initChromiumBrowserProcessForTests();
-
         LayoutInflater inflater =
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.test_activity, null);

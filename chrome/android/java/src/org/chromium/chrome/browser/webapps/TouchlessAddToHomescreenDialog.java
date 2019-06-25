@@ -13,12 +13,12 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.browser.widget.AlertDialogEditText;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -102,8 +102,16 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
                 .with(DialogListItemProperties.MULTI_CLICKABLE, false)
                 .with(DialogListItemProperties.CLICK_LISTENER,
                         (v) -> {
-                            if (TextUtils.isEmpty(title)) return;
-                            mDelegate.addToHomescreen(title);
+                            ViewGroup group =
+                                    (ViewGroup) mModel.get(ModalDialogProperties.CUSTOM_VIEW);
+                            String customTitle =
+                                    ((AlertDialogEditText) group.findViewById(R.id.app_title))
+                                            .getText()
+                                            .toString();
+                            if (TextUtils.isEmpty(customTitle)) customTitle = title;
+
+                            if (TextUtils.isEmpty(customTitle)) return;
+                            mDelegate.addToHomescreen(customTitle);
                             mDialogManager.dismissDialog(mModel, DialogDismissalCause.UNKNOWN);
                         })
                 .build();
@@ -118,11 +126,12 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
 
         group.findViewById(R.id.spinny).setVisibility(View.GONE);
         group.findViewById(R.id.icon).setVisibility(View.VISIBLE);
-        group.findViewById(R.id.app_info).setVisibility(View.VISIBLE);
+        group.findViewById(R.id.app_title).setVisibility(View.VISIBLE);
 
         if (icon != null) ((ImageView) group.findViewById(R.id.icon)).setImageBitmap(icon);
-        if (title != null) ((TextView) group.findViewById(R.id.name)).setText(title);
-        if (origin != null) ((TextView) group.findViewById(R.id.origin)).setText(origin);
+        if (title != null) {
+            ((AlertDialogEditText) group.findViewById(R.id.app_title)).setText(title);
+        }
     }
 
     @Override

@@ -6,6 +6,8 @@ crbug.com/599776 [ win amd ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure
 crbug.com/599776 [ mac intel ] ScreenshotSync_GPURasterWithCanvas [ RetryOnFailure ]
 crbug.com/599776 [ mac intel ] ScreenshotSync_GPURasterWithDivs [ RetryOnFailure ]
 crbug.com/639489 [ win amd-0x6613 ] ScreenshotSync_GPURasterWithDivs [ Failure ]
+crbug.com/978492 [ mac amd ] ScreenshotSync_GPURasterWithDivs [ RetryOnFailure ]
+crbug.com/978492 [ mac amd ] ScreenshotSync_SWRasterWithCanvas [ RetryOnFailure ]
 
 # TODO(kbr): flakily timing out on this configuration.
 crbug.com/648369 [ linux debug intel ] * [ RetryOnFailure ]

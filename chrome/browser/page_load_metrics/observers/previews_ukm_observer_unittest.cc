@@ -214,9 +214,7 @@ class PreviewsUKMObserverTest
     navigation->Commit();
   }
 
-  void ValidateUKM(bool server_lofi_expected,
-                   bool client_lofi_expected,
-                   bool lite_page_expected,
+  void ValidateUKM(bool lite_page_expected,
                    bool lite_page_redirect_expected,
                    bool noscript_expected,
                    bool resource_loading_hints_expected,
@@ -231,8 +229,7 @@ class PreviewsUKMObserverTest
                    base::Optional<base::TimeDelta> navigation_restart_penalty,
                    base::Optional<int64_t> hint_generation_timestamp,
                    base::Optional<int> hint_source) {
-    ValidatePreviewsUKM(server_lofi_expected, client_lofi_expected,
-                        lite_page_expected, lite_page_redirect_expected,
+    ValidatePreviewsUKM(lite_page_expected, lite_page_redirect_expected,
                         noscript_expected, resource_loading_hints_expected,
                         opt_out_value, origin_opt_out_expected,
                         save_data_enabled_expected, offline_preview_expected,
@@ -270,8 +267,6 @@ class PreviewsUKMObserverTest
 
  private:
   void ValidatePreviewsUKM(
-      bool server_lofi_expected,
-      bool client_lofi_expected,
       bool lite_page_expected,
       bool lite_page_redirect_expected,
       bool noscript_expected,
@@ -287,11 +282,11 @@ class PreviewsUKMObserverTest
       base::Optional<base::TimeDelta> navigation_restart_penalty) {
     using UkmEntry = ukm::builders::Previews;
     auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
-    if (!server_lofi_expected && !client_lofi_expected && !lite_page_expected &&
-        !lite_page_redirect_expected && !noscript_expected &&
-        !resource_loading_hints_expected && opt_out_value == 0 &&
-        !origin_opt_out_expected && !save_data_enabled_expected &&
-        !offline_preview_expected && !previews_likely_expected &&
+    if (!lite_page_expected && !lite_page_redirect_expected &&
+        !noscript_expected && !resource_loading_hints_expected &&
+        opt_out_value == 0 && !origin_opt_out_expected &&
+        !save_data_enabled_expected && !offline_preview_expected &&
+        !previews_likely_expected &&
         coin_flip_result_expected == CoinFlipHoldbackResult::kNotSet &&
         !navigation_restart_penalty.has_value()) {
       EXPECT_EQ(0u, entries.size());
@@ -300,10 +295,6 @@ class PreviewsUKMObserverTest
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
       test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kDefaultTestUrl));
-      EXPECT_EQ(server_lofi_expected, test_ukm_recorder().EntryHasMetric(
-                                          entry, UkmEntry::kserver_lofiName));
-      EXPECT_EQ(client_lofi_expected, test_ukm_recorder().EntryHasMetric(
-                                          entry, UkmEntry::kclient_lofiName));
       EXPECT_EQ(lite_page_expected, test_ukm_recorder().EntryHasMetric(
                                         entry, UkmEntry::klite_pageName));
       EXPECT_EQ(lite_page_redirect_expected,
@@ -458,8 +449,7 @@ TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
           base::nullopt /* hint_version_string */);
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -485,8 +475,7 @@ TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
   NavigateToUntrackedUrl();
 
   // Opt out should not be added since we don't track this type.
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -511,8 +500,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, true /* lite_page_expected */,
+  ValidateUKM(true /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -538,8 +526,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, true /* lite_page_expected */,
+  ValidateUKM(true /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -564,8 +551,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               true /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -591,8 +577,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               true /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -617,7 +602,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeenWithBadVersionString) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       true /* noscript_expected */, false /* resource_loading_hints_expected */,
       0 /* opt_out_value */, false /* origin_opt_out_expected */,
@@ -643,7 +628,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       true /* noscript_expected */, false /* resource_loading_hints_expected */,
       2 /* opt_out_value */, false /* origin_opt_out_expected */,
@@ -667,8 +652,7 @@ TEST_F(PreviewsUKMObserverTest, OfflinePreviewsSeen) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -694,7 +678,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       false /* noscript_expected */, true /* resource_loading_hints_expected */,
       0 /* opt_out_value */, false /* origin_opt_out_expected */,
@@ -720,7 +704,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       false /* noscript_expected */, true /* resource_loading_hints_expected */,
       2 /* opt_out_value */, false /* origin_opt_out_expected */,
@@ -744,8 +728,7 @@ TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -770,8 +753,7 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -800,7 +782,7 @@ TEST_F(PreviewsUKMObserverTest, NavigationRestartPenaltySeen) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       false /* noscript_expected */,
       false /* resource_loading_hints_expected */, 0 /* opt_out_value */,
@@ -825,8 +807,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelySet_PreCommitDecision) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -851,8 +832,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PostCommitDecision) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -877,8 +857,7 @@ TEST_F(PreviewsUKMObserverTest, PreviewsLikelyNotSet_PreviewsOff) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -903,8 +882,7 @@ TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Holdback) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -929,8 +907,7 @@ TEST_F(PreviewsUKMObserverTest, CoinFlipResult_Allowed) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -964,8 +941,7 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -1006,8 +982,7 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -1046,7 +1021,7 @@ TEST_F(PreviewsUKMObserverTest, LogOptimizationGuideHintVersion_NoHintSource) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       false /* noscript_expected */,
       false /* resource_loading_hints_expected */, 0 /* opt_out_value */,
@@ -1077,7 +1052,7 @@ TEST_F(PreviewsUKMObserverTest,
   NavigateToUntrackedUrl();
 
   ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
+
       false /* lite_page_expected */, false /* lite_page_redirect_expected */,
       false /* noscript_expected */,
       false /* resource_loading_hints_expected */, 0 /* opt_out_value */,
@@ -1101,8 +1076,7 @@ TEST_F(PreviewsUKMObserverTest,
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -1127,8 +1101,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
 
   web_contents()->WasHidden();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
@@ -1153,8 +1126,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
 
   SimulateAppEnterBackground();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
+  ValidateUKM(false /* lite_page_expected */,
               false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,

@@ -115,8 +115,8 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
       prefs::kPrintingEnabled, profile->GetPrefs(),
-      base::Bind(&PrintViewManagerBase::UpdatePrintingEnabled,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&PrintViewManagerBase::UpdatePrintingEnabled,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 PrintViewManagerBase::~PrintViewManagerBase() {

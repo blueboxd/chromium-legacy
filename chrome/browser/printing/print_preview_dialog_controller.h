@@ -62,7 +62,7 @@ class PrintPreviewDialogController
 
   // Run |callback| on the dialog of each active print preview operation.
   void ForEachPreviewDialog(
-      base::Callback<void(content::WebContents*)> callback);
+      base::RepeatingCallback<void(content::WebContents*)> callback);
 
   // Erase the initiator info associated with |preview_dialog|.
   void EraseInitiatorInfo(content::WebContents* preview_dialog);

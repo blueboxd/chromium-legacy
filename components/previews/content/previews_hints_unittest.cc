@@ -528,7 +528,7 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations.
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =
@@ -568,7 +568,7 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations.
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =

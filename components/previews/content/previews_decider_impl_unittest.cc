@@ -1388,7 +1388,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
         static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
   }
 
-  // Verify preview not allowed for whitelisted url for unknown network quality.
+  // Verify preview not allowed for whitelisted url for offline network quality.
   {
     base::HistogramTester histogram_tester;
     PreviewsUserData user_data(kDefaultPageId);
@@ -1567,7 +1567,7 @@ TEST_F(PreviewsDeciderImplTest, DeferAllScriptCommitTimeWhitelistCheck) {
         static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
   }
 
-  // Verify preview not allowed for whitelisted url for unknown network quality.
+  // Verify preview not allowed for whitelisted url for offline network quality.
   {
     base::HistogramTester histogram_tester;
     PreviewsUserData user_data(kDefaultPageId);

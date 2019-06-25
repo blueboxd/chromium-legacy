@@ -10,4 +10,5 @@
     RuntimeEnabled=PeriodicBackgroundSync
 ] interface PeriodicSyncManager {
     [MeasureAs=PeriodicBackgroundSyncRegister,CallWith=ScriptState,ImplementedAs=registerPeriodicSync] Promise<void> register(DOMString tag, optional BackgroundSyncOptions options);
+    [MeasureAs=PeriodicBackgroundSyncGetTags, CallWith=ScriptState] Promise<sequence<DOMString>> getTags();
 };

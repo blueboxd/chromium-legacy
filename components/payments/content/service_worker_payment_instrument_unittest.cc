@@ -34,7 +34,6 @@ class MockPaymentRequestDelegate : public PaymentRequestDelegate {
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_CONST_METHOD0(GetApplicationLocale, const std::string&());
   MOCK_CONST_METHOD0(IsIncognito, bool());
-  MOCK_METHOD0(IsSslCertificateValid, bool());
   MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
   MOCK_METHOD2(
       DoFullCardRequest,

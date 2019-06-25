@@ -29,7 +29,7 @@
     Exposed=(Window,Worker)
 ] interface IDBObjectStore {
     [RaisesException=Setter] attribute DOMString name;
-    [CallWith=ScriptState] readonly attribute any keyPath;
+    [CallWith=ScriptState, CachedAttribute=IsKeyPathDirty] readonly attribute any keyPath;
     readonly attribute DOMStringList indexNames;
     [SameObject] readonly attribute IDBTransaction transaction;
     readonly attribute boolean autoIncrement;

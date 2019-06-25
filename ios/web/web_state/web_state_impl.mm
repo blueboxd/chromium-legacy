@@ -702,6 +702,10 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && !trust_level) {
+    auto ignore_trust = URLVerificationTrustLevel::kNone;
+    return [web_controller_ currentURLWithTrustLevel:&ignore_trust];
+  }
   GURL result = [web_controller_ currentURLWithTrustLevel:trust_level];
 
   web::NavigationItemImpl* item =
@@ -735,7 +739,8 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
                        << " Last committed: " << lastCommittedURL.spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && !equalOrigins) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      (!equalOrigins || (item && item->IsUntrusted()))) {
     *trust_level = web::URLVerificationTrustLevel::kMixed;
   }
   return result;

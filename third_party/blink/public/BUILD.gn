@@ -374,6 +374,7 @@ source_set("blink_headers") {
     "web/modules/mediastream/media_stream_video_sink.h",
     "web/modules/mediastream/media_stream_video_source.h",
     "web/modules/mediastream/media_stream_video_track.h",
+    "web/modules/mediastream/remote_media_stream_track_adapter.h",
     "web/modules/mediastream/video_track_adapter_settings.h",
     "web/modules/mediastream/web_media_stream_utils.h",
     "web/modules/mediastream/webaudio_media_stream_audio_sink.h",

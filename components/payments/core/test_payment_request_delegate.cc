@@ -39,10 +39,6 @@ bool TestPaymentRequestDelegate::IsIncognito() const {
   return false;
 }
 
-bool TestPaymentRequestDelegate::IsSslCertificateValid() {
-  return true;
-}
-
 const GURL& TestPaymentRequestDelegate::GetLastCommittedURL() const {
   return last_committed_url_;
 }

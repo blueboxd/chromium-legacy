@@ -19,13 +19,13 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
@@ -40,10 +40,6 @@
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/feature_switch.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -684,7 +680,6 @@ class AppMenu::ZoomView : public AppMenuView {
 
   std::unique_ptr<content::HostZoomMap::Subscription>
       browser_zoom_subscription_;
-  content::NotificationRegistrar registrar_;
 
   // Button for incrementing the zoom.
   LabelButton* increment_button_;
@@ -782,8 +777,8 @@ AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
     : browser_(browser),
       run_types_(run_types),
       alert_reopen_tab_items_(alert_reopen_tab_items) {
-  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(browser_->profile()));
+  global_error_observer_.Add(
+      GlobalErrorServiceFactory::GetForProfile(browser->profile()));
 }
 
 AppMenu::~AppMenu() {
@@ -1064,11 +1059,7 @@ void AppMenu::BookmarkModelChanged() {
     root_->Cancel();
 }
 
-void AppMenu::Observe(int type,
-                      const content::NotificationSource& source,
-                      const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED, type);
-
+void AppMenu::OnGlobalErrorsChanged() {
   // A change in the global errors list can add or remove items from the
   // menu. Close the menu to avoid have a stale menu on-screen.
   if (root_)

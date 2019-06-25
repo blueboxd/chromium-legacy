@@ -6,6 +6,8 @@ include_rules = [
   "+components/account_id",
   "+components/image_fetcher/core",
   "+components/metrics",
+  "+components/user_manager/known_user.h",
+  "+jni",
   "+mojo/public",
   "+services/identity/public",
   "+services/network/public",

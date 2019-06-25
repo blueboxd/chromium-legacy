@@ -58,8 +58,6 @@ static const base::FilePath::CharType kCapturedYuvFileName[] =
     FILE_PATH_LITERAL("captured_video.yuv");
 static const base::FilePath::CharType kCapturedWebmFileName[] =
     FILE_PATH_LITERAL("captured_video.webm");
-static const base::FilePath::CharType kStatsFileName[] =
-    FILE_PATH_LITERAL("stats.txt");
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 static const char kCapturingWebrtcHtmlPage[] =
@@ -90,11 +88,6 @@ static const struct VideoQualityTestConfig {
 //
 // You must also compile the frame_analyzer target before you run this
 // test to get all the tools built.
-//
-// The external compare_videos.py script also depends on two external
-// executables which must be located in the PATH when running this test.
-// * zxing (see the CPP version at https://code.google.com/p/zxing)
-// * ffmpeg 0.11.1 or compatible version (see http://www.ffmpeg.org)
 //
 // The test runs several custom binaries - rgba_to_i420 converter and
 // frame_analyzer. Both tools can be found under third_party/webrtc/rtc_tools.
@@ -179,18 +172,15 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   // Compares the |captured_video_filename| with the |reference_video_filename|.
   //
   // The barcode decoder decodes the captured video containing barcodes overlaid
-  // into every frame of the video. It produces a set of PNG images and a
-  // |stats_file| that maps each captured frame to a frame in the reference
-  // video. The frames should be of size |width| x |height|.
+  // into every frame of the video. It produces a set of PNG images.
+  // The frames should be of size |width| x |height|.
   // All measurements calculated are printed as perf parsable numbers to stdout.
   bool CompareVideosAndPrintResult(
       const std::string& test_label,
       int width,
       int height,
       const base::FilePath& captured_video_filename,
-      const base::FilePath& reference_video_filename,
-      const base::FilePath& stats_file) {
-
+      const base::FilePath& reference_video_filename) {
     base::FilePath path_to_analyzer = base::MakeAbsoluteFilePath(
         GetBrowserDir().Append(kFrameAnalyzerExecutable));
     base::FilePath path_to_compare_script = GetSourceDir().Append(
@@ -205,17 +195,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     if (!base::PathExists(path_to_compare_script)) {
       LOG(ERROR) << "Missing video compare script: should be in "
           << path_to_compare_script.value();
-      return false;
-    }
-
-    base::FilePath path_to_zxing = test::GetToolForPlatform("zxing");
-    if (!base::PathExists(path_to_zxing)) {
-      LOG(ERROR) << "Missing zxing: should be in " << path_to_zxing.value();
-      return false;
-    }
-    base::FilePath path_to_ffmpeg = test::GetToolForPlatform("ffmpeg");
-    if (!base::PathExists(path_to_ffmpeg)) {
-      LOG(ERROR) << "Missing ffmpeg: should be in " << path_to_ffmpeg.value();
       return false;
     }
 
@@ -236,12 +215,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     compare_command.AppendArg(base::NumberToString(width));
     compare_command.AppendArg("--yuv_frame_height");
     compare_command.AppendArg(base::NumberToString(height));
-    compare_command.AppendArg("--zxing_path");
-    compare_command.AppendArgPath(path_to_zxing);
-    compare_command.AppendArg("--ffmpeg_path");
-    compare_command.AppendArgPath(path_to_ffmpeg);
-    compare_command.AppendArg("--stats_file");
-    compare_command.AppendArgPath(stats_file);
 
     DVLOG(0) << "Running " << compare_command.GetCommandLineString();
     std::string output;
@@ -312,8 +285,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
         test_config_.height, GetWorkingDir().Append(kCapturedYuvFileName),
         test::GetReferenceFilesDir()
             .Append(test_config_.reference_video)
-            .AddExtension(test::kYuvFileExtension),
-        GetWorkingDir().Append(kStatsFileName)));
+            .AddExtension(test::kYuvFileExtension)));
   }
 
  protected:

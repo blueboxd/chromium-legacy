@@ -397,7 +397,7 @@ WebState* WKBasedNavigationManagerImpl::GetWebState() const {
   return delegate_->GetWebState();
 }
 
-bool WKBasedNavigationManagerImpl::CanTrustLastCommittedItemForVisibleItem(
+bool WKBasedNavigationManagerImpl::CanTrustLastCommittedItem(
     const NavigationItem* last_committed_item) const {
   DCHECK(last_committed_item);
   if (!web_view_cache_.IsAttachedToWebView())
@@ -414,7 +414,7 @@ bool WKBasedNavigationManagerImpl::CanTrustLastCommittedItemForVisibleItem(
   // Fast back-forward navigations can be performed synchronously, with the
   // WKWebView.URL updated before enough callbacks occur to update the
   // last committed item.  As a result, any calls to
-  // -CanTrustLastCommittedItemForVisibleItem during a call to WKWebView
+  // -CanTrustLastCommittedItem during a call to WKWebView
   // -goToBackForwardListItem are wrapped in the
   // |going_to_back_forward_list_item_| flag. This flag is set and immediately
   // unset because the the mismatch between URL and last_committed_item is
@@ -459,26 +459,7 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
 
   NavigationItem* last_committed_item = GetLastCommittedItem();
   if (last_committed_item) {
-    if (CanTrustLastCommittedItemForVisibleItem(last_committed_item)) {
-      return last_committed_item;
-    } else {
-      auto trust_level = web::URLVerificationTrustLevel::kNone;
-      // Don't check trust level here, as at this point it's expected
-      // the _documentURL and the last_commited_item URL have an origin
-      // mismatch.
-      GURL document_url = delegate_->GetWebState()->GetCurrentURL(&trust_level);
-      if (!visible_web_view_item_) {
-        visible_web_view_item_ = CreateNavigationItemWithRewriters(
-            GURL::EmptyGURL(), Referrer(),
-            ui::PageTransition::PAGE_TRANSITION_LINK,
-            NavigationInitiationType::RENDERER_INITIATED, GURL::EmptyGURL(),
-            nullptr /* use default rewriters only */);
-      }
-      visible_web_view_item_->SetURL(document_url);
-      visible_web_view_item_->SetTimestamp(
-          time_smoother_.GetSmoothedTime(base::Time::Now()));
-      return visible_web_view_item_.get();
-    }
+    return last_committed_item;
   }
 
   // While an -IsRestoreSessionUrl URL can not be a committed page, it is
@@ -782,7 +763,29 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     DCHECK_EQ(0, GetItemCount());
     return nullptr;
   }
-  return GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+  NavigationItemImpl* last_committed_item =
+      GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+  if (last_committed_item && GetWebState() &&
+      !CanTrustLastCommittedItem(last_committed_item)) {
+    // Don't check trust level here, as at this point it's expected
+    // the _documentURL and the last_commited_item URL have an origin
+    // mismatch.
+    GURL document_url = GetWebState()->GetCurrentURL(/*trust_level=*/nullptr);
+    if (!last_committed_web_view_item_) {
+      last_committed_web_view_item_ = CreateNavigationItemWithRewriters(
+          /*url=*/GURL::EmptyGURL(), Referrer(),
+          ui::PageTransition::PAGE_TRANSITION_LINK,
+          NavigationInitiationType::RENDERER_INITIATED,
+          /*previous_url=*/GURL::EmptyGURL(),
+          nullptr /* use default rewriters only */);
+      last_committed_web_view_item_->SetUntrusted();
+    }
+    last_committed_web_view_item_->SetURL(document_url);
+    last_committed_web_view_item_->SetTimestamp(
+        time_smoother_.GetSmoothedTime(base::Time::Now()));
+    return last_committed_web_view_item_.get();
+  }
+  return last_committed_item;
 }
 
 int WKBasedNavigationManagerImpl::

@@ -44,6 +44,7 @@ blink_modules_sources("mediastream") {
     "navigator_user_media.h",
     "overconstrained_error.cc",
     "overconstrained_error.h",
+    "remote_media_stream_track_adapter.cc",
     "user_media_client.cc",
     "user_media_client.h",
     "user_media_controller.cc",

@@ -34,6 +34,7 @@ auto CombineWithLayerMaskTypes(
                         Layer::LayerMaskType::MULTI_TEXTURE_MASK));
 }
 
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
 std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
     {LayerTreeTest::RENDERER_GL, GPU},

@@ -73,12 +73,10 @@
 
 namespace {
 
-const char kAAccountIdString[] =
-    "{\"account_type\":\"unknown\",\"email\":\"A\"}";
-const char kBAccountIdString[] =
-    "{\"account_type\":\"unknown\",\"email\":\"B\"}";
+const char kAAccountIdString[] = R"({"account_type":"unknown","email":"a"})";
+const char kBAccountIdString[] = R"({"account_type":"unknown","email":"b"})";
 const char kArrowBAccountIdString[] =
-    "->{\"account_type\":\"unknown\",\"email\":\"B\"}";
+    R"(->{"account_type":"unknown","email":"b"})";
 
 const content::BrowserContext* GetActiveContext() {
   const user_manager::UserManager* user_manager =
@@ -196,8 +194,8 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
 
   // Returns a list of all open windows in the following form:
   // "<H(idden)/S(hown)/D(eleted)>[<Owner>[,<shownForUser>]], .."
-  // Like: "S[B], .." would mean that window#0 is shown and belongs to user B.
-  // or "S[B,A], .." would mean that window#0 is shown, belongs to B but is
+  // Like: "S[b], .." would mean that window#0 is shown and belongs to user B.
+  // or "S[b,a], .." would mean that window#0 is shown, belongs to B but is
   // shown by A, and "D,..." would mean that window#0 is deleted.
   std::string GetStatus() {
     return GetStatusImpl(/* follow_transients */ false);
@@ -311,7 +309,7 @@ void MultiProfileSupportTest::SetUpForThisManyWindows(int windows) {
     windows_[i]->Show();
   }
   ::MultiUserWindowManagerHelper::CreateInstanceForTest(
-      AccountId::FromUserEmail("A"));
+      AccountId::FromUserEmail("a"));
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
   wallpaper_controller_client_ =
@@ -382,8 +380,8 @@ TEST_F(MultiProfileSupportTest, BasicTests) {
             ::MultiUserWindowManagerHelper::GetWindowManager());
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   // The owner of an unowned window should be empty and it should be shown on
   // all windows.
@@ -432,51 +430,51 @@ TEST_F(MultiProfileSupportTest, BasicTests) {
 TEST_F(MultiProfileSupportTest, OwnerTests) {
   SetUpForThisManyWindows(5);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Set some windows to the active owner.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
-  EXPECT_EQ("S[A], S[], S[], S[], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[], S[], S[], S[]", GetStatus());
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_A);
-  EXPECT_EQ("S[A], S[], S[A], S[], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[], S[a], S[], S[]", GetStatus());
 
   // Set some windows to an inactive owner. Note that the windows should hide.
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  EXPECT_EQ("S[A], H[B], S[A], S[], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], S[a], S[], S[]", GetStatus());
   multi_user_window_manager()->SetWindowOwner(window(3), account_id_B);
-  EXPECT_EQ("S[A], H[B], S[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], S[a], H[b], S[]", GetStatus());
 
   // Assume that the user has now changed to C - which should show / hide
   // accordingly.
   StartUserTransitionAnimation(account_id_C);
-  EXPECT_EQ("H[A], H[B], H[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("H[a], H[b], H[a], H[b], S[]", GetStatus());
 
   // If someone tries to show an inactive window it should only work if it can
   // be shown / hidden.
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], H[B], S[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], S[a], H[b], S[]", GetStatus());
   window(3)->Show();
-  EXPECT_EQ("S[A], H[B], S[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], S[a], H[b], S[]", GetStatus());
   window(2)->Hide();
-  EXPECT_EQ("S[A], H[B], H[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], H[a], H[b], S[]", GetStatus());
   window(2)->Show();
-  EXPECT_EQ("S[A], H[B], S[A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b], S[a], H[b], S[]", GetStatus());
 }
 
 TEST_F(MultiProfileSupportTest, CloseWindowTests) {
   SetUpForThisManyWindows(1);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_B);
-  EXPECT_EQ("H[B]", GetStatus());
+  EXPECT_EQ("H[b]", GetStatus());
   ShowWindowForUserNoUserTransition(window(0), account_id_A);
-  EXPECT_EQ("S[B,A]", GetStatus());
+  EXPECT_EQ("S[b,a]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
-  EXPECT_EQ("B", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("b", GetOwnersOfVisibleWindowsAsString());
 
   aura::Window* to_be_deleted = window(0);
 
@@ -502,9 +500,9 @@ TEST_F(MultiProfileSupportTest, CloseWindowTests) {
 TEST_F(MultiProfileSupportTest, SharedWindowTests) {
   SetUpForThisManyWindows(5);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
@@ -512,9 +510,9 @@ TEST_F(MultiProfileSupportTest, SharedWindowTests) {
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(3), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(4), account_id_C);
-  EXPECT_EQ("S[A], S[A], H[B], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], S[a], H[b], H[b], H[c]", GetStatus());
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
 
   // For all following tests we override window 2 to be shown by user B.
   ShowWindowForUserNoUserTransition(window(1), account_id_B);
@@ -522,41 +520,41 @@ TEST_F(MultiProfileSupportTest, SharedWindowTests) {
   // Change window 3 between two users and see that it changes
   // accordingly (or not).
   ShowWindowForUserNoUserTransition(window(2), account_id_A);
-  EXPECT_EQ("S[A], H[A,B], S[B,A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[a,b], S[b,a], H[b], H[c]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
-  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("a b", GetOwnersOfVisibleWindowsAsString());
   ShowWindowForUserNoUserTransition(window(2), account_id_C);
-  EXPECT_EQ("S[A], H[A,B], H[B,C], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[a,b], H[b,c], H[b], H[c]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
 
   // Switch the users and see that the results are correct.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[A,B], H[B,C], S[B], H[C]", GetStatus());
-  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], S[a,b], H[b,c], S[b], H[c]", GetStatus());
+  EXPECT_EQ("a b", GetOwnersOfVisibleWindowsAsString());
   StartUserTransitionAnimation(account_id_C);
-  EXPECT_EQ("H[A], H[A,B], S[B,C], H[B], S[C]", GetStatus());
-  EXPECT_EQ("B C", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], H[a,b], S[b,c], H[b], S[c]", GetStatus());
+  EXPECT_EQ("b c", GetOwnersOfVisibleWindowsAsString());
 
   // Showing on the desktop of the already owning user should have no impact.
   ShowWindowForUserNoUserTransition(window(4), account_id_C);
-  EXPECT_EQ("H[A], H[A,B], S[B,C], H[B], S[C]", GetStatus());
-  EXPECT_EQ("B C", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], H[a,b], S[b,c], H[b], S[c]", GetStatus());
+  EXPECT_EQ("b c", GetOwnersOfVisibleWindowsAsString());
 
   // Changing however a shown window back to the original owner should hide it.
   ShowWindowForUserNoUserTransition(window(2), account_id_B);
-  EXPECT_EQ("H[A], H[A,B], H[B], H[B], S[C]", GetStatus());
+  EXPECT_EQ("H[a], H[a,b], H[b], H[b], S[c]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
-  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("c", GetOwnersOfVisibleWindowsAsString());
 
   // And the change should be "permanent" - switching somewhere else and coming
   // back.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[A,B], S[B], S[B], H[C]", GetStatus());
-  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], S[a,b], S[b], S[b], H[c]", GetStatus());
+  EXPECT_EQ("a b", GetOwnersOfVisibleWindowsAsString());
   StartUserTransitionAnimation(account_id_C);
-  EXPECT_EQ("H[A], H[A,B], H[B], H[B], S[C]", GetStatus());
-  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], H[a,b], H[b], H[b], S[c]", GetStatus());
+  EXPECT_EQ("c", GetOwnersOfVisibleWindowsAsString());
 
   // After switching window 2 back to its original desktop, all desktops should
   // be "clean" again.
@@ -568,8 +566,8 @@ TEST_F(MultiProfileSupportTest, SharedWindowTests) {
 TEST_F(MultiProfileSupportTest, DoubleSharedWindowTests) {
   SetUpForThisManyWindows(1);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_B);
 
@@ -592,9 +590,9 @@ TEST_F(MultiProfileSupportTest, DoubleSharedWindowTests) {
 TEST_F(MultiProfileSupportTest, PreserveWindowVisibilityTests) {
   SetUpForThisManyWindows(5);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Set some owners and make sure we got what we asked for.
   // Note that we try to cover all combinations in one go.
@@ -604,45 +602,45 @@ TEST_F(MultiProfileSupportTest, PreserveWindowVisibilityTests) {
   multi_user_window_manager()->SetWindowOwner(window(3), account_id_B);
   ShowWindowForUserNoUserTransition(window(2), account_id_A);
   ShowWindowForUserNoUserTransition(window(3), account_id_A);
-  EXPECT_EQ("S[A], S[A], S[B,A], S[B,A], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[b,a], S[b,a], S[]", GetStatus());
 
   // Hiding a window should be respected - no matter if it is owned by that user
   // owned by someone else but shown on that desktop - or not owned.
   window(0)->Hide();
   window(2)->Hide();
   window(4)->Hide();
-  EXPECT_EQ("H[A], S[A], H[B,A], S[B,A], H[]", GetStatus());
+  EXPECT_EQ("H[a], S[a], H[b,a], S[b,a], H[]", GetStatus());
 
   // Flipping to another user and back should preserve all show / hide states.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[A], H[B,A], H[B,A], H[]", GetStatus());
+  EXPECT_EQ("H[a], H[a], H[b,a], H[b,a], H[]", GetStatus());
 
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("H[A], S[A], H[B,A], S[B,A], H[]", GetStatus());
+  EXPECT_EQ("H[a], S[a], H[b,a], S[b,a], H[]", GetStatus());
 
   // After making them visible and switching fore and back everything should be
   // visible.
   window(0)->Show();
   window(2)->Show();
   window(4)->Show();
-  EXPECT_EQ("S[A], S[A], S[B,A], S[B,A], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[b,a], S[b,a], S[]", GetStatus());
 
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[A], H[B,A], H[B,A], S[]", GetStatus());
+  EXPECT_EQ("H[a], H[a], H[b,a], H[b,a], S[]", GetStatus());
 
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], S[A], S[B,A], S[B,A], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[b,a], S[b,a], S[]", GetStatus());
 
   // Now test that making windows visible through "normal operation" while the
   // user's desktop is hidden leads to the correct result.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[A], H[B,A], H[B,A], S[]", GetStatus());
+  EXPECT_EQ("H[a], H[a], H[b,a], H[b,a], S[]", GetStatus());
   window(0)->Show();
   window(2)->Show();
   window(4)->Show();
-  EXPECT_EQ("H[A], H[A], H[B,A], H[B,A], S[]", GetStatus());
+  EXPECT_EQ("H[a], H[a], H[b,a], H[b,a], S[]", GetStatus());
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], S[A], S[B,A], S[B,A], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[b,a], S[b,a], S[]", GetStatus());
 }
 
 // Check that minimizing a window which is owned by another user will move it
@@ -650,28 +648,28 @@ TEST_F(MultiProfileSupportTest, PreserveWindowVisibilityTests) {
 TEST_F(MultiProfileSupportTest, MinimizeChangesOwnershipBack) {
   SetUpForThisManyWindows(4);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_B);
   ShowWindowForUserNoUserTransition(window(1), account_id_A);
-  EXPECT_EQ("S[A], S[B,A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[b,a], H[b], S[]", GetStatus());
   EXPECT_TRUE(
       MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
           window(1), account_id_A));
   wm::GetWindowState(window(1))->Minimize();
   // At this time the window is still on the desktop of that user, but the user
   // does not have a way to get to it.
-  EXPECT_EQ("S[A], H[B,A], H[B], S[]", GetStatus());
+  EXPECT_EQ("S[a], H[b,a], H[b], S[]", GetStatus());
   EXPECT_TRUE(
       MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
           window(1), account_id_A));
   EXPECT_TRUE(wm::GetWindowState(window(1))->IsMinimized());
   // Change to user B and make sure that minimizing does not change anything.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[B], S[B], S[]", GetStatus());
+  EXPECT_EQ("H[a], S[b], S[b], S[]", GetStatus());
   EXPECT_FALSE(wm::GetWindowState(window(1))->IsMinimized());
 }
 
@@ -679,39 +677,39 @@ TEST_F(MultiProfileSupportTest, MinimizeChangesOwnershipBack) {
 TEST_F(MultiProfileSupportTest, MinimizeSuppressesViewTransfer) {
   SetUpForThisManyWindows(1);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   wm::GetWindowState(window(0))->Minimize();
-  EXPECT_EQ("H[A]", GetStatus());
+  EXPECT_EQ("H[a]", GetStatus());
 
   // Try to transfer the window to user B - which should get ignored.
   ShowWindowForUserNoUserTransition(window(0), account_id_B);
-  EXPECT_EQ("H[A]", GetStatus());
+  EXPECT_EQ("H[a]", GetStatus());
 }
 
 // Testing that the activation state changes to the active window.
 TEST_F(MultiProfileSupportTest, ActiveWindowTests) {
   SetUpForThisManyWindows(4);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Set some windows to the active owner.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(3), account_id_B);
-  EXPECT_EQ("S[A], S[A], H[B], H[B]", GetStatus());
+  EXPECT_EQ("S[a], S[a], H[b], H[b]", GetStatus());
 
   // Set the active window for user A to be #1
   ::wm::ActivateWindow(window(1));
 
   // Change to user B and make sure that one of its windows is active.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[A], S[B], S[B]", GetStatus());
+  EXPECT_EQ("H[a], H[a], S[b], S[b]", GetStatus());
   EXPECT_TRUE(::wm::IsActiveWindow(window(3)) ||
               ::wm::IsActiveWindow(window(2)));
   // Set the active window for user B now to be #2
@@ -742,8 +740,8 @@ TEST_F(MultiProfileSupportTest, ActiveWindowTests) {
 TEST_F(MultiProfileSupportTest, TransientWindows) {
   SetUpForThisManyWindows(10);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   // We create a hierarchy like this:
   //    0 (A)  4 (B)   7 (-)   - The top level owned/not owned windows
@@ -768,12 +766,12 @@ TEST_F(MultiProfileSupportTest, TransientWindows) {
   // By now the hierarchy should have updated itself to show all windows of A
   // and hide all windows of B. Unowned windows should remain in what ever state
   // they are in.
-  EXPECT_EQ("S[A], S[], S[], S[], H[B], H[], H[], S[], S[], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[], S[], S[], H[b], H[], H[], S[], S[], S[]", GetStatus());
 
   // Trying to show a hidden transient window shouldn't change anything for now.
   window(5)->Show();
   window(6)->Show();
-  EXPECT_EQ("S[A], S[], S[], S[], H[B], H[], H[], S[], S[], S[]", GetStatus());
+  EXPECT_EQ("S[a], S[], S[], S[], H[b], H[], H[], S[], S[], S[]", GetStatus());
 
   // Hiding on the other hand a shown window should work and hide also its
   // children. Note that hide will have an immediate impact on itself and all
@@ -781,13 +779,13 @@ TEST_F(MultiProfileSupportTest, TransientWindows) {
   // transient children are removed from its owner later on.
   window(2)->Hide();
   window(9)->Hide();
-  EXPECT_EQ("S[A], S[], H[], H[], H[B], H[], H[], S[], S[], H[]", GetStatus());
+  EXPECT_EQ("S[a], S[], H[], H[], H[b], H[], H[], S[], S[], H[]", GetStatus());
 
   // Switching users and switch back should return to the previous state.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[], H[], H[], S[B], S[], S[], S[], S[], H[]", GetStatus());
+  EXPECT_EQ("H[a], H[], H[], H[], S[b], S[], S[], S[], S[], H[]", GetStatus());
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], S[], H[], H[], H[B], H[], H[], S[], S[], H[]", GetStatus());
+  EXPECT_EQ("S[a], S[], H[], H[], H[b], H[], H[], S[], S[], H[]", GetStatus());
 
   // Removing a window from its transient parent should return to the previously
   // set visibility state.
@@ -802,7 +800,7 @@ TEST_F(MultiProfileSupportTest, TransientWindows) {
   //                   9
   ::wm::RemoveTransientChild(window(2), window(3));
   ::wm::RemoveTransientChild(window(4), window(6));
-  EXPECT_EQ("S[A], S[], H[], H[], H[B], H[], S[], S[], S[], H[]", GetStatus());
+  EXPECT_EQ("S[a], S[], H[], H[], H[b], H[], S[], S[], S[], H[]", GetStatus());
   // Before we leave we need to reverse all transient window ownerships.
   ::wm::RemoveTransientChild(window(0), window(1));
   ::wm::RemoveTransientChild(window(1), window(2));
@@ -817,7 +815,7 @@ TEST_F(MultiProfileSupportTest, SetWindowOwnerOnTransientDialog) {
   SetUpForThisManyWindows(2);
   aura::Window* parent = window(0);
   aura::Window* transient = window(1);
-  const AccountId account_id(AccountId::FromUserEmail("A"));
+  const AccountId account_id(AccountId::FromUserEmail("a"));
   multi_user_window_manager()->SetWindowOwner(parent, account_id);
 
   // Simulate chrome::ShowWebDialog() showing a transient dialog, which calls
@@ -826,7 +824,7 @@ TEST_F(MultiProfileSupportTest, SetWindowOwnerOnTransientDialog) {
   multi_user_window_manager()->SetWindowOwner(transient, account_id);
 
   // Both windows are shown and owned by user A.
-  EXPECT_EQ("S[A], S[A]", GetStatusUseTransientOwners());
+  EXPECT_EQ("S[a], S[a]", GetStatusUseTransientOwners());
 
   // Cleanup.
   ::wm::RemoveTransientChild(parent, transient);
@@ -836,8 +834,8 @@ TEST_F(MultiProfileSupportTest, SetWindowOwnerOnTransientDialog) {
 TEST_F(MultiProfileSupportTest, PreserveInitialVisibility) {
   SetUpForThisManyWindows(4);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   // Set our initial show state before we assign an owner.
   window(0)->Show();
@@ -851,11 +849,11 @@ TEST_F(MultiProfileSupportTest, PreserveInitialVisibility) {
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(3), account_id_B);
-  EXPECT_EQ("S[A], H[A], H[B], H[B]", GetStatus());
+  EXPECT_EQ("S[a], H[a], H[b], H[b]", GetStatus());
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], H[A], S[B], H[B]", GetStatus());
+  EXPECT_EQ("H[a], H[a], S[b], H[b]", GetStatus());
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], H[A], H[B], H[B]", GetStatus());
+  EXPECT_EQ("S[a], H[a], H[b], H[b]", GetStatus());
 
   // Second test: Transferring the window to another desktop preserves the
   // show state.
@@ -863,11 +861,11 @@ TEST_F(MultiProfileSupportTest, PreserveInitialVisibility) {
   ShowWindowForUserNoUserTransition(window(1), account_id_B);
   ShowWindowForUserNoUserTransition(window(2), account_id_A);
   ShowWindowForUserNoUserTransition(window(3), account_id_A);
-  EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+  EXPECT_EQ("H[a,b], H[a,b], S[b,a], H[b,a]", GetStatus());
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("S[A,B], H[A,B], H[B,A], H[B,A]", GetStatus());
+  EXPECT_EQ("S[a,b], H[a,b], H[b,a], H[b,a]", GetStatus());
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("H[A,B], H[A,B], S[B,A], H[B,A]", GetStatus());
+  EXPECT_EQ("H[a,b], H[a,b], S[b,a], H[b,a]", GetStatus());
 }
 
 // Test that in case of an activated tablet mode, windows from all users get
@@ -875,8 +873,8 @@ TEST_F(MultiProfileSupportTest, PreserveInitialVisibility) {
 TEST_F(MultiProfileSupportTest, TabletModeInteraction) {
   SetUpForThisManyWindows(2);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
@@ -978,9 +976,9 @@ TEST_F(MultiProfileSupportTest,
 TEST_F(MultiProfileSupportTest, FullUserSwitchAnimationTests) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -989,27 +987,27 @@ TEST_F(MultiProfileSupportTest, FullUserSwitchAnimationTests) {
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
 
   // Switch the user fore and back and see that the results are correct.
   SwitchUserAndWaitForAnimation(account_id_B);
 
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
-  EXPECT_EQ("B", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
+  EXPECT_EQ("b", GetOwnersOfVisibleWindowsAsString());
 
   SwitchUserAndWaitForAnimation(account_id_A);
 
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
 
   // Switch the user quickly to another user and before the animation is done
   // switch back and see that this works.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   // Check that after switching to C, C is fully visible.
   SwitchUserAndWaitForAnimation(account_id_C);
-  EXPECT_EQ("H[A], H[B], S[C]", GetStatus());
-  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("H[a], H[b], S[c]", GetStatus());
+  EXPECT_EQ("c", GetOwnersOfVisibleWindowsAsString());
 }
 
 // Make sure that we do not crash upon shutdown when an animation is pending and
@@ -1017,8 +1015,8 @@ TEST_F(MultiProfileSupportTest, FullUserSwitchAnimationTests) {
 TEST_F(MultiProfileSupportTest, SystemShutdownWithActiveAnimation) {
   SetUpForThisManyWindows(2);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -1037,9 +1035,9 @@ TEST_F(MultiProfileSupportTest, SystemShutdownWithActiveAnimation) {
 TEST_F(MultiProfileSupportTest, AnimationSteps) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -1050,21 +1048,21 @@ TEST_F(MultiProfileSupportTest, AnimationSteps) {
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_FALSE(CoversScreen(window(0)));
   EXPECT_FALSE(CoversScreen(window(1)));
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
 
   // Start the animation and see that the old window is becoming invisible, the
   // new one is becoming visible, and the background starts transitionining.
   StartUserTransitionAnimation(account_id_B);
   EXPECT_EQ(kArrowBAccountIdString, GetWallpaperUserIdForTest());
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   AdvanceUserTransitionAnimation();
   EXPECT_EQ(kArrowBAccountIdString, GetWallpaperUserIdForTest());
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
@@ -1095,9 +1093,9 @@ TEST_F(MultiProfileSupportTest, AnimationStepsScreenCoverage) {
 TEST_F(MultiProfileSupportTest, AnimationStepsMaximizeToNormal) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -1109,27 +1107,27 @@ TEST_F(MultiProfileSupportTest, AnimationStepsMaximizeToNormal) {
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_TRUE(CoversScreen(window(0)));
   EXPECT_FALSE(CoversScreen(window(1)));
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
 
   // Start the animation and see that the new background is immediately set.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The final step will also not have any visible impact.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
@@ -1140,9 +1138,9 @@ TEST_F(MultiProfileSupportTest, AnimationStepsMaximizeToNormal) {
 TEST_F(MultiProfileSupportTest, AnimationStepsNormalToMaximized) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -1154,28 +1152,28 @@ TEST_F(MultiProfileSupportTest, AnimationStepsNormalToMaximized) {
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_FALSE(CoversScreen(window(0)));
   EXPECT_TRUE(CoversScreen(window(1)));
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
 
   // Start the animation and see that the old window is becoming invisible, the
   // new one visible and the background remains as is.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ("", GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ("", GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The final step however will switch the background.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
@@ -1186,9 +1184,9 @@ TEST_F(MultiProfileSupportTest, AnimationStepsNormalToMaximized) {
 TEST_F(MultiProfileSupportTest, AnimationStepsMaximizedToMaximized) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
-  const AccountId account_id_C(AccountId::FromUserEmail("C"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
+  const AccountId account_id_C(AccountId::FromUserEmail("c"));
 
   // Turn the use of delays and animation on.
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
@@ -1201,49 +1199,49 @@ TEST_F(MultiProfileSupportTest, AnimationStepsMaximizedToMaximized) {
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_TRUE(CoversScreen(window(0)));
   EXPECT_TRUE(CoversScreen(window(1)));
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
-  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
+  EXPECT_EQ("a", GetOwnersOfVisibleWindowsAsString());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
 
   // Start the animation and see that the all windows are hidden (except that of
   // the new user).
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The final step however will hide the old window.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[a], S[b], H[c]", GetStatus());
   EXPECT_EQ(kBAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // Switching back will do the exact same thing.
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
   EXPECT_EQ(kAAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(0.0f, window(1)->layer()->GetTargetOpacity());
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
   EXPECT_EQ(kAAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(0.0f, window(1)->layer()->GetTargetOpacity());
 
   // The final step is also not changing anything to the status.
   AdvanceUserTransitionAnimation();
-  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
+  EXPECT_EQ("S[a], H[b], H[c]", GetStatus());
   EXPECT_EQ(kAAccountIdString, GetWallpaperUserIdForTest());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(0.0f, window(1)->layer()->GetTargetOpacity());
@@ -1314,8 +1312,8 @@ class TestWindowObserver : public aura::WindowObserver {
 TEST_F(MultiProfileSupportTest, TransientWindowActivationTest) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   // Create a window hierarchy like this:
   // 0 (A)          - The normal windows
@@ -1463,8 +1461,8 @@ TEST_F(MultiProfileSupportTest, TeleportedWindowAvatarProperty) {
 TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
   SetUpForThisManyWindows(3);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
   AddTestUser(account_id_A);
   AddTestUser(account_id_B);
   SwitchActiveUser(account_id_A);
@@ -1475,7 +1473,7 @@ TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_A);
-  EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[a]", GetStatus());
 
   // Activate the windows one by one.
   activation_client->ActivateWindow(window(2));
@@ -1490,11 +1488,11 @@ TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
   EXPECT_EQ(mru_list[2], window(2));
 
   SwitchActiveUser(account_id_B);
-  EXPECT_EQ("H[A], H[A], H[A]", GetStatus());
+  EXPECT_EQ("H[a], H[a], H[a]", GetStatus());
   EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
 
   SwitchActiveUser(account_id_A);
-  EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
+  EXPECT_EQ("S[a], S[a], S[a]", GetStatus());
   EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
 
   mru_list =
@@ -1510,8 +1508,8 @@ TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
 TEST_F(MultiProfileSupportTest, FindBrowserWithActiveWindow) {
   SetUpForThisManyWindows(1);
 
-  const AccountId account_id_A(AccountId::FromUserEmail("A"));
-  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  const AccountId account_id_A(AccountId::FromUserEmail("a"));
+  const AccountId account_id_B(AccountId::FromUserEmail("b"));
   AddTestUser(account_id_A);
   AddTestUser(account_id_B);
   SwitchActiveUser(account_id_A);
@@ -1545,8 +1543,8 @@ TEST_F(MultiProfileSupportTest, WindowBoundsAfterTabletMode) {
 
   // Add two windows, one to each user and set their initial bounds.
   SetUpForThisManyWindows(2);
-  const AccountId user1(AccountId::FromUserEmail("A"));
-  const AccountId user2(AccountId::FromUserEmail("B"));
+  const AccountId user1(AccountId::FromUserEmail("a"));
+  const AccountId user2(AccountId::FromUserEmail("b"));
   AddTestUser(user1);
   AddTestUser(user2);
   SwitchActiveUser(user1);
@@ -1583,8 +1581,8 @@ TEST_F(MultiProfileSupportTest, WindowBoundsAfterTabletMode) {
 TEST_F(MultiProfileSupportTest, AccountIdChangesAfterSwitch) {
   SetUpForThisManyWindows(1);
 
-  const AccountId account1(AccountId::FromUserEmail("A"));
-  const AccountId account2(AccountId::FromUserEmail("B"));
+  const AccountId account1(AccountId::FromUserEmail("a"));
+  const AccountId account2(AccountId::FromUserEmail("b"));
   AddTestUser(account1);
   AddTestUser(account2);
   SwitchActiveUser(account1);

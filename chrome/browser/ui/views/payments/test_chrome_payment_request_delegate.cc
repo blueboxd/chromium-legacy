@@ -32,10 +32,6 @@ bool TestChromePaymentRequestDelegate::IsIncognito() const {
   return is_incognito_;
 }
 
-bool TestChromePaymentRequestDelegate::IsSslCertificateValid() {
-  return is_valid_ssl_;
-}
-
 autofill::RegionDataLoader*
 TestChromePaymentRequestDelegate::GetRegionDataLoader() {
   if (region_data_loader_)
@@ -49,6 +45,11 @@ PrefService* TestChromePaymentRequestDelegate::GetPrefService() {
 
 bool TestChromePaymentRequestDelegate::IsBrowserWindowActive() const {
   return is_browser_window_active_;
+}
+
+std::string
+TestChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
+  return is_valid_ssl_ ? "" : "Invalid SSL certificate";
 }
 
 }  // namespace payments

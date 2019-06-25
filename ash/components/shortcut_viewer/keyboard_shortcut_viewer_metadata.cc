@@ -146,6 +146,30 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
   return base::string16();
 }
 
+base::string16 GetAccessibleNameForKeyboardCode(ui::KeyboardCode key_code) {
+  int msg_id = 0;
+  switch (key_code) {
+    case ui::VKEY_OEM_PERIOD:
+      msg_id = IDS_KSV_KEY_PERIOD_ACCESSIBILITY_NAME;
+      break;
+    case ui::VKEY_OEM_COMMA:
+      msg_id = IDS_KSV_KEY_COMMA_ACCESSIBILITY_NAME;
+      break;
+    case ui::VKEY_OEM_MINUS:
+      msg_id = IDS_KSV_KEY_HYPHEN_ACCESSIBILITY_NAME;
+      break;
+    case ui::VKEY_OEM_4:
+      msg_id = IDS_KSV_KEY_BRACKET_LEFT_ACCESSIBILITY_NAME;
+      break;
+    case ui::VKEY_OEM_6:
+      msg_id = IDS_KSV_KEY_BRACKET_RIGHT_ACCESSIBILITY_NAME;
+      break;
+    default:
+      break;
+  }
+  return msg_id ? l10n_util::GetStringUTF16(msg_id) : base::string16();
+}
+
 const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
   switch (key_code) {
     case ui::VKEY_BROWSER_BACK:

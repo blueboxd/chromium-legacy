@@ -306,8 +306,7 @@ void Service::GetPrimaryAccountInfoCallback(
     RetryRefreshToken();
     return;
   }
-  account_id_ = AccountId::FromUserEmailGaiaId(account_info.value().email,
-                                               account_info.value().gaia);
+  account_id_ = AccountIdFromAccountInfo(account_info.value());
   identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);

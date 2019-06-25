@@ -266,12 +266,30 @@ std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
     {LayerTreeTest::RENDERER_GL, ZERO_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    {LayerTreeTest::RENDERER_SKIA_VK, GPU},
+#endif
+};
+
+std::vector<PixelResourceTestCase> const kTestCasesNonVulkan = {
+    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
+    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
 };
 
 INSTANTIATE_TEST_SUITE_P(B,
                          LayerTreeHostBlendingPixelTest,
                          ::testing::Combine(::testing::ValuesIn(kTestCases),
                                             ::testing::ValuesIn(kBlendModes)));
+
+using LayerTreeHostBlendingPixelTestNonVulkan = LayerTreeHostBlendingPixelTest;
+
+// TODO(crbug.com/963446): Enable these tests for Vulkan.
+INSTANTIATE_TEST_SUITE_P(
+    B,
+    LayerTreeHostBlendingPixelTestNonVulkan,
+    ::testing::Combine(::testing::ValuesIn(kTestCasesNonVulkan),
+                       ::testing::ValuesIn(kBlendModes)));
 
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;
@@ -340,7 +358,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
   RunPixelResourceTest(background, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithTransparent) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
   InitializeFromTestCase(resource_type());
@@ -375,36 +393,40 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
   RunPixelResourceTest(root, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithRenderPass) {
   RunBlendingWithRenderPass(0);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithRenderPassAA) {
   RunBlendingWithRenderPass(kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrix) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+       BlendingWithRenderPassColorMatrix) {
   RunBlendingWithRenderPass(kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMask) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+       BlendingWithRenderPassWithMask) {
   RunBlendingWithRenderPass(kUseMasks);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+       BlendingWithRenderPassColorMatrixAA) {
   RunBlendingWithRenderPass(kUseAntialiasing | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA) {
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+       BlendingWithRenderPassWithMaskAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest,
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
        BlendingWithRenderPassWithMaskColorMatrix) {
   RunBlendingWithRenderPass(kUseMasks | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTest,
+TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
        BlendingWithRenderPassWithMaskColorMatrixAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }

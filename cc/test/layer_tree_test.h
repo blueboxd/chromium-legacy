@@ -67,8 +67,6 @@ class LayerTreeHostClientForTesting;
 // thread, but be aware that ending the test is an asynchronous process.
 class LayerTreeTest : public testing::Test, public TestHooks {
  public:
-  // TODO(sgilhuly): Once the pixel tests are working on skia gl, add the option
-  // for skia vulkan.
   enum RendererType {
     RENDERER_GL,
     RENDERER_SKIA_GL,

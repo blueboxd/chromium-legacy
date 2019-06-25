@@ -335,12 +335,6 @@ enum NotificationType {
   // The source is the browser's FullscreenController, no details.
   NOTIFICATION_MOUSE_LOCK_CHANGED,
 
-  // Sent when a global error has changed and the error UI should update it
-  // self. The source is a Source<Profile> containing the profile for the
-  // error. The detail is a GlobalError object that has changed or NULL if
-  // all error UIs should update.
-  NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

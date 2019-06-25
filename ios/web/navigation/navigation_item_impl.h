@@ -118,6 +118,12 @@ class NavigationItemImpl : public web::NavigationItem {
   // doesn't specify a title.
   static base::string16 GetDisplayTitleForURL(const GURL& url);
 
+  // Used only by WKBasedNavigationManager.  SetUntrusted() is only used for
+  // Visible or LastCommitted NavigationItems where the |url_| may be incorrect
+  // due to timining problems or bugs in WKWebView.
+  void SetUntrusted();
+  bool IsUntrusted();
+
 #ifndef NDEBUG
   // Returns a human-readable description of the state for debugging purposes.
   NSString* GetDescription() const;
@@ -155,8 +161,10 @@ class NavigationItemImpl : public web::NavigationItem {
   // |ResetForCommit| and not persisted.
   web::NavigationInitiationType navigation_initiation_type_;
 
-  // Whether the navigation contains unsafe resources.
-  bool is_unsafe_;
+  // Used only by WKBasedNavigationManager.  |is_untrusted_| is only |true| for
+  // Visible or LastCommitted NavigationItems where the |url_| may be incorrect
+  // due to timining problems or bugs in WKWebView.
+  bool is_untrusted_;
 
   // This is a cached version of the result of GetTitleForDisplay. When the URL,
   // virtual URL, or title is set, this should be cleared to force a refresh.

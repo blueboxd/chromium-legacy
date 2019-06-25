@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/global_error/global_error_waiter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -6764,14 +6765,12 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
   // the expected number of errors in external_install_manager(). We also verify
   // that only the first BUBBLE_ALERT error is shown.
   for (size_t i = 0; i < data.size(); ++i) {
-    content::WindowedNotificationObserver global_error_observer(
-        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-        content::NotificationService::AllSources());
+    test::GlobalErrorWaiter error_waiter(profile());
     provider->UpdateOrAddExtension(data[i].id, data[i].version,
                                    data[i].crx_path);
     WaitForExternalExtensionInstalled();
     // Make sure ExternalInstallError::OnDialogReady() fires.
-    global_error_observer.Wait();
+    error_waiter.Wait();
 
     const size_t expected_error_count = i + 1u;
     std::vector<ExternalInstallError*> errors =
@@ -6813,15 +6812,13 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
             data_dir().AppendASCII("update_from_webstore3.pem"),
             webstore_crx_three);
 
-    content::WindowedNotificationObserver global_error_observer(
-        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-        content::NotificationService::AllSources());
+    test::GlobalErrorWaiter error_waiter(profile());
     provider->UpdateOrAddExtension(
         updates_from_webstore3, "1",
         temp_dir().GetPath().AppendASCII("webstore3.crx"));
     WaitForExternalExtensionInstalled();
     // Make sure ExternalInstallError::OnDialogReady() fires.
-    global_error_observer.Wait();
+    error_waiter.Wait();
 
     std::vector<ExternalInstallError*> errors =
         service_->external_install_manager()->GetErrorsForTesting();
@@ -6866,14 +6863,12 @@ TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
           data_dir().AppendASCII("update_from_webstore2.pem"),
           data[1].crx_path);
   {
-    content::WindowedNotificationObserver global_error_observer(
-        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-        content::NotificationService::AllSources());
+    test::GlobalErrorWaiter error_waiter(profile());
     provider->UpdateOrAddExtension(data[0].id, data[0].version,
                                    data[0].crx_path);
     WaitForExternalExtensionInstalled();
     // Make sure ExternalInstallError::OnDialogReady() fires.
-    global_error_observer.Wait();
+    error_waiter.Wait();
 
     std::vector<ExternalInstallError*> errors =
         service_->external_install_manager()->GetErrorsForTesting();
@@ -6903,14 +6898,12 @@ TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
   // BUBBLE_ALERT.
   // Make sure that this bubble alert does not replace the current bubble alert.
   {
-    content::WindowedNotificationObserver global_error_observer(
-        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-        content::NotificationService::AllSources());
+    test::GlobalErrorWaiter error_waiter(profile());
     provider->UpdateOrAddExtension(data[1].id, data[1].version,
                                    data[1].crx_path);
     WaitForExternalExtensionInstalled();
     // Make sure ExternalInstallError::OnDialogReady() fires.
-    global_error_observer.Wait();
+    error_waiter.Wait();
 
     std::vector<ExternalInstallError*> errors =
         service_->external_install_manager()->GetErrorsForTesting();

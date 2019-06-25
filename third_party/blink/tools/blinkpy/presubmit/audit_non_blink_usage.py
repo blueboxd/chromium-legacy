@@ -620,6 +620,9 @@ _CONFIG = [
         'allowed': [
             'media::.+',
             'base::AutoLock',
+            'webrtc::AudioTrackInterface',
+            'webrtc::VideoTrackInterface',
+            'webrtc::MediaStreamTrackInterface',
         ]
     },
     {

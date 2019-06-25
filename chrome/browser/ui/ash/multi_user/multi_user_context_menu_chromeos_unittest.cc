@@ -70,7 +70,7 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
   window_->Show();
 
   MultiUserWindowManagerHelper::CreateInstanceForTest(
-      AccountId::FromUserEmail("A"));
+      AccountId::FromUserEmail("a"));
 }
 
 void MultiUserContextMenuChromeOSTest::TearDown() {
@@ -94,7 +94,7 @@ TEST_F(MultiUserContextMenuChromeOSTest, OwnedWindow) {
   // Make the window owned and check that there is no menu (since only a single
   // user exists).
   MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
-      window(), AccountId::FromUserEmail("A"));
+      window(), AccountId::FromUserEmail("a"));
   EXPECT_EQ(nullptr, CreateMultiUserContextMenu(window()).get());
 
   // After adding another user a menu should get created.

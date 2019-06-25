@@ -58,6 +58,13 @@ class IDBIndex final : public ScriptWrappable {
   void setName(const String& name, ExceptionState&);
   IDBObjectStore* objectStore() const { return object_store_.Get(); }
   ScriptValue keyPath(ScriptState*) const;
+
+  // Per spec prose, keyPath attribute should return the same object each time
+  // (if it is not just a primitive type). The IDL cannot use [SameObject]
+  // because the key path may not be an 'object'. So use [CachedAttribute],
+  // but never dirty the cache.
+  bool IsKeyPathDirty() const { return false; }
+
   bool unique() const { return Metadata().unique; }
   bool multiEntry() const { return Metadata().multi_entry; }
 

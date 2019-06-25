@@ -227,7 +227,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void RemoveActiveRegistration(
       const blink::mojom::BackgroundSyncRegistrationInfo& registration_info);
 
-  void AddActiveRegistration(
+  void AddOrUpdateActiveRegistration(
       int64_t sw_registration_id,
       const url::Origin& origin,
       const BackgroundSyncRegistration& sync_registration);

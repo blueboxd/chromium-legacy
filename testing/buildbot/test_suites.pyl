@@ -3124,6 +3124,7 @@
           '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=swiftshader',
           '--fuzzy-diff',
+          '--skipped=always',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
         ],
@@ -3135,9 +3136,34 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 2,
-        }
+      },
+      'vulkan_swift_shader_blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--use-gl=swiftshader',
+          '--additional-driver-flag=--enable-gpu-rasterization',
+          '--additional-driver-flag=--force-gpu-rasterization',
+          '--additional-driver-flag=--enable-oop-rasterization',
+          '--additional-driver-flag=--disable-software-compositing-fallback',
+          '--additional-driver-flag=--use-vulkan=swiftshader',
+          '--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing',
+          '--fuzzy-diff',
+          '--skipped=always',
+          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader',
+        ],
+        'isolate_name': 'blink_web_tests_exparchive',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
       },
     },
 

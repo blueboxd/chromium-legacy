@@ -59,6 +59,10 @@ static_library("shared") {
     "//components/keyed_service/core",
     "//google_apis",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//components/user_manager" ]
+  }
 }
 
 # This target forms the core of the IdentityManager implementation

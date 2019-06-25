@@ -112,7 +112,7 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
 class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
  public:
   TestPrintFrameContentMsgFilter(int document_cookie,
-                                 const base::RepeatingClosure& msg_callback)
+                                 base::RepeatingClosure msg_callback)
       : content::BrowserMessageFilter(PrintMsgStart),
         document_cookie_(document_cookie),
         task_runner_(base::SequencedTaskRunnerHandle::Get()),

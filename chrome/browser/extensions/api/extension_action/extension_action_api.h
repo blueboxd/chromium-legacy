@@ -251,6 +251,20 @@ class ExtensionActionGetBadgeBackgroundColorFunction
 };
 
 //
+// action.* aliases for supported action APIs.
+//
+
+class ActionSetIconFunction : public ExtensionActionSetIconFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.setIcon", ACTION_SETICON)
+
+ protected:
+  ~ActionSetIconFunction() override {}
+};
+
+// TODO(devlin): Add the rest of the action APIs here.
+
+//
 // browserAction.* aliases for supported browserAction APIs.
 //
 

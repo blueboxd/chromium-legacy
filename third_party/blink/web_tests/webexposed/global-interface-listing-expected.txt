@@ -5530,6 +5530,7 @@ interface PerformanceTiming
 interface PeriodicSyncManager
     attribute @@toStringTag
     method constructor
+    method getTags
     method register
 interface PeriodicWave
     attribute @@toStringTag

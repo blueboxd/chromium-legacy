@@ -5929,6 +5929,9 @@ be describing additional metrics about the same event.
     //components/previews/.
   </summary>
   <metric name="client_lofi">
+    <obsolete>
+      Deprecated June 2019
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a client lo-fi image in a page load.
     </summary>
@@ -6046,6 +6049,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="server_lofi">
+    <obsolete>
+      Deprecated June 2019
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
     </summary>

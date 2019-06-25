@@ -893,12 +893,7 @@ void BrowserMainLoop::CreateStartupTasks() {
   startup_task_runner_->AddTask(std::move(pre_main_message_loop_run));
 
 #if defined(OS_ANDROID)
-  if (parameters_.ui_task) {
-    // Running inside browser tests, which relies on synchronous start.
-    startup_task_runner_->RunAllTasksNow();
-  } else {
-    startup_task_runner_->StartRunningTasksAsync();
-  }
+  startup_task_runner_->StartRunningTasksAsync();
 #else
   startup_task_runner_->RunAllTasksNow();
 #endif

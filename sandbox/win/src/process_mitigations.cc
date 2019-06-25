@@ -5,12 +5,15 @@
 #include "sandbox/win/src/process_mitigations.h"
 
 #include <stddef.h>
+#include <windows.h>
+#include <wow64apiset.h>
 
 #include <algorithm>
 
 #include "base/files/file_path.h"
 #include "base/scoped_native_library.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_rand.h"
@@ -57,6 +60,33 @@ const ULONG64* GetSupportedMitigations() {
   }
 
   return &mitigations[0];
+}
+
+// Returns true if this is 32-bit Chrome running on ARM64 with emulation.
+// Needed because ACG does not work with emulated code.
+// See
+// https://docs.microsoft.com/en-us/windows/uwp/porting/apps-on-arm-troubleshooting-x86.
+// See https://crbug.com/977723.
+// TODO(wfh): Move this code into base. See https://crbug.com/978257.
+bool IsRunning32bitEmulatedOnArm64() {
+#if defined(ARCH_CPU_X86)
+  using IsWow64Process2Function = decltype(&IsWow64Process2);
+
+  IsWow64Process2Function is_wow64_process2 =
+      reinterpret_cast<IsWow64Process2Function>(::GetProcAddress(
+          ::GetModuleHandleA("kernel32.dll"), "IsWow64Process2"));
+  if (!is_wow64_process2)
+    return false;
+  USHORT process_machine;
+  USHORT native_machine;
+  bool retval = is_wow64_process2(::GetCurrentProcess(), &process_machine,
+                                  &native_machine);
+  if (!retval)
+    return false;
+  if (native_machine == IMAGE_FILE_MACHINE_ARM64)
+    return true;
+#endif  // defined(ARCH_CPU_X86)
+  return false;
 }
 
 }  // namespace
@@ -194,8 +224,9 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     return true;
 
   // Enable dynamic code policies.
-  if (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
-      flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
+  if (!IsRunning32bitEmulatedOnArm64() &&
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
+       flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
     PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
     policy.ProhibitDynamicCode = true;
 

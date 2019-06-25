@@ -230,9 +230,8 @@ class CookiesTreeModelTest : public testing::Test {
       CookieTreeNode::DetailedInfo::NodeType node_type,
       content_settings::CookieSettings* cookie_settings,
       const GURL& expected_url) {
-    for (int i = 0; i < node->child_count(); ++i) {
-      const CookieTreeNode* child = node->GetChild(i);
-      CheckContentSettingsUrlForHostNodes(child,
+    for (const auto& child : node->children()) {
+      CheckContentSettingsUrlForHostNodes(child.get(),
                                           child->GetDetailedInfo().node_type,
                                           cookie_settings, expected_url);
     }
@@ -261,9 +260,8 @@ class CookiesTreeModelTest : public testing::Test {
       CookieTreeNode::DetailedInfo::NodeType node_type) {
     if (!node->children().empty()) {
       std::string retval;
-      for (int i = 0; i < node->child_count(); ++i) {
-        retval += GetNodesOfChildren(node->GetChild(i), node_type);
-      }
+      for (const auto& child : node->children())
+        retval += GetNodesOfChildren(child.get(), node_type);
       return retval;
     }
 
@@ -486,7 +484,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
     // 2 nodes - root and app
     SCOPED_TRACE("After removing");
     EXPECT_EQ(1, cookies_model->GetRoot()->GetTotalNodeCount());
-    EXPECT_EQ(0, cookies_model->GetRoot()->child_count());
+    EXPECT_EQ(0u, cookies_model->GetRoot()->children().size());
     EXPECT_EQ(std::string(), GetDisplayedCookies(cookies_model.get()));
     EXPECT_TRUE(mock_browsing_data_cookie_helper_->AllDeleted());
     EXPECT_TRUE(mock_browsing_data_database_helper_->AllDeleted());
@@ -1619,7 +1617,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   CookieTreeHostNode* origin =
       root->GetOrCreateHostNode(host);
 
-  EXPECT_EQ(1, origin->child_count());
+  EXPECT_EQ(1u, origin->children().size());
   EXPECT_TRUE(origin->CanCreateContentException());
   EXPECT_CALL(observer, OnContentSettingsChanged(
                             content_settings, CONTENT_SETTINGS_TYPE_COOKIES,

@@ -443,6 +443,8 @@ void DisplayLockContext::DidLayout(LifecycleTarget target) {
   if (target == kSelf)
     return;
 
+  // Since we did layout on children already, we'll clear this.
+  child_layout_was_blocked_ = false;
   if (state_ == kUpdating)
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kLayout);
 }
@@ -516,7 +518,7 @@ DisplayLockContext::GetScopedForcedUpdate() {
   // this, since |update_forced_| doesn't force paint to happen. See
   // ShouldPaint().
   MarkForStyleRecalcIfNeeded();
-  MarkAncestorsForLayoutIfNeeded();
+  MarkForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   return ScopedForcedUpdate(this);
 }
@@ -561,7 +563,7 @@ void DisplayLockContext::StartCommit() {
 
   // Now that we know we have a layout object, we should ensure that we can
   // reach the rest of the phases as well.
-  MarkAncestorsForLayoutIfNeeded();
+  MarkForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   MarkPaintLayerNeedsRepaint();
 
@@ -645,9 +647,26 @@ bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
   return false;
 }
 
-bool DisplayLockContext::MarkAncestorsForLayoutIfNeeded() {
+bool DisplayLockContext::MarkForLayoutIfNeeded() {
   if (IsElementDirtyForLayout()) {
-    element_->GetLayoutObject()->MarkContainerChainForLayout();
+    // Forces the marking of ancestors to happen, even if
+    // |DisplayLockContext::ShouldLayout()| returns false.
+    base::AutoReset<bool> scoped_force(&update_forced_, true);
+    if (child_layout_was_blocked_) {
+      // We've previously blocked a child traversal when doing self-layout for
+      // the locked element, so we're marking it with child-needs-layout so that
+      // it will traverse to the locked element and do the child traversal
+      // again. We don't need to mark it for self-layout (by calling
+      // |LayoutObject::SetNeedsLayout()|) because the locked element itself
+      // doesn't need to relayout.
+      element_->GetLayoutObject()->SetChildNeedsLayout();
+      child_layout_was_blocked_ = false;
+    } else {
+      // Since the dirty layout propagation stops at the locked element, we need
+      // to mark its ancestors as dirty here so that it will be traversed to on
+      // the next layout.
+      element_->GetLayoutObject()->MarkContainerChainForLayout();
+    }
     return true;
   }
   return false;
@@ -703,7 +722,7 @@ bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
 
 bool DisplayLockContext::IsElementDirtyForLayout() const {
   if (auto* layout_object = element_->GetLayoutObject())
-    return layout_object->NeedsLayout();
+    return layout_object->NeedsLayout() || child_layout_was_blocked_;
   return false;
 }
 

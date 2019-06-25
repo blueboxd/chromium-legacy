@@ -50,6 +50,8 @@
 
 namespace {
 
+constexpr char kExpiredCertificateFile[] = "expired_cert.pem";
+
 class ClickEvent : public ui::Event {
  public:
   ClickEvent() : ui::Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
@@ -140,6 +142,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
     constexpr char kSignInPasswordReuse[] = "SignInPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
+    constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
     constexpr char kAllowAllPermissions[] = "AllowAllPermissions";
@@ -157,7 +160,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     GURL url = http_url;
     if (name == kSecure || name == kEvSecure || name == kMixedContentForm ||
         name == kMixedContent || name == kAllowAllPermissions ||
-        name == kBlockAllPermissions) {
+        name == kBlockAllPermissions || name == kMalwareAndBadCert) {
       url = https_url;
     }
     if (name == kInternal) {
@@ -203,19 +206,24 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       expected_identifiers_.push_back(
           PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_EV_CERTIFICATE_DETAILS);
     } else if (name == kMalware) {
-      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_MALWARE;
+      identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
     } else if (name == kDeceptive) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING;
     } else if (name == kUnwantedSoftware) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE;
     } else if (name == kSignInPasswordReuse) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
     } else if (name == kEnterprisePasswordReuse) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
+    } else if (name == kMalwareAndBadCert) {
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
+      identity.certificate = net::ImportCertFromFile(
+          net::GetTestCertsDirectory(), kExpiredCertificateFile);
+      identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
     } else if (name == kMixedContentForm) {
       identity.identity_status =
           PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
@@ -338,6 +346,15 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       const PageInfoUI::IdentityInfo& identity_info) {
     static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
         ->SetIdentityInfo(identity_info);
+  }
+
+  base::string16 GetCertificateButtonTitle() const {
+    // Only PageInfoBubbleViewBrowserTest can access certificate_button_ in
+    // PageInfoBubbleView, or title() in HoverButton.
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubble());
+    return page_info_bubble_view->certificate_button_->title()->text();
   }
 
  private:
@@ -621,6 +638,13 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_PasswordReuse) {
   ShowAndVerifyUi();
 }
 
+// Shows the Page Info bubble for a site flagged for malware that also has a bad
+// certificate.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeUi_MalwareAndBadCert) {
+  ShowAndVerifyUi();
+}
+
 // Shows the Page Info bubble for an admin-provided cert when the page is
 // secure, but has a form that submits to an insecure url.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
@@ -712,6 +736,41 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   ExecuteJavaScriptForTests("load_mixed();");
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
+}
+
+// Ensure a page can both have an invalid certificate *and* be blocked by Safe
+// Browsing.  Regression test for bug 869925.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/simple.html"));
+
+  // Setup the bogus identity with an expired cert and SB flagging.
+  PageInfoUI::IdentityInfo identity;
+  identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
+  identity.certificate = net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                                 kExpiredCertificateFile);
+  identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
+  OpenPageInfoBubble(browser());
+
+  SetPageInfoBubbleIdentityInfo(identity);
+
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubble();
+
+  // Verify bubble complains of malware...
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MALWARE_SUMMARY));
+
+  // ...and has a "Certificate (Invalid)" button.
+  const base::string16 invalid_parens = l10n_util::GetStringUTF16(
+      IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
+  EXPECT_EQ(GetCertificateButtonTitle(),
+            l10n_util::GetStringFUTF16(IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT,
+                                       invalid_parens));
 }
 
 namespace {

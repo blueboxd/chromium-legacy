@@ -2130,6 +2130,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordsMigrateLinuxToLoginDBName,
      flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
      FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
+    {"enable-dbus-and-x11-status-icons",
+     flag_descriptions::kEnableDbusAndX11StatusIconsName,
+     flag_descriptions::kEnableDbusAndX11StatusIconsDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kEnableDbusAndX11StatusIcons)},
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,
@@ -2165,6 +2169,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccess)},
+    {"enable-experimental-accessibility-switch-access-text",
+     flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
+     flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilitySwitchAccessText)},
     {"enable-experimental-accessibility-chromevox-language-switching",
      flag_descriptions::
          kExperimentalAccessibilityChromeVoxLanguageSwitchingName,
@@ -3143,6 +3153,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-app-grid-ghost", flag_descriptions::kEnableAppGridGhostName,
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
+
+    {"enable-search-box-selection",
+     flag_descriptions::kEnableSearchBoxSelectionName,
+     flag_descriptions::kEnableSearchBoxSelectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableSearchBoxSelection)},
 #endif  // OS_CHROMEOS
 
     {"enable-accessibility-image-descriptions",

@@ -18,6 +18,7 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/extension_interaction.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
@@ -32,12 +33,6 @@ base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit
     g_worker_thread_dispatcher_instance = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
     DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
-
-ServiceWorkerData* GetServiceWorkerData() {
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
-  return data;
-}
 
 }  // namespace
 
@@ -69,6 +64,13 @@ V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
 // static
 ScriptContext* WorkerThreadDispatcher::GetScriptContext() {
   return GetServiceWorkerData()->context();
+}
+
+// static
+ServiceWorkerData* WorkerThreadDispatcher::GetServiceWorkerData() {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  DCHECK(data);
+  return data;
 }
 
 // static
@@ -157,6 +159,9 @@ void WorkerThreadDispatcher::OnDispatchEvent(
     const base::ListValue& event_args) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK(data);
+  std::unique_ptr<ExtensionInteraction> scoped_extension_interaction;
+  if (params.is_user_gesture)
+    scoped_extension_interaction = ExtensionInteraction::CreateScopeForWorker();
   data->bindings_system()->DispatchEventInContext(
       params.event_name, &event_args, &params.filtering_info, data->context());
   Send(new ExtensionHostMsg_EventAckWorker(data->service_worker_version_id(),

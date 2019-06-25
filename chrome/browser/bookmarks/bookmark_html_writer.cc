@@ -437,8 +437,8 @@ void BookmarkFaviconFetcher::ExtractUrls(const BookmarkNode* node) {
     if (!url.empty())
       bookmark_urls_.push_back(url);
   } else {
-    for (int i = 0; i < node->child_count(); ++i)
-      ExtractUrls(node->GetChild(i));
+    for (const auto& child : node->children())
+      ExtractUrls(child.get());
   }
 }
 

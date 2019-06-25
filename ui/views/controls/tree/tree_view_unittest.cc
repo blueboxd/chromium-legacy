@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/tree/tree_view.h"
 
+#include <numeric>
 #include <string>
 
 #include "base/macros.h"
@@ -123,10 +124,10 @@ TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
                                            const base::string16& title) {
   if (node->GetTitle() == title)
     return node;
-  for (int i = 0; i < node->child_count(); ++i) {
-    TestNode* child = GetNodeByTitleImpl(node->GetChild(i), title);
-    if (child)
-      return child;
+  for (auto& child : node->children()) {
+    TestNode* matching_node = GetNodeByTitleImpl(child.get(), title);
+    if (matching_node)
+      return matching_node;
   }
   return nullptr;
 }
@@ -134,14 +135,14 @@ TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
 std::string TreeViewTest::InternalNodeAsString(
     TreeView::InternalNode* node) {
   std::string result = base::UTF16ToASCII(node->model_node()->GetTitle());
-  if (node->is_expanded() && node->child_count()) {
-    result += " [";
-    for (int i = 0; i < node->child_count(); ++i) {
-      if (i > 0)
-        result += " ";
-      result += InternalNodeAsString(node->GetChild(i));
-    }
-    result += "]";
+  if (node->is_expanded() && !node->children().empty()) {
+    result += std::accumulate(
+                  node->children().cbegin() + 1, node->children().cend(),
+                  " [" + InternalNodeAsString(node->children().front().get()),
+                  [this](const std::string& str, const auto& child) {
+                    return str + " " + InternalNodeAsString(child.get());
+                  }) +
+              "]";
   }
   return result;
 }

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/mojo/public/mojom/base/unguessable_token.mojom.js"></script>
+<script src="file:///gen/third_party/blink/public/mojom/serial/serial.mojom.js"></script>
+<script src="resources/serial-test-utils.js"></script>
+<script>
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await port.open({ buffersize: 64 });
+  return promise_rejects(t, 'InvalidStateError', port.open({ buffersize: 64 }));
+}, 'A SerialPort cannot be opened if it is already open.');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  const firstRequest = port.open({ buffersize: 64 });
+  await promise_rejects(t, 'InvalidStateError', port.open({ buffersize: 64 }));
+  await firstRequest;
+}, 'Simultaneous calls to open() are disallowed.');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await promise_rejects(t, new RangeError(), port.open({ buffersize: -1 }));
+  await promise_rejects(t, new RangeError(), port.open({ buffersize: 0 }));
+}, 'Buffer size must be greater than zero.');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  const buffersize = 1 * 1024 * 1024 * 1024 /* 1 GiB */;
+  return promise_rejects(t, new RangeError(), port.open({ buffersize }));
+}, 'Unreasonably large buffer sizes are rejected.');
+
+</script>

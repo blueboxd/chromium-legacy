@@ -47,25 +47,14 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   // framework does not want. Trampoline it.
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
-  MOCK_METHOD5(CreateTextures,
-               bool(int32_t count,
-                    const gfx::Size& size,
-                    std::vector<uint32_t>* texture_ids,
-                    std::vector<gpu::Mailbox>* texture_mailboxes,
-                    uint32_t texture_target));
-  MOCK_METHOD1(DeleteTexture, void(uint32_t texture_id));
-  MOCK_METHOD0(CreateSyncToken, gpu::SyncToken());
-  MOCK_METHOD1(WaitSyncToken, void(const gpu::SyncToken& sync_token));
   MOCK_METHOD2(SignalSyncToken,
                void(const gpu::SyncToken& sync_token,
                     base::OnceClosure callback));
-  MOCK_METHOD0(ShallowFlushCHROMIUM, void());
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
                VideoEncodeAccelerator::SupportedProfiles());
   MOCK_METHOD0(GetMediaContextProvider,
                scoped_refptr<viz::ContextProviderCommandBuffer>());
-  MOCK_METHOD0(GetMediaContextProviderContextSupport, gpu::ContextSupport*());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -80,7 +69,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     return video_frame_output_format_;
   }
 
-  gpu::gles2::GLES2Interface* ContextGL() override { return nullptr; }
   gpu::SharedImageInterface* SharedImageInterface() override { return sii_; }
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override {
     return nullptr;

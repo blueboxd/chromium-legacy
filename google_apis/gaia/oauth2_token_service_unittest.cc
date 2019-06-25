@@ -16,6 +16,7 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
@@ -770,15 +771,15 @@ TEST_F(OAuth2TokenServiceTest, RequestParametersOrderTest) {
 
   const CoreAccountId account_id0("0");
   const CoreAccountId account_id1("1");
-  OAuth2TokenService::RequestParameters params[] = {
-      OAuth2TokenService::RequestParameters("0", account_id0, set_0),
-      OAuth2TokenService::RequestParameters("0", account_id0, set_1),
-      OAuth2TokenService::RequestParameters("0", account_id1, set_0),
-      OAuth2TokenService::RequestParameters("0", account_id1, set_1),
-      OAuth2TokenService::RequestParameters("1", account_id0, set_0),
-      OAuth2TokenService::RequestParameters("1", account_id0, set_1),
-      OAuth2TokenService::RequestParameters("1", account_id1, set_0),
-      OAuth2TokenService::RequestParameters("1", account_id1, set_1),
+  OAuth2AccessTokenManager::RequestParameters params[] = {
+      OAuth2AccessTokenManager::RequestParameters("0", "0", set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", "0", set_1),
+      OAuth2AccessTokenManager::RequestParameters("0", "1", set_0),
+      OAuth2AccessTokenManager::RequestParameters("0", "1", set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", "0", set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", "0", set_1),
+      OAuth2AccessTokenManager::RequestParameters("1", "1", set_0),
+      OAuth2AccessTokenManager::RequestParameters("1", "1", set_1),
   };
 
   for (size_t i = 0; i < base::size(params); i++) {
@@ -811,11 +812,11 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
-  EXPECT_EQ(1, (int)oauth2_service_->token_cache().size());
+  EXPECT_EQ(1, oauth2_service_->GetTokenCacheCount());
 
   oauth2_service_->ClearCache();
 
-  EXPECT_EQ(0, (int)oauth2_service_->token_cache().size());
+  EXPECT_EQ(0, oauth2_service_->GetTokenCacheCount());
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
       account_id, "refreshToken");
   SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
@@ -824,7 +825,7 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
-  EXPECT_EQ(1, (int)oauth2_service_->token_cache().size());
+  EXPECT_EQ(1, oauth2_service_->GetTokenCacheCount());
 }
 
 TEST_F(OAuth2TokenServiceTest, FixRequestErrorIfPossible) {

@@ -531,29 +531,6 @@ void AddPluginVmStrings(content::WebUIDataSource* html_source,
                           base::size(kLocalizedStrings));
 }
 
-void AddKioskNextShellStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
-      {"kioskNextShellPageTitle", IDS_SETTINGS_KIOSK_NEXT_SHELL_TITLE},
-      {"kioskNextShellPageLabel", IDS_SETTINGS_KIOSK_NEXT_SHELL_LABEL},
-      {"kioskNextShellPageSubtextEnable",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_ENABLE},
-      {"kioskNextShellPageSubtextDisable",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_DISABLE},
-      {"kioskNextShellTurnOn", IDS_SETTINGS_TURN_ON},
-      {"kioskNextShellTurnOff", IDS_SETTINGS_KIOSK_NEXT_SHELL_TURN_OFF},
-      {"kioskNextShellEnabledDialogTitle",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_TITLE},
-      {"kioskNextShellDisabledDialogTitle",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_TITLE},
-      {"kioskNextShellEnabledDialogBody",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_BODY},
-      {"kioskNextShellDisabledDialogBody",
-       IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_BODY},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
-}
-
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"androidAppsPageTitle", arc::IsPlayStoreAvailable()
@@ -3082,7 +3059,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   AddCrostiniStrings(html_source, profile);
   AddPluginVmStrings(html_source, profile);
-  AddKioskNextShellStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);

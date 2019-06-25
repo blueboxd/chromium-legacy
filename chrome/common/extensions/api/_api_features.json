@@ -158,7 +158,7 @@
   },
   "browserAction": {
     "dependencies": ["manifest:browser_action"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   // This API is whitelisted on stable and should not be enabled for a wider
   // audience without resolving security issues raised in API proposal and

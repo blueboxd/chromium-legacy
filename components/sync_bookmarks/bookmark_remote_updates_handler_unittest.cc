@@ -273,20 +273,16 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   // All nodes should have been added to the model.
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(kId0)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(0)->child_count(), Eq(1));
-  EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetChild(0)->GetTitle(),
-              Eq(ASCIIToUTF16(kId1)));
-  ASSERT_THAT(bookmark_bar_node->GetChild(0)->GetChild(0)->child_count(),
-              Eq(1));
-  EXPECT_THAT(
-      bookmark_bar_node->GetChild(0)->GetChild(0)->GetChild(0)->GetTitle(),
-      Eq(ASCIIToUTF16(kId2)));
-  EXPECT_THAT(
-      bookmark_bar_node->GetChild(0)->GetChild(0)->GetChild(0)->child_count(),
-      Eq(0));
+  ASSERT_THAT(bookmark_bar_node->GetChild(0)->children().size(), Eq(1u));
+  const bookmarks::BookmarkNode* grandchild =
+      bookmark_bar_node->GetChild(0)->GetChild(0);
+  EXPECT_THAT(grandchild->GetTitle(), Eq(ASCIIToUTF16(kId1)));
+  ASSERT_THAT(grandchild->children().size(), Eq(1u));
+  EXPECT_THAT(grandchild->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kId2)));
+  EXPECT_THAT(grandchild->GetChild(0)->children().size(), Eq(0u));
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -382,7 +378,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   // All nodes should have been added to the model in the correct order.
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(3));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
   EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(kId0)));
   EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetTitle(),
@@ -422,7 +418,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(5));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(5u));
 
   // Change it to this structure by moving node3 after node1.
   // bookmark_bar
@@ -446,7 +442,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
 
   // Model should have been updated.
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(5));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(5u));
   EXPECT_THAT(bookmark_bar_node->GetChild(2)->GetTitle(),
               Eq(ASCIIToUTF16(ids[3])));
 }
@@ -482,7 +478,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(5));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(5u));
 
   // Change it to this structure by moving node1 after node3.
   // bookmark_bar
@@ -506,7 +502,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
 
   // Model should have been updated.
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(5));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(5u));
   EXPECT_THAT(bookmark_bar_node->GetChild(3)->GetTitle(),
               Eq(ASCIIToUTF16(ids[1])));
 }
@@ -542,7 +538,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(5));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(5u));
 
   // Change it to this structure by moving node4 under node1.
   // bookmark_bar
@@ -566,8 +562,8 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                              /*got_new_encryption_requirements=*/false);
 
   // Model should have been updated.
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(4));
-  ASSERT_THAT(bookmark_bar_node->GetChild(1)->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(4u));
+  ASSERT_THAT(bookmark_bar_node->GetChild(1)->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->GetChild(1)->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(ids[4])));
 }
@@ -810,12 +806,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   // The bookmark has been added and tracked.
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   ASSERT_THAT(tracker.GetEntityForSyncId(kId), NotNull());
 
   // Remove the bookmark from the local bookmark model.
   bookmark_model->Remove(bookmark_bar_node->GetChild(0));
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(0));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
   tracker.MarkDeleted(/*sync_id=*/kId);
@@ -898,11 +894,11 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(tracker()->GetEntityForSyncId(kId)->IsUnsynced(), Eq(false));
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   // Remove the bookmark from the local bookmark model.
   bookmark_model()->Remove(bookmark_bar_node->GetChild(0));
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(0));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
   tracker()->MarkDeleted(/*sync_id=*/kId);
@@ -929,7 +925,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   // removing local entity since both changes.
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId), IsNull());
   // Make sure the bookmark hasn't been resurrected.
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(0));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
@@ -983,7 +979,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId)->IsUnsynced(), Eq(true));
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
@@ -1013,11 +1009,11 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(tracker()->GetEntityForSyncId(kId)->IsUnsynced(), Eq(false));
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   // Remove the bookmark from the local bookmark model.
   bookmark_model()->Remove(bookmark_bar_node->GetChild(0));
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(0));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(0u));
 
   // Mark the entity as deleted locally.
   tracker()->MarkDeleted(/*sync_id=*/kId);
@@ -1047,7 +1043,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
               Eq(false));
 
   // The bookmark should have been resurrected.
-  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
 
   histogram_tester.ExpectBucketCount(
       "Sync.ResolveConflict",
@@ -1152,7 +1148,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId)->IsUnsynced(), Eq(false));
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
-  ASSERT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(kNewRemoteTitle)));
 

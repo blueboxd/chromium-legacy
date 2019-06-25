@@ -542,18 +542,14 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   EXPECT_FALSE(parent->NeedsStyleRecalc() || parent->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsStyleRecalc() || element->ChildNeedsStyleRecalc());
 
-  EXPECT_FALSE(parent->GetLayoutObject()->NeedsLayout());
+  EXPECT_TRUE(parent->GetLayoutObject()->NeedsLayout());
   EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
 
   ResetDeadlineForTesting(*budget,
                           GetDocument().View()->CurrentLifecycleData());
-  budget->DidPerformPhase(DisplayLockBudget::Phase::kStyle);
   EXPECT_TRUE(
       budget->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout,
                                  GetDocument().View()->CurrentLifecycleData()));
-
-  EXPECT_TRUE(parent->GetLayoutObject()->NeedsLayout());
-  EXPECT_TRUE(element->GetLayoutObject()->NeedsLayout());
 
   GetDocument().View()->SetInLifecycleUpdateForTest(false);
 }

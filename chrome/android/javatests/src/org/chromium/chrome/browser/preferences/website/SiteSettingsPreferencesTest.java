@@ -466,7 +466,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SiteSettingsPreferences siteSettings =
-                    (SiteSettingsPreferences) preferenceActivity.getMainFragment();
+                    (SiteSettingsPreferences) preferenceActivity.getMainFragmentCompat();
 
             SiteSettingsPreference allSites = (SiteSettingsPreference) siteSettings.findPreference(
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));

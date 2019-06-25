@@ -535,11 +535,9 @@ void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
   all_nodes->Append(std::move(root_node));
 
   const bookmarks::BookmarkNode* model_root_node = bookmark_model_->root_node();
-  for (int i = 0; i < model_root_node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* model_permanent_node =
-        model_root_node->GetChild(i);
-    AppendNodeAndChildrenForDebugging(model_permanent_node, i, all_nodes.get());
-  }
+  int i = 0;
+  for (const auto& child : model_root_node->children())
+    AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes.get());
 
   std::move(callback).Run(syncer::BOOKMARKS, std::move(all_nodes));
 }
@@ -605,9 +603,9 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data_dictionary->SetString("modelType", "Bookmarks");
   all_nodes->Append(std::move(data_dictionary));
 
-  for (int i = 0; i < node->child_count(); ++i) {
-    AppendNodeAndChildrenForDebugging(node->GetChild(i), i, all_nodes);
-  }
+  int i = 0;
+  for (const auto& child : node->children())
+    AppendNodeAndChildrenForDebugging(child.get(), i++, all_nodes);
 }
 
 void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(

@@ -16,6 +16,7 @@ AX_EXPORT extern const char kEnableExperimentalAccessibilityAutoclick[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilityLabelsDebugging[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilityLanguageDetection[];
 AX_EXPORT extern const char kEnableExperimentalAccessibilitySwitchAccess[];
+AX_EXPORT extern const char kEnableExperimentalAccessibilitySwitchAccessText[];
 AX_EXPORT extern const char
     kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[];
 AX_EXPORT extern const char

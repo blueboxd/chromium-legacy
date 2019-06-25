@@ -233,10 +233,10 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
   else
     base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
 
-  const CloseTabSource source =
-      (event.type() == ui::ET_MOUSE_RELEASED &&
-       !(event.flags() & ui::EF_FROM_TOUCH)) ? CLOSE_TAB_FROM_MOUSE
-                                             : CLOSE_TAB_FROM_TOUCH;
+  const CloseTabSource source = (event.type() == ui::ET_MOUSE_RELEASED &&
+                                 !(event.flags() & ui::EF_FROM_TOUCH))
+                                    ? CLOSE_TAB_FROM_MOUSE
+                                    : CLOSE_TAB_FROM_TOUCH;
   DCHECK_EQ(close_button_, sender);
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
@@ -524,9 +524,28 @@ void Tab::OnMouseCaptureLost() {
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
   tab_style_->SetHoverLocation(event.location());
   controller_->OnMouseEventInTab(this, event);
+#if defined(OS_LINUX)
+  MaybeUpdateHoverStatus(event);
+#endif
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
+  MaybeUpdateHoverStatus(event);
+}
+
+void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
+#if defined(OS_LINUX)
+  // Move the hit test area for hovering up so that it is not overlapped by tab
+  // hover cards when they are shown. Also see the adjustment made in
+  // abHoverCardBubbleView::TabHoverCardBubbleView(); the two adjustments should
+  // add to a net six pixels.
+  // TODO(crbug/978134): Once Linux/CrOS widget transparency is solved, remove
+  // this case.
+  constexpr int kHoverCardOverlap = 4;
+  if (event.location().y() >= height() - kHoverCardOverlap)
+    return;
+#endif
+
   mouse_hovered_ = true;
   tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();

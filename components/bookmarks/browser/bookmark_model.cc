@@ -238,17 +238,16 @@ void BookmarkModel::RemoveAllUserBookmarks() {
   // its immediate children. For removing all non permanent nodes just remove
   // all children of non-root permanent nodes.
   {
-    for (int i = 0; i < root_->child_count(); ++i) {
-      const BookmarkNode* permanent_node = root_->GetChild(i);
-
-      if (!client_->CanBeEditedByUser(permanent_node))
+    for (const auto& permanent_node : root_->children()) {
+      if (!client_->CanBeEditedByUser(permanent_node.get()))
         continue;
 
-      for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
+      for (size_t j = permanent_node->children().size(); j > 0; --j) {
         std::unique_ptr<BookmarkNode> node = url_index_->Remove(
-            AsMutable(permanent_node->GetChild(j)), &removed_urls);
+            permanent_node->children()[j - 1].get(), &removed_urls);
         RemoveNode(node.get());
-        removed_node_data_list.push_back({permanent_node, j, std::move(node)});
+        removed_node_data_list.push_back(
+            {permanent_node.get(), j - 1, std::move(node)});
       }
     }
   }
@@ -618,7 +617,7 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   DCHECK(client_->CanBeEditedByUser(parent));
 
   if (!parent || !parent->is_folder() || is_root_node(parent) ||
-      parent->child_count() <= 1) {
+      parent->children().size() <= 1) {
     return;
   }
 
@@ -646,7 +645,7 @@ void BookmarkModel::ReorderChildren(
   DCHECK(client_->CanBeEditedByUser(parent));
 
   // Ensure that all children in |parent| are in |ordered_nodes|.
-  DCHECK_EQ(static_cast<size_t>(parent->child_count()), ordered_nodes.size());
+  DCHECK_EQ(parent->children().size(), ordered_nodes.size());
   for (const BookmarkNode* node : ordered_nodes)
     DCHECK_EQ(parent, node->parent());
 
@@ -761,8 +760,8 @@ void BookmarkModel::RemoveNode(BookmarkNode* node) {
   CancelPendingFaviconLoadRequests(node);
 
   // Recurse through children.
-  for (int i = node->child_count() - 1; i >= 0; --i)
-    RemoveNode(node->GetChild(i));
+  for (size_t i = node->children().size(); i > 0; --i)
+    RemoveNode(node->children()[i - 1].get());
 }
 
 void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
@@ -831,8 +830,8 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
 void BookmarkModel::AddNodeToIndexRecursive(BookmarkNode* node) {
   if (node->is_url())
     index_->Add(node);
-  for (int i = 0; i < node->child_count(); ++i)
-    AddNodeToIndexRecursive(node->GetChild(i));
+  for (const auto& child : node->children())
+    AddNodeToIndexRecursive(child.get());
 }
 
 bool BookmarkModel::IsValidIndex(const BookmarkNode* parent,

@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -1300,7 +1301,7 @@ id<GREYMatcher> SearchIconButton() {
 }
 
 // Verifies that there is |count| children on the bookmark folder with |name|.
-+ (void)assertChildCount:(int)count ofFolderWithName:(NSString*)name {
++ (void)assertChildCount:(size_t)count ofFolderWithName:(NSString*)name {
   base::string16 name16(base::SysNSStringToUTF16(name));
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(
@@ -1318,10 +1319,10 @@ id<GREYMatcher> SearchIconButton() {
     }
   }
   GREYAssert(folder, @"No folder named %@", name);
-  GREYAssertEqual(
-      folder->child_count(), count,
-      @"Unexpected number of children in folder '%@': %d instead of %d", name,
-      folder->child_count(), count);
+  GREYAssertEqual(folder->children().size(), count,
+                  @"Unexpected number of children in folder '%@': %" PRIuS
+                   " instead of %" PRIuS,
+                  name, folder->children().size(), count);
 }
 
 + (void)verifyContextMenuForSingleURL {

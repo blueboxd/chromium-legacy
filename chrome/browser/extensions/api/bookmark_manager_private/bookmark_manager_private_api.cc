@@ -111,9 +111,8 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
     element.url.reset(new std::string(node.url().spec()));
 
   element.title = base::UTF16ToUTF8(node.GetTitle());
-  for (int i = 0; i < node.child_count(); ++i) {
-    element.children.push_back(
-        CreateNodeDataElementFromBookmarkNode(*node.GetChild(i)));
+  for (const auto& child : node.children()) {
+    element.children.push_back(CreateNodeDataElementFromBookmarkNode(*child));
   }
 
   return element;

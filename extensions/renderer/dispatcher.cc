@@ -64,6 +64,7 @@
 #include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extension_interaction.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
@@ -105,7 +106,6 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_script_controller.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -115,7 +115,6 @@
 #include "v8/include/v8.h"
 
 using blink::WebDocument;
-using blink::WebScopedUserGesture;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebView;
@@ -968,7 +967,7 @@ void Dispatcher::OnDispatchEvent(
   content::RenderFrame* background_frame =
       ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
 
-  std::unique_ptr<WebScopedUserGesture> web_user_gesture;
+  std::unique_ptr<ExtensionInteraction> web_user_gesture;
   // Synthesize a user gesture if this was in response to user action; this is
   // necessary if the gesture was e.g. by clicking on the extension toolbar
   // icon, context menu entry, etc.
@@ -983,8 +982,8 @@ void Dispatcher::OnDispatchEvent(
         ScriptContextSet::GetMainWorldContextForFrame(background_frame);
     if (background_context && bindings_system_->HasEventListenerInContext(
                                   params.event_name, background_context)) {
-      web_user_gesture.reset(
-          new WebScopedUserGesture(background_frame->GetWebFrame()));
+      web_user_gesture = ExtensionInteraction::CreateScopeForMainThread(
+          background_frame->GetWebFrame());
     }
   }
 

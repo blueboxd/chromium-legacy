@@ -219,7 +219,7 @@ TEST_F(BookmarkMenuDelegateTest, CloseOnRemove) {
   // Destroy the current delegate so that it doesn't have any references to
   // deleted nodes.
   DestroyDelegate();
-  while (model_->other_node()->child_count() > 1)
+  while (model_->other_node()->children().size() > 1)
     model_->Remove(model_->other_node()->GetChild(1));
 
   NewDelegate();

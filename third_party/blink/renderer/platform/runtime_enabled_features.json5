@@ -1323,10 +1323,6 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
-    {
-      name: "RTCRtpSenderParameters",
-      status: "stable",
-    },
     // Enables the use of the RTCSctpTransport object.
     {
       name: "RTCSctpTransport",

@@ -137,13 +137,10 @@ void BookmarkModelObserverImpl::BookmarkNodeRemoved(
 void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(
     bookmarks::BookmarkModel* model) {
   const bookmarks::BookmarkNode* root_node = model->root_node();
-  for (int i = 0; i < root_node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* permanent_node = root_node->GetChild(i);
-    for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-      if (!model->client()->CanSyncNode(permanent_node->GetChild(j))) {
-        continue;
-      }
-      ProcessDelete(permanent_node, permanent_node->GetChild(j));
+  for (const auto& permanent_node : root_node->children()) {
+    for (const auto& child : permanent_node->children()) {
+      if (model->client()->CanSyncNode(child.get()))
+        ProcessDelete(permanent_node.get(), child.get());
     }
   }
   nudge_for_commit_closure_.Run();
@@ -249,12 +246,9 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
   // 4. Sort the middle, using Between (e.g. recursive implementation).
 
   syncer::UniquePosition position;
-  syncer::UniquePosition previous_position;
-  for (int i = 0; i < node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* child = node->GetChild(i);
-
+  for (const auto& child : node->children()) {
     const SyncedBookmarkTracker::Entity* entity =
-        bookmark_tracker_->GetEntityForBookmarkNode(child);
+        bookmark_tracker_->GetEntityForBookmarkNode(child.get());
     DCHECK(entity);
 
     const std::string& sync_id = entity->metadata()->server_id();
@@ -262,13 +256,9 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
         bookmark_tracker_->model_type_state().cache_guid(), sync_id);
     const base::Time modification_time = base::Time::Now();
 
-    if (i == 0) {
-      position = syncer::UniquePosition::InitialPosition(suffix);
-    } else {
-      position = syncer::UniquePosition::After(previous_position, suffix);
-    }
-
-    previous_position = position;
+    position = (child == node->children().front())
+                   ? syncer::UniquePosition::InitialPosition(suffix)
+                   : syncer::UniquePosition::After(position, suffix);
 
     const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
         node, model, /*force_favicon_load=*/true);
@@ -287,7 +277,7 @@ syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
     const std::string& sync_id) {
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
       bookmark_tracker_->model_type_state().cache_guid(), sync_id);
-  DCHECK_NE(0, parent.child_count());
+  DCHECK(!parent.children().empty());
   const SyncedBookmarkTracker::Entity* predecessor_entity = nullptr;
   const SyncedBookmarkTracker::Entity* successor_entity = nullptr;
 
@@ -347,10 +337,8 @@ void BookmarkModelObserverImpl::ProcessDelete(
     const bookmarks::BookmarkNode* parent,
     const bookmarks::BookmarkNode* node) {
   // If not a leaf node, process all children first.
-  for (int i = 0; i < node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* child = node->GetChild(i);
-    ProcessDelete(node, child);
-  }
+  for (const auto& child : node->children())
+    ProcessDelete(node, child.get());
   // Process the current node.
   const SyncedBookmarkTracker::Entity* entity =
       bookmark_tracker_->GetEntityForBookmarkNode(node);

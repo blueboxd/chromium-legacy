@@ -12,6 +12,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+class GURL;
 struct WebApplicationInfo;
 
 namespace web_app {
@@ -53,6 +54,11 @@ class TestDataRetriever : public WebAppDataRetriever {
   void SetDestructionCallback(base::OnceClosure callback);
 
   WebApplicationInfo& web_app_info() { return *web_app_info_; }
+
+  // Builds minimal data for install to succeed. Data includes: empty renderer
+  // info, manifest with |url| and |scope|, installability checked as |true|,
+  // empty icons.
+  void BuildDefaultDataToRetrieve(const GURL& url, const GURL& scope);
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;

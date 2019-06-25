@@ -81,9 +81,9 @@ TEST_F(TreeNodeModelTest, AddNode) {
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
-  EXPECT_EQ(2, root->child_count());
-  EXPECT_EQ(2, child1->child_count());
-  EXPECT_EQ(0, child2->child_count());
+  EXPECT_EQ(2u, root->children().size());
+  EXPECT_EQ(2u, child1->children().size());
+  EXPECT_EQ(0u, child2->children().size());
 }
 
 // Verifies if the model is properly removing a node from the tree
@@ -129,14 +129,14 @@ TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   for (size_t i = 0; i < 3; ++i)
     foo->Add(std::make_unique<TestNode>(), i);  // bar[n]
 
-  EXPECT_EQ(3, root.child_count());
-  EXPECT_EQ(1, child1->child_count());
-  EXPECT_EQ(3, foo->child_count());
+  EXPECT_EQ(3u, root.children().size());
+  EXPECT_EQ(1u, child1->children().size());
+  EXPECT_EQ(3u, foo->children().size());
 
   // Now remove the child nodes from root.
   root.DeleteAll();
 
-  EXPECT_EQ(0, root.child_count());
+  EXPECT_EQ(0u, root.children().size());
   EXPECT_TRUE(root.children().empty());
 }
 
@@ -259,22 +259,22 @@ TEST_F(TreeNodeModelTest, SetTitle) {
 
 TEST_F(TreeNodeModelTest, BasicOperations) {
   TestNode root;
-  EXPECT_EQ(0, root.child_count());
+  EXPECT_EQ(0u, root.children().size());
 
   TestNode* child1 = root.Add(std::make_unique<TestNode>());
-  EXPECT_EQ(1, root.child_count());
+  EXPECT_EQ(1u, root.children().size());
   EXPECT_EQ(&root, child1->parent());
 
   TestNode* child2 = root.Add(std::make_unique<TestNode>());
-  EXPECT_EQ(2, root.child_count());
+  EXPECT_EQ(2u, root.children().size());
   EXPECT_EQ(child1->parent(), child2->parent());
 
   std::unique_ptr<TestNode> c2 = root.Remove(1);
-  EXPECT_EQ(1, root.child_count());
+  EXPECT_EQ(1u, root.children().size());
   EXPECT_EQ(NULL, child2->parent());
 
   std::unique_ptr<TestNode> c1 = root.Remove(0);
-  EXPECT_EQ(0, root.child_count());
+  EXPECT_EQ(0u, root.children().size());
 }
 
 TEST_F(TreeNodeModelTest, IsRoot) {

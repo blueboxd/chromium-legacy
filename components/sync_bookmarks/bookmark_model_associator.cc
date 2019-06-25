@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -127,13 +128,10 @@ class ScopedAssociationUpdater {
 
 BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
-  for (int i = 0; i < parent_node_->child_count(); ++i) {
-    const BookmarkNode* child_node = parent_node_->GetChild(i);
-
+  for (const auto& child_node : parent_node_->children()) {
     std::string title = base::UTF16ToUTF8(child_node->GetTitle());
     ConvertTitleToSyncInternalFormat(title, &title);
-
-    child_nodes_.insert(std::make_pair(title, child_node));
+    child_nodes_.insert(std::make_pair(title, child_node.get()));
   }
 }
 
@@ -541,17 +539,12 @@ void BookmarkModelAssociator::SetNumItemsBeforeAssociation(
 int BookmarkModelAssociator::GetTotalBookmarkCountAndRecordDuplicates(
     const bookmarks::BookmarkNode* node,
     Context* context) const {
-  int count = 1;  // Start with one to include the node itself.
-
-  if (!node->is_root()) {
+  if (!node->is_root())
     context->UpdateDuplicateCount(node->GetTitle(), node->url());
-  }
 
-  for (int i = 0; i < node->child_count(); ++i) {
-    count +=
-        GetTotalBookmarkCountAndRecordDuplicates(node->GetChild(i), context);
-  }
-
+  int count = 1;  // Start with one to include the node itself.
+  for (const auto& child : node->children())
+    count += GetTotalBookmarkCountAndRecordDuplicates(child.get(), context);
   return count;
 }
 
@@ -826,11 +819,11 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
 
     // Enumerate folder children in reverse order to make it easier to remove
     // bookmarks matching entries in the delete journal.
-    for (int child_index = parent->child_count() - 1;
-         child_index >= 0 && num_journals_unmatched > 0; --child_index) {
-      const BookmarkNode* child = parent->GetChild(child_index);
+    for (const auto& child : base::Reversed(parent->children())) {
+      if (num_journals_unmatched == 0)
+        break;
       if (child->is_folder())
-        dfs_stack.push(child);
+        dfs_stack.push(child.get());
 
       if (journaled_external_ids.find(child->id()) ==
           journaled_external_ids.end()) {
@@ -848,16 +841,16 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
             bk_delete_journals[journal_index];
         if (child->id() == delete_entry.external_id &&
             BookmarkNodeFinder::NodeMatches(
-                child, GURL(delete_entry.specifics.bookmark().url()),
+                child.get(), GURL(delete_entry.specifics.bookmark().url()),
                 delete_entry.specifics.bookmark().title(),
                 delete_entry.is_folder)) {
           if (child->is_folder()) {
             // Remember matched folder without removing and delete only empty
             // ones later.
             folders_matched.push_back(
-                FolderInfo(child, parent, delete_entry.id));
+                FolderInfo(child.get(), parent, delete_entry.id));
           } else {
-            bookmark_model_->Remove(child);
+            bookmark_model_->Remove(child.get());
             context->IncrementLocalItemsDeleted();
           }
           // Move unmatched journal here and decrement counter.
@@ -875,7 +868,7 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
 
   // Remove empty folders from bottom to top.
   for (auto it = folders_matched.rbegin(); it != folders_matched.rend(); ++it) {
-    if (it->folder->child_count() == 0) {
+    if (it->folder->children().empty()) {
       bookmark_model_->Remove(it->folder);
       context->IncrementLocalItemsDeleted();
     } else {

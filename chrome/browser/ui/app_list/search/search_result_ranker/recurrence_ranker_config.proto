@@ -28,14 +28,14 @@ message RecurrenceRankerConfigProto {
   message DefaultPredictorConfig {}
 
   // Config for a frecency predictor.
-  message ZeroStateFrecencyPredictorConfig {
+  message FrecencyPredictorConfig {
     // The frecency parameter used to control the frequency-recency tradeoff
     // that determines when targets are removed. Must be in [0.5, 1.0], with 0.5
     // meaning only-recency and 1.0 meaning only-frequency.
     required float decay_coeff = 1;
   }
 
-  message ZeroStateHourBinPredictorConfig {
+  message HourBinPredictorConfig {
     // The decay coeffficient number that control the decay rate. The decay is
     // once a week.
     required float weekly_decay_coeff = 1;
@@ -45,8 +45,8 @@ message RecurrenceRankerConfigProto {
   // The choice of which kind of predictor to use, and its configuration.
   oneof predictor_config {
     FakePredictorConfig fake_predictor = 10001;
-    ZeroStateFrecencyPredictorConfig zero_state_frecency_predictor = 10002;
+    FrecencyPredictorConfig frecency_predictor = 10002;
     DefaultPredictorConfig default_predictor = 10003;
-    ZeroStateHourBinPredictorConfig zero_state_hour_bin_predictor = 10004;
+    HourBinPredictorConfig hour_bin_predictor = 10004;
   }
 }

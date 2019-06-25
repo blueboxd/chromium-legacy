@@ -357,11 +357,8 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model,
     const BookmarkNode* node) {
   api::bookmarks::OnChildrenReordered::ReorderInfo reorder_info;
-  int childCount = node->child_count();
-  for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* child = node->GetChild(i);
+  for (const auto& child : node->children())
     reorder_info.child_ids.push_back(base::NumberToString(child->id()));
-  }
 
   DispatchEvent(events::BOOKMARKS_ON_CHILDREN_REORDERED,
                 api::bookmarks::OnChildrenReordered::kEventName,
@@ -458,11 +455,9 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
     return false;
 
   std::vector<BookmarkTreeNode> nodes;
-  int child_count = node->child_count();
-  for (int i = 0; i < child_count; ++i) {
-    const BookmarkNode* child = node->GetChild(i);
-    bookmark_api_helpers::AddNode(GetManagedBookmarkService(), child, &nodes,
-                                  false);
+  for (const auto& child : node->children()) {
+    bookmark_api_helpers::AddNode(GetManagedBookmarkService(), child.get(),
+                                  &nodes, false);
   }
 
   results_ = api::bookmarks::GetChildren::Results::Create(nodes);

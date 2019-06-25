@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <numeric>
 #include <utility>
 #include <vector>
 
@@ -318,11 +319,10 @@ int64_t CookieTreeNode::InclusiveSize() const {
 }
 
 int CookieTreeNode::NumberOfCookies() const {
-  int number_of_cookies = 0;
-  for (int i = 0; i < this->child_count(); ++i) {
-    number_of_cookies += this->GetChild(i)->NumberOfCookies();
-  }
-  return number_of_cookies;
+  return std::accumulate(children().cbegin(), children().cend(), 0,
+                         [](int total, const auto& child) {
+                           return total + child->NumberOfCookies();
+                         });
 }
 
 void CookieTreeNode::AddChildSortedByTitle(
@@ -894,11 +894,10 @@ class CookieTreeCollectionNode : public CookieTreeNode {
   ~CookieTreeCollectionNode() override {}
 
   int64_t InclusiveSize() const final {
-    int64_t total_size = 0;
-    for (int i = 0; i < this->child_count(); ++i) {
-      total_size += this->GetChild(i)->InclusiveSize();
-    }
-    return total_size;
+    return std::accumulate(children().cbegin(), children().cend(), int64_t{0},
+                           [](int64_t total, const auto& child) {
+                             return total + child->InclusiveSize();
+                           });
   }
 
  private:
@@ -1331,11 +1330,10 @@ bool CookieTreeHostNode::CanCreateContentException() const {
 }
 
 int64_t CookieTreeHostNode::InclusiveSize() const {
-  int64_t total_size = 0;
-  for (int i = 0; i < this->child_count(); ++i) {
-    total_size += this->GetChild(i)->InclusiveSize();
-  }
-  return total_size;
+  return std::accumulate(children().cbegin(), children().cend(), int64_t{0},
+                         [](int64_t total, const auto& child) {
+                           return total + child->InclusiveSize();
+                         });
 }
 
 ///////////////////////////////////////////////////////////////////////////////

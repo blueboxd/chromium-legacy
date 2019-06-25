@@ -474,8 +474,7 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
   std::string usage_string = "";
   std::string cookie_string = "";
-  for (int i = 0; i < root->child_count(); ++i) {
-    const CookieTreeNode* site = root->GetChild(i);
+  for (const auto& site : root->children()) {
     std::string title = base::UTF16ToUTF8(site->GetTitle());
     if (title != usage_host_)
       continue;
@@ -602,11 +601,9 @@ void SiteSettingsHandler::HandleClearUsage(const base::ListValue* args) {
   if (!url.is_valid())
     return;
   AllowJavascript();
-  CookieTreeNode* parent = cookies_tree_model_->GetRoot();
-  for (int i = 0; i < parent->child_count(); ++i) {
-    CookieTreeNode* node = parent->GetChild(i);
+  for (const auto& node : cookies_tree_model_->GetRoot()->children()) {
     if (origin == node->GetDetailedInfo().origin.GetURL().spec()) {
-      cookies_tree_model_->DeleteCookieNode(node);
+      cookies_tree_model_->DeleteCookieNode(node.get());
       return;
     }
   }
@@ -1413,9 +1410,7 @@ void SiteSettingsHandler::GetOriginStorage(
     std::map<std::string, int64_t>* origin_size_map) {
   CHECK(cookies_tree_model_.get());
 
-  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
-  for (int i = 0; i < root->child_count(); ++i) {
-    const CookieTreeNode* site = root->GetChild(i);
+  for (const auto& site : cookies_tree_model_->GetRoot()->children()) {
     int64_t size = site->InclusiveSize();
     if (size == 0)
       continue;
@@ -1429,9 +1424,7 @@ void SiteSettingsHandler::GetOriginCookies(
     std::map<std::string, int>* origin_cookie_map) {
   CHECK(cookies_tree_model_.get());
   // Get sites that don't have data but have cookies.
-  const CookieTreeNode* root = cookies_tree_model_->GetRoot();
-  for (int i = 0; i < root->child_count(); ++i) {
-    const CookieTreeNode* site = root->GetChild(i);
+  for (const auto& site : cookies_tree_model_->GetRoot()->children()) {
     GURL url = site->GetDetailedInfo().origin.GetURL();
     (*origin_cookie_map)[url.host()] = site->NumberOfCookies();
     CreateOrAppendSiteGroupEntry(all_sites_map, url,
@@ -1450,18 +1443,16 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
 
   // Find all the nodes that contain the given etld+1.
   std::vector<CookieTreeNode*> nodes_to_delete;
-  for (int i = 0; i < parent->child_count(); ++i) {
-    CookieTreeNode* node = parent->GetChild(i);
+  for (const auto& node : parent->children()) {
     std::string cookie_node_etld_plus1 =
         net::registry_controlled_domains::GetDomainAndRegistry(
             base::UTF16ToUTF8(node->GetTitle()),
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     if (etld_plus1_string == cookie_node_etld_plus1)
-      nodes_to_delete.push_back(node);
+      nodes_to_delete.push_back(node.get());
   }
-  for (auto* node : nodes_to_delete) {
+  for (auto* node : nodes_to_delete)
     cookies_tree_model_->DeleteCookieNode(node);
-  }
 
   LogAllSitesAction(AllSitesAction::kClearData);
 }

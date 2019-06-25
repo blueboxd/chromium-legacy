@@ -12,16 +12,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
@@ -43,19 +42,6 @@
 namespace {
 
 constexpr base::TimeDelta kPopupEventTimeout = base::TimeDelta::FromSeconds(5);
-
-// Observer for NOTIFICATION_FULLSCREEN_CHANGED notifications.
-class FullscreenNotificationObserver
-    : public content::WindowedNotificationObserver {
- public:
-  FullscreenNotificationObserver()
-      : WindowedNotificationObserver(
-            chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-            content::NotificationService::AllSources()) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FullscreenNotificationObserver);
-};
 
 }  // namespace
 
@@ -120,7 +106,7 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   bool IsPopupCreated() { return GetFullscreenControlHost()->IsPopupCreated(); }
 
   void EnterActiveTabFullscreen() {
-    FullscreenNotificationObserver fullscreen_observer;
+    FullscreenNotificationObserver fullscreen_observer(browser());
     content::WebContentsDelegate* delegate =
         static_cast<content::WebContentsDelegate*>(browser());
     delegate->EnterFullscreenModeForTab(GetActiveWebContents(),

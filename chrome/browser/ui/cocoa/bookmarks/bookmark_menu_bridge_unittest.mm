@@ -276,9 +276,9 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
   EXPECT_TRUE(MenuItemForNode(bridge_.get(), folder->GetChild(1)));
 
   const BookmarkNode* removed_node = folder->GetChild(0);
-  EXPECT_EQ(2, folder->child_count());
+  EXPECT_EQ(2u, folder->children().size());
   model->Remove(folder->GetChild(0));
-  EXPECT_EQ(1, folder->child_count());
+  EXPECT_EQ(1u, folder->children().size());
 
   EXPECT_FALSE(menu_is_valid());
   UpdateRootMenu();

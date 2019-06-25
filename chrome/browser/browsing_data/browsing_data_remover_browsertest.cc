@@ -225,18 +225,14 @@ class CookiesTreeObserver : public CookiesTreeModel::Observer {
 // Returns the sum of the number of datatypes per host.
 int GetCookiesTreeModelCount(const CookieTreeNode* root) {
   int count = 0;
-  for (int i = 0; i < root->child_count(); i++) {
-    const CookieTreeNode* node = root->GetChild(i);
-    EXPECT_GE(node->child_count(), 1);
-    for (int j = 0; j < node->child_count(); j++) {
-      const CookieTreeNode* child = node->GetChild(j);
-      // Quota nodes are not included in the UI due to crbug.com/642955.
-      if (child->GetDetailedInfo().node_type ==
-          CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
-        continue;
-      }
-      count++;
-    }
+  for (const auto& node : root->children()) {
+    EXPECT_GE(node->children().size(), 1u);
+    count += std::count_if(node->children().cbegin(), node->children().cend(),
+                           [](const auto& child) {
+                             // TODO(crbug.com/642955): Include quota nodes.
+                             return child->GetDetailedInfo().node_type !=
+                                    CookieTreeNode::DetailedInfo::TYPE_QUOTA;
+                           });
   }
   return count;
 }
@@ -246,18 +242,13 @@ int GetCookiesTreeModelCount(const CookieTreeNode* root) {
 std::string GetCookiesTreeModelInfo(const CookieTreeNode* root) {
   std::stringstream info;
   info << "CookieTreeModel: " << std::endl;
-  for (int i = 0; i < root->child_count(); i++) {
-    const CookieTreeNode* node = root->GetChild(i);
+  for (const auto& node : root->children()) {
     info << node->GetTitle() << std::endl;
-    for (int j = 0; j < node->child_count(); j++) {
-      const CookieTreeNode* child = node->GetChild(j);
+    for (const auto& child : node->children()) {
       // Quota nodes are not included in the UI due to crbug.com/642955.
-      if (child->GetDetailedInfo().node_type ==
-          CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
-        continue;
-      }
-      info << "  " << child->GetTitle() << " "
-           << child->GetDetailedInfo().node_type << std::endl;
+      const auto node_type = child->GetDetailedInfo().node_type;
+      if (node_type != CookieTreeNode::DetailedInfo::TYPE_QUOTA)
+        info << "  " << child->GetTitle() << " " << node_type << std::endl;
     }
   }
   return info.str();

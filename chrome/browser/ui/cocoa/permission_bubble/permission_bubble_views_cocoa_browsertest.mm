@@ -48,21 +48,28 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, HasLocationBarByDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
-                       TabFullscreenHasLocationBar) {
-  FullscreenNotificationObserver fullscreen_observer;
+                       TabFullscreenHasNoLocationBar) {
   ShowBubble(browser());
   EXPECT_TRUE(HasVisibleLocationBarForBrowser(browser()));
 
   FullscreenController* controller =
       browser()->exclusive_access_manager()->fullscreen_controller();
-  controller->EnterFullscreenModeForTab(
-      browser()->tab_strip_model()->GetActiveWebContents(), GURL());
-  fullscreen_observer.Wait();
+  {
+    FullscreenNotificationObserver fullscreen_observer(browser());
+    controller->EnterFullscreenModeForTab(
+        browser()->tab_strip_model()->GetActiveWebContents(), GURL());
+    fullscreen_observer.Wait();
+  }
+  EXPECT_TRUE(controller->IsTabFullscreen());
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(browser()));
 
-  controller->ExitFullscreenModeForTab(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  fullscreen_observer.Wait();
+  {
+    FullscreenNotificationObserver fullscreen_observer(browser());
+    controller->ExitFullscreenModeForTab(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    fullscreen_observer.Wait();
+  }
+  EXPECT_FALSE(controller->IsTabFullscreen());
   EXPECT_TRUE(HasVisibleLocationBarForBrowser(browser()));
 }
 

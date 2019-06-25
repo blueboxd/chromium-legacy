@@ -28,6 +28,7 @@
 #include "extensions/renderer/content_setting.h"
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
 #include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extension_interaction.h"
 #include "extensions/renderer/extension_js_runner.h"
 #include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/i18n_hooks_delegate.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 
@@ -852,8 +852,7 @@ void NativeExtensionBindingsSystem::SendRequest(
 bool NativeExtensionBindingsSystem::GetUserActivationState(
     v8::Local<v8::Context> context) {
   ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
-  return blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe(
-      script_context->web_frame());
+  return ExtensionInteraction::HasActiveInteraction(script_context);
 }
 
 void NativeExtensionBindingsSystem::OnEventListenerChanged(

@@ -766,6 +766,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-search-box-selection",
+    "owners": [ "ginko", "newcomer" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-app-list-search-autocomplete",
     "owners": [ "newcomer" ],
     "expiry_milestone": 75
@@ -1073,6 +1078,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-experimental-accessibility-switch-access-text",
+    "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-experimental-accessibility-autoclick",
     "owners": [ "katie", "dmazzoni", "dtseng" ],
     "expiry_milestone": 78
@@ -1194,6 +1204,11 @@
     "name": "identity-disc",
     "owners": ["//chrome/android/java/src/org/chromium/chrome/browser/toolbar/OWNERS"],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-dbus-and-x11-status-icons",
+    "owners": [ "thestig", "thomasanderson" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-implicit-root-scroller",

@@ -35,8 +35,7 @@
     <settings-toggle-button id="enableStylusToolsToggle"
         class="continuation"
         pref="{{prefs.settings.enable_stylus_tools}}"
-        label="$i18n{stylusEnableStylusTools}"
-        hidden$="[[prefs.ash.kiosk_next_shell.enabled.value]]">
+        label="$i18n{stylusEnableStylusTools}">
     </settings-toggle-button>
 
     <template is="dom-if" if="[[hasInternalStylus_]]">
@@ -44,8 +43,7 @@
           id ="launchPaletteOnEjectEventToggle"
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
           label="$i18n{stylusAutoOpenStylusTools}"
-          disabled="[[!prefs.settings.enable_stylus_tools.value]]"
-          hidden$="[[prefs.ash.kiosk_next_shell.enabled.value]]">
+          disabled="[[!prefs.settings.enable_stylus_tools.value]]">
       </settings-toggle-button>
     </template>
 

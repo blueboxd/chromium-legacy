@@ -7387,8 +7387,9 @@ interface Serial : EventTarget
     setter ondisconnect
 interface SerialPort
     attribute @@toStringTag
-    getter in
-    getter out
+    getter readable
+    getter writable
+    method clearReadError
     method close
     method constructor
     method open

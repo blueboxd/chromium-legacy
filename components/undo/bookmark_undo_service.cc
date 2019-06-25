@@ -293,9 +293,10 @@ BookmarkReorderOperation::BookmarkReorderOperation(
     const BookmarkNode* parent)
     : BookmarkUndoOperation(bookmark_model),
       parent_id_(parent->id()) {
-  ordered_bookmarks_.resize(parent->child_count());
-  for (int i = 0; i < parent->child_count(); ++i)
-    ordered_bookmarks_[i] = parent->GetChild(i)->id();
+  ordered_bookmarks_.resize(parent->children().size());
+  std::transform(parent->children().cbegin(), parent->children().cend(),
+                 ordered_bookmarks_.begin(),
+                 [](const auto& child) { return child->id(); });
 }
 
 BookmarkReorderOperation::~BookmarkReorderOperation() {

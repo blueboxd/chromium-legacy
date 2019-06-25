@@ -14,8 +14,7 @@ var gotUpgradeNeeded = false;
 function upgradeNeeded(evt) {
   event = evt;
   shouldBe("event.dataLoss", "'total'");
-  shouldBe("event.dataLossMessage",
-           "'IndexedDB (database was corrupt): missing files'");
+  shouldBe("event.dataLossMessage", "'missing files'");
   gotUpgradeNeeded = true;
 }
 

@@ -168,6 +168,8 @@ class CORE_EXPORT DisplayLockContext final
     reattach_layout_tree_was_blocked_ = true;
   }
 
+  void NotifyChildLayoutWasBlocked() { child_layout_was_blocked_ = true; }
+
   // Inform the display lock that it needs a graphics layer collection when it
   // needs to paint.
   void NotifyNeedsGraphicsLayerCollection() {
@@ -229,7 +231,7 @@ class CORE_EXPORT DisplayLockContext final
   // as well if needed. They return true if the element or its subtree were
   // dirty, and false otherwise.
   bool MarkForStyleRecalcIfNeeded();
-  bool MarkAncestorsForLayoutIfNeeded();
+  bool MarkForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
 
@@ -329,6 +331,11 @@ class CORE_EXPORT DisplayLockContext final
   bool needs_prepaint_subtree_walk_ = false;
   bool is_horizontal_writing_mode_ = true;
   bool needs_graphics_layer_collection_ = false;
+  // Will be true if child traversal was blocked on a previous layout run on the
+  // locked element. We need to keep track of this to ensure that on the next
+  // layout run where the descendants of the locked element are allowed to be
+  // traversed into, we will traverse to the children of the locked element.
+  bool child_layout_was_blocked_ = false;
 
   TaskHandle timeout_task_handle_;
 };

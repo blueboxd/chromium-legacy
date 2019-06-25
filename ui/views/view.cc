@@ -1004,6 +1004,16 @@ void View::SetBackground(std::unique_ptr<Background> b) {
 
 void View::SetBorder(std::unique_ptr<Border> b) {
   border_ = std::move(b);
+
+  // Conceptually, this should be PreferredSizeChanged(), but for some view
+  // hierarchies that triggers synchronous add/remove operations that are unsafe
+  // in some contexts where SetBorder is called.
+  //
+  // InvalidateLayout() still triggers a re-layout of the view, which should
+  // include re-querying its preferred size so in practice this is both safe and
+  // has the intended effect.
+  InvalidateLayout();
+
   SchedulePaint();
 }
 
@@ -2176,6 +2186,11 @@ void View::AddChildViewAtImpl(View* view, int index) {
       view->PropagateThemeChanged();
   }
 
+  // Need to notify the layout manager because one of the callbacks below might
+  // want to know the view's new preferred size, minimum size, etc.
+  if (layout_manager_)
+    layout_manager_->ViewAdded(this, view);
+
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
   for (View* v = this; v; v = v->parent_)
@@ -2191,9 +2206,6 @@ void View::AddChildViewAtImpl(View* view, int index) {
     if (view->GetVisible())
       view->SchedulePaint();
   }
-
-  if (layout_manager_)
-    layout_manager_->ViewAdded(this, view);
 
   for (ViewObserver& observer : observers_)
     observer.OnChildViewAdded(this, view);
@@ -2238,6 +2250,11 @@ void View::DoRemoveChildView(View* view,
   if (widget)
     widget->LayerTreeChanged();
 
+  // Need to notify the layout manager because one of the callbacks below might
+  // want to know the view's new preferred size, minimum size, etc.
+  if (layout_manager_)
+    layout_manager_->ViewRemoved(this, view);
+
   view->PropagateRemoveNotifications(this, new_parent, is_removed_from_widget);
   view->parent_ = nullptr;
 
@@ -2251,9 +2268,6 @@ void View::DoRemoveChildView(View* view,
 
   if (update_tool_tip)
     UpdateTooltip();
-
-  if (layout_manager_)
-    layout_manager_->ViewRemoved(this, view);
 
   for (ViewObserver& observer : observers_)
     observer.OnChildViewRemoved(this, view);

@@ -20,15 +20,12 @@ struct SerialPortInfo {
 enum SerialSendError {
   NONE,
   DISCONNECTED,
-  PENDING,
-  TIMEOUT,
   SYSTEM_ERROR,
 };
 
 enum SerialReceiveError {
   NONE,
   DISCONNECTED,
-  TIMEOUT,
   DEVICE_LOST,
   BREAK,
   FRAME_ERROR,

@@ -98,15 +98,15 @@ bool NodesMatch(const bookmarks::BookmarkNode* local_node,
 size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
                             const bookmarks::BookmarkNode* local_parent,
                             size_t search_starting_child_index) {
-  const EntityData& remote_node_update_entity = *remote_node->entity;
-  for (int i = search_starting_child_index; i < local_parent->child_count();
-       ++i) {
-    const bookmarks::BookmarkNode* local_child = local_parent->GetChild(i);
-    if (NodesMatch(local_child, remote_node_update_entity)) {
-      return i;
-    }
-  }
-  return kInvalidIndex;
+  const auto& children = local_parent->children();
+  DCHECK_LE(search_starting_child_index, children.size());
+  const EntityData& remote_entity = *remote_node->entity;
+  const auto it =
+      std::find_if(children.cbegin() + search_starting_child_index,
+                   children.cend(), [&remote_entity](const auto& child) {
+                     return NodesMatch(child.get(), remote_entity);
+                   });
+  return (it == children.cend()) ? kInvalidIndex : (it - children.cbegin());
 }
 
 bool UniquePositionLessThan(const UpdateResponseData* a,

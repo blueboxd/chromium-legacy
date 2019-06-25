@@ -35,7 +35,7 @@ class TabStyleViews;
 namespace gfx {
 class Animation;
 class LinearAnimation;
-}
+}  // namespace gfx
 namespace views {
 class Label;
 }
@@ -218,6 +218,10 @@ class Tab : public gfx::AnimationDelegate,
   // ensure proper contrast. Elements affected include title text, close button
   // and alert icon.
   void UpdateForegroundColors();
+
+  // Considers switching to hovered mode or [re-]showing the hover card based on
+  // the mouse moving over the tab.
+  void MaybeUpdateHoverStatus(const ui::MouseEvent& event);
 
   // The controller, never nullptr.
   TabController* const controller_;

@@ -230,12 +230,12 @@ const BookmarkNode* PartnerBookmarksShim::GetNodeByID(
     int64_t id) const {
   if (parent->id() == id)
     return parent;
-  for (int i = 0, child_count = parent->child_count(); i < child_count; ++i) {
-    const BookmarkNode* result = GetNodeByID(parent->GetChild(i), id);
+  for (const auto& node : parent->children()) {
+    const BookmarkNode* result = GetNodeByID(node.get(), id);
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 void PartnerBookmarksShim::ReloadNodeMapping() {

@@ -258,76 +258,6 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
                               .video_encode_accelerator_supported_profiles));
 }
 
-bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(
-    int32_t count,
-    const gfx::Size& size,
-    std::vector<uint32_t>* texture_ids,
-    std::vector<gpu::Mailbox>* texture_mailboxes,
-    uint32_t texture_target) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(texture_target);
-
-  if (CheckContextLost())
-    return false;
-  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-  texture_ids->resize(count);
-  texture_mailboxes->resize(count);
-  gles2->GenTextures(count, &texture_ids->at(0));
-  for (int i = 0; i < count; ++i) {
-    gles2->ActiveTexture(GL_TEXTURE0);
-    uint32_t texture_id = texture_ids->at(i);
-    gles2->BindTexture(texture_target, texture_id);
-    gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    if (texture_target == GL_TEXTURE_2D) {
-      gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
-                        0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    }
-    gles2->ProduceTextureDirectCHROMIUM(texture_id,
-                                        texture_mailboxes->at(i).name);
-  }
-
-  // We need ShallowFlushCHROMIUM() here to order the command buffer commands
-  // with respect to IPC to the GPU process, to guarantee that the decoder in
-  // the GPU process can use these textures as soon as it receives IPC
-  // notification of them.
-  gles2->ShallowFlushCHROMIUM();
-  DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
-  return true;
-}
-
-void GpuVideoAcceleratorFactoriesImpl::DeleteTexture(uint32_t texture_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (CheckContextLost())
-    return;
-
-  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-  gles2->DeleteTextures(1, &texture_id);
-  DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
-}
-
-gpu::SyncToken GpuVideoAcceleratorFactoriesImpl::CreateSyncToken() {
-  gpu::SyncToken sync_token;
-  context_provider_->ContextGL()->GenSyncTokenCHROMIUM(sync_token.GetData());
-  return sync_token;
-}
-
-void GpuVideoAcceleratorFactoriesImpl::WaitSyncToken(
-    const gpu::SyncToken& sync_token) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (CheckContextLost())
-    return;
-
-  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-  gles2->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-
-  // Callers expect the WaitSyncToken to affect the next IPCs. Make sure to
-  // flush the command buffers to ensure that.
-  gles2->ShallowFlushCHROMIUM();
-}
-
 void GpuVideoAcceleratorFactoriesImpl::SignalSyncToken(
     const gpu::SyncToken& sync_token,
     base::OnceClosure callback) {
@@ -337,14 +267,6 @@ void GpuVideoAcceleratorFactoriesImpl::SignalSyncToken(
 
   context_provider_->ContextSupport()->SignalSyncToken(sync_token,
                                                        std::move(callback));
-}
-
-void GpuVideoAcceleratorFactoriesImpl::ShallowFlushCHROMIUM() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (CheckContextLost())
-    return;
-
-  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -431,10 +353,6 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
 }
 
-gpu::gles2::GLES2Interface* GpuVideoAcceleratorFactoriesImpl::ContextGL() {
-  return CheckContextLost() ? nullptr : context_provider_->ContextGL();
-}
-
 gpu::SharedImageInterface*
 GpuVideoAcceleratorFactoriesImpl::SharedImageInterface() {
   return CheckContextLost() ? nullptr
@@ -470,12 +388,6 @@ GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
 scoped_refptr<viz::ContextProviderCommandBuffer>
 GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
-}
-
-gpu::ContextSupport*
-GpuVideoAcceleratorFactoriesImpl::GetMediaContextProviderContextSupport() {
-  auto context_provider = GetMediaContextProvider();
-  return context_provider ? context_provider->ContextSupport() : nullptr;
 }
 
 void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(

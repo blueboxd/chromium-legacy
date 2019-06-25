@@ -40,11 +40,13 @@ class ToolbarIconContainerView : public views::View,
   friend class ToolbarPageActionIconContainerViewBrowserTest;
 
   // views::View:
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   gfx::Insets GetInsets() const override;
 
-  void UpdateHighlight(bool highlighted);
+  void UpdateHighlight();
 
   // The main view is nominally always present and is last child in the view
   // hierarchy.

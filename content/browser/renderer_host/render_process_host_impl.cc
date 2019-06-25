@@ -867,26 +867,6 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
     }
   }
 
-  // Check whether |host| is associated with at least one URL for which
-  // SiteInstance does not assign site URLs.  This is used to disqualify |host|
-  // from being reused if it has pending navigations to such URLs.
-  bool ContainsNonReusableSiteForHost(RenderProcessHost* host) {
-    for (auto iter : map_) {
-      // If SiteInstance doesn't assign a site URL for the current entry, check
-      // whether |host| is on the list of processes the entry is associated
-      // with.
-      //
-      // TODO(alexmos): ShouldAssignSiteForURL() expects a full URL, whereas we
-      // only have a site URL here.  For now, this mismatch is ok since
-      // ShouldAssignSiteForURL() only cares about schemes in practice, but
-      // this should be cleaned up.
-      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first) &&
-          base::Contains(iter.second, host->GetID()))
-        return true;
-    }
-    return false;
-  }
-
  private:
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
 #ifndef NDEBUG
@@ -3720,30 +3700,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
     }
   }
 
-  if (!GetContentClient()->browser()->IsSuitableHost(host, site_url))
-    return false;
-
-  // Check whether this process has a pending navigation to a URL for
-  // which SiteInstance does not assign site URLs.  If this is the case, it is
-  // not safe to reuse this process for a navigation which itself assigns site
-  // URLs, since in that case the latter navigation could lock this process
-  // before the commit for the siteless URL arrives, resulting in a renderer
-  // kill. See https://crbug.com/970046.
-  if (SiteInstanceImpl::ShouldAssignSiteForURL(site_url)) {
-    SiteProcessCountTracker* pending_tracker =
-        static_cast<SiteProcessCountTracker*>(
-            browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
-    bool has_disqualifying_pending_navigation =
-        pending_tracker &&
-        pending_tracker->ContainsNonReusableSiteForHost(host);
-    UMA_HISTOGRAM_BOOLEAN(
-        "SiteIsolation.PendingSitelessNavigationDisallowsProcessReuse",
-        has_disqualifying_pending_navigation);
-    if (has_disqualifying_pending_navigation)
-      return false;
-  }
-
-  return true;
+  return GetContentClient()->browser()->IsSuitableHost(host, site_url);
 }
 
 // static

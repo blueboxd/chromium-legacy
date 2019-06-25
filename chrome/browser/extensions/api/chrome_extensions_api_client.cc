@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/system_display/display_info_provider.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/chrome_guest_view_manager_delegate.h"
@@ -47,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -281,6 +283,11 @@ ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
 ManagementAPIDelegate* ChromeExtensionsAPIClient::CreateManagementAPIDelegate()
     const {
   return new ChromeManagementAPIDelegate;
+}
+
+std::unique_ptr<DisplayInfoProvider>
+ChromeExtensionsAPIClient::CreateDisplayInfoProvider() const {
+  return CreateChromeDisplayInfoProvider();
 }
 
 MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {

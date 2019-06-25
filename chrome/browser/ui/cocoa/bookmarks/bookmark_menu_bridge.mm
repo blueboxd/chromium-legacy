@@ -266,8 +266,7 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
 
 // TODO(jrg): limit the number of bookmarks in the menubar?
 void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
-  int child_count = node->child_count();
-  if (child_count == 0) {
+  if (node->children().empty()) {
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
     base::scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
         initWithTitle:empty_string
@@ -277,17 +276,16 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
     return;
   }
 
-  for (int i = 0; i < child_count; i++) {
-    const BookmarkNode* child = node->GetChild(i);
+  for (const auto& child : node->children()) {
     if (child->is_folder()) {
-      AddNodeAsSubmenu(menu, child, folder_image_);
+      AddNodeAsSubmenu(menu, child.get(), folder_image_);
     } else {
       base::scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
-          initWithTitle:MenuTitleForNode(child)
+          initWithTitle:MenuTitleForNode(child.get())
                  action:nil
           keyEquivalent:@""]);
-      bookmark_nodes_[child] = item;
-      ConfigureMenuItem(child, item, false);
+      bookmark_nodes_[child.get()] = item;
+      ConfigureMenuItem(child.get(), item, false);
       [menu addItem:item];
     }
   }

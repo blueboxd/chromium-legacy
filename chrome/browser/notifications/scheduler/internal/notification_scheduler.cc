@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
@@ -132,9 +133,34 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void OnInitialized(std::unique_ptr<InitHelper>,
                      InitCallback init_callback,
                      bool success) {
-    // TODO(xingliu): Inform the clients about initialization results and tear
-    // down internal components.
+    // TODO(xingliu): Tear down internal components if initialization failed.
     std::move(init_callback).Run(success);
+    NotifyClientsAfterInit(success);
+  }
+
+  void NotifyClientsAfterInit(bool success) {
+    std::vector<SchedulerClientType> clients;
+    context_->client_registrar()->GetRegisteredClients(&clients);
+    for (auto type : clients) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterInit,
+                         weak_ptr_factory_.GetWeakPtr(), type, success));
+    }
+  }
+
+  void NotifyClientAfterInit(SchedulerClientType type, bool success) {
+    std::vector<const NotificationEntry*> notifications;
+    context_->notification_manager()->GetNotifications(type, &notifications);
+    std::set<std::string> guids;
+    for (const auto* notification : notifications) {
+      DCHECK(notification);
+      guids.emplace(notification->guid);
+    }
+
+    auto* client = context_->client_registrar()->GetClient(type);
+    DCHECK(client);
+    client->OnSchedulerInitialized(success, std::move(guids));
   }
 
   // NotificationBackgroundTaskScheduler::Handler implementation.
@@ -184,8 +210,6 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         task_start_time, std::move(notifications), std::move(client_states),
         &results);
 
-    // TODO(xingliu): Update impression data after notification shown.
-    // See https://crbug.com/965133.
     for (const auto& guid : results) {
       context_->notification_manager()->DisplayNotification(guid);
     }

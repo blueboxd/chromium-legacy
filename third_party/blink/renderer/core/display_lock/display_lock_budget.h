@@ -55,9 +55,10 @@ class CORE_EXPORT DisplayLockBudget {
 
   void MarkPhaseAsDirty(Phase marking_phase);
 
-  // Marks the ancestor chain dirty for the given phase if it's needed. Returns
-  // true if the ancestors were marked dirty and false otherwise.
-  bool MarkAncestorsDirtyForPhaseIfNeeded(Phase);
+  // Marks the element and ancestor chain dirty for the given phase if it's
+  // needed. Returns true if the ancestors were marked dirty and false
+  // otherwise.
+  bool MarkDirtyForPhaseIfNeeded(Phase);
 
   const base::TickClock* clock_;
 

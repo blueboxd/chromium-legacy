@@ -57,11 +57,16 @@ class RectChromium {
 
   int GetArea() const { return width_ * height_; }
 
+  auto TieForCmp() const { return std::tie(x_, y_, width_, height_); }
+
   bool operator==(const RectChromium& other) const {
-    return (x() == other.x() && y() == other.y() && width() == other.width() &&
-            height() == other.height());
+    return TieForCmp() == other.TieForCmp();
   }
   bool operator!=(const RectChromium& other) const { return !(*this == other); }
+
+  bool operator<(const RectChromium& other) const {
+    return TieForCmp() < other.TieForCmp();
+  }
 
  private:
   int x_ = 0;

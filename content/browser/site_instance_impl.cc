@@ -766,7 +766,6 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   if (allow_default_site_url &&
       !base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances) &&
-      SiteInstanceImpl::ShouldAssignSiteForURL(url) &&
       !DoesSiteURLRequireDedicatedProcess(isolation_context, site_url)) {
     return GetDefaultSiteURL();
   }

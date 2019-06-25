@@ -132,26 +132,23 @@ class ManagedBookmarkServiceTest : public testing::Test {
       return false;
 
     if (node->is_folder()) {
-      const base::ListValue* children = NULL;
+      const base::ListValue* children = nullptr;
       if (!dict->GetList("children", &children) ||
-          node->child_count() != static_cast<int>(children->GetSize())) {
+          node->children().size() != children->GetSize()) {
         return false;
       }
-      for (int i = 0; i < node->child_count(); ++i) {
-        const base::DictionaryValue* child = NULL;
-        if (!children->GetDictionary(i, &child) ||
-            !NodeMatchesValue(node->GetChild(i), child)) {
-          return false;
-        }
-      }
-    } else if (node->is_url()) {
-      std::string url;
-      if (!dict->GetString("url", &url) || node->url() != url)
-        return false;
-    } else {
-      return false;
+      size_t i = 0;
+      return std::all_of(node->children().cbegin(), node->children().cend(),
+                         [children, &i](const auto& child_node) {
+                           const base::DictionaryValue* child = nullptr;
+                           return children->GetDictionary(i++, &child) &&
+                                  NodeMatchesValue(child_node.get(), child);
+                         });
     }
-    return true;
+    if (!node->is_url())
+      return false;
+    std::string url;
+    return dict->GetString("url", &url) && node->url() == url;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -256,14 +253,14 @@ TEST_F(ManagedBookmarkServiceTest, IsDescendantOfManagedNode) {
                                         managed_->managed_node()));
 
   const BookmarkNode* parent = managed_->managed_node();
-  ASSERT_EQ(2, parent->child_count());
+  ASSERT_EQ(2u, parent->children().size());
   EXPECT_TRUE(
       bookmarks::IsDescendantOf(parent->GetChild(0), managed_->managed_node()));
   EXPECT_TRUE(
       bookmarks::IsDescendantOf(parent->GetChild(1), managed_->managed_node()));
 
   parent = parent->GetChild(1);
-  ASSERT_EQ(2, parent->child_count());
+  ASSERT_EQ(2u, parent->children().size());
   EXPECT_TRUE(
       bookmarks::IsDescendantOf(parent->GetChild(0), managed_->managed_node()));
   EXPECT_TRUE(
@@ -271,7 +268,7 @@ TEST_F(ManagedBookmarkServiceTest, IsDescendantOfManagedNode) {
 }
 
 TEST_F(ManagedBookmarkServiceTest, RemoveAllDoesntRemoveManaged) {
-  EXPECT_EQ(2, managed_->managed_node()->child_count());
+  EXPECT_EQ(2u, managed_->managed_node()->children().size());
 
   EXPECT_CALL(observer_,
               BookmarkNodeAdded(model_, model_->bookmark_bar_node(), 0));
@@ -281,13 +278,13 @@ TEST_F(ManagedBookmarkServiceTest, RemoveAllDoesntRemoveManaged) {
                  GURL("http://google.com/"));
   model_->AddFolder(model_->bookmark_bar_node(), 1,
                     base::ASCIIToUTF16("Test Folder"));
-  EXPECT_EQ(2, model_->bookmark_bar_node()->child_count());
+  EXPECT_EQ(2u, model_->bookmark_bar_node()->children().size());
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, BookmarkAllUserNodesRemoved(model_, _));
   model_->RemoveAllUserBookmarks();
-  EXPECT_EQ(2, managed_->managed_node()->child_count());
-  EXPECT_EQ(0, model_->bookmark_bar_node()->child_count());
+  EXPECT_EQ(2u, managed_->managed_node()->children().size());
+  EXPECT_EQ(0u, model_->bookmark_bar_node()->children().size());
   Mock::VerifyAndClearExpectations(&observer_);
 }
 

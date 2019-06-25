@@ -771,11 +771,6 @@ const char kExperimentalAccessibilityLanguageDetectionDescription[] =
     "Enable language detection for in-page content which is then exposed to "
     "accessiblity technologies such as screen readers.";
 
-const char kExperimentalAccessibilitySwitchAccessName[] =
-    "Experimental feature Switch Access";
-const char kExperimentalAccessibilitySwitchAccessDescription[] =
-    "Add a setting to enable the prototype of Switch Access";
-
 const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
 const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
@@ -3027,6 +3022,11 @@ const char kEnableAppGridGhostName[] = "App Grid Ghosting";
 const char kEnableAppGridGhostDescription[] =
     "Enables ghosting during an item drag in launcher.";
 
+const char kEnableSearchBoxSelectionName[] = "Search Box Selection";
+const char kEnableSearchBoxSelectionDescription[] =
+    "Enables the ResultSelectionController in the Search Box. This alters "
+    "perceived focus traversal.";
+
 const char kEnableAppListSearchAutocompleteName[] =
     "App List Search Autocomplete";
 const char kEnableAppListSearchAutocompleteDescription[] =
@@ -3138,6 +3138,17 @@ const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[] =
 const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
     "Enable ChromeVox rich text indication, which automatically notifies the "
     "user of text styling.";
+
+const char kExperimentalAccessibilitySwitchAccessName[] =
+    "Experimental feature Switch Access";
+const char kExperimentalAccessibilitySwitchAccessDescription[] =
+    "Add a setting to enable the prototype of Switch Access";
+
+const char kExperimentalAccessibilitySwitchAccessTextName[] =
+    "Enable enhanced Switch Access text input.";
+const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
+    "Enable experimental or in-progress Switch Access features for improved "
+    "text input";
 
 const char kFileManagerFeedbackPanelDescription[] =
     "Enable feedback panel in the Files app.";
@@ -3474,6 +3485,17 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
     "capturing the desktop content on the Wayland display server.";
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+const char kEnableDbusAndX11StatusIconsName[] =
+    "Enable DBus and X11 status icons";
+const char kEnableDbusAndX11StatusIconsDescription[] =
+    "If enabled, uses Chromium's StatusNotifierItem (DBus) and system tray "
+    "(X11) implementations of status icons.  Otherwise, uses libappindicator's "
+    "and GTK's implementaitons.";
+
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 const char kAvoidFlashBetweenNavigationName[] =
     "Enable flash avoidance between same-origin navigations";

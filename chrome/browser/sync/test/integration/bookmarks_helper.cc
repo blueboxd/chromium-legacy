@@ -436,10 +436,10 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
                         const BookmarkNode* foreign_node,
                         const BookmarkNode** result) {
   // Climb the tree.
-  base::stack<int> path;
+  base::stack<size_t> path;
   const BookmarkNode* walker = foreign_node;
   while (walker != foreign_model->root_node()) {
-    path.push(walker->parent()->GetIndexOf(walker));
+    path.push(size_t{walker->parent()->GetIndexOf(walker)});
     walker = walker->parent();
   }
 
@@ -449,8 +449,8 @@ void FindNodeInVerifier(BookmarkModel* foreign_model,
   // Climb down.
   while (!path.empty()) {
     ASSERT_TRUE(walker->is_folder());
-    ASSERT_LT(path.top(), walker->child_count());
-    walker = walker->GetChild(path.top());
+    ASSERT_LT(path.top(), walker->children().size());
+    walker = walker->children()[path.top()].get();
     path.pop();
   }
 
@@ -759,10 +759,10 @@ void Remove(int profile, const BookmarkNode* parent, size_t index) {
 void RemoveAll(int profile) {
   if (sync_datatype_helper::test()->use_verifier()) {
     const BookmarkNode* root_node = GetVerifierBookmarkModel()->root_node();
-    for (int i = 0; i < root_node->child_count(); ++i) {
-      const BookmarkNode* permanent_node = root_node->GetChild(i);
-      for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-        GetVerifierBookmarkModel()->Remove(permanent_node->GetChild(j));
+    for (const auto& permanent_node : root_node->children()) {
+      while (!permanent_node->children().empty()) {
+        GetVerifierBookmarkModel()->Remove(
+            permanent_node->children().back().get());
       }
     }
   }

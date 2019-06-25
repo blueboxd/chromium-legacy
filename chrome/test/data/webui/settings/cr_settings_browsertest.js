@@ -2275,39 +2275,6 @@ TEST_F('CrSettingsMultideviceSubpageTest', 'All', function() {
 });
 
 /**
- * Test fixture for the Chrome OS Kiosk Next Shell page.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsKioskNextShellPageTest() {}
-
-CrSettingsKioskNextShellPageTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://settings/kiosk_next_shell_page/kiosk_next_shell_page.html',
-
-  /** @override */
-  featureList: {enabled: ['ash::features::kKioskNextShell']},
-
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
-    'kiosk_next_shell_page_tests.js',
-    'test_util.js',
-    'test_lifetime_browser_proxy.js',
-  ]),
-};
-
-GEN('#if defined(OS_CHROMEOS)');
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
-TEST_F('CrSettingsKioskNextShellPageTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif  // defined(GOOGLE_CHROME_BUILD)');
-GEN('#endif  // defined(OS_CHROMEOS)');
-
-/**
  * Test fixture for the Linux for Chromebook (Crostini) page.
  * @constructor
  * @extends {CrSettingsBrowserTest}

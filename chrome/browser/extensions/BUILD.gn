@@ -685,6 +685,7 @@ jumbo_static_library("extensions") {
     "suspicious_extension_bubble_delegate.h",
     "sync_bundle.cc",
     "sync_bundle.h",
+    "system_display/display_info_provider.h",
     "system_display/display_info_provider_chromeos.cc",
     "system_display/display_info_provider_chromeos.h",
     "system_display/display_info_provider_mac.cc",

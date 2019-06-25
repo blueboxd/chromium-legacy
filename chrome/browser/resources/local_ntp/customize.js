@@ -303,7 +303,7 @@ customize.clearAttribution = function() {
   const attributions = $(customize.IDS.ATTRIBUTIONS);
   attributions.removeAttribute('href');
   attributions.className = '';
-  attributions.style.cursor = 'none';
+  attributions.style.cursor = 'default';
   while (attributions.firstChild) {
     attributions.removeChild(attributions.firstChild);
   }

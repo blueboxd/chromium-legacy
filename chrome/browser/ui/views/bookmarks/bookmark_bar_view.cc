@@ -836,8 +836,7 @@ void BookmarkBarView::Layout() {
     x += managed_bookmarks_pref.width() + bookmark_bar_button_padding;
   }
 
-  if (model_->loaded() &&
-      model_->bookmark_bar_node()->child_count() > 0) {
+  if (model_->loaded() && !model_->bookmark_bar_node()->children().empty()) {
     bool last_visible = x < max_x;
     size_t button_count = bookmark_buttons_.size();
     for (size_t i = 0; i <= button_count; ++i) {
@@ -1814,7 +1813,7 @@ void BookmarkBarView::CalculateDropLocation(const DropTargetEvent& event,
                                            ->children()[location->index.value()]
                                            .get();
     location->operation = chrome::GetBookmarkDropOperation(
-        profile, event, data, parent, parent->child_count());
+        profile, event, data, parent, parent->children().size());
     if (!location->operation && !data.has_single_url() &&
         data.GetFirstNode(model_, profile->GetPath()) == parent) {
       // Don't open a menu if the node being dragged is the menu to open.

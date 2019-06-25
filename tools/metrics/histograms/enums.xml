@@ -6248,11 +6248,6 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Present"/>
 </enum>
 
-<enum name="BooleanProcessReuseDisallowed">
-  <int value="0" label="Process reuse allowed"/>
-  <int value="1" label="Process reuse disallowed"/>
-</enum>
-
 <enum name="BooleanProfileSignedIn">
   <int value="0" label="Profile was not Signed In"/>
   <int value="1" label="Profile was Signed In"/>
@@ -29682,9 +29677,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="OpenCleanupBlobJournalFailed">
     Open failed because the blob journal could not be cleaned up.
   </int>
-  <int value="16" label="OpenFailedMetadataSetup">
-    Open failed because the backing store's metadata could not be set up.
-  </int>
 </enum>
 
 <enum name="IdleDeadlineCallbackType">
@@ -33592,6 +33584,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1847835522" label="disable-touch-adjustment"/>
   <int value="-1847776781"
       label="enable-loading-ipc-optimization-for-small-resources"/>
+  <int value="-1846471618"
+      label="enable-experimental-accessibility-switch-access-text"/>
   <int value="-1844754731" label="Mash:disabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
@@ -34050,6 +34044,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1206698676" label="MacV2Sandbox:disabled"/>
   <int value="-1206337150"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
+  <int value="-1205076560" label="EnableSearchBoxSelection:disabled"/>
   <int value="-1203955801" label="enable-password-change-support:disabled"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201741587" label="DataReductionProxyDecidesTransform:disabled"/>
@@ -34248,6 +34243,7 @@ from previous Chrome versions.
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-915035507" label="ArcPrintSpoolerExperiment:enabled"/>
   <int value="-914210146" label="enable-web-based-signin"/>
+  <int value="-914097698" label="EnableDbusAndX11StatusIcons:disabled"/>
   <int value="-913294939" label="DriveFS:enabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
@@ -34277,6 +34273,7 @@ from previous Chrome versions.
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
+  <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>
@@ -35076,6 +35073,7 @@ from previous Chrome versions.
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
+  <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
@@ -47711,6 +47709,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="NoScript"/>
   <int value="6" label="Unspecified"/>
   <int value="7" label="ResourceLoadingHints"/>
+  <int value="8" label="LitePageRedirect"/>
+  <int value="9" label="DeferAllScript"/>
 </enum>
 
 <enum name="PreviewsUserOmniboxAction">

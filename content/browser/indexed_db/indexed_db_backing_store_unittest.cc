@@ -40,7 +40,6 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using base::ASCIIToUTF16;
 using blink::IndexedDBDatabaseMetadata;
@@ -192,8 +191,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     idb_factory_ = std::make_unique<TestIDBFactory>(idb_context_.get());
 
     leveldb::Status s;
-    std::tie(origin_state_handle_, s, std::ignore, data_loss_info_,
-             std::ignore) =
+    std::tie(origin_state_handle_, s, std::ignore, std::ignore, std::ignore) =
         idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
     if (!origin_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
@@ -228,7 +226,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
   IndexedDBOriginStateHandle origin_state_handle_;
   TestableIndexedDBBackingStore* backing_store_ = nullptr;
-  IndexedDBDataLossInfo data_loss_info_;
 
   // Sample keys and values that are consistent.
   IndexedDBKey key1_;
@@ -1491,7 +1488,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
   // The factory returns a null backing store pointer when there is a corrupt
   // database.
-  EXPECT_TRUE(data_loss_info_.status == blink::mojom::IDBDataLoss::Total);
+  EXPECT_EQ(nullptr, backing_store());
 }
 
 }  // namespace indexed_db_backing_store_unittest

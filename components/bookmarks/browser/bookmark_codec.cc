@@ -150,8 +150,8 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
     UpdateChecksumWithFolderNode(id, title);
 
     auto child_values = std::make_unique<base::ListValue>();
-    for (int i = 0; i < node->child_count(); ++i)
-      child_values->Append(EncodeNode(node->GetChild(i)));
+    for (const auto& child : node->children())
+      child_values->Append(EncodeNode(child.get()));
     value->Set(kChildrenKey, std::move(child_values));
   }
   const BookmarkNode::MetaInfoMap* meta_info_map = node->GetMetaInfoMap();
@@ -478,8 +478,8 @@ void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
 void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
   DCHECK(node);
   node->set_id(++maximum_id_);
-  for (int i = 0; i < node->child_count(); ++i)
-    ReassignIDsHelper(node->GetChild(i));
+  for (const auto& child : node->children())
+    ReassignIDsHelper(child.get());
 }
 
 void BookmarkCodec::UpdateChecksum(const std::string& str) {

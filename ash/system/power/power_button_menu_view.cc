@@ -5,7 +5,6 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -164,8 +163,7 @@ void PowerButtonMenuView::CreateItems() {
               IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
       AddChildView(lock_screen_item_);
 
-      if (base::FeatureList::IsEnabled(kEnableFeedbackItem) ||
-          Shell::Get()->kiosk_next_shell_controller()->IsEnabled()) {
+      if (base::FeatureList::IsEnabled(kEnableFeedbackItem)) {
         feedback_item_ = new PowerButtonMenuItemView(
             this, kSystemPowerButtonMenuFeedbackIcon,
             l10n_util::GetStringUTF16(

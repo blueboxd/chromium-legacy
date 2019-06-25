@@ -14,8 +14,7 @@ message FakePredictorProto {
   map<uint32, float> counts = 1;
 }
 
-// Zero-state frecency predictor.
-message ZeroStateFrecencyPredictorProto {
+message FrecencyPredictorProto {
   // Field 1 (targets) has been deleted.
   reserved 1;
 
@@ -34,8 +33,7 @@ message ZeroStateFrecencyPredictorProto {
   required uint32 num_updates = 5;
 }
 
-// Zero-state hour bin predictor
-message ZeroStateHourBinPredictorProto {
+message HourBinPredictorProto {
   // Records all data related to a single hour bin.
   message FrequencyTable {
     // Total number of training counts in a bin.
@@ -53,7 +51,7 @@ message ZeroStateHourBinPredictorProto {
 message RecurrencePredictorProto {
   oneof predictor {
     FakePredictorProto fake_predictor = 1;
-    ZeroStateFrecencyPredictorProto zero_state_frecency_predictor = 2;
-    ZeroStateHourBinPredictorProto zero_state_hour_bin_predictor = 3;
+    FrecencyPredictorProto frecency_predictor = 2;
+    HourBinPredictorProto hour_bin_predictor = 3;
   }
 }

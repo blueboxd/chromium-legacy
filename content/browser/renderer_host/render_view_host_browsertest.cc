@@ -45,10 +45,7 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
       return;
     }
 
-    NavigationHandleImpl* impl =
-        static_cast<NavigationHandleImpl*>(navigation_handle);
     observed_remote_endpoint_ = navigation_handle->GetSocketAddress();
-    base_url_ = impl->base_url();
     ++navigation_count_;
   }
 
@@ -56,15 +53,10 @@ class RenderViewHostTestWebContentsObserver : public WebContentsObserver {
     return observed_remote_endpoint_;
   }
 
-  GURL base_url() const {
-    return base_url_;
-  }
-
   int navigation_count() const { return navigation_count_; }
 
  private:
   net::IPEndPoint observed_remote_endpoint_;
-  GURL base_url_;
   int navigation_count_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestWebContentsObserver);
@@ -81,21 +73,6 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
       net::HostPortPair::FromURL(embedded_test_server()->base_url()),
       net::HostPortPair::FromIPEndPoint(observer.observed_remote_endpoint()));
   EXPECT_EQ(1, observer.navigation_count());
-}
-
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  RenderViewHostTestWebContentsObserver observer(shell()->web_contents());
-
-  // Base URL is not set if it is the same as the URL.
-  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), test_url);
-  EXPECT_TRUE(observer.base_url().is_empty());
-  EXPECT_EQ(1, observer.navigation_count());
-
-  // But should be set to the original page when reading MHTML.
-  NavigateToURL(shell(), GetTestUrl(nullptr, "google.mht"));
-  EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
 }
 
 // This test ensures a RenderFrameHost object is created for the top level frame

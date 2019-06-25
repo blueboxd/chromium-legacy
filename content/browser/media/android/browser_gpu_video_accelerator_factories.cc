@@ -117,26 +117,6 @@ BrowserGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return nullptr;
 }
 
-bool BrowserGpuVideoAcceleratorFactories::CreateTextures(
-    int32_t count,
-    const gfx::Size& size,
-    std::vector<uint32_t>* texture_ids,
-    std::vector<gpu::Mailbox>* texture_mailboxes,
-    uint32_t texture_target) {
-  return false;
-}
-
-void BrowserGpuVideoAcceleratorFactories::DeleteTexture(uint32_t texture_id) {}
-
-gpu::SyncToken BrowserGpuVideoAcceleratorFactories::CreateSyncToken() {
-  return gpu::SyncToken();
-}
-
-void BrowserGpuVideoAcceleratorFactories::ShallowFlushCHROMIUM() {}
-
-void BrowserGpuVideoAcceleratorFactories::WaitSyncToken(
-    const gpu::SyncToken& sync_token) {}
-
 void BrowserGpuVideoAcceleratorFactories::SignalSyncToken(
     const gpu::SyncToken& sync_token,
     base::OnceClosure callback) {}
@@ -163,10 +143,6 @@ media::GpuVideoAcceleratorFactories::OutputFormat
 BrowserGpuVideoAcceleratorFactories::VideoFrameOutputFormat(
     media::VideoPixelFormat pixel_format) {
   return GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
-}
-
-gpu::gles2::GLES2Interface* BrowserGpuVideoAcceleratorFactories::ContextGL() {
-  return nullptr;
 }
 
 gpu::SharedImageInterface*
@@ -200,11 +176,6 @@ BrowserGpuVideoAcceleratorFactories::
 scoped_refptr<viz::ContextProviderCommandBuffer>
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
   return context_provider_;
-}
-
-gpu::ContextSupport*
-BrowserGpuVideoAcceleratorFactories::GetMediaContextProviderContextSupport() {
-  return GetMediaContextProvider()->ContextSupport();
 }
 
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(

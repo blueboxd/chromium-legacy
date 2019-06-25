@@ -36,8 +36,8 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
       id_(node->id()) {
   if (node->GetMetaInfoMap())
     meta_info_map = *node->GetMetaInfoMap();
-  for (int i = 0; i < node->child_count(); ++i)
-    children.push_back(Element(node->GetChild(i)));
+  for (const auto& child : node->children())
+    children.push_back(Element(child.get()));
 }
 
 BookmarkNodeData::Element::Element(const Element& other) = default;

@@ -16,6 +16,32 @@
 
 int OAuth2AccessTokenManager::max_fetch_retry_num_ = 5;
 
+OAuth2AccessTokenManager::RequestParameters::RequestParameters(
+    const std::string& client_id,
+    const CoreAccountId& account_id,
+    const OAuth2TokenService::ScopeSet& scopes)
+    : client_id(client_id), account_id(account_id), scopes(scopes) {}
+
+OAuth2AccessTokenManager::RequestParameters::RequestParameters(
+    const RequestParameters& other) = default;
+
+OAuth2AccessTokenManager::RequestParameters::~RequestParameters() {}
+
+bool OAuth2AccessTokenManager::RequestParameters::operator<(
+    const RequestParameters& p) const {
+  if (client_id < p.client_id)
+    return true;
+  else if (p.client_id < client_id)
+    return false;
+
+  if (account_id < p.account_id)
+    return true;
+  else if (p.account_id < account_id)
+    return false;
+
+  return scopes < p.scopes;
+}
+
 // Class that fetches an OAuth2 access token for a given account id and set of
 // scopes.
 //
@@ -386,8 +412,8 @@ void OAuth2AccessTokenManager::FetchOAuth2Token(
   // If there is already a pending fetcher for |scopes| and |account_id|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.
-  OAuth2TokenService::RequestParameters request_parameters =
-      OAuth2TokenService::RequestParameters(client_id, account_id, scopes);
+  RequestParameters request_parameters =
+      RequestParameters(client_id, account_id, scopes);
   auto iter = pending_fetchers_.find(request_parameters);
   if (iter != pending_fetchers_.end()) {
     iter->second->AddWaitingRequest(request->AsWeakPtr());
@@ -406,16 +432,15 @@ void OAuth2AccessTokenManager::RegisterTokenResponse(
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  token_cache_[OAuth2TokenService::RequestParameters(client_id, account_id,
-                                                     scopes)] = token_response;
+  token_cache_[RequestParameters(client_id, account_id, scopes)] =
+      token_response;
 }
 
 const OAuth2AccessTokenConsumer::TokenResponse*
 OAuth2AccessTokenManager::GetCachedTokenResponse(
-    const OAuth2TokenService::RequestParameters& request_parameters) {
+    const RequestParameters& request_parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OAuth2TokenService::TokenCache::iterator token_iterator =
-      token_cache_.find(request_parameters);
+  TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator == token_cache_.end())
     return nullptr;
   if (token_iterator->second.expiration_time <= base::Time::Now()) {
@@ -438,7 +463,7 @@ void OAuth2AccessTokenManager::ClearCache() {
 void OAuth2AccessTokenManager::ClearCacheForAccount(
     const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (OAuth2TokenService::TokenCache::iterator iter = token_cache_.begin();
+  for (TokenCache::iterator iter = token_cache_.begin();
        iter != token_cache_.end();
        /* iter incremented in body */) {
     if (iter->first.account_id == account_id) {
@@ -468,6 +493,17 @@ void OAuth2AccessTokenManager::CancelRequestsForAccount(
   CancelFetchers(fetchers_to_cancel);
 }
 
+void OAuth2AccessTokenManager::InvalidateAccessTokenImpl(
+    const CoreAccountId& account_id,
+    const std::string& client_id,
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RemoveCachedTokenResponse(RequestParameters(client_id, account_id, scopes),
+                            access_token);
+  delegate_->InvalidateAccessToken(account_id, client_id, scopes, access_token);
+}
+
 void OAuth2AccessTokenManager::
     set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -478,8 +514,8 @@ size_t OAuth2AccessTokenManager::GetNumPendingRequestsForTesting(
     const std::string& client_id,
     const CoreAccountId& account_id,
     const OAuth2TokenService::ScopeSet& scopes) const {
-  auto iter = pending_fetchers_.find(
-      OAuth2TokenService::RequestParameters(client_id, account_id, scopes));
+  auto iter =
+      pending_fetchers_.find(RequestParameters(client_id, account_id, scopes));
   return iter == pending_fetchers_.end()
              ? 0
              : iter->second->GetWaitingRequestCount();
@@ -525,8 +561,7 @@ OAuth2AccessTokenManager::StartRequestForClientWithContext(
     return std::move(request);
   }
 
-  OAuth2TokenService::RequestParameters request_parameters(client_id,
-                                                           account_id, scopes);
+  RequestParameters request_parameters(client_id, account_id, scopes);
   const OAuth2AccessTokenConsumer::TokenResponse* token_response =
       GetCachedTokenResponse(request_parameters);
   if (token_response && token_response->access_token.length()) {
@@ -547,7 +582,7 @@ OAuth2AccessTokenManager::StartRequestForClientWithContext(
 void OAuth2AccessTokenManager::InformConsumerWithCachedTokenResponse(
     const OAuth2AccessTokenConsumer::TokenResponse* cache_token_response,
     OAuth2TokenService::RequestImpl* request,
-    const OAuth2TokenService::RequestParameters& request_parameters) {
+    const RequestParameters& request_parameters) {
   DCHECK(cache_token_response && cache_token_response->access_token.length());
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnFetchAccessTokenComplete(
@@ -564,11 +599,10 @@ void OAuth2AccessTokenManager::InformConsumerWithCachedTokenResponse(
 }
 
 bool OAuth2AccessTokenManager::RemoveCachedTokenResponse(
-    const OAuth2TokenService::RequestParameters& request_parameters,
+    const RequestParameters& request_parameters,
     const std::string& token_to_remove) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OAuth2TokenService::TokenCache::iterator token_iterator =
-      token_cache_.find(request_parameters);
+  TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
     for (auto& observer : diagnostics_observer_list_) {
@@ -617,7 +651,7 @@ void OAuth2AccessTokenManager::OnFetchComplete(
   // Then by (2), |fetcher| is recorded in |pending_fetchers_|.
   // Then by (3), |fetcher_| is mapped from its combination of client ID,
   // account ID, and scope set.
-  OAuth2TokenService::RequestParameters request_param(
+  RequestParameters request_param(
       fetcher->GetClientId(), fetcher->GetAccountId(), fetcher->GetScopeSet());
 
   const OAuth2AccessTokenConsumer::TokenResponse* entry =

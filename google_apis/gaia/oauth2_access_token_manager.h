@@ -18,6 +18,25 @@ class OAuth2TokenServiceDelegate;
 // Class that manages requests for OAuth2 access tokens.
 class OAuth2AccessTokenManager {
  public:
+  // The parameters used to fetch an OAuth2 access token.
+  struct RequestParameters {
+    RequestParameters(const std::string& client_id,
+                      const CoreAccountId& account_id,
+                      const OAuth2TokenService::ScopeSet& scopes);
+    RequestParameters(const RequestParameters& other);
+    ~RequestParameters();
+    bool operator<(const RequestParameters& params) const;
+
+    // OAuth2 client id.
+    std::string client_id;
+    // Account id for which the request is made.
+    CoreAccountId account_id;
+    // URL scopes for the requested access token.
+    OAuth2TokenService::ScopeSet scopes;
+  };
+  typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
+      TokenCache;
+
   // TODO(https://crbug.com/967598): Remove |token_service| parameter once
   // OAuth2AccessTokenManager fully manages access tokens independently of
   // OAuth2TokenService and replace |delegate| with
@@ -85,7 +104,7 @@ class OAuth2AccessTokenManager {
   // ensure no entry with the same |client_scopes| is added before the usage of
   // the returned entry is done.
   const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
-      const OAuth2TokenService::RequestParameters& client_scopes);
+      const RequestParameters& client_scopes);
 
   // Clears the internal token cache.
   void ClearCache();
@@ -100,6 +119,13 @@ class OAuth2AccessTokenManager {
 
   // Cancels all requests related to a given |account_id|.
   void CancelRequestsForAccount(const CoreAccountId& account_id);
+
+  // Invalidates the |access_token| issued for |account_id|, |client_id| and
+  // |scopes|.
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
+                                 const std::string& client_id,
+                                 const OAuth2TokenService::ScopeSet& scopes,
+                                 const std::string& access_token);
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
@@ -117,7 +143,7 @@ class OAuth2AccessTokenManager {
   class Fetcher;
   friend class Fetcher;
 
-  OAuth2TokenService::TokenCache& token_cache() { return token_cache_; }
+  TokenCache& token_cache() { return token_cache_; }
 
   // Create an access token fetcher for the given account id.
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -140,13 +166,12 @@ class OAuth2AccessTokenManager {
   void InformConsumerWithCachedTokenResponse(
       const OAuth2AccessTokenConsumer::TokenResponse* token_response,
       OAuth2TokenService::RequestImpl* request,
-      const OAuth2TokenService::RequestParameters& client_scopes);
+      const RequestParameters& client_scopes);
 
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
-  bool RemoveCachedTokenResponse(
-      const OAuth2TokenService::RequestParameters& client_scopes,
-      const std::string& token_to_remove);
+  bool RemoveCachedTokenResponse(const RequestParameters& client_scopes,
+                                 const std::string& token_to_remove);
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
@@ -155,7 +180,7 @@ class OAuth2AccessTokenManager {
   void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
   // The cache of currently valid tokens.
-  OAuth2TokenService::TokenCache token_cache_;
+  TokenCache token_cache_;
   // List of observers to notify when access token status changes.
   base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
@@ -167,8 +192,7 @@ class OAuth2AccessTokenManager {
   OAuth2TokenServiceDelegate* delegate_;
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
-  std::map<OAuth2TokenService::RequestParameters, std::unique_ptr<Fetcher>>
-      pending_fetchers_;
+  std::map<RequestParameters, std::unique_ptr<Fetcher>> pending_fetchers_;
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;
 

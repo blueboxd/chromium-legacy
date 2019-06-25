@@ -31,11 +31,10 @@ bool RemoveAllUserBookmarksIOS(ios::ChromeBrowserState* browser_state) {
 
   bookmark_model->RemoveAllUserBookmarks();
 
-  for (int i = 0; i < bookmark_model->root_node()->child_count(); ++i) {
-    if (!bookmark_model->client()->CanBeEditedByUser(
-            bookmark_model->root_node()->GetChild(i)))
+  for (const auto& child : bookmark_model->root_node()->children()) {
+    if (!bookmark_model->client()->CanBeEditedByUser(child.get()))
       continue;
-    if (!bookmark_model->root_node()->GetChild(i)->children().empty())
+    if (!child->children().empty())
       return false;
   }
 
@@ -60,11 +59,9 @@ std::vector<const BookmarkNode*> RootLevelFolders(BookmarkModel* model) {
   std::vector<const BookmarkNode*> primary_permanent_nodes =
       PrimaryPermanentNodes(model);
   for (const BookmarkNode* parent : primary_permanent_nodes) {
-    int child_count = parent->child_count();
-    for (int i = 0; i < child_count; ++i) {
-      const BookmarkNode* node = parent->GetChild(i);
-      if (node->is_folder() && node->IsVisible())
-        root_level_folders.push_back(node);
+    for (const auto& child : parent->children()) {
+      if (child->is_folder() && child->IsVisible())
+        root_level_folders.push_back(child.get());
     }
   }
   return root_level_folders;

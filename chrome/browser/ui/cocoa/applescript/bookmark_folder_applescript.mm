@@ -19,16 +19,14 @@ using bookmarks::BookmarkNode;
 @implementation BookmarkFolderAppleScript
 
 - (NSArray*)bookmarkFolders {
-  NSMutableArray* bookmarkFolders = [NSMutableArray
-      arrayWithCapacity:bookmarkNode_->child_count()];
+  NSMutableArray* bookmarkFolders =
+      [NSMutableArray arrayWithCapacity:bookmarkNode_->children().size()];
 
-  for (int i = 0; i < bookmarkNode_->child_count(); ++i) {
-    const BookmarkNode* node = bookmarkNode_->GetChild(i);
-
+  for (const auto& node : bookmarkNode_->children()) {
     if (!node->is_folder())
       continue;
     base::scoped_nsobject<BookmarkFolderAppleScript> bookmarkFolder(
-        [[BookmarkFolderAppleScript alloc] initWithBookmarkNode:node]);
+        [[BookmarkFolderAppleScript alloc] initWithBookmarkNode:node.get()]);
     [bookmarkFolder setContainer:self
                         property:AppleScript::kBookmarkFoldersProperty];
     [bookmarkFolders addObject:bookmarkFolder];
@@ -46,9 +44,8 @@ using bookmarks::BookmarkNode;
   if (!model)
     return;
 
-  const BookmarkNode* node = model->AddFolder(bookmarkNode_,
-                                              bookmarkNode_->child_count(),
-                                              base::string16());
+  const BookmarkNode* node = model->AddFolder(
+      bookmarkNode_, bookmarkNode_->children().size(), base::string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;
@@ -90,16 +87,14 @@ using bookmarks::BookmarkNode;
 }
 
 - (NSArray*)bookmarkItems {
-  NSMutableArray* bookmarkItems = [NSMutableArray
-      arrayWithCapacity:bookmarkNode_->child_count()];
+  NSMutableArray* bookmarkItems =
+      [NSMutableArray arrayWithCapacity:bookmarkNode_->children().size()];
 
-  for (int i = 0; i < bookmarkNode_->child_count(); ++i) {
-    const BookmarkNode* node = bookmarkNode_->GetChild(i);
-
+  for (const auto& node : bookmarkNode_->children()) {
     if (!node->is_url())
       continue;
     base::scoped_nsobject<BookmarkItemAppleScript> bookmarkItem(
-        [[BookmarkItemAppleScript alloc] initWithBookmarkNode:node]);
+        [[BookmarkItemAppleScript alloc] initWithBookmarkNode:node.get()]);
     [bookmarkItem setContainer:self
                       property:AppleScript::kBookmarkItemsProperty];
     [bookmarkItems addObject:bookmarkItem];
@@ -124,10 +119,8 @@ using bookmarks::BookmarkNode;
     return;
   }
 
-  const BookmarkNode* node = model->AddURL(bookmarkNode_,
-                                           bookmarkNode_->child_count(),
-                                           base::string16(),
-                                           url);
+  const BookmarkNode* node = model->AddURL(
+      bookmarkNode_, bookmarkNode_->children().size(), base::string16(), url);
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkItem);
     return;

@@ -304,7 +304,7 @@ int BookmarkMenuDelegate::OnPerformDrop(
     case views::MenuDelegate::DROP_ON:
       DCHECK(drop_node->is_folder());
       drop_parent = drop_node;
-      index_to_drop_at = drop_node->child_count();
+      index_to_drop_at = drop_node->children().size();
       break;
 
     case views::MenuDelegate::DROP_BEFORE:
@@ -312,7 +312,7 @@ int BookmarkMenuDelegate::OnPerformDrop(
           drop_node == model->mobile_node()) {
         // This can happen with SHOW_PERMANENT_FOLDERS.
         drop_parent = model->bookmark_bar_node();
-        index_to_drop_at = drop_parent->child_count();
+        index_to_drop_at = drop_parent->children().size();
       }
       break;
 
@@ -368,7 +368,8 @@ int BookmarkMenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {
 
 void BookmarkMenuDelegate::WillShowMenu(MenuItemView* menu) {
   auto iter = menu_id_to_node_map_.find(menu->GetCommand());
-  if ((iter != menu_id_to_node_map_.end()) && iter->second->child_count() &&
+  if ((iter != menu_id_to_node_map_.end()) &&
+      !iter->second->children().empty() &&
       menu->GetSubmenu()->GetMenuItems().empty())
     BuildMenu(iter->second, 0, menu);
 }
@@ -463,8 +464,8 @@ bool BookmarkMenuDelegate::ShouldCloseOnRemove(const BookmarkNode* node) const {
     return false;
 
   const bool is_only_child_of_other_folder =
-      (node->parent() == GetBookmarkModel()->other_node() &&
-       node->parent()->child_count() == 1);
+      node->parent() == GetBookmarkModel()->other_node() &&
+      node->parent()->children().size() == 1;
   const bool is_child_of_bookmark_bar =
       node->parent() == GetBookmarkModel()->bookmark_bar_node();
   // The 'other' bookmarks folder hides when it has no more items, so we need

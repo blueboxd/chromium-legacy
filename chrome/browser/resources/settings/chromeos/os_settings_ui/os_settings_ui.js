@@ -78,9 +78,6 @@ Polymer({
     showAssistant_: Boolean,
 
     /** @private */
-    showKioskNextShell_: Boolean,
-
-    /** @private */
     showCrostini_: Boolean,
 
     /** @private */
@@ -173,8 +170,6 @@ Polymer({
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
     // Assistant can be disallowed due to flag, policy, locale, etc.
     this.showAssistant_ = loadTimeData.getBoolean('isAssistantAllowed');
-    this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
-        loadTimeData.getBoolean('showKioskNextShell');
     this.showParentalControls_ =
         loadTimeData.valueExists('showParentalControls') &&
         loadTimeData.getBoolean('showParentalControls');

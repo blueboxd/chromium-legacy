@@ -39,6 +39,7 @@ class AutomationInternalApiDelegate;
 class AppViewGuestDelegate;
 class ContentRulesRegistry;
 class DevicePermissionsPrompt;
+class DisplayInfoProvider;
 class ExtensionOptionsGuest;
 class ExtensionOptionsGuestDelegate;
 class FeedbackPrivateDelegate;
@@ -150,6 +151,11 @@ class ExtensionsAPIClient {
 
   // Creates a delegate for handling the management extension api.
   virtual ManagementAPIDelegate* CreateManagementAPIDelegate() const;
+
+  // Creates and returns the DisplayInfoProvider used by the
+  // chrome.system.display extension API.
+  virtual std::unique_ptr<DisplayInfoProvider> CreateDisplayInfoProvider()
+      const;
 
   // If supported by the embedder, returns a delegate for embedder-dependent
   // MetricsPrivateAPI behavior.

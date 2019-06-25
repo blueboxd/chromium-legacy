@@ -31,7 +31,9 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -192,21 +194,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void CreateDefaultDataToRetrieve(const GURL& url, const GURL& scope) {
-    data_retriever_->SetRendererWebApplicationInfo(
-        std::make_unique<WebApplicationInfo>());
-
-    auto manifest = std::make_unique<blink::Manifest>();
-    manifest->start_url = url;
-    manifest->scope = scope;
-    blink::Manifest::RelatedApplication related_app;
-    related_app.platform =
-        base::NullableString16(base::ASCIIToUTF16("chromeos_play"));
-    related_app.id = base::NullableString16(base::ASCIIToUTF16("com.app.id"));
-    manifest->related_applications.push_back(std::move(related_app));
-
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
-
-    data_retriever_->SetIcons(IconsMap{});
+    DCHECK(data_retriever_);
+    data_retriever_->BuildDefaultDataToRetrieve(url, scope);
   }
 
   void CreateDefaultDataToRetrieve(const GURL& url) {
@@ -219,7 +208,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void SetIconsMapToRetrieve(IconsMap icons_map) {
-    CHECK(data_retriever_);
+    DCHECK(data_retriever_);
     data_retriever_->SetIcons(std::move(icons_map));
   }
 
@@ -995,8 +984,21 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   const GURL scope("https://example.com/scope");
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
 
-  CreateDefaultDataToRetrieve(url, scope);
   CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = url;
+    manifest->scope = scope;
+    blink::Manifest::RelatedApplication related_app;
+    related_app.platform =
+        base::NullableString16(base::ASCIIToUTF16("chromeos_play"));
+    related_app.id = base::NullableString16(base::ASCIIToUTF16("com.app.id"));
+    manifest->related_applications.push_back(std::move(related_app));
+
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+
+    data_retriever_->SetIcons(IconsMap{});
+  }
 
   base::RunLoop run_loop;
   install_task_->InstallWebAppFromManifestWithFallback(
@@ -1012,5 +1014,34 @@ TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
   run_loop.Run();
 }
 #endif
+
+// Default apps should be installable for guest profiles.
+TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
+  SetInstallFinalizerForTesting();
+
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(profile_manager.SetUp());
+  Profile* guest_profile = profile_manager.CreateGuestProfile();
+
+  auto data_retriever = std::make_unique<TestDataRetriever>();
+  data_retriever->BuildDefaultDataToRetrieve(GURL("https://example.com/path"),
+                                             /*scope=*/GURL{});
+
+  auto install_task = std::make_unique<WebAppInstallTask>(
+      guest_profile, install_finalizer_.get(), std::move(data_retriever));
+
+  InstallOptions install_options;
+  install_options.install_source = InstallSource::kExternalDefault;
+
+  base::RunLoop run_loop;
+  install_task->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting(
+          [&](const AppId& app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
 
 }  // namespace web_app

@@ -31,15 +31,22 @@
 class FullscreenControllerStateInteractiveTest
     : public InProcessBrowserTest,
       public FullscreenControllerStateTest {
+ public:
+  FullscreenControllerStateInteractiveTest() = default;
+  ~FullscreenControllerStateInteractiveTest() override = default;
+
+  // InProcessBrowserTest:
+  void TearDown() override {
+    FullscreenControllerStateTest::TearDown();
+    InProcessBrowserTest::TearDown();
+  }
+
+  // FullscreenControllerStateTest:
+  Browser* GetBrowser() override { return InProcessBrowserTest::browser(); }
+
  private:
-  // FullscreenControllerStateTest override:
-  Browser* GetBrowser() override;
+  DISALLOW_COPY_AND_ASSIGN(FullscreenControllerStateInteractiveTest);
 };
-
-Browser* FullscreenControllerStateInteractiveTest::GetBrowser() {
-  return InProcessBrowserTest::browser();
-}
-
 
 // Soak tests ------------------------------------------------------------------
 

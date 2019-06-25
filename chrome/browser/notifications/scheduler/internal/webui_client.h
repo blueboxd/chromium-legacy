@@ -21,8 +21,9 @@ class WebUIClient : public NotificationSchedulerClient {
 
  private:
   // NotificationSchedulerClient implementation.
-  void ShowNotification(std::unique_ptr<NotificationData> notification_data,
-                        NotificationDataCallback callback) override;
+  void BeforeShowNotification(
+      std::unique_ptr<NotificationData> notification_data,
+      NotificationDataCallback callback) override;
   void OnSchedulerInitialized(bool success,
                               std::set<std::string> guids) override;
   void OnUserAction(UserActionType action_type,

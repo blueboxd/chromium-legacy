@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/extensions/system_display/display_info_provider.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/common/api/system_display.h"
@@ -621,9 +622,9 @@ void DisplayInfoProviderChromeOS::OnTabletModeToggled(bool enabled) {
   DispatchOnDisplayChangedEvent();
 }
 
-// static
-DisplayInfoProvider* DisplayInfoProvider::Create() {
-  return new DisplayInfoProviderChromeOS(content::GetSystemConnector());
+std::unique_ptr<DisplayInfoProvider> CreateChromeDisplayInfoProvider() {
+  return std::make_unique<DisplayInfoProviderChromeOS>(
+      content::GetSystemConnector());
 }
 
 }  // namespace extensions

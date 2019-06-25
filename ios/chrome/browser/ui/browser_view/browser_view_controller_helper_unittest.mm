@@ -88,7 +88,7 @@ TEST_F(BrowserViewControllerHelperTest, TestisWebStateBookmarked) {
   const bookmarks::BookmarkNode* bookmarks =
       bookmark_model->bookmark_bar_node();
   const bookmarks::BookmarkNode* node =
-      bookmark_model->AddURL(bookmarks, bookmarks->child_count(),
+      bookmark_model->AddURL(bookmarks, bookmarks->children().size(),
                              base::UTF8ToUTF16(kWebUrl), GURL(kWebUrl));
   EXPECT_TRUE([helper_ isWebStateBookmarked:web_state_.get()]);
 

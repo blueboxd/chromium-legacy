@@ -19,10 +19,10 @@ namespace app_list {
 using FakePredictorConfig = RecurrenceRankerConfigProto::FakePredictorConfig;
 using DefaultPredictorConfig =
     RecurrenceRankerConfigProto::DefaultPredictorConfig;
-using ZeroStateFrecencyPredictorConfig =
-    RecurrenceRankerConfigProto::ZeroStateFrecencyPredictorConfig;
-using ZeroStateHourBinPredictorConfig =
-    RecurrenceRankerConfigProto::ZeroStateHourBinPredictorConfig;
+using FrecencyPredictorConfig =
+    RecurrenceRankerConfigProto::FrecencyPredictorConfig;
+using HourBinPredictorConfig =
+    RecurrenceRankerConfigProto::HourBinPredictorConfig;
 
 // |RecurrencePredictor| is the interface for all predictors used by
 // |RecurrenceRanker| to drive rankings. If a predictor has some form of
@@ -34,16 +34,12 @@ class RecurrencePredictor {
 
   // Train the predictor on an occurrence of |target| coinciding with
   // |condition|. The predictor will collect its own contextual information, eg.
-  // time of day, as part of training. Zero-state predictors should use the
-  // one-argument version.
-  virtual void Train(unsigned int target);
-  virtual void Train(unsigned int target, unsigned int condition);
+  // time of day, as part of training.
+  virtual void Train(unsigned int target, unsigned int condition) = 0;
 
   // Return a map of all known targets to their scores for the given condition
-  // under this predictor. Scores must be within the range [0,1]. Zero-state
-  // predictors should use the zero-argument version.
-  virtual base::flat_map<unsigned int, float> Rank();
-  virtual base::flat_map<unsigned int, float> Rank(unsigned int condition);
+  // under this predictor. Scores must be within the range [0,1].
+  virtual base::flat_map<unsigned int, float> Rank(unsigned int condition) = 0;
 
   virtual void ToProto(RecurrencePredictorProto* proto) const = 0;
   virtual void FromProto(const RecurrencePredictorProto& proto) = 0;
@@ -62,8 +58,8 @@ class FakePredictor : public RecurrencePredictor {
   ~FakePredictor() override;
 
   // RecurrencePredictor:
-  void Train(unsigned int target) override;
-  base::flat_map<unsigned int, float> Rank() override;
+  void Train(unsigned int target, unsigned int condition) override;
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -85,6 +81,8 @@ class DefaultPredictor : public RecurrencePredictor {
   ~DefaultPredictor() override;
 
   // RecurrencePredictor:
+  void Train(unsigned int target, unsigned int condition) override;
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -95,16 +93,15 @@ class DefaultPredictor : public RecurrencePredictor {
   DISALLOW_COPY_AND_ASSIGN(DefaultPredictor);
 };
 
-// ZeroStateFrecencyPredictor ranks targets according to their frecency, and
+// FrecencyPredictor ranks targets according to their frecency, and
 // can only be used for zero-state predictions. This predictor allows for
 // frecency-based rankings with different configuration to that of the ranker's
 // FrecencyStore. If frecency-based rankings with the same configuration as the
 // store are needed, the DefaultPredictor should be used instead.
-class ZeroStateFrecencyPredictor : public RecurrencePredictor {
+class FrecencyPredictor : public RecurrencePredictor {
  public:
-  explicit ZeroStateFrecencyPredictor(
-      const ZeroStateFrecencyPredictorConfig& config);
-  ~ZeroStateFrecencyPredictor() override;
+  explicit FrecencyPredictor(const FrecencyPredictorConfig& config);
+  ~FrecencyPredictor() override;
 
   // Records all information about a target: its id and score, along with the
   // number of updates that had occurred when the score was last calculated.
@@ -115,8 +112,8 @@ class ZeroStateFrecencyPredictor : public RecurrencePredictor {
   };
 
   // RecurrencePredictor:
-  void Train(unsigned int target) override;
-  base::flat_map<unsigned int, float> Rank() override;
+  void Train(unsigned int target, unsigned int condition) override;
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -139,23 +136,22 @@ class ZeroStateFrecencyPredictor : public RecurrencePredictor {
 
   // This stores all the data of the frecency predictor.
   // TODO(tby): benchmark which map is best in practice for our use.
-  base::flat_map<unsigned int, ZeroStateFrecencyPredictor::TargetData> targets_;
+  base::flat_map<unsigned int, FrecencyPredictor::TargetData> targets_;
 
-  DISALLOW_COPY_AND_ASSIGN(ZeroStateFrecencyPredictor);
+  DISALLOW_COPY_AND_ASSIGN(FrecencyPredictor);
 };
 
-// |ZeroStateHourBinPredictor| ranks targets according to their frequency during
+// |HourBinPredictor| ranks targets according to their frequency during
 // the current and neighbor hour bins. It can only be used for zero-state
 // predictions.
-class ZeroStateHourBinPredictor : public RecurrencePredictor {
+class HourBinPredictor : public RecurrencePredictor {
  public:
-  explicit ZeroStateHourBinPredictor(
-      const ZeroStateHourBinPredictorConfig& config);
-  ~ZeroStateHourBinPredictor() override;
+  explicit HourBinPredictor(const HourBinPredictorConfig& config);
+  ~HourBinPredictor() override;
 
   // RecurrencePredictor:
-  void Train(unsigned int target) override;
-  base::flat_map<unsigned int, float> Rank() override;
+  void Train(unsigned int target, unsigned int condition) override;
+  base::flat_map<unsigned int, float> Rank(unsigned int condition) override;
   void ToProto(RecurrencePredictorProto* proto) const override;
   void FromProto(const RecurrencePredictorProto& proto) override;
   const char* GetPredictorName() const override;
@@ -163,13 +159,11 @@ class ZeroStateHourBinPredictor : public RecurrencePredictor {
   static const char kPredictorName[];
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, GetTheRightBin);
-  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest,
-                           TrainAndRankSingleBin);
-  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest,
-                           TrainAndRankMultipleBin);
-  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, ToProto);
-  FRIEND_TEST_ALL_PREFIXES(ZeroStateHourBinPredictorTest, FromProtoDecays);
+  FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, GetTheRightBin);
+  FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, TrainAndRankSingleBin);
+  FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, TrainAndRankMultipleBin);
+  FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, ToProto);
+  FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, FromProtoDecays);
   // Return the bin index that is |hour_difference| away from the current bin
   // index.
   int GetBinFromHourDifference(int hour_difference) const;
@@ -182,9 +176,9 @@ class ZeroStateHourBinPredictor : public RecurrencePredictor {
   void SetLastDecayTimestamp(float value) {
     proto_.set_last_decay_timestamp(value);
   }
-  ZeroStateHourBinPredictorProto proto_;
-  ZeroStateHourBinPredictorConfig config_;
-  DISALLOW_COPY_AND_ASSIGN(ZeroStateHourBinPredictor);
+  HourBinPredictorProto proto_;
+  HourBinPredictorConfig config_;
+  DISALLOW_COPY_AND_ASSIGN(HourBinPredictor);
 };
 
 }  // namespace app_list

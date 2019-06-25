@@ -39,4 +39,9 @@ const char kTabHoverCardsFeatureParameterName[] = "setting";
 const base::Feature kTabHoverCardImages{"TabHoverCardImages",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+constexpr base::Feature kEnableDbusAndX11StatusIcons{
+    "EnableDbusAndX11StatusIcons", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features

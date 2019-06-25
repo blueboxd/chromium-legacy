@@ -269,7 +269,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   } else {
     DCHECK(!self.folder);
     self.folder = self.bookmarkModel->AddFolder(
-        self.parentFolder, self.parentFolder->child_count(), folderTitle);
+        self.parentFolder, self.parentFolder->children().size(), folderTitle);
   }
   [self.delegate bookmarkFolderEditor:self didFinishEditingFolder:self.folder];
 }

@@ -2288,8 +2288,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   params.source_site_instance = source_site_instance;
   params.load_type = method == "POST" ? LOAD_TYPE_HTTP_POST : LOAD_TYPE_DEFAULT;
   params.transition_type = page_transition;
-  params.frame_tree_node_id =
-      render_frame_host->frame_tree_node()->frame_tree_node_id();
+  params.frame_tree_node_id = node->frame_tree_node_id();
   params.referrer = referrer;
   /* params.redirect_chain: skip */
   params.extra_headers = extra_headers;
@@ -2313,15 +2312,15 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
-          render_frame_host->frame_tree_node(), params, override_user_agent,
-          should_replace_current_entry, false /* has_user_gesture */,
-          download_policy, ReloadType::NONE, entry.get(), frame_entry.get());
+          node, params, override_user_agent, should_replace_current_entry,
+          false /* has_user_gesture */, download_policy, ReloadType::NONE,
+          entry.get(), frame_entry.get());
 
   if (!request)
     return;
 
-  render_frame_host->frame_tree_node()->navigator()->Navigate(
-      std::move(request), ReloadType::NONE, RestoreType::NONE);
+  node->navigator()->Navigate(std::move(request), ReloadType::NONE,
+                              RestoreType::NONE);
 }
 
 void NavigationControllerImpl::SetSessionStorageNamespace(

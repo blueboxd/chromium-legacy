@@ -628,12 +628,11 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
           return;
         }
       }
-      for (int i = dst->child_count() - 1; i >= 0; --i) {
-        model->Move(dst->GetChild(i), foster_parent,
+      while (!dst->children().empty()) {
+        model->Move(dst->children().back().get(), foster_parent,
                     foster_parent->children().size());
       }
     }
-    DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
 
     model_associator_->Disassociate(it->id);
 
@@ -739,7 +738,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   // Clean up the temporary node.
   if (foster_parent) {
     // There should be no nodes left under the foster parent.
-    DCHECK_EQ(foster_parent->child_count(), 0);
+    DCHECK(foster_parent->children().empty());
     model->Remove(foster_parent);
     foster_parent = nullptr;
   }

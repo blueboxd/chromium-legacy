@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
@@ -20,9 +21,6 @@
 #endif
 
 namespace {
-
-constexpr base::Feature kEnableDbusAndX11StatusIcons{
-    "EnableDbusAndX11StatusIcons", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
@@ -135,7 +133,7 @@ std::unique_ptr<StatusIconLinuxWrapper>
 StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
-  if (base::FeatureList::IsEnabled(kEnableDbusAndX11StatusIcons)) {
+  if (base::FeatureList::IsEnabled(features::kEnableDbusAndX11StatusIcons)) {
 #if defined(USE_DBUS)
     return base::WrapUnique(new StatusIconLinuxWrapper(
         std::make_unique<StatusIconLinuxDbus>(), kTypeDbus, image, tool_tip));

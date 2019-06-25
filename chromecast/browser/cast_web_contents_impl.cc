@@ -266,8 +266,10 @@ void CastWebContentsImpl::RenderFrameCreated(
   // Allow observers to use remote interfaces which are hosted by the new
   // RenderFrame.
   for (Observer& observer : observer_list_) {
-    observer.RenderFrameCreated(render_process_id, render_frame_id,
-                                render_frame_host->GetRemoteInterfaces());
+    observer.RenderFrameCreated(
+        render_process_id, render_frame_id,
+        render_frame_host->GetRemoteInterfaces(),
+        render_frame_host->GetRemoteAssociatedInterfaces());
   }
 
   chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;

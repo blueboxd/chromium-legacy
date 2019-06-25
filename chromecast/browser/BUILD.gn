@@ -317,8 +317,6 @@ cast_source_set("browser") {
       "extensions/api/tts/tts_extension_api.h",
       "extensions/api/tts/tts_extension_api_constants.cc",
       "extensions/api/tts/tts_extension_api_constants.h",
-      "extensions/cast_display_info_provider.cc",
-      "extensions/cast_display_info_provider.h",
       "extensions/cast_extension_host_delegate.cc",
       "extensions/cast_extension_host_delegate.h",
       "extensions/cast_extension_system.cc",

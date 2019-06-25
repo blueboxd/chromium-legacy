@@ -104,13 +104,19 @@ class RecurrenceRankerTest : public testing::Test {
     value_data.set_last_num_updates(4);
     (*target_values)["C"] = value_data;
 
-    // Make empty conditions frecency store.
+    // Make conditions frecency store.
     auto* conditions = proto.mutable_conditions();
-    conditions->set_value_limit(0u);
-    conditions->set_decay_coeff(0.0f);
+    conditions->set_value_limit(10u);
+    conditions->set_decay_coeff(0.5f);
     conditions->set_num_updates(0);
     conditions->set_next_id(0);
-    conditions->mutable_values();
+
+    auto* condition_values = conditions->mutable_values();
+
+    value_data.set_id(0u);
+    value_data.set_last_score(0.5f);
+    value_data.set_last_num_updates(1);
+    (*condition_values)[""] = value_data;
 
     // Make FakePredictor counts.
     auto* counts =
@@ -369,7 +375,7 @@ TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
 TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   RecurrenceRankerConfigProto config;
   PartiallyPopulateConfig(&config);
-  auto* predictor = config.mutable_zero_state_frecency_predictor();
+  auto* predictor = config.mutable_frecency_predictor();
   predictor->set_decay_coeff(0.5f);
 
   RecurrenceRanker ranker(ranker_filepath_, config, false);

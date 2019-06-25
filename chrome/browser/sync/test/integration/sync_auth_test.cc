@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   // Delete the bookmark and the pref.
   // Note that AttemptToTriggerAuthError() also creates bookmarks, so the index
   // of our test bookmark might have changed.
-  ASSERT_EQ(bar->GetChild(bar->child_count() - 1), bookmark);
+  ASSERT_EQ(bar->children().back().get(), bookmark);
   bookmarks_helper::Remove(0, bar, bar->children().size() - 1);
   ASSERT_FALSE(bookmarks_helper::HasNodeWithURL(0, kTestURL));
   pref_service->ClearPref(prefs::kHomePageIsNewTabPage);

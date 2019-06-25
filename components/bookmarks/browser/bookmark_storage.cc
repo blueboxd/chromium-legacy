@@ -53,8 +53,8 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
     if (node->url().is_valid())
       details->index()->Add(node);
   } else {
-    for (int i = 0; i < node->child_count(); ++i)
-      AddBookmarksToIndex(details, node->GetChild(i));
+    for (const auto& child : node->children())
+      AddBookmarksToIndex(details, child.get());
   }
 }
 
@@ -70,8 +70,8 @@ void PopulateNumNodesPerUrlHash(
   if (!node->is_folder())
     (*num_nodes_per_url_hash)[std::hash<std::string>()(node->url().spec())]++;
 
-  for (int i = 0; i < node->child_count(); ++i)
-    PopulateNumNodesPerUrlHash(node->GetChild(i), num_nodes_per_url_hash);
+  for (const auto& child : node->children())
+    PopulateNumNodesPerUrlHash(child.get(), num_nodes_per_url_hash);
 }
 
 // Computes the number of bookmarks (excluding folders) with a URL that is used
@@ -102,8 +102,8 @@ int GetNumNodesWithEmptyTitle(const BookmarkNode* node) {
   if (!node->is_root() && node->GetTitle().empty())
     ++num_nodes_with_empty_title;
 
-  for (int i = 0; i < node->child_count(); ++i)
-    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(node->GetChild(i));
+  for (const auto& child : node->children())
+    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(child.get());
 
   return num_nodes_with_empty_title;
 }
@@ -227,8 +227,7 @@ bool BookmarkLoadDetails::LoadExtraNodes() {
       std::move(load_extra_callback_).Run(&max_id_);
   bool has_non_empty_node = false;
   for (auto& node : extra_nodes) {
-    if (node->child_count() != 0)
-      has_non_empty_node = true;
+    has_non_empty_node |= !node->children().empty();
     root_node_->Add(std::move(node));
   }
   return has_non_empty_node;

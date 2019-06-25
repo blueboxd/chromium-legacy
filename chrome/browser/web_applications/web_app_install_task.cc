@@ -71,6 +71,7 @@ void WebAppInstallTask::InstallWebAppFromManifest(
     WebappInstallSource install_source,
     InstallManager::WebAppInstallDialogCallback dialog_callback,
     InstallManager::OnceInstallCallback install_callback) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
   CheckInstallPreconditions();
 
   Observe(contents);
@@ -93,6 +94,7 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
     WebappInstallSource install_source,
     InstallManager::WebAppInstallDialogCallback dialog_callback,
     InstallManager::OnceInstallCallback install_callback) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
   CheckInstallPreconditions();
 
   Observe(contents);
@@ -111,6 +113,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
     bool no_network_install,
     WebappInstallSource install_source,
     InstallManager::OnceInstallCallback callback) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
   CheckInstallPreconditions();
 
   std::vector<BitmapAndSource> square_icons;
@@ -191,7 +194,6 @@ void WebAppInstallTask::SetInstallFinalizerForTesting(
 
 void WebAppInstallTask::CheckInstallPreconditions() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(AreWebAppsUserInstallable(profile_));
 
   // Concurrent calls are not allowed.
   DCHECK(!web_contents());

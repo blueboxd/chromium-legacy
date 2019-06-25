@@ -540,8 +540,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   if (IsHTMLDialogElement(GetNode()) && IsOutOfFlowPositioned())
     PositionDialog();
 
-  // Only clear child dirty bits, if we allowed child layout.
-  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  ClearNeedsLayout();
   UpdateIsSelfCollapsing();
   NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
 }

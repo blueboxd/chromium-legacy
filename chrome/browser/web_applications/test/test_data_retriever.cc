@@ -81,4 +81,17 @@ void TestDataRetriever::SetDestructionCallback(base::OnceClosure callback) {
   destruction_callback_ = std::move(callback);
 }
 
+void TestDataRetriever::BuildDefaultDataToRetrieve(const GURL& url,
+                                                   const GURL& scope) {
+  SetRendererWebApplicationInfo(std::make_unique<WebApplicationInfo>());
+
+  auto manifest = std::make_unique<blink::Manifest>();
+  manifest->start_url = url;
+  manifest->scope = scope;
+
+  SetManifest(std::move(manifest), /*is_installable=*/true);
+
+  SetIcons(IconsMap{});
+}
+
 }  // namespace web_app

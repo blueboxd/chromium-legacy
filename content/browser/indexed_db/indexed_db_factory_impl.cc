@@ -6,38 +6,31 @@
 
 #include <stdint.h>
 
-#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
-#include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -47,7 +40,6 @@ using url::Origin;
 namespace content {
 
 namespace {
-constexpr static const int kNumOpenTries = 2;
 
 leveldb::Status GetDBSizeFromEnv(leveldb::Env* env,
                                  const std::string& path,
@@ -82,69 +74,6 @@ IndexedDBDatabaseError CreateDefaultError() {
                    " for indexedDB.open."));
 }
 
-// Creates the leveldb and blob storage directories for IndexedDB.
-std::tuple<base::FilePath /*leveldb_path*/,
-           base::FilePath /*blob_path*/,
-           leveldb::Status>
-CreateDatabaseDirectories(const base::FilePath& path_base,
-                          const url::Origin& origin) {
-  leveldb::Status status;
-  if (!base::CreateDirectoryAndGetError(path_base, nullptr)) {
-    status =
-        leveldb::Status::IOError("Unable to create IndexedDB database path");
-    LOG(ERROR) << status.ToString() << ": \"" << path_base.AsUTF8Unsafe()
-               << "\"";
-    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,
-                     origin);
-    return {base::FilePath(), base::FilePath(), status};
-  }
-
-  base::FilePath leveldb_path =
-      path_base.Append(indexed_db::GetLevelDBFileName(origin));
-  base::FilePath blob_path =
-      path_base.Append(indexed_db::GetBlobStoreFileName(origin));
-  if (indexed_db::IsPathTooLong(leveldb_path)) {
-    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
-                     origin);
-    status = leveldb::Status::IOError("File path too long");
-    return {base::FilePath(), base::FilePath(), status};
-  }
-  return {leveldb_path, blob_path, status};
-}
-
-std::tuple<bool, leveldb::Status> AreSchemasKnown(LevelDBDatabase* db) {
-  int64_t db_schema_version = 0;
-  bool found = false;
-  leveldb::Status s = indexed_db::GetInt(db, SchemaVersionKey::Encode(),
-                                         &db_schema_version, &found);
-  if (!s.ok())
-    return {false, s};
-  if (!found) {
-    return {true, s};
-  }
-  if (db_schema_version < 0)
-    return {false, leveldb::Status::Corruption(
-                       "Invalid IndexedDB database schema version.")};
-  if (db_schema_version > indexed_db::kLatestKnownSchemaVersion) {
-    return {false, s};
-  }
-
-  int64_t raw_db_data_version = 0;
-  s = indexed_db::GetInt(db, DataVersionKey::Encode(), &raw_db_data_version,
-                         &found);
-  if (!s.ok())
-    return {false, s};
-  if (!found) {
-    return {true, s};
-  }
-  if (raw_db_data_version < 0)
-    return {false,
-            leveldb::Status::Corruption("Invalid IndexedDB data version.")};
-
-  return {IndexedDBDataFormatVersion::GetCurrent().IsAtLeast(
-              IndexedDBDataFormatVersion::Decode(raw_db_data_version)),
-          s};
-}
 }  // namespace
 
 IndexedDBFactoryImpl::IndexedDBFactoryImpl(
@@ -608,16 +537,10 @@ std::tuple<IndexedDBOriginStateHandle,
            leveldb::Status,
            IndexedDBDatabaseError,
            IndexedDBDataLossInfo,
-           /*is_cold_open=*/bool>
+           bool>
 IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     const Origin& origin,
     const base::FilePath& data_directory) {
-  IDB_TRACE("indexed_db::GetOrOpenOriginFactory");
-  // Please see docs/open_and_verify_leveldb_database.code2flow, and the
-  // generated pdf (from https://code2flow.com).
-  // The intended strategy here is to have this function match that flowchart,
-  // where the flowchart should be seen as the 'master' logic template. Please
-  // check the git history of both to make sure they are in sync.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = factories_per_origin_.find(origin);
   if (it != factories_per_origin_.end()) {
@@ -626,46 +549,25 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
             /*was_cold_open=*/false};
   }
 
-  bool is_incognito_and_in_memory = data_directory.empty();
   base::FilePath blob_path;
   base::FilePath database_path;
-  leveldb::Status s = leveldb::Status::OK();
-  if (!is_incognito_and_in_memory) {
+  leveldb::Status s;
+  if (!data_directory.empty()) {
     // The database will be on-disk and not in-memory.
     std::tie(database_path, blob_path, s) =
-        CreateDatabaseDirectories(data_directory, origin);
+        indexed_db::CreateDatabaseDirectories(data_directory, origin);
     if (!s.ok())
       return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
               IndexedDBDataLossInfo(), /*was_cold_open=*/true};
   }
+  std::unique_ptr<LevelDBDatabase> database;
   IndexedDBDataLossInfo data_loss_info;
-  std::unique_ptr<IndexedDBBackingStore> backing_store;
-  bool disk_full = false;
-  for (int i = 0; i < kNumOpenTries; ++i) {
-    std::tie(backing_store, s, data_loss_info, disk_full) =
-        OpenAndVerifyIndexedDBBackingStore(origin, data_directory,
-                                           database_path, blob_path,
-                                           /*is_first_attempt=*/i == 0);
-    if (LIKELY(s.ok()))
-      break;
-    DCHECK(!backing_store);
-    // If the disk is full, always exit immediately.
-    if (disk_full)
-      break;
-    if (s.IsCorruption()) {
-      std::string sanitized_message = leveldb_env::GetCorruptionMessage(s);
-      base::ReplaceSubstringsAfterOffset(&sanitized_message, 0u,
-                                         data_directory.AsUTF8Unsafe(), "...");
-      LOG(ERROR) << "Got corruption for " << origin.Serialize() << ", "
-                 << sanitized_message;
-      IndexedDBBackingStore::RecordCorruptionInfo(data_directory, origin,
-                                                  sanitized_message);
-    }
-  }
-
-  if (UNLIKELY(!s.ok())) {
-    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
-                     origin);
+  bool disk_full;
+  std::tie(database, s, data_loss_info, disk_full) =
+      indexed_db::OpenAndVerifyLevelDBDatabase(origin, data_directory,
+                                               database_path, leveldb_factory_,
+                                               context_->TaskRunner());
+  if (!s.ok()) {
     if (disk_full) {
       return {IndexedDBOriginStateHandle(), s,
               IndexedDBDatabaseError(
@@ -679,19 +581,35 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
               data_loss_info, /*was_cold_open=*/true};
     }
   }
-  if (!is_incognito_and_in_memory)
-    ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin);
-  it = factories_per_origin_
-           .emplace(origin,
-                    std::make_unique<IndexedDBOriginState>(
-                        /*persist_for_incognito=*/is_incognito_and_in_memory,
-                        clock_, leveldb_factory_, &earliest_sweep_,
-                        base::BindOnce(
-                            &IndexedDBFactoryImpl::RemoveOriginState,
-                            origin_state_destruction_weak_factory_.GetWeakPtr(),
-                            origin),
-                        std::move(backing_store)))
-           .first;
+  bool is_in_memory = data_directory.empty();
+  IndexedDBBackingStore::Mode backing_store_mode =
+      is_in_memory ? IndexedDBBackingStore::Mode::kInMemory
+                   : IndexedDBBackingStore::Mode::kOnDisk;
+  std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
+      backing_store_mode, leveldb_factory_, origin, blob_path,
+      std::move(database), context_->TaskRunner());
+
+  bool first_open_since_startup =
+      backends_opened_since_startup_.insert(origin).second;
+  s = backing_store->Initialize(
+      /*cleanup_live_journal=*/!database_path.empty() &&
+      first_open_since_startup);
+
+  if (!s.ok())
+    return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
+            data_loss_info, /*was_cold_open=*/true};
+
+  it =
+      factories_per_origin_
+          .emplace(origin,
+                   std::make_unique<IndexedDBOriginState>(
+                       is_in_memory, clock_, leveldb_factory_, &earliest_sweep_,
+                       base::BindOnce(
+                           &IndexedDBFactoryImpl::RemoveOriginState,
+                           origin_state_destruction_weak_factory_.GetWeakPtr(),
+                           origin),
+                       std::move(backing_store)))
+          .first;
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),
           data_loss_info, /*was_cold_open=*/true};
@@ -707,114 +625,6 @@ std::unique_ptr<IndexedDBBackingStore> IndexedDBFactoryImpl::CreateBackingStore(
   return std::make_unique<IndexedDBBackingStore>(
       backing_store_mode, this, leveldb_factory, origin, blob_path,
       std::move(db), task_runner);
-}
-
-std::tuple<std::unique_ptr<IndexedDBBackingStore>,
-           leveldb::Status,
-           IndexedDBDataLossInfo,
-           bool /* is_disk_full */>
-IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
-    const url::Origin& origin,
-    base::FilePath data_directory,
-    base::FilePath database_path,
-    base::FilePath blob_path,
-    bool is_first_attempt) {
-  // Please see docs/open_and_verify_leveldb_database.code2flow, and the
-  // generated pdf (from https://code2flow.com).
-  // The intended strategy here is to have this function match that flowchart,
-  // where the flowchart should be seen as the 'master' logic template. Please
-  // check the git history of both to make sure they are in sync.
-  DCHECK_EQ(database_path.empty(), data_directory.empty());
-  DCHECK_EQ(blob_path.empty(), data_directory.empty());
-  IDB_TRACE("indexed_db::OpenAndVerifyLevelDBDatabase");
-
-  bool is_incognito_and_in_memory = data_directory.empty();
-  leveldb::Status status;
-  IndexedDBDataLossInfo data_loss_info;
-  data_loss_info.status = blink::mojom::IDBDataLoss::None;
-  if (!is_incognito_and_in_memory) {
-    // Check for previous corruption, and if found then try to delete the
-    // database.
-    std::string corruption_message =
-        indexed_db::ReadCorruptionInfo(data_directory, origin);
-    if (UNLIKELY(!corruption_message.empty())) {
-      LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
-                    "database.";
-      if (is_first_attempt) {
-        ReportOpenStatus(
-            indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
-            origin);
-      }
-      data_loss_info.status = blink::mojom::IDBDataLoss::Total;
-      data_loss_info.message = base::StrCat(
-          {"IndexedDB (database was corrupt): ", corruption_message});
-      // This is a special case where we want to make sure the database is
-      // deleted, so we try to delete again.
-      status = leveldb_factory_->DestroyLevelDB(database_path);
-      UMA_HISTOGRAM_ENUMERATION(
-          "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
-          leveldb_env::GetLevelDBStatusUMAValue(status),
-          leveldb_env::LEVELDB_STATUS_MAX);
-      if (UNLIKELY(!status.ok())) {
-        LOG(ERROR) << "Unable to delete backing store: " << status.ToString();
-        return {nullptr, status, data_loss_info, /*is_disk_full=*/false};
-      }
-    }
-  }
-
-  bool is_disk_full;
-  scoped_refptr<LevelDBState> state;
-
-  // Open the leveldb database.
-  std::tie(state, status, is_disk_full) = leveldb_factory_->OpenLevelDBState(
-      database_path, indexed_db::GetDefaultIndexedDBComparator(),
-      indexed_db::GetDefaultLevelDBComparator());
-
-  if (UNLIKELY(!status.ok()))
-    return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};
-
-  std::unique_ptr<LevelDBDatabase> database = std::make_unique<LevelDBDatabase>(
-      std::move(state), leveldb_factory_, context_->TaskRunner(),
-      LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
-
-  bool are_schemas_known = false;
-  std::tie(are_schemas_known, status) = AreSchemasKnown(database.get());
-  if (UNLIKELY(!status.ok())) {
-    LOG(ERROR) << "IndexedDB had an error checking schema, treating it as "
-                  "failure to open: "
-               << status.ToString();
-    ReportOpenStatus(
-        indexed_db::
-            INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
-        origin);
-    return {nullptr, status, std::move(data_loss_info), /*is_disk_full=*/false};
-  } else if (UNLIKELY(!are_schemas_known)) {
-    LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it as "
-                  "failure to open.";
-    ReportOpenStatus(
-        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
-        origin);
-    return {nullptr, leveldb::Status::Corruption("Unknown IndexedDB schema"),
-            std::move(data_loss_info), /*is_disk_full=*/false};
-  }
-
-  bool first_open_since_startup =
-      backends_opened_since_startup_.insert(origin).second;
-  IndexedDBBackingStore::Mode backing_store_mode =
-      is_incognito_and_in_memory ? IndexedDBBackingStore::Mode::kInMemory
-                                 : IndexedDBBackingStore::Mode::kOnDisk;
-  std::unique_ptr<IndexedDBBackingStore> backing_store = CreateBackingStore(
-      backing_store_mode, leveldb_factory_, origin, blob_path,
-      std::move(database), context_->TaskRunner());
-  status = backing_store->Initialize(
-      /*cleanup_live_journal=*/(!is_incognito_and_in_memory &&
-                                first_open_since_startup));
-
-  if (UNLIKELY(!status.ok()))
-    return {nullptr, status, IndexedDBDataLossInfo(), /*is_disk_full=*/false};
-
-  return {std::move(backing_store), status, std::move(data_loss_info),
-          /*is_disk_full=*/false};
 }
 
 void IndexedDBFactoryImpl::RemoveOriginState(const url::Origin& origin) {

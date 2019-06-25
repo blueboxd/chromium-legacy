@@ -4,6 +4,7 @@
 
 #include "components/bookmarks/browser/url_index.h"
 
+#include "base/containers/adapters.h"
 #include "components/bookmarks/browser/url_and_title.h"
 
 namespace bookmarks {
@@ -117,8 +118,8 @@ void UrlIndex::AddImpl(BookmarkNode* node) {
   url_lock_.AssertAcquired();
   if (node->is_url())
     nodes_ordered_by_url_set_.insert(node);
-  for (int i = 0; i < node->child_count(); ++i)
-    AddImpl(node->GetChild(i));
+  for (const auto& child : node->children())
+    AddImpl(child.get());
 }
 
 void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
@@ -134,8 +135,8 @@ void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
     if (removed_urls)
       removed_urls->insert(node->url());
   }
-  for (int i = node->child_count() - 1; i >= 0; --i)
-    RemoveImpl(node->GetChild(i), removed_urls);
+  for (const auto& child : base::Reversed(node->children()))
+    RemoveImpl(child.get(), removed_urls);
 }
 
 }  // namespace bookmarks

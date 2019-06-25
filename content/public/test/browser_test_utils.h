@@ -1380,10 +1380,6 @@ class TestNavigationManager : public WebContentsObserver {
   // Whether the navigation successfully committed.
   bool was_successful() const { return was_successful_; }
 
-  // Allows nestable tasks when running a message loop in the Wait* functions.
-  // This is useful for utilizing this class from within another message loop.
-  void AllowNestableTasks();
-
  protected:
   // Derived classes can override if they want to filter out navigations. This
   // is called from DidStartNavigation.
@@ -1425,7 +1421,6 @@ class TestNavigationManager : public WebContentsObserver {
   NavigationState desired_state_;
   bool was_successful_ = false;
   base::OnceClosure quit_closure_;
-  base::RunLoop::Type message_loop_type_ = base::RunLoop::Type::kDefault;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 

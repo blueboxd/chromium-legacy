@@ -48,6 +48,7 @@ public class ChromeBasePreferenceCompat extends Preference {
      */
     public ChromeBasePreferenceCompat(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setLayoutResource(R.layout.preference_compat);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeBasePreference);
         mIconTint = a.getColorStateList(R.styleable.ChromeBasePreference_iconTint);

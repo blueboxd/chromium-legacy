@@ -81,12 +81,10 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
     return std::make_unique<FakePredictor>(config.fake_predictor());
   if (config.has_default_predictor())
     return std::make_unique<DefaultPredictor>(config.default_predictor());
-  if (config.has_zero_state_frecency_predictor())
-    return std::make_unique<ZeroStateFrecencyPredictor>(
-        config.zero_state_frecency_predictor());
-  if (config.has_zero_state_hour_bin_predictor())
-    return std::make_unique<ZeroStateHourBinPredictor>(
-        config.zero_state_hour_bin_predictor());
+  if (config.has_frecency_predictor())
+    return std::make_unique<FrecencyPredictor>(config.frecency_predictor());
+  if (config.has_hour_bin_predictor())
+    return std::make_unique<HourBinPredictor>(config.hour_bin_predictor());
 
   LogConfigurationError(ConfigurationError::kInvalidPredictor);
   NOTREACHED();
@@ -215,34 +213,12 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
     LogSerializationError(SerializationError::kConditionsMissingError);
 }
 
-void RecurrenceRanker::Record(const std::string& target) {
-  if (!load_from_disk_completed_)
-    return;
-
-  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
-    targets_->Update(target);
-  } else {
-    predictor_->Train(targets_->Update(target));
-  }
-
-  MaybeSave();
-}
-
 void RecurrenceRanker::Record(const std::string& target,
                               const std::string& condition) {
   if (!load_from_disk_completed_)
     return;
 
-  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
-    // TODO(921444): The default predictor does not support queries, so we fail
-    // here. Once we have a suitable query-based default predictor implemented,
-    // change this.
-    LogUsageError(UsageError::kInvalidTrainCall);
-    NOTREACHED();
-  } else {
-    predictor_->Train(targets_->Update(target), conditions_->Update(condition));
-  }
-
+  predictor_->Train(targets_->Update(target), conditions_->Update(condition));
   MaybeSave();
 }
 
@@ -282,41 +258,21 @@ void RecurrenceRanker::RemoveCondition(const std::string& condition) {
   MaybeSave();
 }
 
-base::flat_map<std::string, float> RecurrenceRanker::Rank() {
-  if (!load_from_disk_completed_)
-    return {};
-
-  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName)
-    return GetScoresFromFrecencyStore(targets_->GetAll());
-  return ZipTargetsWithScores(targets_->GetAll(), predictor_->Rank());
-}
-
 base::flat_map<std::string, float> RecurrenceRanker::Rank(
     const std::string& condition) {
   if (!load_from_disk_completed_)
     return {};
+  // Special case the default predictor, and return the scores from the target
+  // frecency store.
+  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName)
+    return GetScoresFromFrecencyStore(targets_->GetAll());
 
   base::Optional<unsigned int> condition_id = conditions_->GetId(condition);
   if (condition_id == base::nullopt)
     return {};
 
-  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
-    // TODO(921444): The default predictor does not support queries, so we fail
-    // here. Once we have a suitable query-based default predictor implemented,
-    // change this.
-    LogUsageError(UsageError::kInvalidRankCall);
-    NOTREACHED();
-    return {};
-  }
   return ZipTargetsWithScores(targets_->GetAll(),
                               predictor_->Rank(condition_id.value()));
-}
-
-std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(int n) {
-  if (!load_from_disk_completed_)
-    return {};
-
-  return SortAndTruncateRanks(n, Rank());
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(

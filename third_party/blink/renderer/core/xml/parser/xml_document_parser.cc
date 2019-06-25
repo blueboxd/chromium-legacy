@@ -1619,6 +1619,9 @@ void XMLDocumentParser::ResumeParsing() {
   // the passed string has more than one reference.
   Append(rest.ToString().Impl());
 
+  if (IsDetached())
+    return;
+
   // Finally, if finish() has been called and write() didn't result
   // in any further callbacks being queued, call end()
   if (finish_called_ && pending_callbacks_.IsEmpty())

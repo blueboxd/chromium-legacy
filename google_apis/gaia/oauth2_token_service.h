@@ -91,25 +91,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     std::string id_;
   };
 
-  // The parameters used to fetch an OAuth2 access token.
-  struct RequestParameters {
-    RequestParameters(const std::string& client_id,
-                      const CoreAccountId& account_id,
-                      const ScopeSet& scopes);
-    RequestParameters(const RequestParameters& other);
-    ~RequestParameters();
-    bool operator<(const RequestParameters& params) const;
-
-    // OAuth2 client id.
-    std::string client_id;
-    // Account id for which the request is made.
-    CoreAccountId account_id;
-    // URL scopes for the requested access token.
-    ScopeSet scopes;
-  };
-  typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
-      TokenCache;
-
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~OAuth2TokenService() override;
@@ -230,7 +211,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // TODO(https://crbug.com/967598): Remove this. It's opened only for
   // OAuth2TokenServiceTest.
-  OAuth2TokenService::TokenCache& token_cache();
+  int GetTokenCacheCount();
 
   const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
   GetAccessTokenDiagnosticsObservers();
@@ -313,8 +294,9 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
       const ScopeSet& scopes);
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
-  // |scopes|. Virtual so it can be overriden for tests and for platform-
-  // specifc behavior.
+  // |scopes|. Virtual so it can be overridden for tests and for platform-
+  // specific behavior.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   virtual void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                          const std::string& client_id,
                                          const ScopeSet& scopes,

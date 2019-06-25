@@ -11,31 +11,30 @@
 #include <wrl/client.h>
 
 #include "ui/gfx/buffer_types.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
-#include "ui/gl/gl_image.h"
+#include "ui/gl/gl_image_egl.h"
 
 namespace gl {
 
-class GL_EXPORT GLImageDXGISwapChain : public gl::GLImage {
+class GL_EXPORT GLImageDXGISwapChain : public gl::GLImageEGL {
  public:
   GLImageDXGISwapChain(const gfx::Size& size,
                        gfx::BufferFormat buffer_format,
                        Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
                        Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain);
 
+  // Safe downcast. Returns nullptr on failure.
+  static GLImageDXGISwapChain* FromGLImage(GLImage* image);
+
+  bool Initialize();
+
   // GLImage implementation
-  BindOrCopy ShouldBindOrCopy() override;
-  // Destroys surface(if present), and binds image to new pixel buffer surface.
-  bool BindTexImage(unsigned target) override;
-  void ReleaseTexImage(unsigned target) override;
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override;
   void Flush() override;
   unsigned GetInternalFormat() override;
-  gfx::Size GetSize() override;
   Type GetType() const override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
@@ -48,22 +47,19 @@ class GL_EXPORT GLImageDXGISwapChain : public gl::GLImage {
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture() { return texture_; }
+  const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture() { return texture_; }
+  const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain() {
+    return swap_chain_;
+  }
 
  protected:
   ~GLImageDXGISwapChain() override;
 
  private:
-  void DestroySurface();
-
-  const gfx::Size size_;
   const gfx::BufferFormat buffer_format_;
-  EGLSurface surface_ = nullptr;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
   // Required by Direct composition surface to pass swap chain handle to OS.
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
-  const EGLDisplay display_;
-  const EGLConfig config_;
   DISALLOW_COPY_AND_ASSIGN(GLImageDXGISwapChain);
 };
 

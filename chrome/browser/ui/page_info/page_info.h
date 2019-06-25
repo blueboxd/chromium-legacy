@@ -87,15 +87,20 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     // The website provided a valid certificate, but the certificate or chain
     // is using a deprecated signature algorithm.
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
+  };
+
+  // Safe Browsing status of a website.
+  enum SafeBrowsingStatus {
+    SAFE_BROWSING_STATUS_NONE = 0,
     // The website has been flagged by Safe Browsing as dangerous for
     // containing malware, social engineering, unwanted software, or password
     // reuse on a low reputation site.
-    SITE_IDENTITY_STATUS_MALWARE,
-    SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
-    SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
-    SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE,
-    SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE,
-    SITE_IDENTITY_STATUS_BILLING,
+    SAFE_BROWSING_STATUS_MALWARE,
+    SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING,
+    SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE,
+    SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE,
+    SAFE_BROWSING_STATUS_BILLING,
   };
 
   // Events for UMA. Do not reorder or change! Exposed in header so enum is
@@ -192,8 +197,12 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     return site_identity_status_;
   }
 
-  const base::string16& site_identity_details() const {
-    return site_identity_details_;
+  const SafeBrowsingStatus& safe_browsing_status() const {
+    return safe_browsing_status_;
+  }
+
+  const base::string16& site_details_message() const {
+    return site_details_message_;
   }
 
   const base::string16& organization_name() const { return organization_name_; }
@@ -232,11 +241,12 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   void RecordPasswordReuseEvent();
 #endif
 
-  // Helper function to get the site identification status and details by
-  // malicious content status.
-  void GetSiteIdentityByMaliciousContentStatus(
+  // Helper function to get the Safe Browsing status and details by malicious
+  // content status.
+  // TODO(jdeblasio): Eliminate this and just use MaliciousContentStatus?
+  void GetSafeBrowsingStatusByMaliciousContentStatus(
       security_state::MaliciousContentStatus malicious_content_status,
-      PageInfo::SiteIdentityStatus* status,
+      PageInfo::SafeBrowsingStatus* status,
       base::string16* details);
 
   // Retrieves all the permissions that are shown in Page Info.
@@ -260,6 +270,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // Status of the website's identity verification check.
   SiteIdentityStatus site_identity_status_;
 
+  // Safe Browsing status of the website.
+  SafeBrowsingStatus safe_browsing_status_;
+
   // For secure connection |certificate_| is set to the server certificate.
   scoped_refptr<net::X509Certificate> certificate_;
 
@@ -271,9 +284,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // unnecessary UTF-8 string conversions.
 
   // Details about the website's identity. If the website's identity has been
-  // verified then |site_identity_details_| contains who verified the identity.
+  // verified then |site_details_message_| contains who verified the identity.
   // This string will be displayed in the UI.
-  base::string16 site_identity_details_;
+  base::string16 site_details_message_;
 
   // Set when the user has explicitly bypassed an SSL error for this host or
   // explicitly denied it (the latter of which is not currently possible in the

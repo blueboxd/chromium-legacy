@@ -165,10 +165,10 @@ TEST_F(ExtensionBookmarksTest, RemoveNodeNotRecursive) {
 }
 
 TEST_F(ExtensionBookmarksTest, RemoveNodeRecursive) {
-  EXPECT_EQ(3, model_->other_node()->child_count());
+  EXPECT_EQ(3u, model_->other_node()->children().size());
   std::string error;
   EXPECT_TRUE(RemoveNode(model_, managed_, folder_->id(), true, &error));
-  EXPECT_EQ(2, model_->other_node()->child_count());
+  EXPECT_EQ(2u, model_->other_node()->children().size());
 }
 
 TEST_F(ExtensionBookmarksTest, GetMetaInfo) {

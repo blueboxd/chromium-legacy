@@ -72,9 +72,6 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
-    showKioskNextShell_: Boolean,
-
-    /** @private */
     showCrostini_: Boolean,
 
     /** @private */
@@ -175,9 +172,6 @@ Polymer({
     this.showAndroidApps_ = showOSSettings &&
         loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
-    this.showKioskNextShell_ = showOSSettings &&
-        loadTimeData.valueExists('showKioskNextShell') &&
-        loadTimeData.getBoolean('showKioskNextShell');
     this.showCrostini_ = showOSSettings &&
         loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');

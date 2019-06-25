@@ -25,7 +25,7 @@ void UnyieldingDisplayLockBudget::OnLifecycleChange(
   // Mark all the phases dirty since we have no intention of yielding.
   for (auto phase = static_cast<unsigned>(Phase::kFirst);
        phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
-    MarkAncestorsDirtyForPhaseIfNeeded(static_cast<Phase>(phase));
+    MarkDirtyForPhaseIfNeeded(static_cast<Phase>(phase));
   }
 }
 

@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, Sanity) {
       UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
-  ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
+  ASSERT_EQ(tier1_a_url0->id(), top->children().back()->id());
   Remove(kSingleProfileIndex, top, top->children().size() - 1);
   Move(kSingleProfileIndex, wired, tier1_b, 0);
   Move(kSingleProfileIndex, porsche, bar, 3);
@@ -404,8 +404,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   ASSERT_TRUE(
       UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
   // Verify other node has no children now.
-  EXPECT_EQ(0, GetOtherNode(kSingleProfileIndex)->child_count());
-  EXPECT_EQ(0, GetBookmarkBarNode(kSingleProfileIndex)->child_count());
+  EXPECT_TRUE(GetOtherNode(kSingleProfileIndex)->children().empty());
+  EXPECT_TRUE(GetBookmarkBarNode(kSingleProfileIndex)->children().empty());
   // Verify model matches verifier.
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 }
@@ -688,7 +688,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title2));
 
   const BookmarkNode* bar = GetBookmarkBarNode(kSingleProfileIndex);
-  ASSERT_EQ(3, bar->child_count());
+  ASSERT_EQ(3u, bar->children().size());
   EXPECT_EQ(base::ASCIIToUTF16(title0), bar->GetChild(0)->GetTitle());
   EXPECT_EQ(base::ASCIIToUTF16(title1), bar->GetChild(1)->GetTitle());
   EXPECT_EQ(base::ASCIIToUTF16(title2), bar->GetChild(2)->GetTitle());
@@ -739,7 +739,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_EQ(1, GetBookmarkBarNode(kSingleProfileIndex)->child_count());
+  ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
 
   EXPECT_NE(
       0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-  ASSERT_EQ(1, GetBookmarkBarNode(kSingleProfileIndex)->child_count());
+  ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
 
 #if defined(CHROMEOS)
   // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order

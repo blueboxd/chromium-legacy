@@ -102,6 +102,8 @@ jumbo_source_set("renderer") {
     "extension_frame_helper.h",
     "extension_injection_host.cc",
     "extension_injection_host.h",
+    "extension_interaction.cc",
+    "extension_interaction.h",
     "extension_js_runner.cc",
     "extension_js_runner.h",
     "extension_throttle_entry.cc",

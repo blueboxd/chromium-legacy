@@ -10,6 +10,7 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/views/app_list_page.h"
+#include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_result_container_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -65,6 +66,9 @@ class APP_LIST_EXPORT SearchResultPageView
   views::View* contents_view() { return contents_view_; }
 
   SearchResultBaseView* first_result_view() const { return first_result_view_; }
+  ResultSelectionController* result_selection_controller() {
+    return result_selection_controller_.get();
+  }
 
   // Offset/add the size of the shadow border to the bounds
   // for proper sizing/placement with shadow included.
@@ -82,6 +86,10 @@ class APP_LIST_EXPORT SearchResultPageView
   // The SearchResultContainerViews that compose the search page. All owned by
   // the views hierarchy.
   std::vector<SearchResultContainerView*> result_container_views_;
+
+  // |ResultSelectionController| handles selection within the
+  // |result_container_views_|
+  std::unique_ptr<ResultSelectionController> result_selection_controller_;
 
   std::vector<HorizontalSeparator*> separators_;
 

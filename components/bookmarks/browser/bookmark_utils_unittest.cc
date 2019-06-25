@@ -285,7 +285,7 @@ TEST_F(BookmarkUtilsTest, PasteBookmarkFromURL) {
   EXPECT_TRUE(CanPasteFromClipboard(model.get(), new_folder));
 
   PasteFromClipboard(model.get(), new_folder, 0);
-  ASSERT_EQ(1, new_folder->child_count());
+  ASSERT_EQ(1u, new_folder->children().size());
 
   // Url for added node should be same as url_text.
   EXPECT_EQ(url_text, ASCIIToUTF16(new_folder->GetChild(0)->url().spec()));
@@ -340,7 +340,7 @@ TEST_F(BookmarkUtilsTest, MakeTitleUnique) {
   EXPECT_TRUE(CanPasteFromClipboard(model.get(), bookmark_bar_node));
 
   PasteFromClipboard(model.get(), bookmark_bar_node, 1);
-  ASSERT_EQ(2, bookmark_bar_node->child_count());
+  ASSERT_EQ(2u, bookmark_bar_node->children().size());
 
   // Url for added node should be same as url_text.
   EXPECT_EQ(url_text,
@@ -368,13 +368,13 @@ TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
   // Paste node to a different folder.
   const BookmarkNode* folder =
       model->AddFolder(model->bookmark_bar_node(), 0, ASCIIToUTF16("Folder"));
-  EXPECT_EQ(0, folder->child_count());
+  EXPECT_EQ(0u, folder->children().size());
 
   // And make sure we can paste a bookmark from the clipboard.
   EXPECT_TRUE(CanPasteFromClipboard(model.get(), folder));
 
   PasteFromClipboard(model.get(), folder, 0);
-  ASSERT_EQ(1, folder->child_count());
+  ASSERT_EQ(1u, folder->children().size());
 
   // Verify that the pasted node contains the same meta info.
   const BookmarkNode* pasted = folder->GetChild(0);
@@ -409,7 +409,7 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
   CopyToClipboard(model.get(), nodes, true);
 
   // Make sure the nodes were removed.
-  EXPECT_EQ(0, model->other_node()->child_count());
+  EXPECT_EQ(0u, model->other_node()->children().size());
 
   // Make sure observers were notified the set of changes should be grouped.
   ExpectGroupedChangeCount(1, 1);
@@ -505,9 +505,9 @@ TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
   std::vector<BookmarkNodeData::Element> elements;
   BookmarkNodeData::Element node_data(node);
   elements.push_back(node_data);
-  EXPECT_EQ(0, folder->child_count());
+  EXPECT_EQ(0u, folder->children().size());
   CloneBookmarkNode(model.get(), elements, folder, 0, false);
-  ASSERT_EQ(1, folder->child_count());
+  ASSERT_EQ(1u, folder->children().size());
 
   // Verify that the cloned node contains the same meta info.
   const BookmarkNode* clone = folder->GetChild(0);
@@ -536,7 +536,7 @@ TEST_F(BookmarkUtilsTest, CloneBookmarkResetsNonClonedKey) {
 
   // Cloning a bookmark should clear the non cloned key.
   CloneBookmarkNode(model.get(), elements, parent, 0, true);
-  ASSERT_EQ(2, parent->child_count());
+  ASSERT_EQ(2u, parent->children().size());
   std::string value;
   EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
 
@@ -560,7 +560,7 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
 
   // Cloning a folder should clear the non cloned key.
   CloneBookmarkNode(model.get(), elements, parent, 0, true);
-  ASSERT_EQ(2, parent->child_count());
+  ASSERT_EQ(2u, parent->children().size());
   std::string value;
   EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
 
@@ -603,7 +603,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   EXPECT_TRUE(model->bookmark_bar_node()->children().empty());
   EXPECT_TRUE(model->other_node()->children().empty());
   EXPECT_TRUE(model->mobile_node()->children().empty());
-  EXPECT_EQ(1, extra_node->child_count());
+  EXPECT_EQ(1u, extra_node->children().size());
 }
 
 }  // namespace

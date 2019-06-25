@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_SCHEDULER_TYPES_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_SCHEDULER_TYPES_H_
 
+#include <string>
+
 namespace notifications {
 
 // Enum to describe the time to process scheduled notification data.
@@ -68,6 +70,16 @@ enum class ImpressionResult {
   kMaxValue = kNeutral
 };
 
+// Defines user actions type.
+enum class UserActionType {
+  // The user clicks on the notification body.
+  kClick = 0,
+  // The user clicks on the notification button.
+  kButtonClick = 1,
+  // The user dismisses the notification.
+  kDismiss = 2,
+};
+
 // Categorizes type of notification buttons. Different type of button clicks
 // may result in change of notification shown frequency.
 enum class ActionButtonType {
@@ -79,6 +91,15 @@ enum class ActionButtonType {
 
   // Unhelpful button indicates dislike of the notification.
   kUnhelpful = 2,
+};
+
+// Information about button clicks.
+struct ButtonClickInfo {
+  // Unique id of the button.
+  std::string button_id;
+
+  // Associate impression type for the button.
+  ActionButtonType type = ActionButtonType::kUnknownAction;
 };
 
 }  // namespace notifications

@@ -144,7 +144,7 @@ class ToolbarMediatorTest : public PlatformTest {
         chrome_browser_state_.get());
     GURL URL = GURL(kTestUrl);
     const BookmarkNode* defaultFolder = bookmark_model_->mobile_node();
-    bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+    bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                             base::SysNSStringToUTF16(@"Test bookmark 1"), URL);
   }
 
@@ -198,7 +198,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarAddedToBookmarks) {
       chrome_browser_state_.get());
   GURL URL = GURL(kTestUrl2);
   const BookmarkNode* defaultFolder = bookmark_model_->mobile_node();
-  bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                           base::SysNSStringToUTF16(@"Test bookmark 1"), URL);
   EXPECT_OCMOCK_VERIFY(consumer_);
 
@@ -207,7 +207,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarAddedToBookmarks) {
   bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
       chrome_browser_state_.get());
   URL = GURL(kTestUrl);
-  bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                           base::SysNSStringToUTF16(@"Test bookmark 2"), URL);
 
   EXPECT_OCMOCK_VERIFY(consumer_);
@@ -222,7 +222,7 @@ TEST_F(ToolbarMediatorTest, TestToolbarRemovedFromBookmarks) {
       chrome_browser_state_.get());
   GURL URL = GURL(kTestUrl2);
   const BookmarkNode* defaultFolder = bookmark_model_->mobile_node();
-  bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                           base::SysNSStringToUTF16(@"Test bookmark 1"), URL);
   web_state_->SetCurrentURL(GURL(kTestUrl));
   mediator_.webStateList = web_state_list_.get();

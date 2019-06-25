@@ -3225,6 +3225,7 @@ test("unit_tests") {
   data_deps = [
     "//chrome/test/data/media/engagement/preload:generate_preload_list",
     "//chrome/test/data/media/engagement/preload:test_data",
+    "//testing/buildbot/filters:unit_tests_filters",
   ]
 
   data = [

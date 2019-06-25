@@ -131,8 +131,8 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64_t id) {
   if (node->id() == id)
     return node;
 
-  for (int i = 0, child_count = node->child_count(); i < child_count; ++i) {
-    const BookmarkNode* result = GetNodeByID(node->GetChild(i), id);
+  for (const auto& child : node->children()) {
+    const BookmarkNode* result = GetNodeByID(child.get(), id);
     if (result)
       return result;
   }
@@ -214,12 +214,9 @@ void GetBookmarksMatchingPropertiesImpl(
 bool HasUserCreatedBookmarks(BookmarkModel* model) {
   const BookmarkNode* root_node = model->root_node();
 
-  for (int i = 0; i < root_node->child_count(); ++i) {
-    const BookmarkNode* node = root_node->GetChild(i);
-    if (node->child_count() > 0)
-      return true;
-  }
-  return false;
+  return std::any_of(
+      root_node->children().cbegin(), root_node->children().cend(),
+      [](const auto& node) { return !node->children().empty(); });
 }
 #endif
 
@@ -275,8 +272,7 @@ void MakeTitleUnique(const BookmarkModel* model,
                      base::string16* title) {
   std::unordered_set<base::string16> titles;
   base::string16 original_title_lower = base::i18n::ToLower(*title);
-  for (int i = 0; i < parent->child_count(); i++) {
-    const BookmarkNode* node = parent->GetChild(i);
+  for (const auto& node : parent->children()) {
     if (node->is_url() && (url == node->url()) &&
         base::StartsWith(base::i18n::ToLower(node->GetTitle()),
                          original_title_lower,
@@ -368,11 +364,10 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedUserFolders(
     // only children of the root_node.
     const BookmarkNode* root_node = model->root_node();
 
-    for (int i = 0; i < root_node->child_count(); ++i) {
-      const BookmarkNode* node = root_node->GetChild(i);
-      if (node->IsVisible() && model->client()->CanBeEditedByUser(node) &&
-          !base::Contains(nodes, node)) {
-        nodes.push_back(node);
+    for (const auto& node : root_node->children()) {
+      if (node->IsVisible() && model->client()->CanBeEditedByUser(node.get()) &&
+          !base::Contains(nodes, node.get())) {
+        nodes.push_back(node.get());
 
         if (nodes.size() == max_count)
           break;

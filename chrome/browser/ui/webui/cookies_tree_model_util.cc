@@ -305,15 +305,15 @@ void CookiesTreeModelUtil::GetChildNodeDetails(const CookieTreeNode* parent,
   for (const auto& child : parent->children()) {
     std::string cookie_id_path =
         id_path + "," + GetTreeNodeId(child.get()) + ",";
-    for (int k = 0; k < child->child_count(); ++k) {
-      const CookieTreeNode* details = child->GetChild(k);
+    for (const auto& details : child->children()) {
       std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
       if (GetCookieTreeNodeDictionary(*details, include_quota_nodes,
                                       dict.get())) {
         // TODO(dschuyler): This ID path is an artifact from using tree nodes to
         // hold the cookies. Can this be changed to a dictionary with a key
         // lookup (and remove use of id_map_)?
-        dict->SetString("idPath", cookie_id_path + GetTreeNodeId(details));
+        dict->SetString("idPath",
+                        cookie_id_path + GetTreeNodeId(details.get()));
         list->Append(std::move(dict));
       }
     }
@@ -361,14 +361,10 @@ const CookieTreeNode* CookiesTreeModelUtil::GetTreeNodeFromPath(
 const CookieTreeNode* CookiesTreeModelUtil::GetTreeNodeFromTitle(
     const CookieTreeNode* root,
     const base::string16& title) {
-  // TODO(dschuyler): This method reduces an old O(n^2) lookup with an O(n)
-  // lookup for O(1) space, but it could be further improved to O(1) lookup if
-  // desired (by trading O(n) space for the time improvement).
-  int site_count = root->child_count();
-  for (int i = 0; i < site_count; ++i) {
-    const CookieTreeNode* child = root->GetChild(i);
-    if (title == child->GetTitle())
-      return child;
-  }
-  return nullptr;
+  // TODO(dschuyler): This is an O(n) lookup for O(1) space, but it could be
+  // improved to O(1) lookup if desired (by using O(n) space).
+  const auto i = std::find_if(
+      root->children().cbegin(), root->children().cend(),
+      [&title](const auto& child) { return title == child->GetTitle(); });
+  return (i == root->children().cend()) ? nullptr : i->get();
 }

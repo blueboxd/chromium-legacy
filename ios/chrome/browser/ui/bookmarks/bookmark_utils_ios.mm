@@ -224,8 +224,8 @@ void CreateOrUpdateBookmarkWithUndoToast(
   if (!node) {  // Create a new bookmark.
     bookmark_model->client()->RecordAction(
         base::UserMetricsAction("BookmarkAdded"));
-    node =
-        bookmark_model->AddURL(folder, folder->child_count(), titleString, url);
+    node = bookmark_model->AddURL(folder, folder->children().size(),
+                                  titleString, url);
   } else {  // Update the information.
     bookmark_model->SetTitle(node, titleString);
     bookmark_model->SetURL(node, url);
@@ -233,7 +233,7 @@ void CreateOrUpdateBookmarkWithUndoToast(
     DCHECK(folder);
     DCHECK(!folder->HasAncestor(node));
     if (node->parent() != folder) {
-      bookmark_model->Move(node, folder, folder->child_count());
+      bookmark_model->Move(node, folder, folder->children().size());
     }
     DCHECK(node->parent() == folder);
   }
@@ -312,9 +312,8 @@ void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
                      bookmarks::BookmarkModel* model,
                      const BookmarkNode* node) {
   // Delete children in reverse order, so that the index remains valid.
-  for (int i = node->child_count() - 1; i >= 0; --i) {
-    DeleteBookmarks(bookmarks, model, node->GetChild(i));
-  }
+  for (size_t i = node->children().size(); i > 0; --i)
+    DeleteBookmarks(bookmarks, model, node->children()[i - 1].get());
 
   if (bookmarks.find(node) != bookmarks.end())
     model->Remove(node);
@@ -364,7 +363,7 @@ bool MoveBookmarks(const std::set<const BookmarkNode*>& bookmarks,
     if (folder->HasAncestor(node))
       continue;
     if (node->parent() != folder) {
-      model->Move(node, folder, folder->child_count());
+      model->Move(node, folder, folder->children().size());
       didPerformMove = true;
     }
   }
@@ -541,12 +540,9 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
                            NodeVector* results,
                            const NodeSet& obstructions) {
   std::vector<const BookmarkNode*> directDescendants;
-  for (int i = 0; i < folder->child_count(); ++i) {
-    const BookmarkNode* subfolder = folder->GetChild(i);
-    if (IsObstructed(subfolder, obstructions))
-      continue;
-
-    directDescendants.push_back(subfolder);
+  for (const auto& subfolder : folder->children()) {
+    if (!IsObstructed(subfolder.get(), obstructions))
+      directDescendants.push_back(subfolder.get());
   }
 
   bookmark_utils_ios::SortFolders(&directDescendants);

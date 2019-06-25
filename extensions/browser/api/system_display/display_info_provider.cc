@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
@@ -42,8 +43,11 @@ DisplayInfoProvider::~DisplayInfoProvider() = default;
 
 // static
 DisplayInfoProvider* DisplayInfoProvider::Get() {
-  if (!g_display_info_provider)
-    g_display_info_provider = DisplayInfoProvider::Create();
+  if (!g_display_info_provider) {
+    // Let the DisplayInfoProvider leak.
+    g_display_info_provider =
+        ExtensionsAPIClient::Get()->CreateDisplayInfoProvider().release();
+  }
   return g_display_info_provider;
 }
 

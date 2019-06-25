@@ -275,6 +275,12 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   bool should_load_page_hints = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
+          previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+    previews_state |= content::DEFER_ALL_SCRIPT_ON;
+    should_load_page_hints = true;
+  }
+  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
     should_load_page_hints = true;
@@ -383,6 +389,21 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
+
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+    // DeferAllScript was allowed for the original URL but only continue with it
+    // if the committed URL has HTTPS scheme and is allowed by decider.
+    if (is_https && previews_decider &&
+        previews_decider->ShouldCommitPreview(
+            previews_data, url, previews::PreviewsType::DEFER_ALL_SCRIPT)) {
+      LogCommittedPreview(previews_data, PreviewsType::DEFER_ALL_SCRIPT);
+      return content::DEFER_ALL_SCRIPT_ON;
+    }
+    // Remove DEFER_ALL_SCRIPT_ON from |previews_state| since we decided not to
+    // commit to it.
+    previews_state = previews_state & ~content::DEFER_ALL_SCRIPT_ON;
+  }
+
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
@@ -505,6 +526,8 @@ previews::PreviewsType GetMainFramePreviewsType(
     return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON)
+    return previews::PreviewsType::DEFER_ALL_SCRIPT;
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON)
     return previews::PreviewsType::RESOURCE_LOADING_HINTS;
   if (previews_state & content::NOSCRIPT_ON)

@@ -232,6 +232,28 @@ class MockXRInputSource {
     this.gamepad_ = null;
   }
 
+  setGamepadButtonCount(button_count) {
+    this.gamepad_.buttons = [];
+    for (let i = 0; i < button_count; ++i) {
+      this.gamepad_.buttons.push(new device.mojom.GamepadButton());
+    }
+  }
+
+  setGamepadAxesCount(axes_count) {
+    this.gamepad_.axes = [];
+    for (let i = 0; i < axes_count; ++i) {
+      this.gamepad_.axes.push(0);
+    }
+  }
+
+  setGamepadButtonPressed(button_index, is_pressed) {
+    this.gamepad_.buttons[button_index].pressed = is_pressed;
+  }
+
+  setGamepadAxisValue(index, value) {
+    this.gamepad_.axes[index] = value;
+  }
+
   getInputSourceState() {
     let input_state = new device.mojom.XRInputSourceState();
 

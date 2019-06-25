@@ -424,9 +424,8 @@ SyncedBookmarkTracker::ReorderUnsyncedEntitiesExceptDeletions(
   // Remove those who are direct children of another node.
   for (const SyncedBookmarkTracker::Entity* entity : entities) {
     const bookmarks::BookmarkNode* node = entity->bookmark_node();
-    for (int i = 0; i < node->child_count(); ++i) {
-      nodes.erase(node->GetChild(i));
-    }
+    for (const auto& child : node->children())
+      nodes.erase(child.get());
   }
   // |nodes| contains only roots of all trees in the forest all of which are
   // ready to be processed because their parents have no pending updates.
@@ -446,10 +445,9 @@ void SyncedBookmarkTracker::TraverseAndAppend(
   DCHECK(!entity->metadata()->is_deleted());
   ordered_entities->push_back(entity);
   // Recurse for all children.
-  for (int i = 0; i < node->child_count(); ++i) {
-    const bookmarks::BookmarkNode* child = node->GetChild(i);
+  for (const auto& child : node->children()) {
     const SyncedBookmarkTracker::Entity* child_entity =
-        GetEntityForBookmarkNode(child);
+        GetEntityForBookmarkNode(child.get());
     DCHECK(child_entity);
     if (!child_entity->IsUnsynced()) {
       // If the entity has no local change, no need to check its children. If
@@ -464,7 +462,7 @@ void SyncedBookmarkTracker::TraverseAndAppend(
       // added later.
       continue;
     }
-    TraverseAndAppend(child, ordered_entities);
+    TraverseAndAppend(child.get(), ordered_entities);
   }
 }
 

@@ -29,41 +29,38 @@ namespace app_list {
 
 RecurrencePredictorProto MakeTestingProto() {
   RecurrencePredictorProto proto;
-  auto* zero_state_hour_bin_proto =
-      proto.mutable_zero_state_hour_bin_predictor();
-  zero_state_hour_bin_proto->set_last_decay_timestamp(365);
+  auto* hour_bin_proto = proto.mutable_hour_bin_predictor();
+  hour_bin_proto->set_last_decay_timestamp(365);
 
-  ZeroStateHourBinPredictorProto::FrequencyTable frequency_table;
+  HourBinPredictorProto::FrequencyTable frequency_table;
   (*frequency_table.mutable_frequency())[1u] = 3;
   (*frequency_table.mutable_frequency())[2u] = 1;
   frequency_table.set_total_counts(4);
-  (*zero_state_hour_bin_proto->mutable_binned_frequency_table())[10] =
-      frequency_table;
+  (*hour_bin_proto->mutable_binned_frequency_table())[10] = frequency_table;
 
-  frequency_table = ZeroStateHourBinPredictorProto::FrequencyTable();
+  frequency_table = HourBinPredictorProto::FrequencyTable();
   (*frequency_table.mutable_frequency())[1u] = 1;
   (*frequency_table.mutable_frequency())[3u] = 1;
   frequency_table.set_total_counts(2);
-  (*zero_state_hour_bin_proto->mutable_binned_frequency_table())[11] =
-      frequency_table;
+  (*hour_bin_proto->mutable_binned_frequency_table())[11] = frequency_table;
 
   return proto;
 }
 
-class ZeroStateFrecencyPredictorTest : public testing::Test {
+class FrecencyPredictorTest : public testing::Test {
  protected:
   void SetUp() override {
     Test::SetUp();
 
     config_.set_decay_coeff(0.5f);
-    predictor_ = std::make_unique<ZeroStateFrecencyPredictor>(config_);
+    predictor_ = std::make_unique<FrecencyPredictor>(config_);
   }
 
-  ZeroStateFrecencyPredictorConfig config_;
-  std::unique_ptr<ZeroStateFrecencyPredictor> predictor_;
+  FrecencyPredictorConfig config_;
+  std::unique_ptr<FrecencyPredictor> predictor_;
 };
 
-class ZeroStateHourBinPredictorTest : public testing::Test {
+class HourBinPredictorTest : public testing::Test {
  protected:
   void SetUp() override {
     Test::SetUp();
@@ -74,7 +71,7 @@ class ZeroStateHourBinPredictorTest : public testing::Test {
     (*config_.mutable_bin_weights_map())[2] = 0.05;
     (*config_.mutable_bin_weights_map())[-1] = 0.15;
     (*config_.mutable_bin_weights_map())[-2] = 0.05;
-    predictor_ = std::make_unique<ZeroStateHourBinPredictor>(config_);
+    predictor_ = std::make_unique<HourBinPredictor>(config_);
   }
 
   // Sets local time according to |day_of_week| and |hour_of_day|.
@@ -88,8 +85,8 @@ class ZeroStateHourBinPredictorTest : public testing::Test {
   }
 
   base::ScopedMockClockOverride time_;
-  ZeroStateHourBinPredictorConfig config_;
-  std::unique_ptr<ZeroStateHourBinPredictor> predictor_;
+  HourBinPredictorConfig config_;
+  std::unique_ptr<HourBinPredictor> predictor_;
 
  private:
   // Advances time to be 0am next Sunday.
@@ -107,58 +104,58 @@ class ZeroStateHourBinPredictorTest : public testing::Test {
   }
 };
 
-TEST_F(ZeroStateFrecencyPredictorTest, RankWithNoTargets) {
-  EXPECT_TRUE(predictor_->Rank().empty());
+TEST_F(FrecencyPredictorTest, RankWithNoTargets) {
+  EXPECT_TRUE(predictor_->Rank(0u).empty());
 }
 
-TEST_F(ZeroStateFrecencyPredictorTest, RecordAndRankSimple) {
-  predictor_->Train(2u);
-  predictor_->Train(4u);
-  predictor_->Train(6u);
+TEST_F(FrecencyPredictorTest, RecordAndRankSimple) {
+  predictor_->Train(2u, 0u);
+  predictor_->Train(4u, 0u);
+  predictor_->Train(6u, 0u);
 
   EXPECT_THAT(
-      predictor_->Rank(),
+      predictor_->Rank(0u),
       UnorderedElementsAre(Pair(2u, FloatEq(0.125f)), Pair(4u, FloatEq(0.25f)),
                            Pair(6u, FloatEq(0.5f))));
 }
 
-TEST_F(ZeroStateFrecencyPredictorTest, RecordAndRankComplex) {
-  predictor_->Train(2u);
-  predictor_->Train(4u);
-  predictor_->Train(6u);
-  predictor_->Train(4u);
-  predictor_->Train(2u);
+TEST_F(FrecencyPredictorTest, RecordAndRankComplex) {
+  predictor_->Train(2u, 0u);
+  predictor_->Train(4u, 0u);
+  predictor_->Train(6u, 0u);
+  predictor_->Train(4u, 0u);
+  predictor_->Train(2u, 0u);
 
   // Ranks should be deterministic.
   for (int i = 0; i < 3; ++i) {
-    EXPECT_THAT(predictor_->Rank(),
+    EXPECT_THAT(predictor_->Rank(0u),
                 UnorderedElementsAre(Pair(2u, FloatEq(0.53125f)),
                                      Pair(4u, FloatEq(0.3125f)),
                                      Pair(6u, FloatEq(0.125f))));
   }
 }
 
-TEST_F(ZeroStateFrecencyPredictorTest, ToAndFromProto) {
-  predictor_->Train(1u);
-  predictor_->Train(3u);
-  predictor_->Train(5u);
+TEST_F(FrecencyPredictorTest, ToAndFromProto) {
+  predictor_->Train(1u, 0u);
+  predictor_->Train(3u, 0u);
+  predictor_->Train(5u, 0u);
 
   RecurrencePredictorProto proto;
   predictor_->ToProto(&proto);
 
-  ZeroStateFrecencyPredictor new_predictor(config_);
+  FrecencyPredictor new_predictor(config_);
   new_predictor.FromProto(proto);
 
-  EXPECT_TRUE(proto.has_zero_state_frecency_predictor());
-  EXPECT_EQ(proto.zero_state_frecency_predictor().num_updates(), 3u);
-  EXPECT_EQ(predictor_->Rank(), new_predictor.Rank());
+  EXPECT_TRUE(proto.has_frecency_predictor());
+  EXPECT_EQ(proto.frecency_predictor().num_updates(), 3u);
+  EXPECT_EQ(predictor_->Rank(0u), new_predictor.Rank(0u));
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, RankWithNoTargets) {
-  EXPECT_TRUE(predictor_->Rank().empty());
+TEST_F(HourBinPredictorTest, RankWithNoTargets) {
+  EXPECT_TRUE(predictor_->Rank(0u).empty());
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, GetTheRightBin) {
+TEST_F(HourBinPredictorTest, GetTheRightBin) {
   // Monday.
   for (int i = 0; i <= 23; ++i) {
     SetLocalTime(1, i);
@@ -200,64 +197,64 @@ TEST_F(ZeroStateHourBinPredictorTest, GetTheRightBin) {
   EXPECT_EQ(predictor_->GetBinFromHourDifference(-5), 22);
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, TrainAndRankSingleBin) {
+TEST_F(HourBinPredictorTest, TrainAndRankSingleBin) {
   base::flat_map<int, float> weights(
       predictor_->config_.bin_weights_map().begin(),
       predictor_->config_.bin_weights_map().end());
 
   SetLocalTime(1, 10);
-  predictor_->Train(1u);
+  predictor_->Train(1u, 0u);
   SetLocalTime(2, 10);
-  predictor_->Train(1u);
+  predictor_->Train(1u, 0u);
   SetLocalTime(3, 10);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
   SetLocalTime(4, 10);
-  predictor_->Train(1u);
+  predictor_->Train(1u, 0u);
   SetLocalTime(5, 10);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
 
   // Train on weekend doesn't affect the result during the week
   SetLocalTime(0, 10);
-  predictor_->Train(1u);
+  predictor_->Train(1u, 0u);
   SetLocalTime(0, 10);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
 
   SetLocalTime(1, 10);
-  EXPECT_THAT(predictor_->Rank(),
+  EXPECT_THAT(predictor_->Rank(0u),
               UnorderedElementsAre(Pair(1u, FloatEq(weights[0] * 0.6)),
                                    Pair(2u, FloatEq((weights)[0] * 0.4))));
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, TrainAndRankMultipleBin) {
+TEST_F(HourBinPredictorTest, TrainAndRankMultipleBin) {
   base::flat_map<int, float> weights(
       predictor_->config_.bin_weights_map().begin(),
       predictor_->config_.bin_weights_map().end());
   // For bin 10
   SetLocalTime(1, 10);
-  predictor_->Train(1u);
-  predictor_->Train(1u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(1u, 0u);
   SetLocalTime(2, 10);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
 
   // For bin 11
   SetLocalTime(3, 11);
-  predictor_->Train(1u);
-  predictor_->Train(2u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(2u, 0u);
   // For bin 12
   SetLocalTime(5, 12);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
 
   // Train on weekend.
   SetLocalTime(6, 10);
-  predictor_->Train(1u);
-  predictor_->Train(2u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(2u, 0u);
   SetLocalTime(0, 11);
-  predictor_->Train(2u);
+  predictor_->Train(2u, 0u);
 
   // Check workdays.
   SetLocalTime(1, 10);
   EXPECT_THAT(
-      predictor_->Rank(),
+      predictor_->Rank(0u),
       UnorderedElementsAre(
           Pair(1u, FloatEq((weights)[0] * 2.0 / 3.0 + weights[1] * 0.5)),
           Pair(2u, FloatEq(weights[0] * 1.0 / 3.0 + weights[1] * 0.5 +
@@ -265,28 +262,28 @@ TEST_F(ZeroStateHourBinPredictorTest, TrainAndRankMultipleBin) {
 
   // Check weekends.
   SetLocalTime(0, 9);
-  EXPECT_THAT(predictor_->Rank(),
+  EXPECT_THAT(predictor_->Rank(0u),
               UnorderedElementsAre(
                   Pair(1u, FloatEq(weights[1] * 1.0 / 2.0)),
                   Pair(2u, FloatEq(weights[1] * 1.0 / 2.0 + weights[2]))));
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, FromProto) {
+TEST_F(HourBinPredictorTest, FromProto) {
   RecurrencePredictorProto proto = MakeTestingProto();
   predictor_->FromProto(proto);
   SetLocalTime(1, 11);
   EXPECT_THAT(
-      predictor_->Rank(),
+      predictor_->Rank(0u),
       UnorderedElementsAre(Pair(1u, FloatEq(0.4125)), Pair(2u, FloatEq(0.0375)),
                            Pair(3u, FloatEq(0.3))));
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, FromProtoDecays) {
+TEST_F(HourBinPredictorTest, FromProtoDecays) {
   RecurrencePredictorProto proto = MakeTestingProto();
-  proto.mutable_zero_state_hour_bin_predictor()->set_last_decay_timestamp(350);
+  proto.mutable_hour_bin_predictor()->set_last_decay_timestamp(350);
   predictor_->FromProto(proto);
   SetLocalTime(1, 11);
-  EXPECT_THAT(predictor_->Rank(),
+  EXPECT_THAT(predictor_->Rank(0u),
               UnorderedElementsAre(Pair(1u, FloatEq(0.15))));
 
   // Check if empty items got deleted during decay.
@@ -299,25 +296,25 @@ TEST_F(ZeroStateHourBinPredictorTest, FromProtoDecays) {
             1);
 }
 
-TEST_F(ZeroStateHourBinPredictorTest, ToProto) {
+TEST_F(HourBinPredictorTest, ToProto) {
   RecurrencePredictorProto proto;
   SetLocalTime(1, 10);
-  predictor_->Train(1u);
-  predictor_->Train(1u);
-  predictor_->Train(1u);
-  predictor_->Train(2u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(2u, 0u);
 
   SetLocalTime(1, 11);
-  predictor_->Train(1u);
-  predictor_->Train(3u);
+  predictor_->Train(1u, 0u);
+  predictor_->Train(3u, 0u);
   predictor_->SetLastDecayTimestamp(365);
 
   predictor_->ToProto(&proto);
   RecurrencePredictorProto target_proto = MakeTestingProto();
 
-  EXPECT_TRUE(proto.has_zero_state_hour_bin_predictor());
+  EXPECT_TRUE(proto.has_hour_bin_predictor());
 
-  EXPECT_TRUE(EquivToProtoLite(proto.zero_state_hour_bin_predictor(),
-                               target_proto.zero_state_hour_bin_predictor()));
+  EXPECT_TRUE(EquivToProtoLite(proto.hour_bin_predictor(),
+                               target_proto.hour_bin_predictor()));
 }
 }  // namespace app_list

@@ -19,6 +19,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/memory/ptr_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/gfx/canvas.h"
@@ -192,6 +193,9 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   AddChildView(scroller);
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  result_selection_controller_ =
+      std::make_unique<ResultSelectionController>(&result_container_views_);
 }
 
 SearchResultPageView::~SearchResultPageView() = default;
@@ -322,31 +326,40 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   ReorderSearchResultContainers();
 
-  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
 
-  // Clear the first search result view's background highlight.
-  if (first_result_view_ && first_result_view_ != focused_view)
-    first_result_view_->SetBackgroundHighlighted(false);
+    // Clear the first search result view's background highlight.
+    if (first_result_view_ && first_result_view_ != focused_view)
+      first_result_view_->SetBackgroundHighlighted(false);
+  }
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
-
-  // Update SearchBoxView search box autocomplete as necessary based on new
-  // first result view.
-  if (first_result_view_)
-    AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
-
-  // If one of the search result is focused, do not highlight the first search
-  // result.
-  if (Contains(focused_view))
-    return;
-
   if (!first_result_view_)
     return;
 
-  // Highlight the first result after search results are updated. Note that the
-  // focus is not set on the first result to prevent frequent focus switch
-  // between the search box and the first result when the user is typing query.
-  first_result_view_->SetBackgroundHighlighted(true);
+  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
+    // If one of the search result is focused, do not highlight the first search
+    // result.
+    if (Contains(focused_view))
+      return;
+  }
+
+  // Update SearchBoxView search box autocomplete as necessary based on new
+  // first result view.
+  AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
+
+  if (app_list_features::IsSearchBoxSelectionEnabled()) {
+    // Reset selection to first when things change.
+    result_selection_controller_->ResetSelection();
+  } else {
+    // Highlight the first result after search results are updated. Note that
+    // the focus is not set on the first result to prevent frequent focus switch
+    // between the search box and the first result when the user is typing
+    // query.
+    first_result_view_->SetBackgroundHighlighted(true);
+  }
 }
 
 void SearchResultPageView::OnSearchResultContainerResultFocused(

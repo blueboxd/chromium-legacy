@@ -18,6 +18,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
+namespace blink {
+class AssociatedInterfaceProvider;
+}  // namespace blink
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -139,7 +143,8 @@ class CastWebContents {
     virtual void RenderFrameCreated(
         int render_process_id,
         int render_frame_id,
-        service_manager::InterfaceProvider* frame_interfaces) {}
+        service_manager::InterfaceProvider* frame_interfaces,
+        blink::AssociatedInterfaceProvider* frame_associated_interfaces) {}
 
     // These methods are calls forwarded from WebContentsObserver.
     virtual void MainFrameResized(const gfx::Rect& bounds) {}

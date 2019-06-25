@@ -43,8 +43,14 @@ namespace {
 
 bool g_disable_initial_delay = false;
 
-// Used for the highlight view and the shield (black background).
+// The color of the window cycle highlight.
+constexpr SkColor kHighlightColor = SkColorSetARGB(36, 255, 255, 255);
+
+// Used for the shield (black background).
 constexpr float kBackgroundCornerRadius = 4.f;
+
+// Corner radius applied to the alt-tab selector border.
+constexpr gfx::RoundedCornersF kWindowSelectionCornerRadii{2};
 
 // Horizontal spacing between the icon and label views.
 constexpr int kIconLabelSpacingDp = 12;
@@ -67,26 +73,6 @@ constexpr int kFixedPreviewHeightDp = 256;
 // The min and max width size are in relation to the fixed height.
 constexpr int kMinPreviewWidthDp = kFixedPreviewHeightDp / 2;
 constexpr int kMaxPreviewWidthDp = kFixedPreviewHeightDp * 2;
-
-// This background paints a |Painter| but fills the view's layer's size rather
-// than the view's size.
-class LayerFillBackgroundPainter : public views::Background {
- public:
-  explicit LayerFillBackgroundPainter(std::unique_ptr<views::Painter> painter)
-      : painter_(std::move(painter)) {}
-
-  ~LayerFillBackgroundPainter() override = default;
-
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    views::Painter::PaintPainterAt(canvas, painter_.get(),
-                                   gfx::Rect(view->layer()->size()));
-  }
-
- private:
-  std::unique_ptr<views::Painter> painter_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerFillBackgroundPainter);
-};
 
 }  // namespace
 
@@ -285,15 +271,10 @@ class WindowCycleView : public views::WidgetDelegateView {
       mirror_container_->AddChildView(view);
     }
 
-    // The background needs to be painted to fill the layer, not the View,
-    // because the layer animates bounds changes but the View's bounds change
-    // immediately.
-    highlight_view_->SetBackground(std::make_unique<LayerFillBackgroundPainter>(
-        views::Painter::CreateRoundRectWith1PxBorderPainter(
-            SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
-            kBackgroundCornerRadius)));
-    highlight_view_->SetPaintToLayer();
-
+    highlight_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    highlight_view_->layer()->SetRoundedCornerRadius(
+        kWindowSelectionCornerRadii);
+    highlight_view_->layer()->SetColor(kHighlightColor);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 
     AddChildView(highlight_view_);

@@ -31,6 +31,7 @@ struct ExtensionMsg_ExternalConnectionInfo;
 namespace extensions {
 class NativeExtensionBindingsSystem;
 class ScriptContext;
+class ServiceWorkerData;
 class V8SchemaRegistry;
 struct Message;
 struct PortId;
@@ -52,6 +53,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   static NativeExtensionBindingsSystem* GetBindingsSystem();
   static V8SchemaRegistry* GetV8SchemaRegistry();
   static ScriptContext* GetScriptContext();
+  static ServiceWorkerData* GetServiceWorkerData();
 
   void Init(content::RenderThread* render_thread);
 

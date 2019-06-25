@@ -2083,8 +2083,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   // Verify other node has no children now.
-  EXPECT_EQ(0, GetOtherNode(0)->child_count());
-  EXPECT_EQ(0, GetBookmarkBarNode(0)->child_count());
+  EXPECT_TRUE(GetOtherNode(0)->children().empty());
+  EXPECT_TRUE(GetBookmarkBarNode(0)->children().empty());
   ASSERT_TRUE(AllModelsMatch());
 }
 
@@ -2121,8 +2121,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   GURL google_url("http://www.google.com");
   ASSERT_NE(nullptr, AddURL(0, "Google", google_url));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
-  ASSERT_EQ(1, bar_node0->child_count());
-  ASSERT_EQ(1, bar_node1->child_count());
+  ASSERT_EQ(1u, bar_node0->children().size());
+  ASSERT_EQ(1u, bar_node1->children().size());
 
   // Set the ManagedBookmarks policy for the first Profile,
   // which will add one new managed bookmark.
@@ -2147,12 +2147,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
 
   // Verify that the managed bookmark exists in the local model of the first
   // Profile, and has a child node.
-  ASSERT_EQ(1, managed_node0->child_count());
+  ASSERT_EQ(1u, managed_node0->children().size());
   ASSERT_TRUE(managed_node0->IsVisible());
   EXPECT_EQ(GURL("http://youtube.com/"), managed_node0->GetChild(0)->url());
 
   // Verify that the second Profile didn't get this node.
-  ASSERT_EQ(0, managed_node1->child_count());
+  ASSERT_EQ(0u, managed_node1->children().size());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,

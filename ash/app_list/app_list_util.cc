@@ -42,9 +42,12 @@ bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event) {
 }
 
 bool IsArrowKeyEvent(const ui::KeyEvent& event) {
-  return event.key_code() == ui::VKEY_DOWN ||
-         event.key_code() == ui::VKEY_RIGHT ||
-         event.key_code() == ui::VKEY_LEFT || event.key_code() == ui::VKEY_UP;
+  return IsArrowKey(event.key_code());
+}
+
+bool IsArrowKey(const ui::KeyboardCode& key_code) {
+  return key_code == ui::VKEY_DOWN || key_code == ui::VKEY_RIGHT ||
+         key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP;
 }
 
 bool LeftRightKeyEventShouldExitText(views::Textfield* textfield,

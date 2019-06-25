@@ -648,7 +648,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
   // Verify bookmarked URL.
   GURL bookmarkedURL = GURL("https://chromium.org/page");
   const bookmarks::BookmarkNode* defaultFolder = bookmark_model_->mobile_node();
-  bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                           base::SysNSStringToUTF16(@"Test bookmark"),
                           bookmarkedURL);
   data = [[ShareToData alloc]

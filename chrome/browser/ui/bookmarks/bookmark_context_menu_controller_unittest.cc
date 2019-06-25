@@ -330,11 +330,11 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
   controller.reset(new BookmarkContextMenuController(
       NULL, NULL, NULL, profile_.get(), NULL, BOOKMARK_LAUNCH_LOCATION_NONE,
       nodes[0]->parent(), nodes));
-  int old_count = bb_node->child_count();
+  size_t old_count = bb_node->children().size();
   controller->ExecuteCommand(IDC_PASTE, 0);
 
   ASSERT_TRUE(bb_node->GetChild(1)->is_url());
-  ASSERT_EQ(old_count + 1, bb_node->child_count());
+  ASSERT_EQ(old_count + 1, bb_node->children().size());
   ASSERT_EQ(bb_node->GetChild(0)->url(), bb_node->GetChild(1)->url());
 
   controller.reset(new BookmarkContextMenuController(
@@ -344,7 +344,7 @@ TEST_F(BookmarkContextMenuControllerTest, CutCopyPasteNode) {
   controller->ExecuteCommand(IDC_CUT, 0);
   ASSERT_TRUE(bb_node->GetChild(0)->is_url());
   ASSERT_TRUE(bb_node->GetChild(1)->is_folder());
-  ASSERT_EQ(old_count, bb_node->child_count());
+  ASSERT_EQ(old_count, bb_node->children().size());
 }
 
 TEST_F(BookmarkContextMenuControllerTest,

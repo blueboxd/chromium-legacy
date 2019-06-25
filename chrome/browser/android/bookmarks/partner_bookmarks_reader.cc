@@ -103,12 +103,12 @@ void PrepareAndSetFavicon(jbyte* icon_bytes,
 const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
   if (parent->id() == id)
     return parent;
-  for (int i= 0, child_count = parent->child_count(); i < child_count; ++i) {
-    const BookmarkNode* result = GetNodeByID(parent->GetChild(i), id);
+  for (const auto& child : parent->children()) {
+    const BookmarkNode* result = GetNodeByID(child.get(), id);
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace

@@ -33,9 +33,18 @@ class ServiceWorkerData {
   }
   ScriptContext* context() const { return context_; }
 
+  // Returns the number of active interactions for this worker.
+  int interaction_count() const { return interaction_count_; }
+
+  // Marks the beginning of an interaction within this worker.
+  void IncrementInteraction();
+  // Marks the end of an interaction within this worker.
+  void DecrementInteraction();
+
  private:
   const int64_t service_worker_version_id_;
   ScriptContext* const context_;
+  int interaction_count_ = 0;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
   std::unique_ptr<NativeExtensionBindingsSystem> bindings_system_;

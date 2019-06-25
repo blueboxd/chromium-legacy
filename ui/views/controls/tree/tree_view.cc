@@ -139,8 +139,8 @@ void TreeView::SetModel(TreeModel* model) {
     root_.set_is_expanded(true);
     if (root_shown_)
       selected_node_ = &root_;
-    else if (root_.child_count())
-      selected_node_ = root_.GetChild(0);
+    else if (!root_.children().empty())
+      selected_node_ = root_.children().front().get();
   }
   DrawnNodesChanged();
 }
@@ -683,7 +683,7 @@ bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
 }
 
 void TreeView::LoadChildren(InternalNode* node) {
-  DCHECK_EQ(0, node->child_count());
+  DCHECK(node->children().empty());
   DCHECK(!node->loaded_children());
   node->set_loaded_children(true);
   for (auto* model_child : model_->GetChildren(node->model_node())) {
@@ -769,8 +769,8 @@ void TreeView::PaintRows(gfx::Canvas* canvas,
   if (!node->is_expanded())
     return;
   depth++;
-  for (int i = 0; i < node->child_count() && *row < max_row; ++i)
-    PaintRows(canvas, min_row, max_row, node->GetChild(i), depth, row);
+  for (size_t i = 0; i < node->children().size() && *row < max_row; ++i)
+    PaintRows(canvas, min_row, max_row, node->children()[i].get(), depth, row);
 }
 
 void TreeView::PaintRow(gfx::Canvas* canvas,
@@ -1007,10 +1007,9 @@ TreeView::InternalNode* TreeView::GetNodeByRowImpl(InternalNode* node,
   (*current_row)++;
   if (node->is_expanded()) {
     current_depth++;
-    for (int i = 0; i < node->child_count(); ++i) {
+    for (const auto& child : node->children()) {
       InternalNode* result = GetNodeByRowImpl(
-          node->GetChild(i), target_row, current_depth, current_row,
-          node_depth);
+          child.get(), target_row, current_depth, current_row, node_depth);
       if (result)
         return result;
     }
@@ -1024,7 +1023,7 @@ void TreeView::IncrementSelection(IncrementType type) {
 
   if (!GetSelectedNode()) {
     // If nothing is selected select the first or last node.
-    if (!root_.child_count())
+    if (root_.children().empty())
       return;
     if (type == INCREMENT_PREVIOUS) {
       int row_count = GetRowCount();
@@ -1062,7 +1061,7 @@ void TreeView::ExpandOrSelectChild() {
   if (selected_node_) {
     if (!selected_node_->is_expanded())
       Expand(selected_node_->model_node());
-    else if (selected_node_->child_count())
+    else if (!selected_node_->children().empty())
       SetSelectedNode(selected_node_->GetChild(0)->model_node());
   }
 }
@@ -1139,8 +1138,8 @@ int TreeView::InternalNode::NumExpandedNodes() const {
   int result = 1;  // For this.
   if (!is_expanded_)
     return result;
-  for (int i = 0; i < child_count(); ++i)
-    result += GetChild(i)->NumExpandedNodes();
+  for (const auto& child : children())
+    result += child->NumExpandedNodes();
   return result;
 }
 
@@ -1150,9 +1149,9 @@ int TreeView::InternalNode::GetMaxWidth(TreeView* tree, int indent, int depth) {
   int max_width = (has_icon ? text_width_ : kArrowRegionSize) + indent * depth;
   if (!is_expanded_)
     return max_width;
-  for (int i = 0; i < child_count(); ++i) {
+  for (const auto& child : children()) {
     max_width =
-        std::max(max_width, GetChild(i)->GetMaxWidth(tree, indent, depth + 1));
+        std::max(max_width, child->GetMaxWidth(tree, indent, depth + 1));
   }
   return max_width;
 }

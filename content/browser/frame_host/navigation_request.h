@@ -375,8 +375,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return navigation_type_;
   }
 
-  const GURL& base_url() { return base_url_; }
-
   bool did_replace_entry() const {
     DCHECK(handle_state_ == DID_COMMIT ||
            handle_state_ == DID_COMMIT_ERROR_PAGE);
@@ -867,9 +865,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // The previous main frame URL that the user was on. This may be empty if
   // there was no last committed entry.
   GURL previous_url_;
-
-  // The base URL for the page's document when the frame was committed.
-  GURL base_url_;
 
   // The type of navigation that just occurred. Note that not all types of
   // navigations in the enum are valid here, since some of them don't actually

@@ -2706,7 +2706,6 @@ void NavigationRequest::DidCommitNavigation(
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
   previous_url_ = previous_url;
-  base_url_ = params.base_url;
   navigation_type_ = navigation_type;
 
   // If an error page reloads, net_error_code might be 200 but we still want to

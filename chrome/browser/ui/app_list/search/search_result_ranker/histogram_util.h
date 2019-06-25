@@ -29,9 +29,9 @@ enum class SerializationError {
   kTargetsMissingError = 5,
   kConditionsMissingError = 6,
   kFakePredictorLoadingError = 7,
-  kZeroStateFrecencyPredictorLoadingError = 8,
-  kZeroStateHourBinnedPredictorLoadingError = 9,
-  kMaxValue = kZeroStateHourBinnedPredictorLoadingError,
+  kFrecencyPredictorLoadingError = 8,
+  kHourBinnedPredictorLoadingError = 9,
+  kMaxValue = kHourBinnedPredictorLoadingError,
 };
 
 // Represents errors where a RecurrenceRanker is used in a way not supported by

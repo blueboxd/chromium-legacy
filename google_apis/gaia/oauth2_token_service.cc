@@ -23,33 +23,6 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-OAuth2TokenService::RequestParameters::RequestParameters(
-    const std::string& client_id,
-    const CoreAccountId& account_id,
-    const ScopeSet& scopes)
-    : client_id(client_id), account_id(account_id), scopes(scopes) {}
-
-OAuth2TokenService::RequestParameters::RequestParameters(
-    const RequestParameters& other) = default;
-
-OAuth2TokenService::RequestParameters::~RequestParameters() {
-}
-
-bool OAuth2TokenService::RequestParameters::operator<(
-    const RequestParameters& p) const {
-  if (client_id < p.client_id)
-    return true;
-  else if (p.client_id < client_id)
-    return false;
-
-  if (account_id < p.account_id)
-    return true;
-  else if (p.account_id < account_id)
-    return false;
-
-  return scopes < p.scopes;
-}
-
 OAuth2TokenService::RequestImpl::RequestImpl(
     const CoreAccountId& account_id,
     OAuth2TokenService::Consumer* consumer)
@@ -116,8 +89,8 @@ OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
   return token_manager_->diagnostics_observer_list_;
 }
 
-OAuth2TokenService::TokenCache& OAuth2TokenService::token_cache() {
-  return token_manager_->token_cache();
+int OAuth2TokenService::GetTokenCacheCount() {
+  return token_manager_->token_cache().size();
 }
 
 void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
@@ -273,9 +246,8 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
     const ScopeSet& scopes,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_manager_->RemoveCachedTokenResponse(
-      RequestParameters(client_id, account_id, scopes), access_token);
-  delegate_->InvalidateAccessToken(account_id, client_id, scopes, access_token);
+  token_manager_->InvalidateAccessTokenImpl(account_id, client_id, scopes,
+                                            access_token);
 }
 
 void OAuth2TokenService::OnRefreshTokensLoaded() {

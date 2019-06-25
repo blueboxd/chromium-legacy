@@ -175,8 +175,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->navigation_ui_data();
   }
 
-  const GURL& base_url() { return navigation_request_->base_url(); }
-
   NavigationType navigation_type() {
     return navigation_request_->navigation_type();
   }

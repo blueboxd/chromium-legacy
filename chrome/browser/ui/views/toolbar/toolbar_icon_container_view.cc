@@ -40,26 +40,29 @@ void ToolbarIconContainerView::OnHighlightChanged(
     bool highlighted) {
   // TODO(crbug.com/932818): Pass observed button type to container.
   highlighted_view_ = highlighted ? observed_button : nullptr;
-  UpdateHighlight(highlighted);
+  UpdateHighlight();
 }
 
 void ToolbarIconContainerView::OnStateChanged(
     views::Button* observed_button,
     views::Button::ButtonState old_state) {
-  if (highlighted_view_)
-    return;
-
-  UpdateHighlight(
-      observed_button->state() == views::Button::ButtonState::STATE_PRESSED ||
-      observed_button->state() == views::Button::ButtonState::STATE_HOVERED);
+  UpdateHighlight();
 }
 
 void ToolbarIconContainerView::OnViewFocused(views::View* observed_view) {
-  UpdateHighlight(true);
+  UpdateHighlight();
 }
 
 void ToolbarIconContainerView::OnViewBlurred(views::View* observed_view) {
-  UpdateHighlight(false);
+  UpdateHighlight();
+}
+
+void ToolbarIconContainerView::OnMouseEntered(const ui::MouseEvent& event) {
+  UpdateHighlight();
+}
+
+void ToolbarIconContainerView::OnMouseExited(const ui::MouseEvent& event) {
+  UpdateHighlight();
 }
 
 void ToolbarIconContainerView::ChildPreferredSizeChanged(views::View* child) {
@@ -77,9 +80,37 @@ gfx::Insets ToolbarIconContainerView::GetInsets() const {
   return gfx::Insets();
 }
 
-void ToolbarIconContainerView::UpdateHighlight(bool highlighted) {
+void ToolbarIconContainerView::UpdateHighlight() {
   if (!uses_highlight_)
     return;
+
+  bool highlighted = false;
+
+  // If this container is mouse hovered and the main view is not mouse hovered
+  // the container should be highlighted.
+  if (!main_view_ || !main_view_->IsMouseHovered())
+    highlighted = IsMouseHovered();
+
+  // The container should also be highlighted if a dialog is anchored to.
+  if (highlighted_view_)
+    highlighted = true;
+
+  // The container should also highlight if any of the child buttons are
+  // either pressed or hovered.
+  for (views::View* child : children()) {
+    // The main view should not be considered for focus / button state.
+    if (child == main_view_)
+      continue;
+    if (child->HasFocus())
+      highlighted = true;
+    views::Button* button = views::Button::AsButton(child);
+    if (!button)
+      continue;
+    if (button->state() == views::Button::ButtonState::STATE_PRESSED ||
+        button->state() == views::Button::ButtonState::STATE_HOVERED) {
+      highlighted = true;
+    }
+  }
 
   SetBorder(highlighted
                 ? views::CreateRoundedRectBorder(

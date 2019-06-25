@@ -1298,12 +1298,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       MarkingBehavior = kMarkContainerChain,
       SubtreeLayoutScope* = nullptr);
 
-  void ClearNeedsLayoutWithoutPaintInvalidation(
-      bool clear_child_dirty_bits = true);
+  void ClearNeedsLayoutWithoutPaintInvalidation();
   // |ClearNeedsLayout()| calls |SetShouldCheckForPaintInvalidation()|.
-  void ClearNeedsLayout(bool clear_child_dirty_bits = true);
-  void ClearNeedsLayoutWithFullPaintInvalidation(
-      bool clear_child_dirty_bits = true);
+  void ClearNeedsLayout();
+  void ClearNeedsLayoutWithFullPaintInvalidation();
 
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
                            SubtreeLayoutScope* = nullptr);
@@ -2386,7 +2384,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetOutlineMayBeAffectedByDescendants(b);
   }
 
-  bool LayoutBlockedByDisplayLock(
+  inline bool LayoutBlockedByDisplayLock(
       DisplayLockContext::LifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldLayout(target);
@@ -3273,8 +3271,7 @@ inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
   SetShouldDoFullPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation(
-    bool clear_child_dirty_bits) {
+inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
 
@@ -3284,10 +3281,19 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation(
   SetNeedsPositionedMovementLayout(false);
   SetAncestorLineBoxDirty(false);
 
-  if (clear_child_dirty_bits) {
+  if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
     SetPosChildNeedsLayout(false);
     SetNormalChildNeedsLayout(false);
     SetNeedsSimplifiedNormalFlowLayout(false);
+  } else if (!PosChildNeedsLayout() && !NormalChildNeedsLayout() &&
+             !NeedsSimplifiedNormalFlowLayout()) {
+    // We aren't clearing the child dirty bits because the node is locked and
+    // layout for children is not done. If the children aren't dirty,  we need
+    // to notify the display lock that child traversal was blocked so that when
+    // the subtree gets updated/unlocked we will traverse the children.
+    auto* context = GetDisplayLockContext();
+    DCHECK(context);
+    context->NotifyChildLayoutWasBlocked();
   }
 
 #if DCHECK_IS_ON()
@@ -3297,14 +3303,13 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation(
   SetScrollAnchorDisablingStyleChanged(false);
 }
 
-inline void LayoutObject::ClearNeedsLayout(bool clear_child_dirty_bits) {
-  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
+inline void LayoutObject::ClearNeedsLayout() {
+  ClearNeedsLayoutWithoutPaintInvalidation();
   SetShouldCheckForPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation(
-    bool clear_child_dirty_bits) {
-  ClearNeedsLayoutWithoutPaintInvalidation(clear_child_dirty_bits);
+inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation() {
+  ClearNeedsLayoutWithoutPaintInvalidation();
   SetShouldDoFullPaintInvalidation();
 }
 

@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
-import android.widget.ListView;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -31,8 +29,8 @@ import java.util.List;
  * version/experiment so the organization of this menu should be simplified, probably by moving
  * Media to its own dedicated PreferenceFragment rather than sharing this one.
  */
-public class SiteSettingsPreferences extends PreferenceFragment
-        implements OnPreferenceClickListener {
+public class SiteSettingsPreferences
+        extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page
     // are defined in the SiteSettingsCategory, additional keys
     // are listed here.
@@ -43,8 +41,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
     boolean mMediaSubMenu;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
         getActivity().setTitle(R.string.prefs_site_settings);
 
@@ -64,7 +61,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
+        setDivider(null);
     }
 
     private Preference findPreference(@Type int type) {

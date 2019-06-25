@@ -15,6 +15,8 @@
 
 namespace previews {
 
+// Types of previews. This enum must remain synchronized with the enum
+// |PreviewsType| in tools/metrics/histograms/enums.xml.
 enum class PreviewsType {
   // Used to indicate that there is no preview type.
   NONE = 0,

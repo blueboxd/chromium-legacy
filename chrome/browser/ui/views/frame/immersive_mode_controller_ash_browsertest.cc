@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -24,11 +25,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/window/frame_caption_button.h"
@@ -97,12 +95,12 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   // Toggle the browser's fullscreen state.
   void ToggleFullscreen() {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. The notification
-    // is used to trigger changes in whether the shelf is auto hidden.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    // The fullscreen change notification is sent asynchronously. The
+    // notification is used to trigger changes in whether the shelf is auto
+    // hidden.
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
 
   // Attempt revealing the top-of-window views.

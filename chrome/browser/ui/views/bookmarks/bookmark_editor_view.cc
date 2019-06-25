@@ -491,23 +491,23 @@ BookmarkEditorView::CreateRootNode() {
       std::make_unique<EditorNode>(base::string16(), 0);
   const BookmarkNode* bb_root_node = bb_model_->root_node();
   CreateNodes(bb_root_node, root_node.get());
-  DCHECK(root_node->child_count() >= 2 && root_node->child_count() <= 4);
+  DCHECK_GE(root_node->children().size(), 2u);
+  DCHECK_LE(root_node->children().size(), 4u);
   DCHECK_EQ(BookmarkNode::BOOKMARK_BAR, bb_root_node->GetChild(0)->type());
   DCHECK_EQ(BookmarkNode::OTHER_NODE, bb_root_node->GetChild(1)->type());
-  if (root_node->child_count() >= 3)
+  if (root_node->children().size() >= 3)
     DCHECK_EQ(BookmarkNode::MOBILE, bb_root_node->GetChild(2)->type());
   return root_node;
 }
 
 void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
                                      BookmarkEditorView::EditorNode* b_node) {
-  for (int i = 0; i < bb_node->child_count(); ++i) {
-    const BookmarkNode* child_bb_node = bb_node->GetChild(i);
+  for (const auto& child_bb_node : bb_node->children()) {
     if (child_bb_node->IsVisible() && child_bb_node->is_folder() &&
-        bb_model_->client()->CanBeEditedByUser(child_bb_node)) {
+        bb_model_->client()->CanBeEditedByUser(child_bb_node.get())) {
       EditorNode* new_b_node = b_node->Add(std::make_unique<EditorNode>(
           child_bb_node->GetTitle(), child_bb_node->id()));
-      CreateNodes(child_bb_node, new_b_node);
+      CreateNodes(child_bb_node.get(), new_b_node);
     }
   }
 }
@@ -517,8 +517,8 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
     int64_t id) {
   if (node->value == id)
     return node;
-  for (int i = 0; i < node->child_count(); ++i) {
-    EditorNode* result = FindNodeWithID(node->GetChild(i), id);
+  for (const auto& child : node->children()) {
+    EditorNode* result = FindNodeWithID(child.get(), id);
     if (result)
       return result;
   }
@@ -581,8 +581,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     const BookmarkNode** parent_bb_node) {
   if (parent_b_node == b_node)
     *parent_bb_node = bb_node;
-  for (int i = 0; i < b_node->child_count(); ++i) {
-    EditorNode* child_b_node = b_node->GetChild(i);
+  for (const auto& child_b_node : b_node->children()) {
     const BookmarkNode* child_bb_node = nullptr;
     if (child_b_node->value == 0) {
       // New folder.
@@ -592,17 +591,16 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewFolders(
     } else {
       // Existing node, reset the title (BookmarkModel ignores changes if the
       // title is the same).
-      for (int j = 0; j < bb_node->child_count(); ++j) {
-        const BookmarkNode* node = bb_node->GetChild(j);
-        if (node->is_folder() && node->id() == child_b_node->value) {
-          child_bb_node = node;
-          break;
-        }
-      }
-      DCHECK(child_bb_node);
+      const auto i = std::find_if(
+          bb_node->children().cbegin(), bb_node->children().cend(),
+          [&child_b_node](const auto& node) {
+            return node->is_folder() && node->id() == child_b_node->value;
+          });
+      DCHECK(i != bb_node->children().cend());
+      child_bb_node = i->get();
       bb_model_->SetTitle(child_bb_node, child_b_node->GetTitle());
     }
-    ApplyNameChangesAndCreateNewFolders(child_bb_node, child_b_node,
+    ApplyNameChangesAndCreateNewFolders(child_bb_node, child_b_node.get(),
                                         parent_b_node, parent_bb_node);
   }
 }
@@ -619,8 +617,8 @@ void BookmarkEditorView::UpdateExpandedNodes(
         bookmarks::GetBookmarkNodeByID(bb_model_, editor_node->value));
   }
 
-  for (int i = 0; i < editor_node->child_count(); ++i)
-    UpdateExpandedNodes(editor_node->GetChild(i), expanded_nodes);
+  for (const auto& child : editor_node->children())
+    UpdateExpandedNodes(child.get(), expanded_nodes);
 }
 
 ui::SimpleMenuModel* BookmarkEditorView::GetMenuModel() {

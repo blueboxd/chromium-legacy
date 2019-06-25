@@ -35,7 +35,6 @@ class Size;
 }
 
 namespace gpu {
-class ContextSupport;
 class GpuMemoryBufferManager;
 class SharedImageInterface;
 struct SyncToken;
@@ -99,17 +98,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual std::unique_ptr<VideoEncodeAccelerator>
   CreateVideoEncodeAccelerator() = 0;
 
-  // Allocate & delete native textures.
-  virtual bool CreateTextures(int32_t count,
-                              const gfx::Size& size,
-                              std::vector<uint32_t>* texture_ids,
-                              std::vector<gpu::Mailbox>* texture_mailboxes,
-                              uint32_t texture_target) = 0;
-  virtual void DeleteTexture(uint32_t texture_id) = 0;
-  virtual gpu::SyncToken CreateSyncToken() = 0;
-  virtual void ShallowFlushCHROMIUM() = 0;
-
-  virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
   virtual void SignalSyncToken(const gpu::SyncToken& sync_token,
                                base::OnceClosure callback) = 0;
 
@@ -129,12 +117,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // video frames are enabled.
   virtual OutputFormat VideoFrameOutputFormat(
       VideoPixelFormat pixel_format) = 0;
-
-  // Returns a GL Context that can be used on the task runner associated with
-  // the same instance of GpuVideoAcceleratorFactories.
-  // nullptr will be returned in cases where a context couldn't be created or
-  // the context was lost.
-  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
 
   // Returns a SharedImageInterface that can be used (on any thread) to allocate
   // and update shared images.
@@ -160,7 +142,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual scoped_refptr<viz::ContextProviderCommandBuffer>
   GetMediaContextProvider() = 0;
-  virtual gpu::ContextSupport* GetMediaContextProviderContextSupport() = 0;
 
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;

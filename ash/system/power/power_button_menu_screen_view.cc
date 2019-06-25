@@ -98,7 +98,7 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
 
   // views::View:
   const char* GetClassName() const override {
-    return "PowerButtonMenuScreenView";
+    return "PowerButtonMenuBackgroundView";
   }
 
  private:

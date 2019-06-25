@@ -2453,9 +2453,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // We can safely re-use this fragment if we are positioned, and only our
   // position constraints changed (left/top/etc). However we need to clear the
   // dirty layout bit(s). Note that we may be here because we are display locked
-  // and have cached a locked layout result. In that case, we still need to
-  // retain child bits.
-  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  // and have cached a locked layout result. In that case, this function will
+  // not clear the child dirty bits.
+  ClearNeedsLayout();
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:

@@ -93,11 +93,10 @@ void PopulateBookmarkTreeNode(
 
   if (recurse && node->is_folder()) {
     std::vector<BookmarkTreeNode> children;
-    for (int i = 0; i < node->child_count(); ++i) {
-      const BookmarkNode* child = node->GetChild(i);
+    for (const auto& child : node->children()) {
       if (child->IsVisible() && (!only_folders || child->is_folder())) {
         children.push_back(
-            GetBookmarkTreeNode(managed, child, true, only_folders));
+            GetBookmarkTreeNode(managed, child.get(), true, only_folders));
       }
     }
     out_bookmark_tree_node->children.reset(
@@ -162,9 +161,8 @@ void GetMetaInfo(const BookmarkNode& node,
   id_to_meta_info_map->Set(base::NumberToString(node.id()), std::move(value));
 
   if (node.is_folder()) {
-    for (int i = 0; i < node.child_count(); ++i) {
-      GetMetaInfo(*(node.GetChild(i)), id_to_meta_info_map);
-    }
+    for (const auto& child : node.children())
+      GetMetaInfo(*child, id_to_meta_info_map);
   }
 }
 

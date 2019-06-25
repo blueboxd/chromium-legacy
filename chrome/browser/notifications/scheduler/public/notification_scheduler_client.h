@@ -22,35 +22,16 @@ namespace notifications {
 // The client interface to receive events from notification scheduler.
 class NotificationSchedulerClient {
  public:
-  // Defines user actions type.
-  enum class UserActionType {
-    // The user clicks on the notification body.
-    kClick = 0,
-    // The user clicks on the notification button.
-    kButtonClick = 1,
-    // The user dismisses the notification.
-    kDismiss = 2,
-  };
-
-  // Information about button clicks.
-  struct ButtonClickInfo {
-    // Unique id of the button.
-    std::string button_id;
-
-    // Associate impression type for the button.
-    ActionButtonType type = ActionButtonType::kUnknownAction;
-  };
-
   using NotificationDataCallback =
       base::OnceCallback<void(std::unique_ptr<NotificationData>)>;
 
   NotificationSchedulerClient() = default;
   virtual ~NotificationSchedulerClient() = default;
 
-  // Called when the notification should be displayed to the user. The clients
+  // Called before the notification should be displayed to the user. The clients
   // can overwrite data in |notification_data| and return the updated data in
   // |callback|.
-  virtual void ShowNotification(
+  virtual void BeforeShowNotification(
       std::unique_ptr<NotificationData> notification_data,
       NotificationDataCallback callback) = 0;
 

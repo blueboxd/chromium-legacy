@@ -340,9 +340,8 @@ void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {
 
   AllowJavascript();
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
-  while (parent->child_count()) {
+  while (!parent->children().empty())
     cookies_tree_model_->DeleteCookieNode(parent->GetChild(0));
-  }
 }
 
 void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
@@ -353,26 +352,24 @@ void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
 
   AllowJavascript();
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
-  int parent_child_count = parent->child_count();
-  for (int i = 0; i < parent_child_count; ++i) {
-    CookieTreeNode* node = parent->GetChild(i);
-    if (node->GetTitle() == site) {
-      cookies_tree_model_->DeleteCookieNode(node);
-      sorted_sites_.clear();
-      return;
-    }
+  const auto i = std::find_if(
+      parent->children().cbegin(), parent->children().cend(),
+      [&site](const auto& node) { return node->GetTitle() == site; });
+  if (i != parent->children().cend()) {
+    cookies_tree_model_->DeleteCookieNode(i->get());
+    sorted_sites_.clear();
   }
 }
 
 void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   CHECK(cookies_tree_model_.get());
   CHECK(request_.should_send_list);
-  const int parent_child_count = parent->child_count();
+  const size_t parent_child_count = parent->children().size();
   if (sorted_sites_.empty()) {
     // Sort the list by site.
     sorted_sites_.reserve(parent_child_count);  // Optimization, hint size.
-    for (int i = 0; i < parent_child_count; ++i) {
-      const base::string16& title = parent->GetChild(i)->GetTitle();
+    for (size_t i = 0; i < parent_child_count; ++i) {
+      const base::string16& title = parent->children()[i]->GetTitle();
       sorted_sites_.push_back(LabelAndIndex(title, i));
     }
     std::sort(sorted_sites_.begin(), sorted_sites_.end());
@@ -389,24 +386,22 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   for (int i = 0; i < list_item_count; ++i) {
     const CookieTreeNode* site = parent->GetChild(sorted_sites_[i].second);
     base::string16 description;
-    for (int k = 0; k < site->child_count(); ++k) {
-      if (!description.empty()) {
+    for (const auto& category : site->children()) {
+      if (!description.empty())
         description += base::ASCIIToUTF16(", ");
-      }
-      const CookieTreeNode* category = site->GetChild(k);
       const auto node_type = category->GetDetailedInfo().node_type;
-      int item_count = category->child_count();
+      size_t item_count = category->children().size();
       switch (node_type) {
         case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
           // TODO(crbug.com/642955): Omit quota values until bug is addressed.
           continue;
         case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-          DCHECK_EQ(0, item_count);
+          DCHECK_EQ(0u, item_count);
           item_count = 1;
           FALLTHROUGH;
         case CookieTreeNode::DetailedInfo::TYPE_COOKIES:
           description += l10n_util::GetPluralStringFUTF16(
-              IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, item_count);
+              IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, int{item_count});
           break;
         default:
           int ids_value = GetCategoryLabelID(node_type);

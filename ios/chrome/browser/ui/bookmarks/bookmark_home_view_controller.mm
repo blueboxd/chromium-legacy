@@ -1069,7 +1069,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.sharedState.editingFolderNode =
       self.sharedState.bookmarkModel->AddFolder(
           self.sharedState.tableViewDisplayedRootNode,
-          self.sharedState.tableViewDisplayedRootNode->child_count(),
+          self.sharedState.tableViewDisplayedRootNode->children().size(),
           folderTitle);
 
   BookmarkHomeNodeItem* nodeItem = [[BookmarkHomeNodeItem alloc]
@@ -1248,13 +1248,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     std::copy(editNodes.begin(), editNodes.end(), std::back_inserter(nodes));
   } else {
     // Create a vector of edit nodes in the same order as the nodes in folder.
-    int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
-    for (int i = 0; i < childCount; ++i) {
-      const BookmarkNode* node =
-          self.sharedState.tableViewDisplayedRootNode->GetChild(i);
-      if (self.sharedState.editNodes.find(node) !=
+    for (const auto& child :
+         self.sharedState.tableViewDisplayedRootNode->children()) {
+      if (self.sharedState.editNodes.find(child.get()) !=
           self.sharedState.editNodes.end()) {
-        nodes.push_back(node);
+        nodes.push_back(child.get());
       }
     }
   }

@@ -224,8 +224,8 @@ class CrashHandlerTest : public base::MultiProcessTest,
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
     int exit_code = -1;
-    EXPECT_TRUE(process.WaitForExitWithTimeout(
-        TestTimeouts::action_max_timeout(), &exit_code));
+    EXPECT_TRUE(WaitForMultiprocessTestChildExit(
+        process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_NE(exit_code, kSuccess);
 
     return (exit_code != kSuccess);

@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.download.home.glue;
 
-import android.os.Handler;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -22,6 +22,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,13 @@ public class DownloadGlue implements DownloadObserver {
     @Override
     public void onDownloadItemUpdated(DownloadItem item) {
         if (!canShowDownloadItem(item)) return;
-        mDelegate.onItemUpdated(DownloadItem.createOfflineItem(item), null);
+
+        OfflineItem offlineItem = DownloadItem.createOfflineItem(item);
+        mDelegate.onItemUpdated(offlineItem, null);
+
+        if (offlineItem.externallyRemoved) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> removeItem(offlineItem));
+        }
     }
 
     /** @see OfflineContentProvider.Observer#onItemRemoved(ContentId) */
@@ -146,7 +153,7 @@ public class DownloadGlue implements DownloadObserver {
     /** @see OfflineContentProvider#getItemById(ContentId, Callback) */
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
         assert false : "Not supported.";
-        new Handler().post(() -> callback.onResult(null));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
     }
 
     /** @see OfflineContentProvider#getAllItems(Callback) */
@@ -161,14 +168,15 @@ public class DownloadGlue implements DownloadObserver {
 
     /** @see OfflineContentProvider#getVisualsForItem(ContentId, VisualsCallback) */
     public void getVisualsForItem(ContentId id, VisualsCallback callback) {
-        new Handler().post(() -> callback.onVisualsAvailable(id, null));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onVisualsAvailable(id, null));
     }
 
     /** @see OfflineContentProvider#getShareInfoForItem(ContentId, ShareCallback) */
     public void getShareInfoForItem(OfflineItem item, ShareCallback callback) {
         OfflineItemShareInfo info = new OfflineItemShareInfo();
         info.uri = DownloadUtils.getUriForItem(item.filePath);
-        new Handler().post(() -> callback.onShareInfoAvailable(item.id, info));
+        PostTask.postTask(
+                UiThreadTaskTraits.DEFAULT, () -> callback.onShareInfoAvailable(item.id, info));
     }
 
     /** @see OfflineContentProvider#renameItem(ContentId, String, Callback)*/

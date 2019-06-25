@@ -63,8 +63,8 @@ class SamplingPartitionAllocShimsTest : public base::MultiProcessTest {
   void runTest(const char* name) {
     base::Process process = SpawnChild(name);
     int exit_code = -1;
-    ASSERT_TRUE(process.WaitForExitWithTimeout(
-        TestTimeouts::action_max_timeout(), &exit_code));
+    ASSERT_TRUE(WaitForMultiprocessTestChildExit(
+        process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_EQ(exit_code, kSuccess);
   }
 };

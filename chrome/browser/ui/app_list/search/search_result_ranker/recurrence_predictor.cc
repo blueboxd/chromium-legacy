@@ -15,29 +15,6 @@ constexpr int kHoursADay = 24;
 
 }  // namespace
 
-void RecurrencePredictor::Train(unsigned int target) {
-  LogUsageError(UsageError::kInvalidTrainCall);
-  NOTREACHED();
-}
-
-void RecurrencePredictor::Train(unsigned int target, unsigned int condition) {
-  LogUsageError(UsageError::kInvalidTrainCall);
-  NOTREACHED();
-}
-
-base::flat_map<unsigned int, float> RecurrencePredictor::Rank() {
-  LogUsageError(UsageError::kInvalidRankCall);
-  NOTREACHED();
-  return {};
-}
-
-base::flat_map<unsigned int, float> RecurrencePredictor::Rank(
-    unsigned int condition) {
-  LogUsageError(UsageError::kInvalidRankCall);
-  NOTREACHED();
-  return {};
-}
-
 FakePredictor::FakePredictor(const FakePredictorConfig& config) {
   // The fake predictor should only be used for testing, not in production.
   // Record an error so we know if it is being used.
@@ -51,11 +28,12 @@ const char* FakePredictor::GetPredictorName() const {
   return kPredictorName;
 }
 
-void FakePredictor::Train(unsigned int target) {
+void FakePredictor::Train(unsigned int target, unsigned int condition) {
   counts_[target] += 1.0f;
 }
 
-base::flat_map<unsigned int, float> FakePredictor::Rank() {
+base::flat_map<unsigned int, float> FakePredictor::Rank(
+    unsigned int condition) {
   return counts_;
 }
 
@@ -70,14 +48,22 @@ void FakePredictor::FromProto(const RecurrencePredictorProto& proto) {
     LogSerializationError(SerializationError::kFakePredictorLoadingError);
     return;
   }
-  auto predictor = proto.fake_predictor();
 
-  for (const auto& pair : predictor.counts())
+  for (const auto& pair : proto.fake_predictor().counts())
     counts_[pair.first] = pair.second;
 }
 
 DefaultPredictor::DefaultPredictor(const DefaultPredictorConfig& config) {}
 DefaultPredictor::~DefaultPredictor() {}
+
+void DefaultPredictor::Train(unsigned int target, unsigned int condition) {}
+
+base::flat_map<unsigned int, float> DefaultPredictor::Rank(
+    unsigned int condition) {
+  LogUsageError(UsageError::kInvalidRankCall);
+  NOTREACHED();
+  return {};
+}
 
 const char DefaultPredictor::kPredictorName[] = "DefaultPredictor";
 const char* DefaultPredictor::GetPredictorName() const {
@@ -88,25 +74,24 @@ void DefaultPredictor::ToProto(RecurrencePredictorProto* proto) const {}
 
 void DefaultPredictor::FromProto(const RecurrencePredictorProto& proto) {}
 
-ZeroStateFrecencyPredictor::ZeroStateFrecencyPredictor(
-    const ZeroStateFrecencyPredictorConfig& config)
+FrecencyPredictor::FrecencyPredictor(const FrecencyPredictorConfig& config)
     : decay_coeff_(config.decay_coeff()) {}
-ZeroStateFrecencyPredictor::~ZeroStateFrecencyPredictor() = default;
+FrecencyPredictor::~FrecencyPredictor() = default;
 
-const char ZeroStateFrecencyPredictor::kPredictorName[] =
-    "ZeroStateFrecencyPredictor";
-const char* ZeroStateFrecencyPredictor::GetPredictorName() const {
+const char FrecencyPredictor::kPredictorName[] = "FrecencyPredictor";
+const char* FrecencyPredictor::GetPredictorName() const {
   return kPredictorName;
 }
 
-void ZeroStateFrecencyPredictor::Train(unsigned int target) {
+void FrecencyPredictor::Train(unsigned int target, unsigned int condition) {
   ++num_updates_;
   TargetData& data = targets_[target];
   DecayScore(&data);
   data.last_score += 1.0f - decay_coeff_;
 }
 
-base::flat_map<unsigned int, float> ZeroStateFrecencyPredictor::Rank() {
+base::flat_map<unsigned int, float> FrecencyPredictor::Rank(
+    unsigned int condition) {
   base::flat_map<unsigned int, float> result;
   for (auto& pair : targets_) {
     DecayScore(&pair.second);
@@ -115,9 +100,8 @@ base::flat_map<unsigned int, float> ZeroStateFrecencyPredictor::Rank() {
   return result;
 }
 
-void ZeroStateFrecencyPredictor::ToProto(
-    RecurrencePredictorProto* proto) const {
-  auto* predictor = proto->mutable_zero_state_frecency_predictor();
+void FrecencyPredictor::ToProto(RecurrencePredictorProto* proto) const {
+  auto* predictor = proto->mutable_frecency_predictor();
 
   predictor->set_num_updates(num_updates_);
 
@@ -129,14 +113,12 @@ void ZeroStateFrecencyPredictor::ToProto(
   }
 }
 
-void ZeroStateFrecencyPredictor::FromProto(
-    const RecurrencePredictorProto& proto) {
-  if (!proto.has_zero_state_frecency_predictor()) {
-    LogSerializationError(
-        SerializationError::kZeroStateFrecencyPredictorLoadingError);
+void FrecencyPredictor::FromProto(const RecurrencePredictorProto& proto) {
+  if (!proto.has_frecency_predictor()) {
+    LogSerializationError(SerializationError::kFrecencyPredictorLoadingError);
     return;
   }
-  const auto& predictor = proto.zero_state_frecency_predictor();
+  const auto& predictor = proto.frecency_predictor();
 
   num_updates_ = predictor.num_updates();
 
@@ -148,7 +130,7 @@ void ZeroStateFrecencyPredictor::FromProto(
   targets_.swap(targets);
 }
 
-void ZeroStateFrecencyPredictor::DecayScore(TargetData* data) {
+void FrecencyPredictor::DecayScore(TargetData* data) {
   int time_since_update = num_updates_ - data->last_num_updates;
 
   if (time_since_update > 0) {
@@ -157,25 +139,22 @@ void ZeroStateFrecencyPredictor::DecayScore(TargetData* data) {
   }
 }
 
-ZeroStateHourBinPredictor::ZeroStateHourBinPredictor(
-    const ZeroStateHourBinPredictorConfig& config)
+HourBinPredictor::HourBinPredictor(const HourBinPredictorConfig& config)
     : config_(config) {
   if (!proto_.has_last_decay_timestamp())
     SetLastDecayTimestamp(
         base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
 }
 
-ZeroStateHourBinPredictor::~ZeroStateHourBinPredictor() = default;
+HourBinPredictor::~HourBinPredictor() = default;
 
-const char ZeroStateHourBinPredictor::kPredictorName[] =
-    "ZeroStateHourBinPredictor";
+const char HourBinPredictor::kPredictorName[] = "HourBinPredictor";
 
-const char* ZeroStateHourBinPredictor::GetPredictorName() const {
+const char* HourBinPredictor::GetPredictorName() const {
   return kPredictorName;
 }
 
-int ZeroStateHourBinPredictor::GetBinFromHourDifference(
-    int hour_difference) const {
+int HourBinPredictor::GetBinFromHourDifference(int hour_difference) const {
   base::Time shifted_time =
       base::Time::Now() + base::TimeDelta::FromHours(hour_difference);
   base::Time::Exploded exploded_time;
@@ -193,18 +172,19 @@ int ZeroStateHourBinPredictor::GetBinFromHourDifference(
   }
 }
 
-int ZeroStateHourBinPredictor::GetBin() const {
+int HourBinPredictor::GetBin() const {
   return GetBinFromHourDifference(0);
 }
 
-void ZeroStateHourBinPredictor::Train(unsigned int target) {
+void HourBinPredictor::Train(unsigned int target, unsigned int condition) {
   int hour = GetBin();
   auto& frequency_table = (*proto_.mutable_binned_frequency_table())[hour];
   frequency_table.set_total_counts(frequency_table.total_counts() + 1);
   (*frequency_table.mutable_frequency())[target] += 1;
 }
 
-base::flat_map<unsigned int, float> ZeroStateHourBinPredictor::Rank() {
+base::flat_map<unsigned int, float> HourBinPredictor::Rank(
+    unsigned int condition) {
   base::flat_map<unsigned int, float> ranks;
   const auto& frequency_table_map = proto_.binned_frequency_table();
   for (const auto& hour_and_weight : config_.bin_weights_map()) {
@@ -229,27 +209,26 @@ base::flat_map<unsigned int, float> ZeroStateHourBinPredictor::Rank() {
   return ranks;
 }
 
-void ZeroStateHourBinPredictor::ToProto(RecurrencePredictorProto* proto) const {
-  *proto->mutable_zero_state_hour_bin_predictor() = proto_;
+void HourBinPredictor::ToProto(RecurrencePredictorProto* proto) const {
+  *proto->mutable_hour_bin_predictor() = proto_;
 }
 
-void ZeroStateHourBinPredictor::FromProto(
-    const RecurrencePredictorProto& proto) {
-  if (!proto.has_zero_state_hour_bin_predictor())
+void HourBinPredictor::FromProto(const RecurrencePredictorProto& proto) {
+  if (!proto.has_hour_bin_predictor())
     return;
 
-  proto_ = proto.zero_state_hour_bin_predictor();
+  proto_ = proto.hour_bin_predictor();
   if (ShouldDecay())
     DecayAll();
 }
 
-bool ZeroStateHourBinPredictor::ShouldDecay() {
+bool HourBinPredictor::ShouldDecay() {
   const int today = base::Time::Now().ToDeltaSinceWindowsEpoch().InDays();
   // Check if we should decay the frequency
   return today - proto_.last_decay_timestamp() > 7;
 }
 
-void ZeroStateHourBinPredictor::DecayAll() {
+void HourBinPredictor::DecayAll() {
   SetLastDecayTimestamp(base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
   auto& frequency_table_map = *proto_.mutable_binned_frequency_table();
   for (auto it_table = frequency_table_map.begin();

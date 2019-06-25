@@ -215,7 +215,7 @@ class MaxDatabaseIdKey {
 
 class DataVersionKey {
  public:
-  CONTENT_EXPORT static std::string Encode();
+  static std::string Encode();
 };
 
 class BlobJournalKey {

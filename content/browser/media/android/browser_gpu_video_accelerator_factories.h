@@ -33,15 +33,6 @@ class BrowserGpuVideoAcceleratorFactories
       const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
-  bool CreateTextures(int32_t count,
-                      const gfx::Size& size,
-                      std::vector<uint32_t>* texture_ids,
-                      std::vector<gpu::Mailbox>* texture_mailboxes,
-                      uint32_t texture_target) override;
-  void DeleteTexture(uint32_t texture_id) override;
-  gpu::SyncToken CreateSyncToken() override;
-  void ShallowFlushCHROMIUM() override;
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override;
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -53,7 +44,6 @@ class BrowserGpuVideoAcceleratorFactories
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   media::GpuVideoAcceleratorFactories::OutputFormat VideoFrameOutputFormat(
       media::VideoPixelFormat pixel_format) override;
-  gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::SharedImageInterface* SharedImageInterface() override;
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
@@ -62,7 +52,6 @@ class BrowserGpuVideoAcceleratorFactories
   GetVideoEncodeAcceleratorSupportedProfiles() override;
   scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
       override;
-  gpu::ContextSupport* GetMediaContextProviderContextSupport() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
   scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;

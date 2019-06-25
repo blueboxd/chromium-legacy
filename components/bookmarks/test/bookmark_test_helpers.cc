@@ -109,18 +109,12 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
 }
 
 std::string ModelStringFromNode(const BookmarkNode* node) {
-  // Since the children of the node are not available as a vector,
-  // we'll just have to do it the hard way.
-  int child_count = node->child_count();
   std::string child_string;
-  for (int i = 0; i < child_count; ++i) {
-    const BookmarkNode* child = node->GetChild(i);
-    if (child->is_folder()) {
-      child_string += base::UTF16ToUTF8(child->GetTitle()) + ":[ " +
-          ModelStringFromNode(child) + "] ";
-    } else {
-      child_string += base::UTF16ToUTF8(child->GetTitle()) + " ";
-    }
+  for (const auto& child : node->children()) {
+    child_string += base::UTF16ToUTF8(child->GetTitle());
+    if (child->is_folder())
+      child_string += ":[ " + ModelStringFromNode(child.get()) + "]";
+    child_string += ' ';
   }
   return child_string;
 }

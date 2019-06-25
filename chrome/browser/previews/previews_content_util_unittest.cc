@@ -71,7 +71,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
                            const GURL& url,
                            PreviewsType type) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
-                type == PreviewsType::RESOURCE_LOADING_HINTS);
+                type == PreviewsType::RESOURCE_LOADING_HINTS ||
+                type == PreviewsType::DEFER_ALL_SCRIPT);
     return IsEnabled(type);
   }
 
@@ -219,6 +220,31 @@ TEST_F(PreviewsContentUtilTest,
 }
 
 TEST_F(PreviewsContentUtilTest,
+       DetermineAllowedClientPreviewsStateDeferAllScript) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("Previews,DeferAllScript",
+                                          std::string());
+  PreviewsUserData user_data(1);
+  bool is_reload = false;
+  bool previews_triggering_logic_already_ran = false;
+  bool is_data_saver_user = true;
+  // Allowed for start of HTTPS navigation.
+  EXPECT_LT(0,
+            content::DEFER_ALL_SCRIPT_ON &
+                previews::CallDetermineAllowedClientPreviewsState(
+                    &user_data, GURL("https://www.google.com"), is_reload,
+                    previews_triggering_logic_already_ran, is_data_saver_user,
+                    enabled_previews_decider(), nullptr));
+  // Allowed for start of HTTP navigation.
+  EXPECT_LT(0,
+            content::DEFER_ALL_SCRIPT_ON &
+                previews::CallDetermineAllowedClientPreviewsState(
+                    &user_data, GURL("http://www.google.com"), is_reload,
+                    previews_triggering_logic_already_ran, is_data_saver_user,
+                    enabled_previews_decider(), nullptr));
+}
+
+TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateResourceLoadingHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("Previews,ResourceLoadingHints",
@@ -322,7 +348,8 @@ TEST_F(PreviewsContentUtilTest,
 TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,NoScriptPreviews,ResourceLoadingHints", std::string());
+      "Previews,NoScriptPreviews,ResourceLoadingHints,DeferAllScript",
+      std::string());
   PreviewsUserData user_data(1);
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
   base::HistogramTester histogram_tester;
@@ -371,6 +398,19 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   // Try different navigation ECT value.
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
+  // DeferAllScript has precedence over NoScript and ResourceLoadingHints.
+  EXPECT_EQ(content::DEFER_ALL_SCRIPT_ON,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("https://www.google.com"),
+                content::DEFER_ALL_SCRIPT_ON | content::NOSCRIPT_ON |
+                    content::RESOURCE_LOADING_HINTS_ON,
+                enabled_previews_decider(), nullptr));
+  histogram_tester.ExpectBucketCount(
+      "Previews.Triggered.EffectiveConnectionType2.DeferAllScript",
+      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 4);
+
   // RESOURCE_LOADING_HINTS has precedence over NoScript.
   EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
             previews::DetermineCommittedClientPreviewsState(
@@ -381,13 +421,43 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 4);
+      "Previews.Triggered.EffectiveConnectionType2", 5);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 content::NOSCRIPT_ON, enabled_previews_decider(), nullptr));
+}
+
+TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsStateForHttp) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "Previews,NoScriptPreviews,ResourceLoadingHints,DeferAllScript",
+      std::string());
+  PreviewsUserData user_data(1);
+  user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::HistogramTester histogram_tester;
+
+  // Verify that currently these previews do not commit on HTTP.
+  EXPECT_EQ(content::PREVIEWS_OFF,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("http://www.google.com"),
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+                    content::DEFER_ALL_SCRIPT_ON,
+                enabled_previews_decider(), nullptr));
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 0);
+
+  // Ensure one does commit on HTTPS (to confirm test setup).
+  EXPECT_NE(content::PREVIEWS_OFF,
+            previews::DetermineCommittedClientPreviewsState(
+                &user_data, GURL("https://www.google.com"),
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+                    content::DEFER_ALL_SCRIPT_ON,
+                enabled_previews_decider(), nullptr));
+  histogram_tester.ExpectTotalCount(
+      "Previews.Triggered.EffectiveConnectionType2", 1);
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -437,6 +507,8 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
       previews::GetMainFramePreviewsType(content::RESOURCE_LOADING_HINTS_ON));
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
             previews::GetMainFramePreviewsType(content::LITE_PAGE_REDIRECT_ON));
+  EXPECT_EQ(previews::PreviewsType::DEFER_ALL_SCRIPT,
+            previews::GetMainFramePreviewsType(content::DEFER_ALL_SCRIPT_ON));
 
   // NONE cases:
   EXPECT_EQ(previews::PreviewsType::NONE,
@@ -456,10 +528,14 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
   EXPECT_EQ(previews::PreviewsType::RESOURCE_LOADING_HINTS,
             previews::GetMainFramePreviewsType(
                 content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON));
+  EXPECT_EQ(previews::PreviewsType::DEFER_ALL_SCRIPT,
+            previews::GetMainFramePreviewsType(
+                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+                content::DEFER_ALL_SCRIPT_ON));
   EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
             previews::GetMainFramePreviewsType(
                 content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
-                content::LITE_PAGE_REDIRECT_ON));
+                content::DEFER_ALL_SCRIPT_ON | content::LITE_PAGE_REDIRECT_ON));
 }
 
 class PreviewsContentSimulatedNavigationTest

@@ -235,6 +235,12 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
       return !actions_view_->children().empty() &&
              list_view_->HandleVerticalFocusMovement(
                  this, event.key_code() == ui::VKEY_UP);
+    case ui::VKEY_DELETE:
+    case ui::VKEY_BROWSER_BACK:
+      // Allows alt+(back or delete) to trigger the 'remove result' dialog.
+      OnSearchResultActionActivated(
+          ash::OmniBoxZeroStateAction::kRemoveSuggestion, event.flags());
+      return true;
     default:
       return false;
   }

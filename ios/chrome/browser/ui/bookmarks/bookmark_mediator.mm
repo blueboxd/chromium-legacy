@@ -92,7 +92,7 @@ const int64_t kLastUsedFolderNone = -1;
       [[self class] folderForNewBookmarksInBrowserState:self.browserState];
   BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
-  bookmarkModel->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmarkModel->AddURL(defaultFolder, defaultFolder->children().size(),
                         base::SysNSStringToUTF16(title), URL);
 
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];

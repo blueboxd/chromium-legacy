@@ -846,14 +846,6 @@ bool AppMenuModel::CreateActionToolbarOverflowMenu() {
   // GetToolbarActionsBar() can be null in testing.
   if (browser_->window() && browser_->window()->GetToolbarActionsBar() &&
       browser_->window()->GetToolbarActionsBar()->NeedsOverflow()) {
-#if defined(OS_MACOSX)
-    // There's a bug in AppKit menus, where if a menu item with a custom view
-    // (like the extensions overflow menu) is the first menu item, it is not
-    // highlightable or keyboard-selectable.
-    // Adding any menu item before it (even one which is never visible) prevents
-    // it, so add a bogus item here that will always be hidden.
-    AddItem(kEmptyMenuItemCommand, base::string16());
-#endif
     AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
     return true;
   }

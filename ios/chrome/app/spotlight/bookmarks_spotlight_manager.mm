@@ -214,10 +214,8 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     spotlight::DeleteItemsWithIdentifiers(@[ spotlightID ], completion);
     return;
   }
-  int childCount = node->child_count();
-  for (int child = 0; child < childCount; child++) {
-    [self removeNodeFromIndex:node->GetChild(child)];
-  }
+  for (const auto& child : node->children())
+    [self removeNodeFromIndex:child.get()];
 }
 
 - (BOOL)shouldReindex {
@@ -274,10 +272,8 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
     }
     return;
   }
-  int childCount = node->child_count();
-  for (int child = 0; child < childCount; child++) {
-    [self refreshNodeInIndex:node->GetChild(child) initial:initial];
-  }
+  for (const auto& child : node->children())
+    [self refreshNodeInIndex:child.get() initial:initial];
 }
 
 - (void)shutdown {

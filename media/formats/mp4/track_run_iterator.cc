@@ -119,7 +119,11 @@ DecodeTimestamp DecodeTimestampFromRational(int64_t numer, int64_t denom) {
 }
 
 TrackRunIterator::TrackRunIterator(const Movie* moov, MediaLog* media_log)
-    : moov_(moov), media_log_(media_log), sample_offset_(0) {
+    : moov_(moov),
+      media_log_(media_log),
+      sample_dts_(0),
+      sample_cts_(0),
+      sample_offset_(0) {
   CHECK(moov);
 }
 

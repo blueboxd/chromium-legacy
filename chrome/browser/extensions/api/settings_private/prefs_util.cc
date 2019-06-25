@@ -484,8 +484,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Ash settings.
-  (*s_whitelist)[ash::prefs::kKioskNextShellEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kEnableStylusTools] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kLaunchPaletteOnEjectEvent] =

@@ -123,10 +123,6 @@ class TreeNode : public TreeModelNode {
 
   const TreeNodes& children() const { return children_; }
 
-  // Returns the number of children.
-  // TODO(https://crbug.com/956419): Remove; use children().size().
-  int child_count() const { return static_cast<int>(children_.size()); }
-
   // Returns the number of all nodes in the subtree rooted at this node,
   // including this node.
   int GetTotalNodeCount() const {

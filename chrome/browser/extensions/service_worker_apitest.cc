@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/web_navigation.h"
@@ -1834,6 +1836,30 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   content::WebContents* web_contents = AddTab(browser(), page_url);
   EXPECT_TRUE(web_contents);
   EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
+}
+
+// Tests that chrome.browserAction.onClicked sees user gesture.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       BrowserActionUserGesture) {
+  // First, load |extension| first so that it has browserAction.onClicked
+  // listener registered.
+  ExtensionTestMessageListener listener_added("ready", false);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("service_worker/worker_based_background/"
+                                 "browser_action"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener_added.WaitUntilSatisfied());
+
+  ResultCatcher catcher;
+  // Click on browser action to start the test.
+  {
+    content::WebContents* web_contents = AddTab(browser(), GURL("about:blank"));
+    ASSERT_TRUE(web_contents);
+    ExtensionActionRunner::GetForWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents())
+        ->RunAction(extension, true);
+  }
+  EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 
 // Tests that console messages logged by extension service workers, both via

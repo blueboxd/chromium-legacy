@@ -28,7 +28,10 @@ class GPU_GLES2_EXPORT SwapChainFactoryDXGI {
   explicit SwapChainFactoryDXGI(bool use_passthrough);
   ~SwapChainFactoryDXGI();
 
-  struct SwapChainBackings {
+  // Returns true if DXGI swap chain shared images for overlays are supported.
+  static bool IsSupported();
+
+  struct GPU_GLES2_EXPORT SwapChainBackings {
     SwapChainBackings(std::unique_ptr<SharedImageBacking> front_buffer,
                       std::unique_ptr<SharedImageBacking> back_buffer);
     ~SwapChainBackings();

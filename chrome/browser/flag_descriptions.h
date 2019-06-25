@@ -197,9 +197,6 @@ extern const char kExperimentalAccessibilityAutoclickDescription[];
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
-extern const char kExperimentalAccessibilitySwitchAccessName[];
-extern const char kExperimentalAccessibilitySwitchAccessDescription[];
-
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
@@ -1803,6 +1800,9 @@ extern const char kEnableAppDataSearchDescription[];
 extern const char kEnableAppGridGhostName[];
 extern const char kEnableAppGridGhostDescription[];
 
+extern const char kEnableSearchBoxSelectionName[];
+extern const char kEnableSearchBoxSelectionDescription[];
+
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];
 
@@ -1873,6 +1873,12 @@ extern const char
 extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
 extern const char
     kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
+
+extern const char kExperimentalAccessibilitySwitchAccessName[];
+extern const char kExperimentalAccessibilitySwitchAccessDescription[];
+
+extern const char kExperimentalAccessibilitySwitchAccessTextName[];
+extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
 extern const char kFileManagerFeedbackPanelDescription[];
 extern const char kFileManagerFeedbackPanelName[];
@@ -2116,6 +2122,13 @@ extern const char kWebrtcPipeWireCapturerName[];
 extern const char kWebrtcPipeWireCapturerDescription[];
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+extern const char kEnableDbusAndX11StatusIconsName[];
+extern const char kEnableDbusAndX11StatusIconsDescription[];
+
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in

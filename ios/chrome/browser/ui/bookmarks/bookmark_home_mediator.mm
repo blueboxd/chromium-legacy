@@ -133,13 +133,11 @@ const int kMaxBookmarksSearchResults = 50;
     return;
   }
   // Add all bookmarks and folders of the current root node to the table.
-  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
-  for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node =
-        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
+  for (const auto& child :
+       self.sharedState.tableViewDisplayedRootNode->children()) {
     BookmarkHomeNodeItem* nodeItem =
         [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
-                                      bookmarkNode:node];
+                                      bookmarkNode:child.get()];
     [self.sharedState.tableViewModel
                         addItem:nodeItem
         toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];

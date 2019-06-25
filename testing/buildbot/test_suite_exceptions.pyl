@@ -398,11 +398,6 @@
     ],
     'modifications': {
       # chromium.android
-      'android-asan': {
-        'swarming': {
-          'shards': 18,
-        },
-      },
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 13,
@@ -418,6 +413,15 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
+      },
+      # chromium.memory
+      'android-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 18,
+        },
       },
       # chromium.win
       'Win10 Tests x64 (dbg)': {
@@ -1179,6 +1183,7 @@
   },
   'perfetto_unittests': {
     'remove_from': [
+      'android-asan',
       'android-code-coverage',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
@@ -1440,6 +1445,11 @@
         },
       },
       # chromium.memory
+      'android-asan': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.unit_tests.filter',
+        ],
+      },
       'Linux ASan LSan Tests (1)': {
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/794372

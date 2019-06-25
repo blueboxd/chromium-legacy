@@ -74,7 +74,6 @@
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -473,13 +472,6 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
-#if defined(KIOSK_NEXT)
-  // Remove valueExists call from os_settings_ui.js when the #define is removed.
-  html_source->AddBoolean(
-      "showKioskNextShell",
-      base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
-          profile->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
-#endif
 
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(

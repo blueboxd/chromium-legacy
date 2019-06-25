@@ -6,6 +6,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -50,17 +51,17 @@ class ToolbarPageActionIconContainerViewBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
-  void TestUsesHighlight(ToolbarPageActionIconContainerView* view,
+  void TestUsesHighlight(ToolbarPageActionIconContainerView* container,
                          bool expect_highlight) {
-    DCHECK(view);
-    EXPECT_EQ(view->uses_highlight(), expect_highlight);
-    EXPECT_EQ(view->border(), nullptr);
+    DCHECK(container);
+    EXPECT_EQ(container->uses_highlight(), expect_highlight);
+    EXPECT_EQ(container->border(), nullptr);
 
-    view->UpdateHighlight(true);
-    EXPECT_EQ(view->border() != nullptr, expect_highlight);
+    container->save_card_icon_view()->SetHighlighted(true);
+    EXPECT_EQ(container->border() != nullptr, expect_highlight);
 
-    view->UpdateHighlight(false);
-    EXPECT_EQ(view->border(), nullptr);
+    container->save_card_icon_view()->SetHighlighted(false);
+    EXPECT_EQ(container->border(), nullptr);
   }
 
  private:

@@ -19,4 +19,13 @@ ServiceWorkerData::ServiceWorkerData(
 
 ServiceWorkerData::~ServiceWorkerData() {}
 
+void ServiceWorkerData::IncrementInteraction() {
+  ++interaction_count_;
+}
+
+void ServiceWorkerData::DecrementInteraction() {
+  DCHECK_GT(interaction_count_, 0);
+  --interaction_count_;
+}
+
 }  // namespace extensions

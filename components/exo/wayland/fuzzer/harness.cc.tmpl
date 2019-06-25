@@ -76,10 +76,10 @@ namespace wayland_fuzzer {
           {{arg.cpp_type}} {{arg.name}} = harness->get_{{arg.interface}}(action.{{arg.name}}());
           {% if not arg.nullable %}
             if (!{{arg.name}})
-	      return;
+              return;
           {% endif %}
-	{% elif arg.type == 'fd' %}
-	  int {{arg.name}} = harness->GetFileDescriptor(action.{{arg.name}}());
+        {% elif arg.type == 'fd' %}
+          int {{arg.name}} = harness->GetFileDescriptor(action.{{arg.name}}());
         {% endif %}
       {% endfor %}
       {% if request.is_constructor %}
@@ -160,7 +160,16 @@ Harness::Harness() {
 }
 
 Harness::~Harness() {
-  wl_display_disconnect(wl_display_list_.front());
+  {% for interface in interfaces %}
+    for (auto ifc : {{interface.name}}_list_) {
+      if (ifc)
+        {% if interface.name == "wl_display" %}
+          wl_display_disconnect(ifc);
+        {% else %}
+          free(ifc);
+        {% endif %}
+    }
+  {% endfor %}
 }
 
 void Harness::Run(const actions::actions& all_steps) {

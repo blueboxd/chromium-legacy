@@ -1571,11 +1571,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
   bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
                          base::ASCIIToUTF16("a"), bookmarked_page);
-  EXPECT_EQ(1, bookmark_model->bookmark_bar_node()->child_count());
+  EXPECT_EQ(1u, bookmark_model->bookmark_bar_node()->children().size());
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS, false);
-  EXPECT_EQ(0, bookmark_model->bookmark_bar_node()->child_count());
+  EXPECT_EQ(0u, bookmark_model->bookmark_bar_node()->children().size());
 }
 
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as

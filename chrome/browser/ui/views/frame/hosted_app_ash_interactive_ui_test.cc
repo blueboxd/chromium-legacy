@@ -5,6 +5,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -71,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppAshInteractiveUITest, MenuButtonClickable) {
 // Test that the hosted app menu button opens a menu on click in immersive mode.
 IN_PROC_BROWSER_TEST_F(HostedAppAshInteractiveUITest,
                        ImmersiveMenuButtonClickable) {
-  FullscreenNotificationObserver waiter;
+  FullscreenNotificationObserver waiter(browser());
   chrome::ToggleFullscreenMode(browser());
   waiter.Wait();
 

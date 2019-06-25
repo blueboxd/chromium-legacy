@@ -32,10 +32,6 @@ api::serial::SendError ConvertSendErrorFromMojo(
       return api::serial::SEND_ERROR_NONE;
     case device::mojom::SerialSendError::DISCONNECTED:
       return api::serial::SEND_ERROR_DISCONNECTED;
-    case device::mojom::SerialSendError::PENDING:
-      return api::serial::SEND_ERROR_PENDING;
-    case device::mojom::SerialSendError::TIMEOUT:
-      return api::serial::SEND_ERROR_TIMEOUT;
     case device::mojom::SerialSendError::SYSTEM_ERROR:
       return api::serial::SEND_ERROR_SYSTEM_ERROR;
   }
@@ -49,8 +45,6 @@ api::serial::ReceiveError ConvertReceiveErrorFromMojo(
       return api::serial::RECEIVE_ERROR_NONE;
     case device::mojom::SerialReceiveError::DISCONNECTED:
       return api::serial::RECEIVE_ERROR_DISCONNECTED;
-    case device::mojom::SerialReceiveError::TIMEOUT:
-      return api::serial::RECEIVE_ERROR_TIMEOUT;
     case device::mojom::SerialReceiveError::DEVICE_LOST:
       return api::serial::RECEIVE_ERROR_DEVICE_LOST;
     case device::mojom::SerialReceiveError::BREAK:

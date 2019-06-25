@@ -202,10 +202,10 @@ void PopulateBookmarkNode(TestNode* parent,
 // Verifies the contents of the bookmark bar node match the contents of the
 // TestNode.
 void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
-  ASSERT_EQ(expected->child_count(), actual->child_count());
-  for (int i = 0; i < expected->child_count(); ++i) {
-    TestNode* expected_child = expected->GetChild(i);
-    const BookmarkNode* actual_child = actual->GetChild(i);
+  ASSERT_EQ(expected->children().size(), actual->children().size());
+  for (size_t i = 0; i < expected->children().size(); ++i) {
+    TestNode* expected_child = expected->children()[i].get();
+    const BookmarkNode* actual_child = actual->children()[i].get();
     ASSERT_EQ(expected_child->GetTitle(), actual_child->GetTitle());
     if (expected_child->value == BookmarkNode::FOLDER) {
       ASSERT_TRUE(actual_child->type() == BookmarkNode::FOLDER);
@@ -475,17 +475,17 @@ class BookmarkModelTest : public testing::Test,
 TEST_F(BookmarkModelTest, InitialState) {
   const BookmarkNode* bb_node = model_->bookmark_bar_node();
   ASSERT_TRUE(bb_node != nullptr);
-  EXPECT_EQ(0, bb_node->child_count());
+  EXPECT_EQ(0u, bb_node->children().size());
   EXPECT_EQ(BookmarkNode::BOOKMARK_BAR, bb_node->type());
 
   const BookmarkNode* other_node = model_->other_node();
   ASSERT_TRUE(other_node != nullptr);
-  EXPECT_EQ(0, other_node->child_count());
+  EXPECT_EQ(0u, other_node->children().size());
   EXPECT_EQ(BookmarkNode::OTHER_NODE, other_node->type());
 
   const BookmarkNode* mobile_node = model_->mobile_node();
   ASSERT_TRUE(mobile_node != nullptr);
-  EXPECT_EQ(0, mobile_node->child_count());
+  EXPECT_EQ(0u, mobile_node->children().size());
   EXPECT_EQ(BookmarkNode::MOBILE, mobile_node->type());
 
   EXPECT_TRUE(bb_node->id() != other_node->id());
@@ -502,7 +502,7 @@ TEST_F(BookmarkModelTest, AddURL) {
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
-  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(1u, root->children().size());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
@@ -523,7 +523,7 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
-  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(1u, root->children().size());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
@@ -543,8 +543,7 @@ TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
 
     const BookmarkNode* new_node = model_->AddURL(root, i, title, url);
 
-    int size = i + 1;
-    EXPECT_EQ(size, root->child_count());
+    EXPECT_EQ(i + 1, root->children().size());
     EXPECT_EQ(ASCIIToUTF16(url_whitespace_test_cases[i].expected_title),
               new_node->GetTitle());
     EXPECT_EQ(BookmarkNode::URL, new_node->type());
@@ -564,7 +563,7 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
-  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(1u, root->children().size());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
@@ -587,7 +586,7 @@ TEST_F(BookmarkModelTest, AddURLToMobileBookmarks) {
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
-  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(1u, root->children().size());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_TRUE(url == new_node->url());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
@@ -606,7 +605,7 @@ TEST_F(BookmarkModelTest, AddFolder) {
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
-  ASSERT_EQ(1, root->child_count());
+  ASSERT_EQ(1u, root->children().size());
   ASSERT_EQ(title, new_node->GetTitle());
   ASSERT_EQ(BookmarkNode::FOLDER, new_node->type());
 
@@ -629,8 +628,7 @@ TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
 
     const BookmarkNode* new_node = model_->AddFolder(root, i, title);
 
-    int size = i + 1;
-    EXPECT_EQ(size, root->child_count());
+    EXPECT_EQ(i + 1, root->children().size());
     EXPECT_EQ(ASCIIToUTF16(title_whitespace_test_cases[i].expected_title),
               new_node->GetTitle());
     EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
@@ -645,7 +643,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   ClearCounts();
 
   model_->Remove(root->GetChild(0));
-  ASSERT_EQ(0, root->child_count());
+  ASSERT_EQ(0u, root->children().size());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
@@ -668,7 +666,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
 
   // Now remove the folder.
   model_->Remove(root->GetChild(0));
-  ASSERT_EQ(0, root->child_count());
+  ASSERT_EQ(0u, root->children().size());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
 
@@ -694,7 +692,7 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
   AssertObserverCount(3, 0, 0, 0, 0, 0, 0, 0, 0);
   ClearCounts();
 
-  int permanent_node_count = model_->root_node()->child_count();
+  size_t permanent_node_count = model_->root_node()->children().size();
 
   NodeRemovalDetail expected_node_removal_details[] = {
     NodeRemovalDetail(bookmark_bar_node, 1, url_node),
@@ -704,9 +702,9 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
   model_->SetUndoDelegate(this);
   model_->RemoveAllUserBookmarks();
 
-  EXPECT_EQ(0, bookmark_bar_node->child_count());
+  EXPECT_EQ(0u, bookmark_bar_node->children().size());
   // No permanent node should be removed.
-  EXPECT_EQ(permanent_node_count, model_->root_node()->child_count());
+  EXPECT_EQ(permanent_node_count, model_->root_node()->children().size());
   // No individual BookmarkNodeRemoved events are fired, so removed count
   // should be 0.
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 1);
@@ -791,9 +789,9 @@ TEST_F(BookmarkModelTest, Move) {
   AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, folder1, 1, 0);
   EXPECT_TRUE(folder1 == node->parent());
-  EXPECT_EQ(1, root->child_count());
+  EXPECT_EQ(1u, root->children().size());
   EXPECT_EQ(folder1, root->GetChild(0));
-  EXPECT_EQ(1, folder1->child_count());
+  EXPECT_EQ(1u, folder1->children().size());
   EXPECT_EQ(node, folder1->GetChild(0));
 
   // And remove the folder.
@@ -802,7 +800,7 @@ TEST_F(BookmarkModelTest, Move) {
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, nullptr, 0, size_t{-1});
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
-  EXPECT_EQ(0, root->child_count());
+  EXPECT_EQ(0u, root->children().size());
 }
 
 TEST_F(BookmarkModelTest, NonMovingMoveCall) {
@@ -1082,7 +1080,7 @@ TEST_F(BookmarkModelTest, Reorder) {
   AssertObserverCount(0, 0, 0, 0, 1, 0, 0, 1, 0);
 
   // Make sure the order matches is correct (it should be reversed).
-  ASSERT_EQ(4, parent->child_count());
+  ASSERT_EQ(4u, parent->children().size());
   EXPECT_EQ("D", base::UTF16ToASCII(parent->GetChild(0)->GetTitle()));
   EXPECT_EQ("C", base::UTF16ToASCII(parent->GetChild(1)->GetTitle()));
   EXPECT_EQ("B", base::UTF16ToASCII(parent->GetChild(2)->GetTitle()));

@@ -101,10 +101,12 @@ class MockCastWebContentsObserver : public CastWebContents::Observer {
   MOCK_METHOD1(OnPageStateChanged, void(CastWebContents* cast_web_contents));
   MOCK_METHOD2(OnPageStopped,
                void(CastWebContents* cast_web_contents, int error_code));
-  MOCK_METHOD3(RenderFrameCreated,
-               void(int render_process_id,
-                    int render_frame_id,
-                    service_manager::InterfaceProvider* frame_interfaces));
+  MOCK_METHOD4(
+      RenderFrameCreated,
+      void(int render_process_id,
+           int render_frame_id,
+           service_manager::InterfaceProvider* frame_interfaces,
+           blink::AssociatedInterfaceProvider* frame_associated_interfaces));
   MOCK_METHOD1(ResourceLoadFailed, void(CastWebContents* cast_web_contents));
 
  private:

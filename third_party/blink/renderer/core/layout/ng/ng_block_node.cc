@@ -725,14 +725,19 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 
   box_->UpdateAfterLayout();
-  // We should only clear the child layout bits if display-locking has not
-  // prevented us from laying the children out.
-  box_->ClearNeedsLayout(
-      !box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  box_->ClearNeedsLayout();
 
   // Overflow computation depends on this being set.
   if (LIKELY(block_flow))
     block_flow->UpdateIsSelfCollapsing();
+
+  // We should notify the display lock that we've done layout on self, and if
+  // it's not blocked, on children.
+  if (auto* context = box_->GetDisplayLockContext()) {
+    context->DidLayout(DisplayLockContext::kSelf);
+    if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+      context->DidLayout(DisplayLockContext::kChildren);
+  }
 }
 
 void NGBlockNode::PlaceChildrenInLayoutBox(

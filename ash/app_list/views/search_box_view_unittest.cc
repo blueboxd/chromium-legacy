@@ -79,6 +79,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     counter_view_ = new KeyPressCounterView(app_list_view_);
     widget_->GetContentsView()->AddChildView(view());
     widget_->GetContentsView()->AddChildView(counter_view_);
+    counter_view_->Init(view_delegate_.GetModel());
     view()->set_contents_view(counter_view_);
   }
 
@@ -597,12 +598,8 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
 }
 
 // Tests that autocomplete suggestion is accepted and displayed in SearchModel
-// after pressing the tab key, clicking on the search box, or gesture tapping on
-// the search box.
-TEST_F(SearchBoxViewAutocompleteTest,
-       SearchBoxAcceptsAutocompleteForTabClickTap) {
-  TestKeyEvent(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE),
-               true);
+// after clicking or tapping on the search box.
+TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAcceptsAutocompleteForClickTap) {
   TestMouseEvent(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
                                 gfx::Point(), ui::EventTimeForNow(), 0, 0),
                  true);

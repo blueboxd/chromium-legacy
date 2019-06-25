@@ -33,12 +33,11 @@ class RecurrenceRanker {
                    bool is_ephemeral_user);
   ~RecurrenceRanker();
 
-  // Record the use of a given target, and train the predictor on it. The
-  // one-argument version should be used for zero-state predictions, and the
-  // two-argument version for condition-based predictions. This may save to
-  // disk, but is not guaranteed to.
-  void Record(const std::string& target);
-  void Record(const std::string& target, const std::string& condition);
+  // Record the use of a given target, and train the predictor on it. This may
+  // save to disk, but is not guaranteed to. The user-supplied |condition| can
+  // be ignored if it isn't needed.
+  void Record(const std::string& target,
+              const std::string& condition = std::string());
 
   // Rename a target, while keeping learned information on it. This may save to
   // disk, but is not guaranteed to.
@@ -56,22 +55,19 @@ class RecurrenceRanker {
   // Returns a map of target to score.
   //  - Higher scores are better.
   //  - Score are guaranteed to be in the range [0,1].
-  // The zero-argument version should be used for zero-state predictions, and
-  // the one-argument version for condition-based predictions.
-  base::flat_map<std::string, float> Rank();
-  base::flat_map<std::string, float> Rank(const std::string& condition);
+  // The user-supplied |condition| can be ignored if it isn't needed.
+  base::flat_map<std::string, float> Rank(
+      const std::string& condition = std::string());
 
   // Returns a sorted vector of <target, score> pairs.
   //  - Higher scores are better.
   //  - Score are guaranteed to be in the range [0,1].
   //  - Pairs are sorted in descending order of score.
   //  - At most n results will be returned.
-  // The zero-argument version should be used for zero-state predictions, and
-  // the one-argument version for condition-based predictions.
-  std::vector<std::pair<std::string, float>> RankTopN(int n);
+  // The user-supplied |condition| can be ignored if it isn't needed.
   std::vector<std::pair<std::string, float>> RankTopN(
       int n,
-      const std::string& condition);
+      const std::string& condition = std::string());
 
   // TODO(921444): Create a system for cleaning up internal predictor state that
   // is stored indepent of the target/condition frecency stores.

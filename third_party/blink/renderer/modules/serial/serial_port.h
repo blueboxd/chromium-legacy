@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/serial.mojom-blink.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -18,35 +19,66 @@ class UnguessableToken;
 namespace blink {
 
 class ReadableStream;
+class ScriptPromiseResolver;
 class ScriptState;
 class Serial;
 class SerialOptions;
+class SerialPortUnderlyingSource;
 class WritableStream;
 
-class SerialPort final : public ScriptWrappable {
+class SerialPort final : public ScriptWrappable,
+                         public device::mojom::blink::SerialPortClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(SerialPort, Dispose);
 
  public:
   explicit SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info);
   ~SerialPort() override;
 
   // Web-exposed functions
-  ReadableStream* in() const { return nullptr; }
-  WritableStream* out() const { return nullptr; }
+  ReadableStream* readable() const { return readable_; }
+  WritableStream* writable() const { return nullptr; }
 
   ScriptPromise open(ScriptState*, const SerialOptions* options);
-  ScriptPromise close(ScriptState*);
+  void clearReadError(ScriptState*, ExceptionState&);
+  void close();
 
   const base::UnguessableToken& token() const { return info_->token; }
+  void UnderlyingSourceClosed();
 
   void ContextDestroyed();
   void Trace(Visitor*) override;
+  void Dispose();
+
+  // SerialPortClient
+  void OnReadError(device::mojom::blink::SerialReceiveError) override;
+  void OnSendError(device::mojom::blink::SerialSendError) override;
 
  private:
-  mojom::blink::SerialPortInfoPtr info_;
-  device::mojom::blink::SerialPortPtr port_;
+  bool CreateDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
+                      mojo::ScopedDataPipeConsumerHandle* consumer);
+  void OnConnectionError();
+  void OnOpen(mojo::ScopedDataPipeConsumerHandle,
+              mojo::ScopedDataPipeProducerHandle,
+              device::mojom::blink::SerialPortClientRequest,
+              bool success);
+  void InitializeReadableStream(ScriptState*,
+                                mojo::ScopedDataPipeConsumerHandle);
+  void InitializeWritableStream(ScriptState*,
+                                mojo::ScopedDataPipeProducerHandle);
 
+  mojom::blink::SerialPortInfoPtr info_;
   Member<Serial> parent_;
+
+  uint32_t buffer_size_ = 0;
+  device::mojom::blink::SerialPortPtr port_;
+  mojo::Binding<device::mojom::blink::SerialPortClient> client_binding_{this};
+
+  Member<ReadableStream> readable_;
+  Member<SerialPortUnderlyingSource> underlying_source_;
+
+  // Resolver for the Promise returned by open().
+  Member<ScriptPromiseResolver> open_resolver_;
 };
 
 }  // namespace blink

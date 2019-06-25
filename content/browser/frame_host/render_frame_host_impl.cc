@@ -429,7 +429,7 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
 }
 
-base::Optional<url::Origin> GetOriginForURLLoaderFactory(
+base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
   // Return a safe unique origin when there is no |navigation_request| (e.g.
   // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
@@ -464,6 +464,13 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
     return url::Origin::Create(common_params.base_url_for_data_url);
   }
 
+  // MHTML frames should commit as unique origin (and should not be able to make
+  // network requests on behalf of the real origin).
+  //
+  // TODO(lukasza): Cover MHTML main frames here.
+  if (navigation_request->IsForMhtmlSubframe())
+    return url::Origin();
+
   // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
   // of falling back to site URL for about:blank and about:srcdoc.
   if (common_params.url.SchemeIs(url::kAboutScheme)) {
@@ -487,6 +494,23 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   // data: URLs (which should use an opaque origin for their subresource
   // requests) and blob: URLs (which embed their origin inside the URL).
   return url::Origin::Create(common_params.url);
+}
+
+base::Optional<url::Origin> GetOriginForURLLoaderFactory(
+    NavigationRequest* navigation_request) {
+  base::Optional<url::Origin> result =
+      GetOriginForURLLoaderFactoryUnchecked(navigation_request);
+
+  // Any non-opaque |result| must be an origin that is allowed to be accessed
+  // from the process that is the target of this navigation.
+  if (result.has_value() && !result->opaque()) {
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    CHECK(policy->CanAccessDataForOrigin(
+        navigation_request->render_frame_host()->GetProcess()->GetID(),
+        *result));
+  }
+
+  return result;
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(

@@ -12,12 +12,12 @@ namespace blink {
 DisplayLockBudget::DisplayLockBudget(DisplayLockContext* context)
     : clock_(base::DefaultTickClock::GetInstance()), context_(context) {}
 
-bool DisplayLockBudget::MarkAncestorsDirtyForPhaseIfNeeded(Phase phase) {
+bool DisplayLockBudget::MarkDirtyForPhaseIfNeeded(Phase phase) {
   switch (phase) {
     case Phase::kStyle:
       return context_->MarkForStyleRecalcIfNeeded();
     case Phase::kLayout:
-      return context_->MarkAncestorsForLayoutIfNeeded();
+      return context_->MarkForLayoutIfNeeded();
     case Phase::kPrePaint:
       return context_->MarkAncestorsForPrePaintIfNeeded();
   }
@@ -42,7 +42,7 @@ void DisplayLockBudget::MarkPhaseAsDirty(Phase marking_phase) {
   // Mark the next phase we're scheduled to run.
   for (auto phase = static_cast<unsigned>(marking_phase);
        phase <= static_cast<unsigned>(Phase::kLast); ++phase) {
-    if (MarkAncestorsDirtyForPhaseIfNeeded(static_cast<Phase>(phase)))
+    if (MarkDirtyForPhaseIfNeeded(static_cast<Phase>(phase)))
       break;
   }
 }

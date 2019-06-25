@@ -538,8 +538,8 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters) {
   bool is_done = false;
 
   extension_printer_handler_->StartGetPrinters(
-      base::Bind(&RecordPrinterList, &call_count, &printers),
-      base::Bind(&RecordPrintersDone, &is_done));
+      base::BindRepeating(&RecordPrinterList, &call_count, &printers),
+      base::BindOnce(&RecordPrintersDone, &is_done));
 
   EXPECT_FALSE(printers.get());
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
@@ -566,8 +566,8 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
   bool is_done = false;
 
   extension_printer_handler_->StartGetPrinters(
-      base::Bind(&RecordPrinterList, &call_count, &printers),
-      base::Bind(&RecordPrintersDone, &is_done));
+      base::BindRepeating(&RecordPrinterList, &call_count, &printers),
+      base::BindOnce(&RecordPrintersDone, &is_done));
 
   EXPECT_FALSE(printers.get());
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
@@ -608,8 +608,8 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
   std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
   extension_printer_handler_->StartGetPrinters(
-      base::Bind(&RecordPrinterList, &call_count, &printers),
-      base::Bind(&RecordPrintersDone, &is_done));
+      base::BindRepeating(&RecordPrinterList, &call_count, &printers),
+      base::BindOnce(&RecordPrintersDone, &is_done));
 
   base::RunLoop().RunUntilIdle();
 
@@ -656,7 +656,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetCapability) {
   std::unique_ptr<base::DictionaryValue> capability;
 
   extension_printer_handler_->StartGetCapability(
-      kPrinterId, base::Bind(&RecordCapability, &call_count, &capability));
+      kPrinterId, base::BindOnce(&RecordCapability, &call_count, &capability));
 
   EXPECT_EQ(0u, call_count);
 
@@ -683,7 +683,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetCapability_Reset) {
   std::unique_ptr<base::DictionaryValue> capability;
 
   extension_printer_handler_->StartGetCapability(
-      kPrinterId, base::Bind(&RecordCapability, &call_count, &capability));
+      kPrinterId, base::BindOnce(&RecordCapability, &call_count, &capability));
 
   EXPECT_EQ(0u, call_count);
 
@@ -715,7 +715,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kPdfSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
@@ -751,7 +751,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kPdfSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
@@ -776,7 +776,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kAllTypesSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
 
@@ -813,7 +813,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
 
@@ -866,7 +866,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kDuplexSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
 
@@ -919,7 +919,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
 
@@ -947,7 +947,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kInvalidSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
 
@@ -968,7 +968,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 
   extension_printer_handler_->StartPrint(
       title, *base::JSONReader::Read(kSimpleRasterSettings), print_data,
-      base::Bind(&RecordPrintResult, &call_count, &success, &status));
+      base::BindOnce(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
 
@@ -987,7 +987,8 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
   std::string printer_id = base::StringPrintf(
       "provisional-usb:fake extension id:%s", device->guid.c_str());
   extension_printer_handler_->StartGrantPrinterAccess(
-      printer_id, base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
+      printer_id,
+      base::BindOnce(&RecordPrinterInfo, &call_count, &printer_info));
 
   EXPECT_FALSE(printer_info.get());
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();
@@ -1019,7 +1020,7 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
   extension_printer_handler_->StartGrantPrinterAccess(
       base::StringPrintf("provisional-usb:fake extension id:%s",
                          device->guid.c_str()),
-      base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
+      base::BindOnce(&RecordPrinterInfo, &call_count, &printer_info));
 
   EXPECT_FALSE(printer_info.get());
   FakePrinterProviderAPI* fake_api = GetPrinterProviderAPI();

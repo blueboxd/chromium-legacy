@@ -9,18 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webaudio_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"

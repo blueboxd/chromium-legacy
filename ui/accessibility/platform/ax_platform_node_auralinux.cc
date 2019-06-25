@@ -1956,7 +1956,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (IsContainerWithSelectableChildren(GetData().role))
     interface_mask |= 1 << ATK_SELECTION_INTERFACE;
 
-  if (role == ATK_ROLE_TABLE)
+  if (role == ATK_ROLE_TABLE || role == ATK_ROLE_TREE_TABLE)
     interface_mask |= 1 << ATK_TABLE_INTERFACE;
 
   // Because the TableCell Interface is only supported in ATK version 2.12 and

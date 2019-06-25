@@ -114,7 +114,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                               void* params);
 
   // Sets |pdf_file_saved_closure_| to |closure|.
-  void SetPdfSavedClosureForTesting(const base::Closure& closure);
+  void SetPdfSavedClosureForTesting(base::OnceClosure closure);
 
   // Fires the 'enable-manipulate-settings-for-test' WebUI event.
   void SendEnableManipulateSettingsForTest();

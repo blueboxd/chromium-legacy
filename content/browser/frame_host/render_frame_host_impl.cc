@@ -1493,7 +1493,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidBlockFramebust, OnDidBlockFramebust)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidBlockNavigation, OnDidBlockNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AbortNavigation, OnAbortNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
@@ -3204,8 +3204,11 @@ void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(
   commit_callback_interceptor_ = interceptor;
 }
 
-void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
-  delegate_->OnDidBlockFramebust(url);
+void RenderFrameHostImpl::OnDidBlockNavigation(
+    const GURL& blocked_url,
+    const GURL& initiator_url,
+    blink::NavigationBlockedReason reason) {
+  delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
 void RenderFrameHostImpl::OnAbortNavigation() {

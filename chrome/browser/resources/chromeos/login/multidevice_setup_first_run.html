@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <!--
   UI for the MultiDevice setup flow when displayed after OOBE or during the
   user's first login on this Chromebook. Note that this flow is
@@ -32,16 +33,11 @@
         width: 768px;
       }
 
-      #multidevice-help-overlay-webview {
+      #multideviceHelpOverlayWebview {
         border: 1px solid #d9d9d9;
         display: block;
         height: 450px;
         width: 100%;
-      }
-
-      #multidevice-help-overlay-webview-container.overlay-loading > webview,
-      #multidevice-help-overlay-webview-container:not(.overlay-loading) > div {
-        display: none;
       }
 
       #multidevice-help-overlay-webview-container {
@@ -50,6 +46,11 @@
         margin: auto;
         padding: 24px 8px 8px 8px;
         width: 100%;
+      }
+
+      .multidevice-help-overlay-webview-loading {
+          height: 100%;
+          width: 100%;
       }
 
       .multidevice-help-overlay-close-top {
@@ -111,7 +112,13 @@
             title="[[getOverlayCloseTopTitle_()]]">
         </div>
         <div id="multidevice-help-overlay-webview-container">
-          <webview id="multidevice-help-overlay-webview"
+          <div class="multidevice-help-overlay-webview-loading
+                      layout horizontal center-center"
+              hidden$="[[!isWebviewLoading_]]">
+            <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
+          </div>
+          <webview id="multideviceHelpOverlayWebview"
+              hidden$="[[isWebviewLoading_]]"
               src="[[webviewSrc_]]"></webview>
         </div>
         <div class="multidevice-help-button-strip">

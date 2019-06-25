@@ -35,6 +35,7 @@
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
@@ -497,9 +498,11 @@ class BLINK_EXPORT WebLocalFrameClient {
     return WebURLRequest::kPreviewsUnspecified;
   }
 
-  // This frame tried to navigate its top level frame to the given url without
-  // ever having received a user gesture.
-  virtual void DidBlockFramebust(const WebURL&) {}
+  // This frame tried to perform a navigation from |initiator_url| to
+  // |blocked_url| but was blocked because of |reason|.
+  virtual void DidBlockNavigation(const WebURL& blocked_url,
+                                  const WebURL& initiator_url,
+                                  blink::NavigationBlockedReason reason) {}
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session

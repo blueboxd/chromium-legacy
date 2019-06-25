@@ -454,7 +454,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void AnnotatedRegionsChanged() = 0;
 
-  virtual void DidBlockFramebust(const KURL&) {}
+  virtual void DidBlockNavigation(const KURL& blocked_url,
+                                  const KURL& initiator_urk,
+                                  blink::NavigationBlockedReason reason) {}
 
   // Called when the corresponding frame should be scrolled in a remote parent
   // frame.

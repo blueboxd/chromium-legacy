@@ -95,11 +95,9 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
-  EXPECT_TRUE(ConciergeClient().get_vm_info_called());
-  EXPECT_TRUE(base::DirectoryExists(
-      file_manager::util::GetMyFilesFolderForProfile(testing_profile_.get())));
-  EXPECT_TRUE(SeneschalClient().share_path_called());
-  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
+  EXPECT_FALSE(ConciergeClient().get_vm_info_called());
+  EXPECT_FALSE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kSuccess, 1);
@@ -121,19 +119,42 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
   EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_FALSE(ConciergeClient().get_vm_info_called());
+  EXPECT_FALSE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
+
+  plugin_vm_manager_->StopPluginVm();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
+}
+
+TEST_F(PluginVmManagerTest, OnStateChangedRunningStopped) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
+  state_changed_signal.set_owner_id(
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(
+          testing_profile_.get()));
+  state_changed_signal.set_vm_name(kPluginVmName);
+  state_changed_signal.set_vm_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
+  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
+  thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(ConciergeClient().get_vm_info_called());
   EXPECT_TRUE(base::DirectoryExists(
       file_manager::util::GetMyFilesFolderForProfile(testing_profile_.get())));
   EXPECT_TRUE(SeneschalClient().share_path_called());
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 1ul);
 
-  plugin_vm_manager_->StopPluginVm();
+  state_changed_signal.set_vm_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
   thread_bundle_.RunUntilIdle();
-  EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
-
-  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
-                                        PluginVmLaunchResult::kSuccess, 1);
 }
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {

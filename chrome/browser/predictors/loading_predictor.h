@@ -145,6 +145,7 @@ class LoadingPredictor : public KeyedService,
   friend class LoadingPredictorTest;
   friend class LoadingPredictorPreconnectTest;
   friend class LoadingPredictorTabHelperTest;
+  friend class LoadingPredictorTabHelperTestCollectorTest;
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestMainFrameResponseCancelsHint);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,

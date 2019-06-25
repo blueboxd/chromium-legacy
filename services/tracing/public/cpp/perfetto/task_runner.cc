@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/task/common/checked_lock_impl.h"
 #include "base/task/common/scoped_defer_task_posting.h"
 #include "base/task/post_task.h"
@@ -24,7 +25,12 @@ PerfettoTaskRunner::PerfettoTaskRunner(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {}
 
-PerfettoTaskRunner::~PerfettoTaskRunner() = default;
+PerfettoTaskRunner::~PerfettoTaskRunner() {
+  DCHECK(GetOrCreateTaskRunner()->RunsTasksInCurrentSequence());
+#if defined(OS_ANDROID)
+  fd_controllers_.clear();
+#endif  // defined(OS_ANDROID)
+}
 
 void PerfettoTaskRunner::PostTask(std::function<void()> task) {
   base::ScopedDeferTaskPosting::PostOrDefer(
@@ -70,12 +76,29 @@ bool PerfettoTaskRunner::RunsTasksOnCurrentThread() const {
   return task_runner_->RunsTasksInCurrentSequence();
 }
 
-void PerfettoTaskRunner::AddFileDescriptorWatch(int fd, std::function<void()>) {
+void PerfettoTaskRunner::AddFileDescriptorWatch(
+    int fd,
+    std::function<void()> callback) {
+#if !defined(OS_ANDROID)
   NOTREACHED();
+#else
+  DCHECK(GetOrCreateTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(!base::Contains(fd_controllers_, fd));
+  fd_controllers_[fd] = base::FileDescriptorWatcher::WatchReadable(
+      fd,
+      base::BindRepeating([](std::function<void()> callback) { callback(); },
+                          std::move(callback)));
+#endif  // !defined(OS_ANDROID)
 }
 
 void PerfettoTaskRunner::RemoveFileDescriptorWatch(int fd) {
+#if !defined(OS_ANDROID)
   NOTREACHED();
+#else
+  DCHECK(GetOrCreateTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(base::Contains(fd_controllers_, fd));
+  fd_controllers_.erase(fd);
+#endif  // !defined(OS_ANDROID)
 }
 
 void PerfettoTaskRunner::ResetTaskRunnerForTesting(

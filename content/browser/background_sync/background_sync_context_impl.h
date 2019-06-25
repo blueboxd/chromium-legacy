@@ -68,7 +68,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   BackgroundSyncManager* background_sync_manager() const;
 
   // BackgroundSyncContext implementation.
-  void FireBackgroundSyncEvents(base::OnceClosure done_closure) override;
+  void FireBackgroundSyncEvents(blink::mojom::BackgroundSyncType sync_type,
+                                base::OnceClosure done_closure) override;
   void GetSoonestWakeupDelta(
       base::OnceCallback<void(base::TimeDelta)> callback) override;
 
@@ -86,7 +87,9 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   friend class PeriodicBackgroundSyncServiceImplTest;
   friend class BackgroundSyncLauncherTest;
 
-  void FireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
+  void FireBackgroundSyncEventsOnIOThread(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::OnceClosure done_closure);
   void DidFireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
   virtual void CreateBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,

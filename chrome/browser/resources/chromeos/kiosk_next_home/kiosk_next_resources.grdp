@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <grit-part>
-  <if expr="_google_chrome">
-    <then>
-      <include name="IDR_KIOSK_NEXT_BG_JS" file="chromeos/kiosk_next_home/bg_internal.js" type="BINDATA" />
-      <include name="IDR_KIOSK_NEXT_MAIN_HTML" file="chromeos/kiosk_next_home/internal/main.html" type="chrome_html" />
-    </then>
-    <else>
-      <include name="IDR_KIOSK_NEXT_BG_JS" file="chromeos/kiosk_next_home/bg.js" type="BINDATA" />
-      <include name="IDR_KIOSK_NEXT_MAIN_HTML" file="chromeos/kiosk_next_home/main.html" type="chrome_html" />
-    </else>
-  </if>
+  <include name="IDR_KIOSK_NEXT_BG_JS" file="chromeos/kiosk_next_home/bg.js" type="BINDATA" />
+  <include name="IDR_KIOSK_NEXT_MAIN_HTML" file="chromeos/kiosk_next_home/main.html" type="chrome_html" />
   <include name="IDR_KIOSK_NEXT_ICON_192" file="chromeos/kiosk_next_home/static/icon192.png" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_API_JS" file="chromeos/kiosk_next_home/api.js" type="BINDATA" />
   <include name="IDR_KIOSK_NEXT_API_IMPL_JS" file="chromeos/kiosk_next_home/api_impl.js" type="BINDATA" />

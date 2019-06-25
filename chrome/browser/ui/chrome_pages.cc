@@ -66,11 +66,6 @@ namespace {
 
 const char kHashMark[] = "#";
 
-#if defined(OS_CHROMEOS)
-const char kAppManagementPagePrefix[] =
-    "chrome://app-management/detail?ref=settings&id=";
-#endif
-
 void FocusWebContents(Browser* browser) {
   auto* const contents = browser->tab_strip_model()->GetActiveWebContents();
   if (contents)
@@ -410,18 +405,10 @@ void ShowManagementPageForProfile(Profile* profile) {
 
 void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
-  base::RecordAction(base::UserMetricsAction("ShowAppManagementPage"));
+  constexpr char kAppManagementPagePrefix[] =
+      "chrome://app-management/detail?id=";
+  base::RecordAction(base::UserMetricsAction("ShowAppManagementDetailPage"));
   GURL url(kAppManagementPagePrefix + app_id);
-
-#if defined(OS_CHROMEOS)
-  SettingsWindowManager* settings = SettingsWindowManager::GetInstance();
-  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
-    base::RecordAction(base::UserMetricsAction("ShowOptions"));
-    settings->ShowChromePageForProfile(profile, url);
-    return;
-  }
-  // Fall through and open browser settings in a tab.
-#endif
 
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)

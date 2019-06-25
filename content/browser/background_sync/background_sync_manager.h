@@ -136,10 +136,11 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Called from DevTools to toggle service worker "offline" status
   void EmulateServiceWorkerOffline(int64_t service_worker_id, bool is_offline);
 
-  // Scans the list of available events and fires those that are
-  // ready to fire. For those that can't yet be fired, wakeup alarms are set.
-  // Once all of this is done, invokes |callback|.
+  // Scans the list of available events and fires those of type |sync_type| that
+  // are ready to fire. For those that can't yet be fired, wakeup alarms are
+  // set. Once all of this is done, invokes |callback|.
   void FireReadyEvents(
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive = nullptr);
 
@@ -302,6 +303,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void RunInBackgroundIfNecessary();
 
   void FireReadyEventsImpl(
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
   void FireReadyEventsDidFindRegistration(

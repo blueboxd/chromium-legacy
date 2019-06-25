@@ -42,13 +42,6 @@ constexpr int32_t kMinConfiguredStreams = 1;
 // Maximum configured streams could contain two optional YUV streams.
 constexpr int32_t kMaxConfiguredStreams = 4;
 
-struct ReprocessTasksInfo {
-  ReprocessTasksInfo();
-  ~ReprocessTasksInfo();
-  uint64_t input_buffer_id;
-  ReprocessTaskQueue task_queue;
-};
-
 // Interface that provides API to let Camera3AController to update the metadata
 // that will be sent with capture request.
 class CAPTURE_EXPORT CaptureMetadataDispatcher {
@@ -96,6 +89,8 @@ class CAPTURE_EXPORT RequestManager final
   struct CaptureResult {
     CaptureResult();
     ~CaptureResult();
+    // The shutter timestamp in nanoseconds.
+    uint64_t shutter_timestamp;
     // |reference_time| and |timestamp| are derived from the shutter time of
     // this frame.  They are be passed to |client_->OnIncomingCapturedData|
     // along with the |buffers| when the captured frame is submitted.
@@ -202,8 +197,23 @@ class CAPTURE_EXPORT RequestManager final
  private:
   friend class RequestManagerTest;
 
+  // ReprocessJobInfo holds the queued reprocess tasks and associated metadata
+  // for a given YUVInput buffer.
+  struct ReprocessJobInfo {
+    ReprocessJobInfo(ReprocessTaskQueue queue, uint64_t timestamp);
+    ReprocessJobInfo(ReprocessJobInfo&& info);
+    ~ReprocessJobInfo();
+
+    ReprocessTaskQueue task_queue;
+    uint64_t shutter_timestamp;
+  };
+
   // Puts Jpeg orientation information into the metadata.
   void SetJpegOrientation(cros::mojom::CameraMetadataPtr* settings);
+
+  // Puts sensor timestamp into the metadata for reprocess request.
+  void SetSensorTimestamp(cros::mojom::CameraMetadataPtr* settings,
+                          uint64_t shutter_timestamp);
 
   // Prepares a capture request by mixing repeating request with one-shot
   // request if it exists. If there are reprocess requests in the queue, just
@@ -327,9 +337,9 @@ class CAPTURE_EXPORT RequestManager final
   std::queue<base::OnceCallback<void(int, mojom::BlobPtr)>>
       take_photo_callback_queue_;
 
-  // Map that maps buffer id to reprocess task queue. If all reprocess tasks for
+  // Map that maps buffer id to reprocess task info. If all reprocess tasks for
   // specific buffer id are all consumed, release that buffer.
-  std::map<uint64_t, ReprocessTaskQueue> buffer_id_reprocess_tasks_map_;
+  std::map<uint64_t, ReprocessJobInfo> buffer_id_reprocess_job_info_map_;
 
   // Map that maps frame number to reprocess task queue. We should consume the
   // content inside this map when preparing capture request.

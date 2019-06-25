@@ -4653,6 +4653,17 @@
     ]
   },
 
+  "DevicePowerwashAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerwashAllowed": true },
+    "pref_mappings": [
+      {
+        "pref": "cros.device.device_powerwash_allowed",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

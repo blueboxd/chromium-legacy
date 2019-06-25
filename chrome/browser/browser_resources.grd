@@ -531,14 +531,7 @@
         <include name="IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS" file="internal\resources\chromeos-sync-consent-icons.html" type="BINDATA" />
       </if>
       <if expr="_kiosk_next">
-        <if expr="_google_chrome">
-          <then>
-            <include name="IDR_KIOSK_NEXT_HOME_MANIFEST" file="resources\chromeos\kiosk_next_home\internal\manifest.json" type="BINDATA" />
-          </then>
-          <else>
-            <include name="IDR_KIOSK_NEXT_HOME_MANIFEST" file="resources\chromeos\kiosk_next_home\manifest.json" type="BINDATA" />
-          </else>
-        </if>
+        <include name="IDR_KIOSK_NEXT_HOME_MANIFEST" file="resources\chromeos\kiosk_next_home\manifest.json" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_SET_AS_DEFAULT_BROWSER_JS" file="resources\set_as_default_browser.js" flattenhtml="true" type="BINDATA" />

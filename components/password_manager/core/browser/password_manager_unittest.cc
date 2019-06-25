@@ -46,6 +46,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
+using autofill::mojom::PasswordFormFieldPredictionType;
 using base::ASCIIToUTF16;
 using base::Feature;
 using base::TestMockTimeTaskRunner;
@@ -154,8 +155,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AutofillDataReceived,
-               void(const std::map<autofill::FormData,
-                                   autofill::PasswordFormFieldPredictionMap>&));
+               void(const autofill::FormsPredictionsMap&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
@@ -2746,10 +2746,11 @@ TEST_F(PasswordManagerTest, ProcessAutofillPredictions) {
 
   // Check that Autofill predictions are converted to password related
   // predictions.
-  std::map<autofill::FormData, autofill::PasswordFormFieldPredictionMap>
-      predictions;
-  predictions[form][form.fields[0]] = autofill::PREDICTION_USERNAME;
-  predictions[form][form.fields[1]] = autofill::PREDICTION_CURRENT_PASSWORD;
+  autofill::FormsPredictionsMap predictions;
+  predictions[form][form.fields[0]] =
+      PasswordFormFieldPredictionType::kUsername;
+  predictions[form][form.fields[1]] =
+      PasswordFormFieldPredictionType::kCurrentPassword;
   EXPECT_CALL(driver_, AutofillDataReceived(predictions));
 
   manager()->ProcessAutofillPredictions(&driver_, forms);

@@ -67,6 +67,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -1136,7 +1137,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
-  void OnDidBlockFramebust(const GURL& url);
+  void OnDidBlockNavigation(const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason);
   // Only used with PerNavigationMojoInterface disabled.
   void OnAbortNavigation();
   void OnForwardResourceTimingToParent(

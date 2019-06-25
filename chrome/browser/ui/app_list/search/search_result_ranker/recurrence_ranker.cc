@@ -18,7 +18,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
@@ -282,6 +281,16 @@ std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
     return {};
 
   return SortAndTruncateRanks(n, Rank(condition));
+}
+
+base::flat_map<std::string, FrecencyStore::ValueData>*
+RecurrenceRanker::GetTargetData() {
+  return targets_->get_mutable_values();
+}
+
+base::flat_map<std::string, FrecencyStore::ValueData>*
+RecurrenceRanker::GetConditionData() {
+  return conditions_->get_mutable_values();
 }
 
 void RecurrenceRanker::SaveToDisk() {

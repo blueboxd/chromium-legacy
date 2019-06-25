@@ -405,14 +405,6 @@ void EnterpriseEnrollmentHelperImpl::ReportAuthStatus(
       UMA(policy::kMetricEnrollmentAccountNotSignedUp);
       LOG(ERROR) << "Account not signed up " << error.state();
       break;
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-      UMA(policy::kMetricEnrollmentAccountDeleted);
-      LOG(ERROR) << "Account deleted " << error.state();
-      break;
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      UMA(policy::kMetricEnrollmentAccountDisabled);
-      LOG(ERROR) << "Account disabled " << error.state();
-      break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       UMA(policy::kMetricEnrollmentNetworkFailed);

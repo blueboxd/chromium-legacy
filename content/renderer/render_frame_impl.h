@@ -777,7 +777,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetEffectiveConnectionTypeForTesting(
       blink::WebEffectiveConnectionType) override;
   blink::WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
-  void DidBlockFramebust(const blink::WebURL& url) override;
+  void DidBlockNavigation(const blink::WebURL& blocked_url,
+                          const blink::WebURL& initiator_url,
+                          blink::NavigationBlockedReason reason) override;
   void NavigateBackForwardSoon(int offset, bool has_user_gesture) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void RenderFallbackContentInParentProcess() override;

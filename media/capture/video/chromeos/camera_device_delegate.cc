@@ -447,6 +447,15 @@ void CameraDeviceDelegate::ResetMojoInterface() {
 void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
+  if (device_context_ == nullptr) {
+    // The OnOpenedDevice() might be called after the camera device already
+    // closed by StopAndDeAllocate(), because |camera_hal_delegate_| and
+    // |device_ops_| are on different IPC channels. In such case,
+    // OnMojoConnectionError() might call OnClosed() and the
+    // |device_context_| is cleared, so we just return here.
+    return;
+  }
+
   if (device_context_->GetState() != CameraDeviceContext::State::kStarting) {
     if (device_context_->GetState() == CameraDeviceContext::State::kError) {
       // In case of camera open failed, the HAL can terminate the Mojo channel

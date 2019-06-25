@@ -37,9 +37,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -623,12 +623,9 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   }
   response_object->setProtocol(protocol);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
-
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
     auto san_list = std::make_unique<protocol::Array<String>>(
         response_security_details->san_list.begin(),
         response_security_details->san_list.end());
@@ -959,11 +956,9 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   resources_data_->ResponseReceived(request_id, frame_id, response);
   resources_data_->SetResourceType(request_id, type);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
     resources_data_->SetCertificate(request_id,
                                     response_security_details->certificate);
   }

@@ -17,6 +17,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
+import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
@@ -85,7 +86,7 @@ public class SignInPreference
     /**
      * Starts listening for updates to the sign-in and sync state.
      */
-    void registerForUpdates() {
+    public void registerForUpdates() {
         AccountManagerFacade.get().addObserver(this);
         SigninManager.get().addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
@@ -104,7 +105,7 @@ public class SignInPreference
      * Stops listening for updates to the sign-in and sync state. Every call to registerForUpdates()
      * must be matched with a call to this method.
      */
-    void unregisterForUpdates() {
+    public void unregisterForUpdates() {
         AccountManagerFacade.get().removeObserver(this);
         SigninManager.get().removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);

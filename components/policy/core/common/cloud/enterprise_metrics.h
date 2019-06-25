@@ -100,10 +100,8 @@ enum MetricEnrollment {
   kMetricEnrollmentRegisterPolicyResponseInvalid = 40,
   // OAuth token fetch failed: account not signed up.
   kMetricEnrollmentAccountNotSignedUp = 41,
-  // OAuth token fetch failed: account deleted.
-  kMetricEnrollmentAccountDeleted = 42,
-  // OAuth token fetch failed: account disabled.
-  kMetricEnrollmentAccountDisabled = 43,
+  /* kMetricEnrollmentAccountDeleted = 42 REMOVED */
+  /* kMetricEnrollmentAccountDisabled = 43 REMOVED */
   // Re-enrollment pre-check failed: domain does not match install attributes.
   kMetricEnrollmentPrecheckDomainMismatch = 44,
   // Lockbox backend failed to initialize.

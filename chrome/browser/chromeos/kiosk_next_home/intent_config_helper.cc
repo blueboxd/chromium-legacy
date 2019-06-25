@@ -18,11 +18,6 @@
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "url/url_constants.h"
 
-#if defined(KIOSK_NEXT) && defined(GOOGLE_CHROME_BUILD)
-#include "chrome/grit/kiosk_next_internal_resources.h"
-#include "ui/base/resource/resource_bundle.h"
-#endif
-
 namespace chromeos {
 namespace kiosk_next_home {
 
@@ -59,13 +54,7 @@ class ReadJsonConfigResourceDelegate : public IntentConfigHelper::Delegate {
 
   // IntentConfigHelper::Delegate:
   std::string GetJsonConfig() const override {
-#if defined(KIOSK_NEXT) && defined(GOOGLE_CHROME_BUILD)
-    return ui::ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_KIOSK_NEXT_INTENT_CONFIG_JSON)
-        .as_string();
-#else
     return std::string();
-#endif
   }
 
   DISALLOW_COPY_AND_ASSIGN(ReadJsonConfigResourceDelegate);

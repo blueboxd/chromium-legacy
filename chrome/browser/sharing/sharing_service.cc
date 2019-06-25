@@ -4,7 +4,9 @@
 
 #include "chrome/browser/sharing/sharing_service.h"
 
+#include <algorithm>
 #include <map>
+#include <unordered_set>
 
 #include "base/time/time.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
@@ -38,10 +40,21 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
 
   const base::Time min_updated_time = base::Time::Now() - kDeviceExpiration;
 
+  // Sort the DeviceInfo vector so the most recently modified devices are first.
+  std::sort(all_devices.begin(), all_devices.end(),
+            [](const auto& device1, const auto& device2) {
+              return device1->last_updated_timestamp() >
+                     device2->last_updated_timestamp();
+            });
+
+  std::unordered_set<std::string> device_names;
   std::vector<SharingDeviceInfo> device_candidates;
   for (const auto& device : all_devices) {
+    // If the current device is considered expired for our purposes, stop here
+    // since the next devices in the vector are at least as expired than this
+    // one.
     if (device->last_updated_timestamp() < min_updated_time)
-      continue;
+      break;
 
     auto synced_device = synced_devices.find(device->guid());
     if (synced_device == synced_devices.end())
@@ -51,9 +64,13 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     if ((device_capabilities & required_capabilities) != required_capabilities)
       continue;
 
-    device_candidates.emplace_back(device->guid(), device->client_name(),
-                                   device->last_updated_timestamp(),
-                                   device_capabilities);
+    // Only insert the first occurrence of each device name.
+    auto inserted = device_names.insert(device->client_name());
+    if (inserted.second) {
+      device_candidates.emplace_back(device->guid(), device->client_name(),
+                                     device->last_updated_timestamp(),
+                                     device_capabilities);
+    }
   }
 
   // TODO(knollr): Remove devices from |sync_prefs_| that are in

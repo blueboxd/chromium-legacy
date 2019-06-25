@@ -27,26 +27,6 @@ using testing::UnorderedElementsAre;
 
 namespace app_list {
 
-RecurrencePredictorProto MakeTestingProto() {
-  RecurrencePredictorProto proto;
-  auto* hour_bin_proto = proto.mutable_hour_bin_predictor();
-  hour_bin_proto->set_last_decay_timestamp(365);
-
-  HourBinPredictorProto::FrequencyTable frequency_table;
-  (*frequency_table.mutable_frequency())[1u] = 3;
-  (*frequency_table.mutable_frequency())[2u] = 1;
-  frequency_table.set_total_counts(4);
-  (*hour_bin_proto->mutable_binned_frequency_table())[10] = frequency_table;
-
-  frequency_table = HourBinPredictorProto::FrequencyTable();
-  (*frequency_table.mutable_frequency())[1u] = 1;
-  (*frequency_table.mutable_frequency())[3u] = 1;
-  frequency_table.set_total_counts(2);
-  (*hour_bin_proto->mutable_binned_frequency_table())[11] = frequency_table;
-
-  return proto;
-}
-
 class FrecencyPredictorTest : public testing::Test {
  protected:
   void SetUp() override {
@@ -58,50 +38,6 @@ class FrecencyPredictorTest : public testing::Test {
 
   FrecencyPredictorConfig config_;
   std::unique_ptr<FrecencyPredictor> predictor_;
-};
-
-class HourBinPredictorTest : public testing::Test {
- protected:
-  void SetUp() override {
-    Test::SetUp();
-
-    config_.set_weekly_decay_coeff(0.5f);
-    (*config_.mutable_bin_weights_map())[0] = 0.6;
-    (*config_.mutable_bin_weights_map())[1] = 0.15;
-    (*config_.mutable_bin_weights_map())[2] = 0.05;
-    (*config_.mutable_bin_weights_map())[-1] = 0.15;
-    (*config_.mutable_bin_weights_map())[-2] = 0.05;
-    predictor_ = std::make_unique<HourBinPredictor>(config_);
-  }
-
-  // Sets local time according to |day_of_week| and |hour_of_day|.
-  void SetLocalTime(const int day_of_week, const int hour_of_day) {
-    AdvanceToNextLocalSunday();
-    const auto advance = base::TimeDelta::FromDays(day_of_week) +
-                         base::TimeDelta::FromHours(hour_of_day);
-    if (advance > base::TimeDelta()) {
-      time_.Advance(advance);
-    }
-  }
-
-  base::ScopedMockClockOverride time_;
-  HourBinPredictorConfig config_;
-  std::unique_ptr<HourBinPredictor> predictor_;
-
- private:
-  // Advances time to be 0am next Sunday.
-  void AdvanceToNextLocalSunday() {
-    base::Time::Exploded now;
-    base::Time::Now().LocalExplode(&now);
-    const auto advance = base::TimeDelta::FromDays(6 - now.day_of_week) +
-                         base::TimeDelta::FromHours(24 - now.hour);
-    if (advance > base::TimeDelta()) {
-      time_.Advance(advance);
-    }
-    base::Time::Now().LocalExplode(&now);
-    CHECK_EQ(now.day_of_week, 0);
-    CHECK_EQ(now.hour, 0);
-  }
 };
 
 TEST_F(FrecencyPredictorTest, RankWithNoTargets) {
@@ -151,6 +87,74 @@ TEST_F(FrecencyPredictorTest, ToAndFromProto) {
   EXPECT_EQ(predictor_->Rank(0u), new_predictor.Rank(0u));
 }
 
+class HourBinPredictorTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    Test::SetUp();
+
+    config_.set_weekly_decay_coeff(0.5f);
+
+    const base::flat_map<int, float> bin_weights = {
+        {-2, 0.05}, {-1, 0.15}, {0, 0.6}, {1, 0.15}, {2, 0.05}};
+    for (const auto& pair : bin_weights) {
+      auto* config_pair = config_.add_bin_weights();
+      config_pair->set_bin(pair.first);
+      config_pair->set_weight(pair.second);
+    }
+
+    predictor_ = std::make_unique<HourBinPredictor>(config_);
+  }
+
+  // Sets local time according to |day_of_week| and |hour_of_day|.
+  void SetLocalTime(const int day_of_week, const int hour_of_day) {
+    AdvanceToNextLocalSunday();
+    const auto advance = base::TimeDelta::FromDays(day_of_week) +
+                         base::TimeDelta::FromHours(hour_of_day);
+    if (advance > base::TimeDelta()) {
+      time_.Advance(advance);
+    }
+  }
+
+  RecurrencePredictorProto MakeTestingHourBinnedProto() {
+    RecurrencePredictorProto proto;
+    auto* hour_bin_proto = proto.mutable_hour_bin_predictor();
+    hour_bin_proto->set_last_decay_timestamp(365);
+
+    HourBinPredictorProto::FrequencyTable frequency_table;
+    (*frequency_table.mutable_frequency())[1u] = 3;
+    (*frequency_table.mutable_frequency())[2u] = 1;
+    frequency_table.set_total_counts(4);
+    (*hour_bin_proto->mutable_binned_frequency_table())[10] = frequency_table;
+
+    frequency_table = HourBinPredictorProto::FrequencyTable();
+    (*frequency_table.mutable_frequency())[1u] = 1;
+    (*frequency_table.mutable_frequency())[3u] = 1;
+    frequency_table.set_total_counts(2);
+    (*hour_bin_proto->mutable_binned_frequency_table())[11] = frequency_table;
+
+    return proto;
+  }
+
+  base::ScopedMockClockOverride time_;
+  HourBinPredictorConfig config_;
+  std::unique_ptr<HourBinPredictor> predictor_;
+
+ private:
+  // Advances time to be 0am next Sunday.
+  void AdvanceToNextLocalSunday() {
+    base::Time::Exploded now;
+    base::Time::Now().LocalExplode(&now);
+    const auto advance = base::TimeDelta::FromDays(6 - now.day_of_week) +
+                         base::TimeDelta::FromHours(24 - now.hour);
+    if (advance > base::TimeDelta()) {
+      time_.Advance(advance);
+    }
+    base::Time::Now().LocalExplode(&now);
+    CHECK_EQ(now.day_of_week, 0);
+    CHECK_EQ(now.hour, 0);
+  }
+};
+
 TEST_F(HourBinPredictorTest, RankWithNoTargets) {
   EXPECT_TRUE(predictor_->Rank(0u).empty());
 }
@@ -198,9 +202,9 @@ TEST_F(HourBinPredictorTest, GetTheRightBin) {
 }
 
 TEST_F(HourBinPredictorTest, TrainAndRankSingleBin) {
-  base::flat_map<int, float> weights(
-      predictor_->config_.bin_weights_map().begin(),
-      predictor_->config_.bin_weights_map().end());
+  base::flat_map<int, float> weights;
+  for (const auto& pair : config_.bin_weights())
+    weights[pair.bin()] = pair.weight();
 
   SetLocalTime(1, 10);
   predictor_->Train(1u, 0u);
@@ -222,13 +226,14 @@ TEST_F(HourBinPredictorTest, TrainAndRankSingleBin) {
   SetLocalTime(1, 10);
   EXPECT_THAT(predictor_->Rank(0u),
               UnorderedElementsAre(Pair(1u, FloatEq(weights[0] * 0.6)),
-                                   Pair(2u, FloatEq((weights)[0] * 0.4))));
+                                   Pair(2u, FloatEq(weights[0] * 0.4))));
 }
 
 TEST_F(HourBinPredictorTest, TrainAndRankMultipleBin) {
-  base::flat_map<int, float> weights(
-      predictor_->config_.bin_weights_map().begin(),
-      predictor_->config_.bin_weights_map().end());
+  base::flat_map<int, float> weights;
+  for (const auto& pair : config_.bin_weights())
+    weights[pair.bin()] = pair.weight();
+
   // For bin 10
   SetLocalTime(1, 10);
   predictor_->Train(1u, 0u);
@@ -269,7 +274,7 @@ TEST_F(HourBinPredictorTest, TrainAndRankMultipleBin) {
 }
 
 TEST_F(HourBinPredictorTest, FromProto) {
-  RecurrencePredictorProto proto = MakeTestingProto();
+  RecurrencePredictorProto proto = MakeTestingHourBinnedProto();
   predictor_->FromProto(proto);
   SetLocalTime(1, 11);
   EXPECT_THAT(
@@ -279,7 +284,7 @@ TEST_F(HourBinPredictorTest, FromProto) {
 }
 
 TEST_F(HourBinPredictorTest, FromProtoDecays) {
-  RecurrencePredictorProto proto = MakeTestingProto();
+  RecurrencePredictorProto proto = MakeTestingHourBinnedProto();
   proto.mutable_hour_bin_predictor()->set_last_decay_timestamp(350);
   predictor_->FromProto(proto);
   SetLocalTime(1, 11);
@@ -310,7 +315,7 @@ TEST_F(HourBinPredictorTest, ToProto) {
   predictor_->SetLastDecayTimestamp(365);
 
   predictor_->ToProto(&proto);
-  RecurrencePredictorProto target_proto = MakeTestingProto();
+  RecurrencePredictorProto target_proto = MakeTestingHourBinnedProto();
 
   EXPECT_TRUE(proto.has_hour_bin_predictor());
 

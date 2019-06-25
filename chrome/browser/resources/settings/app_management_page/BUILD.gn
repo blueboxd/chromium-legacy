@@ -12,8 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("app_management_page") {
   deps = [
-    "../prefs:prefs_behavior",
-    "//ui/webui/resources/js:i18n_behavior",
+    "..:open_window_proxy",
   ]
-  externs_list = [ "$externs_path/settings_private.js" ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }

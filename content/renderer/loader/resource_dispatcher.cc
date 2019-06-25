@@ -523,7 +523,7 @@ int ResourceDispatcher::StartAsync(
 
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
       request->render_frame_id, request_id, request->url, request->method,
-      request->referrer, pending_request->resource_type);
+      request->referrer, pending_request->resource_type, request->priority);
 
   pending_request->previews_state = request->previews_state;
 

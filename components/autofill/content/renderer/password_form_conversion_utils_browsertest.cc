@@ -37,6 +37,9 @@ using blink::WebInputElement;
 using blink::WebVector;
 
 namespace autofill {
+
+using mojom::PasswordFormFieldPredictionType;
+
 namespace {
 
 const char kTestFormActionURL[] = "http://cnn.com";
@@ -1858,7 +1861,7 @@ TEST_F(PasswordFormConversionUtilsTest, CreditCardNumberWithTypePasswordForm) {
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[1] = PREDICTION_NOT_PASSWORD;
+  predictions_positions[1] = PasswordFormFieldPredictionType::kNotPassword;
 
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
@@ -1886,7 +1889,7 @@ TEST_F(PasswordFormConversionUtilsTest, UsernamePredictionFromServer) {
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[0] = PREDICTION_USERNAME;
+  predictions_positions[0] = PasswordFormFieldPredictionType::kUsername;
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
@@ -1914,7 +1917,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[0] = PREDICTION_USERNAME;
+  predictions_positions[0] = PasswordFormFieldPredictionType::kUsername;
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
 
@@ -1945,7 +1948,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[2] = PREDICTION_NOT_PASSWORD;
+  predictions_positions[2] = PasswordFormFieldPredictionType::kNotPassword;
 
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
@@ -1973,7 +1976,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[1] = PREDICTION_NOT_PASSWORD;
+  predictions_positions[1] = PasswordFormFieldPredictionType::kNotPassword;
 
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);
@@ -2001,7 +2004,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   std::string html = builder.ProduceHTML();
 
   std::map<int, PasswordFormFieldPredictionType> predictions_positions;
-  predictions_positions[2] = PREDICTION_NOT_PASSWORD;
+  predictions_positions[2] = PasswordFormFieldPredictionType::kNotPassword;
 
   FormsPredictionsMap predictions;
   SetPredictions(html, &predictions, predictions_positions);

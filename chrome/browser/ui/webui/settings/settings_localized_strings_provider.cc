@@ -561,6 +561,7 @@ void AddAppsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
       {"manageYourApps", IDS_SETTINGS_APPS_LINK_TEXT},
+      {"manageYourAppsSublabel", IDS_SETTINGS_APPS_LINK_SUBLABEL_TEXT},
   };
 
   AddLocalizedStringsBulk(html_source, localized_strings,

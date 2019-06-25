@@ -30,15 +30,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
-                  autofill::PasswordFormFieldPredictionType> {
-  static autofill::mojom::PasswordFormFieldPredictionType ToMojom(
-      autofill::PasswordFormFieldPredictionType input);
-  static bool FromMojom(autofill::mojom::PasswordFormFieldPredictionType input,
-                        autofill::PasswordFormFieldPredictionType* output);
-};
-
-template <>
 struct StructTraits<autofill::mojom::FormFieldDataDataView,
                     autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
@@ -588,7 +579,7 @@ struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
   static std::vector<autofill::FormFieldData> keys(
       const autofill::PasswordFormFieldPredictionMap& r);
 
-  static std::vector<autofill::PasswordFormFieldPredictionType> values(
+  static std::vector<autofill::mojom::PasswordFormFieldPredictionType> values(
       const autofill::PasswordFormFieldPredictionMap& r);
 
   static bool Read(autofill::mojom::PasswordFormFieldPredictionMapDataView data,

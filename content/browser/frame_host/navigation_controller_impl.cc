@@ -523,8 +523,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       is_initial_navigation_(true),
       in_navigate_to_pending_entry_(false),
       pending_reload_(ReloadType::NONE),
-      get_timestamp_callback_(base::Bind(&base::Time::Now)),
-      last_committed_reload_type_(ReloadType::NONE) {
+      get_timestamp_callback_(base::Bind(&base::Time::Now)) {
   DCHECK(browser_context_);
 }
 
@@ -605,26 +604,7 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
   if (!entry)
     return;
 
-  // Check if previous navigation was a reload to track consecutive reload
-  // operations.
-  if (last_committed_reload_type_ != ReloadType::NONE) {
-    DCHECK(!last_committed_reload_time_.is_null());
-    base::Time now =
-        time_smoother_.GetSmoothedTime(get_timestamp_callback_.Run());
-    DCHECK_GT(now, last_committed_reload_time_);
-    if (!last_committed_reload_time_.is_null() &&
-        now > last_committed_reload_time_) {
-      base::TimeDelta delta = now - last_committed_reload_time_;
-      UMA_HISTOGRAM_MEDIUM_TIMES("Navigation.Reload.ReloadToReloadDuration",
-                                 delta);
-      if (last_committed_reload_type_ == ReloadType::NORMAL) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Navigation.Reload.ReloadMainResourceToReloadDuration", delta);
-      }
-    }
-  }
-
-  // Set ReloadType for |entry| in order to check it at commit time.
+  // Set ReloadType for |entry|.
   entry->set_reload_type(reload_type);
 
   if (g_check_for_repost && check_for_repost &&
@@ -1056,28 +1036,13 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // is_same_document must be computed before the entry gets committed.
   details->is_same_document = is_same_document_navigation;
 
-  // Save reload type and timestamp for a reload navigation to detect
-  // consecutive reloads when the next reload is requested.
-  NavigationHandleImpl* navigation_handle =
-      navigation_request->navigation_handle();
-  DCHECK(navigation_handle);
-  if (PendingEntryMatchesHandle(navigation_handle)) {
-    if (pending_entry_->reload_type() != ReloadType::NONE) {
-      last_committed_reload_type_ = pending_entry_->reload_type();
-      last_committed_reload_time_ =
-          time_smoother_.GetSmoothedTime(get_timestamp_callback_.Run());
-    } else if (!pending_entry_->is_renderer_initiated() ||
-               params.gesture == NavigationGestureUser) {
-      last_committed_reload_type_ = ReloadType::NONE;
-      last_committed_reload_time_ = base::Time();
-    }
-  }
-
   // Make sure we do not discard the pending entry for a different ongoing
   // navigation when a same document commit comes in unexpectedly from the
   // renderer.  Limit this to a very narrow set of conditions to avoid risks to
   // other navigation types. See https://crbug.com/900036.
   // TODO(crbug.com/926009): Handle history.pushState() as well.
+  NavigationHandleImpl* navigation_handle =
+      navigation_request->navigation_handle();
   bool keep_pending_entry = is_same_document_navigation &&
                             details->type == NAVIGATION_TYPE_EXISTING_PAGE &&
                             pending_entry_ &&

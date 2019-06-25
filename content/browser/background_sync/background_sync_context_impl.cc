@@ -40,10 +40,12 @@ BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
 #if defined(OS_ANDROID)
 void BackgroundSyncContext::FireBackgroundSyncEventsAcrossPartitions(
     BrowserContext* browser_context,
+    blink::mojom::BackgroundSyncType sync_type,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
-  BackgroundSyncLauncher::FireBackgroundSyncEvents(browser_context, j_runnable);
+  BackgroundSyncLauncher::FireBackgroundSyncEvents(browser_context, sync_type,
+                                                   j_runnable);
 }
 #endif
 
@@ -170,16 +172,18 @@ void BackgroundSyncContextImpl::DidGetSoonestWakeupDelta(
 }
 
 void BackgroundSyncContextImpl::FireBackgroundSyncEvents(
+    blink::mojom::BackgroundSyncType sync_type,
     base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread, this,
-          std::move(done_closure)));
+          sync_type, std::move(done_closure)));
 }
 
 void BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread(
+    blink::mojom::BackgroundSyncType sync_type,
     base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -188,9 +192,11 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread(
     return;
   }
 
-  background_sync_manager_->FireReadyEvents(base::BindOnce(
-      &BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread, this,
-      std::move(done_closure)));
+  background_sync_manager_->FireReadyEvents(
+      sync_type,
+      base::BindOnce(
+          &BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread,
+          this, std::move(done_closure)));
 }
 
 void BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread(

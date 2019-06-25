@@ -12,8 +12,16 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/base/task_runner.h"
+
+#if defined(OS_ANDROID)
+#include <map>
+// Needed for base::FileDescriptorWatcher::Controller and for implementing
+// AddFileDescriptorWatch & RemoveFileDescriptorWatch on Android.
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif  // defined(OS_ANDROID)
 
 namespace tracing {
 
@@ -40,7 +48,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
   bool HasTaskRunner() const { return !!task_runner_; }
 
-  // Not used in Chrome.
+  // These are only used on Android when talking to the system Perfetto service.
   void AddFileDescriptorWatch(int fd, std::function<void()>) override;
   void RemoveFileDescriptorWatch(int fd) override;
 
@@ -54,6 +62,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   void OnDeferredTasksDrainTimer();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+#if defined(OS_ANDROID)
+  std::map<int, std::unique_ptr<base::FileDescriptorWatcher::Controller>>
+      fd_controllers_;
+#endif  // defined(OS_ANDROID)
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoTaskRunner);
 };

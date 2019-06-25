@@ -191,6 +191,29 @@ std::string GetAPIKeyForUrl(version_info::Channel channel) {
   return google_apis::GetNonStableAPIKey();
 }
 
+bool IsAddressForm(FieldTypeGroup field_type_group) {
+  switch (field_type_group) {
+    case NAME:
+    case NAME_BILLING:
+    case EMAIL:
+    case COMPANY:
+    case ADDRESS_HOME:
+    case ADDRESS_BILLING:
+    case PHONE_HOME:
+    case PHONE_BILLING:
+      return true;
+    case CREDIT_CARD:
+    case TRANSACTION:
+    case PASSWORD_FIELD:
+    case USERNAME_FIELD:
+    case NO_GROUP:
+    case UNFILLABLE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 AutofillManager::FillingContext::FillingContext() = default;
@@ -531,13 +554,9 @@ void AutofillManager::DidSuppressPopup(const FormData& form,
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
-  if (autofill_field->Type().group() == CREDIT_CARD) {
-    credit_card_form_event_logger_->OnPopupSuppressed(*form_structure,
-                                                      *autofill_field);
-  } else {
-    address_form_event_logger_->OnPopupSuppressed(*form_structure,
-                                                  *autofill_field);
-  }
+  auto* logger = GetEventFormLogger(autofill_field->Type().group());
+  if (logger)
+    logger->OnPopupSuppressed(*form_structure, *autofill_field);
 }
 
 void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
@@ -562,6 +581,12 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
         data_util::DetermineGroups(form_structure->GetServerFieldTypes());
   }
 
+  if (!autofill_field->is_autofilled) {
+    auto* logger = GetEventFormLogger(autofill_field->Type().group());
+    if (logger)
+      logger->OnTypedIntoNonFilledField();
+  }
+
   if (!user_did_type_) {
     user_did_type_ = true;
     AutofillMetrics::LogUserHappinessMetric(
@@ -576,6 +601,10 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
         AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD,
         autofill_field->Type().group(),
         client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
+
+    auto* logger = GetEventFormLogger(autofill_field->Type().group());
+    if (logger)
+      logger->OnEditedAutofilledField();
 
     if (!user_did_edit_autofilled_field_) {
       user_did_edit_autofilled_field_ = true;
@@ -927,14 +956,11 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
         client_->GetSecurityLevelForUmaHistograms(), profile_form_bitmask);
   }
 
-  if (autofill_field->Type().group() == CREDIT_CARD) {
-    credit_card_form_event_logger_->OnDidShowSuggestions(
-        *form_structure, *autofill_field,
-        form_structure->form_parsed_timestamp(), sync_state_);
-  } else {
-    address_form_event_logger_->OnDidShowSuggestions(
-        *form_structure, *autofill_field,
-        form_structure->form_parsed_timestamp(), sync_state_);
+  auto* logger = GetEventFormLogger(autofill_field->Type().group());
+  if (logger) {
+    logger->OnDidShowSuggestions(*form_structure, *autofill_field,
+                                 form_structure->form_parsed_timestamp(),
+                                 sync_state_);
   }
 }
 
@@ -1621,7 +1647,7 @@ void AutofillManager::OnFormsParsed(
     for (const auto& field : *form_structure) {
       if (field->Type().group() == CREDIT_CARD) {
         card_form = true;
-      } else {
+      } else if (IsAddressForm(field->Type().group())) {
         address_form = true;
       }
     }
@@ -2079,11 +2105,11 @@ void AutofillManager::GetAvailableSuggestions(
   if (got_autofillable_form) {
     if (context->focused_field->Type().group() == CREDIT_CARD) {
       context->is_filling_credit_card = true;
-      credit_card_form_event_logger_->OnDidInteractWithAutofillableForm(
-          *(context->form_structure), sync_state_);
-    } else {
-      address_form_event_logger_->OnDidInteractWithAutofillableForm(
-          *(context->form_structure), sync_state_);
+    }
+    auto* logger = GetEventFormLogger(context->focused_field->Type().group());
+    if (logger) {
+      logger->OnDidInteractWithAutofillableForm(*(context->form_structure),
+                                                sync_state_);
     }
   }
 
@@ -2140,6 +2166,31 @@ void AutofillManager::GetAvailableSuggestions(
         POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
     suggestions->assign(1, warning_suggestion);
   }
+}
+
+FormEventLoggerBase* AutofillManager::GetEventFormLogger(
+    FieldTypeGroup field_type_group) const {
+  switch (field_type_group) {
+    case NAME:
+    case NAME_BILLING:
+    case EMAIL:
+    case COMPANY:
+    case ADDRESS_HOME:
+    case ADDRESS_BILLING:
+    case PHONE_HOME:
+    case PHONE_BILLING:
+      return address_form_event_logger_.get();
+    case CREDIT_CARD:
+      return credit_card_form_event_logger_.get();
+    case TRANSACTION:
+    case PASSWORD_FIELD:
+    case USERNAME_FIELD:
+    case NO_GROUP:
+    case UNFILLABLE:
+      return nullptr;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace autofill

@@ -335,6 +335,9 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
   PhysicalRect RectInContainerBox() const;
 };
 
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment*);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment&);
+
 #if !DCHECK_IS_ON()
 inline void NGPhysicalFragment::CheckType() const {}
 inline void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {}

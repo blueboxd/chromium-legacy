@@ -39,7 +39,14 @@ message RecurrenceRankerConfigProto {
     // The decay coeffficient number that control the decay rate. The decay is
     // once a week.
     required float weekly_decay_coeff = 1;
-    map<int32, float> bin_weights_map = 2;
+
+    // Controls how much a change in one bin affects the bins around it. |bin|
+    // is a relative index, and |weight| controls the magnitude of the update.
+    message BinWeight {
+      required int32 bin = 1;
+      required float weight = 2;
+    }
+    repeated BinWeight bin_weights = 2;
   }
 
   // The choice of which kind of predictor to use, and its configuration.

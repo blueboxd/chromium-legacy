@@ -16,6 +16,8 @@ const AsyncIteratorPrototype = Object.getPrototypeOf(
 const StorageAreaAsyncIteratorPrototype = {
   __proto__: AsyncIteratorPrototype,
 
+  [Symbol.toStringTag]: 'StorageArea AsyncIterator',
+
   next() {
     const performDatabaseOperation = _performDatabaseOperation.get(this);
     if (!performDatabaseOperation) {
@@ -41,6 +43,12 @@ const StorageAreaAsyncIteratorPrototype = {
     return thisNextPromise;
   },
 };
+
+Object.defineProperty(
+  StorageAreaAsyncIteratorPrototype,
+  Symbol.toStringTag,
+  {writable: false, enumerable: false}
+);
 
 function getNextIterResult(iter, performDatabaseOperation) {
   return performDatabaseOperation(async (transaction, store) => {

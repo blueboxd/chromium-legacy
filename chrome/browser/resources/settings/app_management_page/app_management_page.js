@@ -11,7 +11,9 @@ Polymer({
   is: 'settings-app-management-page',
 
   /** @private */
-  onManageAppsClick_: function() {
-    window.location.href = 'chrome://app-management';
+  openAppManagement_: function() {
+    chrome.metricsPrivate.recordUserAction('SettingsPage.OpenAppManagement');
+    settings.OpenWindowProxyImpl.getInstance().openURL(
+        'chrome://app-management');
   },
 });

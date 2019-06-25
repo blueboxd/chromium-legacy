@@ -10,9 +10,11 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/loading_test_util.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -77,80 +79,112 @@ TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
 }
 
 TEST_F(LoadingDataCollectorTest, ShouldRecordMainFrameLoad) {
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
   auto http_request = CreateResourceLoadInfo("http://www.google.com");
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*http_request));
+  EXPECT_TRUE(
+      collector_->ShouldRecordResourceLoad(navigation_id, *http_request));
 
   auto https_request = CreateResourceLoadInfo("https://www.google.com");
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*https_request));
+  EXPECT_TRUE(
+      collector_->ShouldRecordResourceLoad(navigation_id, *https_request));
 
   auto file_request = CreateResourceLoadInfo("file://www.google.com");
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(*file_request));
+  EXPECT_FALSE(
+      collector_->ShouldRecordResourceLoad(navigation_id, *file_request));
 
   auto https_request_with_port =
       CreateResourceLoadInfo("https://www.google.com:666");
-  EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*https_request_with_port));
+  EXPECT_FALSE(collector_->ShouldRecordResourceLoad(navigation_id,
+                                                    *https_request_with_port));
 }
 
-TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoad) {
+// Resource loaded after FCP event is recorded by default.
+TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoadAfterFCP) {
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
+
+  collector_->RecordStartNavigation(navigation_id);
+  collector_->RecordFirstContentfulPaint(navigation_id, base::TimeTicks::Now());
+
   // Protocol.
   auto http_image_request = CreateResourceLoadInfo(
       "http://www.google.com/cat.png", content::ResourceType::kImage);
   EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*http_image_request));
+      collector_->ShouldRecordResourceLoad(navigation_id, *http_image_request));
+}
+
+TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoad) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kLoadingOnlyLearnHighPriorityResources);
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
+
+  // Protocol.
+  auto low_priority_http_image_request = CreateLowPriorityResourceLoadInfo(
+      "http://www.google.com/cat.png", content::ResourceType::kImage);
+  EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
+      navigation_id, *low_priority_http_image_request));
+
+  auto http_image_request = CreateResourceLoadInfo(
+      "http://www.google.com/cat.png", content::ResourceType::kImage);
+  EXPECT_TRUE(
+      collector_->ShouldRecordResourceLoad(navigation_id, *http_image_request));
 
   auto https_image_request = CreateResourceLoadInfo(
       "https://www.google.com/cat.png", content::ResourceType::kImage);
-  EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*https_image_request));
+  EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
+                                                   *https_image_request));
 
   auto https_image_request_with_port = CreateResourceLoadInfo(
       "https://www.google.com:666/cat.png", content::ResourceType::kImage);
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *https_image_request_with_port));
+  EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
+      navigation_id, *https_image_request_with_port));
 
   auto file_image_request = CreateResourceLoadInfo(
       "file://www.google.com/cat.png", content::ResourceType::kImage);
   EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*file_image_request));
+      collector_->ShouldRecordResourceLoad(navigation_id, *file_image_request));
 
   // ResourceType.
   auto sub_frame_request = CreateResourceLoadInfo(
       "http://www.google.com/frame.html", content::ResourceType::kSubFrame);
   EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*sub_frame_request));
+      collector_->ShouldRecordResourceLoad(navigation_id, *sub_frame_request));
 
   auto font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
                              content::ResourceType::kFontResource);
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*font_request));
+  EXPECT_TRUE(
+      collector_->ShouldRecordResourceLoad(navigation_id, *font_request));
 
   // From MIME Type.
   auto prefetch_image_request = CreateResourceLoadInfo(
       "http://www.google.com/cat.png", content::ResourceType::kPrefetch);
   prefetch_image_request->mime_type = "image/png";
-  EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*prefetch_image_request));
+  EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
+                                                   *prefetch_image_request));
 
   auto prefetch_unknown_image_request = CreateResourceLoadInfo(
       "http://www.google.com/cat.png", content::ResourceType::kPrefetch);
   prefetch_unknown_image_request->mime_type = "image/my-wonderful-format";
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *prefetch_unknown_image_request));
+  EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
+      navigation_id, *prefetch_unknown_image_request));
 
   auto prefetch_font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
                              content::ResourceType::kPrefetch);
   prefetch_font_request->mime_type = "font/woff";
-  EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*prefetch_font_request));
+  EXPECT_TRUE(collector_->ShouldRecordResourceLoad(navigation_id,
+                                                   *prefetch_font_request));
 
   auto prefetch_unknown_font_request =
       CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
                              content::ResourceType::kPrefetch);
   prefetch_unknown_font_request->mime_type = "font/woff-woff";
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *prefetch_unknown_font_request));
+  EXPECT_FALSE(collector_->ShouldRecordResourceLoad(
+      navigation_id, *prefetch_unknown_font_request));
 }
 
 // Single navigation that will be recorded. Will check for duplicate
@@ -200,6 +234,7 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
 
   auto summary = CreatePageRequestSummary("http://www.google.com",
                                           "http://www.google.com", resources);
+  EXPECT_FALSE(summary.origins.empty());
 
   EXPECT_CALL(*mock_predictor_,
               RecordPageRequestSummaryProxy(testing::Pointee(summary)));

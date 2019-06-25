@@ -112,14 +112,14 @@ void LocalPrinterHandlerDefault::GetDefaultPrinter(DefaultPrinterCallback cb) {
 }
 
 void LocalPrinterHandlerDefault::StartGetPrinters(
-    const AddedPrintersCallback& callback,
+    AddedPrintersCallback callback,
     GetPrintersDoneCallback done_callback) {
   VLOG(1) << "Enumerate printers start";
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE, base::BindOnce(&EnumeratePrintersAsync),
-      base::BindOnce(&ConvertPrinterListForCallback, callback,
+      base::BindOnce(&ConvertPrinterListForCallback, std::move(callback),
                      std::move(done_callback)));
 }
 

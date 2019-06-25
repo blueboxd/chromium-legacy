@@ -70,6 +70,8 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   void MountGuestEx(
       const cryptohome::MountGuestRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void GetRsuDeviceId(
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void TpmIsReady(DBusMethodCallback<bool> callback) override;
   void TpmIsEnabled(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
@@ -304,6 +306,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
     enable_auth_check_ = enable_auth_check;
   }
 
+  void set_rsu_device_id(const std::string& rsu_device_id) {
+    rsu_device_id_ = rsu_device_id;
+  }
+
   void SetTpmAttestationUserCertificate(
       const cryptohome::AccountIdentifier& cryptohome_id,
       const std::string& key_name,
@@ -442,6 +448,9 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   bool supports_low_entropy_credentials_ = false;
   // Controls if CheckKeyEx actually checks the key.
   bool enable_auth_check_ = false;
+
+  // Reply to GetRsuDeviceId().
+  std::string rsu_device_id_;
 
   // MountEx fields.
   cryptohome::CryptohomeErrorCode cryptohome_error_ =

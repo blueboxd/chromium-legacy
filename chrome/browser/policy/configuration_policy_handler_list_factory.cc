@@ -42,6 +42,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/history/core/common/pref_names.h"
@@ -1115,6 +1116,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<autofill::AutofillCreditCardPolicyHandler>());
   handlers->AddHandler(std::make_unique<autofill::AutofillPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<content_settings::CookieSettingsPolicyHandler>());
   handlers->AddHandler(std::make_unique<DefaultSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceYouTubeSafetyModePolicyHandler>());

@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/strings/string16.h"
 #include "base/unguessable_token.h"
 #include "base/win/windows_version.h"
@@ -20,18 +21,27 @@ namespace sandbox {
 
 namespace {
 
-base::SharedMemoryHandle GetSharedMemoryHandle(const ClientInfo& client_info,
-                                               HANDLE handle,
-                                               size_t size) {
-  HANDLE result_handle = nullptr;
+base::UnsafeSharedMemoryRegion GetSharedMemoryRegion(
+    const ClientInfo& client_info,
+    HANDLE handle,
+    size_t size) {
+  HANDLE dup_handle = nullptr;
   intptr_t handle_int = reinterpret_cast<intptr_t>(handle);
   if (handle_int <= 0 ||
       !::DuplicateHandle(client_info.process, handle, ::GetCurrentProcess(),
-                         &result_handle, 0, false, DUPLICATE_SAME_ACCESS)) {
-    result_handle = nullptr;
+                         &dup_handle, 0, false, DUPLICATE_SAME_ACCESS)) {
+    return {};
   }
-  return base::SharedMemoryHandle(result_handle, size,
-                                  base::UnguessableToken::Create());
+  // The raw handle returned from ::DuplicateHandle() must be wrapped in a
+  // base::PlatformSharedMemoryRegion.
+  base::subtle::PlatformSharedMemoryRegion platform_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          base::win::ScopedHandle(dup_handle),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe, size,
+          base::UnguessableToken::Create());
+  // |platform_region| can now be wrapped in a base::UnsafeSharedMemoryRegion.
+  return base::UnsafeSharedMemoryRegion::Deserialize(
+      std::move(platform_region));
 }
 
 }  // namespace
@@ -413,22 +423,22 @@ bool ProcessMitigationsWin32KDispatcher::GetCertificate(
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
-  base::SharedMemoryHandle handle = GetSharedMemoryHandle(
+  base::UnsafeSharedMemoryRegion region = GetSharedMemoryRegion(
       *ipc->client_info, shared_buffer_handle, shared_buffer_size);
-  if (!handle.IsValid()) {
+  if (!region.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
-  base::SharedMemory cert_data(handle, false);
-  if (!cert_data.Map(shared_buffer_size)) {
+  base::WritableSharedMemoryMapping cert_data = region.Map();
+  if (!cert_data.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
   NTSTATUS status = STATUS_INVALID_PARAMETER;
   if (device_name->size() > 0) {
     status = ProcessMitigationsWin32KLockdownPolicy::GetCertificateAction(
-        *ipc->client_info, *device_name, static_cast<BYTE*>(cert_data.memory()),
-        shared_buffer_size);
+        *ipc->client_info, *device_name,
+        cert_data.GetMemoryAsSpan<BYTE>().data(), shared_buffer_size);
   } else {
     scoped_refptr<ProtectedVideoOutput> output =
         GetProtectedVideoOutput(protected_output, false);
@@ -436,7 +446,7 @@ bool ProcessMitigationsWin32KDispatcher::GetCertificate(
       status =
           ProcessMitigationsWin32KLockdownPolicy::GetCertificateByHandleAction(
               *ipc->client_info, output.get()->handle(),
-              static_cast<BYTE*>(cert_data.memory()), shared_buffer_size);
+              cert_data.GetMemoryAsSpan<BYTE>().data(), shared_buffer_size);
     }
   }
   ipc->return_info.nt_status = status;
@@ -517,15 +527,15 @@ bool ProcessMitigationsWin32KDispatcher::ConfigureOPMProtectedOutput(
     ipc->return_info.nt_status = STATUS_INVALID_HANDLE;
     return true;
   };
-  base::SharedMemoryHandle handle =
-      GetSharedMemoryHandle(*ipc->client_info, shared_buffer_handle,
+  base::UnsafeSharedMemoryRegion region =
+      GetSharedMemoryRegion(*ipc->client_info, shared_buffer_handle,
                             sizeof(DXGKMDT_OPM_CONFIGURE_PARAMETERS));
-  if (!handle.IsValid()) {
+  if (!region.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
-  base::SharedMemory buffer(handle, false);
-  if (!buffer.Map(sizeof(DXGKMDT_OPM_CONFIGURE_PARAMETERS))) {
+  base::WritableSharedMemoryMapping buffer = region.Map();
+  if (!buffer.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
@@ -554,15 +564,15 @@ bool ProcessMitigationsWin32KDispatcher::GetOPMInformation(
       std::max(sizeof(DXGKMDT_OPM_GET_INFO_PARAMETERS),
                sizeof(DXGKMDT_OPM_REQUESTED_INFORMATION));
 
-  base::SharedMemoryHandle handle = GetSharedMemoryHandle(
+  base::UnsafeSharedMemoryRegion region = GetSharedMemoryRegion(
       *ipc->client_info, shared_buffer_handle, shared_buffer_size);
-  if (!handle.IsValid()) {
+  if (!region.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }
-  base::SharedMemory buffer(handle, false);
 
-  if (!buffer.Map(shared_buffer_size)) {
+  base::WritableSharedMemoryMapping buffer = region.Map();
+  if (!buffer.IsValid()) {
     ipc->return_info.nt_status = STATUS_ACCESS_DENIED;
     return true;
   }

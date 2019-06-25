@@ -21,6 +21,12 @@ class Visitor;
 class LazyLoadImageObserver final
     : public GarbageCollected<LazyLoadImageObserver> {
  public:
+  enum class DeferralMessage {
+    kNone,
+    kLoadEventsDeferred,
+    kMissingDimensionForLazy
+  };
+
   struct VisibleLoadTimeMetrics {
     // Keeps track of whether the image was initially intersecting the viewport.
     bool is_initially_intersecting = false;
@@ -35,7 +41,9 @@ class LazyLoadImageObserver final
 
   LazyLoadImageObserver();
 
-  static void StartMonitoring(Element*, bool is_for_intervention);
+  static void StartMonitoring(
+      Element*,
+      DeferralMessage deferral_message = DeferralMessage::kNone);
   static void StopMonitoring(Element*);
 
   static void StartTrackingVisibilityMetrics(HTMLImageElement*);
@@ -44,9 +52,7 @@ class LazyLoadImageObserver final
   void Trace(Visitor*);
 
  private:
-  void StartMonitoringNearViewport(Document*,
-                                   Element*,
-                                   bool is_for_intervention);
+  void StartMonitoringNearViewport(Document*, Element*, DeferralMessage);
   void LoadIfNearViewport(const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void StartMonitoringVisibility(Document*, HTMLImageElement*);
@@ -64,6 +70,7 @@ class LazyLoadImageObserver final
 
   // Used to show the intervention console message one time only.
   bool is_load_event_deferred_intervention_shown_ = false;
+  bool is_missing_dimension_intervention_shown_ = false;
 };
 
 }  // namespace blink

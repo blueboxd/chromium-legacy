@@ -55,12 +55,13 @@
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 #import "ios/web/web_state/ui/crw_wk_ui_handler_delegate.h"
-#import "ios/web/web_state/ui/wk_security_origin_util.h"
+#import "ios/web/web_state/ui/js_window_error_manager.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_view/content_type_util.h"
+#import "ios/web/web_view/wk_security_origin_util.h"
 #import "ios/web/web_view/wk_web_view_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -153,6 +154,9 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
   // Manager for favicon JavaScript messages.
   std::unique_ptr<web::FaviconManager> _faviconManager;
+
+  // Manager for window.error message.
+  std::unique_ptr<web::JsWindowErrorManager> _jsWindowErrorManager;
 }
 
 // The WKNavigationDelegate handler class.
@@ -245,13 +249,6 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
                      forContext:(web::NavigationContextImpl*)context;
-// Acts on a single message from the JS object, parsed from JSON into a
-// DictionaryValue. Returns NO if the format for the message was invalid.
-- (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
-       userIsInteracting:(BOOL)userIsInteracting
-               originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame
-             senderFrame:(web::WebFrame*)senderFrame;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
@@ -333,6 +330,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
+    _jsWindowErrorManager =
+        std::make_unique<web::JsWindowErrorManager>(_webStateImpl);
     _legacyNativeController =
         [[CRWLegacyNativeContentController alloc] initWithWebState:webState];
     _legacyNativeController.delegate = self;
@@ -624,7 +623,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.UIHandler close];
   [self.JSNavigationHandler close];
   _faviconManager.reset();
-
+  _jsWindowErrorManager.reset();
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
 
@@ -1385,56 +1384,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - JavaScript message Helpers (Private)
 
-- (BOOL)respondToMessage:(base::DictionaryValue*)message
-       userIsInteracting:(BOOL)userIsInteracting
-               originURL:(const GURL&)originURL
-             isMainFrame:(BOOL)isMainFrame
-             senderFrame:(web::WebFrame*)senderFrame {
-  std::string command;
-  if (!message->GetString("command", &command)) {
-    DLOG(WARNING) << "JS message parameter not found: command";
-    return NO;
-  }
-
-  SEL handler = [self selectorToHandleJavaScriptCommand:command];
-  if (!handler) {
-    if (self.webStateImpl->OnScriptCommandReceived(command, *message, originURL,
-                                                   userIsInteracting,
-                                                   isMainFrame, senderFrame)) {
-      return YES;
-    }
-    // Message was either unexpected or not correctly handled.
-    // Page is reset as a precaution.
-    DLOG(WARNING) << "Unexpected message received: " << command;
-    return NO;
-  }
-
-  typedef BOOL (*HandlerType)(id, SEL, base::DictionaryValue*, NSDictionary*);
-  HandlerType handlerImplementation =
-      reinterpret_cast<HandlerType>([self methodForSelector:handler]);
-  DCHECK(handlerImplementation);
-  NSMutableDictionary* context =
-      [NSMutableDictionary dictionaryWithObject:@(userIsInteracting)
-                                         forKey:kUserIsInteractingKey];
-  NSURL* originNSURL = net::NSURLWithGURL(originURL);
-  if (originNSURL)
-    context[kOriginURLKey] = originNSURL;
-  context[kIsMainFrame] = @(isMainFrame);
-  return handlerImplementation(self, handler, message, context);
-}
-
-- (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command {
-  static std::map<std::string, SEL>* handlers = nullptr;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    handlers = new std::map<std::string, SEL>();
-    (*handlers)["window.error"] = @selector(handleWindowErrorMessage:context:);
-  });
-  DCHECK(handlers);
-  auto iter = handlers->find(command);
-  return iter != handlers->end() ? iter->second : nullptr;
-}
-
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message {
   // Broken out into separate method to catch errors.
   if (![self respondToWKScriptMessage:message]) {
@@ -1464,16 +1413,27 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return NO;
   }
 
-  base::DictionaryValue* command = nullptr;
-  if (!message->GetDictionary("crwCommand", &command)) {
+  base::DictionaryValue* crwCommand = nullptr;
+  if (!message->GetDictionary("crwCommand", &crwCommand)) {
     return NO;
   }
-  return [self
-       respondToMessage:command
-      userIsInteracting:_userInteractionState.IsUserInteracting(self.webView)
-              originURL:net::GURLWithNSURL(self.webView.URL)
-            isMainFrame:scriptMessage.frameInfo.mainFrame
-            senderFrame:senderFrame];
+
+  std::string command;
+  if (!crwCommand->GetString("command", &command)) {
+    DLOG(WARNING) << "JS message parameter not found: command";
+    return NO;
+  }
+
+  if (self.webStateImpl->OnScriptCommandReceived(
+          command, *crwCommand, net::GURLWithNSURL(self.webView.URL),
+          _userInteractionState.IsUserInteracting(self.webView),
+          scriptMessage.frameInfo.mainFrame, senderFrame)) {
+    return YES;
+  }
+  // Message was either unexpected or not correctly handled.
+  // Page is reset as a precaution.
+  DLOG(WARNING) << "Unexpected message received: " << command;
+  return NO;
 }
 
 #pragma mark - Web frames management
@@ -1540,24 +1500,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         framesManager->GetFrameWithId(frameID));
     framesManager->RemoveFrameWithId(frameID);
   }
-}
-
-#pragma mark - JavaScript message handlers
-// Handlers for JavaScript messages. |message| contains a JavaScript command and
-// data relevant to the message, and |context| contains contextual information
-// about web view state needed for some handlers.
-
-// Handles 'window.error' message.
-- (BOOL)handleWindowErrorMessage:(base::DictionaryValue*)message
-                         context:(NSDictionary*)context {
-  std::string errorMessage;
-  if (!message->GetString("message", &errorMessage)) {
-    DLOG(WARNING) << "JS message parameter not found: message";
-    return NO;
-  }
-  DLOG(ERROR) << "JavaScript error: " << errorMessage
-              << " URL:" << [self currentURL].spec();
-  return YES;
 }
 
 #pragma mark - WebUI

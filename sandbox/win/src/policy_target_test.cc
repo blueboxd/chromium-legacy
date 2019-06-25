@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/win/scoped_process_information.h"
@@ -404,31 +405,30 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   ASSERT_TRUE(broker);
 
   base::StringPiece contents = "Hello World";
-  std::string name = "TestSharedMemory";
-  base::SharedMemoryCreateOptions options;
-  options.size = contents.size();
-  options.share_read_only = true;
-  options.name_deprecated = &name;
-  base::SharedMemory writable_shmem;
-  ASSERT_TRUE(writable_shmem.Create(options));
-  ASSERT_TRUE(writable_shmem.Map(options.size));
-  memcpy(writable_shmem.memory(), contents.data(), contents.size());
-
-  base::SharedMemory read_only_view;
-  ASSERT_TRUE(read_only_view.Open(name, true));
+  base::WritableSharedMemoryRegion writable_region =
+      base::WritableSharedMemoryRegion::Create(contents.size());
+  ASSERT_TRUE(writable_region.IsValid());
+  base::WritableSharedMemoryMapping writable_mapping = writable_region.Map();
+  ASSERT_TRUE(writable_mapping.IsValid());
+  memcpy(writable_mapping.memory(), contents.data(), contents.size());
 
   // Get the path to the sandboxed app.
   wchar_t prog_name[MAX_PATH];
   GetModuleFileNameW(nullptr, prog_name, MAX_PATH);
 
+  base::ReadOnlySharedMemoryRegion read_only_region =
+      base::WritableSharedMemoryRegion::ConvertToReadOnly(
+          std::move(writable_region));
+  ASSERT_TRUE(read_only_region.IsValid());
+
   scoped_refptr<TargetPolicy> policy = broker->CreatePolicy();
-  policy->AddHandleToShare(read_only_view.handle().GetHandle());
+  policy->AddHandleToShare(read_only_region.GetPlatformHandle());
 
   base::string16 arguments(L"\"");
   arguments += prog_name;
   arguments += L"\" -child 0 shared_memory_handle ";
   arguments += base::NumberToString16(
-      base::win::HandleToUint32(read_only_view.handle().GetHandle()));
+      base::win::HandleToUint32(read_only_region.GetPlatformHandle()));
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;

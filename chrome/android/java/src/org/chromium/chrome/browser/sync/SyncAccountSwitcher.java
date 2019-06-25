@@ -9,7 +9,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
+import org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;

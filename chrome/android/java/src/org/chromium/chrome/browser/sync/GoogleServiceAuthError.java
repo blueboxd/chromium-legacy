@@ -17,9 +17,8 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class GoogleServiceAuthError {
     @IntDef({State.NONE, State.INVALID_GAIA_CREDENTIALS, State.USER_NOT_SIGNED_UP,
-            State.CONNECTION_FAILED, State.ACCOUNT_DELETED, State.ACCOUNT_DISABLED,
-            State.SERVICE_UNAVAILABLE, State.REQUEST_CANCELED, State.UNEXPECTED_SERVICE_RESPONSE,
-            State.SERVICE_ERROR})
+            State.CONNECTION_FAILED, State.SERVICE_UNAVAILABLE, State.REQUEST_CANCELED,
+            State.UNEXPECTED_SERVICE_RESPONSE, State.SERVICE_ERROR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface State {
         // The user is authenticated.
@@ -44,11 +43,13 @@ public class GoogleServiceAuthError {
         // captcha() will provide details about the associated challenge.
         // int CAPTCHA_REQUIRED = 4;
 
+        // DEPRECATED.
         // The user account has been deleted.
-        int ACCOUNT_DELETED = 5;
+        // int ACCOUNT_DELETED = 5;
 
+        // DEPRECATED.
         // The user account has been disabled.
-        int ACCOUNT_DISABLED = 6;
+        // int ACCOUNT_DISABLED = 6;
 
         // The service is not available; try again later.
         int SERVICE_UNAVAILABLE = 7;
@@ -88,15 +89,9 @@ public class GoogleServiceAuthError {
             case State.SERVICE_UNAVAILABLE:
                 return R.string.sync_error_service_unavailable;
             // case State.NONE:
-            // case State.USER_NOT_SIGNED_UP:
-            // case State.CAPTCHA_REQUIRED:
-            // case State.ACCOUNT_DELETED:
-            // case State.ACCOUNT_DISABLED:
-            // case State.TWO_FACTOR:
             // case State.REQUEST_CANCELED:
             // case State.UNEXPECTED_SERVICE_RESPONSE:
             // case State.SERVICE_ERROR:
-            // case State.WEB_LOGIN_REQUIRED:
             default:
                 return R.string.sync_error_generic;
         }

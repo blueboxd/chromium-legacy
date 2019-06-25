@@ -21,7 +21,7 @@
 ++++++++++[text] name='Tree item at level 2'
 ++++[tree item] name='Tree item at level 3' selectable level:3
 ++++++[text] name='Tree item at level 3'
-++[tree table]
+++[tree table] cols=1 headers=(NONE); rows=2 headers=(NONE); caption=false; spans=(all: 1x1)
 ++++[table row] selectable level:1
 ++++++[table cell] name='Cell at level 1' selectable (row=0, col=0, row_span=1, col_span=1, n_row_headers=0, n_col_headers=0)
 ++++++++[text] name='Cell at level 1'

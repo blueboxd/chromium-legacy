@@ -17,7 +17,6 @@
 
 namespace autofill {
 class AutofillDriver;
-struct FormData;
 struct PasswordFormGenerationData;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -53,8 +52,7 @@ class PasswordManagerDriver
   // Notifies the driver that username and password predictions from autofill
   // have been received.
   virtual void AutofillDataReceived(
-      const std::map<autofill::FormData,
-                     autofill::PasswordFormFieldPredictionMap>& predictions) {}
+      const autofill::FormsPredictionsMap& predictions) {}
 
   // Notifies the driver that the user has accepted a generated password.
   virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;

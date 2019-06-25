@@ -27,6 +27,7 @@ bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
       // trigger runs, so collection can begin without opt-in.
       return false;
     case TriggerType::AD_POPUP:
+    case TriggerType::AD_REDIRECT:
     case TriggerType::AD_SAMPLE:
       // Ad samples happen in the background so the user must already be opted
       // in before the trigger is allowed to run.
@@ -162,7 +163,8 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
     return false;
 
   bool should_trim_threat_details = (trigger_type == TriggerType::AD_POPUP ||
-                                     trigger_type == TriggerType::AD_SAMPLE);
+                                     trigger_type == TriggerType::AD_SAMPLE ||
+                                     trigger_type == TriggerType::AD_REDIRECT);
   collectors->threat_details = ThreatDetails::NewThreatDetails(
       ui_manager_, web_contents, resource, url_loader_factory, history_service,
       referrer_chain_provider_, should_trim_threat_details,

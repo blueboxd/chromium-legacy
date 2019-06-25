@@ -226,6 +226,34 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
 });
 GEN('#endif');
 
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/app_management/app_management_page.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAppManagementPageTest() {}
+
+CrSettingsAppManagementPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'app_management_page_test.js',
+    'test_open_window_proxy.js',
+  ]),
+};
+
+TEST_F('CrSettingsAppManagementPageTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(OS_CHROMEOS)');
+
 /**
  * Test fixture for
  * chrome/browser/resources/settings/autofill_page/autofill_page.html.
@@ -248,6 +276,7 @@ CrSettingsAutofillPageTest.prototype = {
     'ensure_lazy_loaded.js',
     'fake_settings_private.js',
     'passwords_and_autofill_fake_data.js',
+    'test_open_window_proxy.js',
     'test_password_manager_proxy.js',
   ]),
 };

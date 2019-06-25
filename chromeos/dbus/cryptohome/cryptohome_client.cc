@@ -1011,6 +1011,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetRsuDeviceId(
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    cryptohome::GetRsuDeviceIdRequest request;
+    CallCryptohomeMethod(cryptohome::kCryptohomeGetRsuDeviceId, request,
+                         std::move(callback));
+  }
+
   void LockToSingleUserMountUntilReboot(
       const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {

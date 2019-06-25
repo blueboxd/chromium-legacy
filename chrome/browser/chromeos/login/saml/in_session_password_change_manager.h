@@ -27,11 +27,9 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer {
  public:
   // Returns null if in-session password change is disabled.
   static std::unique_ptr<InSessionPasswordChangeManager> CreateIfEnabled(
-      Profile* primary_profile,
-      const user_manager::User* primary_user);
+      Profile* primary_profile);
 
-  InSessionPasswordChangeManager(Profile* primary_profile,
-                                 const user_manager::User* primary_user);
+  explicit InSessionPasswordChangeManager(Profile* primary_profile);
   ~InSessionPasswordChangeManager() override;
 
   // Change cryptohome password for primary user.

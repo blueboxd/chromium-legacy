@@ -172,7 +172,7 @@ Polymer({
           const key = print_preview.MARGIN_KEY_MAP.get(control.side);
           const newValue = margins[key] || 0;
           control.setPositionInPts(newValue);
-          control.setTextboxValue(this.serializeValueFromPts_(newValue));
+          control.setTextboxValue(newValue);
         });
   },
 
@@ -259,20 +259,7 @@ Polymer({
    */
   moveControlWithConstraints_: function(control, posInPts) {
     control.setPositionInPts(posInPts);
-    control.setTextboxValue(this.serializeValueFromPts_(posInPts));
-  },
-
-  /**
-   * @param {number} value Value in points to serialize.
-   * @return {string} String representation of the value in the system's local
-   *     units.
-   * @private
-   */
-  serializeValueFromPts_: function(value) {
-    assert(this.measurementSystem);
-    value = this.measurementSystem.convertFromPoints(value);
-    value = this.measurementSystem.roundValue(value);
-    return value + this.measurementSystem.unitSymbol;
+    control.setTextboxValue(posInPts);
   },
 
   /**
@@ -448,19 +435,14 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent<string>} e Event containing the new textbox value.
+   * @param {!CustomEvent<number>} e Event containing the new textbox value.
    * @private
    */
   onTextChange_: function(e) {
-    const marginValue = this.parseValueToPts_(e.detail);
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-    if (marginValue == null) {
-      control.invalid = true;
-      return;
-    }
     control.invalid = false;
-    const clippedValue = this.clipAndRoundValue_(control.side, marginValue);
+    const clippedValue = this.clipAndRoundValue_(control.side, e.detail);
     control.setPositionInPts(clippedValue);
     this.setMargin_(control.side, clippedValue);
   },
@@ -475,8 +457,7 @@ Polymer({
     if (e.detail /* detail is true if the control is in an invalid state */) {
       const control =
           /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-      control.setTextboxValue(
-          this.serializeValueFromPts_(control.getPositionInPts()));
+      control.setTextboxValue(control.getPositionInPts());
       control.invalid = false;
     }
     this.textboxFocused_ = false;
@@ -519,33 +500,6 @@ Polymer({
     if (this.invisible_) {
       this.style.display = 'none';
     }
-  },
-
-  /**
-   * @param {string} value Value to parse to points. E.g. '3.40"' or '200mm'.
-   * @return {?number} Value in points represented by the input value.
-   * @private
-   */
-  parseValueToPts_: function(value) {
-    // Removing whitespace anywhere in the string.
-    value = value.replace(/\s*/g, '');
-    if (value.length == 0) {
-      return null;
-    }
-    assert(this.measurementSystem);
-    const validationRegex = new RegExp(
-        '^(^-?)(\\d)+(\\' + this.measurementSystem.thousandsDelimeter +
-        '\\d{3})*(\\' + this.measurementSystem.decimalDelimeter + '\\d*)?' +
-        '(' + this.measurementSystem.unitSymbol + ')?$');
-    if (validationRegex.test(value)) {
-      // Replacing decimal point with the dot symbol in order to use
-      // parseFloat() properly.
-      const replacementRegex =
-          new RegExp('\\' + this.measurementSystem.decimalDelimeter + '{1}');
-      value = value.replace(replacementRegex, '.');
-      return this.measurementSystem.convertToPoints(parseFloat(value));
-    }
-    return null;
   },
 
   /**

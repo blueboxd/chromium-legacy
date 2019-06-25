@@ -54,6 +54,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
@@ -162,6 +163,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
                               blink::FrameOcclusionState::kUnknown,
                               blink::FrameOcclusionState::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::NavigationBlockedReason,
+                          blink::NavigationBlockedReason::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
@@ -1476,9 +1479,12 @@ IPC_MESSAGE_ROUTED5(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     base::Optional<url::Origin> /* top frame origin */,
                     content::ResourceType /* resource type */)
 
-// This frame attempted to navigate the main frame to the given url, even
-// though this frame has never received a user gesture.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidBlockFramebust, GURL /* url */)
+// This frame attempted to navigate the main frame from the |initiator_url| to
+// the |blocked_url|, but the navigation was blocked because of |reason|.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
+                    GURL /* blocked_url */,
+                    GURL /* initiator_url */,
+                    blink::NavigationBlockedReason /* reason */)
 
 // PlzNavigate
 // Tells the browser to abort an ongoing renderer-initiated navigation. This is

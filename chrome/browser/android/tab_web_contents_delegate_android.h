@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 
 class FindNotificationDetails;
 
@@ -87,8 +88,10 @@ class TabWebContentsDelegateAndroid
   blink::WebSecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void OnDidBlockFramebust(content::WebContents* web_contents,
-                           const GURL& url) override;
+  void OnDidBlockNavigation(content::WebContents* web_contents,
+                            const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason) override;
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
   std::unique_ptr<content::WebContents> SwapWebContents(

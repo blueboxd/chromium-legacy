@@ -66,6 +66,7 @@
 #include "base/android/build_info.h"
 #include "net/cert/cert_verify_proc_android.h"
 #elif defined(OS_IOS)
+#include "base/ios/ios_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -859,7 +860,14 @@ class CertVerifyProcInternalTest
   }
 
   bool WeakKeysAreInvalid() const {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_IOS)
+    // Starting with iOS 13, certs with weak keys are treated as (recoverable)
+    // invalid certificate errors.
+    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
+        base::ios::IsRunningOnIOS13OrLater()) {
+      return true;
+    }
+#elif defined(OS_MACOSX)
     // Starting with Mac OS 10.12, certs with weak keys are treated as
     // (recoverable) invalid certificate errors.
     if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
@@ -1202,6 +1210,22 @@ TEST_P(CertVerifyProcInternalTest, RejectExpiredCert) {
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
+static int GetMinimumRsaDsaKeySize() {
+#if defined(OS_IOS)
+  // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
+  // 2048 bits. See https://support.apple.com/en-us/HT210176
+  if (base::ios::IsRunningOnIOS13OrLater())
+    return 2048;
+#elif defined(OS_MACOSX)
+  // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
+  // is 2048 bits. See https://support.apple.com/en-us/HT210176
+  if (base::mac::IsAtLeastOS10_15())
+    return 2048;
+#endif
+
+  return 1024;
+}
+
 // Currently, only RSA and DSA keys are checked for weakness, and our example
 // weak size is 768. These could change in the future.
 //
@@ -1209,11 +1233,15 @@ TEST_P(CertVerifyProcInternalTest, RejectExpiredCert) {
 // algorithms and which are weak will pass this test.
 static bool IsWeakKeyType(const std::string& key_type) {
   size_t pos = key_type.find("-");
-  std::string size = key_type.substr(0, pos);
+  std::string size_str = key_type.substr(0, pos);
   std::string type = key_type.substr(pos + 1);
+  int size = 0;
+
+  if (!base::StringToInt(size_str, &size))
+    return false;
 
   if (type == "rsa" || type == "dsa")
-    return size == "768";
+    return size < GetMinimumRsaDsaKeySize();
 
   return false;
 }
@@ -1269,10 +1297,15 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
 
       if (IsWeakKeyType(*ee_type) || IsWeakKeyType(*signer_type)) {
         EXPECT_NE(OK, error);
-        EXPECT_EQ(CERT_STATUS_WEAK_KEY,
-                  verify_result.cert_status & CERT_STATUS_WEAK_KEY);
-        EXPECT_EQ(WeakKeysAreInvalid() ? CERT_STATUS_INVALID : 0,
-                  verify_result.cert_status & CERT_STATUS_INVALID);
+        if (WeakKeysAreInvalid()) {
+          EXPECT_EQ(CERT_STATUS_INVALID,
+                    verify_result.cert_status & CERT_STATUS_INVALID);
+
+        } else {
+          EXPECT_EQ(CERT_STATUS_WEAK_KEY,
+                    verify_result.cert_status & CERT_STATUS_WEAK_KEY);
+          EXPECT_EQ(0u, verify_result.cert_status & CERT_STATUS_INVALID);
+        }
       } else {
         EXPECT_THAT(error, IsOk());
         EXPECT_EQ(0U, verify_result.cert_status & CERT_STATUS_WEAK_KEY);
@@ -1964,12 +1997,12 @@ TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
 
   if (AreSHA1IntermediatesAllowed()) {
     EXPECT_THAT(error, IsOk());
-    EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
+    EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
   } else {
-    EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
-    EXPECT_EQ(CERT_STATUS_WEAK_SIGNATURE_ALGORITHM |
-                  CERT_STATUS_SHA1_SIGNATURE_PRESENT,
-              verify_result.cert_status);
+    EXPECT_NE(error, OK);
+    EXPECT_TRUE(verify_result.cert_status &
+                CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+    EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
   }
 }
 
@@ -2380,10 +2413,6 @@ TEST_P(CertVerifyProcInternalTest, IsIssuedByKnownRootIgnoresTestRoots) {
 // Test verification with a leaf that does not contain embedded SCTs, and which
 // has a notBefore date after 2018/10/15, and with no |sct_list|.
 // On recent macOS and iOS versions this should fail to verify.
-// The iOS simulator has different verifier behavior than a real device, and
-// verification succeeds on all currently available versions. If this test
-// fails on iossim in the future, disable the test on TARGET_IPHONE_SIMULATOR
-// and file a bug against mattm.
 TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
   scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "treadclimber.pem",
@@ -2405,7 +2434,7 @@ TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
 
 #if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
   if (verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (__builtin_available(iOS 12.2, *)) {
+    if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
       // TODO(mattm): Check if this can this be mapped to some better error.
       EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
       EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
@@ -2413,8 +2442,9 @@ TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
     }
   }
 #elif defined(OS_MACOSX)
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC) {
-    if (__builtin_available(macOS 10.14.2, *)) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
+      verify_proc_type() == CERT_VERIFY_PROC_IOS) {
+    if (__builtin_available(macOS 10.14.2, iOS 13, *)) {
       // TODO(mattm): SecTrustEvaluate just gives a generic
       // CSSMERR_TP_VERIFY_ACTION_FAILED error. Not sure there's much that
       // could be done about that.
@@ -3513,12 +3543,19 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
     // This seemed to be working on Windows when !AreSHA1IntermediatesAllowed()
     // from previous testing, but then failed on the Windows 10 bot.
     if (error != OK) {
+      EXPECT_TRUE(verify_result.cert_status &
+                  CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+      EXPECT_TRUE(verify_result.cert_status &
+                  CERT_STATUS_SHA1_SIGNATURE_PRESENT);
       EXPECT_TRUE(verify_result.has_sha1);
       EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
     }
   } else {
+    EXPECT_NE(OK, error);
+    EXPECT_TRUE(verify_result.cert_status &
+                CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+    EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_SHA1_SIGNATURE_PRESENT);
     EXPECT_TRUE(verify_result.has_sha1);
-    EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
   }
 }
 

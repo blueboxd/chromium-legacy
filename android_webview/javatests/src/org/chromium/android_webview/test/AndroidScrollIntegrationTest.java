@@ -10,7 +10,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.view.View;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -197,8 +196,10 @@ public class AndroidScrollIntegrationTest {
         return CommonResources.makeHtmlPageFrom(TEST_PAGE_COMMON_HEADERS, content);
     }
 
-    private void scrollToOnMainSync(final View view, final int xPix, final int yPix) {
+    private void scrollToOnMainSync(final AwTestContainerView view, final int xPix, final int yPix)
+            throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> view.scrollTo(xPix, yPix));
+        mActivityTestRule.waitForVisualStateCallback(view.getAwContents());
     }
 
     private void setMaxScrollOnMainSync(final ScrollTestContainerView testContainerView,
@@ -850,12 +851,8 @@ public class AndroidScrollIntegrationTest {
     }
 
     @Test
-    /**
-     * @SmallTest
-     * @Feature("AndroidWebView")
-     * BUG=977526
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature("AndroidWebView")
     public void testScrollOffsetAfterCapturePicture() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =

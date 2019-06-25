@@ -57,8 +57,10 @@ void CompositorFrameReportingController::WillBeginImplFrame() {
 
 void CompositorFrameReportingController::WillBeginMainFrame() {
   DCHECK(reporters_[PipelineStage::kBeginImplFrame]);
-  DCHECK_NE(reporters_[PipelineStage::kBeginMainFrame],
-            reporters_[PipelineStage::kBeginImplFrame]);
+  // We need to use .get() below because operator<< in std::unique_ptr is a
+  // C++20 feature.
+  DCHECK_NE(reporters_[PipelineStage::kBeginMainFrame].get(),
+            reporters_[PipelineStage::kBeginImplFrame].get());
   reporters_[PipelineStage::kBeginImplFrame]->StartStage(
       CompositorFrameReporter::StageType::kSendBeginMainFrameToCommit, Now(),
       stage_history_[static_cast<int>(CompositorFrameReporter::StageType::

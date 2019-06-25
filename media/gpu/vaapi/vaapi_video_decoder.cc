@@ -85,22 +85,32 @@ VaapiVideoDecoder::VaapiVideoDecoder(
 VaapiVideoDecoder::~VaapiVideoDecoder() {}
 
 std::string VaapiVideoDecoder::GetDisplayName() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   return "VaapiVideoDecoder";
 }
 
 bool VaapiVideoDecoder::IsPlatformDecoder() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   return true;
 }
 
 bool VaapiVideoDecoder::NeedsBitstreamConversion() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   return needs_bitstream_conversion_;
 }
 
 bool VaapiVideoDecoder::CanReadWithoutStalling() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   return frame_pool_ && !frame_pool_->IsExhausted();
 }
 
 int VaapiVideoDecoder::GetMaxDecodeRequests() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   return kMaxDecodeRequests;
 }
 

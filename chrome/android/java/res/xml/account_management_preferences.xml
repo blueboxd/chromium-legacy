@@ -31,7 +31,7 @@
         android:key="child_content_divider"
         android:layout="@layout/divider_preference"/>
 
-    <org.chromium.chrome.browser.preferences.SyncPreference
+    <org.chromium.chrome.browser.preferences.sync.SyncPreference
         android:key="sync_settings"
         android:title="@string/sign_in_sync"/>
 

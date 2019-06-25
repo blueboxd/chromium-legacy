@@ -106,6 +106,15 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
   resource_load_info->resource_type = resource_type;
   resource_load_info->network_info = content::mojom::CommonNetworkInfo::New(
       true, always_access_network, base::nullopt);
+  resource_load_info->request_priority = net::HIGHEST;
+  return resource_load_info;
+}
+
+content::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
+    const std::string& url,
+    content::ResourceType resource_type) {
+  auto resource_load_info = CreateResourceLoadInfo(url, resource_type, false);
+  resource_load_info->request_priority = net::LOWEST;
   return resource_load_info;
 }
 
@@ -117,6 +126,7 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
   resource_load_info->original_url = GURL(redirect_chain.front());
   resource_load_info->method = "GET";
   resource_load_info->resource_type = resource_type;
+  resource_load_info->request_priority = net::HIGHEST;
   auto common_network_info =
       content::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
   resource_load_info->network_info = common_network_info.Clone();

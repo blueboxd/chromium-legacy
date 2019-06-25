@@ -305,6 +305,7 @@ extern const char kDeviceWallpaperImageFilePath[];
 extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
+extern const char kKerberosActivePrincipalName[];
 extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kDeviceWebUsbAllowDevicesForUrls[];
@@ -677,6 +678,7 @@ extern const char
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
+extern const char kLastRsuDeviceIdUploaded[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

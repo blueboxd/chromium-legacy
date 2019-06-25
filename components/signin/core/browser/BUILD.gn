@@ -17,9 +17,8 @@ buildflag_header("signin_buildflags") {
   ]
 }
 
-# This target contains code that will be shared between the Identity Service
-# implementation and its client library/clients. Currently, this code is used
-# both by IdentityManager and by its clients.
+# This target contains code that is used both by the IdentityManager
+# implementation and by clients of the //components/signin public code.
 static_library("shared") {
   sources = [
     "account_consistency_method.cc",
@@ -30,9 +29,13 @@ static_library("shared") {
     "account_info_util.h",
     "avatar_icon_util.cc",
     "avatar_icon_util.h",
+    "device_id_helper.cc",
+    "device_id_helper.h",
     "identity_utils.cc",
     "identity_utils.h",
     "set_accounts_in_cookie_result.h",
+    "signin_client.cc",
+    "signin_client.h",
     "signin_metrics.cc",
     "signin_metrics.h",
     "signin_pref_names.cc",
@@ -53,18 +56,16 @@ static_library("shared") {
   ]
   public_deps = [
     "//base",
-
-    # TODO(blundell): Analyze this dependency.
+    "//components/keyed_service/core",
     "//google_apis",
   ]
 }
 
-# This target contains what will become the core of the Identity Service
-# implementation. It currently forms the core of the IdentityManager
-# implementation (//services/identity/public/cpp/identity_manager.*). We are
-# actively converting the codebase away from using the code in this target
-# directly to using IdentityManager (tracked in https://crbug.com/796544). Do
-# not add code to this target without consulting with blundell@chromium.org.
+# This target forms the core of the IdentityManager implementation
+# (//services/identity/public/cpp/identity_manager.*). We are actively
+# converting the codebase away from using the code in this target directly to
+# using IdentityManager (tracked in https://crbug.com/796544). Do not add code
+# to this target without consulting with blundell@chromium.org.
 static_library("internals") {
   sources = [
     "account_fetcher_service.cc",
@@ -75,8 +76,6 @@ static_library("internals") {
     "account_tracker_service.h",
     "child_account_info_fetcher_android.cc",
     "child_account_info_fetcher_android.h",
-    "device_id_helper.cc",
-    "device_id_helper.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
     "oauth2_token_service_delegate_android.cc",
@@ -92,8 +91,6 @@ static_library("internals") {
     "profile_oauth2_token_service.h",
     "profile_oauth2_token_service_delegate_chromeos.cc",
     "profile_oauth2_token_service_delegate_chromeos.h",
-    "signin_client.cc",
-    "signin_client.h",
     "ubertoken_fetcher_impl.cc",
     "ubertoken_fetcher_impl.h",
   ]
@@ -134,6 +131,7 @@ static_library("internals") {
   }
 }
 
+# This target contains code that is used by clients of //components/signin.
 static_library("browser") {
   sources = [
     "about_signin_internals.cc",
@@ -160,6 +158,8 @@ static_library("browser") {
     "mice_account_reconcilor_delegate.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
+    "multilogin_parameters.cc",
+    "multilogin_parameters.h",
     "mutable_profile_oauth2_token_service_delegate.cc",
     "mutable_profile_oauth2_token_service_delegate.h",
     "signin_error_controller.cc",

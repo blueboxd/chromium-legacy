@@ -112,6 +112,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(chromeos::switches::kLoginUser)) {
+    // TODO(https://crbug.com/977489): There's a lot of code duplication with
+    // UserSessionManager::FinalizePrepareProfile, which is (only!) run for
+    // regular session starts. This needs to be refactored.
+
     // This is done in SessionManager::OnProfileCreated during normal login.
     UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -157,6 +161,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
         crostini::CrostiniManager::GetForProfile(user_profile);
     if (crostini_manager)
       crostini_manager->MaybeUpgradeCrostini();
+
+    g_browser_process->platform_part()->InitializePrimaryProfileServices(
+        user_profile);
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
       ConsumerStatusReportingServiceFactory::GetForBrowserContext(user_profile);

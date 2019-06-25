@@ -22,10 +22,6 @@
         margin-inline-start: 12px;
       }
 
-      #back-button {
-        margin-inline-start: 0;
-      }
-
       #collapse {
         display: block;
         min-height: var(--collapsed-height);
@@ -34,9 +30,6 @@
     </style>
     <div class="card-container">
       <div id="app-list-header">
-        <cr-icon-button class="icon-arrow-back" id="back-button"
-          on-click="onClickBack_" aria-label="$i18n{back}">
-        </cr-icon-button>
         <div id="app-list-title" class="header-text">[[listTitle]]</div>
       </div>
       <iron-collapse id="collapse">

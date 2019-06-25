@@ -408,6 +408,92 @@ const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
 
+bool ViewAXPlatformNodeDelegate::IsOrderedSetItem() const {
+  const ui::AXNodeData& data = GetData();
+  return (view()->GetGroup() >= 0) ||
+         (data.HasIntAttribute(ax::mojom::IntAttribute::kPosInSet) &&
+          data.HasIntAttribute(ax::mojom::IntAttribute::kSetSize));
+}
+
+bool ViewAXPlatformNodeDelegate::IsOrderedSet() const {
+  return (view()->GetGroup() >= 0) ||
+         GetData().HasIntAttribute(ax::mojom::IntAttribute::kSetSize);
+}
+
+base::Optional<int> ViewAXPlatformNodeDelegate::GetPosInSet() const {
+  // Consider overridable attributes first.
+  const ui::AXNodeData& data = GetData();
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kPosInSet))
+    return data.GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+
+  std::vector<View*> views_in_group;
+  GetViewsInGroupForSet(&views_in_group);
+  if (views_in_group.empty())
+    return base::nullopt;
+  // Check this is in views_in_group; it may be removed if it is ignored.
+  auto found_view =
+      std::find(views_in_group.begin(), views_in_group.end(), view());
+  if (found_view == views_in_group.end())
+    return base::nullopt;
+
+  int posInSet = std::distance(views_in_group.begin(), found_view);
+  // posInSet is zero-based; users expect one-based, so increment.
+  return ++posInSet;
+}
+
+base::Optional<int> ViewAXPlatformNodeDelegate::GetSetSize() const {
+  // Consider overridable attributes first.
+  const ui::AXNodeData& data = GetData();
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+    return data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+
+  std::vector<View*> views_in_group;
+  GetViewsInGroupForSet(&views_in_group);
+  if (views_in_group.empty())
+    return base::nullopt;
+  // Check this is in views_in_group; it may be removed if it is ignored.
+  auto found_view =
+      std::find(views_in_group.begin(), views_in_group.end(), view());
+  if (found_view == views_in_group.end())
+    return base::nullopt;
+
+  return views_in_group.size();
+}
+
+void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
+    std::vector<View*>* views_in_group) const {
+  const int group_id = view()->GetGroup();
+  if (group_id < 0)
+    return;
+
+  View* view_to_check = view();
+  // If this view has a parent, check from the parent, to make sure we catch any
+  // siblings.
+  if (view()->parent())
+    view_to_check = view()->parent();
+  view_to_check->GetViewsInGroup(group_id, views_in_group);
+
+  // Remove any views that are ignored in the accessibility tree.
+  views_in_group->erase(
+      std::remove_if(
+          views_in_group->begin(), views_in_group->end(),
+          [](View* view) {
+            ViewAccessibility& view_accessibility =
+                view->GetViewAccessibility();
+            bool is_ignored = view_accessibility.IsIgnored();
+            // TODO Remove the ViewAXPlatformNodeDelegate::GetData() part of
+            // this lambda, once the temporary code in GetData() setting the
+            // role to kIgnored is moved to ViewAccessibility.
+            ViewAXPlatformNodeDelegate* ax_delegate =
+                static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
+            if (ax_delegate)
+              is_ignored = is_ignored || (ax_delegate->GetData().role ==
+                                          ax::mojom::Role::kIgnored);
+            return is_ignored;
+          }),
+      views_in_group->end());
+}
+
 ViewAXPlatformNodeDelegate::ChildWidgetsResult
 ViewAXPlatformNodeDelegate::GetChildWidgets() const {
   // Only attach child widgets to the root view.

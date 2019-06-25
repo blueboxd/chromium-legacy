@@ -18,6 +18,11 @@ import org.chromium.base.annotations.JCaller;
  */
 public interface SigninManagerDelegate {
     /**
+     * Perform destruction of the object, including destructing the associated native object.
+     */
+    public void destroy();
+
+    /**
      * If there is no Google Play Services available, ask the user to fix by showing either a
      * notification or a modal dialog
      * @param activity The activity used to open the dialog, or null to use notifications
@@ -28,7 +33,7 @@ public interface SigninManagerDelegate {
     /**
      * @return the management domain if the signed in account is managed, otherwise null.
      */
-    public String getManagementDomain(@JCaller SigninManager self, long nativeSigninManagerAndroid);
+    public String getManagementDomain();
 
     /**
      * @return Whether the device has Google Play Services.
@@ -38,37 +43,23 @@ public interface SigninManagerDelegate {
     /**
      * Verifies if the account is managed. Callback may be called either synchronously or
      * asynchronously depending on the availability of the result.
-     * @param signinManager a reference on SigninManager used for the native calls
-     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     *                                   calls
      * @param email An email of the account.
      * @param callback The callback that will receive true if the account is managed, false
      *                 otherwise.
      */
-    public void isAccountManaged(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, String email, final Callback<Boolean> callback);
+    public void isAccountManaged(String email, final Callback<Boolean> callback);
 
     /**
-     * Interact with the UserPolicySigninService to retrieve the user policy if necessary.
-     * @param signinManager a reference on SigninManager used for the native calls
-     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     *                                   calls
-     * @param username (email) of the account signing in.
-     * @param callback The callback called once the policy is retrieved and applied. This is always
-     *                 called, even if the user is not managed and no policy was retrieved or
-     *                 applied.
+     * Interact with the UserPolicySigninService to retrieve the user policy.
+     * @param username (email) of the user signing in.
+     * @param callback The callback called once the policy is retrieved and applied
      */
-    public void fetchAndApplyCloudPolicy(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, String username, Runnable callback);
+    public void fetchAndApplyCloudPolicy(String username, Runnable callback);
 
     /**
      * Perform the required cloud policy cleanup when a signin is aborted.
-     * @param signinManager a reference on SigninManager used for the native calls
-     * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
-     *                                   calls
      */
-    public void stopApplyingCloudPolicy(
-            @JCaller SigninManager signinManager, long nativeSigninManagerAndroid);
+    public void stopApplyingCloudPolicy();
 
     /**
      * Called AFTER native sign-in is complete, enabling Sync.

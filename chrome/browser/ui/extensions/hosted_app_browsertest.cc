@@ -900,17 +900,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
       OpenApplicationWindow(params, web_app_info.file_handler->action);
   navigation_observer.Wait();
 
-  base::Value expected(base::Value::Type::DICTIONARY);
-  expected.SetStringKey("cause", "default");
-  expected.SetIntKey("length", 0);
-
-  EXPECT_EQ(expected,
-            content::EvalJsWithManualReply(
-                web_contents,
-                "getLaunchParams().then(params => {"
-                "domAutomationController.send({ cause: params.cause, length: "
-                "params.files.length });"
-                "});"));
+  EXPECT_EQ(0, content::EvalJs(
+                   web_contents,
+                   "getLaunchParams().then(params => params.files.length)"));
 }
 
 #if !defined(OS_ANDROID)

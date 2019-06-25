@@ -272,7 +272,7 @@ int main() {
   base::android::Java_SampleForTests_methodThatThrowsException(env,
                                                                my_java_object);
   base::android::Java_SampleForTests_javaMethodWithAnnotatedParam(
-      env, my_java_object, 42);
+      env, my_java_object, 42, 13, -1, 99);
 
   base::android::Java_SampleForTests_getInnerInterface(env);
   base::android::Java_SampleForTests_getInnerEnum(env);

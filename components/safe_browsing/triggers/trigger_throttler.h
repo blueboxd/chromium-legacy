@@ -41,8 +41,9 @@ enum class TriggerType {
   SUSPICIOUS_SITE = 4,
   APK_DOWNLOAD = 5,
   AD_POPUP = 6,
+  AD_REDIRECT = 7,
   kMinTriggerType = SECURITY_INTERSTITIAL,
-  kMaxTriggerType = AD_POPUP,
+  kMaxTriggerType = AD_REDIRECT,
 };
 
 struct TriggerTypeHash {

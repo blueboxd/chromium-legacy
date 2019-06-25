@@ -33,6 +33,13 @@ WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
           worker_thread_scheduler->CreateTaskQueue("worker_unpausable_tq")),
       thread_scheduler_(worker_thread_scheduler),
       weak_factory_(this) {
+  task_runners_.insert(
+      std::make_pair(throttleable_task_queue_,
+                     throttleable_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.insert(std::make_pair(
+      pausable_task_queue_, pausable_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.insert(std::make_pair(unpausable_task_queue_, nullptr));
+
   thread_scheduler_->RegisterWorkerScheduler(this);
 
   SetUpThrottling();
@@ -62,8 +69,11 @@ void WorkerScheduler::PauseImpl() {
   thread_scheduler_->helper()->CheckOnValidThread();
   paused_count_++;
   if (paused_count_ == 1) {
-    throttleable_task_queue_->SetPaused(true);
-    pausable_task_queue_->SetPaused(true);
+    for (const auto& pair : task_runners_) {
+      if (pair.second) {
+        pair.second->SetVoteToEnable(false);
+      }
+    }
   }
 }
 
@@ -71,8 +81,11 @@ void WorkerScheduler::ResumeImpl() {
   thread_scheduler_->helper()->CheckOnValidThread();
   paused_count_--;
   if (paused_count_ == 0 && !is_disposed_) {
-    throttleable_task_queue_->SetPaused(false);
-    pausable_task_queue_->SetPaused(false);
+    for (const auto& pair : task_runners_) {
+      if (pair.second) {
+        pair.second->SetVoteToEnable(true);
+      }
+    }
   }
 }
 
@@ -110,9 +123,11 @@ void WorkerScheduler::Dispose() {
 
   thread_scheduler_->UnregisterWorkerScheduler(this);
 
-  unpausable_task_queue_->ShutdownTaskQueue();
-  pausable_task_queue_->ShutdownTaskQueue();
-  throttleable_task_queue_->ShutdownTaskQueue();
+  for (const auto& pair : task_runners_) {
+    pair.first->ShutdownTaskQueue();
+  }
+
+  task_runners_.clear();
 
   is_disposed_ = true;
 }

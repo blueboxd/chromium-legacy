@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace v8 {
+class EmbedderGraph;
 class Isolate;
 }
 
@@ -67,6 +68,7 @@ class PersistentNode;
 class PersistentRegion;
 class ThreadHeap;
 class ThreadState;
+class UnifiedHeapController;
 class Visitor;
 
 template <ThreadAffinity affinity>
@@ -173,6 +175,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   class ObjectResurrectionForbiddenScope;
   class SweepForbiddenScope;
 
+  using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
+  using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
+                                                v8::EmbedderGraph*,
+                                                void*);
+
   // Returns true if some thread (possibly the current thread) may be doing
   // incremental marking. If false is returned, the *current* thread is
   // definitely not doing incremental marking. See atomic_entry_flag.h for
@@ -207,6 +214,22 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   ThreadHeap& Heap() const { return *heap_; }
   base::PlatformThreadId ThreadId() const { return thread_; }
+
+  // Associates |ThreadState| with a given |v8::Isolate|, essentially tying
+  // there garbage collectors together.
+  void AttachToIsolate(v8::Isolate*,
+                       V8TraceRootsCallback,
+                       V8BuildEmbedderGraphCallback);
+
+  // Removes the association from a potentially attached |v8::Isolate|.
+  void DetachFromIsolate();
+
+  // Returns an |UnifiedHeapController| if ThreadState is attached to a V8
+  // isolate (see |AttachToIsolate|), nullptr otherwise.
+  UnifiedHeapController* unified_heap_controller() const {
+    DCHECK(isolate_);
+    return unified_heap_controller_.get();
+  }
 
   // When ThreadState is detaching from non-main thread its
   // heap is expected to be empty (because it is going away).
@@ -353,14 +376,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     Vector<size_t> live_size;
     Vector<size_t> dead_size;
   };
-
-  void RegisterTraceDOMWrappers(v8::Isolate* isolate,
-                                void (*trace_dom_wrappers)(v8::Isolate*,
-                                                           Visitor*)) {
-    isolate_ = isolate;
-    DCHECK(!isolate_ || trace_dom_wrappers);
-    trace_dom_wrappers_ = trace_dom_wrappers;
-  }
 
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
 
@@ -560,7 +575,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   LinkedHashSet<PreFinalizer> ordered_pre_finalizers_;
 
   v8::Isolate* isolate_ = nullptr;
-  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*) = nullptr;
+  V8TraceRootsCallback v8_trace_roots_ = nullptr;
+  V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
+  std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;

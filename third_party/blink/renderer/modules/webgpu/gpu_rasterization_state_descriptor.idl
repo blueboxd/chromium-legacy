@@ -5,7 +5,7 @@
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
 dictionary GPURasterizationStateDescriptor {
-    required GPUFrontFace frontFace;
+    GPUFrontFace frontFace = "ccw";
     GPUCullMode cullMode = "none";
 
     long depthBias = 0;

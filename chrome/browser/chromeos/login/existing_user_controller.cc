@@ -1585,21 +1585,6 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   VLOG(1) << details;
-  HelpAppLauncher::HelpTopic help_topic_id;
-  if (login_performer_) {
-    switch (login_performer_->error().state()) {
-      case GoogleServiceAuthError::ACCOUNT_DISABLED:
-        help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
-        break;
-      default:
-        help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-        break;
-    }
-  } else {
-    // login_performer_ will be null if an error occurred during OAuth2 token
-    // fetch. In this case, show a generic error.
-    help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-  }
 
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
     if (num_login_attempts_ > 1) {
@@ -1611,7 +1596,8 @@ void ExistingUserController::ShowError(int error_id,
     }
   }
 
-  GetLoginDisplay()->ShowError(error_id, num_login_attempts_, help_topic_id);
+  GetLoginDisplay()->ShowError(error_id, num_login_attempts_,
+                               HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
 void ExistingUserController::SendAccessibilityAlert(

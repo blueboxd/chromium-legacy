@@ -54,7 +54,7 @@ void PrivetPrinterHandler::Reset() {
 }
 
 void PrivetPrinterHandler::StartGetPrinters(
-    const AddedPrintersCallback& added_printers_callback,
+    AddedPrintersCallback added_printers_callback,
     GetPrintersDoneCallback done_callback) {
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
@@ -71,8 +71,8 @@ void PrivetPrinterHandler::StartGetCapability(const std::string& destination_id,
   DCHECK(!capabilities_callback_);
   capabilities_callback_ = std::move(callback);
   CreateHTTP(destination_id,
-             base::Bind(&PrivetPrinterHandler::CapabilitiesUpdateClient,
-                        weak_ptr_factory_.GetWeakPtr()));
+             base::BindOnce(&PrivetPrinterHandler::CapabilitiesUpdateClient,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrivetPrinterHandler::StartPrint(
@@ -163,8 +163,8 @@ void PrivetPrinterHandler::CapabilitiesUpdateClient(
 
   privet_capabilities_operation_ =
       privet_http_client_->CreateCapabilitiesOperation(
-          base::Bind(&PrivetPrinterHandler::OnGotCapabilities,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&PrivetPrinterHandler::OnGotCapabilities,
+                         weak_ptr_factory_.GetWeakPtr()));
   privet_capabilities_operation_->Start();
 }
 

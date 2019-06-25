@@ -785,9 +785,8 @@ void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
   handler_->FileSelectedForTesting(path, 0, nullptr);
 }
 
-void PrintPreviewUI::SetPdfSavedClosureForTesting(
-    const base::Closure& closure) {
-  handler_->SetPdfSavedClosureForTesting(closure);
+void PrintPreviewUI::SetPdfSavedClosureForTesting(base::OnceClosure closure) {
+  handler_->SetPdfSavedClosureForTesting(std::move(closure));
 }
 
 void PrintPreviewUI::SendEnableManipulateSettingsForTest() {

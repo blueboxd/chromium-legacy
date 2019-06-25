@@ -127,3 +127,26 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
 
   EXPECT_TRUE(candidates.empty());
 }
+
+TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
+  // Add first device.
+  std::string id1 = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info_1 = CreateFakeDeviceInfo(id1);
+  device_info_tracker_.Add(device_info_1.get());
+  sync_prefs_->SetSyncDevice(id1, CreateFakeSyncDevice());
+
+  // Advance time for a bit to create a newer device.
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+
+  // Add second device.
+  std::string id2 = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info_2 = CreateFakeDeviceInfo(id2);
+  device_info_tracker_.Add(device_info_2.get());
+  sync_prefs_->SetSyncDevice(id2, CreateFakeSyncDevice());
+
+  std::vector<SharingDeviceInfo> candidates =
+      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+
+  ASSERT_EQ(1u, candidates.size());
+  EXPECT_EQ(id2, candidates[0].guid());
+}

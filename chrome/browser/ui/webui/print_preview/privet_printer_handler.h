@@ -40,7 +40,7 @@ class PrivetPrinterHandler
 
   // PrinterHandler implementation:
   void Reset() override;
-  void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
+  void StartGetPrinters(AddedPrintersCallback added_printers_callback,
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback calback) override;

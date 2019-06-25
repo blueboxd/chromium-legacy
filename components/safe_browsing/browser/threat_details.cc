@@ -97,6 +97,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::BLOCKED_AD_POPUP;
     case SB_THREAT_TYPE_AD_SAMPLE:
       return ClientSafeBrowsingReportRequest::AD_SAMPLE;
+    case SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
+      return ClientSafeBrowsingReportRequest::BLOCKED_AD_REDIRECT;
     case SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
     case SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
       return ClientSafeBrowsingReportRequest::URL_PASSWORD_PROTECTION_PHISHING;
@@ -805,7 +807,6 @@ void ThreatDetails::OnCacheCollectionReady() {
       return;
     }
   }
-
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
   for (auto& resource_pair : resources_) {
     ClientSafeBrowsingReportRequest::Resource* pb_resource =

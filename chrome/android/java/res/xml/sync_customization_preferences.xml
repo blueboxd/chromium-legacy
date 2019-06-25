@@ -6,7 +6,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.SyncErrorCardPreference
+    <org.chromium.chrome.browser.preferences.sync.SyncErrorCardPreference
         android:key="sync_error_card"
         android:icon="@drawable/sync_error"
         app:iconTint="@color/default_red"
@@ -17,7 +17,7 @@
         android:title="@string/sign_in_sync"
         android:summary="@string/sync_description" />
 
-    <org.chromium.chrome.browser.preferences.SyncedAccountPreference
+    <org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference
         android:key="synced_account" />
 
     <PreferenceCategory

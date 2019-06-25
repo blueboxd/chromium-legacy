@@ -648,10 +648,10 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   // starts.
   handler->Reset();
   handler->StartGetPrinters(
-      base::Bind(&PrintPreviewHandler::OnAddedPrinters,
-                 weak_factory_.GetWeakPtr(), printer_type),
-      base::Bind(&PrintPreviewHandler::OnGetPrintersDone,
-                 weak_factory_.GetWeakPtr(), callback_id));
+      base::BindRepeating(&PrintPreviewHandler::OnAddedPrinters,
+                          weak_factory_.GetWeakPtr(), printer_type),
+      base::BindOnce(&PrintPreviewHandler::OnGetPrintersDone,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
@@ -665,8 +665,8 @@ void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
   GetPrinterHandler(PrinterType::kExtensionPrinter)
       ->StartGrantPrinterAccess(
           printer_id,
-          base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
-                     weak_factory_.GetWeakPtr(), callback_id));
+          base::BindOnce(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
+                         weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(
@@ -969,8 +969,9 @@ void PrintPreviewHandler::HandleGetInitialSettings(
   AllowJavascript();
 
   GetPrinterHandler(PrinterType::kLocalPrinter)
-      ->GetDefaultPrinter(base::Bind(&PrintPreviewHandler::SendInitialSettings,
-                                     weak_factory_.GetWeakPtr(), callback_id));
+      ->GetDefaultPrinter(
+          base::BindOnce(&PrintPreviewHandler::SendInitialSettings,
+                         weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::GetUserAccountList(base::Value* settings) {
@@ -1392,8 +1393,8 @@ void PrintPreviewHandler::FileSelectedForTesting(const base::FilePath& path,
 }
 
 void PrintPreviewHandler::SetPdfSavedClosureForTesting(
-    const base::Closure& closure) {
-  GetPdfPrinterHandler()->SetPdfSavedClosureForTesting(closure);
+    base::OnceClosure closure) {
+  GetPdfPrinterHandler()->SetPdfSavedClosureForTesting(std::move(closure));
 }
 
 void PrintPreviewHandler::SendEnableManipulateSettingsForTest() {

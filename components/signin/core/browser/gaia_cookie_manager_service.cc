@@ -43,27 +43,6 @@
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
-namespace signin {
-MultiloginParameters::MultiloginParameters(
-    const gaia::MultiloginMode mode,
-    const std::vector<std::string>& accounts_to_send)
-    : mode(mode), accounts_to_send(accounts_to_send) {}
-
-MultiloginParameters::~MultiloginParameters() {}
-
-MultiloginParameters::MultiloginParameters(const MultiloginParameters& other) {
-  mode = other.mode;
-  accounts_to_send = other.accounts_to_send;
-}
-
-MultiloginParameters& MultiloginParameters::operator=(
-    const MultiloginParameters& other) {
-  mode = other.mode;
-  accounts_to_send = other.accounts_to_send;
-  return *this;
-}
-}  // namespace signin
-
 namespace {
 
 // The maximum number of retries for a fetcher used in this class.

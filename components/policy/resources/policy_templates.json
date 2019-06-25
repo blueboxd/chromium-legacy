@@ -16123,6 +16123,28 @@
 
           If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.''',
     },
+    {
+      'id': 571,
+      'name': 'DevicePowerwashAllowed',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'device_only': True,
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'supported_on': ['chrome_os:77-'],
+      'caption': '''Allow the device to request powerwash''',
+      'tags': [],
+      'desc': '''
+      This policy when set to False, does not allow the device to trigger powerwash.
+      When set to True, it allows the device to trigger powerwash.
+      If left unset, it defaults to False, meaning it doesn't allow the device to powerwash.
+      ''',
+    },
   ],
 
   'messages': {
@@ -16470,7 +16492,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
     'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings',
-    'DeviceWebUsbAllowDevicesForUrls': 'device_webusb_allow_devices_for_urls.device_webusb_allow_devices_for_urls'
+    'DeviceWebUsbAllowDevicesForUrls': 'device_webusb_allow_devices_for_urls.device_webusb_allow_devices_for_urls',
+    'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed'
   },
   'policy_atomic_group_definitions': [
     {
@@ -16911,6 +16934,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 570,
+  'highest_id_currently_used': 571,
   'highest_atomic_group_id_currently_used': 37
 }

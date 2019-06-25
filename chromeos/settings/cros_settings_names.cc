@@ -388,4 +388,6 @@ const char kDeviceScheduledUpdateCheck[] =
 const char kDeviceSecondFactorAuthenticationMode[] =
     "cros.device.device_second_factor_authentication_mode";
 
+// A boolean pref specifying if the device is allowed to powerwash.
+const char kDevicePowerwashAllowed[] = "cros.device.device_powerwash_allowed";
 }  // namespace chromeos

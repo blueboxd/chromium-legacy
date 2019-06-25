@@ -9,9 +9,8 @@
 
 namespace blink {
 
-LaunchParams::LaunchParams(String cause,
-                           HeapVector<Member<NativeFileSystemHandle>> files)
-    : cause_(cause), files_(files) {}
+LaunchParams::LaunchParams(HeapVector<Member<NativeFileSystemHandle>> files)
+    : files_(files) {}
 
 LaunchParams::~LaunchParams() = default;
 

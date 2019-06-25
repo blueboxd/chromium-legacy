@@ -51,6 +51,7 @@ using autofill::FormTracker;
 using autofill::PasswordForm;
 using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
+using autofill::mojom::PasswordFormFieldPredictionType;
 using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -2538,9 +2539,11 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
       form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the first field is username, the third
   // one is password.
-  std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
-  predictions[form_data][form_data.fields[0]] = PREDICTION_USERNAME;
-  predictions[form_data][form_data.fields[2]] = PREDICTION_NEW_PASSWORD;
+  autofill::FormsPredictionsMap predictions;
+  predictions[form_data][form_data.fields[0]] =
+      PasswordFormFieldPredictionType::kUsername;
+  predictions[form_data][form_data.fields[2]] =
+      PasswordFormFieldPredictionType::kNewPassword;
   password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
       predictions);
 
@@ -2778,8 +2781,9 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
       form_element, blink::WebFormControlElement(), nullptr,
       form_util::EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the third field is not a password.
-  std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
-  predictions[form_data][form_data.fields[2]] = PREDICTION_NOT_PASSWORD;
+  autofill::FormsPredictionsMap predictions;
+  predictions[form_data][form_data.fields[2]] =
+      PasswordFormFieldPredictionType::kNotPassword;
   password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
       predictions);
 

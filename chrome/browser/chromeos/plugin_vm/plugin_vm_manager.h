@@ -54,7 +54,7 @@ class PluginVmManager : public KeyedService,
   void ShowVm();
   void OnShowVm(
       base::Optional<vm_tools::plugin_dispatcher::ShowVmResponse> reply);
-  void OnGetVmInfo(
+  void OnGetVmInfoForSharing(
       base::Optional<vm_tools::concierge::GetVmInfoResponse> reply);
   void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
 

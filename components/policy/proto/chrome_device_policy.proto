@@ -1278,6 +1278,12 @@ message DeviceWebUsbAllowDevicesForUrlsProto {
   optional string device_webusb_allow_devices_for_urls = 1;
 }
 
+// Settings that control if the device is allowed to powerwash.
+message DevicePowerwashAllowedProto {
+  // Determines if powerwash is allowed on the device.
+  optional bool device_powerwash_allowed = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1391,4 +1397,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceScheduledUpdateCheckProto device_scheduled_update_check = 89;
   optional DeviceWebUsbAllowDevicesForUrlsProto
       device_webusb_allow_devices_for_urls = 90;
+  optional DevicePowerwashAllowedProto device_powerwash_allowed = 91;
 }

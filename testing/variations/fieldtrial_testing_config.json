@@ -1943,25 +1943,6 @@
             ]
         }
     ],
-    "EmitGoogleSearchDomainMixingMetrics": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EmitGoogleSearchDomainMixingMetrics"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableAppContainer": [
         {
             "platforms": [
@@ -3353,25 +3334,6 @@
                     },
                     "enable_features": [
                         "IPH_NewTab"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NoSearchDomainCheck": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NoSearchDomainCheck"
                     ]
                 }
             ]

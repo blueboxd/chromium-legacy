@@ -80,7 +80,7 @@ DOMWindowLaunchParams* DOMWindowLaunchParams::FromState(
     // params from the browser process, use that instead of hard coding the
     // launch params.
     supplement->launch_params_ = MakeGarbageCollected<LaunchParams>(
-        "default", HeapVector<Member<NativeFileSystemHandle>>());
+        HeapVector<Member<NativeFileSystemHandle>>());
   }
   return supplement;
 }

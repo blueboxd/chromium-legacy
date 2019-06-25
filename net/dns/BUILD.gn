@@ -73,6 +73,8 @@ source_set("dns") {
       "record_rdata.cc",
       "serial_worker.cc",
       "serial_worker.h",
+      "system_dns_config_change_notifier.cc",
+      "system_dns_config_change_notifier.h",
     ]
 
     if (is_fuchsia) {
@@ -386,6 +388,7 @@ source_set("tests") {
     "record_parsed_unittest.cc",
     "record_rdata_unittest.cc",
     "serial_worker_unittest.cc",
+    "system_dns_config_change_notifier_unittest.cc",
   ]
 
   if (is_posix) {
@@ -420,10 +423,12 @@ source_set("test_support") {
   sources = [
     "dns_test_util.cc",
     "mock_host_resolver.cc",
+    "test_dns_config_service.cc",
   ]
   public = [
     "dns_test_util.h",
     "mock_host_resolver.h",
+    "test_dns_config_service.h",
   ]
 
   if (enable_mdns) {

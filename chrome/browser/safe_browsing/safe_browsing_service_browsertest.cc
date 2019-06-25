@@ -623,6 +623,12 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
   // Owned by the V4Database.
   TestV4StoreFactory* store_factory_;
 
+#if defined(ADDRESS_SANITIZER)
+  // TODO(lukasza): https://crbug.com/971820: Disallow renderer crashes once the
+  // bug is fixed.
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceTest);
 };
 
@@ -1268,12 +1274,6 @@ class V4SafeBrowsingServiceMetadataTest
   V4SafeBrowsingServiceMetadataTest() {}
 
  private:
-#if defined(ADDRESS_SANITIZER)
-  // TODO(lukasza): https://crbug.com/971820: Disallow renderer crashes once the
-  // bug is fixed.
-  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(V4SafeBrowsingServiceMetadataTest);
 };
 

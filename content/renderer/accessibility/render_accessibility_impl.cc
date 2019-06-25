@@ -256,7 +256,6 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
 
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)

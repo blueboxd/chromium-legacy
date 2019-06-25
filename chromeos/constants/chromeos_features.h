@@ -60,10 +60,6 @@ extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSupervisionOnboardingEligibility;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSupervisionOnboardingScreens;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUpdatedCellularActivationUi;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kUseMessagesGoogleComDomain;

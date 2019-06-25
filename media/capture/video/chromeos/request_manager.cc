@@ -34,10 +34,6 @@ constexpr std::initializer_list<StreamType> kYUVReprocessStreams = {
     StreamType::kYUVInput, StreamType::kJpegOutput};
 }  // namespace
 
-ReprocessTasksInfo::ReprocessTasksInfo() = default;
-
-ReprocessTasksInfo::~ReprocessTasksInfo() = default;
-
 RequestManager::RequestManager(
     cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
     std::unique_ptr<StreamCaptureInterface> capture_interface,
@@ -167,6 +163,21 @@ void RequestManager::SetJpegOrientation(
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
+void RequestManager::SetSensorTimestamp(
+    cros::mojom::CameraMetadataPtr* settings,
+    uint64_t shutter_timestamp) {
+  std::vector<uint8_t> sensor_timestamp(sizeof(int64_t));
+  *reinterpret_cast<int64_t*>(sensor_timestamp.data()) =
+      base::checked_cast<int64_t>(shutter_timestamp);
+  cros::mojom::CameraMetadataEntryPtr e =
+      cros::mojom::CameraMetadataEntry::New();
+  e->tag = cros::mojom::CameraMetadataTag::ANDROID_SENSOR_TIMESTAMP;
+  e->type = cros::mojom::EntryType::TYPE_INT64;
+  e->count = 1;
+  e->data = sensor_timestamp;
+  AddOrUpdateMetadataEntry(settings, std::move(e));
+}
+
 void RequestManager::PrepareCaptureRequest() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
@@ -250,17 +261,17 @@ bool RequestManager::TryPrepareReprocessRequest(
     TakePhotoCallback* callback,
     base::Optional<uint64_t>* input_buffer_id,
     cros::mojom::Effect* reprocess_effect) {
-  if (buffer_id_reprocess_tasks_map_.empty() ||
+  if (buffer_id_reprocess_job_info_map_.empty() ||
       !stream_buffer_manager_->HasFreeBuffers(kYUVReprocessStreams)) {
     return false;
   }
 
   // Consume reprocess task.
-  ReprocessTaskQueue* reprocess_task_queue;
-  for (auto& it : buffer_id_reprocess_tasks_map_) {
+  ReprocessJobInfo* reprocess_job_info;
+  for (auto& it : buffer_id_reprocess_job_info_map_) {
     if (processing_buffer_ids_.count(it.first) == 0) {
       *input_buffer_id = it.first;
-      reprocess_task_queue = &it.second;
+      reprocess_job_info = &it.second;
       break;
     }
   }
@@ -269,12 +280,14 @@ bool RequestManager::TryPrepareReprocessRequest(
     return false;
   }
 
+  ReprocessTaskQueue* reprocess_task_queue = &reprocess_job_info->task_queue;
   ReprocessTask task = std::move(reprocess_task_queue->front());
   reprocess_task_queue->pop();
 
   stream_types->insert(kYUVReprocessStreams);
   // Prepare metadata by adding extra metadata.
   *settings = repeating_request_settings_.Clone();
+  SetSensorTimestamp(settings, reprocess_job_info->shutter_timestamp);
   SetJpegOrientation(settings);
   for (auto& metadata : task.extra_metadata) {
     AddOrUpdateMetadataEntry(settings, std::move(metadata));
@@ -285,7 +298,7 @@ bool RequestManager::TryPrepareReprocessRequest(
 
   // Remove the mapping from map if all tasks consumed.
   if (reprocess_task_queue->empty()) {
-    buffer_id_reprocess_tasks_map_.erase(**input_buffer_id);
+    buffer_id_reprocess_job_info_map_.erase(**input_buffer_id);
   }
   return true;
 }
@@ -536,6 +549,7 @@ void RequestManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
       return;
     }
     CaptureResult& pending_result = pending_results_[frame_number];
+    pending_result.shutter_timestamp = shutter_time;
     // Shutter timestamp is in ns.
     base::TimeTicks reference_time =
         base::TimeTicks() +
@@ -704,15 +718,19 @@ void RequestManager::SubmitCaptureResult(
         processing_buffer_ids_.erase(*pending_result.input_buffer_id);
 
         // If all reprocess tasks are done for this buffer, release the buffer.
-        if (!base::Contains(buffer_id_reprocess_tasks_map_,
+        if (!base::Contains(buffer_id_reprocess_job_info_map_,
                             *pending_result.input_buffer_id)) {
           stream_buffer_manager_->ReleaseBuffer(
               StreamType::kYUVOutput, *pending_result.input_buffer_id);
         }
       }
     } else if (stream_type == StreamType::kYUVOutput) {
-      buffer_id_reprocess_tasks_map_[buffer_id] =
-          std::move(frame_number_reprocess_tasks_map_[frame_number]);
+      DCHECK_GT(pending_result.shutter_timestamp, 0UL);
+      ReprocessJobInfo reprocess_job_info(
+          std::move(frame_number_reprocess_tasks_map_[frame_number]),
+          pending_result.shutter_timestamp);
+      buffer_id_reprocess_job_info_map_.emplace(buffer_id,
+                                                std::move(reprocess_job_info));
       frame_number_reprocess_tasks_map_.erase(frame_number);
 
       // Don't release the buffer since we will need it as input buffer for
@@ -824,5 +842,15 @@ RequestManager::CaptureResult::CaptureResult()
       unsubmitted_buffer_count(0) {}
 
 RequestManager::CaptureResult::~CaptureResult() = default;
+
+RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessTaskQueue queue,
+                                                   uint64_t timestamp)
+    : task_queue(std::move(queue)), shutter_timestamp(timestamp) {}
+
+RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessJobInfo&& info)
+    : task_queue(std::move(info.task_queue)),
+      shutter_timestamp(info.shutter_timestamp) {}
+
+RequestManager::ReprocessJobInfo::~ReprocessJobInfo() = default;
 
 }  // namespace media

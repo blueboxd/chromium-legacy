@@ -7,7 +7,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/strcat.h"
 #include "base/time/time.h"
+
+using base::UmaHistogramBoolean;
 
 namespace autofill {
 
@@ -19,7 +22,9 @@ FormEventLoggerBase::FormEventLoggerBase(
       is_in_main_frame_(is_in_main_frame),
       form_interactions_ukm_logger_(form_interactions_ukm_logger) {}
 
-FormEventLoggerBase::~FormEventLoggerBase() = default;
+FormEventLoggerBase::~FormEventLoggerBase() {
+  RecordFunnelAndKeyMetrics();
+}
 
 void FormEventLoggerBase::OnDidInteractWithAutofillableForm(
     const FormStructure& form,
@@ -49,6 +54,7 @@ void FormEventLoggerBase::OnDidPollSuggestions(
 void FormEventLoggerBase::OnDidParseForm(const FormStructure& form) {
   Log(FORM_EVENT_DID_PARSE_FORM, form);
   RecordParseForm();
+  has_parsed_form_ = true;
 }
 
 void FormEventLoggerBase::OnPopupSuppressed(const FormStructure& form,
@@ -121,6 +127,14 @@ void FormEventLoggerBase::OnFormSubmitted(bool force_logging,
   }
 }
 
+void FormEventLoggerBase::OnTypedIntoNonFilledField() {
+  has_logged_typed_into_non_filled_field_ = true;
+}
+
+void FormEventLoggerBase::OnEditedAutofilledField() {
+  has_logged_edited_autofilled_field_ = true;
+}
+
 void FormEventLoggerBase::Log(FormEvent event,
                               const FormStructure& form) const {
   DCHECK_LT(event, NUM_FORM_EVENTS);
@@ -182,6 +196,73 @@ void FormEventLoggerBase::LogUkmInteractedWithForm(
   form_interactions_ukm_logger_->LogInteractedWithForm(
       /*is_for_credit_card=*/false, local_record_type_count_,
       server_record_type_count_, form_signature);
+}
+
+void FormEventLoggerBase::RecordFunnelAndKeyMetrics() {
+  UmaHistogramBoolean("Autofill.Funnel.ParsedAsType." + form_type_name_,
+                      has_parsed_form_);
+  // Log chronological funnel.
+  if (!has_parsed_form_)
+    return;
+  UmaHistogramBoolean(
+      "Autofill.Funnel.InteractionAfterParsedAsType." + form_type_name_,
+      has_logged_interacted_);
+  if (has_logged_interacted_) {
+    UmaHistogramBoolean(
+        "Autofill.Funnel.SuggestionAfterInteraction." + form_type_name_,
+        has_logged_suggestions_shown_);
+  }
+  if (has_logged_interacted_ && has_logged_suggestions_shown_) {
+    UmaHistogramBoolean(
+        "Autofill.Funnel.FillAfterSuggestion." + form_type_name_,
+        has_logged_suggestion_filled_);
+  }
+  if (has_logged_interacted_ && has_logged_suggestions_shown_ &&
+      has_logged_suggestion_filled_) {
+    UmaHistogramBoolean(
+        "Autofill.Funnel.SubmissionAfterFill." + form_type_name_,
+        has_logged_will_submit_);
+  }
+  // Log key success metrics, always preconditioned on a form submission (except
+  // for the Autofill.KeyMetrics.FormSubmission metrics which measure whether
+  // a submission happens).
+  if (has_logged_will_submit_) {
+    bool has_logged_data_to_fill_available_ =
+        (server_record_type_count_ + local_record_type_count_) > 0;
+    // Whether for a submitted form, Chrome had data stored that could be
+    // filled.
+    UmaHistogramBoolean(
+        "Autofill.KeyMetrics.FillingReadiness." + form_type_name_,
+        has_logged_data_to_fill_available_);
+    if (has_logged_suggestions_shown_) {
+      // Whether a user accepted a filling suggestion they saw for a form that
+      // was later submitted.
+      UmaHistogramBoolean(
+          "Autofill.KeyMetrics.FillingAcceptance." + form_type_name_,
+          has_logged_suggestion_filled_);
+    }
+    if (has_logged_suggestion_filled_) {
+      // Whether a filled form and submitted form required no fixes to filled
+      // fields.
+      UmaHistogramBoolean(
+          "Autofill.KeyMetrics.FillingCorrectness." + form_type_name_,
+          !has_logged_edited_autofilled_field_);
+    }
+    // Whether a submitted form was filled.
+    UmaHistogramBoolean(
+        "Autofill.KeyMetrics.FillingAssistance." + form_type_name_,
+        has_logged_suggestion_filled_);
+  }
+  if (has_logged_typed_into_non_filled_field_ ||
+      has_logged_suggestion_filled_) {
+    // Whether a (non-)autofilled form was submitted.
+    UmaHistogramBoolean(
+        base::StrCat(
+            {"Autofill.KeyMetrics.FormSubmission.",
+             (has_logged_suggestion_filled_ ? "Autofilled." : "NotAutofilled."),
+             form_type_name_}),
+        has_logged_will_submit_);
+  }
 }
 
 }  // namespace autofill

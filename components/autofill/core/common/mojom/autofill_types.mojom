@@ -29,12 +29,15 @@ enum SubmissionIndicatorEvent {
     PROBABLE_FORM_SUBMISSION = 10,
 };
 
-// autofill::PasswordFormFieldPredictionType
+// This enum lists form field types as understood by the password manager,
+// essentially a digest of |autofill::ServerFieldType|. Note that we cannot
+// simply reuse |autofill::ServerFieldType| as it is defined in the browser,
+// while this enum will be used by both the browser and renderer.
 enum PasswordFormFieldPredictionType {
-  PREDICTION_USERNAME,
-  PREDICTION_CURRENT_PASSWORD,
-  PREDICTION_NEW_PASSWORD,
-  PREDICTION_NOT_PASSWORD
+  kUsername,
+  kCurrentPassword,
+  kNewPassword,
+  kNotPassword,
 };
 
 enum SubmissionSource {
@@ -298,17 +301,15 @@ struct PasswordForm {
   bool is_gaia_with_skip_save_password_form;
 };
 
-// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
-// autofill::PasswordFormFieldPredictionMap
-// --> std::map<FormFieldData, PasswordFormFieldPredictionType>
+// Note: Even though https://crbug.com/628104 is solved, we still can not use a
+// map directly as long as https://crbug.com/914074 is not fixed.
 struct PasswordFormFieldPredictionMap {
   array<FormFieldData> keys;
   array<PasswordFormFieldPredictionType> values;
 };
 
-// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
-// autofill::FormsPredictionsMap
-// --> std::map<FormData, PasswordFormFieldPredictionMap>
+// Note: Even though https://crbug.com/628104 is solved, we still can not use a
+// map directly as long as https://crbug.com/914074 is not fixed.
 struct FormsPredictionsMap {
   array<FormData> keys;
   array<PasswordFormFieldPredictionMap> values;

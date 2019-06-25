@@ -70,8 +70,10 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
 // For platforms where the standalone audio service has been launched, the
 // service should terminate after a default timeout if no specific timeout has
 // been set.
+// Disabled due to flakiness.
+// TODO(crbug.com/976841): Fix the flakiness and re-enable this.
 TEST_F(AudioServiceLifetimeConnectorTest,
-       StandaloneServiceTerminatesWhenNoTimeoutIsSet) {
+       DISABLED_StandaloneServiceTerminatesWhenNoTimeoutIsSet) {
   service_.reset();
   audio_manager_->Shutdown();
   audio_manager_.reset();

@@ -146,6 +146,9 @@ enum SBThreatType {
   // Chrome sign in password reuse detected on low reputation page,
   SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
 
+  // A Google ad that caused a blocked autoredirect was collected
+  SB_THREAT_TYPE_BLOCKED_AD_REDIRECT,
+
   // A sample of an ad was collected
   SB_THREAT_TYPE_AD_SAMPLE,
 

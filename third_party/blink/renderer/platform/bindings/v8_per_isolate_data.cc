@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "v8/include/v8.h"
@@ -90,8 +89,6 @@ V8PerIsolateData::V8PerIsolateData(
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      unified_heap_controller_(
-          new UnifiedHeapController(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   GetIsolate()->Enter();
@@ -173,11 +170,11 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   // Detach V8's garbage collector.
   // Need to finalize an already running garbage collection as otherwise
   // callbacks are missing and state gets out of sync.
-  ThreadState::Current()->FinishIncrementalMarkingIfRunning(
+  ThreadState* const thread_state = ThreadState::Current();
+  thread_state->FinishIncrementalMarkingIfRunning(
       BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
       BlinkGC::kEagerSweeping, BlinkGC::GCReason::kThreadTerminationGC);
-  isolate->SetEmbedderHeapTracer(nullptr);
-  data->unified_heap_controller_.reset();
+  thread_state->DetachFromIsolate();
 }
 
 // destroy() clear things that should be cleared after ThreadState::detach()

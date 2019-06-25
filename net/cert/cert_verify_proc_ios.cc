@@ -7,6 +7,7 @@
 #include <CommonCrypto/CommonDigest.h>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
@@ -162,12 +163,6 @@ void GetCertChainInfo(CFArrayRef cert_chain, CertVerifyResult* verify_result) {
     HashValue sha256(HASH_VALUE_SHA256);
     CC_SHA256(spki_bytes.data(), spki_bytes.size(), sha256.data());
     verify_result->public_key_hashes.push_back(sha256);
-
-    // Ignore the signature algorithm for the trust anchor.
-    if ((verify_result->cert_status & CERT_STATUS_AUTHORITY_INVALID) == 0 &&
-        i == count - 1) {
-      continue;
-    }
   }
   if (!verified_cert) {
     NOTREACHED();
@@ -262,6 +257,7 @@ CertStatus CertVerifyProcIOS::GetCertFailureStatusFromTrust(SecTrustRef trust) {
     } else if (CFEqual(error, root_certificate_error)) {
       reason |= CERT_STATUS_AUTHORITY_INVALID;
     } else {
+      LOG(ERROR) << "Unrecognized error: " << error;
       reason |= CERT_STATUS_INVALID;
     }
   }

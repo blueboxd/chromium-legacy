@@ -120,7 +120,7 @@ void ExtensionPrinterHandler::Reset() {
 }
 
 void ExtensionPrinterHandler::StartGetPrinters(
-    const AddedPrintersCallback& callback,
+    AddedPrintersCallback callback,
     GetPrintersDoneCallback done_callback) {
   // Assume that there can only be one printer enumeration occuring at once.
   DCHECK_EQ(pending_enumeration_count_, 0);
@@ -142,13 +142,13 @@ void ExtensionPrinterHandler::StartGetPrinters(
     UsbDeviceManager* usb_manager = UsbDeviceManager::Get(profile_);
     DCHECK(usb_manager);
     usb_manager->GetDevices(
-        base::Bind(&ExtensionPrinterHandler::OnUsbDevicesEnumerated,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&ExtensionPrinterHandler::OnUsbDevicesEnumerated,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   GetPrinterProviderAPI(profile_)->DispatchGetPrintersRequested(
       base::BindRepeating(&ExtensionPrinterHandler::WrapGetPrintersCallback,
-                          weak_ptr_factory_.GetWeakPtr(), callback));
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ExtensionPrinterHandler::StartGetCapability(
@@ -280,7 +280,7 @@ void ExtensionPrinterHandler::DispatchPrintJob(
 }
 
 void ExtensionPrinterHandler::WrapGetPrintersCallback(
-    const AddedPrintersCallback& callback,
+    AddedPrintersCallback callback,
     const base::ListValue& printers,
     bool done) {
   DCHECK_GT(pending_enumeration_count_, 0);
@@ -317,7 +317,7 @@ void ExtensionPrinterHandler::WrapGetPrinterInfoCallback(
 }
 
 void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
-    const AddedPrintersCallback& callback,
+    AddedPrintersCallback callback,
     std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   DevicePermissionsManager* permissions_manager =

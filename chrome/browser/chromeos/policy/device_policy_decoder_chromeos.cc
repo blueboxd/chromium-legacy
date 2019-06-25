@@ -415,6 +415,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_powerwash_allowed()) {
+    const em::DevicePowerwashAllowedProto& container(
+        policy.device_powerwash_allowed());
+    if (container.has_device_powerwash_allowed()) {
+      policies->Set(
+          key::kDevicePowerwashAllowed, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.device_powerwash_allowed()),
+          nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

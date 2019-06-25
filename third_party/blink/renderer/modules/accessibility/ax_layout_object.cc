@@ -2780,8 +2780,11 @@ ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
   if (!parent)
     return ax::mojom::Role::kGenericContainer;
 
-  if (parent->RoleValue() == ax::mojom::Role::kGroup)
+  if (parent->RoleValue() == ax::mojom::Role::kGroup) {
     parent = parent->ParentObjectUnignored();
+    if (!parent)
+      return ax::mojom::Role::kGenericContainer;
+  }
 
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
     return ax::mojom::Role::kLayoutTableRow;

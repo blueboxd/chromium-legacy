@@ -28,7 +28,7 @@ const char GoogleURLTracker::kDefaultGoogleHomepage[] =
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 const base::Feature GoogleURLTracker::kNoSearchDomainCheck{
-    "NoSearchDomainCheck", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NoSearchDomainCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 
 GoogleURLTracker::GoogleURLTracker(
     std::unique_ptr<GoogleURLTrackerClient> client,

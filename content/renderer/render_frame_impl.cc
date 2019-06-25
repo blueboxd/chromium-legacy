@@ -5071,8 +5071,12 @@ blink::WebURLRequest::PreviewsState RenderFrameImpl::GetPreviewsStateForFrame()
   return static_cast<WebURLRequest::PreviewsState>(previews_state_);
 }
 
-void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
-  Send(new FrameHostMsg_DidBlockFramebust(GetRoutingID(), url));
+void RenderFrameImpl::DidBlockNavigation(
+    const WebURL& blocked_url,
+    const WebURL& initiator_url,
+    blink::NavigationBlockedReason reason) {
+  Send(new FrameHostMsg_DidBlockNavigation(GetRoutingID(), blocked_url,
+                                           initiator_url, reason));
 }
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,

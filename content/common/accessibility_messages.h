@@ -139,18 +139,6 @@ IPC_STRUCT_END()
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_PerformAction,
                     ui::AXActionData  /* action parameters */)
 
-// Determine the accessibility object under a given point.
-//
-// If the target is an object with a child frame (like if the hit test
-// result is an iframe element), it responds with
-// AccessibilityHostMsg_ChildFrameHitTestResult so that the
-// hit test can be performed recursively on the child frame. Otherwise
-// it fires an accessibility event of type |event_to_fire| on the target.
-IPC_MESSAGE_ROUTED3(AccessibilityMsg_HitTest,
-                    gfx::Point /* location to test */,
-                    ax::mojom::Event /* event to fire */,
-                    int /* action request id */)
-
 // Tells the render view that a AccessibilityHostMsg_EventBundle
 // message was processed and it can send additional updates. The argument
 // must be the same as the ack_token passed to
@@ -202,7 +190,7 @@ IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResult,
     AccessibilityHostMsg_FindInPageResultParams)
 
-// Sent in response to AccessibilityMsg_HitTest.
+// Sent in response to PerformAction with parameter kHitTest.
 IPC_MESSAGE_ROUTED5(AccessibilityHostMsg_ChildFrameHitTestResult,
                     int /* action request id of initial caller */,
                     gfx::Point /* location tested */,

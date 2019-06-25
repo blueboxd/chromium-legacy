@@ -12,8 +12,15 @@ namespace net {
 
 // Default values are taken from glibc resolv.h except timeout which is set to
 // |kDnsDefaultTimeoutMs|.
-DnsConfig::DnsConfig()
-    : unhandled_options(false),
+DnsConfig::DnsConfig() : DnsConfig(std::vector<IPEndPoint>()) {}
+
+DnsConfig::DnsConfig(const DnsConfig& other) = default;
+
+DnsConfig::DnsConfig(DnsConfig&& other) = default;
+
+DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
+    : nameservers(std::move(nameservers)),
+      unhandled_options(false),
       append_to_multi_label_name(true),
       randomize_ports(false),
       ndots(1),
@@ -23,10 +30,6 @@ DnsConfig::DnsConfig()
       use_local_ipv6(false),
       secure_dns_mode(SecureDnsMode::OFF) {}
 
-DnsConfig::DnsConfig(const DnsConfig& other) = default;
-
-DnsConfig::DnsConfig(DnsConfig&& other) = default;
-
 DnsConfig::~DnsConfig() = default;
 
 DnsConfig& DnsConfig::operator=(const DnsConfig& other) = default;
@@ -35,6 +38,10 @@ DnsConfig& DnsConfig::operator=(DnsConfig&& other) = default;
 
 bool DnsConfig::Equals(const DnsConfig& d) const {
   return EqualsIgnoreHosts(d) && (hosts == d.hosts);
+}
+
+bool DnsConfig::operator==(const DnsConfig& d) const {
+  return Equals(d);
 }
 
 bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {

@@ -20,7 +20,7 @@ namespace blink {
 class LayoutObject;
 
 class CORE_EXPORT NGFragmentBuilder {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   const ComputedStyle& Style() const {

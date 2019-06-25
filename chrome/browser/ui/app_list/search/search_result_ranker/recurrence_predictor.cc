@@ -140,7 +140,10 @@ void FrecencyPredictor::DecayScore(TargetData* data) {
 }
 
 HourBinPredictor::HourBinPredictor(const HourBinPredictorConfig& config)
-    : config_(config) {
+    : weekly_decay_coeff_(config.weekly_decay_coeff()) {
+  for (const auto& pair : config.bin_weights())
+    bin_weights_[pair.bin()] = pair.weight();
+
   if (!proto_.has_last_decay_timestamp())
     SetLastDecayTimestamp(
         base::Time::Now().ToDeltaSinceWindowsEpoch().InDays());
@@ -187,7 +190,7 @@ base::flat_map<unsigned int, float> HourBinPredictor::Rank(
     unsigned int condition) {
   base::flat_map<unsigned int, float> ranks;
   const auto& frequency_table_map = proto_.binned_frequency_table();
-  for (const auto& hour_and_weight : config_.bin_weights_map()) {
+  for (const auto& hour_and_weight : bin_weights_) {
     // Find adjacent bin and weight.
     const int adj_bin = GetBinFromHourDifference(hour_and_weight.first);
     const float weight = hour_and_weight.second;
@@ -236,7 +239,7 @@ void HourBinPredictor::DecayAll() {
     auto& frequency_table = *it_table->second.mutable_frequency();
     for (auto it_freq = frequency_table.begin();
          it_freq != frequency_table.end();) {
-      const int new_frequency = it_freq->second * config_.weekly_decay_coeff();
+      const int new_frequency = it_freq->second * weekly_decay_coeff_;
       it_table->second.set_total_counts(it_table->second.total_counts() -
                                         it_freq->second + new_frequency);
       it_freq->second = new_frequency;

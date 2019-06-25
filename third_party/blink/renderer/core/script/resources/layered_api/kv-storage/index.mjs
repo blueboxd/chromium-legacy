@@ -132,6 +132,23 @@ export class StorageArea {
 }
 
 StorageArea.prototype[Symbol.asyncIterator] = StorageArea.prototype.entries;
+StorageArea.prototype[Symbol.toStringTag] = 'StorageArea';
+
+// Override the defaults that are implied by using class declarations and
+// assignment, to be more Web IDL-ey.
+// https://github.com/heycam/webidl/issues/738 may modify these a bit.
+Object.defineProperties(StorageArea.prototype, {
+  set: {enumerable: true},
+  get: {enumerable: true},
+  delete: {enumerable: true},
+  clear: {enumerable: true},
+  keys: {enumerable: true},
+  values: {enumerable: true},
+  entries: {enumerable: true},
+  backingStore: {enumerable: true},
+  [Symbol.asyncIterator]: {enumerable: false},
+  [Symbol.toStringTag]: {writable: false, enumerable: false}
+});
 
 export const storage = new StorageArea(DEFAULT_STORAGE_AREA_NAME);
 

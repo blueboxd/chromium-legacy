@@ -311,6 +311,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetDevicePowerwashAllowed(bool device_powerwash_allowed) {
+    em::DevicePowerwashAllowedProto* proto =
+        device_policy_->payload().mutable_device_powerwash_allowed();
+    proto->set_device_powerwash_allowed(device_powerwash_allowed);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -823,6 +830,17 @@ TEST_F(DeviceSettingsProviderTest,
       em::DeviceSecondFactorAuthenticationProto::U2F_EXTENDED);
   EXPECT_EQ(base::Value(3),
             *provider_->Get(kDeviceSecondFactorAuthenticationMode));
+}
+
+TEST_F(DeviceSettingsProviderTest, DevicePowerwashAllowed) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDevicePowerwashAllowed, nullptr);
+
+  SetDevicePowerwashAllowed(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kDevicePowerwashAllowed));
+
+  SetDevicePowerwashAllowed(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kDevicePowerwashAllowed));
 }
 
 }  // namespace chromeos

@@ -19,17 +19,15 @@ class LaunchParams final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LaunchParams(String cause, HeapVector<Member<NativeFileSystemHandle>> files);
+  LaunchParams(HeapVector<Member<NativeFileSystemHandle>> files);
   ~LaunchParams() override;
 
   // LaunchParams IDL interface.
-  const String& cause() { return cause_; }
   const HeapVector<Member<NativeFileSystemHandle>>& files() { return files_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  String cause_;
   HeapVector<Member<NativeFileSystemHandle>> files_;
 };
 

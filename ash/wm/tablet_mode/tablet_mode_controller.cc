@@ -906,8 +906,6 @@ void TabletModeController::ResetPauser() {
 }
 
 void TabletModeController::FinishInitTabletMode() {
-  for (auto& observer : tablet_mode_observers_)
-    observer.OnTabletModeStarting();
   tablet_mode_window_manager_ = std::make_unique<TabletModeWindowManager>();
   tablet_mode_window_manager_->Init();
 

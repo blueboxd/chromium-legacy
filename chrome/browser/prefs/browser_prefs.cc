@@ -845,6 +845,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
+  chromeos::KerberosCredentialsManager::RegisterProfilePrefs(registry);
   chromeos::KeyPermissions::RegisterProfilePrefs(registry);
   chromeos::multidevice_setup::MultiDeviceSetupService::RegisterProfilePrefs(
       registry);

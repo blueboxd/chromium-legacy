@@ -27,6 +27,7 @@ using arc::mojom::SelectFilesActionType;
 using arc::mojom::SelectFilesRequest;
 using arc::mojom::SelectFilesRequestPtr;
 using testing::_;
+using testing::Return;
 using ui::SelectFileDialog;
 
 namespace arc {
@@ -80,7 +81,7 @@ class MockSelectFileDialogHolder : public SelectFileDialogHolder {
       : SelectFileDialogHolder(listener) {}
   ~MockSelectFileDialogHolder() override = default;
   MOCK_METHOD5(SelectFile,
-               void(ui::SelectFileDialog::Type type,
+               bool(ui::SelectFileDialog::Type type,
                     const base::FilePath& default_path,
                     const ui::SelectFileDialog::FileTypeInfo* file_types,
                     int task_id,
@@ -111,6 +112,8 @@ class ArcSelectFilesHandlerTest : public testing::Test {
     mock_dialog_holder_ = mock_dialog_holder.get();
     arc_select_files_handler_->SetDialogHolderForTesting(
         std::move(mock_dialog_holder));
+    ON_CALL(*mock_dialog_holder_, SelectFile(_, _, _, _, _))
+        .WillByDefault(Return(true));
   }
 
   void TearDown() override {

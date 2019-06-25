@@ -173,6 +173,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/triggers/ad_redirect_trigger.h"
 #include "components/search/search.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
@@ -216,6 +217,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/filename_util.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
@@ -1271,16 +1273,24 @@ bool Browser::ShouldAllowRunningInsecureContent(
   return false;
 }
 
-void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
-                                  const GURL& url) {
-  if (auto* framebust_helper =
-          FramebustBlockTabHelper::FromWebContents(web_contents)) {
-    auto on_click = [](const GURL& url, size_t index, size_t total_elements) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "WebCore.Framebust.ClickThroughPosition",
-          GetListItemPositionFromDistance(index, total_elements));
-    };
-    framebust_helper->AddBlockedUrl(url, base::BindOnce(on_click));
+void Browser::OnDidBlockNavigation(content::WebContents* web_contents,
+                                   const GURL& blocked_url,
+                                   const GURL& initiator_url,
+                                   blink::NavigationBlockedReason reason) {
+  if (reason == blink::NavigationBlockedReason::kRedirectWithNoUserGesture) {
+    if (auto* framebust_helper =
+            FramebustBlockTabHelper::FromWebContents(web_contents)) {
+      auto on_click = [](const GURL& url, size_t index, size_t total_elements) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "WebCore.Framebust.ClickThroughPosition",
+            GetListItemPositionFromDistance(index, total_elements));
+      };
+      framebust_helper->AddBlockedUrl(blocked_url, base::BindOnce(on_click));
+    }
+  }
+  if (auto* trigger =
+          safe_browsing::AdRedirectTrigger::FromWebContents(web_contents)) {
+    trigger->OnDidBlockNavigation(initiator_url);
   }
 }
 

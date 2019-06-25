@@ -175,11 +175,6 @@ const char GaiaAuthFetcher::kUberAuthTokenURLFormat[] =
 
 const char GaiaAuthFetcher::kOAuthLoginFormat[] = "service=%s&source=%s";
 
-// static
-const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
-// static
-const char GaiaAuthFetcher::kAccountDisabledError[] = "AccountDisabled";
-// static
 const char GaiaAuthFetcher::kBadAuthenticationError[] = "BadAuthentication";
 // static
 const char GaiaAuthFetcher::kServiceUnavailableError[] =
@@ -886,10 +881,6 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   ParseClientLoginFailure(data, &error, &url);
   DLOG(WARNING) << "ClientLogin failed with " << error;
 
-  if (error == kAccountDeletedError)
-    return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
-  if (error == kAccountDisabledError)
-    return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
   if (error == kBadAuthenticationError) {
     return GoogleServiceAuthError(
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(

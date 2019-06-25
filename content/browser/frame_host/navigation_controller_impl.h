@@ -582,13 +582,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // the wrong order in the history view.
   TimeSmoother time_smoother_;
 
-  // Used for tracking consecutive reload requests.  If the last user-initiated
-  // navigation (either browser-initiated or renderer-initiated with a user
-  // gesture) was a reload, these hold the ReloadType and timestamp.  Otherwise
-  // these are ReloadType::NONE and a null timestamp, respectively.
-  ReloadType last_committed_reload_type_;
-  base::Time last_committed_reload_time_;
-
   // BackForwardCache:
   //
   // Stores frozen RenderFrameHost. Restores them on history navigation.

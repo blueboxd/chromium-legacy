@@ -91,7 +91,8 @@ class PosterThread : public base::SimpleThread {
 class PerfettoTaskRunnerTest : public testing::Test {
  public:
   void SetUp() override {
-    task_runner_ = std::make_unique<PerfettoTaskRunner>(CreateNewTaskrunner());
+    sequenced_task_runner_ = CreateNewTaskrunner();
+    task_runner_ = std::make_unique<PerfettoTaskRunner>(sequenced_task_runner_);
   }
 
   scoped_refptr<base::SequencedTaskRunner> CreateNewTaskrunner() {
@@ -105,15 +106,18 @@ class PerfettoTaskRunnerTest : public testing::Test {
         number_of_sequences, expected_tasks, std::move(on_complete));
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    sequenced_task_runner_->DeleteSoon(FROM_HERE, std::move(task_runner_));
+  }
 
   PerfettoTaskRunner* task_runner() { return task_runner_.get(); }
   TaskDestination* destination() { return task_destination_.get(); }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   std::unique_ptr<PerfettoTaskRunner> task_runner_;
   std::unique_ptr<TaskDestination> task_destination_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(PerfettoTaskRunnerTest, SequentialTasks) {

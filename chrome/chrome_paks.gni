@@ -8,10 +8,6 @@ import("//extensions/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 # Generates a rule to repack a set of resources, substituting a given string
 # in for the percentage (e.g. "100", "200"). It generates the repacked files in
 # the "gen" directory, and then introduces a copy rule to copy it to the root
@@ -172,10 +168,6 @@ template("chrome_extra_paks") {
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
-      if (enable_kiosk_next && is_chrome_branded) {
-        sources += [ "$root_gen_dir/chrome/kiosk_next_internal_resources.pak" ]
-        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
-      }
     }
     if (!is_android && !is_chromeos) {
       sources += [ "$root_gen_dir/chrome/onboarding_welcome_resources.pak" ]

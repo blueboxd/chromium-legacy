@@ -29,17 +29,6 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
 
-  // Registers a CloudPolicyClient for fetching policy for a user and fetches
-  // the policy if necessary.
-  void FetchAndApplyCloudPolicy(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& username,
-      const base::android::JavaParamRef<jobject>& j_callback);
-
-  void AbortSignIn(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj);
-
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
   void OnSignInCompleted(JNIEnv* env,
@@ -49,10 +38,6 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   void SignOut(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jint signoutReason);
-
-  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
 
   // Delete all data for this profile.
   void WipeProfileData(JNIEnv* env,
@@ -82,46 +67,16 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
-  void IsAccountManaged(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
-                        const base::android::JavaParamRef<jstring>& j_username,
-                        const base::android::JavaParamRef<jobject>& j_callback);
-
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
-  struct ManagementCredentials {
-    ManagementCredentials(const std::string& dm_token,
-                          const std::string& client_id)
-        : dm_token(dm_token), client_id(client_id) {}
-    const std::string dm_token;
-    const std::string client_id;
-  };
-
-  using RegisterPolicyWithAccountCallback = base::OnceCallback<void(
-      const base::Optional<ManagementCredentials>& credentials)>;
-
   friend class SigninManagerAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerAndroidTest,
                            DeleteGoogleServiceWorkerCaches);
 
   ~SigninManagerAndroid() override;
-
-  // If required registers for policy with given account. callback will be
-  // called with credentials if the account is managed.
-  void RegisterPolicyWithAccount(const CoreAccountInfo& account,
-                                 RegisterPolicyWithAccountCallback callback);
-
-  void OnPolicyRegisterDone(
-      const CoreAccountInfo& account_id,
-      base::OnceClosure policy_callback,
-      const base::Optional<ManagementCredentials>& credentials);
-
-  void FetchPolicyBeforeSignIn(const CoreAccountInfo& account_id,
-                               base::OnceClosure policy_callback,
-                               const ManagementCredentials& credentials);
 
   void OnBrowsingDataRemoverDone();
 

@@ -1442,7 +1442,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   if (num_buffers > num_color_planes) {
-    VLOG(1) << "pix_mp.um_planes: " << num_buffers
+    VLOG(1) << "pix_mp.num_planes: " << num_buffers
             << " should not be larger than NumPlanes("
             << VideoPixelFormatToString(video_format)
             << "): " << num_color_planes;
@@ -1470,7 +1470,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
         // The height is half of Y plane.
         planes.emplace_back(y_stride, y_stride_abs * pix_mp.height,
                             y_stride_abs * pix_mp.height / 2);
-        DCHECK_EQ(3u, planes.size());
+        DCHECK_EQ(2u, planes.size());
         break;
       case V4L2_PIX_FMT_YUV420:
       case V4L2_PIX_FMT_YVU420: {

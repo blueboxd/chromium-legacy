@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -1702,6 +1701,8 @@ source_set("chromeos") {
     "policy/remote_commands/user_command_arc_job.h",
     "policy/remote_commands/user_commands_factory_chromeos.cc",
     "policy/remote_commands/user_commands_factory_chromeos.h",
+    "policy/rsu/lookup_key_uploader.cc",
+    "policy/rsu/lookup_key_uploader.h",
     "policy/secondary_google_account_signin_policy_handler.cc",
     "policy/secondary_google_account_signin_policy_handler.h",
     "policy/server_backed_device_state.cc",
@@ -2161,13 +2162,6 @@ source_set("chromeos") {
   if (use_cras) {
     defines += [ "USE_CRAS" ]
   }
-  if (enable_kiosk_next) {
-    defines += [ "KIOSK_NEXT" ]
-    if (is_chrome_branded) {
-      public_deps +=
-          [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
-    }
-  }
 }
 
 copy("dbus_service_files") {
@@ -2593,6 +2587,7 @@ source_set("unit_tests") {
     "policy/remote_commands/device_command_start_crd_session_unittest.cc",
     "policy/remote_commands/device_command_wipe_users_job_unittest.cc",
     "policy/remote_commands/user_command_arc_job_unittest.cc",
+    "policy/rsu/lookup_key_uploader_unittest.cc",
     "policy/secondary_google_account_signin_policy_handler_unittest.cc",
     "policy/server_backed_state_keys_broker_unittest.cc",
     "policy/single_app_install_event_log_unittest.cc",

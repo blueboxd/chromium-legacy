@@ -75,6 +75,17 @@ class ThreadedPerfettoService : public mojom::TracingSessionClient {
 
     {
       base::RunLoop wait_for_destruction;
+      task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(
+              [](std::unique_ptr<PerfettoService> service) { service.reset(); },
+              std::move(perfetto_service_)),
+          wait_for_destruction.QuitClosure());
+      wait_for_destruction.Run();
+    }
+
+    {
+      base::RunLoop wait_for_destruction;
       PerfettoTracedProcess::GetTaskRunner()
           ->GetOrCreateTaskRunner()
           ->PostTaskAndReply(FROM_HERE, base::DoNothing(),

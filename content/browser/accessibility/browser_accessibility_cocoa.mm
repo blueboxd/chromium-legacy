@@ -876,9 +876,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   } else {
     // Otherwise this is a cell, return the column headers for this cell.
-    int column = *owner_->GetTableCellColIndex();
+    base::Optional<int> column = owner_->GetTableCellColIndex();
+    if (!column)
+      return nil;
 
-    std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(column);
+    std::vector<int32_t> colHeaderIds = table->GetColHeaderNodeIds(*column);
     for (int32_t id : colHeaderIds) {
       BrowserAccessibility* cell = owner_->manager()->GetFromID(id);
       if (cell)
@@ -892,13 +894,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)columnIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
-    return nil;
 
-  int column = *owner_->node()->GetTableCellColIndex();
-  int colspan = *owner_->node()->GetTableCellColSpan();
-  if (column >= 0 && colspan >= 1)
-    return [NSValue valueWithRange:NSMakeRange(column, colspan)];
+  base::Optional<int> column = owner_->node()->GetTableCellColIndex();
+  base::Optional<int> colspan = owner_->node()->GetTableCellColSpan();
+  if (column && colspan)
+    return [NSValue valueWithRange:NSMakeRange(*column, *colspan)];
   return nil;
 }
 
@@ -1881,13 +1881,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSValue*)rowIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsCellOrTableHeader(owner_->GetRole()))
-    return nil;
 
-  int row = *owner_->node()->GetTableCellRowIndex();
-  int rowspan = *owner_->node()->GetTableCellRowSpan();
-  if (row >= 0 && rowspan >= 1)
-    return [NSValue valueWithRange:NSMakeRange(row, rowspan)];
+  base::Optional<int> row = owner_->node()->GetTableCellRowIndex();
+  base::Optional<int> rowspan = owner_->node()->GetTableCellRowSpan();
+  if (row && rowspan)
+    return [NSValue valueWithRange:NSMakeRange(*row, *rowspan)];
   return nil;
 }
 

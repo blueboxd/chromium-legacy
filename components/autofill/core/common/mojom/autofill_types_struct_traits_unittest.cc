@@ -20,6 +20,8 @@
 
 namespace autofill {
 
+using mojom::PasswordFormFieldPredictionType;
+
 const std::vector<const char*> kOptions = {"Option1", "Option2", "Option3",
                                            "Option4"};
 namespace {
@@ -114,18 +116,17 @@ void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
   test::CreateTestAddressFormData(&form_data);
   ASSERT_TRUE(form_data.fields.size() >= 4);
   result_map[form_data][form_data.fields[0]] =
-      PasswordFormFieldPredictionType::PREDICTION_USERNAME;
+      PasswordFormFieldPredictionType::kUsername;
   result_map[form_data][form_data.fields[1]] =
-      PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+      PasswordFormFieldPredictionType::kCurrentPassword;
   result_map[form_data][form_data.fields[2]] =
-      PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+      PasswordFormFieldPredictionType::kNewPassword;
   result_map[form_data][form_data.fields[3]] =
-      PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+      PasswordFormFieldPredictionType::kNotPassword;
 
   // 2nd element.
   form_data.fields.clear();
-  result_map[form_data] =
-      std::map<FormFieldData, PasswordFormFieldPredictionType>();
+  result_map[form_data] = {};
 
   // 3rd element.
   FormFieldData field_data;
@@ -136,9 +137,9 @@ void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
                               kOptions, 4, &field_data);
   form_data.fields.push_back(field_data);
   result_map[form_data][form_data.fields[0]] =
-      PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+      PasswordFormFieldPredictionType::kNewPassword;
   result_map[form_data][form_data.fields[1]] =
-      PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+      PasswordFormFieldPredictionType::kCurrentPassword;
 }
 
 void CreatePasswordGenerationUIData(

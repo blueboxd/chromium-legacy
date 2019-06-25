@@ -237,10 +237,6 @@ class GaiaAuthFetcher {
   static const char kOAuthLoginFormat[];
 
   // Constants for parsing ClientLogin errors.
-  static const char kAccountDeletedError[];
-  static const char kAccountDeletedErrorCode[];
-  static const char kAccountDisabledError[];
-  static const char kAccountDisabledErrorCode[];
   static const char kBadAuthenticationError[];
   static const char kBadAuthenticationErrorCode[];
   static const char kServiceUnavailableError[];
@@ -376,8 +372,6 @@ class GaiaAuthFetcher {
 
   friend class GaiaAuthFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CaptchaParse);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDeletedError);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDisabledError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, BadAuthenticationError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, IncomprehensibleError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ServiceUnavailableError);

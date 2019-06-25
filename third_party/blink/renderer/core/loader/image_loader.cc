@@ -25,7 +25,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -502,9 +502,16 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     image_complete_ = false;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
       if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        LazyLoadImageObserver::StartMonitoring(
-            html_image,
-            GetLoadingAttrValue(*html_image) != LoadingAttrValue::kLazy);
+        using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
+        LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
+        DCHECK(loading_attr != LoadingAttrValue::kEager);
+        auto deferral_message = DeferralMessage::kNone;
+        if (loading_attr == LoadingAttrValue::kAuto) {
+          deferral_message = DeferralMessage::kLoadEventsDeferred;
+        } else if (!was_fully_deferred_) {
+          deferral_message = DeferralMessage::kMissingDimensionForLazy;
+        }
+        LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
       }
     }
   }

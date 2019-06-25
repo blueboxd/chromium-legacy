@@ -161,17 +161,22 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
 #endif
 }
 
+SelectFileDialogExtension::RoutingID GetRoutingID(
+    content::WebContents* web_contents,
+    int android_task_id) {
+  if (android_task_id != SelectFileDialogExtension::kAndroidTaskIdNone) {
+    return base::StringPrintf("android.%d", android_task_id);
+  } else if (web_contents) {
+    return base::StringPrintf(
+        "web.%d", web_contents->GetMainFrame()->GetFrameTreeNodeId());
+  }
+  LOG(ERROR) << "Unable to generate a RoutingID";
+  return "";
+}
+
 }  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
-
-// static
-SelectFileDialogExtension::RoutingID
-SelectFileDialogExtension::GetRoutingIDFromWebContents(
-    content::WebContents* web_contents) {
-  return base::StringPrintf("web.%d",
-                            web_contents->GetMainFrame()->GetFrameTreeNodeId());
-}
 
 // TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
 // static
@@ -302,6 +307,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params,
+    int owner_android_task_id,
     bool show_android_picker_apps) {
   if (owner_window_) {
     LOG(ERROR) << "File dialog already in use!";
@@ -313,7 +319,11 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
 
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;
-  FindRuntimeContext(owner_window, &base_window, &web_contents);
+
+  // Obtain BaseWindow and WebContents if the owner window is browser.
+  if (owner_android_task_id == kAndroidTaskIdNone)
+    FindRuntimeContext(owner_window, &base_window, &web_contents);
+
   if (web_contents)
     profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -328,7 +338,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
   // possible. In such situation, discard this request.
-  RoutingID routing_id = GetRoutingIDFromWebContents(web_contents);
+  RoutingID routing_id = GetRoutingID(web_contents, owner_android_task_id);
   if (PendingExists(routing_id))
     return;
 
@@ -421,9 +431,10 @@ void SelectFileDialogExtension::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owner_window,
     void* params) {
-  SelectFileWithFileManagerParams(
-      type, title, default_path, file_types, file_type_index, default_extension,
-      owner_window, params, false /* show_android_picker_apps */);
+  SelectFileWithFileManagerParams(type, title, default_path, file_types,
+                                  file_type_index, default_extension,
+                                  owner_window, params, kAndroidTaskIdNone,
+                                  false /* show_android_picker_apps */);
 }
 
 bool SelectFileDialogExtension::IsResizeable() const {

@@ -239,20 +239,6 @@ if (is_chromeos) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
-
-  if (enable_kiosk_next && is_chrome_branded) {
-    grit("kiosk_next_internal_resources") {
-      source = "kiosk_next_internal_resources.grd"
-      defines = chrome_grit_defines
-      outputs = [
-        "grit/kiosk_next_internal_resources.h",
-        "grit/kiosk_next_internal_resources_map.cc",
-        "grit/kiosk_next_internal_resources_map.h",
-        "kiosk_next_internal_resources.pak",
-      ]
-      output_dir = "$root_gen_dir/chrome"
-    }
-  }
 }
 
 if (!is_android && !is_chromeos) {

@@ -247,8 +247,6 @@ base::string16 SigninErrorNotifier::GetMessageBody(
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       return l10n_util::GetStringUTF16(
           IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE);
       break;

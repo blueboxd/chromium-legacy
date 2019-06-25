@@ -135,18 +135,27 @@ void FakeKerberosClient::AcquireKerberosTgt(
     return;
   }
 
-  // Remember password.
-  std::string password = ReadPassword(password_fd);
-  if (!password.empty() && request.remember_password())
-    data->password = password;
+  std::string password;
+  if (request.use_login_password()) {
+    // "Retrieve" login password.
+    password = "fake_login_password";
 
-  // Use remembered password.
-  if (password.empty())
-    password = data->password;
-
-  // Erase a previously remembered password.
-  if (!request.remember_password())
+    // Erase a previously remembered password.
     data->password.clear();
+  } else {
+    // Remember password.
+    password = ReadPassword(password_fd);
+    if (!password.empty() && request.remember_password())
+      data->password = password;
+
+    // Use remembered password.
+    if (password.empty())
+      password = data->password;
+
+    // Erase a previously remembered password.
+    if (!request.remember_password())
+      data->password.clear();
+  }
 
   // Reject empty passwords.
   if (password.empty()) {

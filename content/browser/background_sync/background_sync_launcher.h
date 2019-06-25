@@ -16,6 +16,8 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+
 namespace content {
 
 class BrowserContext;
@@ -30,6 +32,7 @@ class CONTENT_EXPORT BackgroundSyncLauncher {
 #if defined(OS_ANDROID)
   static void FireBackgroundSyncEvents(
       BrowserContext* browser_context,
+      blink::mojom::BackgroundSyncType sync_type,
       const base::android::JavaParamRef<jobject>& j_runnable);
 #endif
 

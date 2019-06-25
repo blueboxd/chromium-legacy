@@ -105,8 +105,10 @@ void PaintRect(GraphicsContext& context,
     return;
   if (rect.size.IsEmpty())
     return;
-  const PhysicalRect global_rect(rect.offset + location, rect.size);
-  context.FillRect(FloatRect(global_rect), color);
+  const IntRect pixel_snapped_rect =
+      PixelSnappedIntRect(PhysicalRect(rect.offset + location, rect.size));
+  if (!pixel_snapped_rect.IsEmpty())
+    context.FillRect(pixel_snapped_rect, color);
 }
 
 PhysicalRect MarkerRectForForeground(

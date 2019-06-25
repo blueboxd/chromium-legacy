@@ -47,6 +47,7 @@ class HeartbeatScheduler;
 class SchemaRegistry;
 class StatusUploader;
 class SystemLogUploader;
+class LookupKeyUploader;
 
 enum class ZeroTouchEnrollmentMode { DISABLED, ENABLED, FORCED, HANDS_OFF };
 
@@ -210,6 +211,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
       machine_certificate_uploader_;
   std::unique_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
+
+  // Uploader for remote server unlock related lookup keys.
+  std::unique_ptr<LookupKeyUploader> lookup_key_uploader_;
 
   // Wrapper schema registry that will track the signin profile schema registry
   // once it is passed to this class.

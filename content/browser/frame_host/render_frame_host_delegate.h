@@ -28,6 +28,7 @@
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -104,8 +105,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notification from the renderer host that a suspicious navigation of the
   // main frame has been blocked. Allows the delegate to provide some UI to let
   // the user know about the blocked navigation and give them the option to
-  // recover from it. The given URL is the blocked navigation target.
-  virtual void OnDidBlockFramebust(const GURL& url) {}
+  // recover from it.
+  // |blocked_url| is the blocked navigation target, |initiator_url| is the URL
+  // of the frame initiating the navigation, |reason| specifies why the
+  // navigation was blocked.
+  virtual void OnDidBlockNavigation(const GURL& blocked_url,
+                                    const GURL& initiator_url,
+                                    blink::NavigationBlockedReason reason) {}
 
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.

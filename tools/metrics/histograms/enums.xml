@@ -5465,6 +5465,56 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Attempted"/>
 </enum>
 
+<enum name="BooleanAutofillFillAfterSuggestion">
+  <int value="0" label="User chose to fill"/>
+  <int value="1" label="User did not choose to fill"/>
+</enum>
+
+<enum name="BooleanAutofillFillingAcceptance">
+  <int value="0" label="No suggestion accepted"/>
+  <int value="1" label="At least one suggestion accepted"/>
+</enum>
+
+<enum name="BooleanAutofillFillingAssistance">
+  <int value="0" label="No assistance"/>
+  <int value="1" label="Fields were filled"/>
+</enum>
+
+<enum name="BooleanAutofillFillingCorrectness">
+  <int value="0" label="User edited filled fields"/>
+  <int value="1" label="No filled fields were edited"/>
+</enum>
+
+<enum name="BooleanAutofillFillingReadiness">
+  <int value="0" label="No data available to fill"/>
+  <int value="1" label="Some data available to fill"/>
+</enum>
+
+<enum name="BooleanAutofillInteractionAfterParsedAsType">
+  <int value="0" label="No interaction"/>
+  <int value="1" label="Interaction observed"/>
+</enum>
+
+<enum name="BooleanAutofillParsedAsType">
+  <int value="0" label="Different type"/>
+  <int value="1" label="This type"/>
+</enum>
+
+<enum name="BooleanAutofillSubmission">
+  <int value="0" label="Form was abandoned"/>
+  <int value="1" label="Form was submitted"/>
+</enum>
+
+<enum name="BooleanAutofillSubmissionAfterFill">
+  <int value="0" label="Not submitted"/>
+  <int value="1" label="Submitted"/>
+</enum>
+
+<enum name="BooleanAutofillSuggestionAfterInteraction">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown"/>
+</enum>
+
 <enum name="BooleanAvailable">
   <int value="0" label="Not Available"/>
   <int value="1" label="Available"/>
@@ -16610,11 +16660,11 @@ Called by update_net_error_codes.py.-->
   <int value="41" label="OAuth fetch: account not signed up">
     OAuth token fetch failed: account not signed up.
   </int>
-  <int value="42" label="OAuth fetch: account deleted">
-    OAuth token fetch failed: account deleted.
+  <int value="42" label="OAuth fetch: account deleted (unused)">
+    UNUSED: OAuth token fetch failed: account deleted.
   </int>
-  <int value="43" label="OAuth fetch: account disabled">
-    OAuth token fetch failed: account disabled.
+  <int value="43" label="OAuth fetch: account disabled (unused)">
+    UNUSED: OAuth token fetch failed: account disabled.
   </int>
   <int value="44" label="Re-enrollment: pre-check domain mismatch">
     Re-enrollment pre-check failed: domain does not match install attributes.
@@ -17271,6 +17321,7 @@ Called by update_net_error_codes.py.-->
   <int value="568" label="StartupBrowserWindowLaunchSuppressed"/>
   <int value="569" label="DeviceWebUsbAllowDevicesForUrls"/>
   <int value="570" label="UserFeedbackAllowed"/>
+  <int value="571" label="DevicePowerwashAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -23718,6 +23769,7 @@ Called by update_net_error_codes.py.-->
   <int value="2933" label="LazyLoadFrameLoadingAttributeLazy"/>
   <int value="2934" label="LazyLoadImageLoadingAttributeEager"/>
   <int value="2935" label="LazyLoadImageLoadingAttributeLazy"/>
+  <int value="2936" label="LazyLoadImageMissingDimensionsForLazy"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -27678,8 +27730,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="USER_NOT_SIGNED_UP"/>
   <int value="3" label="CONNECTION_FAILED"/>
   <int value="4" label="CAPTCHA_REQUIRED (deprecated)"/>
-  <int value="5" label="ACCOUNT_DELETED"/>
-  <int value="6" label="ACCOUNT_DISABLED"/>
+  <int value="5" label="ACCOUNT_DELETED (deprecated)"/>
+  <int value="6" label="ACCOUNT_DISABLED (deprecated)"/>
   <int value="7" label="SERVICE_UNAVAILABLE"/>
   <int value="8" label="TWO_FACTOR (deprecated)"/>
   <int value="9" label="REQUEST_CANCELED"/>
@@ -38784,6 +38836,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MidiResult">
+  <obsolete>
+    Removed 06/2019.
+  </obsolete>
   <int value="0" label="Not initialized"/>
   <int value="1" label="Successfully initialized"/>
   <int value="2" label="Not supported"/>
@@ -38805,6 +38860,7 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Initialized"/>
   <int value="5" label="Input port is added"/>
   <int value="6" label="Output port is added"/>
+  <int value="7" label="Error occurred on calling platform APIs"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes">

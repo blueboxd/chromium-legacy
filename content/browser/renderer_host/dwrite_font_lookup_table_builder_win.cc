@@ -335,8 +335,12 @@ void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady(
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady");
   DCHECK(!HasDWriteUniqueFontLookups());
-  DCHECK(!font_table_built_.IsSignaled());
   pending_callbacks_.emplace_back(std::move(task_runner), std::move(callback));
+  // Cover for the condition in which the font table becomes ready briefly after
+  // a renderer asking for GetUniqueNameLookupTableIfAvailable(), receiving the
+  // information that it wasn't ready.
+  if (font_table_built_.IsSignaled())
+    PostCallbacks();
 }
 
 bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {

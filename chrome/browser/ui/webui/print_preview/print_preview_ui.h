@@ -202,7 +202,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   void SetSelectedFileForTesting(const base::FilePath& path);
 
   // Passes |closure| to PrintPreviewHandler::SetPdfSavedClosureForTesting().
-  void SetPdfSavedClosureForTesting(const base::Closure& closure);
+  void SetPdfSavedClosureForTesting(base::OnceClosure closure);
 
   // Tell the handler to send the enable-manipulate-settings-for-test WebUI
   // event.

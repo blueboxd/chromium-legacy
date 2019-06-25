@@ -273,9 +273,12 @@ void WebURLResponse::SetSecurityDetails(
       sct_list);
 }
 
-WebURLResponse::WebSecurityDetails WebURLResponse::SecurityDetailsForTesting() {
-  const blink::ResourceResponse::SecurityDetails* security_details =
+base::Optional<WebURLResponse::WebSecurityDetails>
+WebURLResponse::SecurityDetailsForTesting() {
+  const base::Optional<ResourceResponse::SecurityDetails>& security_details =
       resource_response_->GetSecurityDetails();
+  if (!security_details.has_value())
+    return base::nullopt;
   std::vector<SignedCertificateTimestamp> sct_list;
   for (const auto& iter : security_details->sct_list) {
     sct_list.push_back(SignedCertificateTimestamp(

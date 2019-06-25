@@ -53,6 +53,7 @@ source_set("headers") {
     "features.h",
     "fetch/fetch_api_request_headers_map.h",
     "fetch/fetch_api_request_headers_mojom_traits.h",
+    "frame/blocked_navigation_types.h",
     "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
     "frame/from_ad_state.h",

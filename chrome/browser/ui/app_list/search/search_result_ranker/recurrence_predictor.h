@@ -164,6 +164,7 @@ class HourBinPredictor : public RecurrencePredictor {
   FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, TrainAndRankMultipleBin);
   FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, ToProto);
   FRIEND_TEST_ALL_PREFIXES(HourBinPredictorTest, FromProtoDecays);
+
   // Return the bin index that is |hour_difference| away from the current bin
   // index.
   int GetBinFromHourDifference(int hour_difference) const;
@@ -176,8 +177,16 @@ class HourBinPredictor : public RecurrencePredictor {
   void SetLastDecayTimestamp(float value) {
     proto_.set_last_decay_timestamp(value);
   }
+
   HourBinPredictorProto proto_;
-  HourBinPredictorConfig config_;
+
+  // Weightings for how much an update in bin should affect the bins around it.
+  // Keys in the map are relative indices from the updated bin.
+  base::flat_map<int, float> bin_weights_;
+
+  // How much to decay frequencies each week.
+  float weekly_decay_coeff_;
+
   DISALLOW_COPY_AND_ASSIGN(HourBinPredictor);
 };
 

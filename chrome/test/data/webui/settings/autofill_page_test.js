@@ -3,20 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('settings_autofill_page', function() {
-  /** @implements {settings.OpenWindowProxy} */
-  class TestOpenWindowProxy extends TestBrowserProxy {
-    constructor() {
-      super([
-        'openURL',
-      ]);
-    }
-
-    /** @override */
-    openURL(url) {
-      this.methodCalled('openURL', url);
-    }
-  }
-
   suite('PasswordsAndForms', function() {
     /**
      * Creates a new passwords and forms element.

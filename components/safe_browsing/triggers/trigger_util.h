@@ -19,6 +19,7 @@ namespace safe_browsing {
 // Ad, or the |frame_url| is a Google Ad URL.
 bool DetectGoogleAd(content::RenderFrameHost* render_frame_host,
                     const GURL& frame_url);
+
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_TRIGGERS_TRIGGER_UTIL_H_

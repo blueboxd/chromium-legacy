@@ -1111,6 +1111,9 @@ void UserSessionManager::VoteForSavingLoginPassword(
     bool save_password) {
   DCHECK_LT(service, PasswordConsumingService::kCount);
 
+  VLOG(1) << "Password consuming service " << static_cast<size_t>(service)
+          << " votes " << save_password;
+
   // Prevent this code from being called twice from two services or else the
   // second service would trigger the warning below (since the password has been
   // cleared).
@@ -1118,8 +1121,7 @@ void UserSessionManager::VoteForSavingLoginPassword(
     password_was_saved_ = true;
     const std::string& password = user_context_.GetPasswordKey()->GetSecret();
     if (!password.empty()) {
-      VLOG(1) << "Saving login password for service "
-              << static_cast<size_t>(service);
+      VLOG(1) << "Saving login password";
       SessionManagerClient::Get()->SaveLoginPassword(password);
     } else {
       LOG(WARNING) << "Not saving password because password is empty.";
@@ -1546,6 +1548,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       content::NotificationService::AllSources(),
       content::Details<Profile>(profile));
 
+  // Initialize various services only for primary user.
+  // TODO(https://crbug.com/977489): There's a lot of code duplication with
+  // StartUserSession in chrome_session_manager.cc, which is (only!) run for
+  // session starts after crashes. This needs to be refactored.
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
@@ -1573,6 +1579,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     if (crostini_manager)
       crostini_manager->MaybeUpgradeCrostini();
 
+    g_browser_process->platform_part()->InitializePrimaryProfileServices(
+        profile);
+
     TetherService* tether_service = TetherService::Get(profile);
     if (tether_service)
       tether_service->StartTetherIfPossible();
@@ -1592,6 +1601,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     login::SaveSyncPasswordDataToProfile(user_context_, profile);
   }
 
+  VLOG(1) << "Clearing all secrets";
   user_context_.ClearSecrets();
   if (TokenHandlesEnabled()) {
     CreateTokenUtilIfMissing();

@@ -40,7 +40,8 @@ mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     const GURL& request_url,
     const std::string& http_method,
     const GURL& referrer,
-    ResourceType resource_type);
+    ResourceType resource_type,
+    net::RequestPriority request_priority);
 
 void NotifyResourceRedirectReceived(
     int render_frame_id,

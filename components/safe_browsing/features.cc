@@ -20,6 +20,9 @@ namespace safe_browsing {
 const base::Feature kAdPopupTriggerFeature{"SafeBrowsingAdPopupTrigger",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAdRedirectTriggerFeature{
+    "SafeBrowsingAdRedirectTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls various parameters related to occasionally collecting ad samples,
 // for example to control how often collection should occur.
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
@@ -87,6 +90,7 @@ constexpr struct {
   bool show_state;
 } kExperimentalFeatures[]{
     {&kAdPopupTriggerFeature, true},
+    {&kAdRedirectTriggerFeature, true},
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},

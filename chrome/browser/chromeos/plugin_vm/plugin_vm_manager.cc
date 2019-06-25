@@ -107,10 +107,6 @@ void PluginVmManager::LaunchPluginVm() {
   // 2) Call ListVms to get the state of the VM
   // 3) Start the VM if necessary
   // 4) Show the UI.
-  // 5) Call Concierge::GetVmInfo to get seneschal server handle.
-  //    This happens in parallel with step 4.
-  // 6) Ensure default shared path exists.
-  // 7) Share paths with PluginVm
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
@@ -125,9 +121,6 @@ void PluginVmManager::StopPluginVm() {
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::DoNothing());
-
-  // Reset seneschal handle to indicate that it is no longer valid.
-  seneschal_server_handle_ = 0;
 }
 
 void PluginVmManager::OnVmStateChanged(
@@ -139,6 +132,25 @@ void PluginVmManager::OnVmStateChanged(
 
   if (pending_start_vm_ && !VmIsStopping(vm_state_))
     StartVm();
+
+  // When the VM_STATE_RUNNING signal is received:
+  // 1) Call Concierge::GetVmInfo to get seneschal server handle.
+  // 2) Ensure default shared path exists.
+  // 3) Share paths with PluginVm
+  if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
+    vm_tools::concierge::GetVmInfoRequest concierge_request;
+    concierge_request.set_owner_id(owner_id_);
+    concierge_request.set_name(kPluginVmName);
+    chromeos::DBusThreadManager::Get()->GetConciergeClient()->GetVmInfo(
+        std::move(concierge_request),
+        base::BindOnce(&PluginVmManager::OnGetVmInfoForSharing,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else if (vm_state_ ==
+             vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED) {
+    // When the VM_STATE_STOPPED signal is received, reset seneschal handle to
+    // indicate that it is no longer valid.
+    seneschal_server_handle_ = 0;
+  }
 }
 
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
@@ -231,15 +243,6 @@ void PluginVmManager::ShowVm() {
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ShowVm(
       std::move(request), base::BindOnce(&PluginVmManager::OnShowVm,
                                          weak_ptr_factory_.GetWeakPtr()));
-
-  vm_tools::concierge::GetVmInfoRequest concierge_request;
-  concierge_request.set_owner_id(owner_id_);
-  concierge_request.set_name(kPluginVmName);
-
-  chromeos::DBusThreadManager::Get()->GetConciergeClient()->GetVmInfo(
-      std::move(concierge_request),
-      base::BindOnce(&PluginVmManager::OnGetVmInfo,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManager::OnShowVm(
@@ -254,7 +257,7 @@ void PluginVmManager::OnShowVm(
   RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kSuccess);
 }
 
-void PluginVmManager::OnGetVmInfo(
+void PluginVmManager::OnGetVmInfoForSharing(
     base::Optional<vm_tools::concierge::GetVmInfoResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to get concierge VM info.";

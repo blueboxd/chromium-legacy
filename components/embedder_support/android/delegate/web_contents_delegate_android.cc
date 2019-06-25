@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -375,9 +376,11 @@ bool WebContentsDelegateAndroid::IsFullscreenForTabOrPending(
   return Java_WebContentsDelegateAndroid_isFullscreenForTabOrPending(env, obj);
 }
 
-void WebContentsDelegateAndroid::OnDidBlockFramebust(
+void WebContentsDelegateAndroid::OnDidBlockNavigation(
     content::WebContents* web_contents,
-    const GURL& url) {}
+    const GURL& initiator_url,
+    const GURL& blocked_url,
+    blink::NavigationBlockedReason reason) {}
 
 int WebContentsDelegateAndroid::GetTopControlsHeight() {
   JNIEnv* env = AttachCurrentThread();

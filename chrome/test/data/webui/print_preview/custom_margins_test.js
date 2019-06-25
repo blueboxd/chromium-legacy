@@ -163,24 +163,34 @@ cr.define('custom_margins_test', function() {
      * @param {number} currentValue The current margin value in points.
      * @param {string} input The new textbox input for the margin.
      * @param {boolean} invalid Whether the new value is invalid.
+     * @param {number=} newValuePts the new margin value in pts. If not
+     *     specified, computes the value assuming it is in bounds.
      * @return {!Promise} Promise that resolves when the test is complete.
      */
-    function testControlTextbox(control, key, currentValuePts, input, invalid) {
-      const newValuePts = invalid ?
-          currentValuePts :
-          Math.round(parseFloat(input) * pointsPerInch);
+    function testControlTextbox(
+        control, key, currentValuePts, input, invalid, newValuePts) {
+      if (newValuePts === undefined) {
+        newValuePts = invalid ? currentValuePts :
+                                Math.round(parseFloat(input) * pointsPerInch);
+      }
       assertEquals(
           currentValuePts, container.getSettingValue('customMargins')[key]);
-      controlTextbox = control.$.textbox.inputElement;
+      controlTextbox = control.$.input;
       controlTextbox.value = input;
       controlTextbox.dispatchEvent(
           new CustomEvent('input', {composed: true, bubbles: true}));
 
-      return test_util.eventToPromise('text-change', control).then(() => {
-        assertEquals(
-            newValuePts, container.getSettingValue('customMargins')[key]);
-        assertEquals(invalid, control.invalid);
-      });
+      if (!invalid) {
+        return test_util.eventToPromise('text-change', control).then(() => {
+          assertEquals(
+              newValuePts, container.getSettingValue('customMargins')[key]);
+          assertFalse(control.invalid);
+        });
+      } else {
+        return test_util.eventToPromise('input-change', control).then(() => {
+          assertTrue(control.invalid);
+        });
+      }
     }
 
     /*
@@ -392,42 +402,57 @@ cr.define('custom_margins_test', function() {
     // Test that setting the margin controls with their textbox inputs updates
     // the custom margins setting.
     test(assert(TestNames.SetControlsWithTextbox), function() {
+      /**
+       * @param {!Array<!MarginControlElement>} controls
+       * @param {number} currentValue Current margin value in pts
+       * @param {string} input String to set in margin textboxes
+       * @param {boolean} invalid Whether the string is invalid
+       * @return {!Promise} Promise that resolves when all controls have been
+       *     tested.
+       */
+      const testAllTextboxes = function(
+          controls, currentValue, input, invalid) {
+        return testControlTextbox(
+                   controls[0], keys[0], currentValue, input, invalid)
+            .then(
+                () => testControlTextbox(
+                    controls[1], keys[1], currentValue, input, invalid))
+            .then(
+                () => testControlTextbox(
+                    controls[2], keys[2], currentValue, input, invalid))
+            .then(
+                () => testControlTextbox(
+                    controls[3], keys[3], currentValue, input, invalid));
+      };
+
       return finishSetup().then(() => {
         const controls = getControls();
+        // Set a shorter delay for testing so the test doesn't take too
+        // long.
+        controls.forEach(c => {
+          c.getInput().setAttribute('data-timeout-delay', 10);
+        });
         model.set(
             'settings.margins.value',
             print_preview.ticket_items.MarginsTypeValue.CUSTOM);
         Polymer.dom.flush();
 
         // Verify entering a new value updates the settings.
-        // Then verify entering an invalid value invalidates the control and
-        // does not update the settings.
-        const newValue = '1.75';  // 1.75 inches
-        const invalidValue = 'abc';
-        const newMarginPts = Math.round(parseFloat(newValue) * pointsPerInch);
-        return testControlTextbox(
-                   controls[0], keys[0], defaultMarginPts, newValue, false)
+        // Then verify entering an invalid value invalidates the control
+        // and does not update the settings.
+        const value1 = '1.75';  // 1.75 inches
+        const newMargin1 = Math.round(parseFloat(value1) * pointsPerInch);
+        const value2 = '.6';
+        const newMargin2 = Math.round(parseFloat(value2) * pointsPerInch);
+        const maximumTopMargin = container.pageSize.height - newMargin2 - 72;
+        return testAllTextboxes(controls, defaultMarginPts, value1, false)
+            .then(() => testAllTextboxes(controls, newMargin1, 'abc', true))
+            .then(() => testAllTextboxes(controls, newMargin1, value2, false))
             .then(
                 () => testControlTextbox(
-                    controls[1], keys[1], defaultMarginPts, newValue, false))
-            .then(
-                () => testControlTextbox(
-                    controls[2], keys[2], defaultMarginPts, newValue, false))
-            .then(
-                () => testControlTextbox(
-                    controls[3], keys[3], defaultMarginPts, newValue, false))
-            .then(
-                () => testControlTextbox(
-                    controls[0], keys[0], newMarginPts, invalidValue, true))
-            .then(
-                () => testControlTextbox(
-                    controls[1], keys[1], newMarginPts, invalidValue, true))
-            .then(
-                () => testControlTextbox(
-                    controls[2], keys[2], newMarginPts, invalidValue, true))
-            .then(
-                () => testControlTextbox(
-                    controls[3], keys[3], newMarginPts, invalidValue, true));
+                    controls[0], keys[0], newMargin2, '1,000', false,
+                    container.pageSize.height - newMargin2 -
+                        72 /* MINIMUM_DISTANCE, see margin_control.js */));
       });
     });
 
@@ -561,7 +586,7 @@ cr.define('custom_margins_test', function() {
             const bottomControl = controls[2];
             const whenEventFired =
                 test_util.eventToPromise('text-focus-position', container);
-            bottomControl.$.textbox.focus();
+            bottomControl.$.input.focus();
             // Workaround for mac so that this does not need to be an
             // interactive test: manually fire the focus event from the control.
             bottomControl.fire('text-focus');

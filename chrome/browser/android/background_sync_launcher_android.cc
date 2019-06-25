@@ -13,6 +13,7 @@
 #include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTaskScheduler_jni.h"
 #include "chrome/android/chrome_jni_headers/BackgroundSyncBackgroundTask_jni.h"
 #include "chrome/android/chrome_jni_headers/BackgroundSyncLauncher_jni.h"
+#include "chrome/android/chrome_jni_headers/PeriodicBackgroundSyncChromeWakeUpTask_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/background_sync_context.h"
@@ -34,7 +35,7 @@ bool disable_play_services_version_check_for_tests = false;
 }  // namespace
 
 // static
-void JNI_BackgroundSyncBackgroundTask_FireBackgroundSyncEvents(
+void JNI_BackgroundSyncBackgroundTask_FireOneShotBackgroundSyncEvents(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   if (!base::FeatureList::IsEnabled(
@@ -42,7 +43,15 @@ void JNI_BackgroundSyncBackgroundTask_FireBackgroundSyncEvents(
     return;
   }
 
-  BackgroundSyncLauncherAndroid::Get()->FireBackgroundSyncEvents(j_runnable);
+  BackgroundSyncLauncherAndroid::Get()->FireBackgroundSyncEvents(
+      blink::mojom::BackgroundSyncType::ONE_SHOT, j_runnable);
+}
+
+void JNI_PeriodicBackgroundSyncChromeWakeUpTask_FirePeriodicBackgroundSyncEvents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_runnable) {
+  BackgroundSyncLauncherAndroid::Get()->FireBackgroundSyncEvents(
+      blink::mojom::BackgroundSyncType::PERIODIC, j_runnable);
 }
 
 // static
@@ -108,6 +117,7 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserWithWakeupDelta(
 }
 
 void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(
+    blink::mojom::BackgroundSyncType sync_type,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -115,9 +125,8 @@ void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(
   DCHECK(profile);
 
   content::BackgroundSyncContext::FireBackgroundSyncEventsAcrossPartitions(
-      profile, j_runnable);
+      profile, sync_type, j_runnable);
 }
-
 
 BackgroundSyncLauncherAndroid::BackgroundSyncLauncherAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -15,13 +15,16 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 
 class PrefRegistrySimple;
 class PrefService;
 class PrefChangeRegistrar;
+class Profile;
 
-namespace user_manager {
-class User;
+namespace policy {
+class PolicyMap;
 }
 
 namespace chromeos {
@@ -29,7 +32,7 @@ namespace chromeos {
 class KerberosAddAccountRunner;
 class VariableExpander;
 
-class KerberosCredentialsManager final {
+class KerberosCredentialsManager : public policy::PolicyService::Observer {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
@@ -49,8 +52,8 @@ class KerberosCredentialsManager final {
   };
 
   KerberosCredentialsManager(PrefService* local_state,
-                             const user_manager::User* primary_user);
-  ~KerberosCredentialsManager();
+                             Profile* primary_profile);
+  ~KerberosCredentialsManager() override;
 
   // Singleton accessor. Available once the primary profile is available.
   // DCHECKs if the instance has not been created yet.
@@ -59,11 +62,22 @@ class KerberosCredentialsManager final {
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
+  // Registers prefs stored in user profiles.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   // Helper method for ignoring the results of method calls.
   static ResultCallback EmptyResultCallback();
 
   // Returns the default Kerberos configuration (krb5.conf).
   static const char* GetDefaultKerberosConfig();
+
+  // PolicyService:
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
+
+  // PolicyService:
+  void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
 
   // Start observing this object. |observer| is not owned.
   void AddObserver(Observer* observer);
@@ -117,7 +131,9 @@ class KerberosCredentialsManager final {
   kerberos::ErrorType SetActiveAccount(std::string principal_name);
 
   // Returns the currently active account or an empty string if there is none.
-  const std::string& GetActiveAccount() { return active_principal_name_; }
+  const std::string& GetActiveAccount() const {
+    return GetActivePrincipalName();
+  }
 
  private:
   friend class KerberosAddAccountRunner;
@@ -164,14 +180,37 @@ class KerberosCredentialsManager final {
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
 
+  // Accessors for active principal (stored in user pref).
+  const std::string& GetActivePrincipalName() const;
+  void SetActivePrincipalName(const std::string& principal_name);
+  void ClearActivePrincipalName();
+
+  // Checks whether the active principal is contained in the given |response|.
+  // If not, resets it to the first principal or clears it if the list is empty.
+  // It's not expected that this ever triggers, but it provides a fail safe if
+  // the active principal should ever break for whatever reason.
+  void ValidateActivePrincipal(const kerberos::ListAccountsResponse& response);
+
   // Pref change handlers.
   void UpdateEnabledFromPref();
   void UpdateRememberPasswordEnabledFromPref();
   void UpdateAddAccountsAllowedFromPref();
   void UpdateAccountsFromPref();
 
+  // Informs session manager whether it needs to store the login password in the
+  // kernel keyring. That's the case when '${PASSWORD}' is used as password in
+  // the KerberosAccounts policy. The Kerberos daemon expands that to the login
+  // password.
+  void NotifyRequiresLoginPassword(bool requires_login_password);
+
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
+
+  // Primary profile, not owned.
+  Profile* primary_profile_ = nullptr;
+
+  // Policy service of the primary profile, not owned.
+  policy::PolicyService* policy_service_ = nullptr;
 
   // Called by OnSignalConnected(), puts Kerberos files where GSSAPI finds them.
   KerberosFilesHandler kerberos_files_handler_;
@@ -181,9 +220,6 @@ class KerberosCredentialsManager final {
 
   // Keeps track of accounts currently being added.
   std::vector<std::unique_ptr<KerberosAddAccountRunner>> add_account_runners_;
-
-  // Currently active principal.
-  std::string active_principal_name_;
 
   // Variable expander for the principal name (replaces ${LOGIN_ID} etc.).
   std::unique_ptr<VariableExpander> principal_expander_;

@@ -42,21 +42,6 @@ class OAuthMultiloginHelper;
 class UbertokenFetcherImpl;
 enum class SetAccountsInCookieResult;
 
-struct MultiloginParameters {
-  MultiloginParameters(gaia::MultiloginMode mode,
-                       const std::vector<std::string>& accounts_to_send);
-  MultiloginParameters(const MultiloginParameters& other);
-  MultiloginParameters& operator=(const MultiloginParameters& other);
-  ~MultiloginParameters();
-
-  // Needed for testing.
-  bool operator==(const MultiloginParameters& other) const {
-    return mode == other.mode && accounts_to_send == other.accounts_to_send;
-  }
-
-  gaia::MultiloginMode mode;
-  std::vector<std::string> accounts_to_send;
-};
 }  // namespace signin
 
 // Merges a Google account known to Chrome into the cookie jar.  When merging

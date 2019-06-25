@@ -18,9 +18,11 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
+#include "components/arc/arc_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -29,6 +31,7 @@
 #include "net/base/mime_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "ui/aura/window.h"
 #include "url/gurl.h"
 
 namespace arc {
@@ -154,6 +157,69 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
 
 }  // namespace
 
+ArcSelectFilesHandlersManager::ArcSelectFilesHandlersManager(
+    content::BrowserContext* context)
+    : context_(context), weak_ptr_factory_(this) {}
+
+ArcSelectFilesHandlersManager::~ArcSelectFilesHandlersManager() = default;
+
+void ArcSelectFilesHandlersManager::SelectFiles(
+    const mojom::SelectFilesRequestPtr& request,
+    mojom::FileSystemHost::SelectFilesCallback callback) {
+  int task_id = request->task_id;
+  if (handlers_by_task_id_.find(task_id) != handlers_by_task_id_.end()) {
+    LOG(ERROR) << "SelectFileDialog is already shown for task ID : " << task_id;
+    std::move(callback).Run(mojom::SelectFilesResult::New());
+    return;
+  }
+
+  auto handler = std::make_unique<ArcSelectFilesHandler>(context_);
+  auto* handler_ptr = handler.get();
+  handlers_by_task_id_.emplace(task_id, std::move(handler));
+
+  // Make sure that the handler is erased when the SelectFileDialog is closed.
+  handler_ptr->SelectFiles(
+      std::move(request),
+      base::BindOnce(&ArcSelectFilesHandlersManager::EraseHandlerAndRunCallback,
+                     weak_ptr_factory_.GetWeakPtr(), task_id,
+                     std::move(callback)));
+}
+
+void ArcSelectFilesHandlersManager::OnFileSelectorEvent(
+    mojom::FileSelectorEventPtr event,
+    mojom::FileSystemHost::OnFileSelectorEventCallback callback) {
+  int task_id = event->creator_task_id;
+  auto iter = handlers_by_task_id_.find(task_id);
+  if (iter == handlers_by_task_id_.end()) {
+    LOG(ERROR) << "Can't find a SelectFileDialog for task ID : " << task_id;
+    std::move(callback).Run();
+    return;
+  }
+  iter->second->OnFileSelectorEvent(std::move(event), std::move(callback));
+}
+
+void ArcSelectFilesHandlersManager::GetFileSelectorElements(
+    mojom::GetFileSelectorElementsRequestPtr request,
+    mojom::FileSystemHost::GetFileSelectorElementsCallback callback) {
+  int task_id = request->creator_task_id;
+  auto iter = handlers_by_task_id_.find(task_id);
+  if (iter == handlers_by_task_id_.end()) {
+    LOG(ERROR) << "Can't find a SelectFileDialog for task ID : " << task_id;
+    std::move(callback).Run(mojom::FileSelectorElements::New());
+    return;
+  }
+  iter->second->GetFileSelectorElements(std::move(request),
+                                        std::move(callback));
+}
+
+void ArcSelectFilesHandlersManager::EraseHandlerAndRunCallback(
+    int task_id,
+    mojom::FileSystemHost::SelectFilesCallback callback,
+    mojom::SelectFilesResultPtr result) {
+  handlers_by_task_id_.erase(task_id);
+  std::move(callback).Run(std::move(result));
+}
+
 ArcSelectFilesHandler::ArcSelectFilesHandler(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   dialog_holder_ = std::make_unique<SelectFileDialogHolder>(this);
@@ -166,13 +232,6 @@ void ArcSelectFilesHandler::SelectFiles(
     mojom::FileSystemHost::SelectFilesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!callback_.is_null()) {
-    LOG(ERROR)
-        << "There is already a ui::SelectFileDialog being shown currently. "
-        << "We can't open multiple ui::SelectFileDialogs at one time.";
-    std::move(callback).Run(mojom::SelectFilesResult::New());
-    return;
-  }
   callback_ = std::move(callback);
 
   // TODO(niwa): Convert all request options.
@@ -185,8 +244,12 @@ void ArcSelectFilesHandler::SelectFiles(
   bool show_android_picker_apps =
       request->action_type == mojom::SelectFilesActionType::GET_CONTENT;
 
-  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
-                             request->task_id, show_android_picker_apps);
+  bool success =
+      dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
+                                 request->task_id, show_android_picker_apps);
+  if (!success) {
+    std::move(callback_).Run(mojom::SelectFilesResult::New());
+  }
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
@@ -301,19 +364,31 @@ SelectFileDialogHolder::~SelectFileDialogHolder() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void SelectFileDialogHolder::SelectFile(
+bool SelectFileDialogHolder::SelectFile(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int task_id,
     bool show_android_picker_apps) {
+  aura::Window* owner_window = nullptr;
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id) {
+      owner_window = window;
+      break;
+    }
+  }
+  if (!owner_window) {
+    LOG(ERROR) << "Can't find the ARC window for task ID : " << task_id;
+    return false;
+  }
+
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
       /*file_type_index=*/0,
-      /*default_extension=*/base::FilePath::StringType(),
-      /*owning_window=*/nullptr,
-      /*params=*/nullptr, show_android_picker_apps);
+      /*default_extension=*/base::FilePath::StringType(), owner_window,
+      /*params=*/nullptr, task_id, show_android_picker_apps);
+  return true;
 }
 
 void SelectFileDialogHolder::ExecuteJavaScript(

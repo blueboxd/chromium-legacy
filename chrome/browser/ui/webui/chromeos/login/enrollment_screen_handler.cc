@@ -372,8 +372,6 @@ void EnrollmentScreenHandler::ShowAuthError(
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR, false);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, true);
       return;
     case GoogleServiceAuthError::CONNECTION_FAILED:

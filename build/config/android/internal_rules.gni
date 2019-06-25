@@ -1234,18 +1234,13 @@ if (enable_java_templates) {
           # http://crbug.com/725224. Fix for bots running out of memory.
           pool = "//build/toolchain:link_pool($default_toolchain)"
 
-          if (defined(invoker.proguard_jar_path)) {
-            _proguard_jar_path = invoker.proguard_jar_path
-          } else {
-            _proguard_jar_path = _default_proguard_jar_path
-          }
-
           _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
           _dx = "$android_sdk_build_tools/lib/dx.jar"
+          _r8 = "//third_party/r8/lib/r8.jar"
           inputs = [
             _main_dex_rules,
             _dx,
-            _proguard_jar_path,
+            _r8,
             _shrinked_android,
           ]
 
@@ -1264,8 +1259,8 @@ if (enable_java_templates) {
             rebase_path(_main_dex_list_path, root_build_dir),
             "--main-dex-rules-path",
             rebase_path(_main_dex_rules, root_build_dir),
-            "--proguard-path",
-            rebase_path(_proguard_jar_path, root_build_dir),
+            "--r8-path",
+            rebase_path(_r8, root_build_dir),
           ]
 
           if (defined(invoker.extra_main_dex_proguard_config)) {
@@ -1290,11 +1285,11 @@ if (enable_java_templates) {
           if (defined(invoker.input_jar_classpath)) {
             inputs += [ invoker.build_config ]
             args += [ "--inputs=@FileArg(${invoker.input_jar_classpath})" ]
-          }
-
-          inputs += _dexing_jars
-          if (_dexing_jars != []) {
-            args += rebase_path(_dexing_jars, root_build_dir)
+          } else {
+            inputs += _dexing_jars
+            if (_dexing_jars != []) {
+              args += rebase_path(_dexing_jars, root_build_dir)
+            }
           }
         }
       }

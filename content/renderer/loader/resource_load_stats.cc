@@ -106,7 +106,8 @@ mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     const GURL& request_url,
     const std::string& http_method,
     const GURL& referrer,
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    net::RequestPriority request_priority) {
   auto resource_load_info = mojom::ResourceLoadInfo::New();
   resource_load_info->method = http_method;
   resource_load_info->original_url = request_url;
@@ -115,6 +116,7 @@ mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
   resource_load_info->request_id = request_id;
   resource_load_info->referrer = referrer;
   resource_load_info->network_info = mojom::CommonNetworkInfo::New();
+  resource_load_info->request_priority = request_priority;
   return resource_load_info;
 }
 

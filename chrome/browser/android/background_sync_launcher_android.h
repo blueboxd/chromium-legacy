@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 // The BackgroundSyncLauncherAndroid singleton owns the Java
 // BackgroundSyncLauncher object and is used to register interest in starting
@@ -38,7 +39,9 @@ class BackgroundSyncLauncherAndroid {
 
   // Fires all pending Background Sync events across all storage partitions
   // for the last used profile.
+  // Fires one-shot Background Sync events for registration of |sync_type|.
   void FireBackgroundSyncEvents(
+      blink::mojom::BackgroundSyncType sync_type,
       const base::android::JavaParamRef<jobject>& j_runnable);
 
  private:

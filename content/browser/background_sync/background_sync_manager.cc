@@ -492,7 +492,7 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
   if (emulated_offline_sw_[service_worker_id] > 0)
     return;
   emulated_offline_sw_.erase(service_worker_id);
-  FireReadyEvents(MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
@@ -626,7 +626,8 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     }
   }
 
-  FireReadyEvents(MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -1046,7 +1047,8 @@ void BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive(
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  FireReadyEvents(MakeEmptyCompletion(), std::move(keepalive));
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion(),
+                  std::move(keepalive));
   op_scheduler_.CompleteOperationAndRunNext();
 }
 
@@ -1296,19 +1298,20 @@ base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
   return soonest_wakeup_delta;
 }
 
+// TODO(crbug.com/925297): Update to also schedule a wakeup task for Periodic
+// Background Sync.
 void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::TimeDelta soonest_wakeup_delta =
-      std::min(GetSoonestWakeupDelta(BackgroundSyncType::ONE_SHOT),
-               GetSoonestWakeupDelta(BackgroundSyncType::PERIODIC));
+      GetSoonestWakeupDelta(BackgroundSyncType::ONE_SHOT);
 
   // Try firing again after the wakeup delta.
   if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
-    delayed_sync_task_.Reset(
-        base::BindOnce(&BackgroundSyncManager::FireReadyEvents,
-                       weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(),
-                       /* keepalive= */ nullptr));
+    delayed_sync_task_.Reset(base::BindOnce(
+        &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
+        BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion(),
+        /* keepalive= */ nullptr));
     ScheduleDelayedTask(delayed_sync_task_.callback(), soonest_wakeup_delta);
   }
 
@@ -1320,6 +1323,7 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
 }
 
 void BackgroundSyncManager::FireReadyEvents(
+    blink::mojom::BackgroundSyncType sync_type,
     base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1330,11 +1334,12 @@ void BackgroundSyncManager::FireReadyEvents(
   op_scheduler_.ScheduleOperation(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(keepalive)));
+                     weak_ptr_factory_.GetWeakPtr(), sync_type,
+                     std::move(callback), std::move(keepalive)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(
+    blink::mojom::BackgroundSyncType sync_type,
     base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1356,6 +1361,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(
     for (auto& key_and_registration :
          sw_reg_id_and_registrations.second.registration_map) {
       BackgroundSyncRegistration* registration = &key_and_registration.second;
+      if (sync_type != registration->sync_type())
+        continue;
 
       if (IsRegistrationReadyToFire(*registration,
                                     service_worker_registration_id)) {
@@ -1688,7 +1695,10 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
-  FireReadyEvents(MakeEmptyCompletion());
+  // We don't need to do this for periodic Background Sync registrations, since
+  // once all events have been dispatched, we'll schedule a delayed task to
+  // (wake up Chrome and) fire the next set of periodicsync events.
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
@@ -1724,7 +1734,8 @@ void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
 void BackgroundSyncManager::OnNetworkChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  FireReadyEvents(MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
 }
 
 void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,

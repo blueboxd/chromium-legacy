@@ -20,6 +20,7 @@ Polymer({
     disabled: {
       type: Boolean,
       reflectToAttribute: true,
+      observer: 'onDisabledChange_',
     },
 
     side: {
@@ -27,12 +28,25 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    invalid: Boolean,
+    invalid: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     invisible: {
       type: Boolean,
       reflectToAttribute: true,
       observer: 'onClipSizeChange_',
+    },
+
+    /** @type {?print_preview.MeasurementSystem} */
+    measurementSystem: Object,
+
+    /** @private {boolean} */
+    focused_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
     },
 
     /** @private {number} */
@@ -76,17 +90,26 @@ Polymer({
     'input-change': 'onInputChange_',
   },
 
-  /** @return {!CrInputElement} The cr-input element for InputBehavior. */
+  /** @return {!HTMLInputElement} The input element for InputBehavior. */
   getInput: function() {
-    return this.$.textbox;
+    return this.$.input;
   },
 
-  /** @param {string} value New value of the margin control's textbox. */
-  setTextboxValue: function(value) {
-    const textbox = this.$.textbox;
-    if (textbox.value != value) {
-      textbox.value = value;
+  /**
+   * @param {number} valueInPts New value of the margin control's textbox in
+   *     pts.
+   */
+  setTextboxValue: function(valueInPts) {
+    const textbox = this.$.input;
+    const pts = textbox.value ? this.parseValueToPts_(textbox.value) : null;
+    if (!!pts && valueInPts === Math.round(pts)) {
+      // If the textbox's value represents the same value in pts as the new one,
+      // don't reset. This allows the "undo" command to work as expected, see
+      // https://crbug.com/452844.
+      return;
     }
+
+    textbox.value = this.serializeValueFromPts_(valueInPts);
   },
 
   /** @return {number} The current position of the margin control. */
@@ -115,20 +138,20 @@ Polymer({
    */
   convertPixelsToPts: function(pixels) {
     let pts;
-    const orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
-    if (this.side == orientationEnum.TOP) {
+    const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
+    if (this.side == Orientation.TOP) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
-    } else if (this.side == orientationEnum.RIGHT) {
+    } else if (this.side == Orientation.RIGHT) {
       pts = pixels - this.translateTransform.x + RADIUS_PX;
       pts /= this.scaleTransform;
       pts = this.pageSize.width - pts;
-    } else if (this.side == orientationEnum.BOTTOM) {
+    } else if (this.side == Orientation.BOTTOM) {
       pts = pixels - this.translateTransform.y + RADIUS_PX;
       pts /= this.scaleTransform;
       pts = this.pageSize.height - pts;
     } else {
-      assert(this.side == orientationEnum.LEFT);
+      assert(this.side == Orientation.LEFT);
       pts = pixels - this.translateTransform.x + RADIUS_PX;
       pts /= this.scaleTransform;
     }
@@ -140,8 +163,55 @@ Polymer({
    * @return {boolean} Whether the margin should start being dragged.
    */
   shouldDrag: function(event) {
-    return !this.$.textbox.disabled && event.button == 0 &&
+    return !this.disabled && event.button == 0 &&
         (event.path[0] == this || event.path[0] == this.$.line);
+  },
+
+  /** @private */
+  onDisabledChange_: function() {
+    if (this.disabled) {
+      this.focused_ = false;
+    }
+  },
+
+  /**
+   * @param {string} value Value to parse to points. E.g. '3.40' or '200'.
+   * @return {?number} Value in points represented by the input value.
+   * @private
+   */
+  parseValueToPts_: function(value) {
+    // Removing whitespace anywhere in the string.
+    value = value.replace(/\s*/g, '');
+    if (value.length == 0) {
+      return null;
+    }
+    assert(this.measurementSystem);
+    const decimal = this.measurementSystem.decimalDelimeter;
+    const thousands = this.measurementSystem.thousandsDelimeter;
+    const validationRegex = new RegExp(
+        `^(^-?)(((\\d)(\\${thousands}\\d{3})*)(\\${decimal}\\d*)?|` +
+        `((\\d)?(\\${thousands}\\d{3})*)(\\${decimal}\\d*))`);
+    if (validationRegex.test(value)) {
+      // Replacing decimal point with the dot symbol in order to use
+      // parseFloat() properly.
+      value = value.replace(new RegExp(`\\${decimal}{1}`), '.');
+      value = value.replace(new RegExp(`\\${thousands}`, 'g'), '');
+      return this.measurementSystem.convertToPoints(parseFloat(value));
+    }
+    return null;
+  },
+
+  /**
+   * @param {number} value Value in points to serialize.
+   * @return {string} String representation of the value in the system's local
+   *     units.
+   * @private
+   */
+  serializeValueFromPts_: function(value) {
+    assert(this.measurementSystem);
+    value = this.measurementSystem.convertFromPoints(value);
+    value = this.measurementSystem.roundValue(value);
+    return value.toString();
   },
 
   /**
@@ -149,17 +219,29 @@ Polymer({
    * @private
    */
   onInputChange_: function(e) {
-    this.fire('text-change', e.detail);
+    if (!e.detail) {
+      return;
+    }
+
+    const value = this.parseValueToPts_(e.detail);
+    if (value === null) {
+      this.invalid = true;
+      return;
+    }
+
+    this.fire('text-change', value);
   },
 
   /** @private */
   onBlur_: function() {
+    this.focused_ = false;
     this.resetAndUpdate();
     this.fire('text-blur', this.invalid);
   },
 
   /** @private */
   onFocus_: function() {
+    this.focused_ = true;
     this.fire('text-focus');
   },
 
@@ -169,20 +251,20 @@ Polymer({
       return;
     }
 
-    const orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
+    const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
     let x = this.translateTransform.x;
     let y = this.translateTransform.y;
     let width = null;
     let height = null;
-    if (this.side == orientationEnum.TOP) {
+    if (this.side == Orientation.TOP) {
       y = this.scaleTransform * this.positionInPts_ +
           this.translateTransform.y - RADIUS_PX;
       width = this.scaleTransform * this.pageSize.width;
-    } else if (this.side == orientationEnum.RIGHT) {
+    } else if (this.side == Orientation.RIGHT) {
       x = this.scaleTransform * (this.pageSize.width - this.positionInPts_) +
           this.translateTransform.x - RADIUS_PX;
       height = this.scaleTransform * this.pageSize.height;
-    } else if (this.side == orientationEnum.BOTTOM) {
+    } else if (this.side == Orientation.BOTTOM) {
       y = this.scaleTransform * (this.pageSize.height - this.positionInPts_) +
           this.translateTransform.y - RADIUS_PX;
       width = this.scaleTransform * this.pageSize.width;

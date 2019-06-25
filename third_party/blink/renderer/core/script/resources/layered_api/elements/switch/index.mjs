@@ -27,6 +27,10 @@ export class StdSwitchElement extends HTMLElement {
 
   constructor() {
     super();
+    if (new.target !== StdSwitchElement) {
+      throw new TypeError('Illegal constructor: StdSwitchElement is not ' +
+                          'extensible for now');
+    }
     this[_internals] = this.attachInternals();
     this._initializeDOM();
   }

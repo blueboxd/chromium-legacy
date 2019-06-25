@@ -11,6 +11,8 @@
 #include "ash/assistant/ui/assistant_container_view_focus_traversable.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace ash {
@@ -75,6 +77,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
 
   std::unique_ptr<AssistantContainerViewAnimator> animator_;
   AssistantContainerViewFocusTraversable focus_traversable_;
+
+  base::Optional<aura::WindowOcclusionTracker::ScopedExclude>
+      occlusion_excluder_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerView);
 };

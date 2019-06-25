@@ -30,7 +30,16 @@
             android:id="@+id/payment_container_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/retry_error"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:visibility="gone"
+                android:textAppearance="@style/TextAppearance.PaymentsUiSectionWarningText" />
+        </LinearLayout>
 
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
 

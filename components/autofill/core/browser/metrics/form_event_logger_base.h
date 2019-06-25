@@ -56,6 +56,9 @@ class FormEventLoggerBase {
                        AutofillSyncSigninState sync_state,
                        const FormStructure& form);
 
+  void OnTypedIntoNonFilledField();
+  void OnEditedAutofilledField();
+
  protected:
   virtual ~FormEventLoggerBase();
 
@@ -84,6 +87,10 @@ class FormEventLoggerBase {
                      FormEvent event,
                      const FormStructure& form) const {}
 
+  // Records UMA metrics on the funnel and key metrics. This is not virtual
+  // because it is called in the destructor.
+  void RecordFunnelAndKeyMetrics();
+
   // Constructor parameters.
   std::string form_type_name_;
   bool is_in_main_frame_;
@@ -91,6 +98,7 @@ class FormEventLoggerBase {
   // State variables.
   size_t server_record_type_count_ = 0;
   size_t local_record_type_count_ = 0;
+  bool has_parsed_form_ = false;
   bool has_logged_interacted_ = false;
   bool has_logged_popup_suppressed_ = false;
   bool has_logged_suggestions_shown_ = false;
@@ -98,6 +106,8 @@ class FormEventLoggerBase {
   bool has_logged_will_submit_ = false;
   bool has_logged_submitted_ = false;
   bool logged_suggestion_filled_was_server_data_ = false;
+  bool has_logged_typed_into_non_filled_field_ = false;
+  bool has_logged_edited_autofilled_field_ = false;
 
   // The last field that was polled for suggestions.
   FormFieldData last_polled_field_;

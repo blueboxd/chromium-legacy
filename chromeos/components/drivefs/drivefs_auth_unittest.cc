@@ -193,7 +193,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Permanent) {
   EXPECT_CALL(mock_identity_accessor_,
               GetAccessToken("test@example.com", _, "drivefs"))
       .WillOnce(testing::Return(std::make_pair(
-          base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED)));
+          base::nullopt, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
   ExpectAccessToken(false, mojom::AccessTokenStatus::kAuthError, "");
 }
 
@@ -235,7 +235,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_SequentialRequests) {
     EXPECT_CALL(mock_identity_accessor_,
                 GetAccessToken("test@example.com", _, "drivefs"))
         .WillOnce(testing::Return(std::make_pair(
-            base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED)));
+            base::nullopt, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
     ExpectAccessToken(false, mojom::AccessTokenStatus::kAuthError, "");
   }
 }

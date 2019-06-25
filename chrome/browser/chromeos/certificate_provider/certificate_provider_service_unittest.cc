@@ -12,12 +12,14 @@
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -135,6 +137,12 @@ class TestDelegate : public CertificateProviderService::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
+class MockObserver : public CertificateProviderService::Observer {
+ public:
+  MOCK_METHOD1(OnSignCompleted,
+               void(const scoped_refptr<net::X509Certificate>& certificate));
+};
+
 }  // namespace
 
 class CertificateProviderServiceTest : public testing::Test {
@@ -148,6 +156,8 @@ class CertificateProviderServiceTest : public testing::Test {
     std::unique_ptr<TestDelegate> test_delegate(new TestDelegate);
     test_delegate_ = test_delegate.get();
     service_->SetDelegate(std::move(test_delegate));
+
+    service_->AddObserver(&observer_);
 
     certificate_provider_ = service_->CreateCertificateProvider();
     EXPECT_TRUE(certificate_provider_);
@@ -230,6 +240,7 @@ class CertificateProviderServiceTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestDelegate* test_delegate_ = nullptr;
+  testing::StrictMock<MockObserver> observer_;
   std::unique_ptr<CertificateProvider> certificate_provider_;
   std::unique_ptr<CertificateProviderService> service_;
   const certificate_provider::CertificateInfo cert_info1_;
@@ -494,6 +505,8 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());
 
+  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate));
+
   std::vector<uint8_t> signature_reply;
   signature_reply.push_back(5);
   signature_reply.push_back(7);
@@ -571,6 +584,8 @@ TEST_F(CertificateProviderServiceTest, SignUsingSpkiAsIdentification) {
 
   // No signature received until the extension replied to the service.
   EXPECT_TRUE(received_signature.empty());
+
+  EXPECT_CALL(observer_, OnSignCompleted(cert_info1_.certificate));
 
   std::vector<uint8_t> signature_reply;
   signature_reply.push_back(5);

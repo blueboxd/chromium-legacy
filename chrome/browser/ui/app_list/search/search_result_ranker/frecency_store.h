@@ -52,6 +52,13 @@ class FrecencyStore {
   // updated, and none of the scores are below the |min_score_| threshold.
   const base::flat_map<std::string, FrecencyStore::ValueData>& GetAll();
 
+  // Returns the underlying storage data structure. This does not ensure scores
+  // are correct, and should not be used for scoring items. However it is
+  // useful, for example, for implementing custom cleanup logic.
+  base::flat_map<std::string, FrecencyStore::ValueData>* get_mutable_values() {
+    return &values_;
+  }
+
   void ToProto(FrecencyStoreProto* proto) const;
   void FromProto(const FrecencyStoreProto& proto);
 

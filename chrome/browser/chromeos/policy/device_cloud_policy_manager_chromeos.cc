@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/rsu/lookup_key_uploader.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
@@ -241,6 +242,7 @@ void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentCanExit, true);
   registry->RegisterDictionaryPref(prefs::kServerBackedDeviceState);
   registry->RegisterBooleanPref(prefs::kRemoveUsersRemoteCommand, false);
+  registry->RegisterStringPref(prefs::kLastRsuDeviceIdUploaded, std::string());
 }
 
 // static
@@ -305,6 +307,9 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
       new chromeos::attestation::EnrollmentCertificateUploaderImpl(client()));
   enrollment_policy_observer_.reset(
       new chromeos::attestation::EnrollmentPolicyObserver(client()));
+  lookup_key_uploader_.reset(
+      new LookupKeyUploader(device_store(), g_browser_process->local_state(),
+                            enrollment_certificate_uploader_.get()));
 
   // Don't create a MachineCertificateUploader or start the
   // AttestationPolicyObserver if machine cert requests are disabled.

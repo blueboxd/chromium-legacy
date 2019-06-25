@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
@@ -95,6 +96,13 @@ class CertificateProviderService : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when a sign request gets successfully completed.
+    virtual void OnSignCompleted(
+        const scoped_refptr<net::X509Certificate>& certificate) {}
+  };
+
   // |SetDelegate| must be called exactly once directly after construction.
   CertificateProviderService();
   ~CertificateProviderService() override;
@@ -104,6 +112,9 @@ class CertificateProviderService : public KeyedService {
   // not before, which allows to unregister observers (e.g. for
   // OnExtensionUnloaded) in the delegate's destructor on behalf of the service.
   void SetDelegate(std::unique_ptr<Delegate> delegate);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Must be called with the reply of an extension to a previous certificate
   // request. For each request, it is expected that every registered extension
@@ -214,6 +225,8 @@ class CertificateProviderService : public KeyedService {
       net::SSLPrivateKey::SignCallback callback);
 
   std::unique_ptr<Delegate> delegate_;
+
+  base::ObserverList<Observer> observers_;
 
   // The object to manage the dialog displayed when requestPin is called by the
   // extension.

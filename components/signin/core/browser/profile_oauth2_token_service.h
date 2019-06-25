@@ -37,8 +37,7 @@ class PrefRegistrySimple;
 // Consumer::OnGetTokenSuccess will be invoked, but the access token
 // won't be cached.
 //
-// Note: requests should be started from the UI thread. To start a
-// request from other thread, please use OAuth2TokenServiceRequest.
+// Note: requests should be started from the UI thread.
 class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,

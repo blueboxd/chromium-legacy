@@ -1435,9 +1435,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateToCrashedSingletonTab) {
   EXPECT_FALSE(web_contents->IsCrashed());
 }
 
-// Flaky crbug.com/977510
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_NavigateFromDefaultToOptionsInSameTab) {
+                       NavigateFromDefaultToOptionsInSameTab) {
   {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,

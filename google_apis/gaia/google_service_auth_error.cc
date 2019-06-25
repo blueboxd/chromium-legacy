@@ -101,8 +101,6 @@ bool GoogleServiceAuthError::IsValid(State state) {
     case INVALID_GAIA_CREDENTIALS:
     case USER_NOT_SIGNED_UP:
     case CONNECTION_FAILED:
-    case ACCOUNT_DELETED:
-    case ACCOUNT_DISABLED:
     case SERVICE_UNAVAILABLE:
     case REQUEST_CANCELED:
     case UNEXPECTED_SERVICE_RESPONSE:
@@ -145,10 +143,6 @@ std::string GoogleServiceAuthError::ToString() const {
       return "Not authorized.";
     case CONNECTION_FAILED:
       return base::StringPrintf("Connection failed (%d).", network_error_);
-    case ACCOUNT_DELETED:
-      return "Account deleted.";
-    case ACCOUNT_DISABLED:
-      return "Account disabled.";
     case SERVICE_UNAVAILABLE:
       return "Service unavailable; try again later.";
     case REQUEST_CANCELED:

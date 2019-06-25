@@ -654,6 +654,8 @@ TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   ASSERT_FALSE(entry->IsSigninRequired());
 }
 
+// Avatar icons not used on Android.
+#if !defined(OS_ANDROID)
 TEST_F(ProfileAttributesStorageTest, AvatarIconIndex) {
   AddTestingProfile();
 
@@ -673,6 +675,7 @@ TEST_F(ProfileAttributesStorageTest, AvatarIconIndex) {
   VerifyAndResetCallExpectations();
   ASSERT_EQ(3U, entry->GetAvatarIconIndex());
 }
+#endif
 
 // High res avatar downloading is only supported on desktop.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

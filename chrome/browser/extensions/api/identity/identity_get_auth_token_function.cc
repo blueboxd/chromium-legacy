@@ -512,8 +512,6 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
       }
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       // TODO(courage): flush ticket and retry once
       if (ShouldStartSigninFlow()) {
         StartSigninFlow();

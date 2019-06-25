@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "content/public/browser/render_frame_host.h"
@@ -23,6 +24,7 @@ class BrowserContext;
 
 namespace arc {
 
+class ArcSelectFilesHandler;
 class SelectFileDialogHolder;
 
 // Exposed for testing.
@@ -32,7 +34,47 @@ extern const char kScriptClickDirectory[];
 extern const char kScriptClickFile[];
 extern const char kScriptGetElements[];
 
-// Handler for FileSystemHost.SelectFiles.
+// Manages multiple ArcSelectFilesHandler instances.
+class ArcSelectFilesHandlersManager {
+ public:
+  explicit ArcSelectFilesHandlersManager(content::BrowserContext* context);
+  ~ArcSelectFilesHandlersManager();
+
+  // Handler for FileSystemHost.SelectFiles.
+  // Creates a new ArcSelectFilesHandler instance.
+  void SelectFiles(const mojom::SelectFilesRequestPtr& request,
+                   mojom::FileSystemHost::SelectFilesCallback callback);
+
+  // Handler for FileSystemHost.OnFileSelectorEvent.
+  // Routes the request to the right ArcSelectFilesHandler instance.
+  void OnFileSelectorEvent(
+      mojom::FileSelectorEventPtr event,
+      mojom::FileSystemHost::OnFileSelectorEventCallback callback);
+
+  // Handler for FileSystemHost.GetFileSelectorElements.
+  // Routes the request to the right ArcSelectFilesHandler instance.
+  void GetFileSelectorElements(
+      mojom::GetFileSelectorElementsRequestPtr request,
+      mojom::FileSystemHost::GetFileSelectorElementsCallback callback);
+
+ private:
+  // Helper function for SelectFiles.
+  void EraseHandlerAndRunCallback(
+      int task_id,
+      mojom::FileSystemHost::SelectFilesCallback callback,
+      mojom::SelectFilesResultPtr result);
+
+  content::BrowserContext* const context_;
+
+  // Map of Task ID -> ArcSelectFilesHandler.
+  std::map<int, std::unique_ptr<ArcSelectFilesHandler>> handlers_by_task_id_;
+
+  base::WeakPtrFactory<ArcSelectFilesHandlersManager> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSelectFilesHandlersManager);
+};
+
+// Manages a single SelectFileDialog instance.
 class ArcSelectFilesHandler : public ui::SelectFileDialog::Listener {
  public:
   explicit ArcSelectFilesHandler(content::BrowserContext* context);
@@ -82,7 +124,9 @@ class SelectFileDialogHolder {
   explicit SelectFileDialogHolder(ui::SelectFileDialog::Listener* listener);
   virtual ~SelectFileDialogHolder();
 
-  virtual void SelectFile(ui::SelectFileDialog::Type type,
+  // Obtains the owner window from |task_id| and opens the select file dialog
+  // with it. Returns false if the owner window is not found.
+  virtual bool SelectFile(ui::SelectFileDialog::Type type,
                           const base::FilePath& default_path,
                           const ui::SelectFileDialog::FileTypeInfo* file_types,
                           int task_id,

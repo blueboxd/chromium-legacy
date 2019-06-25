@@ -11,8 +11,13 @@
 // $ npm start
 // $ python ../../../../tools/perf/run_benchmark run blink_perf --browser=canary --test-path=websocket\receive-arraybuffer-1MBx100.html
 
+const params = (new URL(document.location)).searchParams;
+const server = params.get("server") || "ws://127.0.0.1:8001/";
+PerfTestRunner.log("Connect to " + server);
+const iteration = params.get("iteration") || 6;
+
 async function runTestCase() {
-  const ws = new WebSocket("ws://127.0.0.1:8001/");
+  const ws = new WebSocket(server);
   ws.binaryType = "arraybuffer";
   const onOpen = new Promise(resolve => {
     ws.onopen = () => {
@@ -42,7 +47,7 @@ PerfTestRunner.startMeasureValuesAsync({
   run: async function() {
     while (!isDone) await runTestCase();
   },
-  iterationCount: 6,
+  iterationCount: iteration,
 });
 </script>
 </body>

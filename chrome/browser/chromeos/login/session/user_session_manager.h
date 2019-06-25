@@ -149,8 +149,12 @@ class UserSessionManager
     // the OpenNetworkConfiguration policy.
     kNetwork = 0,
 
+    // The Kerberos service needs the login password if ${PASSWORD} is specified
+    // somewhere in the KerberosAccounts policy.
+    kKerberos = 1,
+
     // Should be last. All enum values must be consecutive starting from 0.
-    kCount = 1,
+    kCount = 2,
   };
 
   // Returns UserSessionManager instance.
@@ -338,14 +342,16 @@ class UserSessionManager
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
 
+ protected:
+  // Protected for testability reasons.
+  UserSessionManager();
+  ~UserSessionManager() override;
+
  private:
   friend class test::UserSessionManagerTestApi;
   friend struct base::DefaultSingletonTraits<UserSessionManager>;
 
   typedef std::set<std::string> SigninSessionRestoreStateSet;
-
-  UserSessionManager();
-  ~UserSessionManager() override;
 
   void SetNetworkConnectionTracker(
       network::NetworkConnectionTracker* network_connection_tracker);

@@ -5238,9 +5238,12 @@ void WebContentsImpl::OnInterfaceRequest(
   }
 }
 
-void WebContentsImpl::OnDidBlockFramebust(const GURL& url) {
+void WebContentsImpl::OnDidBlockNavigation(
+    const GURL& blocked_url,
+    const GURL& initiator_url,
+    blink::NavigationBlockedReason reason) {
   if (delegate_)
-    delegate_->OnDidBlockFramebust(this, url);
+    delegate_->OnDidBlockNavigation(this, blocked_url, initiator_url, reason);
 }
 
 const GURL& WebContentsImpl::GetMainFrameLastCommittedURL() {

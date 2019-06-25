@@ -1,0 +1,20 @@
+specific_include_rules = {
+  # The below files create IdentityManager instances from internal
+  # dependencies. TODO(https://crbug.com/974198): Internalize this building and
+  # eliminate the need for these inclusions.
+
+  "identity_manager_factory.cc": [
+    "+components/signin/core/browser/account_fetcher_service.h",
+    "+components/signin/core/browser/account_tracker_service.h",
+    "+components/signin/core/browser/gaia_cookie_manager_service.h",
+    "+components/signin/core/browser/primary_account_manager.h",
+    "+components/signin/core/browser/primary_account_policy_manager.h",
+    "+components/signin/core/browser/profile_oauth2_token_service.h",
+  ],
+
+  "profile_oauth2_token_service_builder.cc": [
+    "+components/signin/core/browser/profile_oauth2_token_service.h",
+    "+components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h",
+    "+components/signin/core/browser/oauth2_token_service_delegate_android.h",
+  ],
+}

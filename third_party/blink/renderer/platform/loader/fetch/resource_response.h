@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
@@ -118,7 +119,30 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   struct SecurityDetails {
     DISALLOW_NEW();
-    SecurityDetails() : valid_from(0), valid_to(0) {}
+    SecurityDetails(const String& protocol,
+                    const String& key_exchange,
+                    const String& key_exchange_group,
+                    const String& cipher,
+                    const String& mac,
+                    const String& subject_name,
+                    const Vector<String>& san_list,
+                    const String& issuer,
+                    time_t valid_from,
+                    time_t valid_to,
+                    const Vector<AtomicString>& certificate,
+                    const SignedCertificateTimestampList& sct_list)
+        : protocol(protocol),
+          key_exchange(key_exchange),
+          key_exchange_group(key_exchange_group),
+          cipher(cipher),
+          mac(mac),
+          subject_name(subject_name),
+          san_list(san_list),
+          issuer(issuer),
+          valid_from(valid_from),
+          valid_to(valid_to),
+          certificate(certificate),
+          sct_list(sct_list) {}
     // All strings are human-readable values.
     String protocol;
     // keyExchange is the empty string if not applicable for the connection's
@@ -268,8 +292,8 @@ class PLATFORM_EXPORT ResourceResponse final {
     security_style_ = security_style;
   }
 
-  const SecurityDetails* GetSecurityDetails() const {
-    return &security_details_;
+  const base::Optional<SecurityDetails>& GetSecurityDetails() const {
+    return security_details_;
   }
   void SetSecurityDetails(const String& protocol,
                           const String& key_exchange,
@@ -511,9 +535,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   SecurityStyle security_style_ = kSecurityStyleUnknown;
 
   // Security details of this request's connection.
-  // If m_securityStyle is Unknown or Unauthenticated, this does not contain
-  // valid data.
-  SecurityDetails security_details_;
+  base::Optional<SecurityDetails> security_details_;
 
   scoped_refptr<ResourceLoadTiming> resource_load_timing_;
   scoped_refptr<ResourceLoadInfo> resource_load_info_;

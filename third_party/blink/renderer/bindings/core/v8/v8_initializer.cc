@@ -548,8 +548,6 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-  isolate->SetEmbedderHeapTracer(static_cast<v8::EmbedderHeapTracer*>(
-      V8PerIsolateData::From(isolate)->GetUnifiedHeapController()));
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
@@ -562,6 +560,10 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
 
   WasmResponseExtensions::Initialize(isolate);
+
+  ThreadState::Current()->AttachToIsolate(
+      isolate, V8GCController::TraceDOMWrappers,
+      EmbedderGraphBuilder::BuildEmbedderGraphCallback);
 }
 
 namespace {
@@ -633,8 +635,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   // over to Blink.
   DCHECK(ThreadState::MainThreadState());
 
-  ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
-      isolate, V8GCController::TraceDOMWrappers);
   InitializeV8Common(isolate);
 
   isolate->SetOOMErrorHandler(ReportOOMErrorInMainThread);
@@ -658,11 +658,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
 
-  if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
-    profiler->AddBuildEmbedderGraphCallback(
-        &EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
-  }
-
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
 }
@@ -680,8 +675,6 @@ static void ReportFatalErrorInWorker(const char* location,
 static const int kWorkerMaxStackSize = 500 * 1024;
 
 void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
-  ThreadState::Current()->RegisterTraceDOMWrappers(
-      isolate, V8GCController::TraceDOMWrappers);
   InitializeV8Common(isolate);
 
   isolate->AddMessageListenerWithErrorLevel(

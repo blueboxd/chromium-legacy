@@ -258,10 +258,19 @@ MockProducer::MockProducer(const std::string& producer_name,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {
-  data_source_ =
-      std::make_unique<TestDataSource>(data_source_name, num_packets);
+  // Construct MockProducerClient before TestDataSource to avoid a race.
+  //
+  // TestDataSource calls AddDataSource on the global PerfettoTracedProcess,
+  // which PostTasks to the threadpool in the task it will access the
+  // |producer_client_| pointer that the PerfettoTracedProcess owns. However in
+  // the constructor for MockProducerClient we will set the |producer_client_|
+  // from the real client to the mock, however this is done on a different
+  // sequence and thus we have a race. By setting the pointer before we
+  // construct the data source the TestDataSource can not race.
   producer_client_ = std::make_unique<MockProducerClient>(
       /* num_data_sources = */ 1, std::move(on_tracing_started));
+  data_source_ =
+      std::make_unique<TestDataSource>(data_source_name, num_packets);
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),

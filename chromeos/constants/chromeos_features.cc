@@ -118,17 +118,6 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 const base::Feature kSplitSettings{"SplitSettings",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, a new screen will be shown at the end of the OOBE/Login for
-// supervised users. It will display a loading page while we fetch
-// eligibility data.
-const base::Feature kSupervisionOnboardingEligibility{
-    "SupervisionOnboardingEligibility", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, we will display the full onboarding flow for eligible supervised
-// users.
-const base::Feature kSupervisionOnboardingScreens{
-    "SupervisionOnboardingScreens", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
     "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};

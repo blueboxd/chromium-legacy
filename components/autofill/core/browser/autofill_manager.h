@@ -503,6 +503,11 @@ class AutofillManager : public AutofillHandler,
                                std::vector<Suggestion>* suggestions,
                                SuggestionsContext* context);
 
+  // Returns an appropriate EventFormLogger for the given |field_type_group|.
+  // May return nullptr.
+  FormEventLoggerBase* GetEventFormLogger(
+      FieldTypeGroup field_type_group) const;
+
   AutofillClient* const client_;
 
   std::string app_locale_;
@@ -692,6 +697,11 @@ class AutofillManager : public AutofillHandler,
                            OnLoadedServerPredictions_ResetManager);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DontOfferToSavePaymentsCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, FillInUpdatedExpirationDate);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsFunnelTest, LogFunnelMetrics);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsKeyMetricsTest,
+                           LogUserFixesFilledData);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsKeyMetricsTest,
+                           LogUserFixesFilledDataButDoesNotSubmit);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 

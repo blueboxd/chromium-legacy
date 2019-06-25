@@ -46,6 +46,7 @@
 #include "content/public/common/page_zoom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -551,8 +552,10 @@ class Browser : public TabStripModelObserver,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
-  void OnDidBlockFramebust(content::WebContents* web_contents,
-                           const GURL& url) override;
+  void OnDidBlockNavigation(content::WebContents* web_contents,
+                            const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason) override;
   content::PictureInPictureResult EnterPictureInPicture(
       content::WebContents* web_contents,
       const viz::SurfaceId&,

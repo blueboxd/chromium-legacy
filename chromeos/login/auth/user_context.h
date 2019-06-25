@@ -60,8 +60,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   // its hashed/transformed representation.
   const Key* GetKey() const;
   Key* GetKey();
-  // The plain-text user password. Initialized only on enterprise enrolled
-  // devices. See https://crbug.com/386606.
+  // The plain-text user password. See https://crbug.com/386606.
   const Key* GetPasswordKey() const;
   Key* GetMutablePasswordKey();
   // The challenge-response keys for user authentication. Currently, such keys

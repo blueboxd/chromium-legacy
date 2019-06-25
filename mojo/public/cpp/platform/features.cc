@@ -12,7 +12,7 @@ namespace features {
 // transport mechanism for PlatformChannel. Otherwise, macOS defaults to using
 // ChannelPosix.
 const base::Feature kMojoChannelMac{"MojoChannelMac",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features

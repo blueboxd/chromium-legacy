@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
@@ -16,23 +17,21 @@ namespace chromeos {
 
 // static
 std::unique_ptr<InSessionPasswordChangeManager>
-InSessionPasswordChangeManager::CreateIfEnabled(
-    Profile* primary_profile,
-    const user_manager::User* primary_user) {
+InSessionPasswordChangeManager::CreateIfEnabled(Profile* primary_profile) {
   if (primary_profile->GetPrefs()->GetBoolean(
           prefs::kSamlInSessionPasswordChangeEnabled)) {
-    return std::make_unique<InSessionPasswordChangeManager>(primary_profile,
-                                                            primary_user);
+    return std::make_unique<InSessionPasswordChangeManager>(primary_profile);
   }
   return nullptr;
 }
 
 InSessionPasswordChangeManager::InSessionPasswordChangeManager(
-    Profile* primary_profile,
-    const user_manager::User* primary_user)
+    Profile* primary_profile)
     : primary_profile_(primary_profile),
-      primary_user_(primary_user),
-      authenticator_(new ChromeCryptohomeAuthenticator(this)) {}
+      primary_user_(ProfileHelper::Get()->GetUserByProfile(primary_profile)),
+      authenticator_(new ChromeCryptohomeAuthenticator(this)) {
+  DCHECK(primary_user_);
+}
 
 InSessionPasswordChangeManager::~InSessionPasswordChangeManager() {}
 

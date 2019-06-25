@@ -27,8 +27,6 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_STATS_USAGE = 183078,
     // Showed whenever there're troubles signing in.
     HELP_CANT_ACCESS_ACCOUNT = 188036,
-    // Showed in case when account was disabled.
-    HELP_ACCOUNT_DISABLED = 188756,
     // Showed as "Learn more" about enterprise enrolled devices.
     HELP_ENTERPRISE = 2535613,
     // Shown at reset screen as "Learn more" about powerwash/rollback options.

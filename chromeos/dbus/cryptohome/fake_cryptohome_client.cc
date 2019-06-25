@@ -171,6 +171,15 @@ void FakeCryptohomeClient::MountGuestEx(
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
+void FakeCryptohomeClient::GetRsuDeviceId(
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  cryptohome::BaseReply reply;
+  cryptohome::GetRsuDeviceIdReply* get_rsu_lookup_key_reply =
+      reply.MutableExtension(cryptohome::GetRsuDeviceIdReply::reply);
+  get_rsu_lookup_key_reply->set_rsu_device_id(rsu_device_id_);
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
+
 void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));

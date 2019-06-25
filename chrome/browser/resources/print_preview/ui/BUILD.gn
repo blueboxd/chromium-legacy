@@ -348,6 +348,7 @@ js_library("margin_control") {
     ":input_behavior",
     "../data:coordinate2d",
     "../data:margins",
+    "../data:measurement_system",
     "../data:size",
     "//ui/webui/resources/js:i18n_behavior",
   ]

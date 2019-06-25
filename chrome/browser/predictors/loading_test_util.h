@@ -69,6 +69,10 @@ content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     content::ResourceType resource_type = content::ResourceType::kMainFrame,
     bool always_access_network = false);
 
+content::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
+    const std::string& url,
+    content::ResourceType resource_type = content::ResourceType::kMainFrame);
+
 content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
     content::ResourceType resource_type = content::ResourceType::kMainFrame);

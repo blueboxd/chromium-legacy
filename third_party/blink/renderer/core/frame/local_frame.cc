@@ -37,6 +37,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -1017,6 +1018,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
+        Client()->DidBlockNavigation(
+            destination_url, GetDocument()->Url(),
+            blink::NavigationBlockedReason::kRedirectWithNoUserGestureSandbox);
         PrintNavigationErrorMessage(
             target_frame,
             "The frame attempting navigation of the top-level window is "
@@ -1089,7 +1093,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
         "but is neither same-origin with its target nor has it received a "
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.");
-    Client()->DidBlockFramebust(destination_url);
+    Client()->DidBlockNavigation(
+        destination_url, GetDocument()->Url(),
+        blink::NavigationBlockedReason::kRedirectWithNoUserGesture);
   } else {
     PrintNavigationErrorMessage(target_frame,
                                 "The frame attempting navigation is neither "

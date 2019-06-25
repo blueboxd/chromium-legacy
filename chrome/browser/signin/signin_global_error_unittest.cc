@@ -123,8 +123,6 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
       {GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true},
       {GoogleServiceAuthError::USER_NOT_SIGNED_UP, true},
       {GoogleServiceAuthError::CONNECTION_FAILED, false},
-      {GoogleServiceAuthError::ACCOUNT_DELETED, true},
-      {GoogleServiceAuthError::ACCOUNT_DISABLED, true},
       {GoogleServiceAuthError::SERVICE_UNAVAILABLE, false},
       {GoogleServiceAuthError::REQUEST_CANCELED, false},
       {GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true},

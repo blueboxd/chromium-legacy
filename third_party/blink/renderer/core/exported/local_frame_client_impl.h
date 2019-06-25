@@ -278,7 +278,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void AnnotatedRegionsChanged() override;
 
-  void DidBlockFramebust(const KURL&) override;
+  void DidBlockNavigation(const KURL& blocked_url,
+                          const KURL& initiator_url,
+                          blink::NavigationBlockedReason reason) override;
 
   base::UnguessableToken GetDevToolsFrameToken() const override;
 

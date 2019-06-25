@@ -165,7 +165,7 @@ base::Value ValidateCddForPrintPreview(base::Value cdd) {
 }
 
 void ConvertPrinterListForCallback(
-    const PrinterHandler::AddedPrintersCallback& callback,
+    PrinterHandler::AddedPrintersCallback callback,
     PrinterHandler::GetPrintersDoneCallback done_callback,
     const PrinterList& printer_list) {
   base::ListValue printers;

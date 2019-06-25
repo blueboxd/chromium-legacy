@@ -14,61 +14,6 @@
 namespace mojo {
 
 // static
-autofill::mojom::PasswordFormFieldPredictionType
-EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
-           autofill::PasswordFormFieldPredictionType>::
-    ToMojom(autofill::PasswordFormFieldPredictionType input) {
-  switch (input) {
-    case autofill::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
-      return autofill::mojom::PasswordFormFieldPredictionType::
-          PREDICTION_USERNAME;
-    case autofill::PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
-      return autofill::mojom::PasswordFormFieldPredictionType::
-          PREDICTION_CURRENT_PASSWORD;
-    case autofill::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
-      return autofill::mojom::PasswordFormFieldPredictionType::
-          PREDICTION_NEW_PASSWORD;
-    case autofill::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
-      return autofill::mojom::PasswordFormFieldPredictionType::
-          PREDICTION_NOT_PASSWORD;
-  }
-
-  NOTREACHED();
-  return autofill::mojom::PasswordFormFieldPredictionType::
-      PREDICTION_NOT_PASSWORD;
-}
-
-// static
-bool EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
-                autofill::PasswordFormFieldPredictionType>::
-    FromMojom(autofill::mojom::PasswordFormFieldPredictionType input,
-              autofill::PasswordFormFieldPredictionType* output) {
-  switch (input) {
-    case autofill::mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
-      *output = autofill::PasswordFormFieldPredictionType::PREDICTION_USERNAME;
-      return true;
-    case autofill::mojom::PasswordFormFieldPredictionType::
-        PREDICTION_CURRENT_PASSWORD:
-      *output = autofill::PasswordFormFieldPredictionType::
-          PREDICTION_CURRENT_PASSWORD;
-      return true;
-    case autofill::mojom::PasswordFormFieldPredictionType::
-        PREDICTION_NEW_PASSWORD:
-      *output =
-          autofill::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
-      return true;
-    case autofill::mojom::PasswordFormFieldPredictionType::
-        PREDICTION_NOT_PASSWORD:
-      *output =
-          autofill::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
-      return true;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-// static
 bool StructTraits<
     autofill::mojom::FormFieldDataDataView,
     autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,
@@ -363,11 +308,11 @@ StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
 }
 
 // static
-std::vector<autofill::PasswordFormFieldPredictionType>
+std::vector<autofill::mojom::PasswordFormFieldPredictionType>
 StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
              autofill::PasswordFormFieldPredictionMap>::
     values(const autofill::PasswordFormFieldPredictionMap& r) {
-  std::vector<autofill::PasswordFormFieldPredictionType> types;
+  std::vector<autofill::mojom::PasswordFormFieldPredictionType> types;
   for (const auto& i : r)
     types.push_back(i.second);
   return types;
@@ -382,7 +327,7 @@ bool StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
   std::vector<autofill::FormFieldData> keys;
   if (!data.ReadKeys(&keys))
     return false;
-  std::vector<autofill::PasswordFormFieldPredictionType> values;
+  std::vector<autofill::mojom::PasswordFormFieldPredictionType> values;
   if (!data.ReadValues(&values))
     return false;
   if (keys.size() != values.size())

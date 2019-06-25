@@ -1001,7 +1001,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, FetchPersistentError) {
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_service_delegate_->GetAuthError(email));
 
-  GoogleServiceAuthError authfail(GoogleServiceAuthError::ACCOUNT_DELETED);
+  GoogleServiceAuthError authfail(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   oauth2_service_delegate_->UpdateAuthError(email, authfail);
   EXPECT_NE(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_service_delegate_->GetAuthError(email));

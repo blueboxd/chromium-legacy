@@ -28,12 +28,14 @@ struct NET_EXPORT DnsConfig {
   DnsConfig();
   DnsConfig(const DnsConfig& other);
   DnsConfig(DnsConfig&& other);
+  explicit DnsConfig(std::vector<IPEndPoint> nameservers);
   ~DnsConfig();
 
   DnsConfig& operator=(const DnsConfig& other);
   DnsConfig& operator=(DnsConfig&& other);
 
   bool Equals(const DnsConfig& d) const;
+  bool operator==(const DnsConfig& d) const;
 
   bool EqualsIgnoreHosts(const DnsConfig& d) const;
 

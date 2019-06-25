@@ -129,10 +129,8 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
                                        PolicyService::Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto it = observers_.find(domain);
-  if (it == observers_.end()) {
-    NOTREACHED();
+  if (it == observers_.end())
     return;
-  }
   it->second->RemoveObserver(observer);
   if (!it->second->might_have_observers()) {
     observers_.erase(it);

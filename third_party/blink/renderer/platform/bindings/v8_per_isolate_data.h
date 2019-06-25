@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -217,14 +216,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return active_script_wrappables_.Get();
   }
 
-  UnifiedHeapController* GetUnifiedHeapController() const {
-    return unified_heap_controller_.get();
-  }
-
-  v8::EmbedderHeapTracer* GetEmbedderHeapTracer() const {
-    return static_cast<v8::EmbedderHeapTracer*>(GetUnifiedHeapController());
-  }
-
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
                    V8ContextSnapshotMode);
@@ -293,7 +284,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   Persistent<GarbageCollectedData> profiler_group_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
-  std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;
 

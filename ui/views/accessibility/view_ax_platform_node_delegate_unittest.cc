@@ -78,11 +78,68 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
         &label_->GetViewAccessibility());
   }
 
+  ViewAXPlatformNodeDelegate* view_accessibility(View* view) {
+    return static_cast<ViewAXPlatformNodeDelegate*>(
+        &view->GetViewAccessibility());
+  }
+
   bool SetFocused(ViewAXPlatformNodeDelegate* ax_delegate, bool focused) {
     ui::AXActionData data;
     data.action =
         focused ? ax::mojom::Action::kFocus : ax::mojom::Action::kBlur;
     return ax_delegate->AccessibilityPerformAction(data);
+  }
+
+  // Sets up a more complicated structure of Views - one parent View with four
+  // child Views.
+  std::vector<View*> SetUpExtraViews() {
+    View* parent_view = new View();
+    widget_->GetContentsView()->AddChildView(parent_view);
+    std::vector<View*> views{parent_view};
+
+    const int num_children = 4;
+    for (int i = 0; i < num_children; i++) {
+      View* child_view = new View();
+      parent_view->AddChildView(child_view);
+      views.push_back(child_view);
+    }
+    return views;
+  }
+
+  // Adds group id information to the first 5 values in |views|. If |views| is
+  // empty, populates it with one parent View and four child Views. It is
+  // assumed |views| is either empty or has at least 5 items.
+  void SetUpExtraViewsWithGroups(std::vector<View*>& views) {
+    //                v[0] g1
+    //     |        |        |      |
+    // v[1] g1  v[2] g1  v[3] g2  v[4]
+    if (views.empty())
+      views = SetUpExtraViews();
+    EXPECT_GE(views.size(), (size_t)5);
+
+    views[0]->SetGroup(1);
+    views[1]->SetGroup(1);
+    views[2]->SetGroup(1);
+    views[3]->SetGroup(2);
+    // Skip views[4] - no group id.
+  }
+
+  // Adds posInSet and setSize overrides to the first 5 values in |views|. If
+  // |views| is empty, populates it with one parent View and four child Views.
+  // It is assumed |views| is either empty or has at least 5 items.
+  void SetUpExtraViewsWithSetOverrides(std::vector<View*>& views) {
+    //                     v[0] p4 s4
+    //      |            |            |            |
+    //  v[1] p3 s4   v[2] p2 s4   v[3] p- s-   v[4] p1 s4
+    if (views.empty())
+      views = SetUpExtraViews();
+    EXPECT_GE(views.size(), (size_t)5);
+
+    views[0]->GetViewAccessibility().OverridePosInSet(4, 4);
+    views[1]->GetViewAccessibility().OverridePosInSet(3, 4);
+    views[2]->GetViewAccessibility().OverridePosInSet(2, 4);
+    // Skip views[3] - no override.
+    views[4]->GetViewAccessibility().OverridePosInSet(1, 4);
   }
 
  protected:
@@ -183,6 +240,101 @@ TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdDefault) {
 TEST_F(ViewAXPlatformNodeDelegateTest, GetAuthorUniqueIdNonDefault) {
   ASSERT_EQ(base::WideToUTF16(L"view_1"),
             button_accessibility()->GetAuthorUniqueId());
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, IsOrderedSet) {
+  std::vector<View*> group_ids;
+  SetUpExtraViewsWithGroups(group_ids);
+  // Only last element has no group id.
+  EXPECT_TRUE(view_accessibility(group_ids[0])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(group_ids[1])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(group_ids[2])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(group_ids[3])->IsOrderedSet());
+  EXPECT_FALSE(view_accessibility(group_ids[4])->IsOrderedSet());
+
+  EXPECT_TRUE(view_accessibility(group_ids[0])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(group_ids[1])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(group_ids[2])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(group_ids[3])->IsOrderedSetItem());
+  EXPECT_FALSE(view_accessibility(group_ids[4])->IsOrderedSetItem());
+
+  std::vector<View*> overrides;
+  SetUpExtraViewsWithSetOverrides(overrides);
+  // Only overrides[3] has no override values for setSize/ posInSet.
+  EXPECT_TRUE(view_accessibility(overrides[0])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(overrides[1])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(overrides[2])->IsOrderedSet());
+  EXPECT_FALSE(view_accessibility(overrides[3])->IsOrderedSet());
+  EXPECT_TRUE(view_accessibility(overrides[4])->IsOrderedSet());
+
+  EXPECT_TRUE(view_accessibility(overrides[0])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(overrides[1])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(overrides[2])->IsOrderedSetItem());
+  EXPECT_FALSE(view_accessibility(overrides[3])->IsOrderedSetItem());
+  EXPECT_TRUE(view_accessibility(overrides[4])->IsOrderedSetItem());
+}
+
+TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
+  // Test Views with group ids.
+  std::vector<View*> group_ids;
+  SetUpExtraViewsWithGroups(group_ids);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 3);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 1);
+  EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 3);
+  EXPECT_EQ(view_accessibility(group_ids[1])->GetPosInSet(), 2);
+  EXPECT_EQ(view_accessibility(group_ids[2])->GetSetSize(), 3);
+  EXPECT_EQ(view_accessibility(group_ids[2])->GetPosInSet(), 3);
+
+  EXPECT_EQ(view_accessibility(group_ids[3])->GetSetSize(), 1);
+  EXPECT_EQ(view_accessibility(group_ids[3])->GetPosInSet(), 1);
+
+  EXPECT_FALSE(view_accessibility(group_ids[4])->GetSetSize().has_value());
+  EXPECT_FALSE(view_accessibility(group_ids[4])->GetPosInSet().has_value());
+
+  // Check if a View is ignored, it is not counted in SetSize or PosInSet
+  group_ids[1]->GetViewAccessibility().OverrideIsIgnored(true);
+  group_ids[2]->GetViewAccessibility().OverrideIsIgnored(true);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 1);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 1);
+  EXPECT_FALSE(view_accessibility(group_ids[1])->GetSetSize().has_value());
+  EXPECT_FALSE(view_accessibility(group_ids[1])->GetPosInSet().has_value());
+  EXPECT_FALSE(view_accessibility(group_ids[2])->GetSetSize().has_value());
+  EXPECT_FALSE(view_accessibility(group_ids[2])->GetPosInSet().has_value());
+  group_ids[1]->GetViewAccessibility().OverrideIsIgnored(false);
+  group_ids[2]->GetViewAccessibility().OverrideIsIgnored(false);
+
+  // Test Views with setSize/ posInSet override values set.
+  std::vector<View*> overrides;
+  SetUpExtraViewsWithSetOverrides(overrides);
+  EXPECT_EQ(view_accessibility(overrides[0])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(overrides[0])->GetPosInSet(), 4);
+  EXPECT_EQ(view_accessibility(overrides[1])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(overrides[1])->GetPosInSet(), 3);
+  EXPECT_EQ(view_accessibility(overrides[2])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(overrides[2])->GetPosInSet(), 2);
+
+  EXPECT_FALSE(view_accessibility(overrides[3])->GetSetSize().has_value());
+  EXPECT_FALSE(view_accessibility(overrides[3])->GetPosInSet().has_value());
+
+  EXPECT_EQ(view_accessibility(overrides[4])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(overrides[4])->GetPosInSet(), 1);
+
+  // Test Views with both group ids and setSize/ posInSet override values set.
+  // Make sure the override values take precedence when both are set.
+  // Add setSize/ posInSet overrides to the Views with group ids.
+  SetUpExtraViewsWithSetOverrides(group_ids);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(group_ids[0])->GetPosInSet(), 4);
+  EXPECT_EQ(view_accessibility(group_ids[1])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(group_ids[1])->GetPosInSet(), 3);
+  EXPECT_EQ(view_accessibility(group_ids[2])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(group_ids[2])->GetPosInSet(), 2);
+
+  EXPECT_EQ(view_accessibility(group_ids[3])->GetSetSize(), 1);
+  EXPECT_EQ(view_accessibility(group_ids[3])->GetPosInSet(), 1);
+
+  EXPECT_EQ(view_accessibility(group_ids[4])->GetSetSize(), 4);
+  EXPECT_EQ(view_accessibility(group_ids[4])->GetPosInSet(), 1);
 }
 
 #if defined(USE_AURA)

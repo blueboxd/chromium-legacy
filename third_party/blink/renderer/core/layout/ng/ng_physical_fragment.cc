@@ -565,4 +565,16 @@ PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
   return {offset_to_container_box, fragment->Size()};
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const NGPhysicalFragment& fragment) {
+  return out << fragment.ToString();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const NGPhysicalFragment* fragment) {
+  if (!fragment)
+    return out << "<null>";
+  return out << *fragment;
+}
+
 }  // namespace blink

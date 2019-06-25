@@ -238,20 +238,6 @@ TEST_F(GaiaAuthFetcherTest, ParseErrorRequest) {
       "E", "U");
 }
 
-TEST_F(GaiaAuthFetcherTest, AccountDeletedError) {
-  std::string data = "Error=AccountDeleted\n";
-  GoogleServiceAuthError error =
-      GaiaAuthFetcher::GenerateAuthError(data, net::OK);
-  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DELETED);
-}
-
-TEST_F(GaiaAuthFetcherTest, AccountDisabledError) {
-  std::string data = "Error=AccountDisabled\n";
-  GoogleServiceAuthError error =
-      GaiaAuthFetcher::GenerateAuthError(data, net::OK);
-  EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DISABLED);
-}
-
 TEST_F(GaiaAuthFetcherTest, BadAuthenticationError) {
   std::string data = "Error=BadAuthentication\n";
   GoogleServiceAuthError error =

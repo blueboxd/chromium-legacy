@@ -140,8 +140,6 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
       break;
     // The following errors are unexpected on iOS.
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
     case GoogleServiceAuthError::SERVICE_ERROR:
     // Conventional value for counting the states, never used.
     case GoogleServiceAuthError::NUM_STATES:

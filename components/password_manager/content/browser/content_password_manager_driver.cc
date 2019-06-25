@@ -113,8 +113,7 @@ void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
 }
 
 void ContentPasswordManagerDriver::AutofillDataReceived(
-    const std::map<autofill::FormData,
-                   autofill::PasswordFormFieldPredictionMap>& predictions) {
+    const autofill::FormsPredictionsMap& predictions) {
   GetPasswordAutofillAgent()->AutofillUsernameAndPasswordDataReceived(
       predictions);
 }

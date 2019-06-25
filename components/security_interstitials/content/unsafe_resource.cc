@@ -47,6 +47,7 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
     case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
     // Malicious ad activity reporting happens in the background.
     case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+    case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
     // Ad sampling happens in the background.
     case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
     // Sign-in password reuse warning happens after the page is finished

@@ -90,6 +90,12 @@ cr.define('multidevice_setup', function() {
         value: true,
       },
 
+      /** Whether the webview is currently loading. */
+      isWebviewLoading_: {
+        type: Boolean,
+        value: false,
+      },
+
       /**
        * URL for the webview to display.
        * @private {string|undefined}
@@ -107,6 +113,10 @@ cr.define('multidevice_setup', function() {
     /** @override */
     attached: function() {
       this.delegate_ = new MultiDeviceSetupFirstRunDelegate();
+      this.$.multideviceHelpOverlayWebview.addEventListener(
+          'contentload', () => {
+            this.isWebviewLoading_ = false;
+          });
     },
 
     /** @override */
@@ -137,21 +147,9 @@ cr.define('multidevice_setup', function() {
       }
     },
 
-    /**
-     * @param {boolean} shouldShow
-     * @param {string=} opt_url
-     * @private
-     */
-    setWebviewOverlayVisibility_: function(shouldShow, opt_url) {
-      if (opt_url) {
-        this.webviewSrc_ = opt_url;
-      }
-      this.webviewOverlayHidden_ = !shouldShow;
-    },
-
     /** @private */
     hideWebviewOverlay_: function() {
-      this.setWebviewOverlayVisibility_(false /* shouldShow */);
+      this.webviewOverlayHidden_ = true;
     },
 
     /**
@@ -159,8 +157,9 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     onOpenLearnMoreWebviewRequested_: function(event) {
-      this.setWebviewOverlayVisibility_(
-          true /* shouldShow */, event.detail /* url */);
+      this.isWebviewLoading_ = true;
+      this.webviewSrc_ = event.detail;
+      this.webviewOverlayHidden_ = false;
     },
 
     /** @private */

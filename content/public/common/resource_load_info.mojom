@@ -9,6 +9,7 @@ import "content/public/common/resource_type.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 import "url/mojom/url.mojom";
 
 // Network related information reported for loads and redirects.
@@ -54,6 +55,9 @@ struct ResourceLoadInfo {
 
   // The resource type.
   ResourceType resource_type;
+
+  // Loading priority of the corresponding request.
+  network.mojom.RequestPriority request_priority;
 
   // The mime type.
   string mime_type;

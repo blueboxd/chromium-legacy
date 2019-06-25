@@ -10,7 +10,7 @@
  * @package
  */
 
-const DEFAULT_DURATION = 2000;
+const DEFAULT_DURATION = 3000;
 
 function stylesheetFactory() {
   let stylesheet;

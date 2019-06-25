@@ -570,6 +570,10 @@ Polymer({
    */
   showUnifiedDesktop_: function(
       unifiedDesktopAvailable, unifiedDesktopMode, displays) {
+    if (displays === undefined) {
+      return false;
+    }
+
     return unifiedDesktopMode ||
         (unifiedDesktopAvailable && displays.length > 1 &&
          !this.isMirrored_(displays));

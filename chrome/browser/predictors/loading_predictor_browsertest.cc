@@ -17,10 +17,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
@@ -58,8 +60,11 @@ const char kInvalidLongUrl[] =
     "0000000000000000000000000000000000000000000000000000.org";
 
 const char kHtmlSubresourcesPath[] = "/predictors/html_subresources.html";
-const std::string kHtmlSubresourcesHosts[] = {"test.com", "baz.com", "foo.com",
-                                              "bar.com"};
+// The embedded test server runs on test.com.
+// kHtmlSubresourcesPath contains high priority resources from baz.com and
+// foo.com. kHtmlSubresourcesPath also contains a low priority resource from
+// bar.com.
+const char* const kHtmlSubresourcesHosts[] = {"test.com", "baz.com", "foo.com"};
 
 std::string GetPathWithPortReplacement(const std::string& path, uint16_t port) {
   std::string string_port = base::StringPrintf("%d", port);
@@ -374,6 +379,8 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   ~LoadingPredictorBrowserTest() override {}
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kLoadingOnlyLearnHighPriorityResources);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
@@ -458,6 +465,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ConnectionListener> connection_listener_;
   std::unique_ptr<ConnectionTracker> connection_tracker_;
   std::unique_ptr<TestPreconnectManagerObserver> preconnect_manager_observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictorBrowserTest);
 };
 
@@ -581,12 +589,43 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 // Tests that the LoadingPredictor has a prediction for a host after navigating
 // to it.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
+  base::test::ScopedFeatureList scoped_feature_list;
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));
   std::vector<PreconnectRequest> requests;
-  for (const auto& host : kHtmlSubresourcesHosts)
+  for (auto* const host : kHtmlSubresourcesHosts)
     requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  auto prediction = GetPreconnectPrediction(url);
+  ASSERT_TRUE(prediction);
+  EXPECT_EQ(prediction->is_redirected, false);
+  EXPECT_EQ(prediction->host, url.host());
+  EXPECT_THAT(prediction->requests,
+              testing::UnorderedElementsAreArray(requests));
+}
+
+// Tests that the LoadingPredictor has a prediction for a host after navigating
+// to it. Disables kLoadingOnlyLearnHighPriorityResources.
+IN_PROC_BROWSER_TEST_F(
+    LoadingPredictorBrowserTest,
+    LearnFromNavigation_DisablekLoadingOnlyLearnHighPriorityResources) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kLoadingOnlyLearnHighPriorityResources);
+
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+  std::vector<PreconnectRequest> requests;
+  for (auto* const host : kHtmlSubresourcesHosts)
+    requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1);
+
+  // When kLoadingOnlyLearnHighPriorityResources is disabled, loading data
+  // collector should learn the loading of low priority resources hosted on
+  // bar.com as well.
+  requests.emplace_back(embedded_test_server()->GetURL("bar.com", "/"), 1);
 
   ui_test_utils::NavigateToURL(browser(), url);
   auto prediction = GetPreconnectPrediction(url);
@@ -608,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
       "redirect.com",
       base::StringPrintf("/server-redirect?%s", redirect_url.spec().c_str()));
   std::vector<PreconnectRequest> requests;
-  for (const auto& host : kHtmlSubresourcesHosts)
+  for (auto* const host : kHtmlSubresourcesHosts)
     requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1);
 
   ui_test_utils::NavigateToURL(browser(), original_url);
@@ -648,8 +687,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
-  for (const auto& host : kHtmlSubresourcesHosts) {
-    GURL url(base::StringPrintf("http://%s", host.c_str()));
+  for (auto* const host : kHtmlSubresourcesHosts) {
+    GURL url(base::StringPrintf("http://%s", host));
     preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
     EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
   }
@@ -851,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
 
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
-  for (const auto& host : kHtmlSubresourcesHosts) {
+  for (auto* const host : kHtmlSubresourcesHosts) {
     GURL url = embedded_test_server()->GetURL(host, "/");
     preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
     EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));

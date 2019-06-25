@@ -46,6 +46,7 @@
 
 using autofill::FormData;
 using autofill::PasswordForm;
+using autofill::mojom::PasswordFormFieldPredictionType;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using password_manager::metrics_util::SyncPasswordHashChange;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -123,20 +124,20 @@ bool IsSignupForm(const PasswordForm& form) {
 bool ServerPredictionsToPasswordFormPrediction(
     std::vector<autofill::AutofillQueryResponseContents::Field::FieldPrediction>
         server_field_predictions,
-    autofill::PasswordFormFieldPredictionType* type) {
+    PasswordFormFieldPredictionType* type) {
   for (auto const& server_field_prediction : server_field_predictions) {
     switch (server_field_prediction.type()) {
       case autofill::USERNAME:
       case autofill::USERNAME_AND_EMAIL_ADDRESS:
-        *type = autofill::PREDICTION_USERNAME;
+        *type = PasswordFormFieldPredictionType::kUsername;
         return true;
 
       case autofill::PASSWORD:
-        *type = autofill::PREDICTION_CURRENT_PASSWORD;
+        *type = PasswordFormFieldPredictionType::kCurrentPassword;
         return true;
 
       case autofill::ACCOUNT_CREATION_PASSWORD:
-        *type = autofill::PREDICTION_NEW_PASSWORD;
+        *type = PasswordFormFieldPredictionType::kNewPassword;
         return true;
 
       default:
@@ -1288,12 +1289,12 @@ void PasswordManager::ProcessAutofillPredictions(
   }
 
   // Leave only forms that contain fields that are useful for password manager.
-  std::map<FormData, autofill::PasswordFormFieldPredictionMap> predictions;
+  autofill::FormsPredictionsMap predictions;
   for (const autofill::FormStructure* form : forms) {
     if (logger)
       logger->LogFormStructure(Logger::STRING_SERVER_PREDICTIONS, *form);
     for (const auto& field : *form) {
-      autofill::PasswordFormFieldPredictionType prediction_type;
+      PasswordFormFieldPredictionType prediction_type;
       if (ServerPredictionsToPasswordFormPrediction(field->server_predictions(),
                                                     &prediction_type)) {
         predictions[form->ToFormData()][*field] = prediction_type;
@@ -1304,7 +1305,7 @@ void PasswordManager::ProcessAutofillPredictions(
           IsPredictedTypeNotPasswordPrediction(
               field->Type().GetStorableType())) {
         predictions[form->ToFormData()][*field] =
-            autofill::PREDICTION_NOT_PASSWORD;
+            PasswordFormFieldPredictionType::kNotPassword;
       }
     }
   }

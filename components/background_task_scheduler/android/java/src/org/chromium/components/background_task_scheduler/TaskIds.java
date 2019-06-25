@@ -34,6 +34,7 @@ public final class TaskIds {
     public static final int BACKGROUND_SYNC_ONE_SHOT_JOB_ID = 102;
     public static final int NOTIFICATION_SCHEDULER_JOB_ID = 103;
     public static final int NOTIFICATION_TRIGGER_JOB_ID = 104;
+    public static final int PERIODIC_BACKGROUND_SYNC_CHROME_WAKEUP_TASK_JOB_ID = 105;
 
     private TaskIds() {}
 }

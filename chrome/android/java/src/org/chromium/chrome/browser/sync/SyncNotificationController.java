@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
@@ -135,8 +135,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             case State.INVALID_GAIA_CREDENTIALS:
                 return false;
             case State.USER_NOT_SIGNED_UP:
-            case State.ACCOUNT_DELETED:
-            case State.ACCOUNT_DISABLED:
                 return true;
             default:
                 Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());

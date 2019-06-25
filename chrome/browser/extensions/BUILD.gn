@@ -1006,9 +1006,6 @@ jumbo_static_library("extensions") {
     if (enable_kiosk_next) {
       defines += [ "KIOSK_NEXT" ]
       deps += [ "//chrome/browser/chromeos/kiosk_next_home/mojom" ]
-      if (is_chrome_branded) {
-        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
-      }
     }
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]

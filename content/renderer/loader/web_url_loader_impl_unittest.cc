@@ -548,22 +548,23 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
-  blink::WebURLResponse::WebSecurityDetails security_details =
+  base::Optional<blink::WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
-  EXPECT_EQ("TLS 1.2", security_details.protocol);
-  EXPECT_EQ("127.0.0.1", security_details.subject_name);
-  EXPECT_EQ("127.0.0.1", security_details.issuer);
-  ASSERT_EQ(3U, security_details.san_list.size());
-  EXPECT_EQ("test.example", security_details.san_list[0]);
-  EXPECT_EQ("127.0.0.2", security_details.san_list[1]);
-  EXPECT_EQ("fe80::1", security_details.san_list[2]);
-  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details.valid_from);
-  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details.valid_to);
-  ASSERT_EQ(2U, security_details.certificate.size());
+  ASSERT_TRUE(security_details.has_value());
+  EXPECT_EQ("TLS 1.2", security_details->protocol);
+  EXPECT_EQ("127.0.0.1", security_details->subject_name);
+  EXPECT_EQ("127.0.0.1", security_details->issuer);
+  ASSERT_EQ(3U, security_details->san_list.size());
+  EXPECT_EQ("test.example", security_details->san_list[0]);
+  EXPECT_EQ("127.0.0.2", security_details->san_list[1]);
+  EXPECT_EQ("fe80::1", security_details->san_list[2]);
+  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details->valid_from);
+  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details->valid_to);
+  ASSERT_EQ(2U, security_details->certificate.size());
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert0_der)),
-            security_details.certificate[0]);
+            security_details->certificate[0]);
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert1_der)),
-            security_details.certificate[1]);
+            security_details->certificate[1]);
 }
 
 TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
@@ -585,17 +586,18 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true, -1);
 
-  blink::WebURLResponse::WebSecurityDetails security_details =
+  base::Optional<blink::WebURLResponse::WebSecurityDetails> security_details =
       web_url_response.SecurityDetailsForTesting();
-  EXPECT_EQ("TLS 1.2", security_details.protocol);
-  EXPECT_EQ("B CA - Multi-root", security_details.subject_name);
-  EXPECT_EQ("C CA - Multi-root", security_details.issuer);
-  EXPECT_EQ(0U, security_details.san_list.size());
-  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details.valid_from);
-  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details.valid_to);
-  ASSERT_EQ(1U, security_details.certificate.size());
+  ASSERT_TRUE(security_details.has_value());
+  EXPECT_EQ("TLS 1.2", security_details->protocol);
+  EXPECT_EQ("B CA - Multi-root", security_details->subject_name);
+  EXPECT_EQ("C CA - Multi-root", security_details->issuer);
+  EXPECT_EQ(0U, security_details->san_list.size());
+  EXPECT_EQ(certs[0]->valid_start().ToTimeT(), security_details->valid_from);
+  EXPECT_EQ(certs[0]->valid_expiry().ToTimeT(), security_details->valid_to);
+  ASSERT_EQ(1U, security_details->certificate.size());
   EXPECT_EQ(blink::WebString::FromLatin1(std::string(cert0_der)),
-            security_details.certificate[0]);
+            security_details->certificate[0]);
 }
 
 // Verifies that the lengths used by the PerformanceResourceTiming API are

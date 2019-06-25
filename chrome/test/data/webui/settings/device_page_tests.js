@@ -736,6 +736,18 @@ cr.define('device_page_tests', function() {
             showAndGetDeviceSubpage('display', settings.routes.DISPLAY)
                 .then(function(page) {
                   displayPage = page;
+                  // Verify all the conditionals that get run during page load
+                  // before the display info has been populated.
+                  expectEquals(undefined, displayPage.displays);
+                  expectFalse(
+                      displayPage.showMirror_(true, displayPage.displays));
+                  expectFalse(
+                      displayPage.showMirror_(false, displayPage.displays));
+                  expectFalse(displayPage.isMirrored_(displayPage.displays));
+                  expectFalse(displayPage.showUnifiedDesktop_(
+                      true, true, displayPage.displays));
+                  expectFalse(displayPage.showUnifiedDesktop_(
+                      false, false, displayPage.displays));
                 }),
             // Wait for the initial call to getInfo.
             fakeSystemDisplay.getInfoCalled.promise,
@@ -761,6 +773,12 @@ cr.define('device_page_tests', function() {
             expectFalse(displayPage.showMirror_(false, displayPage.displays));
             expectFalse(displayPage.isMirrored_(displayPage.displays));
 
+            // Verify unified desktop only shown when enabled.
+            expectTrue(displayPage.showUnifiedDesktop_(
+                true, true, displayPage.displays));
+            expectFalse(displayPage.showUnifiedDesktop_(
+                false, false, displayPage.displays));
+
             // Add a second display.
             addDisplay(2);
             fakeSystemDisplay.onDisplayChanged.callListeners();
@@ -783,6 +801,12 @@ cr.define('device_page_tests', function() {
                 displayPage.displays[0].id, displayPage.primaryDisplayId);
             expectTrue(displayPage.showMirror_(false, displayPage.displays));
             expectFalse(displayPage.isMirrored_(displayPage.displays));
+
+            // Verify unified desktop only shown when enabled.
+            expectTrue(displayPage.showUnifiedDesktop_(
+                true, true, displayPage.displays));
+            expectFalse(displayPage.showUnifiedDesktop_(
+                false, false, displayPage.displays));
 
             // Select the second display and make it primary. Also change the
             // orientation of the second display.

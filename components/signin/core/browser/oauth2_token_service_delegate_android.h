@@ -26,8 +26,7 @@
 //
 // See |OAuth2TokenServiceDelegate| for usage details.
 //
-// Note: requests should be started from the UI thread. To start a
-// request from other thread, please use OAuth2TokenServiceRequest.
+// Note: requests should be started from the UI thread.
 class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
  public:
   OAuth2TokenServiceDelegateAndroid(

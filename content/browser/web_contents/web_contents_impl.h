@@ -57,6 +57,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -488,7 +489,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
-  void OnDidBlockFramebust(const GURL& url) override;
+  void OnDidBlockNavigation(const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason) override;
   const GURL& GetMainFrameLastCommittedURL() override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -402,10 +403,9 @@ V8EmbedderGraphBuilder::~V8EmbedderGraphBuilder() {
 
 void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   isolate_->VisitHandlesWithClassIds(this);
-  v8::EmbedderHeapTracer* tracer =
-      V8PerIsolateData::From(isolate_)->GetEmbedderHeapTracer();
-  if (tracer)
-    tracer->IterateTracedGlobalHandles(this);
+  v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
+      ThreadState::Current()->unified_heap_controller());
+  tracer->IterateTracedGlobalHandles(this);
 // At this point we collected ScriptWrappables in three groups:
 // attached, detached, and unknown.
 #if DCHECK_IS_ON()

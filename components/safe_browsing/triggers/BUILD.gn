@@ -50,10 +50,10 @@ source_set("trigger_util") {
   ]
 }
 
-source_set("ad_sampler_trigger") {
+source_set("ad_popup_trigger") {
   sources = [
-    "ad_sampler_trigger.cc",
-    "ad_sampler_trigger.h",
+    "ad_popup_trigger.cc",
+    "ad_popup_trigger.h",
   ]
   deps = [
     ":trigger_throttler",
@@ -65,10 +65,26 @@ source_set("ad_sampler_trigger") {
   ]
 }
 
-source_set("ad_popup_trigger") {
+source_set("ad_redirect_trigger") {
   sources = [
-    "ad_popup_trigger.cc",
-    "ad_popup_trigger.h",
+    "ad_redirect_trigger.cc",
+    "ad_redirect_trigger.h",
+  ]
+  deps = [
+    ":trigger_throttler",
+    ":trigger_util",
+    ":triggers",
+    "//base:base",
+    "//components/safe_browsing:features",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+}
+
+source_set("ad_sampler_trigger") {
+  sources = [
+    "ad_sampler_trigger.cc",
+    "ad_sampler_trigger.h",
   ]
   deps = [
     ":trigger_throttler",
@@ -120,6 +136,7 @@ source_set("unit_tests") {
     "//components/safe_browsing:features",
     "//components/safe_browsing/browser:browser",
     "//components/subresource_filter/content/browser:test_support",
+    "//content/public/browser:browser",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

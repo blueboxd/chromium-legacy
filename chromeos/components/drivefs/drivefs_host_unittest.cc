@@ -551,7 +551,8 @@ TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
           testing::Return(std::make_pair(
-              base::nullopt, GoogleServiceAuthError::ACCOUNT_DISABLED))));
+              base::nullopt,
+              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS))));
 
   base::RunLoop run_loop;
   delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());

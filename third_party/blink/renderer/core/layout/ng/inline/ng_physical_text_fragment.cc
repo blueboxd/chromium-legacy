@@ -65,7 +65,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
       shape_result_(shape_result) {
   DCHECK_GE(start_offset_, source.StartOffset());
   DCHECK_LE(end_offset_, source.EndOffset());
-  DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  DCHECK(shape_result_ || IsFlowControl()) << *this;
   line_orientation_ = source.line_orientation_;
   is_generated_text_ = source.is_generated_text_;
   ink_overflow_computed_ = false;
@@ -77,7 +77,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
       start_offset_(builder->start_offset_),
       end_offset_(builder->end_offset_),
       shape_result_(std::move(builder->shape_result_)) {
-  DCHECK(shape_result_ || IsFlowControl()) << ToString();
+  DCHECK(shape_result_ || IsFlowControl()) << *this;
   line_orientation_ =
       static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
   is_generated_text_ = builder->IsGeneratedText();

@@ -96,6 +96,8 @@ class LoadingDataCollector {
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest, HandledResourceTypes);
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest, ShouldRecordMainFrameLoad);
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest,
+                           ShouldRecordSubresourceLoadAfterFCP);
+  FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest,
                            ShouldRecordSubresourceLoad);
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest, SimpleNavigation);
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest, SimpleRedirect);
@@ -108,8 +110,9 @@ class LoadingDataCollector {
 
   static void SetAllowPortInUrlsForTesting(bool state);
 
-  static bool ShouldRecordResourceLoad(
-      const content::mojom::ResourceLoadInfo& resource_load_info);
+  bool ShouldRecordResourceLoad(
+      const NavigationID& navigation_id,
+      const content::mojom::ResourceLoadInfo& resource_load_info) const;
 
   // Returns true if the subresource has a supported type.
   static bool IsHandledResourceType(content::ResourceType resource_type,

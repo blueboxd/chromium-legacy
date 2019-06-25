@@ -329,6 +329,14 @@ void CertificateProviderService::SetDelegate(
   delegate_ = std::move(delegate);
 }
 
+void CertificateProviderService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CertificateProviderService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool CertificateProviderService::SetCertificatesProvidedByExtension(
     const std::string& extension_id,
     int cert_request_id,
@@ -358,8 +366,10 @@ void CertificateProviderService::ReplyToSignRequest(
     const std::vector<uint8_t>& signature) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  scoped_refptr<net::X509Certificate> certificate;
   net::SSLPrivateKey::SignCallback callback;
-  if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &callback)) {
+  if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
+                                    &callback)) {
     LOG(ERROR) << "request id unknown.";
     // Maybe multiple replies to the same request.
     return;
@@ -367,6 +377,11 @@ void CertificateProviderService::ReplyToSignRequest(
 
   const net::Error error_code = signature.empty() ? net::ERR_FAILED : net::OK;
   std::move(callback).Run(error_code, signature);
+
+  if (!signature.empty()) {
+    for (auto& observer : observers_)
+      observer.OnSignCompleted(certificate);
+  }
 }
 
 bool CertificateProviderService::LookUpCertificate(
@@ -515,10 +530,12 @@ void CertificateProviderService::RequestSignatureFromExtension(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int sign_request_id =
-      sign_requests_.AddRequest(extension_id, std::move(callback));
+      sign_requests_.AddRequest(extension_id, certificate, std::move(callback));
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
-    sign_requests_.RemoveRequest(extension_id, sign_request_id, &callback);
+    scoped_refptr<net::X509Certificate> local_certificate;
+    sign_requests_.RemoveRequest(extension_id, sign_request_id,
+                                 &local_certificate, &callback);
     std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
   }
 }

@@ -118,11 +118,12 @@ class SampleForTests {
     private String mArrgh = "*/*";
 
     private @interface SomeAnnotation {}
+    private @interface AnotherAnnotation {}
 
     // The generator is not confused by @Annotated parameters.
     @CalledByNative
-    void javaMethodWithAnnotatedParam(@SomeAnnotation int foo) {
-    }
+    void javaMethodWithAnnotatedParam(@SomeAnnotation int foo, final @SomeAnnotation int bar,
+            @SomeAnnotation final int baz, @SomeAnnotation final @AnotherAnnotation int bat) {}
 
     // ---------------------------------------------------------------------------------------------
     // Java fields which are accessed from C++ code only must be annotated with @AccessedByNative to

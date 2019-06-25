@@ -32,8 +32,8 @@ def main(args):
   parser.add_argument('--inputs',
                       help='JARs for which a main dex list should be '
                            'generated.')
-  parser.add_argument('--proguard-path', required=True,
-                      help='Path to the proguard executable.')
+  parser.add_argument(
+      '--r8-path', required=True, help='Path to the r8 executable.')
   parser.add_argument('--negative-main-dex-globs',
       help='GN-list of globs of .class names (e.g. org/chromium/foo/Bar.class) '
            'that will fail the build if they match files in the main dex.')
@@ -55,13 +55,24 @@ def main(args):
         args.negative_main_dex_globs)
 
   proguard_cmd = [
-    'java', '-jar', args.proguard_path,
-    '-forceprocessing',
-    '-dontwarn', '-dontoptimize', '-dontobfuscate', '-dontpreverify',
-    '-libraryjars', args.shrinked_android_path,
+      'java',
+      '-jar',
+      args.r8_path,
+      '--classfile',
+      '--lib',
+      args.shrinked_android_path,
   ]
+
   for m in args.main_dex_rules_paths:
-    proguard_cmd.extend(['-include', m])
+    proguard_cmd.extend(['--pg-conf', m])
+
+  proguard_flags = [
+      '-forceprocessing',
+      '-dontwarn',
+      '-dontoptimize',
+      '-dontobfuscate',
+      '-dontpreverify',
+  ]
 
   main_dex_list_cmd = [
     'java', '-cp', args.dx_path,
@@ -83,17 +94,24 @@ def main(args):
     proguard_cmd,
     main_dex_list_cmd,
   ]
+
   if args.negative_main_dex_globs:
     input_strings += args.negative_main_dex_globs
+    for glob in args.negative_main_dex_globs:
+      # Globs come with 1 asterix, but we want 2 to match subpackages.
+      proguard_flags.append('-checkdiscard class ' +
+                            glob.replace('*', '**').replace('/', '.'))
 
   output_paths = [
     args.main_dex_list_path,
   ]
 
+  def _LineLengthHelperForOnStaleMd5():
+    _OnStaleMd5(proguard_cmd, proguard_flags, main_dex_list_cmd, args.paths,
+                args.main_dex_list_path)
+
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(proguard_cmd, main_dex_list_cmd, args.paths,
-                          args.main_dex_list_path,
-                          args.negative_main_dex_globs),
+      _LineLengthHelperForOnStaleMd5,
       args,
       input_paths=input_paths,
       input_strings=input_strings,
@@ -104,38 +122,22 @@ def main(args):
   return 0
 
 
-def _CheckForUnwanted(kept_classes, proguard_cmd, negative_main_dex_globs):
-  # Check if ProGuard kept any unwanted classes.
-  found_unwanted_classes = sorted(
-      p for p in kept_classes
-      if build_utils.MatchesGlob(p, negative_main_dex_globs))
-
-  if found_unwanted_classes:
-    first_class = found_unwanted_classes[0].replace(
-        '.class', '').replace('/', '.')
-    proguard_cmd += ['-whyareyoukeeping', 'class', first_class, '{}']
-    output = build_utils.CheckOutput(
-        proguard_cmd, print_stderr=False,
-        stdout_filter=proguard_util.ProguardOutputFilter())
-    raise Exception(
-        ('Found classes that should not be in the main dex:\n    {}\n\n'
-         'Here is the -whyareyoukeeping output for {}: \n{}').format(
-             '\n    '.join(found_unwanted_classes), first_class, output))
-
-
-def _OnStaleMd5(proguard_cmd, main_dex_list_cmd, paths, main_dex_list_path,
-                negative_main_dex_globs):
-  paths_arg = ':'.join(paths)
+def _OnStaleMd5(proguard_cmd, proguard_flags, main_dex_list_cmd, paths,
+                main_dex_list_path):
   main_dex_list = ''
   try:
     with tempfile.NamedTemporaryFile(suffix='.jar') as temp_jar:
       # Step 1: Use ProGuard to find all @MainDex code, and all code reachable
       # from @MainDex code (recursive).
-      proguard_cmd += [
-        '-injars', paths_arg,
-        '-outjars', temp_jar.name
-      ]
-      build_utils.CheckOutput(proguard_cmd, print_stderr=False)
+      proguard_cmd += ['--output', temp_jar.name]
+      with tempfile.NamedTemporaryFile() as proguard_flags_file:
+        for flag in proguard_flags:
+          proguard_flags_file.write(flag + '\n')
+        proguard_flags_file.flush()
+        proguard_cmd += ['--pg-conf', proguard_flags_file.name]
+        for injar in paths:
+          proguard_cmd.append(injar)
+        build_utils.CheckOutput(proguard_cmd, print_stderr=False)
 
       # Record the classes kept by ProGuard. Not used by the build, but useful
       # for debugging what classes are kept by ProGuard vs. MainDexListBuilder.
@@ -144,18 +146,9 @@ def _OnStaleMd5(proguard_cmd, main_dex_list_cmd, paths, main_dex_list_path,
       with open(main_dex_list_path + '.partial', 'w') as f:
         f.write('\n'.join(kept_classes) + '\n')
 
-      if negative_main_dex_globs:
-        # Perform assertions before MainDexListBuilder because:
-        # a) MainDexListBuilder is not recursive, so being included by it isn't
-        #    a huge deal.
-        # b) Errors are much more actionable.
-        _CheckForUnwanted(kept_classes, proguard_cmd, negative_main_dex_globs)
-
       # Step 2: Expand inclusion list to all classes referenced by the .class
       # files of kept classes (non-recursive).
-      main_dex_list_cmd += [
-        temp_jar.name, paths_arg
-      ]
+      main_dex_list_cmd += [temp_jar.name, ':'.join(paths)]
       main_dex_list = build_utils.CheckOutput(main_dex_list_cmd)
 
   except build_utils.CalledProcessError as e:

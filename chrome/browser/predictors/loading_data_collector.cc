@@ -7,8 +7,10 @@
 #include <string>
 #include <utility>
 
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/loading_stats_collector.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
@@ -186,7 +188,7 @@ void LoadingDataCollector::RecordResourceLoadComplete(
   if (nav_it == inflight_navigations_.end())
     return;
 
-  if (!ShouldRecordResourceLoad(resource_load_info))
+  if (!ShouldRecordResourceLoad(navigation_id, resource_load_info))
     return;
 
   auto& page_request_summary = *nav_it->second;
@@ -228,9 +230,9 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
     nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
-// static
 bool LoadingDataCollector::ShouldRecordResourceLoad(
-    const content::mojom::ResourceLoadInfo& resource_load_info) {
+    const NavigationID& navigation_id,
+    const content::mojom::ResourceLoadInfo& resource_load_info) const {
   const GURL& url = resource_load_info.url;
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
@@ -238,9 +240,21 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
   if (!g_allow_port_in_urls && url.has_port())
     return false;
 
-  return IsHandledResourceType(resource_load_info.resource_type,
-                               resource_load_info.mime_type) &&
-         resource_load_info.method == "GET";
+  // Guard behind feature: All delayable requests are considered low priority.
+  if (base::FeatureList::IsEnabled(
+          features::kLoadingOnlyLearnHighPriorityResources) &&
+      resource_load_info.request_priority < net::MEDIUM) {
+    return false;
+  }
+
+  if (!IsHandledResourceType(resource_load_info.resource_type,
+                             resource_load_info.mime_type)) {
+    return false;
+  }
+  if (resource_load_info.method != "GET")
+    return false;
+
+  return true;
 }
 
 // static

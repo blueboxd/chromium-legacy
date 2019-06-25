@@ -57,9 +57,7 @@ class ContentPasswordManagerDriver
   void FormEligibleForGenerationFound(
       const autofill::PasswordFormGenerationData& form) override;
   void AutofillDataReceived(
-      const std::map<autofill::FormData,
-                     autofill::PasswordFormFieldPredictionMap>& predictions)
-      override;
+      const autofill::FormsPredictionsMap& predictions) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;

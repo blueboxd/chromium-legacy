@@ -24,7 +24,7 @@ class NGInlineBreakToken;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   NGLineBoxFragmentBuilder(NGInlineNode node,
@@ -173,7 +173,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Unlike the fragment builder, chlidren are mutable.
   // Callers can add to the fragment builder in a batch once finalized.
   class ChildList {
-    STACK_ALLOCATED();
+    DISALLOW_NEW();
 
    public:
     ChildList() = default;

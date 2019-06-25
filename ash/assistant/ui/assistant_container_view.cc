@@ -262,8 +262,10 @@ const char* AssistantContainerView::GetClassName() const {
 }
 
 void AssistantContainerView::AddedToWidget() {
-  GetWidget()->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<AssistantContainerEventTargeter>());
+  // Exclude the Assistant window for occlusion, so it doesn't trigger auto-pip.
+  auto* window = GetWidget()->GetNativeWindow();
+  occlusion_excluder_.emplace(window);
+  window->SetEventTargeter(std::make_unique<AssistantContainerEventTargeter>());
 }
 
 ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() {

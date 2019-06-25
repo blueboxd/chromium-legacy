@@ -29,8 +29,9 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {!CrInputElement} The cr-input element the behavior should use.
-     *     Should be overridden by elements using this behavior.
+     * @return {(!CrInputElement|!HTMLInputElement)} The cr-input or input
+     *     element the behavior should use. Should be overridden by elements
+     *     using this behavior.
      */
     getInput: function() {},
 

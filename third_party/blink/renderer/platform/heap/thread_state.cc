@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -67,6 +68,7 @@
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -169,6 +171,35 @@ void ThreadState::DetachCurrentThread() {
   DCHECK(!state->IsMainThread());
   state->RunTerminationGC();
   delete state;
+}
+
+void ThreadState::AttachToIsolate(
+    v8::Isolate* isolate,
+    V8TraceRootsCallback v8_trace_roots,
+    V8BuildEmbedderGraphCallback v8_build_embedder_graph) {
+  DCHECK(isolate);
+  isolate_ = isolate;
+  v8_trace_roots_ = v8_trace_roots;
+  v8_build_embedder_graph_ = v8_build_embedder_graph;
+  unified_heap_controller_.reset(new UnifiedHeapController(this));
+  isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
+  if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
+    profiler->AddBuildEmbedderGraphCallback(v8_build_embedder_graph, nullptr);
+  }
+}
+
+void ThreadState::DetachFromIsolate() {
+  if (isolate_) {
+    isolate_->SetEmbedderHeapTracer(nullptr);
+    if (v8::HeapProfiler* profiler = isolate_->GetHeapProfiler()) {
+      profiler->RemoveBuildEmbedderGraphCallback(v8_build_embedder_graph_,
+                                                 nullptr);
+    }
+  }
+  isolate_ = nullptr;
+  v8_trace_roots_ = nullptr;
+  v8_build_embedder_graph_ = nullptr;
+  unified_heap_controller_.reset();
 }
 
 void ThreadState::RunTerminationGC() {
@@ -287,10 +318,10 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
 }
 
 void ThreadState::VisitDOMWrappers(Visitor* visitor) {
-  if (trace_dom_wrappers_) {
+  if (v8_trace_roots_) {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitDOMWrappers);
-    trace_dom_wrappers_(isolate_, visitor);
+    v8_trace_roots_(isolate_, visitor);
   }
 }
 
@@ -1359,9 +1390,7 @@ bool ThreadState::FinishIncrementalMarkingIfRunning(
     // finalization of V8 upon Oilpan GCs during a unified GC. Alternative
     // include either breaking up the GCs or avoiding the call in first place.
     if (IsUnifiedGCMarkingInProgress()) {
-      V8PerIsolateData::From(isolate_)
-          ->GetUnifiedHeapController()
-          ->FinalizeTracing();
+      unified_heap_controller()->FinalizeTracing();
     } else {
       RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
     }

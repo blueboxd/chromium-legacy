@@ -150,7 +150,7 @@ public class BackgroundSyncBackgroundTaskTest {
         new BackgroundSyncBackgroundTask().onStartTaskWithNative(
                 RuntimeEnvironment.application, params, mTaskFinishedCallback);
 
-        verify(mNativeMock).fireBackgroundSyncEvents(any(Runnable.class));
+        verify(mNativeMock).fireOneShotBackgroundSyncEvents(any(Runnable.class));
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
         verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
     }

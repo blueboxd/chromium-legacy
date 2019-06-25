@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/identity_manager_wrapper.h"
 
 // static

@@ -9006,4 +9006,375 @@ TEST_F(AutofillMetricsTest, LogServerCardLinkClicked) {
   }
 }
 
+// Parameterized test where the parameter indicates how far we went through
+// the funnel:
+// 0 = Site contained form but user did not focus it (did not interact).
+// 1 = User interacted with form (focused a field).
+// 2 = User saw a suggestion to fill the form.
+// 3 = User accepted the suggestion.
+// 4 = User submitted the form.
+class AutofillMetricsFunnelTest : public AutofillMetricsTest,
+                                  public testing::WithParamInterface<int> {
+ public:
+  AutofillMetricsFunnelTest() = default;
+  ~AutofillMetricsFunnelTest() = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
+                         AutofillMetricsFunnelTest,
+                         testing::Values(0, 1, 2, 3, 4));
+
+TEST_P(AutofillMetricsFunnelTest, LogFunnelMetrics) {
+  // Create a profile.
+  RecreateProfile(/*is_server=*/false);
+
+  // Load a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  base::HistogramTester histogram_tester;
+
+  // Phase 1: Simulate events according to GetParam().
+  const bool user_interacted_with_form = GetParam() >= 1;
+  const bool user_saw_suggestion = GetParam() >= 2;
+  const bool user_accepted_suggestion = GetParam() >= 3;
+  const bool user_submitted_form = GetParam() >= 4;
+
+  // Simulate that the autofill manager has seen this form on page load.
+  autofill_manager_->OnFormsSeen({form}, TimeTicks());
+
+  if (!user_saw_suggestion) {
+    // Remove the profile to prevent suggestion from being shown.
+    personal_data_->ClearProfiles();
+  }
+
+  // Simulate interacting with the form.
+  if (user_interacted_with_form) {
+    autofill_manager_->OnQueryFormFieldAutofill(
+        /*query_id=*/0, form, form.fields[0], gfx::RectF(),
+        /*autoselect_first_suggestion=*/false);
+  }
+
+  // Simulate seeing a suggestion.
+  if (user_saw_suggestion) {
+    autofill_manager_->DidShowSuggestions(
+        /*has_autofill_suggestions=*/true, form, form.fields[0]);
+  }
+
+  // Simulate filling the form.
+  if (user_accepted_suggestion) {
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, /*query_id=*/0, form,
+        form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), kTestGuid));
+  }
+
+  // Simulate form submission.
+  if (user_submitted_form) {
+    autofill_manager_->OnFormSubmitted(form, /*known_success=*/false,
+                                       SubmissionSource::FORM_SUBMISSION);
+  }
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  // Phase 2: Validate Funnel expectations.
+  histogram_tester.ExpectBucketCount("Autofill.Funnel.ParsedAsType.Address", 1,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.Funnel.ParsedAsType.CreditCard",
+                                     0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Funnel.InteractionAfterParsedAsType.Address",
+      user_interacted_with_form ? 1 : 0, 1);
+  if (user_interacted_with_form) {
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Funnel.SuggestionAfterInteraction.Address",
+        user_saw_suggestion ? 1 : 0, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Funnel.SuggestionAfterInteraction.Address", 0);
+  }
+
+  if (user_saw_suggestion) {
+    // If the suggestion was shown, we should record whether the user
+    // accepted it.
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Funnel.FillAfterSuggestion.Address",
+        user_accepted_suggestion ? 1 : 0, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Funnel.FillAfterSuggestion.Address", 0);
+  }
+
+  if (user_accepted_suggestion) {
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Funnel.SubmissionAfterFill.Address",
+        user_submitted_form ? 1 : 0, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.Funnel.SubmissionAfterFill.Address", 0);
+  }
+
+  // Phase 3: Validate KeyMetrics expectations.
+  if (user_submitted_form) {
+    histogram_tester.ExpectBucketCount(
+        "Autofill.KeyMetrics.FillingReadiness.Address", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.KeyMetrics.FillingAcceptance.Address", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.KeyMetrics.FillingCorrectness.Address", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.KeyMetrics.FillingAssistance.Address", 1, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingReadiness.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingAcceptance.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.KeyMetrics.FillingAssistance.Address", 0);
+  }
+  if (user_accepted_suggestion) {
+    histogram_tester.ExpectBucketCount(
+        "Autofill.KeyMetrics.FormSubmission.Autofilled.Address",
+        user_submitted_form ? 1 : 0, 1);
+  }
+}
+
+// Tests for Autofill.KeyMetrics.* metrics.
+class AutofillMetricsKeyMetricsTest : public AutofillMetricsTest {
+ public:
+  AutofillMetricsKeyMetricsTest() = default;
+  ~AutofillMetricsKeyMetricsTest() override = default;
+
+  void SetUp() override;
+
+  // Fillable form.
+  FormData form_;
+};
+
+void AutofillMetricsKeyMetricsTest::SetUp() {
+  AutofillMetricsTest::SetUp();
+
+  // Create a profile.
+  RecreateProfile(/*is_server=*/false);
+
+  // Load a fillable form.
+  form_.name = ASCIIToUTF16("TestForm");
+  form_.url = GURL("http://example.com/form.html");
+  form_.action = GURL("http://example.com/submit.html");
+  form_.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form_.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form_.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form_.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form_, field_types, field_types);
+}
+
+// Validate Autofill.KeyMetrics.* in case the user submits the empty form.
+// Empty in the sense that the user did not fill/type into the fields (not that
+// it has no fields).
+TEST_F(AutofillMetricsKeyMetricsTest, LogEmptyForm) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate page load.
+  autofill_manager_->OnFormsSeen({form_}, TimeTicks());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form_, form_.fields[0], gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
+
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form_, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingReadiness.Address", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingAcceptance.Address", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAssistance.Address", 0, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FormSubmission.NotAutofilled.Address", 0);
+}
+
+// Validate Autofill.KeyMetrics.* in case the user has no address profile on
+// file, so nothing can be filled.
+TEST_F(AutofillMetricsKeyMetricsTest, LogNoProfile) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate that no data is available.
+  personal_data_->ClearProfiles();
+  autofill_manager_->OnFormsSeen({form_}, TimeTicks());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form_, form_.fields[0], gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
+
+  // Simulate user typing the address.
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[0], gfx::RectF(),
+                                          TimeTicks());
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[1], gfx::RectF(),
+                                          TimeTicks());
+
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form_, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingReadiness.Address", 0, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingAcceptance.Address", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAssistance.Address", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FormSubmission.NotAutofilled.Address", 1, 1);
+}
+
+// Validate Autofill.KeyMetrics.* in case the user does not accept a suggestion.
+TEST_F(AutofillMetricsKeyMetricsTest, LogUserDoesNotAcceptSuggestion) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate that suggestion is shown but user does not accept it.
+  autofill_manager_->OnFormsSeen({form_}, TimeTicks());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form_, form_.fields[0], gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
+  autofill_manager_->DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
+
+  // Simulate user typing the address.
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[0], gfx::RectF(),
+                                          TimeTicks());
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[1], gfx::RectF(),
+                                          TimeTicks());
+
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form_, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingReadiness.Address", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAcceptance.Address", 0, 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAssistance.Address", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FormSubmission.NotAutofilled.Address", 1, 1);
+}
+
+// Validate Autofill.KeyMetrics.* in case the user has to fix the filled data.
+TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledData) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate that suggestion is shown and user accepts it.
+  autofill_manager_->OnFormsSeen({form_}, TimeTicks());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form_, form_.fields[0], gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
+  autofill_manager_->DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form_, form_.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), kTestGuid));
+
+  // Simulate user fixing the address.
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[1], gfx::RectF(),
+                                          TimeTicks());
+
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form_, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingReadiness.Address", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAcceptance.Address", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingCorrectness.Address", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FillingAssistance.Address", 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FormSubmission.Autofilled.Address", 1, 1);
+}
+
+// Validate Autofill.KeyMetrics.* in case the user fixes the filled data but
+// then does not submit the form.
+TEST_F(AutofillMetricsKeyMetricsTest, LogUserFixesFilledDataButDoesNotSubmit) {
+  base::HistogramTester histogram_tester;
+
+  // Simulate that suggestion is shown and user accepts it.
+  autofill_manager_->OnFormsSeen({form_}, TimeTicks());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form_, form_.fields[0], gfx::RectF(),
+      /*autoselect_first_suggestion=*/false);
+  autofill_manager_->DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form_, form_.fields[0]);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form_, form_.fields.front(),
+      autofill_manager_->MakeFrontendID(std::string(), kTestGuid));
+
+  // Simulate user fixing the address.
+  autofill_manager_->OnTextFieldDidChange(form_, form_.fields[1], gfx::RectF(),
+                                          TimeTicks());
+
+  // Don't submit form.
+
+  // Reset |autofill_manager_| to commit UMA metrics.
+  autofill_manager_.reset();
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingReadiness.Address", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingAcceptance.Address", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingCorrectness.Address", 0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.KeyMetrics.FillingAssistance.Address", 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.KeyMetrics.FormSubmission.Autofilled.Address", 0, 1);
+}
+
 }  // namespace autofill

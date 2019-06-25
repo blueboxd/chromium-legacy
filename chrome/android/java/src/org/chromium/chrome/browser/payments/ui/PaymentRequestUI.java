@@ -281,6 +281,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     private FadingEdgeScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
+    private TextView mRetryErrorView;
     private ViewGroup mBottomBar;
     private Button mEditButton;
     private Button mPayButton;
@@ -498,6 +499,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentContainer = (FadingEdgeScrollView) mRequestView.findViewById(R.id.option_container);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
+        mRetryErrorView = mRequestView.findViewById(R.id.retry_error);
         mOrderSummarySection = new LineItemBreakdownSection(context,
                 context.getString(R.string.payments_order_summary_label), this,
                 context.getString(R.string.payments_updated_label));
@@ -625,7 +627,23 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param error The error message to display on the header.
      */
     public void setRetryErrorMessage(String error) {
-        ((PaymentRequestHeader) mRequestView.findViewById(R.id.header)).setRetryErrorMessage(error);
+        if (mRetryErrorView == null) return;
+
+        mRetryErrorView.setText(error);
+        if (TextUtils.isEmpty(error)) {
+            mRetryErrorView.setVisibility(View.GONE);
+        } else {
+            if (mIsExpandedToFullHeight) {
+                // Add paddings instead of margin to let getMeasuredHeight return correct value for
+                // section resize animation.
+                int paddingSize = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.editor_dialog_section_large_spacing);
+                ViewCompat.setPaddingRelative(mRetryErrorView, 0, paddingSize, 0, paddingSize);
+            } else {
+                ViewCompat.setPaddingRelative(mRetryErrorView, 0, 0, 0, 0);
+            }
+            mRetryErrorView.setVisibility(View.VISIBLE);
+        }
     }
 
     /**

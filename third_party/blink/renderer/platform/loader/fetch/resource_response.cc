@@ -223,18 +223,11 @@ void ResourceResponse::SetSecurityDetails(
     time_t valid_to,
     const Vector<AtomicString>& certificate,
     const SignedCertificateTimestampList& sct_list) {
-  security_details_.protocol = protocol;
-  security_details_.key_exchange = key_exchange;
-  security_details_.key_exchange_group = key_exchange_group;
-  security_details_.cipher = cipher;
-  security_details_.mac = mac;
-  security_details_.subject_name = subject_name;
-  security_details_.san_list = san_list;
-  security_details_.issuer = issuer;
-  security_details_.valid_from = valid_from;
-  security_details_.valid_to = valid_to;
-  security_details_.certificate = certificate;
-  security_details_.sct_list = sct_list;
+  DCHECK_NE(security_style_, kSecurityStyleUnknown);
+  DCHECK_NE(security_style_, kSecurityStyleUnauthenticated);
+  security_details_ = SecurityDetails(
+      protocol, key_exchange, key_exchange_group, cipher, mac, subject_name,
+      san_list, issuer, valid_from, valid_to, certificate, sct_list);
 }
 
 void ResourceResponse::SetHttpHeaderField(const AtomicString& name,

@@ -2322,6 +2322,7 @@ enum WebFeature {
   kLazyLoadFrameLoadingAttributeLazy = 2933,
   kLazyLoadImageLoadingAttributeEager = 2934,
   kLazyLoadImageLoadingAttributeLazy = 2935,
+  kLazyLoadImageMissingDimensionsForLazy = 2936,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

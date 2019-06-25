@@ -5,11 +5,11 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CENTER_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CENTER_H_
 
+#include "third_party/blink/public/platform/web_media_stream_center.h"
+
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace blink {

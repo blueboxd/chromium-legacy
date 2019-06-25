@@ -407,12 +407,25 @@ void CoreOobeHandler::HandleSkipToUpdateForTesting() {
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {
-  // Powerwash is generally not available on enterprise devices. First, check
-  // the common case of a correctly enrolled device.
+  // TODO(igorcov): Move this logic in a static method in wizard_controller,
+  // passing as parameter a callback(bool). Here, call the newly created method
+  // and pass as a callback a simple function that will call LaunchResetScreen
+  // if the input bool parameter is true.
+  // Check the common case of a correctly enrolled device.
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->IsEnterpriseManaged()) {
-    // Powerwash is only available if allowed by the admin specifically for the
+    // Admin can explicitly allow to powerwash. If the policy is not loaded yet,
+    // we consider by default that the device is not allowed to powerwash.
+    bool is_powerwash_allowed = false;
+    CrosSettings::Get()->GetBoolean(kDevicePowerwashAllowed,
+                                    &is_powerwash_allowed);
+    if (is_powerwash_allowed) {
+      LaunchResetScreen();
+      return;
+    }
+
+    // Check if powerwash is only allowed by the admin specifically for the
     // purpose of installing a TPM firmware update.
     tpm_firmware_update::GetAvailableUpdateModes(
         base::BindOnce([](const std::set<tpm_firmware_update::Mode>& modes) {
@@ -437,9 +450,7 @@ void CoreOobeHandler::HandleToggleResetScreen() {
   // and thus pending for enterprise management. These should not be allowed to
   // powerwash either. Note that taking consumer device ownership has the side
   // effect of dropping the FRE requirement if it was previously in effect.
-  const AutoEnrollmentController::FRERequirement requirement =
-      AutoEnrollmentController::GetFRERequirement();
-  if (requirement !=
+  if (AutoEnrollmentController::GetFRERequirement() !=
       AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
     LaunchResetScreen();
   }

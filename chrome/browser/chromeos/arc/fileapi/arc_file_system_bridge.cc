@@ -175,7 +175,8 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
                                          ArcBridgeService* bridge_service)
     : profile_(Profile::FromBrowserContext(context)),
       bridge_service_(bridge_service),
-      select_files_handler_(std::make_unique<ArcSelectFilesHandler>(context)),
+      select_files_handlers_manager_(
+          std::make_unique<ArcSelectFilesHandlersManager>(context)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_service_->file_system()->SetHost(this);
@@ -325,7 +326,8 @@ void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
 
 void ArcFileSystemBridge::SelectFiles(mojom::SelectFilesRequestPtr request,
                                       SelectFilesCallback callback) {
-  select_files_handler_->SelectFiles(std::move(request), std::move(callback));
+  select_files_handlers_manager_->SelectFiles(std::move(request),
+                                              std::move(callback));
 }
 
 void ArcFileSystemBridge::OnFileSelectorEvent(
@@ -337,8 +339,8 @@ void ArcFileSystemBridge::OnFileSelectorEvent(
     std::move(callback).Run();
     return;
   }
-  select_files_handler_->OnFileSelectorEvent(std::move(event),
-                                             std::move(callback));
+  select_files_handlers_manager_->OnFileSelectorEvent(std::move(event),
+                                                      std::move(callback));
 }
 
 void ArcFileSystemBridge::GetFileSelectorElements(
@@ -350,8 +352,8 @@ void ArcFileSystemBridge::GetFileSelectorElements(
     std::move(callback).Run(mojom::FileSelectorElements::New());
     return;
   }
-  select_files_handler_->GetFileSelectorElements(std::move(request),
-                                                 std::move(callback));
+  select_files_handlers_manager_->GetFileSelectorElements(std::move(request),
+                                                          std::move(callback));
 }
 
 void ArcFileSystemBridge::OpenFileToReadAfterGetFileSize(

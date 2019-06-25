@@ -152,9 +152,6 @@
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
     "includes": [13990],
   },
-  "chrome/browser/resources/kiosk_next_internal_resources.grd": {
-    "includes": [14040],
-  },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.

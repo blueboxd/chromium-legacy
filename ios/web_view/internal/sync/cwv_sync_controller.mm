@@ -45,8 +45,6 @@ CWVSyncError CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
       return CWVSyncErrorUnexpectedServiceResponse;
     // The following errors are unexpected on iOS.
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::NUM_STATES:
       NOTREACHED();

@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
@@ -573,10 +574,14 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Called when a suspicious navigation of the main frame has been blocked.
   // Allows the delegate to provide some UI to let the user know about the
-  // blocked navigation and give them the option to recover from it. The given
-  // URL is the blocked navigation target.
-  virtual void OnDidBlockFramebust(WebContents* web_contents, const GURL& url) {
-  }
+  // blocked navigation and give them the option to recover from it.
+  // |blocked_url| is the blocked navigation target, |initiator_url| is the URL
+  // of the frame initiating the navigation, |reason| specifies why the
+  // navigation was blocked.
+  virtual void OnDidBlockNavigation(WebContents* web_contents,
+                                    const GURL& blocked_url,
+                                    const GURL& initiator_url,
+                                    blink::NavigationBlockedReason reason) {}
 
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}

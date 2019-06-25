@@ -18,17 +18,36 @@
 namespace chromeos {
 
 namespace {
+
 constexpr char kFakePassword[] = "p4zzw0r(|";
-}
+
+// Publicly exposes lifetime methods. Note that the singleton instance
+// UserSessionManager::GetInstance() can't be used since it would be reused
+// between tests.
+class TestUserSessionManager : public UserSessionManager {
+ public:
+  TestUserSessionManager() = default;
+  ~TestUserSessionManager() override = default;
+};
+
+}  // namespace
 
 class UserSessionManagerTest : public testing::Test {
  public:
   UserSessionManagerTest() {
+    static_assert(
+        static_cast<int>(
+            UserSessionManager::PasswordConsumingService::kCount) == 2,
+        "Update PasswordConsumerService_* tests");
+
     SessionManagerClient::InitializeFake();
-    user_session_manager_ = UserSessionManager::GetInstance();
+    user_session_manager_ = std::make_unique<TestUserSessionManager>();
   }
 
-  ~UserSessionManagerTest() override { SessionManagerClient::Shutdown(); }
+  ~UserSessionManagerTest() override {
+    user_session_manager_.reset();
+    SessionManagerClient::Shutdown();
+  }
 
  protected:
   void InitLoginPassword() {
@@ -41,8 +60,13 @@ class UserSessionManagerTest : public testing::Test {
     EXPECT_TRUE(FakeSessionManagerClient::Get()->login_password().empty());
   }
 
-  // Convenience pointer to the singleton, not owned.
-  UserSessionManager* user_session_manager_;
+  // Convenience shortcut to the login password stored in
+  // |user_session_manager_|'s user context.
+  const std::string& GetUserSessionManagerLoginPassword() const {
+    return user_session_manager_->user_context().GetPasswordKey()->GetSecret();
+  }
+
+  std::unique_ptr<TestUserSessionManager> user_session_manager_;
 
   // Allows UserSessionManager to request the NetworkConnectionTracker in its
   // constructor.
@@ -60,26 +84,57 @@ class UserSessionManagerTest : public testing::Test {
 // and clear it from the user context.
 TEST_F(UserSessionManagerTest, PasswordConsumerService_NoSave) {
   InitLoginPassword();
+
+  // First service votes no: Should keep password in user context.
   user_session_manager_->VoteForSavingLoginPassword(
       UserSessionManager::PasswordConsumingService::kNetwork, false);
   EXPECT_TRUE(FakeSessionManagerClient::Get()->login_password().empty());
-  EXPECT_TRUE(user_session_manager_->user_context()
-                  .GetPasswordKey()
-                  ->GetSecret()
-                  .empty());
+  EXPECT_EQ(kFakePassword, GetUserSessionManagerLoginPassword());
+
+  // Second (last) service votes no: Should remove password from user context.
+  user_session_manager_->VoteForSavingLoginPassword(
+      UserSessionManager::PasswordConsumingService::kKerberos, false);
+  EXPECT_TRUE(FakeSessionManagerClient::Get()->login_password().empty());
+  EXPECT_TRUE(GetUserSessionManagerLoginPassword().empty());
 }
 
 // Calling VoteForSavingLoginPassword() with |save_password| set to true should
-// send the password to SessionManager and clear it from the user context.
+// send the password to SessionManager and clear it from the user context once
+// all services have voted.
 TEST_F(UserSessionManagerTest, PasswordConsumerService_Save) {
   InitLoginPassword();
+
+  // First service votes yes: Should send password and remove from user context.
   user_session_manager_->VoteForSavingLoginPassword(
       UserSessionManager::PasswordConsumingService::kNetwork, true);
   EXPECT_EQ(kFakePassword, FakeSessionManagerClient::Get()->login_password());
-  EXPECT_TRUE(user_session_manager_->user_context()
-                  .GetPasswordKey()
-                  ->GetSecret()
-                  .empty());
+  EXPECT_TRUE(GetUserSessionManagerLoginPassword().empty());
+
+  // Second service votes yes: Shouldn't change anything.
+  user_session_manager_->VoteForSavingLoginPassword(
+      UserSessionManager::PasswordConsumingService::kKerberos, true);
+  EXPECT_EQ(kFakePassword, FakeSessionManagerClient::Get()->login_password());
+  EXPECT_TRUE(GetUserSessionManagerLoginPassword().empty());
+}
+
+// Calling OnPasswordConsumingServicePolicyParsed() with |save_password| set to
+// false for one service, followed by true, should send the password to
+// SessionManager on the second service and clear it from the user context.
+TEST_F(UserSessionManagerTest, PasswordConsumerService_NoSave_Save) {
+  InitLoginPassword();
+
+  // First service votes no: Should keep password in user context.
+  user_session_manager_->VoteForSavingLoginPassword(
+      UserSessionManager::PasswordConsumingService::kNetwork, false);
+  EXPECT_TRUE(FakeSessionManagerClient::Get()->login_password().empty());
+  EXPECT_EQ(kFakePassword, GetUserSessionManagerLoginPassword());
+
+  // Second service votes yes: Should save password and remove from user
+  // context.
+  user_session_manager_->VoteForSavingLoginPassword(
+      UserSessionManager::PasswordConsumingService::kKerberos, true);
+  EXPECT_EQ(kFakePassword, FakeSessionManagerClient::Get()->login_password());
+  EXPECT_TRUE(GetUserSessionManagerLoginPassword().empty());
 }
 
 }  // namespace chromeos

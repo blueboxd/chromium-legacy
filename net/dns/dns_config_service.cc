@@ -16,7 +16,9 @@ DnsConfigService::DnsConfigService()
       have_config_(false),
       have_hosts_(false),
       need_update_(false),
-      last_sent_empty_(true) {}
+      last_sent_empty_(true) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 DnsConfigService::~DnsConfigService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

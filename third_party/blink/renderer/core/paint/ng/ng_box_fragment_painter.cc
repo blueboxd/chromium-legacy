@@ -358,7 +358,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
         NGBoxFragmentPainter(*child).Paint(paint_info);
     } else {
       DCHECK(fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend)
-          << fragment.ToString();
+          << fragment;
     }
   }
 }

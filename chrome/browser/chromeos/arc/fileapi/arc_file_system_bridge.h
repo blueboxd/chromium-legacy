@@ -121,7 +121,7 @@ class ArcFileSystemBridge : public KeyedService, public mojom::FileSystemHost {
 
   std::list<FileStreamForwarderPtr> file_stream_forwarders_;
 
-  std::unique_ptr<ArcSelectFilesHandler> select_files_handler_;
+  std::unique_ptr<ArcSelectFilesHandlersManager> select_files_handlers_manager_;
 
   base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_;
 

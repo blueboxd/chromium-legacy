@@ -153,19 +153,16 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
 void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
     Profile* primary_profile) {
   DCHECK(primary_profile);
-  const user_manager::User* primary_user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
-  DCHECK(primary_user);
 
   DCHECK(!kerberos_credentials_manager_);
   kerberos_credentials_manager_ =
       std::make_unique<chromeos::KerberosCredentialsManager>(
-          g_browser_process->local_state(), primary_user);
+          g_browser_process->local_state(), primary_profile);
 
   DCHECK(!in_session_password_change_manager_);
   in_session_password_change_manager_ =
-      chromeos::InSessionPasswordChangeManager::CreateIfEnabled(primary_profile,
-                                                                primary_user);
+      chromeos::InSessionPasswordChangeManager::CreateIfEnabled(
+          primary_profile);
 
   primary_profile_shutdown_subscription_ =
       PrimaryProfileServicesShutdownNotifierFactory::GetInstance()

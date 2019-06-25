@@ -52,11 +52,13 @@ class GoogleServiceAuthError {
     // will provide details about the associated challenge.
     // CAPTCHA_REQUIRED = 4,
 
+    // DEPRECATED.
     // The user account has been deleted.
-    ACCOUNT_DELETED = 5,
+    // ACCOUNT_DELETED = 5,
 
+    // DEPRECATED.
     // The user account has been disabled.
-    ACCOUNT_DISABLED = 6,
+    // ACCOUNT_DISABLED = 6,
 
     // The service is not available; try again later.
     SERVICE_UNAVAILABLE = 7,
@@ -88,7 +90,7 @@ class GoogleServiceAuthError {
     NUM_STATES = 14,
   };
 
-  static constexpr size_t kDeprecatedStateCount = 4;
+  static constexpr size_t kDeprecatedStateCount = 6;
 
   // Error reason for invalid credentials. Only used when the error is
   // INVALID_GAIA_CREDENTIALS.

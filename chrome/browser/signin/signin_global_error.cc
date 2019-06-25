@@ -130,8 +130,6 @@ std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
     // User credentials are invalid (bad acct, etc).
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       messages.push_back(l10n_util::GetStringUTF16(
           IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE));
       break;

@@ -116,7 +116,9 @@ class BackgroundSyncLauncherTest : public testing::Test {
                StoragePartition* storage_partition) {
               BackgroundSyncContext* sync_context =
                   storage_partition->GetBackgroundSyncContext();
-              sync_context->FireBackgroundSyncEvents(std::move(done_closure));
+              sync_context->FireBackgroundSyncEvents(
+                  blink::mojom::BackgroundSyncType::ONE_SHOT,
+                  std::move(done_closure));
             },
             std::move(done_closure)));
 

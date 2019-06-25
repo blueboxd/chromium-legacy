@@ -35,7 +35,6 @@ type_mappings = [
   "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
   "autofill.mojom.PasswordForm=autofill::PasswordForm",
   "autofill.mojom.PasswordFormFieldPredictionMap=autofill::PasswordFormFieldPredictionMap",
-  "autofill.mojom.PasswordFormFieldPredictionType=autofill::PasswordFormFieldPredictionType",
   "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
   "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",

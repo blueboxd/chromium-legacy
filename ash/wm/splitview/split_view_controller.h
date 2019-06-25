@@ -59,17 +59,18 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // top of the screen.
   enum SnapPosition { NONE, LEFT, RIGHT };
 
-  // Why splitview was ended.
+  // Why splitview was ended. For now, all reasons will be kNormal except when
+  // the home launcher button is pressed, an unsnappable window just got
+  // activated, the active user session changed, or the window dragging
+  // started.
   enum class EndReason {
     kNormal = 0,
     kHomeLauncherPressed,
     kUnsnappableWindowActivated,
     kActiveUserChanged,
     kWindowDragStarted,
-    // TODO(edcourtney): Consider not ending Split-View on PIP expand.
-    // See crbug.com/950827.
+    // TODO(950827): Consider not ending Split-View on PIP expand.
     kPipExpanded,
-    kExitTabletMode,
   };
 
   // The behaviors of split view are very different when in tablet mode and in
@@ -191,7 +192,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                uint32_t metrics) override;
 
   // TabletModeObserver:
-  void OnTabletModeStarting() override;
+  void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
   void OnTabletControllerDestroyed() override;
 

@@ -845,21 +845,22 @@ TEST_F(IdentityManagerTest,
   std::string account_id2 = account_info2.account_id;
   SetRefreshTokenForAccount(identity_manager(), account_id2);
 
-  GoogleServiceAuthError account_deleted_error =
-      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DELETED);
-  GoogleServiceAuthError account_disabled_error =
-      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DISABLED);
+  GoogleServiceAuthError user_not_signed_up_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::USER_NOT_SIGNED_UP);
+  GoogleServiceAuthError invalid_gaia_credentials_error =
+      GoogleServiceAuthError(
+          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
   GoogleServiceAuthError transient_error = GoogleServiceAuthError(
       GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
 
   // Set a persistent error for |account_id2| and check that it's reflected.
   token_service()->UpdateAuthErrorForTesting(account_id2,
-                                             account_deleted_error);
+                                             user_not_signed_up_error);
   EXPECT_EQ(account_id2,
             identity_manager_observer()
                 ->AccountFromErrorStateOfRefreshTokenUpdatedCallback()
                 .account_id);
-  EXPECT_EQ(account_deleted_error,
+  EXPECT_EQ(user_not_signed_up_error,
             identity_manager_observer()
                 ->ErrorFromErrorStateOfRefreshTokenUpdatedCallback());
 
@@ -870,19 +871,19 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()
                 ->AccountFromErrorStateOfRefreshTokenUpdatedCallback()
                 .account_id);
-  EXPECT_EQ(account_deleted_error,
+  EXPECT_EQ(user_not_signed_up_error,
             identity_manager_observer()
                 ->ErrorFromErrorStateOfRefreshTokenUpdatedCallback());
 
   // Set a different persistent error for the primary account and check that
   // it's reflected.
   token_service()->UpdateAuthErrorForTesting(primary_account_id,
-                                             account_disabled_error);
+                                             invalid_gaia_credentials_error);
   EXPECT_EQ(primary_account_id,
             identity_manager_observer()
                 ->AccountFromErrorStateOfRefreshTokenUpdatedCallback()
                 .account_id);
-  EXPECT_EQ(account_disabled_error,
+  EXPECT_EQ(invalid_gaia_credentials_error,
             identity_manager_observer()
                 ->ErrorFromErrorStateOfRefreshTokenUpdatedCallback());
 }
@@ -930,18 +931,19 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           account_id2));
 
-  GoogleServiceAuthError account_deleted_error =
-      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DELETED);
-  GoogleServiceAuthError account_disabled_error =
-      GoogleServiceAuthError(GoogleServiceAuthError::State::ACCOUNT_DISABLED);
+  GoogleServiceAuthError user_not_signed_up_error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::USER_NOT_SIGNED_UP);
+  GoogleServiceAuthError invalid_gaia_credentials_error =
+      GoogleServiceAuthError(
+          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
   GoogleServiceAuthError transient_error = GoogleServiceAuthError(
       GoogleServiceAuthError::State::SERVICE_UNAVAILABLE);
 
   // Set a persistent error for |account_id2| and check that it's reflected.
   token_service()->UpdateAuthErrorForTesting(account_id2,
-                                             account_deleted_error);
+                                             user_not_signed_up_error);
   EXPECT_EQ(
-      account_deleted_error,
+      user_not_signed_up_error,
       identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -966,14 +968,14 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
   // Set a different persistent error for the primary account and check that
   // it's reflected.
   token_service()->UpdateAuthErrorForTesting(primary_account_id,
-                                             account_disabled_error);
+                                             invalid_gaia_credentials_error);
   EXPECT_EQ(
-      account_deleted_error,
+      user_not_signed_up_error,
       identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           account_id2));
-  EXPECT_EQ(account_disabled_error,
+  EXPECT_EQ(invalid_gaia_credentials_error,
             identity_manager()->GetErrorStateOfRefreshTokenForAccount(
                 primary_account_id));
   EXPECT_TRUE(
@@ -989,7 +991,7 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           account_id2));
-  EXPECT_EQ(account_disabled_error,
+  EXPECT_EQ(invalid_gaia_credentials_error,
             identity_manager()->GetErrorStateOfRefreshTokenForAccount(
                 primary_account_id));
   EXPECT_TRUE(

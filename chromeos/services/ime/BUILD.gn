@@ -18,6 +18,7 @@ source_set("lib") {
     "//base",
     "//chromeos/services/ime/public/cpp:buildflags",
     "//chromeos/services/ime/public/cpp:rulebased",
+    "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
     "//chromeos/services/ime/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -25,7 +26,6 @@ source_set("lib") {
 
   if (enable_cros_ime_decoder) {
     sources += [
-      "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
       "decoder/decoder_engine.cc",
       "decoder/decoder_engine.h",
       "decoder/downloader_impl.cc",

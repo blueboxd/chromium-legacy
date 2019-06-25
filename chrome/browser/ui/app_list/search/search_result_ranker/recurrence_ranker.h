@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
 
 namespace app_list {
@@ -77,6 +78,12 @@ class RecurrenceRanker {
   // automatically saves at regular intervals. Example use: syncing to disk
   // after a target or condition is deleted.
   void SaveToDisk();
+
+  // Return a pointer to the underlying storage of the FrecencyStore for targets
+  // or conditions. These should not be used under normal use or ranking.
+  // However, they are useful for custom cleanup logic.
+  base::flat_map<std::string, FrecencyStore::ValueData>* GetTargetData();
+  base::flat_map<std::string, FrecencyStore::ValueData>* GetConditionData();
 
   const char* GetPredictorNameForTesting() const;
 

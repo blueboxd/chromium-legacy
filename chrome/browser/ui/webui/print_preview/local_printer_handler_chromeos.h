@@ -42,7 +42,7 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
   // PrinterHandler implementation
   void Reset() override;
   void GetDefaultPrinter(DefaultPrinterCallback cb) override;
-  void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
+  void StartGetPrinters(AddedPrintersCallback added_printers_callback,
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& printer_name,
                           GetCapabilityCallback cb) override;

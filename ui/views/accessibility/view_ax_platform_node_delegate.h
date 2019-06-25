@@ -66,10 +66,20 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   // Also in |ViewAccessibility|.
   const ui::AXUniqueId& GetUniqueId() const override;
 
+  // Ordered-set-like and item-like nodes.
+  bool IsOrderedSetItem() const override;
+  bool IsOrderedSet() const override;
+  base::Optional<int> GetPosInSet() const override;
+  base::Optional<int> GetSetSize() const override;
+
  protected:
   explicit ViewAXPlatformNodeDelegate(View* view);
 
  private:
+  // Uses Views::GetViewsInGroup to find nearby Views in the same group.
+  // Searches from the View's parent to include siblings within that group.
+  void GetViewsInGroupForSet(std::vector<View*>* views_in_group) const;
+
   struct ChildWidgetsResult;
 
   ChildWidgetsResult GetChildWidgets() const;

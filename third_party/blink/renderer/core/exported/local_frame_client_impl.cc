@@ -1146,8 +1146,11 @@ void LocalFrameClientImpl::AnnotatedRegionsChanged() {
   web_frame_->Client()->DraggableRegionsChanged();
 }
 
-void LocalFrameClientImpl::DidBlockFramebust(const KURL& url) {
-  web_frame_->Client()->DidBlockFramebust(url);
+void LocalFrameClientImpl::DidBlockNavigation(
+    const KURL& blocked_url,
+    const KURL& initiator_url,
+    blink::NavigationBlockedReason reason) {
+  web_frame_->Client()->DidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
 base::UnguessableToken LocalFrameClientImpl::GetDevToolsFrameToken() const {

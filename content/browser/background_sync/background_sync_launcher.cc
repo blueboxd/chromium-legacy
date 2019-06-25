@@ -70,6 +70,7 @@ void BackgroundSyncLauncher::GetSoonestWakeupDelta(
 #if defined(OS_ANDROID)
 void BackgroundSyncLauncher::FireBackgroundSyncEvents(
     BrowserContext* browser_context,
+    blink::mojom::BackgroundSyncType sync_type,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
@@ -80,16 +81,17 @@ void BackgroundSyncLauncher::FireBackgroundSyncEvents(
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
 
   BrowserContext::ForEachStoragePartition(
-      browser_context,
-      base::BindRepeating(
-          [](base::OnceClosure done_closure,
-             StoragePartition* storage_partition) {
-            BackgroundSyncContext* sync_context =
-                storage_partition->GetBackgroundSyncContext();
-            DCHECK(sync_context);
-            sync_context->FireBackgroundSyncEvents(std::move(done_closure));
-          },
-          std::move(done_closure)));
+      browser_context, base::BindRepeating(
+                           [](blink::mojom::BackgroundSyncType sync_type,
+                              base::OnceClosure done_closure,
+                              StoragePartition* storage_partition) {
+                             BackgroundSyncContext* sync_context =
+                                 storage_partition->GetBackgroundSyncContext();
+                             DCHECK(sync_context);
+                             sync_context->FireBackgroundSyncEvents(
+                                 sync_type, std::move(done_closure));
+                           },
+                           sync_type, std::move(done_closure)));
 }
 #endif
 

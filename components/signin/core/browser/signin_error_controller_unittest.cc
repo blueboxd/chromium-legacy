@@ -65,7 +65,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
   GoogleServiceAuthError error2 =
-      GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
+      GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   EXPECT_CALL(observer, OnErrorChanged()).Times(1);
   identity_test_env.UpdatePersistentErrorOfRefreshTokenForAccount(
       test_account_id, error2);
@@ -193,8 +193,6 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
       GoogleServiceAuthError::USER_NOT_SIGNED_UP,
       GoogleServiceAuthError::CONNECTION_FAILED,
-      GoogleServiceAuthError::ACCOUNT_DELETED,
-      GoogleServiceAuthError::ACCOUNT_DISABLED,
       GoogleServiceAuthError::SERVICE_UNAVAILABLE,
       GoogleServiceAuthError::REQUEST_CANCELED,
       GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE,

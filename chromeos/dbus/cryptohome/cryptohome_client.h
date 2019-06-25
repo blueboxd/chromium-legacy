@@ -215,6 +215,11 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const cryptohome::MountGuestRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
+  // Calls GetRsuDeviceId method. |callback| is called after the method call
+  // succeeds.
+  virtual void GetRsuDeviceId(
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
   // Calls TpmIsReady method.
   virtual void TpmIsReady(DBusMethodCallback<bool> callback) = 0;
 

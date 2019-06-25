@@ -5,29 +5,17 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_FORM_FIELD_PREDICTION_MAP_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_FORM_FIELD_PREDICTION_MAP_H_
 
-#include <map>
-
+#include "base/containers/flat_map.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 
 namespace autofill {
 
-// This enum lists form field types as understood by the password manager,
-// esentially a digest of |autofill::ServerFieldType|. Note that we cannot
-// simply reuse |autofill::ServerFieldType| as it is defined in the browser,
-// while this enum will be used by both the browser and renderer.
-enum PasswordFormFieldPredictionType {
-  PREDICTION_USERNAME,
-  PREDICTION_CURRENT_PASSWORD,
-  PREDICTION_NEW_PASSWORD,
-  PREDICTION_NOT_PASSWORD,
-  PREDICTION_MAX = PREDICTION_NOT_PASSWORD
-};
-
 using PasswordFormFieldPredictionMap =
-    std::map<FormFieldData, PasswordFormFieldPredictionType>;
+    base::flat_map<FormFieldData, mojom::PasswordFormFieldPredictionType>;
 using FormsPredictionsMap =
-    std::map<FormData, PasswordFormFieldPredictionMap>;
+    base::flat_map<FormData, PasswordFormFieldPredictionMap>;
 
 }  // namespace autofill
 

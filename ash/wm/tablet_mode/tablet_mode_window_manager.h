@@ -124,10 +124,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   void ArrangeWindowsForTabletMode();
 
   // Revert all windows to how they were arranged before tablet mode.
-  // |windows_in_splitview| contains the windows that were in splitview before
-  // entering clamshell mode.
-  void ArrangeWindowsForClamshellMode(
-      base::flat_map<aura::Window*, WindowStateType> windows_in_splitview);
+  // |was_in_overview| indicates whether it was in overview before entering
+  // desktop mode.
+  void ArrangeWindowsForDesktopMode(bool was_in_overview = false);
 
   // If the given window should be handled by us, this function will add it to
   // the list of known windows (remembering the initial show state).
@@ -138,10 +137,13 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                    bool snap = false,
                    bool animate_bounds_on_attach = true);
 
-  // Remove a window from our tracking list. If the window is going to be
-  // destroyed, do not restore its old previous window state object as it will
-  // send unnecessary window state change event.
-  void ForgetWindow(aura::Window* window, bool destroyed);
+  // Remove a window from our tracking list. |was_in_overview| used when
+  // |destroyed| is false to help handle leaving tablet mode. If the window is
+  // going to be destroyed, do not restore its old previous window state object
+  // as it will send unnecessary window state change event.
+  void ForgetWindow(aura::Window* window,
+                    bool destroyed,
+                    bool was_in_overview = false);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);

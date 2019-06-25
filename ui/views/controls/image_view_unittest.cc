@@ -51,9 +51,9 @@ class ImageViewTest : public ViewsTestBase,
     widget_.Init(params);
     View* container = new View();
     // Make sure children can take up exactly as much space as they require.
-    BoxLayout::Orientation orientation = GetParam() == Axis::kHorizontal
-                                             ? BoxLayout::kHorizontal
-                                             : BoxLayout::kVertical;
+    BoxLayout::Orientation orientation =
+        GetParam() == Axis::kHorizontal ? BoxLayout::Orientation::kHorizontal
+                                        : BoxLayout::Orientation::kVertical;
     container->SetLayoutManager(std::make_unique<BoxLayout>(orientation));
     widget_.SetContentsView(container);
 

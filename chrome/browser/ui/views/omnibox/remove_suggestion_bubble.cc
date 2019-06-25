@@ -34,8 +34,8 @@ class RemoveSuggestionBubbleDialogDelegateView
     DCHECK(template_url_service);
     DCHECK(match_.SupportsDeletion());
 
-    auto* layout_manager = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     layout_manager->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
     // TODO(tommycli): Replace this with the real spacing from UX.

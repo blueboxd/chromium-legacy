@@ -359,7 +359,8 @@ void ProfileListViewController::PopulateList() {
 }
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);

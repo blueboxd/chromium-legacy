@@ -126,8 +126,9 @@ void InvertBubbleView::Init() {
       l10n_util::GetStringUTF16(IDS_DARK_THEME), CONTEXT_BODY_TEXT_LARGE);
   dark_theme->set_listener(this);
 
-  views::BoxLayout* layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 

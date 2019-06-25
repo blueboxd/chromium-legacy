@@ -112,7 +112,7 @@ CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
   header_view_ = new views::View();
   views::BoxLayout* layout =
       header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kHorizontalLabelPaddingDp));
   AddChildWithLayer(this, header_view_);
 

@@ -177,7 +177,7 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
   ScriptState::Scope scope(
       WorkerGlobalScope()->ScriptController()->GetScriptState());
   Client().DidInitializeWorkerContext(
-      WorkerGlobalScope()->ScriptController()->GetContext());
+      this, WorkerGlobalScope()->ScriptController()->GetContext());
   TRACE_EVENT_END0("ServiceWorker",
                    "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
@@ -336,6 +336,10 @@ void ServiceWorkerGlobalScopeProxy::Detach() {
 void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
   DCHECK(IsMainThread());
   embedded_worker_->TerminateWorkerContext();
+}
+
+bool ServiceWorkerGlobalScopeProxy::IsWindowInteractionAllowed() {
+  return WorkerGlobalScope()->IsWindowInteractionAllowed();
 }
 
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {

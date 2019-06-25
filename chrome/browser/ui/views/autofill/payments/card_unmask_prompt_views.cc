@@ -381,7 +381,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   auto controls_container = std::make_unique<views::View>();
   controls_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   controls_container_ = AddChildView(std::move(controls_container));
 
@@ -399,13 +399,13 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   // the temporary error label. They are separated by a related distance.
   auto input_container = std::make_unique<views::View>();
   input_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   // Input row, containing month/year dropdowns if needed and the CVC field.
   auto input_row = std::make_unique<views::View>();
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
 
   // Add the month and year comboboxes if the expiration date is needed.
@@ -439,7 +439,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   auto temporary_error = std::make_unique<views::View>();
   auto* temporary_error_layout =
       temporary_error->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
   temporary_error_layout->set_cross_axis_alignment(

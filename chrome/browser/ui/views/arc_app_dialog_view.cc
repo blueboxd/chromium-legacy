@@ -114,7 +114,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
@@ -123,8 +123,8 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   icon_view_ = AddChildView(std::move(icon_view));
 
   auto text_container = std::make_unique<views::View>();
-  auto text_container_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto text_container_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   text_container_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   text_container_layout->set_cross_axis_alignment(

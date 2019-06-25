@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/win/win_util.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
@@ -29,7 +30,9 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path_win.h"
+#include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_win.h"
+#include "ui/views/views_features.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -165,6 +168,9 @@ void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
+  if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows))
+    return std::make_unique<corewm::TooltipAura>();
+
   DCHECK(!tooltip_);
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
   return base::WrapUnique(tooltip_);

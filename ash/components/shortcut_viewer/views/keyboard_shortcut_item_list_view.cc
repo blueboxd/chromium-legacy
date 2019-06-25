@@ -53,7 +53,8 @@ KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
   // side tab than the padding between list view and the border of the window.
   constexpr int kLeftPadding = 16;
   constexpr int kRightPadding = 32;
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   SetLayoutManager(std::move(layout));
   SetBorder(

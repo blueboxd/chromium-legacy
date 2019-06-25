@@ -176,7 +176,7 @@ class ClickActivator : public ui::EventHandler {
 std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   auto view = std::make_unique<views::View>();
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
 
   const gfx::FontList font_list = GetTextFontList();
 
@@ -383,7 +383,7 @@ NotificationInputContainerMD::NotificationInputContainerMD(
       textfield_(new views::Textfield()),
       button_(new views::ImageButton(this)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
   SetBackground(views::CreateSolidBackground(kActionsRowBackgroundColor));
 
   SetInkDropMode(InkDropMode::ON);
@@ -533,7 +533,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
     : MessageView(notification),
       ink_drop_container_(new views::InkDropContainerView()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   set_ink_drop_visible_opacity(1);
 
@@ -554,7 +554,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   content_row_ = new views::View();
   auto* content_row_layout =
       content_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, kContentRowPadding, 0));
+          views::BoxLayout::Orientation::kHorizontal, kContentRowPadding, 0));
   content_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   AddChildView(content_row_);
@@ -562,7 +562,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   // |left_content_| contains most contents like title, message, etc...
   left_content_ = new views::View();
   left_content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
   left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
   content_row_->AddChildView(left_content_);
   content_row_layout->SetFlexForView(left_content_, 1);
@@ -581,7 +581,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   // |action_buttons_row_| contains inline action buttons.
   action_buttons_row_ = new views::View();
   action_buttons_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kActionsRowPadding,
+      views::BoxLayout::Orientation::kHorizontal, kActionsRowPadding,
       kActionsRowHorizontalSpacing));
   action_buttons_row_->SetVisible(false);
   actions_row_->AddChildView(action_buttons_row_);
@@ -1131,7 +1131,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   // |settings_row_| contains inline settings.
   settings_row_ = new views::View();
   settings_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kSettingsRowPadding, 0));
+      views::BoxLayout::Orientation::kVertical, kSettingsRowPadding, 0));
 
   int block_notifications_message_id = 0;
   switch (notification.notifier_id().type) {
@@ -1174,7 +1174,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 
   auto* settings_button_row = new views::View;
   auto settings_button_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kSettingsButtonRowPadding, 0);
+      views::BoxLayout::Orientation::kHorizontal, kSettingsButtonRowPadding, 0);
   settings_button_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   settings_button_row->SetLayoutManager(std::move(settings_button_layout));

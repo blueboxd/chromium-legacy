@@ -192,7 +192,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   // the first input field.
   constexpr int kRowBottomPadding = 6;
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
@@ -209,7 +209,8 @@ CreditCardEditorViewController::CreateHeaderView() {
   constexpr int kPaddingBetweenCardIcons = 8;
   std::unique_ptr<views::View> icons_row = std::make_unique<views::View>();
   icons_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kPaddingBetweenCardIcons));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kPaddingBetweenCardIcons));
 
   std::string selected_network =
       credit_card_to_edit_ ? autofill::data_util::GetPaymentRequestData(
@@ -246,7 +247,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   if (IsEditingServerCard()) {
     std::unique_ptr<views::View> data_source = std::make_unique<views::View>();
     data_source->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kPaddingBetweenCardIcons));
 
     // "From Google Payments".

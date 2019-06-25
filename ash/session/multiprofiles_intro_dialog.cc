@@ -80,7 +80,7 @@ void MultiprofilesIntroDialog::InitDialog() {
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // Explanation string

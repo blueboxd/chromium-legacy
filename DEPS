@@ -142,7 +142,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd32b1ad164ec906d80c8d637611852347b8f812a',
+  'v8_revision': 'd3a6eb96bc8dcd4526cfff4bf7cd841ca1ff9578',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -150,7 +150,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'dd3ef1e788191b55260650c13a2a516ac3b4dcfa',
+  'angle_revision': 'eb66fe4e15e8ad4d11eabcdac3ee1e012b06697a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -832,7 +832,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '73c4a7c3567a7a813398c34b925a6559679c3ebb',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2cfafaf4aa2583fc9503eac3e2f163939ca1ce8b',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),

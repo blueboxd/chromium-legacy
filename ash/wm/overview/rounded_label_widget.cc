@@ -32,7 +32,7 @@ class RoundedLabelView : public views::View {
       : horizontal_padding_(horizontal_padding),
         preferred_height_(preferred_height) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(vertical_padding, horizontal_padding)));
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetColor(background_color);

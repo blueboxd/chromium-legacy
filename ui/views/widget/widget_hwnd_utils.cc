@@ -109,6 +109,9 @@ void CalculateWindowStylesFromInitParams(
     case Widget::InitParams::TYPE_MENU:
       *style |= WS_POPUP;
       break;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      *style |= WS_POPUP;
+      break;
     default:
       NOTREACHED();
   }

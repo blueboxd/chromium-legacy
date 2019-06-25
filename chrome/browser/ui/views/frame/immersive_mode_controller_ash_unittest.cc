@@ -54,20 +54,22 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
 
   // Toggle the browser's fullscreen state.
   void ToggleFullscreen() {
-    // The fullscreen change notification is sent asynchronously. The
-    // notification is used to trigger changes in whether the shelf is auto
-    // hidden and whether a "light bar" version of the tab strip is used when
-    // the top-of-window views are hidden.
-    FullscreenNotificationObserver waiter(browser());
+    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. The notification
+    // is used to trigger changes in whether the shelf is auto hidden and
+    // whether a "light bar" version of the tab strip is used when the
+    // top-of-window views are hidden.
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
     chrome::ToggleFullscreenMode(browser());
-    waiter.Wait();
+    waiter->Wait();
   }
 
   // Set whether the browser is in tab fullscreen.
   void SetTabFullscreen(bool tab_fullscreen) {
     content::WebContents* web_contents =
         browser_view()->contents_web_view()->GetWebContents();
-    FullscreenNotificationObserver waiter(browser());
+    std::unique_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
     if (tab_fullscreen) {
       browser()
           ->exclusive_access_manager()
@@ -79,7 +81,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
           ->fullscreen_controller()
           ->ExitFullscreenModeForTab(web_contents);
     }
-    waiter.Wait();
+    waiter->Wait();
   }
 
   // Attempt revealing the top-of-window views.

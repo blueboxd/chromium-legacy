@@ -19,13 +19,13 @@ namespace {
 views::BoxLayout::Orientation GetOrientation(TriView::Orientation orientation) {
   switch (orientation) {
     case TriView::Orientation::HORIZONTAL:
-      return views::BoxLayout::kHorizontal;
+      return views::BoxLayout::Orientation::kHorizontal;
     case TriView::Orientation::VERTICAL:
-      return views::BoxLayout::kVertical;
+      return views::BoxLayout::Orientation::kVertical;
   }
   // Required for some compilers.
   NOTREACHED();
-  return views::BoxLayout::kHorizontal;
+  return views::BoxLayout::Orientation::kHorizontal;
 }
 
 // A View that will perform a layout if a child view's preferred size changes.

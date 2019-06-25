@@ -216,8 +216,8 @@ void TranslateBubbleView::OnMenuButtonClicked(views::Button* source,
 }
 
 void TranslateBubbleView::Init() {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   should_always_translate_ = model_->ShouldAlwaysTranslate();
   // Create different view based on user selection in

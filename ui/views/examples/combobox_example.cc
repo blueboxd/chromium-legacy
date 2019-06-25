@@ -51,8 +51,8 @@ void ComboboxExample::CreateExampleView(View* container) {
   disabled_combobox->SetSelectedIndex(4);
   disabled_combobox->SetEnabled(false);
 
-  container->SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10, 0), 5));
+  container->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(10, 0), 5));
   container->AddChildView(combobox_);
   container->AddChildView(disabled_combobox);
 }

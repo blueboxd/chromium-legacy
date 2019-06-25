@@ -206,7 +206,7 @@ std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
   std::unique_ptr<views::View> content_view = std::make_unique<views::View>();
 
   content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kPaymentRequestRowVerticalInsets, 0), 0));
 
   for (auto& item : items_)

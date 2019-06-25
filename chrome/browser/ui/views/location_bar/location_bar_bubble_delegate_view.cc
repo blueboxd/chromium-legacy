@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -49,8 +52,10 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
   // Add observer to close the bubble if the fullscreen state changes.
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    fullscreen_observer_.Add(
-        browser->exclusive_access_manager()->fullscreen_controller());
+    registrar_.Add(
+        this, chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+        content::Source<FullscreenController>(
+            browser->exclusive_access_manager()->fullscreen_controller()));
   }
   if (!anchor_view)
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
@@ -81,7 +86,11 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
   }
 }
 
-void LocationBarBubbleDelegateView::OnFullscreenStateChanged() {
+void LocationBarBubbleDelegateView::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
   GetWidget()->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
   CloseBubble();
 }

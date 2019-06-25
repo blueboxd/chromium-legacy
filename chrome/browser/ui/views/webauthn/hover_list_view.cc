@@ -166,7 +166,7 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
 
   auto item_container = std::make_unique<views::View>();
   item_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* betweeen_child_spacing */));
 
   item_container_ = item_container.get();

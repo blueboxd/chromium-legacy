@@ -150,7 +150,7 @@ LoginUserMenuView::LoginUserMenuView(
       kUserMenuMarginWidth);
   auto setup_horizontal_margin_container = [&](views::View* container) {
     container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(0, margins.left(), 0, margins.right())));
     AddChildView(container);
     return container;
@@ -164,7 +164,7 @@ LoginUserMenuView::LoginUserMenuView(
   };
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(margins.top(), 0, margins.bottom(), 0)));
 
   // User information.

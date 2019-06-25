@@ -37,7 +37,7 @@ MigratableCardView::MigratableCardView(
       parent_dialog_(parent_dialog) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI)));
 
   AddChildView(GetMigratableCardDescriptionView(migratable_credit_card,
@@ -47,7 +47,7 @@ MigratableCardView::MigratableCardView(
   checkbox_uncheck_text_container_ = new views::View();
   views::BoxLayout* layout = checkbox_uncheck_text_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
+          views::BoxLayout::Orientation::kVertical,
           gfx::Insets(provider->GetDistanceMetric(
                           views::DISTANCE_RELATED_CONTROL_VERTICAL),
                       provider->GetDistanceMetric(
@@ -95,7 +95,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
 
   migratable_card_description_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
@@ -143,7 +143,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
       std::make_unique<views::View>();
   card_network_and_last_four_digits->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL_LIST)));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

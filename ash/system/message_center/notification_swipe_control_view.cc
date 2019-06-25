@@ -26,7 +26,7 @@ NotificationSwipeControlView::NotificationSwipeControlView(
     message_center::MessageView* message_view)
     : message_view_(message_view) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(message_center_style::kSwipeControlButtonVerticalMargin,
                   message_center_style::kSwipeControlButtonHorizontalMargin),
       message_center_style::kSwipeControlButtonHorizontalMargin));

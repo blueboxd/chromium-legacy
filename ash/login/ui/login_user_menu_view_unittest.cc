@@ -25,8 +25,8 @@ using LoginUserMenuViewTest = LoginTestBase;
 
 TEST_F(LoginUserMenuViewTest, RemoveUserRequiresTwoActivations) {
   auto* anchor = new views::View;
-  anchor->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  anchor->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(anchor));
 
   bool remove_warning_called = false;
@@ -65,8 +65,8 @@ TEST_F(LoginUserMenuViewTest, RemoveUserRequiresTwoActivations) {
 
 TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
   auto* anchor = new views::View;
-  anchor->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  anchor->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(anchor));
 
   auto* bubble = new LoginUserMenuView(
@@ -106,8 +106,8 @@ TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
 
 TEST_F(LoginUserMenuViewTest, LoginButtonRipple) {
   auto* container = new views::View();
-  container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   LoginButton* bubble_opener = new LoginButton(nullptr /*listener*/);
   bubble_opener->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -145,8 +145,8 @@ TEST_F(LoginUserMenuViewTest, LoginButtonRipple) {
 
 TEST_F(LoginUserMenuViewTest, ResetStateHidesConfirmData) {
   auto* container = new views::View;
-  container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(container));
 
   auto* bubble = new LoginUserMenuView(

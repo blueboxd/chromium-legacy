@@ -39,7 +39,8 @@ class VectorIconGallery : public View,
     auto image_view_container = std::make_unique<views::View>();
     image_view_ =
         image_view_container->AddChildView(std::make_unique<ImageView>());
-    auto image_layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
+    auto image_layout =
+        std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal);
     image_layout->set_cross_axis_alignment(
         BoxLayout::CrossAxisAlignment::kCenter);
     image_layout->set_main_axis_alignment(
@@ -48,8 +49,8 @@ class VectorIconGallery : public View,
     image_view_->SetBorder(CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
     image_view_container_ = AddChildView(std::move(image_view_container));
 
-    BoxLayout* box = SetLayoutManager(
-        std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
+    BoxLayout* box = SetLayoutManager(std::make_unique<BoxLayout>(
+        BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
     box->SetFlexForView(image_view_container_, 1);
 
     auto file_chooser = std::make_unique<Textfield>();
@@ -58,7 +59,7 @@ class VectorIconGallery : public View,
     auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
-            BoxLayout::kHorizontal, gfx::Insets(10), 10));
+            BoxLayout::Orientation::kHorizontal, gfx::Insets(10), 10));
     file_chooser_ = file_container->AddChildView(std::move(file_chooser));
     file_go_button_ = file_container->AddChildView(
         MdTextButton::Create(this, base::ASCIIToUTF16("Render")));

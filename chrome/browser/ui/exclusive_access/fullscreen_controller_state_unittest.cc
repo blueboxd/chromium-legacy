@@ -216,7 +216,6 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
 
   // FullscreenControllerStateTest:
   void SetUp() override;
-  void TearDown() override;
   std::unique_ptr<BrowserWindow> CreateBrowserWindow() override;
   void ChangeWindowFullscreenState() override;
   const char* GetWindowStateString() override;
@@ -226,22 +225,16 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
   // FullscreenControllerStateTest:
   bool ShouldSkipStateAndEventPair(State state, Event event) override;
   Browser* GetBrowser() override;
-  FullscreenControllerTestWindow* window_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenControllerStateUnitTest);
+  FullscreenControllerTestWindow* window_;
 };
 
-FullscreenControllerStateUnitTest::FullscreenControllerStateUnitTest() =
-    default;
+FullscreenControllerStateUnitTest::FullscreenControllerStateUnitTest()
+    : window_(NULL) {
+}
 
 void FullscreenControllerStateUnitTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
   window_->set_browser(browser());
-}
-
-void FullscreenControllerStateUnitTest::TearDown() {
-  FullscreenControllerStateTest::TearDown();
-  BrowserWithTestWindowTest::TearDown();
 }
 
 std::unique_ptr<BrowserWindow>

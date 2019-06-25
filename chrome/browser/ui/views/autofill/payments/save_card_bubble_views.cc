@@ -158,7 +158,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   // If applicable, add the upload explanation label.  Appears above the card
@@ -176,7 +176,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   auto* description_view = new views::View();
   views::BoxLayout* box_layout =
       description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   view->AddChildView(description_view);
@@ -227,8 +227,8 @@ void SaveCardBubbleViews::AssignIdsToDialogClientView() {
 }
 
 void SaveCardBubbleViews::Init() {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   // For server cards, there is an explanation between the title and the
   // controls; use views::TEXT. For local cards, since there is no explanation,
   // use views::CONTROL instead.

@@ -52,7 +52,7 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   set_notify_enter_exit_on_child(true);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kTooltipPaddingTop, kTooltipPaddingLeftRight,
                   kTooltipPaddingBottom, kTooltipPaddingLeftRight),
       kPreviewPadding));

@@ -382,7 +382,7 @@ void ZoomBubbleView::Init() {
   const int spacing =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   auto box_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetInsetsMetric(INSETS_TOAST) - margins(), spacing);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);

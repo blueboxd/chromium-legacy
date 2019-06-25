@@ -29,8 +29,8 @@ MediaGalleryCheckboxView::MediaGalleryCheckboxView(
     views::ButtonListener* button_listener,
     views::ContextMenuController* menu_controller) {
   DCHECK(button_listener != NULL);
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets dialog_insets =
       provider->GetInsetsMetric(views::INSETS_DIALOG);

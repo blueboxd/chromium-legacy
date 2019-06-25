@@ -338,7 +338,7 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
 
   auto container = std::make_unique<views::View>();
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(

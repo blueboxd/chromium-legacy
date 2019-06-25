@@ -227,12 +227,12 @@ const char* FullscreenControllerStateTest::GetWindowStateString() {
 
 bool FullscreenControllerStateTest::InvokeEvent(Event event) {
   if (!fullscreen_notification_observer_.get()) {
-    // Start observing fullscreen changes. Construct the notification observer
-    // here instead of in
+    // Start observing NOTIFICATION_FULLSCREEN_CHANGED. Construct the
+    // notification observer here instead of in
     // FullscreenControllerStateTest::FullscreenControllerStateTest() so that we
     // listen to notifications on the proper thread.
-    fullscreen_notification_observer_ =
-        std::make_unique<FullscreenNotificationObserver>(GetBrowser());
+    fullscreen_notification_observer_.reset(
+        new FullscreenNotificationObserver());
   }
 
   State source_state = state_;
@@ -350,8 +350,8 @@ void FullscreenControllerStateTest::MaybeWaitForNotification() {
       IsPersistentState(state_)) {
     fullscreen_notification_observer_->Wait();
     last_notification_received_state_ = state_;
-    fullscreen_notification_observer_ =
-        std::make_unique<FullscreenNotificationObserver>(GetBrowser());
+    fullscreen_notification_observer_.reset(
+        new FullscreenNotificationObserver());
   }
 }
 
@@ -505,10 +505,6 @@ void FullscreenControllerStateTest::VerifyWindowStateExpectations(
     EXPECT_EQ(GetFullscreenController()->IsWindowFullscreenForTabOrPending(),
               !!fullscreen_for_tab) << GetAndClearDebugLog();
   }
-}
-
-void FullscreenControllerStateTest::TearDown() {
-  fullscreen_notification_observer_.reset();
 }
 
 FullscreenController* FullscreenControllerStateTest::GetFullscreenController() {

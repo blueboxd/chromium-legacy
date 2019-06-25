@@ -2757,6 +2757,11 @@ const char kEnableAppcontainerDescription[] =
     "Enables the use of an AppContainer on sandboxed processes to improve "
     "security.";
 
+const char kEnableAuraTooltipsOnWindowsName[] =
+    "Enable aura tooltips on Windows";
+const char kEnableAuraTooltipsOnWindowsDescription[] =
+    "Enables aura tooltips instead of the native comctl32 tooltips on Windows.";
+
 const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
 const char kEnableGpuAppcontainerDescription[] =
     "Enables the use of an AppContainer for the GPU sandboxed processes to "

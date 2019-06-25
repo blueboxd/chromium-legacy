@@ -126,8 +126,6 @@
         background-size: 100% auto;
         display: none;
         padding-top: calc(120 / 680 * 100%); /* Keep background ratio. */
-
-        @apply --promo-banner;
       }
 
       @media (prefers-color-scheme: dark) {
@@ -139,21 +137,13 @@
       :host([showing-promo]) #banner {
         display: block;
       }
-
-      :host([showing-promo]) #promo-title {
-        @apply --promo-title;
-      }
-
-      :host([showing-promo]) #promo-description {
-        @apply --promo-description;
-      }
     </style>
-    <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
+    <div id="banner" hidden="[[syncStatus.signedIn]]" part="banner"></div>
     <div class$="settings-box first
                  [[getPromoHeaderClass_(subLabel_)]]"
         id="promo-header" hidden="[[syncStatus.signedIn]]">
       <div class="start settings-box-text">
-        <div id="promo-title">
+        <div id="promo-title" part="title">
           [[getLabel_(promoLabelWithAccount,
               promoLabelWithNoAccount, shownAccount_)]]
         </div>

@@ -73,8 +73,8 @@ const gfx::VectorIcon& GetBluetoothDeviceIcon(
 
 views::View* CreateDisabledPanel() {
   views::View* container = new views::View;
-  auto box_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto box_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(box_layout));

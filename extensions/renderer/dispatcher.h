@@ -45,6 +45,7 @@ struct ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params;
 
 namespace blink {
 class WebLocalFrame;
+class WebServiceWorkerContextProxy;
 }
 
 namespace base {
@@ -107,6 +108,7 @@ class Dispatcher : public content::RenderThreadObserver,
   // Runs on a different thread and should only use thread safe member
   // variables.
   void DidInitializeServiceWorkerContextOnWorkerThread(
+      blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,

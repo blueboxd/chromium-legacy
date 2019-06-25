@@ -276,7 +276,8 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(button));
 
   AddMenuItemInternal(std::move(margined_view), MenuItems::kStyledButton);
@@ -297,7 +298,7 @@ DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(GetMarginSize(kSmall), kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(button));
 
@@ -318,7 +319,8 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(label));
 
   AddMenuItemInternal(std::move(margined_view), MenuItems::kLabel);
@@ -329,7 +331,8 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(view));
   AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
 }
@@ -340,7 +343,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   // Create a view to keep menu contents.
   auto contents_view = std::make_unique<views::View>();
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets()));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets()));
 
   for (MenuItems& group : menu_item_groups_) {
     if (group.items.empty()) {
@@ -378,7 +381,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
       }
 
       sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
+          views::BoxLayout::Orientation::kVertical,
           gfx::Insets(GetMarginSize(top_margin), 0,
                       GetMarginSize(bottom_margin), 0),
           GetMarginSize(child_spacing)));

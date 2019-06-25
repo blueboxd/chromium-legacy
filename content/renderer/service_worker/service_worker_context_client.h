@@ -114,7 +114,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WillEvaluateScript() override;
   void DidEvaluateScript(bool success) override;
   void WillInitializeWorkerContext() override;
-  void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
+  void DidInitializeWorkerContext(
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;
   void CountFeature(blink::mojom::WebFeature feature) override;

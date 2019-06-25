@@ -328,13 +328,12 @@ enum NotificationType {
   // Sent when a ProtocolHandlerRegistry is changed. The source is the profile.
   NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
 
+  // Sent when the browser enters or exits fullscreen mode.
+  NOTIFICATION_FULLSCREEN_CHANGED,
+
   // Sent when the FullscreenController changes, confirms, or denies mouse lock.
   // The source is the browser's FullscreenController, no details.
   NOTIFICATION_MOUSE_LOCK_CHANGED,
-
-  // Sent by the PluginPrefs when there is a change of plugin enable/disable
-  // status. The source is the profile.
-  NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
 
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the

@@ -50,7 +50,7 @@ std::unique_ptr<views::View> AppInfoPanel::CreateVerticalStack(
     int child_spacing) const {
   auto vertically_stacked_view = std::make_unique<views::View>();
   vertically_stacked_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), child_spacing));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), child_spacing));
   return vertically_stacked_view;
 }
 
@@ -63,7 +63,8 @@ std::unique_ptr<views::View> AppInfoPanel::CreateHorizontalStack(
     int child_spacing) const {
   auto vertically_stacked_view = std::make_unique<views::View>();
   vertically_stacked_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), child_spacing));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      child_spacing));
   return vertically_stacked_view;
 }
 

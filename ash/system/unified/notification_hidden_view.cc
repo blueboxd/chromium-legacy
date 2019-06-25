@@ -49,8 +49,8 @@ NotificationHiddenView::NotificationHiddenView() {
       views::Painter::CreateSolidRoundRectPainter(kUnifiedMenuButtonColor,
                                                   kUnifiedTrayCornerRadius)));
 
-  auto* layout = container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  auto* layout = container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   container->AddChildView(label);
   layout->SetFlexForView(label, 1);

@@ -45,6 +45,7 @@ class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
+class WebServiceWorkerContextProxy;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebMediaStreamRendererFactory;
@@ -336,8 +337,11 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.
+  // |context_proxy| is valid until
+  // WillDestroyServiceWorkerContextOnWorkerThread() is called.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
-      v8::Local<v8::Context> context,
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url) {}

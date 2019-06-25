@@ -10,15 +10,12 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -27,30 +24,18 @@
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
-class Browser;
-
 namespace base {
 class TickClock;
 }  // namespace base
 
-// Observer for fullscreen state change notifications.
-class FullscreenNotificationObserver : public FullscreenObserver {
+// Observer for NOTIFICATION_FULLSCREEN_CHANGED notifications.
+class FullscreenNotificationObserver
+    : public content::WindowedNotificationObserver {
  public:
-  explicit FullscreenNotificationObserver(Browser* browser);
-  ~FullscreenNotificationObserver() override;
-
-  // Runs a loop until a fullscreen change is seen (unless one has already been
-  // observed, in which case it returns immediately).
-  void Wait();
-
-  // FullscreenObserver:
-  void OnFullscreenStateChanged() override;
-
+  FullscreenNotificationObserver() : WindowedNotificationObserver(
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::NotificationService::AllSources()) {}
  protected:
-  bool observed_change_ = false;
-  ScopedObserver<FullscreenController, FullscreenObserver> observer_{this};
-  base::RunLoop run_loop_;
-
   DISALLOW_COPY_AND_ASSIGN(FullscreenNotificationObserver);
 };
 

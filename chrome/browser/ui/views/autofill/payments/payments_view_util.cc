@@ -130,8 +130,8 @@ std::unique_ptr<views::Textfield> CreateCvcTextfield() {
 LegalMessageView::LegalMessageView(const LegalMessageLines& legal_message_lines,
                                    views::StyledLabelListener* listener)
     : legal_message_lines_(legal_message_lines) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   for (const LegalMessageLine& line : legal_message_lines) {
     AddChildView(CreateLegalMessageLineLabel(line, listener).release());
   }

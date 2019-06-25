@@ -94,8 +94,8 @@ class BasePinButton : public views::InkDropHostView {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetPreferredSize(size);
 
-    auto layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical);
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
@@ -411,14 +411,14 @@ LoginPinView::LoginPinView(Style keyboard_style,
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     AddChildView(row);
     return row;
   };
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   bool show_letters = keyboard_style == Style::kAlphanumeric;
   const gfx::Size button_size =

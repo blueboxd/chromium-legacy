@@ -258,8 +258,8 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
   StartupUtils::MarkOobeCompleted();
 }
 
-// Trying to catch http://crbug.com/362153.
-IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
+// http://crbug.com/978267
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, DISABLED_ScreenVisibility) {
   LoginUser(test_users_[0]);
 
   UserAddingScreen::Get()->Start();

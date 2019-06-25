@@ -59,8 +59,8 @@ class RatingsView : public views::View {
   RatingsView(double rating, int rating_count)
       : rating_(rating), rating_count_(rating_count) {
     SetID(ExtensionInstallDialogView::kRatingsViewId);
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
   }
   ~RatingsView() override {}
 
@@ -127,7 +127,7 @@ class PermissionsView : public views::View {
   explicit PermissionsView(int available_width)
       : available_width_(available_width) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         ChromeLayoutProvider::Get()->GetDistanceMetric(
             views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   }
@@ -328,7 +328,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
     auto webstore_data_container = std::make_unique<views::View>();
     webstore_data_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kVertical, gfx::Insets(),
+            views::BoxLayout::Orientation::kVertical, gfx::Insets(),
             provider->GetDistanceMetric(
                 DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
@@ -336,7 +336,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
 
     auto rating_container = std::make_unique<views::View>();
     rating_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
     auto rating = std::make_unique<RatingsView>(prompt_->average_rating(),
                                                 prompt_->rating_count());
@@ -474,7 +474,7 @@ void ExtensionInstallDialogView::CreateContents() {
   extension_info_container->SetBorder(views::CreateEmptyBorder(
       0, content_insets.left(), 0, content_insets.right()));
   extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   const int content_width = GetPreferredSize().width() -
                             extension_info_container->GetInsets().width();
@@ -573,7 +573,8 @@ ExpandableContainerView::DetailsView::DetailsView(
   const int bottom_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, 0, bottom_padding, 0),
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, 0, bottom_padding, 0),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

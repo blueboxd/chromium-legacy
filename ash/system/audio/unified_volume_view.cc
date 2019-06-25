@@ -59,7 +59,7 @@ class MoreButton : public views::Button {
   explicit MoreButton(views::ButtonListener* listener)
       : views::Button(listener) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal,
+        views::BoxLayout::Orientation::kHorizontal,
         gfx::Insets((kTrayItemSize -
                      GetDefaultSizeOfVectorIcon(vector_icons::kHeadsetIcon)) /
                     2),

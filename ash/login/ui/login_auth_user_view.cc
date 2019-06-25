@@ -328,7 +328,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
     SetBorder(views::CreateEmptyBorder(kFingerprintIconTopSpacingDp, 0, 0, 0));
 
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         kSpacingBetweenFingerprintIconAndLabelDp));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
@@ -441,7 +441,7 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
  public:
   DisabledAuthMessageView() {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kDisabledAuthMessageVerticalBorderDp,
                     kDisabledAuthMessageHorizontalBorderDp),
         kDisabledAuthMessageChildrenSpacingDp));

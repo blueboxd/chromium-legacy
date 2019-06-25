@@ -45,8 +45,8 @@ views::ScrollView* CreateCredentialsView(
     views::ButtonListener* button_listener,
     network::mojom::URLLoaderFactory* loader_factory) {
   auto list_view = std::make_unique<views::View>();
-  list_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   int item_height = 0;
   for (const auto& form : forms) {
     std::pair<base::string16, base::string16> titles =

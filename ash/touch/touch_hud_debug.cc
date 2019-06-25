@@ -316,8 +316,8 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
   const gfx::Size& display_size = display.size();
   canvas_->SetSize(display_size);
 
-  label_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  label_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   constexpr SkColor kShadowColor = SK_ColorWHITE;
   const SkColor label_color =

@@ -198,7 +198,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
                     extension_misc::EXTENSION_ICON_SMALL))) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   // Add margins for the icon plus the icon-title padding so that the dialog

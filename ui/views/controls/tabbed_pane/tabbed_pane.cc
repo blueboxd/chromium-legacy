@@ -437,14 +437,15 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
   if (orientation == TabbedPane::Orientation::kHorizontal) {
     constexpr int kTabStripLeadingEdgePadding = 9;
     layout = std::make_unique<BoxLayout>(
-        BoxLayout::kHorizontal, gfx::Insets(0, kTabStripLeadingEdgePadding));
+        BoxLayout::Orientation::kHorizontal,
+        gfx::Insets(0, kTabStripLeadingEdgePadding));
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
   } else {
     constexpr int kTabStripEdgePadding = 8;
     constexpr int kTabSpacing = 8;
     layout = std::make_unique<BoxLayout>(
-        BoxLayout::kVertical, gfx::Insets(kTabStripEdgePadding, 0, 0, 0),
-        kTabSpacing);
+        BoxLayout::Orientation::kVertical,
+        gfx::Insets(kTabStripEdgePadding, 0, 0, 0), kTabSpacing);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
   }
   layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
@@ -561,7 +562,8 @@ MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
                        TabbedPane::TabStripStyle style)
     : TabStrip(orientation, style) {
   if (orientation == TabbedPane::Orientation::kHorizontal) {
-    auto layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
+    auto layout =
+        std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal);
     layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
     layout->SetDefaultFlex(1);

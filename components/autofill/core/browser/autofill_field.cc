@@ -113,6 +113,19 @@ AutofillType AutofillField::ComputedType() const {
     return AutofillType(server_type_);
   }
 
+  // If the explicit type is cc-exp and either the server or heuristics agree on
+  // a 2 vs 4 digit specialization of cc-exp, use that specialization.
+  if (html_type_ == HTML_TYPE_CREDIT_CARD_EXP) {
+    if (server_type_ == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+        server_type_ == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
+      return AutofillType(server_type_);
+    }
+    if (heuristic_type_ == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
+        heuristic_type_ == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
+      return AutofillType(heuristic_type_);
+    }
+  }
+
   // Use the html type specified by the website unless it is unrecognized and
   // autofill predicts a credit card type.
   if (html_type_ != HTML_TYPE_UNSPECIFIED &&

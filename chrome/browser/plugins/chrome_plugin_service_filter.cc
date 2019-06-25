@@ -8,18 +8,17 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -249,8 +248,6 @@ ChromePluginServiceFilter::ChromePluginServiceFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 content::NotificationService::AllSources());
 }
 
 ChromePluginServiceFilter::~ChromePluginServiceFilter() {}
@@ -260,28 +257,12 @@ void ChromePluginServiceFilter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      int render_process_id =
-          content::Source<content::RenderProcessHost>(source).ptr()->GetID();
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CLOSED, type);
+  int render_process_id =
+      content::Source<content::RenderProcessHost>(source).ptr()->GetID();
 
-      base::AutoLock auto_lock(lock_);
-      plugin_details_.erase(render_process_id);
-      break;
-    }
-    case chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      PluginService::GetInstance()->PurgePluginListCache(profile, false);
-      if (profile && profile->HasOffTheRecordProfile()) {
-        PluginService::GetInstance()->PurgePluginListCache(
-            profile->GetOffTheRecordProfile(), false);
-      }
-      break;
-    }
-    default: {
-      NOTREACHED();
-    }
-  }
+  base::AutoLock auto_lock(lock_);
+  plugin_details_.erase(render_process_id);
 }
 
 ChromePluginServiceFilter::ProcessDetails*

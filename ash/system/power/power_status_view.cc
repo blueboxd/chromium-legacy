@@ -32,7 +32,7 @@ PowerStatusView::PowerStatusView()
   separator_label_->SetText(base::ASCIIToUTF16(" - "));
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, 12),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(0, 12),
       kTrayPopupPaddingBetweenItems));
 
   AddChildView(percentage_label_);

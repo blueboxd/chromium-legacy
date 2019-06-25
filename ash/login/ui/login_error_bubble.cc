@@ -32,8 +32,8 @@ LoginErrorBubble::LoginErrorBubble(views::View* content,
                                    bool is_persistent)
     : LoginBaseBubbleView(anchor_view), is_persistent_(is_persistent) {
   auto* alert_view = new NonAccessibleView("AlertIconContainer");
-  alert_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  alert_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
   views::ImageView* alert_icon = new views::ImageView();
   alert_icon->SetPreferredSize(gfx::Size(kAlertIconSizeDp, kAlertIconSizeDp));
   alert_icon->SetImage(

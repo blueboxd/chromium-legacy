@@ -270,7 +270,7 @@ class EmptyNotifierView : public views::View {
   EmptyNotifierView() {
     SkColor color = kUnifiedMenuTextColor;
     auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(), 0);
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(
@@ -440,7 +440,7 @@ NotifierSettingsView::NotifierSettingsView()
 
   auto header_view = std::make_unique<views::View>();
   header_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kHeaderViewPadding, 0));
+      views::BoxLayout::Orientation::kVertical, kHeaderViewPadding, 0));
   header_view->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kTopBorderColor));
 
@@ -448,7 +448,7 @@ NotifierSettingsView::NotifierSettingsView()
 
   auto* quiet_mode_layout =
       quiet_mode_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, kQuietModeViewPadding,
+          views::BoxLayout::Orientation::kHorizontal, kQuietModeViewPadding,
           kQuietModeViewSpacing));
 
   auto quiet_mode_icon = std::make_unique<views::ImageView>();
@@ -552,7 +552,8 @@ void NotifierSettingsView::OnNotifiersUpdated(
 
   auto contents_view = std::make_unique<ScrollContentsView>();
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kHorizontalMargin)));
 
   for (const auto& notifier : notifiers) {
     NotifierButton* button = new NotifierButton(notifier, this);

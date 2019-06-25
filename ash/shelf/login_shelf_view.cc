@@ -384,8 +384,8 @@ LoginShelfView::LoginShelfView(
   // switch to the lock screen or status area. This view should otherwise not
   // be focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   auto add_button = [this](ButtonId id, int text_resource_id,
                            const gfx::VectorIcon& icon) {

@@ -53,7 +53,7 @@ AppInfoHeaderPanel::AppInfoHeaderPanel(Profile* profile,
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
@@ -73,8 +73,8 @@ void AppInfoHeaderPanel::CreateControls() {
 
   // Create a vertical container to store the app's name and link.
   auto vertical_info_container = std::make_unique<views::View>();
-  auto vertical_container_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto vertical_container_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   vertical_container_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   vertical_info_container->SetLayoutManager(

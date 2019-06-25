@@ -89,7 +89,8 @@ bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
 class BottomAlignedBoxLayout : public views::BoxLayout {
  public:
   explicit BottomAlignedBoxLayout(TrayBubbleView* bubble_view)
-      : BoxLayout(BoxLayout::kVertical), bubble_view_(bubble_view) {}
+      : BoxLayout(BoxLayout::Orientation::kVertical),
+        bubble_view_(bubble_view) {}
 
   ~BottomAlignedBoxLayout() override {}
 

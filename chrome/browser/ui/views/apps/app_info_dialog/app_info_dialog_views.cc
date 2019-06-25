@@ -111,8 +111,9 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
 
 AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
     : profile_(profile), app_id_(app->id()) {
-  views::BoxLayout* layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  views::BoxLayout* layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
 
   const int kHorizontalSeparatorHeight = 1;
 
@@ -121,7 +122,7 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
   auto dialog_body_contents = std::make_unique<views::View>();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   dialog_body_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   dialog_body_contents->AddChildView(

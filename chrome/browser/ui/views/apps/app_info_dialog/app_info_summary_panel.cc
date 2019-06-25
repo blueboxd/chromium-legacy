@@ -105,7 +105,7 @@ AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
@@ -122,7 +122,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
   auto description_and_labels_stack = std::make_unique<views::View>();
   description_and_labels_stack->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(),
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
           ChromeLayoutProvider::Get()->GetDistanceMetric(
               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

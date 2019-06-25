@@ -150,8 +150,8 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
                    const base::string16& text,
                    const base::Optional<base::string16>& dismiss_text)
       : overlay_(overlay) {
-    auto* layout = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
 
     if (dismiss_text.has_value()) {
       button_ = new ToastOverlayButton(

@@ -36,7 +36,7 @@ AppInfoFooterPanel::AppInfoFooterPanel(Profile* profile,
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 

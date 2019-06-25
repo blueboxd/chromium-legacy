@@ -57,8 +57,8 @@ class LoginExpandedPublicAccountViewTest
     other_view_ = new views::View();
 
     container_ = new views::View();
-    container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     container_->AddChildView(public_account_);
     container_->AddChildView(other_view_);
     SetWidget(CreateWidgetWithContent(container_));

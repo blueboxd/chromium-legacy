@@ -509,17 +509,19 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(), kDialogSpacingVertical));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+          kDialogSpacingVertical));
 
   views::View* upper_container_view = new views::View();
   upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kDialogInsets, kDialogSpacingVertical));
+      views::BoxLayout::Orientation::kVertical, kDialogInsets,
+      kDialogSpacingVertical));
   AddChildView(upper_container_view);
 
   views::View* lower_container_view = new views::View();
   views::BoxLayout* lower_container_layout =
       lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kLowerContainerInsets));
+          views::BoxLayout::Orientation::kVertical, kLowerContainerInsets));
   AddChildView(lower_container_view);
 
   logo_image_ = new views::ImageView();
@@ -549,8 +551,8 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
   // Make a view to keep |message_label_| and |learn_more_link_| together with
   // less vertical spacing than the other dialog views.
   views::View* message_view = new views::View();
-  message_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  message_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   message_label_ = new views::Label(message);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

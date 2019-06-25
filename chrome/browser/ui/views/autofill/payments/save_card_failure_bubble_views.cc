@@ -30,7 +30,7 @@ SaveCardFailureBubbleViews::CreateMainContentView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   main_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   base::string16 explanation = controller()->GetExplanatoryMessage();

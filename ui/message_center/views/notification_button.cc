@@ -24,8 +24,8 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
   SetBackground(views::CreateSolidBackground(kNotificationBackgroundColor));
   set_notify_enter_exit_on_child(true);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, kButtonHorizontalPadding),
-      kButtonIconToTitlePadding));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, kButtonHorizontalPadding), kButtonIconToTitlePadding));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
 }

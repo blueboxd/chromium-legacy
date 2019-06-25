@@ -145,8 +145,9 @@ class SelectionButtonView : public LoginButton {
     };
 
     auto* label_container = new NonAccessibleView();
-    views::BoxLayout* label_layout = label_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    views::BoxLayout* label_layout =
+        label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
     label_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
     AddChildView(label_container);
@@ -156,8 +157,9 @@ class SelectionButtonView : public LoginButton {
     label_container->AddChildView(label_);
 
     auto* icon_container = new NonAccessibleView();
-    views::BoxLayout* icon_layout = icon_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    views::BoxLayout* icon_layout =
+        icon_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
     icon_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kEnd);
     AddChildView(icon_container);
@@ -220,7 +222,7 @@ class MonitoringWarningView : public NonAccessibleView {
  public:
   MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
 
     image_ = new views::ImageView();
@@ -280,7 +282,8 @@ class RightPaneView : public NonAccessibleView,
     // Create labels view.
     labels_view_ = new NonAccessibleView();
     labels_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(), kSpacingBetweenLabelsDp));
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        kSpacingBetweenLabelsDp));
     AddChildView(labels_view_);
 
     monitoring_warning_view_ = new MonitoringWarningView();
@@ -321,8 +324,8 @@ class RightPaneView : public NonAccessibleView,
 
     // Create advanced view.
     advanced_view_ = new NonAccessibleView();
-    advanced_view_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    advanced_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     AddChildView(advanced_view_);
 
     // Creates button to open the menu.
@@ -669,8 +672,8 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
       on_dismissed_(on_dismissed),
       event_handler_(
           std::make_unique<LoginExpandedPublicAccountEventHandler>(this)) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
   SetPreferredSize(gfx::Size(kExpandedViewWidthDp, kExpandedViewHeightDp));
 
   user_view_ = new LoginUserView(
@@ -681,8 +684,8 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
 
   auto* left_pane = new NonAccessibleView();
   AddChildView(left_pane);
-  left_pane->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  left_pane->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   left_pane->SetPreferredSize(
       gfx::Size(kExpandedViewWidthDp / 2, kExpandedViewHeightDp));
 

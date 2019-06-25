@@ -380,7 +380,8 @@ void AutofillPopupItemView::CreateContent() {
   AutofillPopupController* controller = popup_view_->controller();
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -618,7 +619,7 @@ void AutofillPopupFooterView::CreateContent() {
 
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
+          views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
@@ -828,8 +829,8 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
-  layout_ = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   layout_->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
 
   CreateChildViews();
@@ -932,8 +933,9 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     // Create a container to wrap the "regular" (non-footer) rows.
     std::unique_ptr<views::View> body_container =
         std::make_unique<views::View>();
-    views::BoxLayout* body_layout = body_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    views::BoxLayout* body_layout =
+        body_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
     body_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
     for (auto* row : rows_) {
@@ -967,8 +969,9 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   if (has_footer) {
     auto* footer_container = new views::View();
 
-    views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    views::BoxLayout* footer_layout =
+        footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
     footer_layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kStart);
 

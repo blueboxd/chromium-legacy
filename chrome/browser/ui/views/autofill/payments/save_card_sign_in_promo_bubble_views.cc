@@ -44,7 +44,7 @@ SaveCardSignInPromoBubbleViews::CreateMainContentView() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   view->SetID(DialogViewId::SIGN_IN_PROMO_VIEW);
 

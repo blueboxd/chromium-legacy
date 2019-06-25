@@ -102,6 +102,7 @@
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -346,6 +347,7 @@ void Dispatcher::DidCreateScriptContext(
 }
 
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy,
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
@@ -400,7 +402,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
             worker_dispatcher, service_worker_version_id);
     worker_dispatcher->AddWorkerData(
-        service_worker_version_id, context,
+        service_worker_version_id, context_proxy, context,
         CreateBindingsSystem(std::move(ipc_sender)));
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is

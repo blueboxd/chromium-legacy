@@ -37,8 +37,8 @@ ButtonExample::~ButtonExample() = default;
 
 void ButtonExample::CreateExampleView(View* container) {
   container->SetBackground(CreateSolidBackground(SK_ColorWHITE));
-  auto layout =
-      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10);
+  auto layout = std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
+                                            gfx::Insets(10), 10);
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
 

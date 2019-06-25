@@ -267,7 +267,7 @@ void ExtensionInstalledBubbleView::Init() {
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->set_minimum_cross_axis_size(kRightColumnWidth);
   // Indent by the size of the icon.

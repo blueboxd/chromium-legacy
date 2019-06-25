@@ -139,7 +139,8 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   set_owned_by_client();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kHorizontalMargin));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kHorizontalMargin));
 
   auto gripper = std::make_unique<views::ImageView>();
   gripper->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

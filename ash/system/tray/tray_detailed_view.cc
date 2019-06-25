@@ -58,8 +58,8 @@ class ScrollContentsView : public views::View {
  public:
   explicit ScrollContentsView(DetailedViewDelegate* delegate)
       : delegate_(delegate) {
-    box_layout_ = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
   }
   ~ScrollContentsView() override = default;
 
@@ -272,8 +272,8 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       progress_bar_(nullptr),
       tri_view_(nullptr),
       back_button_(nullptr) {
-  box_layout_ = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetBackground(views::CreateSolidBackground(
       delegate_->GetBackgroundColor(GetNativeTheme())));
 }

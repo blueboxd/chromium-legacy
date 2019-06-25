@@ -33,26 +33,6 @@
 
 using content::WebContents;
 
-FullscreenNotificationObserver::FullscreenNotificationObserver(
-    Browser* browser) {
-  observer_.Add(browser->exclusive_access_manager()->fullscreen_controller());
-}
-
-FullscreenNotificationObserver::~FullscreenNotificationObserver() = default;
-
-void FullscreenNotificationObserver::OnFullscreenStateChanged() {
-  observed_change_ = true;
-  if (run_loop_.running())
-    run_loop_.Quit();
-}
-
-void FullscreenNotificationObserver::Wait() {
-  if (observed_change_)
-    return;
-
-  run_loop_.Run();
-}
-
 const char FullscreenControllerTest::kFullscreenKeyboardLockHTML[] =
     "/fullscreen_keyboardlock/fullscreen_keyboardlock.html";
 
@@ -193,20 +173,20 @@ void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
 
 void FullscreenControllerTest::EnterActiveTabFullscreen() {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  FullscreenNotificationObserver fullscreen_observer(browser());
+  FullscreenNotificationObserver fullscreen_observer;
   browser()->EnterFullscreenModeForTab(tab, GURL(),
                                        blink::WebFullscreenOptions());
   fullscreen_observer.Wait();
 }
 
 void FullscreenControllerTest::ToggleBrowserFullscreen() {
-  FullscreenNotificationObserver fullscreen_observer(browser());
+  FullscreenNotificationObserver fullscreen_observer;
   chrome::ToggleFullscreenMode(browser());
   fullscreen_observer.Wait();
 }
 
 void FullscreenControllerTest::EnterExtensionInitiatedFullscreen() {
-  FullscreenNotificationObserver fullscreen_observer(browser());
+  FullscreenNotificationObserver fullscreen_observer;
   browser()->ToggleFullscreenModeWithExtension(GURL("faux_extension"));
   fullscreen_observer.Wait();
 }

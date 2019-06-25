@@ -51,7 +51,7 @@ class ScrollerContentsView : public views::View {
   ScrollerContentsView(UnifiedMessageListView* message_list_view,
                        views::ButtonListener* listener) {
     auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(0, 0, kUnifiedNotificationCenterSpacing, 0)));
     contents_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStretch);
@@ -153,7 +153,7 @@ StackingNotificationCounterView::StackingNotificationCounterView(
   SetVisible(false);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(0, kStackingNotificationClearAllButtonPadding.left(), 0, 0),
       0));
   layout->set_cross_axis_alignment(

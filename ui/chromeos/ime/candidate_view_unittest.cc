@@ -45,8 +45,8 @@ class CandidateViewTest : public views::ViewsTestBase,
     init_params.delegate = new views::WidgetDelegateView();
 
     container_ = init_params.delegate->GetContentsView();
-    container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     for (size_t i = 0; i < base::size(kDummyCandidates); ++i) {
       CandidateView* candidate = new CandidateView(
           this, ui::CandidateWindow::VERTICAL);

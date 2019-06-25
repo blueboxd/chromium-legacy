@@ -118,8 +118,8 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
       main_view_(main_view),
       view_delegate_(view_delegate),
       results_container_(new views::View) {
-  results_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  results_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   for (int i = 0; i < kMaxResults; ++i) {
     search_result_views_.emplace_back(

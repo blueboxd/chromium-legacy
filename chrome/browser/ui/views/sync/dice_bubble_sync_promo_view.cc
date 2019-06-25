@@ -37,7 +37,7 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
   const int title_resource_id = accounts_promo_message_resource_id;
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()
           ->GetDialogInsetsForContentType(views::TEXT, views::TEXT)
           .bottom());

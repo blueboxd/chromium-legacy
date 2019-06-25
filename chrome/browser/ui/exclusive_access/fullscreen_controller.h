@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class GURL;
 
@@ -61,9 +62,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
  public:
   explicit FullscreenController(ExclusiveAccessManager* manager);
   ~FullscreenController() override;
-
-  void AddObserver(FullscreenObserver* observer);
-  void RemoveObserver(FullscreenObserver* observer);
 
   // Browser/User Fullscreen ///////////////////////////////////////////////////
 
@@ -158,9 +156,10 @@ class FullscreenController : public ExclusiveAccessControllerBase {
     TAB
   };
 
-  // Posts a task to notify observers of the fullscreen state change.
-  void PostFullscreenChangeNotification();
-  void NotifyFullscreenChange();
+  // Posts a task to call NotifyFullscreenChange.
+  void PostFullscreenChangeNotification(bool is_fullscreen);
+  // Sends a NOTIFICATION_FULLSCREEN_CHANGED notification.
+  void NotifyFullscreenChange(bool is_fullscreen);
 
   // Notifies the tab that it has been forced out of fullscreen mode if
   // necessary.
@@ -199,27 +198,25 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   };
   // The state before entering tab fullscreen mode via webkitRequestFullScreen.
   // When not in tab fullscreen, it is STATE_INVALID.
-  PriorFullscreenState state_prior_to_tab_fullscreen_ = STATE_INVALID;
+  PriorFullscreenState state_prior_to_tab_fullscreen_;
   // True if the site has entered into fullscreen.
-  bool tab_fullscreen_ = false;
+  bool tab_fullscreen_;
 
   // True if this controller has toggled into tab OR browser fullscreen.
-  bool toggled_into_fullscreen_ = false;
+  bool toggled_into_fullscreen_;
 
   // Set in OnTabDeactivated(). Used to see if we're in the middle of
   // deactivation of a tab.
-  content::WebContents* deactivated_contents_ = nullptr;
+  content::WebContents* deactivated_contents_;
 
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.
-  bool is_privileged_fullscreen_for_testing_ = false;
+  bool is_privileged_fullscreen_for_testing_;
 
   // Used in testing to set the state to tab fullscreen.
-  bool is_tab_fullscreen_for_testing_ = false;
+  bool is_tab_fullscreen_for_testing_;
 
-  base::ObserverList<FullscreenObserver> observer_list_;
-
-  base::WeakPtrFactory<FullscreenController> ptr_factory_{this};
+  base::WeakPtrFactory<FullscreenController> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };

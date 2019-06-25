@@ -316,13 +316,14 @@ void ServiceWorkerContextClient::WillInitializeWorkerContext() {
 }
 
 void ServiceWorkerContextClient::DidInitializeWorkerContext(
-    v8::Local<v8::Context> context) {
+    blink::WebServiceWorkerContextProxy* context_proxy,
+    v8::Local<v8::Context> v8_context) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context, service_worker_version_id_, service_worker_scope_,
-          script_url_);
+          context_proxy, v8_context, service_worker_version_id_,
+          service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WillDestroyWorkerContext(

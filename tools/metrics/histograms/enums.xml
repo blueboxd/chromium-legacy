@@ -34042,6 +34042,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1208501269" label="AutofillScanThemeDialog:enabled"/>
   <int value="-1206875404" label="EnableIncognitoWindowCounter:enabled"/>
   <int value="-1206698676" label="MacV2Sandbox:disabled"/>
+  <int value="-1206524306" label="EnableAuraTooltipsOnWindows:disabled"/>
   <int value="-1206337150"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
   <int value="-1205076560" label="EnableSearchBoxSelection:disabled"/>
@@ -34222,6 +34223,7 @@ from previous Chrome versions.
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
+  <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-951394314" label="top-chrome-md"/>

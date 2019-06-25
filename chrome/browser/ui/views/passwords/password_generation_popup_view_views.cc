@@ -158,7 +158,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   // Add 1px distance between views for the separator.
   views::BoxLayout* box_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(), 1));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(), 1));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 

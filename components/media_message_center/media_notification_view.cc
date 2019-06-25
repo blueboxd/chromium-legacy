@@ -116,7 +116,7 @@ MediaNotificationView::MediaNotificationView(
   DCHECK(container_);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   auto header_row =
       std::make_unique<message_center::NotificationHeaderView>(this);
@@ -141,7 +141,8 @@ MediaNotificationView::MediaNotificationView(
   auto title_artist_row = std::make_unique<views::View>();
   title_artist_row_layout_ =
       title_artist_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kMediaTitleArtistInsets, 0));
+          views::BoxLayout::Orientation::kVertical, kMediaTitleArtistInsets,
+          0));
   title_artist_row_layout_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   title_artist_row_layout_->set_cross_axis_alignment(
@@ -167,7 +168,7 @@ MediaNotificationView::MediaNotificationView(
   auto button_row = std::make_unique<views::View>();
   auto* button_row_layout =
       button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kMediaButtonRowSeparator));
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -382,7 +383,7 @@ void MediaNotificationView::UpdateViewForExpandedState() {
 
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kVertical,
+            views::BoxLayout::Orientation::kVertical,
             gfx::Insets(
                 kDefaultMarginSize, kDefaultMarginSize, kDefaultMarginSize,
                 has_artwork_ ? kRightMarginExpandedSize : kDefaultMarginSize),
@@ -394,7 +395,7 @@ void MediaNotificationView::UpdateViewForExpandedState() {
 
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal,
+            views::BoxLayout::Orientation::kHorizontal,
             gfx::Insets(0, kDefaultMarginSize, 14,
                         has_artwork_ ? kRightMarginSize : kDefaultMarginSize),
             kDefaultMarginSize, true))

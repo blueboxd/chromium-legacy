@@ -121,7 +121,7 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
     : button_(new UnifiedSliderButton(listener, icon, accessible_name_id)),
       slider_(CreateSlider(listener, readonly)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedSliderRowPadding,
+      views::BoxLayout::Orientation::kHorizontal, kUnifiedSliderRowPadding,
       kUnifiedSliderViewSpacing));
 
   AddChildView(button_);

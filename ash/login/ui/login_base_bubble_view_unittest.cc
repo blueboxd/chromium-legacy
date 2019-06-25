@@ -29,8 +29,8 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
     anchor_ = new views::View();
     anchor_->SetSize(gfx::Size(0, 25));
     container_ = new views::View();
-    container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     container_->AddChildView(anchor_);
 
     SetWidget(CreateWidgetWithContent(container_));
@@ -39,8 +39,8 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
     auto* label = new views::Label(base::UTF8ToUTF16("A message"),
                                    views::style::CONTEXT_LABEL,
                                    views::style::STYLE_PRIMARY);
-    bubble_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    bubble_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     bubble_->AddChildView(label);
 
     container_->AddChildView(bubble_);

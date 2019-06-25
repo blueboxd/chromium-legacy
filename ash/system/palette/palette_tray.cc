@@ -94,8 +94,8 @@ class TitleView : public views::View, public views::ButtonListener {
   explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
     // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
     // See crbug.com/614453.
-    auto box_layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    auto box_layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));

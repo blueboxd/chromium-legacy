@@ -10,9 +10,11 @@ namespace extensions {
 
 ServiceWorkerData::ServiceWorkerData(
     int64_t service_worker_version_id,
+    blink::WebServiceWorkerContextProxy* context_proxy,
     ScriptContext* context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system)
     : service_worker_version_id_(service_worker_version_id),
+      context_proxy_(context_proxy),
       context_(context),
       v8_schema_registry_(new V8SchemaRegistry),
       bindings_system_(std::move(bindings_system)) {}

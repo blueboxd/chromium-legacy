@@ -103,7 +103,7 @@ gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {
 void LocalCardMigrationBubbleViews::AddedToWidget() {
   auto title_container = std::make_unique<views::View>();
   title_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 #if defined(GOOGLE_CHROME_BUILD)

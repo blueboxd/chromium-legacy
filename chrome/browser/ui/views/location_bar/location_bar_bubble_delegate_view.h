@@ -6,15 +6,16 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_BAR_BUBBLE_DELEGATE_VIEW_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/events/event_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/event_monitor.h"
 
 namespace content {
+class NotificationDetails;
+class NotificationSource;
 class WebContents;
 }  // namespace content
 
@@ -23,7 +24,7 @@ class WebContents;
 // mode.
 // TODO(https://crbug.com/788051): Move to chrome/browser/ui/views/page_action/.
 class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
-                                      public FullscreenObserver,
+                                      public content::NotificationObserver,
                                       public content::WebContentsObserver {
  public:
   enum DisplayReason {
@@ -55,8 +56,10 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   // user).
   void ShowForReason(DisplayReason reason, bool allow_refocus_alert = true);
 
-  // FullscreenObserver:
-  void OnFullscreenStateChanged() override;
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -96,8 +99,8 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   virtual void CloseBubble();
 
  private:
-  ScopedObserver<FullscreenController, FullscreenObserver> fullscreen_observer_{
-      this};
+  // Used to register for fullscreen change notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBubbleDelegateView);
 };

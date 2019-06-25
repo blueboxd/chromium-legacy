@@ -46,7 +46,8 @@ BubbleView::BubbleView() {
                   kVerticalBottomPadding, kHorizontalPadding)));
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(), kIconTextSpacing));
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kIconTextSpacing));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);

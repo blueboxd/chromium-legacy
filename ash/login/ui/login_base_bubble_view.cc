@@ -122,7 +122,7 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
     : anchor_view_(anchor_view),
       bubble_handler_(std::make_unique<LoginBubbleHandler>(this)) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
                   kBubbleBottomMarginDp, kBubbleHorizontalMarginDp),
       kBubbleBetweenChildSpacingDp));

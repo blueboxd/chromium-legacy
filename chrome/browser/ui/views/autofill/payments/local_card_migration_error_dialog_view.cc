@@ -98,7 +98,7 @@ void LocalCardMigrationErrorDialogView::Init() {
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -116,7 +116,7 @@ void LocalCardMigrationErrorDialogView::Init() {
   auto* error_view = new views::View();
   auto* horizontal_layout =
       error_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(
               views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   horizontal_layout->set_main_axis_alignment(

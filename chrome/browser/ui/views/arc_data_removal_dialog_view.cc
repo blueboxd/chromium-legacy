@@ -86,7 +86,7 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(

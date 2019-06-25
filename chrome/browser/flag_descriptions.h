@@ -1623,6 +1623,9 @@ extern const char kDisablePostscriptPrintingDescription[];
 extern const char kEnableAppcontainerName[];
 extern const char kEnableAppcontainerDescription[];
 
+extern const char kEnableAuraTooltipsOnWindowsName[];
+extern const char kEnableAuraTooltipsOnWindowsDescription[];
+
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
 

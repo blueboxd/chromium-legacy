@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -69,6 +70,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
 
 namespace extensions {
@@ -279,6 +281,38 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTest);
+};
+
+class ServiceWorkerBasedBackgroundTestWithNotification
+    : public ServiceWorkerBasedBackgroundTest {
+ public:
+  ServiceWorkerBasedBackgroundTestWithNotification() {}
+  ~ServiceWorkerBasedBackgroundTestWithNotification() override = default;
+
+  void SetUpOnMainThread() override {
+    ServiceWorkerBasedBackgroundTest::SetUpOnMainThread();
+    display_service_tester_ =
+        std::make_unique<NotificationDisplayServiceTester>(
+            browser()->profile());
+  }
+
+  void TearDownOnMainThread() override {
+    display_service_tester_.reset();
+    ServiceWorkerBasedBackgroundTest::TearDownOnMainThread();
+  }
+
+ protected:
+  // Returns a vector with the Notification objects that are being displayed
+  // by the notification display service. Synchronous.
+  std::vector<message_center::Notification> GetDisplayedNotifications() const {
+    return display_service_tester_->GetDisplayedNotificationsForType(
+        NotificationHandler::Type::WEB_PERSISTENT);
+  }
+
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTestWithNotification);
 };
 
 // Tests that Service Worker based background pages can be loaded and they can
@@ -1859,6 +1893,30 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
         browser()->tab_strip_model()->GetActiveWebContents())
         ->RunAction(extension, true);
   }
+  EXPECT_TRUE(catcher.GetNextResult()) << message_;
+}
+
+// Tests that Service Worker notification handlers can call extension APIs that
+// require user gesture to be present.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTestWithNotification,
+                       ServiceWorkerNotificationClick) {
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("service_worker/worker_based_background/"
+                                 "notification_click"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << message_;
+
+  // Click on the Service Worker notification.
+  {
+    std::vector<message_center::Notification> notifications =
+        GetDisplayedNotifications();
+    ASSERT_EQ(1u, notifications.size());
+    display_service_tester_->SimulateClick(
+        NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+        base::nullopt, base::nullopt);
+  }
+
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 

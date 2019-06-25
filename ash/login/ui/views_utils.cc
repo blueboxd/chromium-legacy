@@ -16,8 +16,8 @@ namespace login_views_utils {
 std::unique_ptr<views::View> WrapViewForPreferredSize(
     std::unique_ptr<views::View> view) {
   auto proxy = std::make_unique<NonAccessibleView>();
-  auto layout_manager =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout_manager = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   proxy->SetLayoutManager(std::move(layout_manager));

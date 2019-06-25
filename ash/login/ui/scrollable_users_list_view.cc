@@ -295,7 +295,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   user_view_host_ = new NonAccessibleView();
   user_view_host_layout_ =
       user_view_host_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(),
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
           layout_params.between_child_spacing));
   user_view_host_layout_->set_minimum_cross_axis_size(
       LoginUserView::WidthForLayoutStyle(display_style));
@@ -326,8 +326,8 @@ ScrollableUsersListView::ScrollableUsersListView(
   // to be vertically centered when non-scrollable.
   auto ensure_min_height = std::make_unique<EnsureMinHeightView>();
   ensure_min_height
-      ->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical))
+      ->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical))
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));

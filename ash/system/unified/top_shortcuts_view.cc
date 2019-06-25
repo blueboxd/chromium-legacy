@@ -160,7 +160,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   DCHECK(controller_);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
+      views::BoxLayout::Orientation::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);

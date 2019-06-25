@@ -153,10 +153,14 @@ class WebServiceWorkerContextClient {
   // DidInitializeWorkerContext(), but it's not clear when the context would
   // already be initialized.)
   //
+  // |context_proxy| is valid until WillDestroyWorkerContext() is called.
+  //
   // This function is used to support service workers in Chrome extensions.
   //
   // TODO(nhiroki): Can you clarify this code and comment?
-  virtual void DidInitializeWorkerContext(v8::Local<v8::Context> context) {}
+  virtual void DidInitializeWorkerContext(
+      WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context) {}
 
   // WorkerGlobalScope is about to be destroyed. The client should clear
   // the WebServiceWorkerGlobalScopeProxy when this is called.

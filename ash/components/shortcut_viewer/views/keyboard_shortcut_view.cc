@@ -70,7 +70,8 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   constexpr int kTopPadding = 98;
   views::BoxLayout* layout =
       illustration_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(kTopPadding, 0, 0, 0)));
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets(kTopPadding, 0, 0, 0)));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(

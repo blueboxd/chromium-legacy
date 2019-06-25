@@ -55,12 +55,12 @@ class LoginUserViewUnittest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     container_ = new views::View();
-    container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
 
     auto* root = new views::View();
-    root->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    root->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     root->AddChildView(container_);
     SetWidget(CreateWidgetWithContent(root));
   }

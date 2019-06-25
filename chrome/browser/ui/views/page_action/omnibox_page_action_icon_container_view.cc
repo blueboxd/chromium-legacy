@@ -27,7 +27,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           params.between_icon_spacing));
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);

@@ -127,8 +127,8 @@ MediaRemotingDialogView::MediaRemotingDialogView(
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
   DCHECK(pref_service_);
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   // Depress the Cast toolbar icon.
   action_controller_->OnDialogShown();
 }

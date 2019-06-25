@@ -27,7 +27,7 @@ namespace views {
 // Excess space will not be distributed.
 class VIEWS_EXPORT BoxLayout : public LayoutManager {
  public:
-  enum Orientation {
+  enum class Orientation {
     kHorizontal,
     kVertical,
   };

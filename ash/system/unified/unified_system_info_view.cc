@@ -170,8 +170,8 @@ BatteryView::BatteryView()
       status_(new views::Label) {
   PowerStatus::Get()->AddObserver(this);
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   separator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS_SEPARATOR));
@@ -248,7 +248,8 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
                                    const gfx::VectorIcon& icon)
     : Button(listener) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kUnifiedSystemInfoSpacing));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kUnifiedSystemInfoSpacing));
 
   auto* label = new views::Label;
   label->SetAutoColorReadabilityEnabled(false);
@@ -378,7 +379,7 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
     : enterprise_managed_(new EnterpriseManagedView(controller)),
       supervised_(new SupervisedUserView()) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
+      views::BoxLayout::Orientation::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);

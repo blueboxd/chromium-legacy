@@ -35,6 +35,23 @@ namespace {
 
 constexpr char kFingerprint[] = "pinky";
 
+class FullscreenWaiter {
+ public:
+  explicit FullscreenWaiter(Browser* browser) : browser_(browser) {}
+  ~FullscreenWaiter() = default;
+
+  void WaitForState(bool fullscreen) {
+    if (browser_->window()->IsFullscreen() != fullscreen)
+      observer_.Wait();
+  }
+
+ private:
+  FullscreenNotificationObserver observer_;
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenWaiter);
+};
+
 class ScreenLockerTest : public InProcessBrowserTest {
  public:
   ScreenLockerTest() = default;
@@ -127,18 +144,20 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(browser_window->GetNativeWindow());
   {
-    FullscreenNotificationObserver fullscreen_waiter(browser());
+    FullscreenWaiter fullscreen_waiter(browser());
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
         ->ToggleBrowserFullscreenMode();
-    fullscreen_waiter.Wait();
+    fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
     EXPECT_FALSE(tester.IsLocked());
   }
   {
+    FullscreenWaiter fullscreen_waiter(browser());
     tester.Lock();
+    fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
     EXPECT_TRUE(tester.IsLocked());
@@ -147,12 +166,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   tester.UnlockWithPassword(user_manager::StubAccountId(), "pass");
   EXPECT_FALSE(tester.IsLocked());
   {
-    FullscreenNotificationObserver fullscreen_waiter(browser());
+    FullscreenWaiter fullscreen_waiter(browser());
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
         ->ToggleBrowserFullscreenMode();
-    fullscreen_waiter.Wait();
+    fullscreen_waiter.WaitForState(false);
     EXPECT_FALSE(browser_window->IsFullscreen());
   }
 
@@ -164,20 +183,22 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // has all of the pixels, locking the screen should exit fullscreen. The
   // fullscreen window has all of the pixels when in tab fullscreen.
   {
-    FullscreenNotificationObserver fullscreen_waiter(browser());
+    FullscreenWaiter fullscreen_waiter(browser());
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     browser()
         ->exclusive_access_manager()
         ->fullscreen_controller()
         ->EnterFullscreenModeForTab(web_contents, GURL());
-    fullscreen_waiter.Wait();
+    fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_TRUE(window_state->GetHideShelfWhenFullscreen());
     EXPECT_FALSE(tester.IsLocked());
   }
   {
+    FullscreenWaiter fullscreen_waiter(browser());
     tester.Lock();
+    fullscreen_waiter.WaitForState(false);
     EXPECT_FALSE(browser_window->IsFullscreen());
     EXPECT_TRUE(tester.IsLocked());
   }

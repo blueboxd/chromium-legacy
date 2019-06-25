@@ -220,7 +220,7 @@ SearchResultActionsView::SearchResultActionsView(
     SearchResultActionsViewDelegate* delegate)
     : delegate_(delegate) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kActionButtonBetweenSpacing));
 }
 

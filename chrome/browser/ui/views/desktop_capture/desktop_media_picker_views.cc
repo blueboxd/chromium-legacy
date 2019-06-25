@@ -65,7 +65,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

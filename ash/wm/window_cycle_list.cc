@@ -91,7 +91,8 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
     header_view_ = new views::View();
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal, gfx::Insets(), kIconLabelSpacingDp));
+            views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+            kIconLabelSpacingDp));
     AddChildView(header_view_);
 
     gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
@@ -255,8 +256,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     const int kInsideBorderPaddingDip = 64;
     const int kBetweenChildPaddingDip = 10;
     auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(kInsideBorderPaddingDip),
-        kBetweenChildPaddingDip);
+        views::BoxLayout::Orientation::kHorizontal,
+        gfx::Insets(kInsideBorderPaddingDip), kBetweenChildPaddingDip);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
     mirror_container_->SetLayoutManager(std::move(layout));

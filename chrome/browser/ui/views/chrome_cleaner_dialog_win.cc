@@ -65,7 +65,7 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   set_margins(
       layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       layout_provider->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   views::Label* label = new views::Label(

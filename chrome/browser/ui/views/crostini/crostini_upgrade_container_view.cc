@@ -121,7 +121,7 @@ CrostiniUpgradeContainerView::CrostiniUpgradeContainerView() {
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       kDialogSpacingVertical));
   set_margins(provider->GetDialogInsetsForContentType(

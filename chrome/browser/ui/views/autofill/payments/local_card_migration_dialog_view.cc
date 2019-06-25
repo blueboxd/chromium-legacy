@@ -148,7 +148,7 @@ std::unique_ptr<views::ScrollView> CreateCardList(
   constexpr int kCardListSmallVerticalDistance = 8;
   auto* card_list_view_layout =
       card_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(),
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
           should_show_checkbox
               ? kCardListSmallVerticalDistance
               : provider->GetDistanceMetric(
@@ -182,7 +182,7 @@ std::unique_ptr<views::View> CreateTip(
       provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   tip_text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(container_insets),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(container_insets),
       container_child_space));
   tip_text_container->SetBackground(views::CreateSolidBackground(
       dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
@@ -235,7 +235,7 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
   auto feedback_view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   feedback_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   feedback_view->SetBorder(views::CreateEmptyBorder(kMigrationDialogInsets));
 
@@ -279,12 +279,12 @@ class LocalCardMigrationOfferView : public views::View,
       : controller_(controller) {
     ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         kMigrationDialogMainContainerChildSpacing));
 
     auto* contents_container = new views::View();
     contents_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         provider->GetDistanceMetric(
             views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
     // Don't set bottom since there is a legal message view in the offer dialog.
@@ -478,7 +478,7 @@ void LocalCardMigrationDialogView::ConstructView() {
   RemoveAllChildViews(/*delete_children=*/true);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
 
 #if defined(GOOGLE_CHROME_BUILD)

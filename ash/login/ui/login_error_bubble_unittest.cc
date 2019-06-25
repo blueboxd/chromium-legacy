@@ -15,8 +15,8 @@ using LoginErrorBubbleTest = LoginTestBase;
 
 TEST_F(LoginErrorBubbleTest, PersistentEventHandling) {
   auto* container = new views::View;
-  container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetWidget(CreateWidgetWithContent(container));
 
   auto* anchor_view = new views::View;

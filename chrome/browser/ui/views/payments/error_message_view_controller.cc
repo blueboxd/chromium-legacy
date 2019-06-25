@@ -49,7 +49,7 @@ base::string16 ErrorMessageViewController::GetSheetTitle() {
 
 void ErrorMessageViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets), 0);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(

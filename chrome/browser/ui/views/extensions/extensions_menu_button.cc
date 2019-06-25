@@ -128,8 +128,8 @@ void ExtensionsMenuButton::OnMenuClosed() {
 void ExtensionsMenuButton::ConfigureSecondaryView() {
   views::View* container = secondary_view();
   DCHECK(container->children().empty());
-  container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   const SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()

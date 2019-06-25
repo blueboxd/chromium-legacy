@@ -666,8 +666,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
               &LockDebugView::UpdatePerUserActionContainerAndLayout,
               base::Unretained(this)))),
       next_auth_error_type_(AuthErrorType::kFirstUnlockFailed) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   auto debug_detachable_base_model =
       std::make_unique<DebugLoginDetachableBaseModel>();
@@ -679,8 +679,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   AddChildView(lock_);
 
   container_ = new NonAccessibleView();
-  container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   AddChildView(container_);
 
   auto* margin = new NonAccessibleView();
@@ -689,12 +689,13 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 
   global_action_view_container_ = new NonAccessibleView();
   global_action_view_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
 
   auto add_horizontal_container = [&]() {
     auto* container = new NonAccessibleView();
-    container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     global_action_view_container_->AddChildView(container);
     return container;
   };
@@ -739,7 +740,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 
   per_user_action_view_container_ = new NonAccessibleView();
   per_user_action_view_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   UpdatePerUserActionContainer();
 
   auto make_scroll = [](views::View* content,
@@ -1047,8 +1049,8 @@ void LockDebugView::UpdatePerUserActionContainer() {
   int num_users = debug_data_dispatcher_->GetUserCount();
   for (int i = 0; i < num_users; ++i) {
     auto* row = new NonAccessibleView();
-    row->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
 
     auto* name = new views::Label();
     name->SetText(debug_data_dispatcher_->GetDisplayNameForUserIndex(i));

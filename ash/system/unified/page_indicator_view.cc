@@ -152,7 +152,7 @@ PageIndicatorView::PageIndicatorView(UnifiedSystemTrayController* controller,
   layer()->SetFillsBoundsOpaquely(false);
 
   buttons_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets()));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets()));
 
   AddChildView(buttons_container_);
 

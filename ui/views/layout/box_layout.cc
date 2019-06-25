@@ -201,10 +201,11 @@ void BoxLayout::Layout(View* host) {
     gfx::Rect min_child_area(child_area);
     gfx::Insets child_margins;
     if (collapse_margins_spacing_) {
-      child_margins = MaxAxisInsets(
-          orientation_ == kVertical ? HORIZONTAL_AXIS : VERTICAL_AXIS,
-          child.margins(), inside_border_insets_, child.margins(),
-          inside_border_insets_);
+      child_margins =
+          MaxAxisInsets(orientation_ == Orientation::kVertical ? HORIZONTAL_AXIS
+                                                               : VERTICAL_AXIS,
+                        child.margins(), inside_border_insets_, child.margins(),
+                        inside_border_insets_);
     } else {
       child_margins = child.margins();
     }
@@ -289,7 +290,7 @@ gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
   DCHECK_EQ(host_, host);
   // Calculate the child views' preferred width.
   int width = 0;
-  if (orientation_ == kVertical) {
+  if (orientation_ == Orientation::kVertical) {
     // Calculating the child views' overall preferred width is a little involved
     // because of the way the margins interact with |cross_axis_alignment_|.
     int leading = 0;
@@ -371,49 +372,51 @@ int BoxLayout::GetMinimumSizeForView(const View* view) const {
   if (it == flex_map_.end() || !it->second.use_min_size)
     return 0;
 
-  return (orientation_ == kHorizontal) ? view->GetMinimumSize().width()
-                                       : view->GetMinimumSize().height();
+  return (orientation_ == Orientation::kHorizontal)
+             ? view->GetMinimumSize().width()
+             : view->GetMinimumSize().height();
 }
 
 int BoxLayout::MainAxisSize(const gfx::Rect& rect) const {
-  return orientation_ == kHorizontal ? rect.width() : rect.height();
+  return orientation_ == Orientation::kHorizontal ? rect.width()
+                                                  : rect.height();
 }
 
 int BoxLayout::MainAxisPosition(const gfx::Rect& rect) const {
-  return orientation_ == kHorizontal ? rect.x() : rect.y();
+  return orientation_ == Orientation::kHorizontal ? rect.x() : rect.y();
 }
 
 void BoxLayout::SetMainAxisSize(int size, gfx::Rect* rect) const {
-  if (orientation_ == kHorizontal)
+  if (orientation_ == Orientation::kHorizontal)
     rect->set_width(size);
   else
     rect->set_height(size);
 }
 
 void BoxLayout::SetMainAxisPosition(int position, gfx::Rect* rect) const {
-  if (orientation_ == kHorizontal)
+  if (orientation_ == Orientation::kHorizontal)
     rect->set_x(position);
   else
     rect->set_y(position);
 }
 
 int BoxLayout::CrossAxisSize(const gfx::Rect& rect) const {
-  return orientation_ == kVertical ? rect.width() : rect.height();
+  return orientation_ == Orientation::kVertical ? rect.width() : rect.height();
 }
 
 int BoxLayout::CrossAxisPosition(const gfx::Rect& rect) const {
-  return orientation_ == kVertical ? rect.x() : rect.y();
+  return orientation_ == Orientation::kVertical ? rect.x() : rect.y();
 }
 
 void BoxLayout::SetCrossAxisSize(int size, gfx::Rect* rect) const {
-  if (orientation_ == kVertical)
+  if (orientation_ == Orientation::kVertical)
     rect->set_width(size);
   else
     rect->set_height(size);
 }
 
 void BoxLayout::SetCrossAxisPosition(int position, gfx::Rect* rect) const {
-  if (orientation_ == kVertical)
+  if (orientation_ == Orientation::kVertical)
     rect->set_x(position);
   else
     rect->set_y(position);
@@ -421,7 +424,7 @@ void BoxLayout::SetCrossAxisPosition(int position, gfx::Rect* rect) const {
 
 int BoxLayout::MainAxisSizeForView(const ViewWrapper& view,
                                    int child_area_width) const {
-  return orientation_ == kHorizontal
+  return orientation_ == Orientation::kHorizontal
              ? view.GetPreferredSize().width()
              : view.GetHeightForWidth(cross_axis_alignment_ ==
                                               CrossAxisAlignment::kStretch
@@ -430,23 +433,26 @@ int BoxLayout::MainAxisSizeForView(const ViewWrapper& view,
 }
 
 int BoxLayout::MainAxisLeadingInset(const gfx::Insets& insets) const {
-  return orientation_ == kHorizontal ? insets.left() : insets.top();
+  return orientation_ == Orientation::kHorizontal ? insets.left()
+                                                  : insets.top();
 }
 
 int BoxLayout::MainAxisTrailingInset(const gfx::Insets& insets) const {
-  return orientation_ == kHorizontal ? insets.right() : insets.bottom();
+  return orientation_ == Orientation::kHorizontal ? insets.right()
+                                                  : insets.bottom();
 }
 
 int BoxLayout::CrossAxisLeadingEdge(const gfx::Rect& rect) const {
-  return orientation_ == kVertical ? rect.x() : rect.y();
+  return orientation_ == Orientation::kVertical ? rect.x() : rect.y();
 }
 
 int BoxLayout::CrossAxisLeadingInset(const gfx::Insets& insets) const {
-  return orientation_ == kVertical ? insets.left() : insets.top();
+  return orientation_ == Orientation::kVertical ? insets.left() : insets.top();
 }
 
 int BoxLayout::CrossAxisTrailingInset(const gfx::Insets& insets) const {
-  return orientation_ == kVertical ? insets.right() : insets.bottom();
+  return orientation_ == Orientation::kVertical ? insets.right()
+                                                : insets.bottom();
 }
 
 int BoxLayout::MainAxisMarginBetweenViews(const ViewWrapper& leading,
@@ -462,15 +468,17 @@ gfx::Insets BoxLayout::MainAxisOuterMargin() const {
   if (collapse_margins_spacing_) {
     const ViewWrapper first(this, FirstVisibleView());
     const ViewWrapper last(this, LastVisibleView());
-    return MaxAxisInsets(
-        orientation_ == kHorizontal ? HORIZONTAL_AXIS : VERTICAL_AXIS,
-        inside_border_insets_, first.margins(), inside_border_insets_,
-        last.margins());
+    return MaxAxisInsets(orientation_ == Orientation::kHorizontal
+                             ? HORIZONTAL_AXIS
+                             : VERTICAL_AXIS,
+                         inside_border_insets_, first.margins(),
+                         inside_border_insets_, last.margins());
   }
-  return MaxAxisInsets(
-      orientation_ == kHorizontal ? HORIZONTAL_AXIS : VERTICAL_AXIS,
-      inside_border_insets_, gfx::Insets(), inside_border_insets_,
-      gfx::Insets());
+  return MaxAxisInsets(orientation_ == Orientation::kHorizontal
+                           ? HORIZONTAL_AXIS
+                           : VERTICAL_AXIS,
+                       inside_border_insets_, gfx::Insets(),
+                       inside_border_insets_, gfx::Insets());
 }
 
 gfx::Insets BoxLayout::CrossAxisMaxViewMargin() const {
@@ -503,15 +511,15 @@ void BoxLayout::AdjustCrossAxisForInsets(gfx::Rect* rect) const {
 int BoxLayout::CrossAxisSizeForView(const ViewWrapper& view) const {
   // TODO(bruthig): For horizontal case use the available width and not the
   // preferred width. See https://crbug.com/682266.
-  return orientation_ == kVertical
+  return orientation_ == Orientation::kVertical
              ? view.GetPreferredSize().width()
              : view.GetHeightForWidth(view.GetPreferredSize().width());
 }
 
 int BoxLayout::CrossAxisMarginSizeForView(const ViewWrapper& view) const {
-  return collapse_margins_spacing_
-             ? 0
-             : (orientation_ == kVertical ? view.margins().width()
+  return collapse_margins_spacing_ ? 0
+                                   : (orientation_ == Orientation::kVertical
+                                          ? view.margins().width()
                                           : view.margins().height());
 }
 
@@ -522,7 +530,7 @@ int BoxLayout::CrossAxisLeadingMarginForView(const ViewWrapper& view) const {
 void BoxLayout::InsetCrossAxis(gfx::Rect* rect,
                                int leading,
                                int trailing) const {
-  if (orientation_ == kVertical)
+  if (orientation_ == Orientation::kVertical)
     rect->Inset(leading, 0, trailing, 0);
   else
     rect->Inset(0, leading, 0, trailing);
@@ -533,7 +541,7 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
   DCHECK_EQ(host, host_);
   gfx::Rect child_area_bounds;
 
-  if (orientation_ == kHorizontal) {
+  if (orientation_ == Orientation::kHorizontal) {
     // Horizontal layouts ignore |child_area_width|, meaning they mimic the
     // default behavior of GridLayout::GetPreferredHeightForWidth().
     // TODO(estade|bruthig): Fix this See // https://crbug.com/682266.

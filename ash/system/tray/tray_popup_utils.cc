@@ -45,7 +45,7 @@ namespace {
 std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   // TODO(bruthig): Use constants instead of magic numbers.
   auto box_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(8, kTrayPopupLabelHorizontalPadding));
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
@@ -57,8 +57,8 @@ std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
 // Creates a layout manager that positions Views horizontally. The Views will be
 // centered along the horizontal and vertical axis.
 std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
-  auto box_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  auto box_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(

@@ -28,8 +28,8 @@ NotificationControlButtonsView::NotificationControlButtonsView(
     MessageView* message_view)
     : message_view_(message_view) {
   DCHECK(message_view);
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   // Use layer to change the opacity.
   SetPaintToLayer();

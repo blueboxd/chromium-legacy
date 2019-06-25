@@ -86,8 +86,8 @@ class TopCornerBorder : public views::Border {
 class SystemTrayContainer : public views::View {
  public:
   SystemTrayContainer() {
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     SetBackground(UnifiedSystemTrayView::CreateBackground());
     SetBorder(std::make_unique<TopCornerBorder>());
   }
@@ -244,8 +244,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
-  auto* layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   SetBackground(CreateBackground());
   SetPaintToLayer();

@@ -149,7 +149,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     ContentSettingImageView::Delegate* delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           views::LayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   // Right align to clip the leftmost items first when not enough space.
@@ -190,7 +190,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
+          views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0,
                       right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));

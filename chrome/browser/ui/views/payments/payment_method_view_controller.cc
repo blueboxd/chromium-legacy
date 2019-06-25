@@ -115,7 +115,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     card_info_container->set_can_process_events_within_subtree(false);
 
     auto box_layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
@@ -209,7 +209,8 @@ base::string16 PaymentMethodViewController::GetSheetTitle() {
 }
 
 void PaymentMethodViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);

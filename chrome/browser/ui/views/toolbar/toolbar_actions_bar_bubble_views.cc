@@ -92,7 +92,7 @@ std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
   if (icon && extra_view) {
     std::unique_ptr<views::View> parent = std::make_unique<views::View>();
     parent->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         ChromeLayoutProvider::Get()->GetDistanceMetric(
             views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     parent->AddChildView(std::move(icon));
@@ -144,7 +144,7 @@ void ToolbarActionsBarBubbleViews::Init() {
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   int width = provider->GetDistanceMetric(

@@ -195,10 +195,11 @@ PageSwitcher::PageSwitcher(ash::PaginationModel* model,
 
   if (vertical_) {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(), kVerticalButtonPadding));
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+        kVerticalButtonPadding));
   } else {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kHorizontalButtonPadding));
   }
 

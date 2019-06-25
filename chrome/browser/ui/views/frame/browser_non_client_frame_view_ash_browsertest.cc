@@ -98,7 +98,7 @@ namespace {
 
 // Toggles fullscreen mode and waits for the notification.
 void ToggleFullscreenModeAndWait(Browser* browser) {
-  FullscreenNotificationObserver waiter(browser);
+  FullscreenNotificationObserver waiter;
   chrome::ToggleFullscreenMode(browser);
   waiter.Wait();
 }
@@ -106,7 +106,7 @@ void ToggleFullscreenModeAndWait(Browser* browser) {
 // Enters fullscreen mode for tab and waits for the notification.
 void EnterFullscreenModeForTabAndWait(Browser* browser,
                                       content::WebContents* web_contents) {
-  FullscreenNotificationObserver waiter(browser);
+  FullscreenNotificationObserver waiter;
   browser->exclusive_access_manager()
       ->fullscreen_controller()
       ->EnterFullscreenModeForTab(web_contents, GURL());
@@ -116,10 +116,17 @@ void EnterFullscreenModeForTabAndWait(Browser* browser,
 // Exits fullscreen mode for tab and waits for the notification.
 void ExitFullscreenModeForTabAndWait(Browser* browser,
                                      content::WebContents* web_contents) {
-  FullscreenNotificationObserver waiter(browser);
+  FullscreenNotificationObserver waiter;
   browser->exclusive_access_manager()
       ->fullscreen_controller()
       ->ExitFullscreenModeForTab(web_contents);
+  waiter.Wait();
+}
+
+// Exits fullscreen mode and waits for the notification.
+void ExitFullscreenModeAndWait(BrowserView* browser_view) {
+  FullscreenNotificationObserver waiter;
+  browser_view->ExitFullscreen();
   waiter.Wait();
 }
 
@@ -483,11 +490,7 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
-  {
-    FullscreenNotificationObserver waiter(browser());
-    browser_view->ExitFullscreen();
-    waiter.Wait();
-  }
+  ExitFullscreenModeAndWait(browser_view);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())

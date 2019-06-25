@@ -47,8 +47,8 @@ class AnimationGallery : public View,
         CreateSolidSidedBorder(1, 1, 1, 1, SK_ColorBLACK));
     image_view_container_ = AddChildView(std::move(image_view_container));
 
-    BoxLayout* box = SetLayoutManager(
-        std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
+    BoxLayout* box = SetLayoutManager(std::make_unique<BoxLayout>(
+        BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
     box->SetFlexForView(image_view_container_, 1);
 
     auto file_chooser = std::make_unique<Textfield>();
@@ -57,7 +57,7 @@ class AnimationGallery : public View,
     auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
-            BoxLayout::kHorizontal, gfx::Insets(10), 10));
+            BoxLayout::Orientation::kHorizontal, gfx::Insets(10), 10));
     file_chooser_ = file_container->AddChildView(std::move(file_chooser));
     file_go_button_ = file_container->AddChildView(
         MdTextButton::Create(this, base::ASCIIToUTF16("Render")));

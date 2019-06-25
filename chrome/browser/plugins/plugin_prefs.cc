@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
@@ -29,8 +28,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 
@@ -65,7 +62,6 @@ scoped_refptr<PluginPrefs> PluginPrefs::GetForTestingProfile(
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
     const base::string16& name) const {
-  base::AutoLock auto_lock(lock_);
 
   // Special handling for PDF based on its specific policy.
   if (IsPDFViewerPlugin(name) && always_open_pdf_externally_)
@@ -94,11 +90,14 @@ bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
 }
 
 void PluginPrefs::UpdatePdfPolicy(const std::string& pref_name) {
-  base::AutoLock auto_lock(lock_);
   always_open_pdf_externally_ =
       prefs_->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
 
-  NotifyPluginStatusChanged();
+  content::PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+  if (profile_->HasOffTheRecordProfile()) {
+    content::PluginService::GetInstance()->PurgePluginListCache(
+        profile_->GetOffTheRecordProfile(), false);
+  }
 }
 
 void PluginPrefs::SetPrefs(PrefService* prefs) {
@@ -175,44 +174,22 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     }
   }  // Scoped update of prefs::kPluginsPluginsList.
 
-  always_open_pdf_externally_ =
-      prefs_->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
-
+  UpdatePdfPolicy(prefs::kPluginsAlwaysOpenPdfExternally);
   registrar_.Init(prefs_);
-
-  // Because pointers to our own members will remain unchanged for the
-  // lifetime of |registrar_| (which we also own), we can bind their
-  // pointer values directly in the callbacks to avoid string-based
-  // lookups at notification time.
   registrar_.Add(prefs::kPluginsAlwaysOpenPdfExternally,
                  base::Bind(&PluginPrefs::UpdatePdfPolicy,
                  base::Unretained(this)));
-
-  NotifyPluginStatusChanged();
 }
 
 void PluginPrefs::ShutdownOnUIThread() {
-  prefs_ = NULL;
+  prefs_ = nullptr;
   registrar_.RemoveAll();
 }
 
-PluginPrefs::PluginPrefs() : always_open_pdf_externally_(false),
-                             profile_(NULL),
-                             prefs_(NULL) {
-}
-
-PluginPrefs::~PluginPrefs() {
-}
+PluginPrefs::PluginPrefs() = default;
+PluginPrefs::~PluginPrefs() = default;
 
 void PluginPrefs::SetAlwaysOpenPdfExternallyForTests(
     bool always_open_pdf_externally) {
   always_open_pdf_externally_ = always_open_pdf_externally;
-}
-
-void PluginPrefs::NotifyPluginStatusChanged() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-      content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
 }

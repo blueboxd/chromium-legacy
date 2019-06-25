@@ -82,7 +82,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       max_search_result_tiles_(
           AppListConfig::instance().max_search_result_tiles()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));
   for (size_t i = 0; i < max_search_result_tiles_; ++i) {

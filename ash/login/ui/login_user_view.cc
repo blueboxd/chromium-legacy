@@ -253,8 +253,8 @@ class LoginUserView::TapButton : public views::Button {
 class LoginUserView::UserDomainInfoView : public NonAccessibleView {
  public:
   UserDomainInfoView() : NonAccessibleView(kLoginUserDomainClassName) {
-    auto layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    auto layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal);
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
@@ -722,7 +722,7 @@ void LoginUserView::SetLargeLayout() {
 
 void LoginUserView::SetSmallishLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kSmallManyDistanceFromUserIconToUserLabelDp));
 
   AddChildView(user_image_);

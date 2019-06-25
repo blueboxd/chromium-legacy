@@ -369,12 +369,13 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   DCHECK(listener_);
 
   SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kVertical, gfx::Insets(kMarginWidth), kMarginWidth));
+  SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
+                                  gfx::Insets(kMarginWidth), kMarginWidth));
 
   auto container = std::make_unique<View>();
   container->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kHorizontal, gfx::Insets(), kMarginWidth));
+      BoxLayout::Orientation::kHorizontal, gfx::Insets(), kMarginWidth));
   saturation_value_ =
       container->AddChildView(std::make_unique<SaturationValueView>(this));
   hue_ = container->AddChildView(std::make_unique<HueView>(this));

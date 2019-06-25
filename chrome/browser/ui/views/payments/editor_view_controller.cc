@@ -49,8 +49,8 @@ std::unique_ptr<views::View> CreateErrorLabelView(
     autofill::ServerFieldType type) {
   std::unique_ptr<views::View> view = std::make_unique<views::View>();
 
-  std::unique_ptr<views::BoxLayout> layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
@@ -143,7 +143,8 @@ bool EditorViewController::ShouldShowSecondaryButton() {
 }
 
 void EditorViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);

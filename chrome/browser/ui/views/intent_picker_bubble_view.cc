@@ -331,8 +331,8 @@ void IntentPickerBubbleView::Initialize(bool show_remember_selection) {
 
   // Creates a view to hold the views for each app.
   auto scrollable_view = std::make_unique<views::View>();
-  scrollable_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  scrollable_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   size_t i = 0;
   size_t to_erase = app_info_.size();

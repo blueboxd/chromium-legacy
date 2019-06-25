@@ -87,7 +87,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
       ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT);
 
   auto box_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kBubbleContentsInsets, 0);
+      views::BoxLayout::Orientation::kVertical, kBubbleContentsInsets, 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(

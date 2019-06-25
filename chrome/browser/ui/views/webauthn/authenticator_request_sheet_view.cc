@@ -54,7 +54,8 @@ void AuthenticatorRequestSheetView::ReInitChildViews() {
   // is designed to fill the dialog's top half without any border/margins, and
   // the |lower_half| will already contain the standard dialog borders.
   SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kVertical, gfx::Insets(), 0 /* between_child_spacing */));
+      BoxLayout::Orientation::kVertical, gfx::Insets(),
+      0 /* between_child_spacing */));
 
   std::unique_ptr<views::View> upper_half = CreateIllustrationWithOverlays();
   std::unique_ptr<views::View> lower_half = CreateContentsBelowIllustration();
@@ -139,7 +140,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   auto contents = std::make_unique<views::View>();
   BoxLayout* contents_layout =
       contents->SetLayoutManager(std::make_unique<BoxLayout>(
-          BoxLayout::kVertical, gfx::Insets(),
+          BoxLayout::Orientation::kVertical, gfx::Insets(),
           views::LayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
@@ -149,7 +150,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
 
   auto label_container = std::make_unique<views::View>();
   label_container->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kVertical, gfx::Insets(),
+      BoxLayout::Orientation::kVertical, gfx::Insets(),
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 

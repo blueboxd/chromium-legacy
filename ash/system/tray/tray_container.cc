@@ -70,8 +70,8 @@ void TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
   views::BoxLayout::Orientation orientation =
-      is_horizontal ? views::BoxLayout::kHorizontal
-                    : views::BoxLayout::kVertical;
+      is_horizontal ? views::BoxLayout::Orientation::kHorizontal
+                    : views::BoxLayout::Orientation::kVertical;
 
   gfx::Insets insets(is_horizontal ? gfx::Insets(0, kHitRegionPadding)
                                    : gfx::Insets(kHitRegionPadding, 0));

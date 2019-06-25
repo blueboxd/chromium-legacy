@@ -196,7 +196,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     //              padding. Make a new Harmony DistanceMetric?
     cardholder_name_label_row->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal, gfx::Insets(),
+            views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
             provider->GetDistanceMetric(
                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
     std::unique_ptr<views::Label> cardholder_name_label =
@@ -251,7 +251,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     std::unique_ptr<views::View> cardholder_name_view =
         std::make_unique<views::View>();
     cardholder_name_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     cardholder_name_view->AddChildView(cardholder_name_label_row.release());
     cardholder_name_view->AddChildView(cardholder_name_textfield_);
@@ -269,7 +269,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   auto expiration_date_view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   expiration_date_view->SetID(DialogViewId::EXPIRATION_DATE_VIEW);
 
@@ -304,7 +304,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
 
   auto input_row = std::make_unique<views::View>();
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
   input_row->AddChildView(month_input_dropdown_);
   input_row->AddChildView(year_input_dropdown_);

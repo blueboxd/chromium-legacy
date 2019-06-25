@@ -502,9 +502,9 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Tooltip
     case kColorId_TooltipBackground:
+      return system_colors_[COLOR_WINDOW];
     case kColorId_TooltipText:
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
+      return system_colors_[COLOR_WINDOWTEXT];
 
     // Tree
     // NOTE: these aren't right for all themes, but as close as I could get.

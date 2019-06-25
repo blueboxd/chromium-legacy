@@ -836,6 +836,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-aura-tooltips-on-windows",
+    "owners": [ "cliffsmo" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "feuunk", "butter-team@google.com" ],
     "expiry_milestone": 76

@@ -45,8 +45,8 @@ class ModalDialogExample : public WidgetDialogExample {
 
 WidgetDialogExample::WidgetDialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
-  SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
+  SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
@@ -74,8 +74,8 @@ WidgetExample::WidgetExample() : ExampleBase("Widget") {
 WidgetExample::~WidgetExample() = default;
 
 void WidgetExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(), 10));
+  container->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kHorizontal, gfx::Insets(), 10));
   BuildButton(container, "Popup widget", POPUP);
   BuildButton(container, "Dialog widget", DIALOG);
   BuildButton(container, "Modal Dialog", MODAL_DIALOG);
@@ -108,7 +108,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   if (!widget->GetContentsView()) {
     View* contents = new View();
     contents->SetLayoutManager(
-        std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
+        std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
     contents->SetBackground(CreateSolidBackground(SK_ColorGRAY));
     BuildButton(contents, "Close", CLOSE_WIDGET);
     widget->SetContentsView(contents);

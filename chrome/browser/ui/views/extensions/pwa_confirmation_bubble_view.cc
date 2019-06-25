@@ -104,14 +104,15 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
   int icon_label_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), icon_label_spacing));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      icon_label_spacing));
 
   AddChildView(CreateIconView(web_app_info_->icons).release());
 
   views::View* labels = new views::View();
   AddChildView(labels);
-  labels->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  labels->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   labels->AddChildView(CreateNameLabel(web_app_info_->title).release());
   labels->AddChildView(

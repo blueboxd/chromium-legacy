@@ -201,14 +201,14 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
     scroll_button_->SetId(ButtonId::kScroll);
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0);
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
   layout->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kEnd);
   SetLayoutManager(std::move(layout));
 
   // The action control buttons all have the same spacing.
   views::View* action_button_container = new views::View();
   action_button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
+      views::BoxLayout::Orientation::kHorizontal, kUnifiedMenuItemPadding,
       kUnifiedTopShortcutSpacing));
   action_button_container->AddChildView(left_click_button_);
   action_button_container->AddChildView(right_click_button_);
@@ -231,7 +231,7 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
   views::View* position_button_container = new views::View();
   position_button_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
+          views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPanelPositionButtonPadding,
                       kPanelPositionButtonPadding, kPanelPositionButtonPadding),
           kPanelPositionButtonPadding));

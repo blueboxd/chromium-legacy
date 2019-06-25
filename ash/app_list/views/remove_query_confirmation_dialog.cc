@@ -32,7 +32,7 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
       contents_view_(contents_view) {
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 

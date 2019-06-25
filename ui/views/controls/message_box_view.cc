@@ -185,8 +185,8 @@ void MessageBoxView::Init(const InitParams& params) {
   // We explicitly set insets on the message contents instead of the scroll view
   // so that the scroll view borders are not capped by dialog insets.
   message_contents->SetBorder(CreateEmptyBorder(GetHorizontalInsets(provider)));
-  message_contents->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  message_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   auto add_label = [&message_contents, this](
                        const base::string16& text, bool multi_line,
                        gfx::HorizontalAlignment alignment) {

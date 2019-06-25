@@ -50,6 +50,10 @@ class SpellCheck;
 #endif
 class ThreadProfiler;
 
+namespace blink {
+class WebServiceWorkerContextProxy;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 struct WebPluginInfo;
@@ -180,7 +184,8 @@ class ChromeContentRendererClient
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   void WillInitializeServiceWorkerContextOnWorkerThread() override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
-      v8::Local<v8::Context> context,
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url) override;

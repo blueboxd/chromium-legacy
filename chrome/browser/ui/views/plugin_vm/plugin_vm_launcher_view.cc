@@ -92,17 +92,17 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kDialogInsets));
+          views::BoxLayout::Orientation::kVertical, kDialogInsets));
 
   views::View* upper_container_view = new views::View();
   upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets()));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets()));
   AddChildView(upper_container_view);
 
   views::View* lower_container_view = new views::View();
   views::BoxLayout* lower_container_layout =
       lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, kLowerContainerInsets));
+          views::BoxLayout::Orientation::kVertical, kLowerContainerInsets));
   AddChildView(lower_container_view);
 
   views::ImageView* logo_image = new views::ImageView();
@@ -124,7 +124,7 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   views::BoxLayout* message_container_layout =
       message_container_view->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
-              views::BoxLayout::kHorizontal,
+              views::BoxLayout::Orientation::kHorizontal,
               gfx::Insets(kMessageHeight - kMessageFontSize, 0, 0, 0)));
   upper_container_view->AddChildView(message_container_view);
 

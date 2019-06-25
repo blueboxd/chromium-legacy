@@ -81,8 +81,8 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // build layout for public account.
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   user_view_ = user_view.get();
   auto wrapped_user_view =
       login_views_utils::WrapViewForPreferredSize(std::move(user_view));

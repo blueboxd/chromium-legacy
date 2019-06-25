@@ -240,7 +240,7 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   find_text_->SetBorder(views::NullBorder());
 
   auto* manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(provider->GetInsetsMetric(INSETS_TOAST) - horizontal_margin),
       0));
 

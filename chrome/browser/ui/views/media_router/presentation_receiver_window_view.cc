@@ -163,8 +163,8 @@ void PresentationReceiverWindowView::Init() {
   location_bar_view_ =
       new LocationBarView(nullptr, profile, &command_updater_, this, true);
 
-  auto box_owner =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto box_owner = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   box_owner->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   auto* box = SetLayoutManager(std::move(box_owner));

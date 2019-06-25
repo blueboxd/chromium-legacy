@@ -111,7 +111,8 @@ void EventCountView::RecordEvent(ui::Event* event) {
 }
 
 ResizeAwareParentView::ResizeAwareParentView() {
-  SetLayoutManager(std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
+  SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
 }
 
 void ResizeAwareParentView::ChildPreferredSizeChanged(View* child) {

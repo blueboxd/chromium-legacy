@@ -936,7 +936,7 @@ PaymentSheetViewController::CreateShippingOptionRow() {
 std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   std::unique_ptr<views::View> content_view = std::make_unique<views::View>();
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(

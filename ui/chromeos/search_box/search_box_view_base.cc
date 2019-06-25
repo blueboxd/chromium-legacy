@@ -252,7 +252,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
 
   box_layout_ =
       content_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(0, kPadding),
           kInnerPadding -
               views::LayoutProvider::Get()->GetDistanceMetric(
                   views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));

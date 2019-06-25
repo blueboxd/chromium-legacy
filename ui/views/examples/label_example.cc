@@ -62,8 +62,8 @@ LabelExample::~LabelExample() = default;
 
 void LabelExample::CreateExampleView(View* container) {
   // A very simple label example, followed by additional helpful examples.
-  container->SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(), 10));
+  container->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(), 10));
   container->AddChildView(
       std::make_unique<Label>(ASCIIToUTF16("Hello world!")));
 

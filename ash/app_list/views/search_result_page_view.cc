@@ -156,7 +156,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), 0));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
     assistant_privacy_info_view_ = new PrivacyInfoView(view_delegate_, this);

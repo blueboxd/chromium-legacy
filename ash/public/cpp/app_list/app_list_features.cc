@@ -41,8 +41,8 @@ const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableSearchBoxSelection{
-    "EnableSearchBoxSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableSearchBoxSelection{"EnableSearchBoxSelection",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.

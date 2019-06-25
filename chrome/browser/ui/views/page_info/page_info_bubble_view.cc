@@ -258,7 +258,8 @@ BubbleHeaderView::BubbleHeaderView(
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   auto ev_certificate_label_container = std::make_unique<views::View>();
   ev_certificate_label_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
   ev_certificate_label_container_ =
       layout->AddView(std::move(ev_certificate_label_container), 1.0, 1.0,
                       views::GridLayout::FILL, views::GridLayout::LEADING);
@@ -266,7 +267,8 @@ BubbleHeaderView::BubbleHeaderView(
   layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   auto reset_decisions_label_container = std::make_unique<views::View>();
   reset_decisions_label_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
   reset_decisions_label_container_ =
       layout->AddView(std::move(reset_decisions_label_container), 1.0, 1.0,
                       views::GridLayout::FILL, views::GridLayout::LEADING);
@@ -390,8 +392,8 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
       (change_password_button->CalculatePreferredSize().width() +
        whitelist_password_reuse_button->CalculatePreferredSize().width());
   auto layout = std::make_unique<views::BoxLayout>(
-      can_fit_in_one_line ? views::BoxLayout::kHorizontal
-                          : views::BoxLayout::kVertical,
+      can_fit_in_one_line ? views::BoxLayout::Orientation::kHorizontal
+                          : views::BoxLayout::Orientation::kVertical,
       gfx::Insets(), kSpacingBetweenButtons);
   // Make buttons left-aligned. For RTL languages, buttons will automatically
   // become right-aligned.
@@ -892,7 +894,8 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
     return;
 
   auto* layout = page_feature_info_view_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
@@ -1004,8 +1007,9 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
 
 std::unique_ptr<views::View> PageInfoBubbleView::CreateSiteSettingsView() {
   auto site_settings_view = std::make_unique<views::View>();
-  auto* box_layout = site_settings_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* box_layout =
+      site_settings_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 

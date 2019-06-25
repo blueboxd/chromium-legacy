@@ -38,7 +38,8 @@ bool ExtensionInteraction::HasActiveInteraction(ScriptContext* context) {
     DCHECK(!context->web_frame());
     ServiceWorkerData* worker_data =
         WorkerThreadDispatcher::GetServiceWorkerData();
-    return worker_data->interaction_count() > 0;
+    return worker_data->interaction_count() > 0 ||
+           worker_data->is_service_worker_window_interaction_allowed();
   }
   return blink::WebUserGestureIndicator::IsProcessingUserGesture(
       context->web_frame());

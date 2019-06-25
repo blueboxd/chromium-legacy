@@ -29,7 +29,7 @@ constexpr int kTextfieldBottomBorderThickness = 2;
 
 BlePinEntryView::BlePinEntryView(Delegate* delegate) : delegate_(delegate) {
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING));
   layout->set_cross_axis_alignment(

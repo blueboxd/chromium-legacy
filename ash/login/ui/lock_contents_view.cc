@@ -409,8 +409,8 @@ LockContentsView::LockContentsView(
 
   // The top header view.
   top_header_ = new views::View();
-  auto top_header_layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  auto top_header_layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal);
   top_header_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   top_header_->SetLayoutManager(std::move(top_header_layout));
@@ -419,7 +419,7 @@ LockContentsView::LockContentsView(
   system_info_ = new views::View();
   auto* system_info_layout =
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(6, 8)));
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(6, 8)));
   system_info_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kEnd);
   system_info_->SetVisible(false);
@@ -655,8 +655,9 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   }
 
   // Allocate layout and big user, which are common between all densities.
-  auto* main_layout = main_view_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  auto* main_layout =
+      main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
   main_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   main_layout->set_cross_axis_alignment(
@@ -771,8 +772,8 @@ void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
         big_view->auth_user()->password_view()->GetPreferredSize().width());
 
     auto* container = new NonAccessibleView();
-    container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     container->AddChildView(label);
 
     auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
@@ -1738,7 +1739,7 @@ void LockContentsView::ShowAuthErrorMessage() {
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kLearnMoreButtonVerticalSpacingDp));
   container->AddChildView(label);
   container->AddChildView(learn_more_button);

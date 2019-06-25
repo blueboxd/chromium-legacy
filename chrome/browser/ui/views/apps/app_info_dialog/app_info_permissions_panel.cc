@@ -194,7 +194,7 @@ AppInfoPermissionsPanel::AppInfoPermissionsPanel(
     const extensions::Extension* app)
     : AppInfoPanel(profile, app) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 

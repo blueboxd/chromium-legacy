@@ -78,8 +78,8 @@ AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
     : Button(this), controller_(controller) {
   SetID(VIEW_ID_ADD_USER_BUTTON);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(kUnifiedTopShortcutSpacing),
-      kUnifiedTopShortcutSpacing));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
 
   auto* icon = new views::ImageView;
   icon->SetImage(
@@ -196,8 +196,8 @@ UserItemButton::UserItemButton(int user_index,
             VIEW_ID_USER_ITEM_BUTTON_START + user_index);
   SetID(VIEW_ID_USER_ITEM_BUTTON_START + user_index);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
-      kUnifiedTopShortcutSpacing));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_minimum_cross_axis_size(kUnifiedUserChooserRowHeight);
@@ -205,8 +205,9 @@ UserItemButton::UserItemButton(int user_index,
 
   views::View* vertical_labels = new views::View;
   vertical_labels->set_can_process_events_within_subtree(false);
-  auto* vertical_layout = vertical_labels->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* vertical_layout =
+      vertical_labels->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   vertical_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
@@ -286,8 +287,8 @@ void UserItemButton::ButtonPressed(views::Button* sender,
 
 UserChooserView::UserChooserView(
     UserChooserDetailedViewController* controller) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   const int num_users =
       Shell::Get()->session_controller()->NumberOfLoggedInUsers();
   for (int i = 0; i < num_users; ++i) {

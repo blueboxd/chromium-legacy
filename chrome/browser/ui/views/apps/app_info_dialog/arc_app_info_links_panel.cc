@@ -27,7 +27,7 @@ ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
       app_list_observer_(this),
       manage_link_(nullptr) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   auto manage_link = std::make_unique<views::Link>(

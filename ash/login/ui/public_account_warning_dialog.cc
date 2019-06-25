@@ -63,13 +63,14 @@ PublicAccountWarningDialog::PublicAccountWarningDialog(
     base::WeakPtr<LoginExpandedPublicAccountView> controller)
     : controller_(controller) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kBetweenLabelPaddingDp));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      kBetweenLabelPaddingDp));
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kDialogContentMarginDp)));
 
   auto add_bulleted_label = [&](const base::string16& text) {
     auto* container = new views::View();
-    container->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
 
     auto* label = new views::Label(text);
     label->SetMultiLine(true);

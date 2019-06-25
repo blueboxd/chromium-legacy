@@ -55,8 +55,8 @@ ExtensionsMenuView::ExtensionsMenuView(
 
   EnableUpDownKeyboardAccelerators();
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   Repopulate();
 }
 
@@ -140,8 +140,8 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
 
   auto extension_buttons = std::make_unique<views::View>();
   extension_menu_button_container_for_testing_ = extension_buttons.get();
-  extension_buttons->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  extension_buttons->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   auto add_group =
       [this, &extension_buttons](

@@ -54,8 +54,9 @@ TouchSelectionMenuViews::TouchSelectionMenuViews(
   set_adjust_if_offscreen(true);
   EnableCanvasFlippingForRTLUI(true);
 
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kHorizontal, gfx::Insets(), kSpacingBetweenButtons));
+  SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal,
+                                  gfx::Insets(), kSpacingBetweenButtons));
 }
 
 void TouchSelectionMenuViews::ShowMenu(const gfx::Rect& anchor_rect,

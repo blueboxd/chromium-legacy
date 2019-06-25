@@ -13,6 +13,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -27,15 +28,20 @@ namespace {
 
 // Max visual tooltip width. If a tooltip is greater than this width, it will
 // be wrapped.
-constexpr int kTooltipMaxWidthPixels = 400;
+constexpr int kTooltipMaxWidthPixels = 800;
 
 // FIXME: get cursor offset from actual cursor size.
 constexpr int kCursorOffsetX = 10;
 constexpr int kCursorOffsetY = 15;
 
+// Paddings
+constexpr int kHorizontalPadding = 8;
+constexpr int kVerticalPaddingTop = 4;
+constexpr int kVerticalPaddingBottom = 5;
+
 // TODO(varkha): Update if native widget can be transparent on Linux.
 bool CanUseTranslucentTooltipWidget() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_WIN)
   return false;
 #else
   return true;
@@ -71,9 +77,6 @@ namespace corewm {
 class TooltipAura::TooltipView : public views::View {
  public:
   TooltipView() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
-    constexpr int kHorizontalPadding = 8;
-    constexpr int kVerticalPaddingTop = 4;
-    constexpr int kVerticalPaddingBottom = 5;
     SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                 kVerticalPaddingBottom, kHorizontalPadding));
 
@@ -122,13 +125,22 @@ class TooltipAura::TooltipView : public views::View {
   }
 
   void SetBackgroundColor(SkColor background_color) {
-    // Corner radius of tooltip background.
-    const float kTooltipCornerRadius = 2.f;
-    SetBackground(CanUseTranslucentTooltipWidget()
-                      ? views::CreateBackgroundFromPainter(
-                            views::Painter::CreateSolidRoundRectPainter(
-                                background_color, kTooltipCornerRadius))
-                      : views::CreateSolidBackground(background_color));
+    if (CanUseTranslucentTooltipWidget()) {
+      // Corner radius of tooltip background.
+      const float kTooltipCornerRadius = 2.f;
+      SetBackground(views::CreateBackgroundFromPainter(
+          views::Painter::CreateSolidRoundRectPainter(background_color,
+                                                      kTooltipCornerRadius)));
+    } else {
+      SetBackground(views::CreateSolidBackground(background_color));
+
+      auto border_color =
+          color_utils::GetColorWithMaxContrast(background_color);
+      SetBorder(views::CreatePaddedBorder(
+          views::CreateSolidBorder(1, border_color),
+          gfx::Insets(kVerticalPaddingTop - 1, kHorizontalPadding - 1,
+                      kVerticalPaddingBottom - 1, kHorizontalPadding - 1)));
+    }
 
     // Force the text color to be readable when |background_color| is not
     // opaque.
@@ -220,10 +232,16 @@ void TooltipAura::SetText(aura::Window* window,
   }
 
   ui::NativeTheme* native_theme = widget_->GetNativeTheme();
-  tooltip_view_->SetBackgroundColor(native_theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TooltipBackground));
-  tooltip_view_->SetForegroundColor(native_theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TooltipText));
+  auto background_color =
+      native_theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
+  if (!CanUseTranslucentTooltipWidget())
+    background_color = SkColorSetA(background_color, 0xFF);
+  tooltip_view_->SetBackgroundColor(background_color);
+  auto foreground_color =
+      native_theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText);
+  if (!CanUseTranslucentTooltipWidget())
+    foreground_color = SkColorSetA(foreground_color, 0xFF);
+  tooltip_view_->SetForegroundColor(foreground_color);
 }
 
 void TooltipAura::Show() {

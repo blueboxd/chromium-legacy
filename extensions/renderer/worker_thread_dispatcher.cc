@@ -24,6 +24,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
+#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 
 namespace extensions {
 
@@ -218,12 +219,14 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
-    ScriptContext* context,
+    blink::WebServiceWorkerContextProxy* context_proxy,
+    ScriptContext* script_context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
-    ServiceWorkerData* new_data = new ServiceWorkerData(
-        service_worker_version_id, context, std::move(bindings_system));
+    ServiceWorkerData* new_data =
+        new ServiceWorkerData(service_worker_version_id, context_proxy,
+                              script_context, std::move(bindings_system));
     g_data_tls.Pointer()->Set(new_data);
   }
 

@@ -37,8 +37,8 @@ class MenuItemView : public views::Button, public views::ButtonListener {
                const LoginMenuView::OnHighlight& on_highlight)
       : views::Button(this), item_(item), on_highlight_(on_highlight) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
     SetPreferredSize(gfx::Size(kMenuItemWidthDp, kMenuItemHeightDp));
 
     auto* spacing = new NonAccessibleView();
@@ -140,13 +140,15 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
   scroller_->ClipHeightTo(kMenuItemHeightDp, kMenuItemHeightDp * 5);
   AddChildView(scroller_);
 
-  views::BoxLayout* box_layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  views::BoxLayout* box_layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   box_layout->SetFlexForView(scroller_, 1);
 
   auto contents = std::make_unique<NonAccessibleView>();
-  views::BoxLayout* layout = contents->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  views::BoxLayout* layout =
+      contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kMenuItemWidthDp);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);

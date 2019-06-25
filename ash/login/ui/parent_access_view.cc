@@ -180,7 +180,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
     DCHECK(on_input_change_);
 
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
+        views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kAccessCodeBetweenInputFieldsGapDp));
     SetGroup(kParentAccessInputGroup);
     SetPaintToLayer();
@@ -424,7 +424,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kParentAccessViewVerticalInsetDp,
                   kParentAccessViewHorizontalInsetDp),
       0);
@@ -442,7 +442,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Header view contains back button that is aligned to its start.
   auto header_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), 0);
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
   header_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
   auto* header = new NonAccessibleView();
@@ -548,7 +548,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   footer->SetPreferredSize(gfx::Size(child_view_width, kArrowButtonSizeDp));
   auto* bottom_layout =
       footer->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
   AddChildView(footer);
 
   help_button_ = new views::LabelButton(

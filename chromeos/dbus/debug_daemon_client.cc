@@ -219,6 +219,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void StopPerf(uint64_t session_id, VoidDBusMethodCallback callback) override {
+    DCHECK(session_id);
+    dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kStopPerf);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint64(session_id);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void GetScrubbedBigLogs(GetLogsCallback callback) override {
     // The PipeReaderWrapper is a self-deleting object; we don't have to worry
     // about ownership or lifetime. We need to create a new one for each Big

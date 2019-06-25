@@ -120,6 +120,15 @@ class OAuth2AccessTokenManager {
   // Cancels all requests related to a given |account_id|.
   void CancelRequestsForAccount(const CoreAccountId& account_id);
 
+  // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
+  // invalid. This should be done if the token was received from this class,
+  // but was not accepted by the server (e.g., the server returned
+  // 401 Unauthorized). The token will be removed from the cache for the given
+  // scopes.
+  void InvalidateAccessToken(const CoreAccountId& account_id,
+                             const OAuth2TokenService::ScopeSet& scopes,
+                             const std::string& access_token);
+
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|.
   void InvalidateAccessTokenImpl(const CoreAccountId& account_id,

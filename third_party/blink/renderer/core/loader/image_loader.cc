@@ -97,10 +97,15 @@ LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
     return LazyLoadImageEligibility::kDisabled;
 
   LoadingAttrValue loading_attr = GetLoadingAttrValue(html_image);
-  if (loading_attr == LoadingAttrValue::kLazy)
+  if (loading_attr == LoadingAttrValue::kLazy) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeLazy);
     return LazyLoadImageEligibility::kEnabledExplicit;
+  }
   if (loading_attr == LoadingAttrValue::kEager &&
       !frame.GetDocument()->IsLazyLoadPolicyEnforced()) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeEager);
     return LazyLoadImageEligibility::kDisabled;
   }
 

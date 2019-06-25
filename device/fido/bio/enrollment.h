@@ -97,24 +97,32 @@ enum class BioEnrollmentSampleStatus : uint8_t {
 };
 
 struct BioEnrollmentRequest {
-  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  EncodeAsCBOR(const BioEnrollmentRequest& request);
+  enum Version {
+    kDefault,
+    kPreview,
+  };
 
-  static BioEnrollmentRequest ForGetModality();
-  static BioEnrollmentRequest ForGetSensorInfo();
+  static BioEnrollmentRequest ForGetModality(Version);
+  static BioEnrollmentRequest ForGetSensorInfo(Version);
   static BioEnrollmentRequest ForEnrollBegin(
+      Version,
       const pin::TokenResponse& pin_token);
   static BioEnrollmentRequest ForEnrollNextSample(
+      Version,
       const pin::TokenResponse& pin_token,
       std::vector<uint8_t> template_id);
-  static BioEnrollmentRequest ForCancel();
-  static BioEnrollmentRequest ForEnumerate(const pin::TokenResponse& token);
-  static BioEnrollmentRequest ForRename(const pin::TokenResponse& token,
+  static BioEnrollmentRequest ForCancel(Version);
+  static BioEnrollmentRequest ForEnumerate(Version,
+                                           const pin::TokenResponse& token);
+  static BioEnrollmentRequest ForRename(Version,
+                                        const pin::TokenResponse& token,
                                         std::vector<uint8_t> id,
                                         std::string name);
-  static BioEnrollmentRequest ForDelete(const pin::TokenResponse& token,
+  static BioEnrollmentRequest ForDelete(Version,
+                                        const pin::TokenResponse& token,
                                         std::vector<uint8_t> id);
 
+  Version version;
   base::Optional<BioEnrollmentModality> modality;
   base::Optional<BioEnrollmentSubCommand> subcommand;
   base::Optional<cbor::Value::MapValue> params;
@@ -127,7 +135,7 @@ struct BioEnrollmentRequest {
   ~BioEnrollmentRequest();
 
  private:
-  BioEnrollmentRequest();
+  BioEnrollmentRequest(Version);
 };
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentResponse {

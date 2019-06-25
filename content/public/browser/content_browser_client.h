@@ -781,8 +781,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Selects a SSL client certificate and returns it to the |delegate|. Note:
   // |delegate| may be called synchronously or asynchronously.
   //
+  // Returns a callback that cancels the UI element corresponding to this
+  // request. The callback should expect to be invoked on the UI thread. The
+  // callback may be null. The callback is not required to be invoked.
+  //
   // TODO(davidben): Move this hook to WebContentsDelegate.
-  virtual void SelectClientCertificate(
+  virtual base::OnceClosure SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,

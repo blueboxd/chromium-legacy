@@ -693,7 +693,7 @@ void CastContentBrowserClient::AllowCertificateError(
   return;
 }
 
-void CastContentBrowserClient::SelectClientCertificate(
+base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -704,7 +704,7 @@ void CastContentBrowserClient::SelectClientCertificate(
     LOG(ERROR) << "Invalid URL string: "
                << requesting_url.possibly_invalid_spec();
     delegate->ContinueWithCertificate(nullptr, nullptr);
-    return;
+    return base::OnceClosure();
   }
 
   // In our case there are no relevant certs in |client_certs|. The cert
@@ -730,6 +730,7 @@ void CastContentBrowserClient::SelectClientCertificate(
           base::Bind(
               &content::ClientCertificateDelegate::ContinueWithCertificate,
               base::Owned(delegate.release()))));
+  return base::OnceClosure();
 }
 
 void CastContentBrowserClient::SelectClientCertificateOnIOThread(

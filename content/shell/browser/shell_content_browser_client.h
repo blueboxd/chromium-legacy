@@ -65,7 +65,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       storage::OptionalQuotaSettingsCallback callback) override;
   GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,

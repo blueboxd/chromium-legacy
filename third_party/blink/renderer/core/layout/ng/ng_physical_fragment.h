@@ -242,6 +242,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   String ToString() const;
 
+  void CheckType() const;
   void CheckCanUpdateInkOverflow() const;
 
   enum DumpFlag {
@@ -335,6 +336,7 @@ struct CORE_EXPORT NGPhysicalFragmentWithOffset {
 };
 
 #if !DCHECK_IS_ON()
+inline void NGPhysicalFragment::CheckType() const {}
 inline void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {}
 #endif
 

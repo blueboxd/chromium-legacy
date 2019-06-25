@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, MigrateOldCryptohome) {
   // Fill out and submit the old password passed to the stub authenticator.
   test::OobeJS().TypeIntoPath("old user password",
                               {"gaia-password-changed", "oldPasswordInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-password-changed", "oldPasswordInputForm", "button"});
 
   // User session should start, and whole OOBE screen is expected to be hidden,
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
   // Fill out and submit the old password passed to the stub authenticator.
   test::OobeJS().TypeIntoPath("incorrect old user password",
                               {"gaia-password-changed", "oldPasswordInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-password-changed", "oldPasswordInputForm", "button"});
 
   // Expect the UI to report failure.
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
   // Submit the correct password.
   test::OobeJS().TypeIntoPath("old user password",
                               {"gaia-password-changed", "oldPasswordInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-password-changed", "oldPasswordInputForm", "button"});
 
   // User session should start, and whole OOBE screen is expected to be hidden,
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, SkipDataRecovery) {
       true, {"gaia-password-changed", "oldPasswordCard"});
 
   // Click forgot password link.
-  test::OobeJS().TapOnPath({"gaia-password-changed", "forgot-password-link"});
+  test::OobeJS().ClickOnPath({"gaia-password-changed", "forgot-password-link"});
 
   test::OobeJS().CreateVisibilityWaiter(
       false, {"gaia-password-changed", "oldPasswordCard"});
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, SkipDataRecovery) {
       {"gaia-password-changed", "proceedAnywayBtn"});
 
   // Click "Proceed anyway".
-  test::OobeJS().TapOnPath({"gaia-password-changed", "proceedAnywayBtn"});
+  test::OobeJS().ClickOnPath({"gaia-password-changed", "proceedAnywayBtn"});
 
   // User session should start, and whole OOBE screen is expected to be hidden,
   OobeWindowVisibilityWaiter(false).Wait();
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
       true, {"gaia-password-changed", "oldPasswordCard"});
 
   // Click forgot password link.
-  test::OobeJS().TapOnPath({"gaia-password-changed", "forgot-password-link"});
+  test::OobeJS().ClickOnPath({"gaia-password-changed", "forgot-password-link"});
 
   test::OobeJS().CreateVisibilityWaiter(
       false, {"gaia-password-changed", "oldPasswordCard"});
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
       {"gaia-password-changed", "proceedAnywayBtn"});
 
   // Go back to old password input by clicking Try Again.
-  test::OobeJS().TapOnPath({"gaia-password-changed", "try-again-link"});
+  test::OobeJS().ClickOnPath({"gaia-password-changed", "try-again-link"});
 
   test::OobeJS().CreateVisibilityWaiter(
       true, {"gaia-password-changed", "oldPasswordCard"});
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, TryAgainAfterForgetLinkClick) {
   // Enter and submit the correct password.
   test::OobeJS().TypeIntoPath("old user password",
                               {"gaia-password-changed", "oldPasswordInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-password-changed", "oldPasswordInputForm", "button"});
 
   // User session should start, and whole OOBE screen is expected to be hidden,
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, ClosePasswordChangedDialog) {
   test::OobeJS().TypeIntoPath("old user password",
                               {"gaia-password-changed", "oldPasswordInput"});
   // Click the close button.
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-password-changed", "navigation", "closeButton"});
 
   OobeWindowVisibilityWaiter(false).Wait();

@@ -53,6 +53,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -611,6 +612,7 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
   // should be fast because the icon should be in the HTTP cache.
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(
       GetURLLoaderFactory(browser_context_),
+      url::Origin::Create(install_shortcut_info_->url),
       install_shortcut_info_->best_primary_icon_url,
       base::Bind(&WebApkInstaller::OnGotPrimaryIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -629,6 +631,7 @@ void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(
           install_shortcut_info_->best_primary_icon_url) {
     WebApkIconHasher::DownloadAndComputeMurmur2Hash(
         GetURLLoaderFactory(browser_context_),
+        url::Origin::Create(install_shortcut_info_->url),
         install_shortcut_info_->best_badge_icon_url,
         base::Bind(&WebApkInstaller::OnGotBadgeIconMurmur2Hash,
                    weak_ptr_factory_.GetWeakPtr(), true, primary_icon_hash));

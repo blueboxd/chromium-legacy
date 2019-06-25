@@ -23,6 +23,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -38,7 +39,7 @@ class WebApkIconHasherRunner {
   void Run(network::mojom::URLLoaderFactory* url_loader_factory,
            const GURL& icon_url) {
     WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
-        url_loader_factory, icon_url, 300,
+        url_loader_factory, url::Origin::Create(icon_url), icon_url, 300,
         base::Bind(&WebApkIconHasherRunner::OnCompleted,
                    base::Unretained(this)));
 

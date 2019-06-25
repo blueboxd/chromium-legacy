@@ -90,6 +90,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  LOG(ERROR) << "FlushMetricsOnAppEnterBackground " << info.url;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
@@ -105,6 +106,7 @@ DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
 void DataReductionProxyMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  LOG(ERROR) << "OnComplete " << info.url;
   DataReductionProxyMetricsObserverBase::OnComplete(timing, info);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordPageSizeUMA();

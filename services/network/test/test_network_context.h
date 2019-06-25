@@ -27,6 +27,10 @@
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/origin.h"
 
+namespace net {
+class NetworkIsolationKey;
+}
+
 namespace network {
 
 // Noop implementation of mojom::NetworkContext.  Useful to override to create
@@ -186,7 +190,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,
                          int32_t load_flags,
-                         bool privacy_mode_enabled) override {}
+                         bool privacy_mode_enabled,
+                         const base::Optional<net::NetworkIsolationKey>&
+                             network_isolation_key) override {}
   void CreateP2PSocketManager(
       mojom::P2PTrustedSocketManagerClientPtr client,
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,

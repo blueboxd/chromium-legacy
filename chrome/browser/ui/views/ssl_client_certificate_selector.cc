@@ -88,7 +88,8 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       auth_observer_impl_(
           std::make_unique<SSLClientAuthObserverImpl>(web_contents,
                                                       cert_request_info,
-                                                      std::move(delegate))) {
+                                                      std::move(delegate))),
+      weak_factory_(this) {
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SSL_CLIENT_CERTIFICATE_SELECTOR);
 }
@@ -133,9 +134,21 @@ void SSLClientCertificateSelector::AcceptCertificate(
                                                std::move(identity));
 }
 
+void SSLClientCertificateSelector::OnCancel() {
+  // Close the dialog if it is not currently being displayed
+  if (!GetWidget()->IsVisible())
+    CloseDialog();
+}
+
+base::OnceClosure SSLClientCertificateSelector::GetCancellationCallback() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return base::BindOnce(&SSLClientCertificateSelector::OnCancel,
+                        weak_factory_.GetWeakPtr());
+}
+
 namespace chrome {
 
-void ShowSSLClientCertificateSelector(
+base::OnceClosure ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -147,13 +160,14 @@ void ShowSSLClientCertificateSelector(
   // TODO(davidben): Move this hook to the WebContentsDelegate and only try to
   // show a dialog in Browser's implementation. https://crbug.com/456255
   if (!SSLClientCertificateSelector::CanShow(contents))
-    return;
+    return base::OnceClosure();
 
   SSLClientCertificateSelector* selector = new SSLClientCertificateSelector(
       contents, cert_request_info, std::move(client_certs),
       std::move(delegate));
   selector->Init();
   selector->Show();
+  return selector->GetCancellationCallback();
 }
 
 }  // namespace chrome

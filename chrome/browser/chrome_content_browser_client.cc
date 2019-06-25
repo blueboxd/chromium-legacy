@@ -2902,7 +2902,7 @@ void AddDataReductionProxyBinding(
 
 }  // namespace
 
-void ChromeContentBrowserClient::SelectClientCertificate(
+base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -2912,7 +2912,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   if (prerender_contents) {
     prerender_contents->Destroy(
         prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED);
-    return;
+    return base::OnceClosure();
   }
 
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
@@ -2948,7 +2948,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       // Continue without client certificate. We do this to mimic the case of no
       // client certificate being present in the profile's certificate store.
       delegate->ContinueWithCertificate(nullptr, nullptr);
-      return;
+      return base::OnceClosure();
     }
     VLOG(1) << "Client cert requested in sign-in profile.";
   }
@@ -2967,7 +2967,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
             &content::ClientCertificateDelegate::ContinueWithCertificate,
             std::move(delegate), std::move(cert)));
     LogClientAuthResult(ClientCertSelectionResult::kAutoSelect);
-    return;
+    return base::OnceClosure();
   }
 
   if (!may_show_cert_selection) {
@@ -2977,12 +2977,12 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     // Continue without client certificate. We do this to mimic the case of no
     // client certificate being present in the profile's certificate store.
     delegate->ContinueWithCertificate(nullptr, nullptr);
-    return;
+    return base::OnceClosure();
   }
 
-  chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,
-                                           std::move(client_certs),
-                                           std::move(delegate));
+  return chrome::ShowSSLClientCertificateSelector(
+      web_contents, cert_request_info, std::move(client_certs),
+      std::move(delegate));
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {

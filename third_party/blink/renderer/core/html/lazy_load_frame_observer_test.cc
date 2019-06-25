@@ -771,6 +771,10 @@ TEST_P(LazyLoadFramesParamsTest,
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(
@@ -817,6 +821,10 @@ TEST_P(LazyLoadFramesParamsTest,
   EXPECT_EQ(RuntimeEnabledFeatures::LazyFrameLoadingEnabled(),
             ConsoleMessages().Contains("main body onload"));
   EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
@@ -937,6 +945,10 @@ TEST_P(LazyLoadFramesParamsTest,
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
@@ -1014,6 +1026,10 @@ TEST_P(LazyLoadFramesParamsTest,
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 
   // There's another nested cross origin iframe inside the first child frame,
   // even further down such that it's not near the viewport. If LazyLoad is
@@ -1090,6 +1106,10 @@ TEST_P(LazyLoadFramesParamsTest,
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1215,6 +1235,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDisabledAndAttrLazy) {
           false);
 
   TestCrossOriginFrameIsImmediatelyLoaded("loading='lazy'");
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAttrLazy) {
@@ -1226,6 +1250,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAttrLazy) {
           false);
 
   TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAttrEager) {
@@ -1237,6 +1265,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAttrEager) {
           false);
 
   TestCrossOriginFrameIsImmediatelyLoaded("loading='eager'");
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticAndAttrLazy) {
@@ -1248,6 +1280,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticAndAttrLazy) {
           false);
 
   TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticAndAttrEager) {
@@ -1259,6 +1295,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticAndAttrEager) {
           false);
 
   TestCrossOriginFrameIsImmediatelyLoaded("loading='eager'");
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticRestrictedAndAttrLazy) {
@@ -1270,6 +1310,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticRestrictedAndAttrLazy) {
           true);
 
   TestCrossOriginFrameIsLazilyLoaded("loading='lazy'");
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticRestrictedAndAttrEager) {
@@ -1282,6 +1326,10 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticRestrictedAndAttrEager) {
 
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   TestCrossOriginFrameIsImmediatelyLoaded("loading='eager'");
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeLazy));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadFrameLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadFramesTest, LazyLoadWhenAutomaticDisabled) {

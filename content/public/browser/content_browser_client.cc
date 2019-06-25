@@ -431,11 +431,13 @@ void ContentBrowserClient::AllowCertificateError(
   callback.Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
-void ContentBrowserClient::SelectClientCertificate(
+base::OnceClosure ContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
-    std::unique_ptr<ClientCertificateDelegate> delegate) {}
+    std::unique_ptr<ClientCertificateDelegate> delegate) {
+  return base::OnceClosure();
+}
 
 net::CookieStore* ContentBrowserClient::OverrideCookieStoreForURL(
     const GURL& url,

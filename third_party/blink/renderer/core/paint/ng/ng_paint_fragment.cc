@@ -415,6 +415,8 @@ void NGPaintFragment::PopulateDescendants(CreateContext* parent_context) {
       !box_physical_fragment || box_physical_fragment->ChildrenInline();
 
   for (const NGLink& child_fragment : container.Children()) {
+    child_fragment->CheckType();
+
     // OOF objects are not needed because they always have self painting layer.
     if (UNLIKELY(child_fragment->IsOutOfFlowPositioned()))
       continue;

@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -203,6 +204,13 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
   for (const auto& detail : engagement_details) {
     if (top_hosts.size() >= max_sites)
       return top_hosts;
+    // Once the engagement score is less than the initial engagement score for a
+    // newly navigated host, return the current set of top hosts. This threshold
+    // prevents hosts that have not been engaged recently from having hints
+    // requested for them. The engagement_details are sorted above in descending
+    // order by engagement score.
+    if (detail.total_score <= GetMinTopHostEngagementThreshold())
+      return top_hosts;
     // TODO(b/968542): Skip origins that are local hosts (e.g., IP addresses,
     // localhost:8080 etc.).
     if (detail.origin.SchemeIs(url::kHttpsScheme) &&
@@ -212,6 +220,15 @@ std::vector<std::string> PreviewsTopHostProviderImpl::GetTopHosts(
   }
 
   return top_hosts;
+}
+
+size_t PreviewsTopHostProviderImpl::GetMinTopHostEngagementThreshold() const {
+  // The base score for the first navigation of a host when added to the site
+  // engagement service. The threshold corresponds to the minimum score that a
+  // host is considered to be a top host, hosts with a lower score have not
+  // been navigated to recently.
+  return SiteEngagementScore::GetNavigationPoints() +
+         SiteEngagementScore::GetFirstDailyEngagementPoints();
 }
 
 }  // namespace previews

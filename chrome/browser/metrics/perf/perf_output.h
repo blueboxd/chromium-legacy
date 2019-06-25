@@ -28,17 +28,23 @@ class PerfOutputCall {
   // - Output from "perf record", in PerfDataProto format, OR
   // - Output from "perf stat", in PerfStatProto format, OR
   // - The empty string if there was an error.
-  using DoneCallback = base::OnceCallback<void(const std::string& perf_stdout)>;
+  // The output is transferred to |perf_stdout|.
+  using DoneCallback = base::OnceCallback<void(std::string perf_stdout)>;
 
   PerfOutputCall(base::TimeDelta duration,
                  const std::vector<std::string>& perf_args,
                  DoneCallback callback);
-  ~PerfOutputCall();
+  virtual ~PerfOutputCall();
+
+  // Stop() is made virtual for mocks in testing.
+  virtual void Stop();
 
  private:
   // Internal callbacks.
   void OnIOComplete(base::Optional<std::string> data);
   void OnGetPerfOutput(base::Optional<uint64_t> result);
+
+  void StopImpl();
 
   // Used to capture perf data written to a pipe.
   std::unique_ptr<chromeos::PipeReader> perf_data_pipe_reader_;
@@ -47,6 +53,13 @@ class PerfOutputCall {
   base::TimeDelta duration_;
   std::vector<std::string> perf_args_;
   DoneCallback done_callback_;
+
+  // Whether Stop() is called before OnGetPerfOutput() has returned the session
+  // ID. If true (meaning Stop() is called very soon after we request perf
+  // output), the stop request will be sent out after we have the session ID to
+  // stop the perf session.
+  bool pending_stop_;
+  base::Optional<uint64_t> perf_session_id_;
 
   THREAD_CHECKER(thread_checker_);
 

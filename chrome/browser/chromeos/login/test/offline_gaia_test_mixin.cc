@@ -115,7 +115,7 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
       ->Wait();
   test::OobeJS().TypeIntoPath(user_email,
                               {"gaia-signin", "offline-gaia", "emailInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-signin", "offline-gaia", "email-input-form", "button"});
   test::OobeJS()
       .CreateDisplayedWaiter(false,
@@ -127,7 +127,7 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
       ->Wait();
   test::OobeJS().TypeIntoPath(password,
                               {"gaia-signin", "offline-gaia", "passwordInput"});
-  test::OobeJS().TapOnPath(
+  test::OobeJS().ClickOnPath(
       {"gaia-signin", "offline-gaia", "password-input-form", "button"});
 }
 

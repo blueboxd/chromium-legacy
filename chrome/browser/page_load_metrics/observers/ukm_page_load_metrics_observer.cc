@@ -319,9 +319,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
-    TRACE_EVENT_INSTANT1(
-        "loading", "NavStartToLargestContentfulPaint::AllFrames::UKM",
-        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue());
     builder
         .SetExperimental_PaintTiming_NavigationToLargestContentPaintAllFrames(
             paint.Time().value().InMilliseconds());
@@ -624,6 +621,23 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
+  bool loading_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("loading", &loading_enabled);
+  if (!loading_enabled)
+    return;
+  const page_load_metrics::ContentfulPaintTimingInfo& paint =
+      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!paint.IsEmpty()) {
+    TRACE_EVENT_INSTANT1(
+        "loading",
+        "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM",
+        TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue());
+  } else {
+    TRACE_EVENT_INSTANT0("loading",
+                         "NavStartToLargestContentfulPaint::"
+                         "Invalidate::AllFrames::UKM",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
 }
 
 void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(

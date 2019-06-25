@@ -42,7 +42,7 @@ FloatRect TextElementTiming::ComputeIntersectionRect(
     Node* node,
     const IntRect& aggregated_visual_rect,
     const PropertyTreeState& property_tree_state,
-    LocalFrameView* frame_view) {
+    const LocalFrameView* frame_view) {
   if (!NeededForElementTiming(node))
     return FloatRect();
 

@@ -443,8 +443,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_Trace) {
   }
   auto analyzer = trace_analyzer::Stop();
   trace_analyzer::TraceEventVector events;
-  Query q =
-      Query::EventNameIs("NavStartToLargestContentfulPaint::AllFrames::UKM");
+  Query q = Query::EventNameIs(
+      "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM");
   analyzer->FindEvents(q, &events);
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
@@ -462,6 +462,48 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_Trace) {
   std::string type;
   EXPECT_TRUE(arg_dict->GetString("type", &type));
   EXPECT_EQ("text", type);
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest,
+       LargestContentPaint_Trace_InvalidateCandidate) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("loading");
+  {
+    page_load_metrics::mojom::PageLoadTiming timing;
+    page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.navigation_start = base::Time::FromDoubleT(1);
+    timing.paint_timing->largest_text_paint =
+        base::TimeDelta::FromMilliseconds(600);
+    timing.paint_timing->largest_text_paint_size = 1000;
+    PopulateRequiredTimingFields(&timing);
+
+    NavigateAndCommit(GURL(kTestUrl1));
+    SimulateTimingUpdate(timing);
+
+    timing.paint_timing->largest_text_paint = base::Optional<base::TimeDelta>();
+    timing.paint_timing->largest_text_paint_size = 0;
+    PopulateRequiredTimingFields(&timing);
+
+    SimulateTimingUpdate(timing);
+
+    // Simulate closing the tab.
+    DeleteContents();
+  }
+  auto analyzer = trace_analyzer::Stop();
+
+  trace_analyzer::TraceEventVector candidate_events;
+  Query candidate_query = Query::EventNameIs(
+      "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM");
+  analyzer->FindEvents(candidate_query, &candidate_events);
+  EXPECT_EQ(1u, candidate_events.size());
+
+  trace_analyzer::TraceEventVector invalidate_events;
+  Query invalidate_query = Query::EventNameIs(
+      "NavStartToLargestContentfulPaint::"
+      "Invalidate::AllFrames::UKM");
+  analyzer->FindEvents(invalidate_query, &invalidate_events);
+  EXPECT_EQ(1u, invalidate_events.size());
+  EXPECT_EQ("loading", invalidate_events[0]->category);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestContentPaint_OnlyText) {

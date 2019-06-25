@@ -44,7 +44,7 @@ class CORE_EXPORT TextElementTiming final
       Node*,
       const IntRect& aggregated_visual_rect,
       const PropertyTreeState&,
-      LocalFrameView*);
+      const LocalFrameView*);
 
   // Called when the swap promise queued by TextPaintTimingDetector has been
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.

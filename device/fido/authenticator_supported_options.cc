@@ -61,6 +61,17 @@ cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options) {
   using BioEnrollmentAvailability =
       AuthenticatorSupportedOptions::BioEnrollmentAvailability;
 
+  switch (options.bio_enrollment_availability) {
+    case BioEnrollmentAvailability::kSupportedAndProvisioned:
+      option_map.emplace(kBioEnrollmentMapKey, true);
+      break;
+    case BioEnrollmentAvailability::kSupportedButUnprovisioned:
+      option_map.emplace(kBioEnrollmentMapKey, false);
+      break;
+    case BioEnrollmentAvailability::kNotSupported:
+      break;
+  }
+
   switch (options.bio_enrollment_availability_preview) {
     case BioEnrollmentAvailability::kSupportedAndProvisioned:
       option_map.emplace(kBioEnrollmentPreviewMapKey, true);

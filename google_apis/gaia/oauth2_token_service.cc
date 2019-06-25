@@ -214,9 +214,7 @@ void OAuth2TokenService::InvalidateAccessToken(
     const CoreAccountId& account_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
-  InvalidateAccessTokenImpl(account_id,
-                            GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-                            scopes, access_token);
+  token_manager_->InvalidateAccessToken(account_id, scopes, access_token);
 }
 
 void OAuth2TokenService::InvalidateTokenForMultilogin(
@@ -230,14 +228,6 @@ void OAuth2TokenService::InvalidateTokenForMultilogin(
   // For desktop refresh tokens can be invalidated directly in delegate. This
   // will have no effect on mobile.
   delegate_->InvalidateTokenForMultilogin(failed_account);
-}
-
-void OAuth2TokenService::InvalidateAccessTokenForClient(
-    const CoreAccountId& account_id,
-    const std::string& client_id,
-    const ScopeSet& scopes,
-    const std::string& access_token) {
-  InvalidateAccessTokenImpl(account_id, client_id, scopes, access_token);
 }
 
 void OAuth2TokenService::InvalidateAccessTokenImpl(

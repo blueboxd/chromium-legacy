@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_top_host_provider_impl.h"
 
 #include "base/values.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -31,8 +32,10 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
 
   void AddEngagedHosts(size_t num_hosts) {
     for (size_t i = 1; i <= num_hosts; i++) {
-      AddEngagedHost(GURL(base::StringPrintf("https://domain%zu.com", i)),
-                     static_cast<int>(i));
+      AddEngagedHost(
+          GURL(base::StringPrintf("https://domain%zu.com", i)),
+          static_cast<int>(
+              i + SiteEngagementScore::GetFirstDailyEngagementPoints()));
     }
   }
 
@@ -324,6 +327,39 @@ TEST_F(PreviewsTopHostProviderImplTest,
       "domain%zu.com",
       previews::params::MaxHintsFetcherTopHostBlacklistSize())));
   EXPECT_FALSE(IsHostBlacklisted(base::StringPrintf("domain%u.com", 1u)));
+}
+
+TEST_F(PreviewsTopHostProviderImplTest, TopHostsFilteredByEngagementThreshold) {
+  size_t engaged_hosts =
+      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+  size_t max_top_hosts =
+      previews::params::MaxHintsFetcherTopHostBlacklistSize() + 1;
+
+  AddEngagedHosts(engaged_hosts);
+  // Add two hosts with very low engagement scores that should not be returned
+  // by the top host provider.
+  AddEngagedHost(GURL("https://lowengagement.com"), 1);
+  AddEngagedHost(GURL("https://lowengagement2.com"), 1);
+
+  // Blacklist should be populated on the first request.
+  std::vector<std::string> hosts =
+      top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(hosts.size(), 0u);
+
+  hosts = top_host_provider()->GetTopHosts(max_top_hosts);
+  EXPECT_EQ(
+      hosts.size(),
+      engaged_hosts - previews::params::MaxHintsFetcherTopHostBlacklistSize());
+  EXPECT_EQ(GetCurrentTopHostBlacklistState(),
+            optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+                kInitialized);
+
+  // The hosts with engagement scores below the minimum threshold should not be
+  // returned.
+  EXPECT_EQ(std::find(hosts.begin(), hosts.end(), "lowengagement.com"),
+            hosts.end());
+  EXPECT_EQ(std::find(hosts.begin(), hosts.end(), "lowengagement2.com"),
+            hosts.end());
 }
 
 }  // namespace previews

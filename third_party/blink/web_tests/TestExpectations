@@ -6199,3 +6199,5 @@ crbug.com/974710 [ Win7 ] virtual/isolated_world_csp/http/tests/security/isolate
 
 # Sheriff 2019-06-24
 crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Pass Timeout ]
+
+crbug.com/946700 [ Win ] http/tests/devtools/coverage/decorations-after-script-formatter.js [ Pass Timeout ]

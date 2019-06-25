@@ -54,7 +54,7 @@ bool IsBackgroundImageContentful(const LayoutObject& object,
 PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       text_paint_timing_detector_(
-          MakeGarbageCollected<TextPaintTimingDetector>(frame_view)),
+          MakeGarbageCollected<TextPaintTimingDetector>(frame_view, this)),
       image_paint_timing_detector_(
           MakeGarbageCollected<ImagePaintTimingDetector>(frame_view)) {}
 

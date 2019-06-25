@@ -41,6 +41,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
@@ -1559,10 +1560,12 @@ void NetworkContext::VerifyCertificateForTesting(
       request, net::NetLogWithSource());
 }
 
-void NetworkContext::PreconnectSockets(uint32_t num_streams,
-                                       const GURL& original_url,
-                                       int32_t load_flags,
-                                       bool privacy_mode_enabled) {
+void NetworkContext::PreconnectSockets(
+    uint32_t num_streams,
+    const GURL& original_url,
+    int32_t load_flags,
+    bool privacy_mode_enabled,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   GURL url = GetHSTSRedirect(original_url);
 
   // |PreconnectSockets| may receive arguments from the renderer, which is not
@@ -1581,9 +1584,11 @@ void NetworkContext::PreconnectSockets(uint32_t num_streams,
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        user_agent);
 
+  request_info.load_flags = load_flags;
   request_info.privacy_mode = privacy_mode_enabled ? net::PRIVACY_MODE_ENABLED
                                                    : net::PRIVACY_MODE_DISABLED;
-  request_info.load_flags = load_flags;
+  if (network_isolation_key)
+    request_info.network_isolation_key = *network_isolation_key;
 
   net::HttpTransactionFactory* factory =
       url_request_context_->http_transaction_factory();

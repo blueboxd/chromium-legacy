@@ -276,7 +276,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -287,6 +287,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
     passed_identities_ = std::move(client_certs);
     delegate_ = std::move(delegate);
     select_certificate_run_loop_.Quit();
+    return base::OnceClosure();
   }
 
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

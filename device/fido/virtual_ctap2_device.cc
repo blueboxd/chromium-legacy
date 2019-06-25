@@ -502,6 +502,17 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (config.bio_enrollment_support) {
     options_updated = true;
     if (mutable_state()->bio_enrollment_provisioned) {
+      options.bio_enrollment_availability = AuthenticatorSupportedOptions::
+          BioEnrollmentAvailability::kSupportedAndProvisioned;
+    } else {
+      options.bio_enrollment_availability = AuthenticatorSupportedOptions::
+          BioEnrollmentAvailability::kSupportedButUnprovisioned;
+    }
+  }
+
+  if (config.bio_enrollment_preview_support) {
+    options_updated = true;
+    if (mutable_state()->bio_enrollment_provisioned) {
       options.bio_enrollment_availability_preview =
           AuthenticatorSupportedOptions::BioEnrollmentAvailability::
               kSupportedAndProvisioned;
@@ -590,6 +601,7 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
     case CtapRequestCommand::kAuthenticatorCredentialManagement:
       response_code = OnCredentialManagement(request_bytes, &response_data);
       break;
+    case CtapRequestCommand::kAuthenticatorBioEnrollment:
     case CtapRequestCommand::kAuthenticatorBioEnrollmentPreview:
       response_code = OnBioEnrollment(request_bytes, &response_data);
       break;
@@ -1345,8 +1357,12 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   // Check to ensure that device supports bio enrollment.
-  if (device_info_->options.bio_enrollment_availability_preview ==
-      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported) {
+  if (device_info_->options.bio_enrollment_availability ==
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kNotSupported &&
+      device_info_->options.bio_enrollment_availability_preview ==
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kNotSupported) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
@@ -1434,7 +1450,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     case static_cast<int>(SubCmd::kEnrollBegin):
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kTemplateId),
-          cbor::Value(std::vector<uint8_t>{0, 0, 0, 1}));
+          std::vector<uint8_t>{0, 0, 0, 1});
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
           static_cast<int>(BioEnrollmentSampleStatus::kGood));

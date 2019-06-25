@@ -51,12 +51,18 @@ class ClientCertRequest {
       std::unique_ptr<content::ClientCertificateDelegate> delegate)
       : pending_requests_(pending_requests),
         cert_request_info_(cert_request_info),
-        delegate_(std::move(delegate)) {}
+        delegate_(std::move(delegate)),
+        weak_factory_(this) {}
 
-  ~ClientCertRequest() {}
+  base::OnceClosure GetCancellationCallback() {
+    return base::BindOnce(&ClientCertRequest::OnCancel,
+                          weak_factory_.GetWeakPtr());
+  }
 
   void CertificateSelected(scoped_refptr<net::X509Certificate> cert,
                            scoped_refptr<net::SSLPrivateKey> key);
+
+  void OnCancel();
 
   net::SSLCertRequestInfo* cert_request_info() const {
     return cert_request_info_.get();
@@ -66,6 +72,7 @@ class ClientCertRequest {
   base::WeakPtr<SSLClientCertPendingRequests> pending_requests_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   std::unique_ptr<content::ClientCertificateDelegate> delegate_;
+  base::WeakPtrFactory<ClientCertRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertRequest);
 };
@@ -291,6 +298,13 @@ void ClientCertRequest::CertificateSelected(
   }
 }
 
+void ClientCertRequest::OnCancel() {
+  // When we receive an OnCancel message, we remove this ClientCertRequest from
+  // the queue of pending requests.
+  auto should_keep = [this](auto* req) { return req != this; };
+  pending_requests_->FilterPendingRequests(should_keep);
+}
+
 }  // namespace
 
 namespace android {
@@ -370,7 +384,7 @@ JNI_SSLClientCertificateRequest_NotifyClientCertificatesChangedOnIOThread(
 
 }  // namespace android
 
-void ShowSSLClientCertificateSelector(
+base::OnceClosure ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList unused_client_certs,
@@ -380,15 +394,19 @@ void ShowSSLClientCertificateSelector(
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           contents, vr::UiSuppressedElement::kSslClientCertificate)) {
     delegate->ContinueWithCertificate(nullptr, nullptr);
-    return;
+    return base::OnceClosure();
   }
 
   SSLClientCertPendingRequests::CreateForWebContents(contents);
   SSLClientCertPendingRequests* active_requests =
       SSLClientCertPendingRequests::FromWebContents(contents);
 
-  active_requests->AddRequest(std::make_unique<ClientCertRequest>(
-      active_requests->GetWeakPtr(), cert_request_info, std::move(delegate)));
+  auto client_cert_request = std::make_unique<ClientCertRequest>(
+      active_requests->GetWeakPtr(), cert_request_info, std::move(delegate));
+  base::OnceClosure cancellation_callback =
+      client_cert_request->GetCancellationCallback();
+  active_requests->AddRequest(std::move(client_cert_request));
+  return cancellation_callback;
 }
 
 }  // namespace chrome

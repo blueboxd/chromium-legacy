@@ -29,6 +29,7 @@ const char kCredentialTypeMapKey[] = "type";
 const char kCredentialAlgorithmMapKey[] = "alg";
 const char kCredentialManagementMapKey[] = "credMgmt";
 const char kCredentialManagementPreviewMapKey[] = "credentialMgmtPreview";
+const char kBioEnrollmentMapKey[] = "bioEnroll";
 const char kBioEnrollmentPreviewMapKey[] = "userVerificationMgmtPreview";
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(10);

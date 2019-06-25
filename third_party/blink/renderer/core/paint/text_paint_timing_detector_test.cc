@@ -55,7 +55,8 @@ class TextPaintTimingDetectorTest
   wtf_size_t CountRankingSetSize() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        ->records_manager_.size_ordered_set_.size();
+        ->records_manager_.GetLargestTextPaintManager()
+        ->size_ordered_set_.size();
   }
 
   void InvokeCallback() {
@@ -95,10 +96,6 @@ class TextPaintTimingDetectorTest
                          test_task_runner_->NowTicks());
   }
 
-  void UpdateCandidate() {
-    GetPaintTimingDetector().GetTextPaintTimingDetector()->UpdateCandidate();
-  }
-
   Element* AppendFontBlockToBody(String content) {
     Element* font = GetDocument().CreateRawElement(html_names::kFontTag);
     font->setAttribute(html_names::kSizeAttr, AtomicString("5"));
@@ -123,6 +120,7 @@ class TextPaintTimingDetectorTest
     return GetFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
+        ->records_manager_.GetLargestTextPaintManager()
         ->FindLargestPaintCandidate();
   }
 
@@ -130,6 +128,7 @@ class TextPaintTimingDetectorTest
     return GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
+        ->records_manager_.GetLargestTextPaintManager()
         ->FindLargestPaintCandidate();
   }
 
@@ -236,7 +235,6 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
     <div>small text</div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  UpdateCandidate();
   base::TimeTicks time2 = NowTicks();
   base::TimeTicks first_largest = LargestPaintStoredResult();
   EXPECT_GE(first_largest, time1);
@@ -244,7 +242,6 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
 
   AppendDivElementToBody("a long-long-long text");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  UpdateCandidate();
   base::TimeTicks time3 = NowTicks();
   base::TimeTicks second_largest = LargestPaintStoredResult();
   EXPECT_GE(second_largest, time2);
@@ -335,14 +332,12 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportLastNullCandidate) {
   )HTML");
   Element* text = AppendDivElementToBody("text to remove");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  UpdateCandidate();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::ExistingIdForNode(text));
   EXPECT_NE(LargestPaintStoredResult(), base::TimeTicks());
 
   RemoveElement(text);
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  UpdateCandidate();
   EXPECT_FALSE(TextRecordOfLargestTextPaint());
   EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }

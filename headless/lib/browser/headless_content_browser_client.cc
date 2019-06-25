@@ -289,12 +289,13 @@ void HeadlessContentBrowserClient::AllowCertificateError(
   }
 }
 
-void HeadlessContentBrowserClient::SelectClientCertificate(
+base::OnceClosure HeadlessContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   delegate->ContinueWithCertificate(nullptr, nullptr);
+  return base::OnceClosure();
 }
 
 void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {

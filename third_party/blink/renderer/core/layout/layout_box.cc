@@ -2448,6 +2448,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (*out_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
     return nullptr;
 
+  physical_fragment.CheckType();
+
   DCHECK_EQ(*out_cache_status, NGLayoutCacheStatus::kHit);
 
   // We can safely re-use this fragment if we are positioned, and only our

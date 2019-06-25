@@ -41,11 +41,17 @@ const base::FilePath::CharType kTestDataDir[] =
 // URL of mock WebAPK server.
 const char* kServerUrl = "/webapkserver/";
 
+// Start URL for the WebAPK
+const char* kStartUrl = "/index.html";
+
 // The URLs of best icons from Web Manifest. We use a random file in the test
 // data directory. Since WebApkInstaller does not try to decode the file as an
 // image it is OK that the file is not an image.
 const char* kBestPrimaryIconUrl = "/simple.html";
 const char* kBestBadgeIconUrl = "/nostore.html";
+
+// Icon which has Cross-Origin-Resource-Policy: same-origin set.
+const char* kBestPrimaryIconCorpUrl = "/banners/image-512px-corp.png";
 
 // Token from the WebAPK server. In production, the token is sent to Google
 // Play. Google Play uses the token to retrieve the WebAPK from the WebAPK
@@ -95,10 +101,12 @@ class TestWebApkInstaller : public WebApkInstaller {
 class WebApkInstallerRunner {
  public:
   WebApkInstallerRunner(content::BrowserContext* browser_context,
+                        const GURL& start_url,
                         const GURL& best_primary_icon_url,
                         const GURL& best_badge_icon_url,
                         SpaceStatus test_space_status)
       : browser_context_(browser_context),
+        start_url_(start_url),
         best_primary_icon_url_(best_primary_icon_url),
         best_badge_icon_url_(best_badge_icon_url),
         test_space_status_(test_space_status) {}
@@ -109,7 +117,7 @@ class WebApkInstallerRunner {
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
 
-    ShortcutInfo info((GURL()));
+    ShortcutInfo info(start_url_);
     info.best_primary_icon_url = best_primary_icon_url_;
     info.best_badge_icon_url = best_badge_icon_url_;
     WebApkInstaller::InstallAsyncForTesting(
@@ -151,6 +159,8 @@ class WebApkInstallerRunner {
   }
 
   content::BrowserContext* browser_context_;
+
+  const GURL start_url_;
 
   // The Web Manifest's icon URLs.
   const GURL best_primary_icon_url_;
@@ -302,6 +312,9 @@ class WebApkInstallerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Sets the Web Manifest's start URL.
+  void SetStartUrl(const GURL& start_url) { start_url_ = start_url; }
+
   // Sets the best Web Manifest's primary icon URL.
   void SetBestPrimaryIconUrl(const GURL& best_primary_icon_url) {
     best_primary_icon_url_ = best_primary_icon_url;
@@ -330,9 +343,9 @@ class WebApkInstallerTest : public ::testing::Test {
   void SetSpaceStatus(const SpaceStatus status) { test_space_status_ = status; }
 
   std::unique_ptr<WebApkInstallerRunner> CreateWebApkInstallerRunner() {
-    return std::unique_ptr<WebApkInstallerRunner>(
-        new WebApkInstallerRunner(profile_.get(), best_primary_icon_url_,
-                                  best_badge_icon_url_, test_space_status_));
+    return std::unique_ptr<WebApkInstallerRunner>(new WebApkInstallerRunner(
+        profile_.get(), start_url_, best_primary_icon_url_,
+        best_badge_icon_url_, test_space_status_));
   }
 
   std::unique_ptr<BuildProtoRunner> CreateBuildProtoRunner() {
@@ -344,6 +357,7 @@ class WebApkInstallerTest : public ::testing::Test {
  private:
   // Sets default configuration for running WebApkInstaller.
   void SetDefaults() {
+    SetStartUrl(test_server_.GetURL(kStartUrl));
     SetBestPrimaryIconUrl(test_server_.GetURL(kBestPrimaryIconUrl));
     SetBestBadgeIconUrl(test_server_.GetURL(kBestBadgeIconUrl));
     SetWebApkServerUrl(test_server_.GetURL(kServerUrl));
@@ -361,6 +375,9 @@ class WebApkInstallerTest : public ::testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer test_server_;
+
+  // Web Manifest's start URL.
+  GURL start_url_;
 
   // Web Manifest's icon URLs.
   GURL best_primary_icon_url_;
@@ -388,6 +405,17 @@ TEST_F(WebApkInstallerTest, FailOnLowSpace) {
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunInstallWebApk();
   EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
+}
+
+// Test that installation succeeds when the primary icon is guarded by
+// a Cross-Origin-Resource-Policy: same-origin header and the icon is
+// same-origin with the start URL.
+TEST_F(WebApkInstallerTest, CrossOriginResourcePolicySameOriginIconSuccess) {
+  SetBestPrimaryIconUrl(test_server()->GetURL(kBestPrimaryIconCorpUrl));
+
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->RunInstallWebApk();
+  EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
 }
 
 // Test that installation fails if fetching the bitmap at the best primary icon

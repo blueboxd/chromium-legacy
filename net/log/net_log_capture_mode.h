@@ -7,14 +7,7 @@
 
 #include <stdint.h>
 
-#include <string>
-
-#include "base/strings/string_piece_forward.h"
 #include "net/base/net_export.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace net {
 
@@ -63,11 +56,6 @@ class NET_EXPORT NetLogCaptureMode {
 
   int32_t value_;
 };
-
-// Parses a NetLogCaptureMode given an optional command-line switch.
-NET_EXPORT NetLogCaptureMode
-GetNetCaptureModeFromCommandLine(const base::CommandLine& command_line,
-                                 base::StringPiece switch_name);
 
 }  // namespace net
 

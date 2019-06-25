@@ -102,6 +102,9 @@ void FakeDebugDaemonClient::GetPerfOutput(
     int file_descriptor,
     DBusMethodCallback<uint64_t> error_callback) {}
 
+void FakeDebugDaemonClient::StopPerf(uint64_t session_id,
+                                     VoidDBusMethodCallback callback) {}
+
 void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";

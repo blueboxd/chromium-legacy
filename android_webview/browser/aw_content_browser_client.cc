@@ -635,7 +635,7 @@ void AwContentBrowserClient::AllowCertificateError(
     callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
-void AwContentBrowserClient::SelectClientCertificate(
+base::OnceClosure AwContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
@@ -644,6 +644,7 @@ void AwContentBrowserClient::SelectClientCertificate(
       AwContentsClientBridge::FromWebContents(web_contents);
   if (client)
     client->SelectClientCertificate(cert_request_info, std::move(delegate));
+  return base::OnceClosure();
 }
 
 bool AwContentBrowserClient::CanCreateWindow(

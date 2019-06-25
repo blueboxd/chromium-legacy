@@ -180,16 +180,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // but was not accepted by the server (e.g., the server returned
   // 401 Unauthorized). The token will be removed from the cache for the given
   // scopes.
+  // Deprecated. It's moved to OAuth2AccessTokenManager.
   void InvalidateAccessToken(const CoreAccountId& account_id,
                              const ScopeSet& scopes,
                              const std::string& access_token);
-
-  // Like |InvalidateToken| except is uses |client_id| to identity OAuth2 client
-  // app that issued the request instead of Chrome's default values.
-  void InvalidateAccessTokenForClient(const CoreAccountId& account_id,
-                                      const std::string& client_id,
-                                      const ScopeSet& scopes,
-                                      const std::string& access_token);
 
   // Removes token from cache (if it is cached) and calls
   // InvalidateTokenForMultilogin method of the delegate. This should be done if

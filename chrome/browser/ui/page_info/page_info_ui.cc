@@ -232,7 +232,6 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
-      safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -246,41 +245,6 @@ std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
-
-  switch (identity_info.safe_browsing_status) {
-    case PageInfo::SAFE_BROWSING_STATUS_NONE:
-      break;
-    case PageInfo::SAFE_BROWSING_STATUS_MALWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
-                                       IDS_PAGE_INFO_MALWARE_DETAILS);
-    case PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
-    case PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
-                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
-    case PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/false);
-#endif
-      NOTREACHED();
-      break;
-    case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
-      return CreateSecurityDescriptionForPasswordReuse(
-          /*is_enterprise_password=*/true);
-#endif
-      NOTREACHED();
-      break;
-    case PageInfo::SAFE_BROWSING_STATUS_BILLING:
-      return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                       IDS_PAGE_INFO_BILLING_SUMMARY,
-                                       IDS_PAGE_INFO_BILLING_DETAILS);
-  }
 
   switch (identity_info.identity_status) {
     case PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE:
@@ -321,6 +285,32 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                            IDS_PAGE_INFO_SECURE_SUMMARY,
                                            IDS_PAGE_INFO_SECURE_DETAILS);
       }
+    case PageInfo::SITE_IDENTITY_STATUS_MALWARE:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
+                                       IDS_PAGE_INFO_MALWARE_DETAILS);
+    case PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+          IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
+    case PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
+    case PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE:
+#if defined(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/false);
+#endif
+    case PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE:
+#if defined(FULL_SAFE_BROWSING)
+      return CreateSecurityDescriptionForPasswordReuse(
+          /*is_enterprise_password=*/true);
+#endif
+    case PageInfo::SITE_IDENTITY_STATUS_BILLING:
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_BILLING_SUMMARY,
+                                       IDS_PAGE_INFO_BILLING_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:

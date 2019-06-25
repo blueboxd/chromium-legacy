@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoinError);
-  test::OobeJS().TapOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
+  test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }
 

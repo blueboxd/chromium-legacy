@@ -56,6 +56,22 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
   DISALLOW_COPY_AND_ASSIGN(ClientCertificateDelegateImpl);
 };
 
+// This function is used to pass the UI cancellation callback from the UI thread
+// to the SSLClientAuthHandler |handler| on the IO thread. If |handler| has
+// already expired, the UI elements are considered orphaned, so we post the
+// cancellation callback to the UI thread immediately.
+void TrySetCancellationCallback(
+    const base::WeakPtr<SSLClientAuthHandler>& handler,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (handler) {
+    handler->SetCancellationCallback(std::move(callback));
+  } else if (callback) {
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             std::move(callback));
+  }
+}
+
 void SelectCertificateOnUIThread(
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     net::SSLCertRequestInfo* cert_request_info,
@@ -70,9 +86,19 @@ void SelectCertificateOnUIThread(
   if (!web_contents)
     return;
 
-  GetContentClient()->browser()->SelectClientCertificate(
-      web_contents, cert_request_info, std::move(client_certs),
-      std::move(delegate));
+  base::OnceClosure cancellation_callback =
+      GetContentClient()->browser()->SelectClientCertificate(
+          web_contents, cert_request_info, std::move(client_certs),
+          std::move(delegate));
+
+  // Attempt to pass the callback to |handler|. If |handler| has already been
+  // destroyed, TrySetCancellationCallback will just invoke the callback. In
+  // contrast, simply posting SetCancellationCallback to the IO thread would
+  // result in |cancellation_callback| never being called if |handler| had
+  // already been destroyed when the task ran.
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&TrySetCancellationCallback, handler,
+                                          std::move(cancellation_callback)));
 }
 
 }  // namespace
@@ -136,6 +162,10 @@ SSLClientAuthHandler::SSLClientAuthHandler(
 }
 
 SSLClientAuthHandler::~SSLClientAuthHandler() {
+  if (cancellation_callback_) {
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             std::move(cancellation_callback_));
+  }
 }
 
 void SSLClientAuthHandler::SelectCertificate() {
@@ -143,6 +173,11 @@ void SSLClientAuthHandler::SelectCertificate() {
 
   // |core_| will call DidGetClientCerts when done.
   core_->GetClientCerts();
+}
+
+void SSLClientAuthHandler::SetCancellationCallback(base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  cancellation_callback_ = std::move(callback);
 }
 
 // static

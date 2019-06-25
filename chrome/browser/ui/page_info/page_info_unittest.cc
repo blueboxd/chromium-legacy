@@ -442,8 +442,8 @@ TEST_F(PageInfoTest, Malware) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_MALWARE,
-            page_info()->safe_browsing_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_MALWARE,
+            page_info()->site_identity_status());
 }
 
 TEST_F(PageInfoTest, SocialEngineering) {
@@ -454,8 +454,8 @@ TEST_F(PageInfoTest, SocialEngineering) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING,
-            page_info()->safe_browsing_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
+            page_info()->site_identity_status());
 }
 
 TEST_F(PageInfoTest, UnwantedSoftware) {
@@ -466,8 +466,8 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE,
-            page_info()->safe_browsing_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
+            page_info()->site_identity_status());
 }
 
 #if defined(FULL_SAFE_BROWSING)
@@ -479,8 +479,8 @@ TEST_F(PageInfoTest, SignInPasswordReuse) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
-            page_info()->safe_browsing_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE,
+            page_info()->site_identity_status());
 }
 
 TEST_F(PageInfoTest, EnterprisePasswordReuse) {
@@ -491,8 +491,8 @@ TEST_F(PageInfoTest, EnterprisePasswordReuse) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE,
-            page_info()->safe_browsing_status());
+  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE,
+            page_info()->site_identity_status());
 }
 #endif
 
@@ -768,7 +768,7 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
   EXPECT_EQ(
       base::UTF8ToUTF16(
           "This page has been identified as being owned by Google Inc [US]."),
-      page_info()->site_details_message());
+      page_info()->site_identity_details());
 }
 
 TEST_F(PageInfoTest, HTTPSRevocationError) {

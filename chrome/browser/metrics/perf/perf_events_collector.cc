@@ -392,6 +392,22 @@ MetricCollector::PerfProtoType PerfCollector::GetPerfProtoType(
   return PerfProtoType::PERF_TYPE_UNSUPPORTED;
 }
 
+void PerfCollector::OnPerfOutputComplete(
+    std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
+    std::unique_ptr<SampledProfile> sampled_profile,
+    PerfProtoType type,
+    bool has_cycles,
+    std::string perf_stdout) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // We are done using |perf_output_call_| and may destroy it.
+  perf_output_call_ = nullptr;
+
+  ParseOutputProtoIfValid(std::move(incognito_observer),
+                          std::move(sampled_profile), type, has_cycles,
+                          perf_stdout);
+}
+
 void PerfCollector::ParseOutputProtoIfValid(
     std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
     std::unique_ptr<SampledProfile> sampled_profile,
@@ -399,10 +415,6 @@ void PerfCollector::ParseOutputProtoIfValid(
     bool has_cycles,
     const std::string& perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // |perf_output_call_| called us, and owns |perf_stdout|. We must delete it,
-  // but not before parsing |perf_stdout|, and we may return early.
-  std::unique_ptr<PerfOutputCall> call_deleter(std::move(perf_output_call_));
 
   if (incognito_observer->incognito_launched()) {
     AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
@@ -481,7 +493,7 @@ void PerfCollector::CollectProfile(
 
   perf_output_call_ = std::make_unique<PerfOutputCall>(
       collection_params_.collection_duration, command,
-      base::BindOnce(&PerfCollector::ParseOutputProtoIfValid,
+      base::BindOnce(&PerfCollector::OnPerfOutputComplete,
                      weak_factory_.GetWeakPtr(), std::move(incognito_observer),
                      std::move(sampled_profile), type, has_cycles));
 }

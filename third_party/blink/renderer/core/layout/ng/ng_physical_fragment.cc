@@ -357,6 +357,58 @@ const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
 }
 
 #if DCHECK_IS_ON()
+void NGPhysicalFragment::CheckType() const {
+  switch (Type()) {
+    case kFragmentBox:
+    case kFragmentRenderedLegend:
+      if (IsInlineBox()) {
+        DCHECK(layout_object_.IsLayoutInline());
+      } else {
+        DCHECK(layout_object_.IsBox());
+      }
+      if (IsColumnBox()) {
+        // TODO(kojii): Column box can fail following checks, needs review.
+        break;
+      }
+      if (layout_object_.IsLayoutNGListMarker()) {
+        // List marker is an atomic inline if it appears in a line box, or a
+        // block box.
+        DCHECK(!IsFloating());
+        DCHECK(!IsOutOfFlowPositioned());
+        DCHECK(IsAtomicInline() || (IsBox() && BoxType() == kBlockFlowRoot));
+        break;
+      }
+      DCHECK_EQ(IsFloating(), layout_object_.IsFloating());
+      DCHECK_EQ(IsOutOfFlowPositioned(),
+                layout_object_.IsOutOfFlowPositioned());
+      DCHECK_EQ(IsAtomicInline(), layout_object_.IsInline() &&
+                                      layout_object_.IsAtomicInlineLevel());
+      break;
+    case kFragmentText:
+      if (To<NGPhysicalTextFragment>(this)->IsGeneratedText()) {
+        // Ellipsis has the truncated in-flow LayoutObject.
+        DCHECK(layout_object_.IsText() ||
+               (layout_object_.IsInline() &&
+                layout_object_.IsAtomicInlineLevel()) ||
+               layout_object_.IsLayoutInline());
+      } else {
+        DCHECK(layout_object_.IsText());
+      }
+      DCHECK(!IsFloating());
+      DCHECK(!IsOutOfFlowPositioned());
+      DCHECK(!IsInlineBox());
+      DCHECK(!IsAtomicInline());
+      break;
+    case kFragmentLineBox:
+      DCHECK(layout_object_.IsLayoutBlockFlow());
+      DCHECK(!IsFloating());
+      DCHECK(!IsOutOfFlowPositioned());
+      DCHECK(!IsInlineBox());
+      DCHECK(!IsAtomicInline());
+      break;
+  }
+}
+
 void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
   if (!GetLayoutObject())
     return;

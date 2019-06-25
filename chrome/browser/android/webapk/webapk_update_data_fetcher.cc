@@ -27,6 +27,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -160,7 +161,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      info_.best_primary_icon_url,
+      url::Origin::Create(last_fetched_url_), info_.best_primary_icon_url,
       base::Bind(&WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -179,7 +180,7 @@ void WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash(
         content::BrowserContext::GetDefaultStoragePartition(profile)
             ->GetURLLoaderFactoryForBrowserProcess()
             .get(),
-        info_.best_badge_icon_url,
+        url::Origin::Create(last_fetched_url_), info_.best_badge_icon_url,
         base::Bind(&WebApkUpdateDataFetcher::OnDataAvailable,
                    weak_ptr_factory_.GetWeakPtr(), primary_icon_murmur2_hash,
                    true));

@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/perf/perf_output.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -17,6 +18,7 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
     : duration_(duration),
       perf_args_(perf_args),
       done_callback_(std::move(callback)),
+      pending_stop_(false),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -36,10 +38,27 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
 
 PerfOutputCall::~PerfOutputCall() {}
 
+void PerfOutputCall::Stop() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!perf_session_id_) {
+    // GetPerfOutputFd hasn't returned the session ID yet. Mark that Stop() has
+    // been called. StopImpl() will be delayed until we receive the session ID.
+    pending_stop_ = true;
+    return;
+  }
+
+  StopImpl();
+}
+
 void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   perf_data_pipe_reader_.reset();
-  std::move(done_callback_).Run(result.value_or(std::string()));
+  // Use the r-value variant of base::Optional::value_or() to move |result| to
+  // the callback argument. Callback can safely use |result| after |this| is
+  // deleted.
+  std::move(done_callback_).Run(std::move(result).value_or(std::string()));
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
@@ -51,6 +70,22 @@ void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
     perf_data_pipe_reader_.reset();
     std::move(done_callback_).Run(std::string());
   }
+
+  // DBus method GetPerfOutputFd returns a generated session ID back to the
+  // caller. The session ID will be used in stopping the existing perf session.
+  perf_session_id_ = result;
+  if (pending_stop_) {
+    // Stop() is called before GetPerfOutputFd returns the session ID. We can
+    // invoke the StopPerf DBus method now.
+    StopImpl();
+  }
+}
+
+void PerfOutputCall::StopImpl() {
+  DCHECK(perf_session_id_);
+  chromeos::DebugDaemonClient* client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  client->StopPerf(*perf_session_id_, base::DoNothing());
 }
 
 }  // namespace metrics

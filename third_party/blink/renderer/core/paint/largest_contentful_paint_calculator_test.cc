@@ -76,9 +76,6 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
                               .GetTextPaintTimingDetector();
     text_detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
                                   simulated_clock_.NowTicks());
-    // TexPaintTimingDetector does not update the candidate on the swap
-    // callback, so manually call it.
-    text_detector->UpdateCandidate();
   }
 
  private:

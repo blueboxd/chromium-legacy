@@ -111,12 +111,12 @@ void EnrollmentUIMixin::ExpectErrorMessage(int error_message_id,
 }
 
 void EnrollmentUIMixin::RetryAfterError() {
-  OobeJS().TapOnPath(kEnrollmentErrorRetryButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentErrorRetryButtonPath);
   WaitForStep(ui::kEnrollmentStepSignin);
 }
 
 void EnrollmentUIMixin::LeaveDeviceAttributeErrorScreen() {
-  OobeJS().TapOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
+  OobeJS().ClickOnPath(kEnrollmentDeviceAttributesErrorButtonPath);
 }
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,

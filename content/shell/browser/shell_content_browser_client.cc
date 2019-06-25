@@ -410,13 +410,14 @@ ShellContentBrowserClient::GetGeneratedCodeCacheSettings(
   return GeneratedCodeCacheSettings(true, 0, context->GetPath());
 }
 
-void ShellContentBrowserClient::SelectClientCertificate(
+base::OnceClosure ShellContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {
   if (select_client_certificate_callback_)
     std::move(select_client_certificate_callback_).Run();
+  return base::OnceClosure();
 }
 
 SpeechRecognitionManagerDelegate*

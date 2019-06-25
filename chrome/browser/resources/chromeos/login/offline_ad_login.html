@@ -135,9 +135,8 @@
               error-message="[[i18nDynamic(locale, 'adLoginInvalidPassword')]]">
           </cr-input>
           <div class="flex layout horizontal start-justified">
-            <gaia-button id="moreOptionsBtn" type="link"
-                on-tap="onMoreOptionsClicked_" hidden="[[!isDomainJoin]]"
-                disabled="[[disabled]]">
+            <gaia-button id="moreOptionsBtn" on-click="onMoreOptionsClicked_"
+                hidden="[[!isDomainJoin]]" disabled="[[disabled]]" link>
               [[i18nDynamic(locale, 'adJoinMoreOptions')]]
             </gaia-button>
           </div>

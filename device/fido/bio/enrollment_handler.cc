@@ -32,30 +32,14 @@ BioEnrollmentHandler::~BioEnrollmentHandler() {
 
 void BioEnrollmentHandler::GetModality(ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
-  if (!authenticator_ ||
-      authenticator_->Options()->bio_enrollment_availability_preview ==
-          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
-              kNotSupported) {
-    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedOption,
-                            base::nullopt);
-  } else {
-    authenticator_->GetModality(std::move(callback));
-  }
+  DCHECK(authenticator_);
+  authenticator_->GetModality(std::move(callback));
 }
 
 void BioEnrollmentHandler::GetSensorInfo(ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker);
-
-  if (!authenticator_ ||
-      authenticator_->Options()->bio_enrollment_availability_preview ==
-          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
-              kNotSupported) {
-    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedOption,
-                            base::nullopt);
-  } else {
-    authenticator_->GetSensorInfo(std::move(callback));
-  }
+  DCHECK(authenticator_);
+  authenticator_->GetSensorInfo(std::move(callback));
 }
 
 void BioEnrollmentHandler::EnrollTemplate(ResponseCallback callback) {
@@ -135,9 +119,12 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
   CancelActiveAuthenticators(authenticator->GetId());
 
   if (!authenticator->Options() ||
-      authenticator->Options()->bio_enrollment_availability_preview ==
-          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
-              kNotSupported) {
+      (authenticator->Options()->bio_enrollment_availability ==
+           AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+               kNotSupported &&
+       authenticator->Options()->bio_enrollment_availability_preview ==
+           AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+               kNotSupported)) {
     std::move(error_callback_)
         .Run(FidoReturnCode::kAuthenticatorMissingBioEnrollment);
     return;

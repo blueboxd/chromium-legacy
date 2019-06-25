@@ -118,6 +118,28 @@ void OnNetworkServiceCrash() {
   GetCrashHandlersList().Notify();
 }
 
+// Parses the desired granularity of NetLog capturing specified by the command
+// line.
+net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
+    const base::CommandLine& command_line) {
+  base::StringPiece switch_name = network::switches::kNetLogCaptureMode;
+
+  if (command_line.HasSwitch(switch_name)) {
+    std::string value = command_line.GetSwitchValueASCII(switch_name);
+
+    if (value == "Default")
+      return net::NetLogCaptureMode::Default();
+    if (value == "IncludeCookiesAndCredentials")
+      return net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+    if (value == "IncludeSocketBytes")
+      return net::NetLogCaptureMode::IncludeSocketBytes();
+
+    LOG(ERROR) << "Unrecognized value for --" << switch_name;
+  }
+
+  return net::NetLogCaptureMode::Default();
+}
+
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
@@ -191,14 +213,11 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
           base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
                                         base::File::FLAG_WRITE);
           if (!file.IsValid()) {
-            LOG(ERROR) << "Failed opening: " << log_path.value();
+            LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
           } else {
-            net::NetLogCaptureMode capture_mode =
-                net::GetNetCaptureModeFromCommandLine(
-                    *command_line, network::switches::kNetLogCaptureMode);
-
             (*g_network_service_ptr)
-                ->StartNetLog(std::move(file), capture_mode,
+                ->StartNetLog(std::move(file),
+                              GetNetCaptureModeFromCommandLine(*command_line),
                               std::move(client_constants));
           }
         }

@@ -54,7 +54,7 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
 TEST_F(BioEnrollmentHandlerTest, Modality) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -85,7 +85,7 @@ TEST_F(BioEnrollmentHandlerTest, Modality) {
 TEST_F(BioEnrollmentHandlerTest, FingerprintSensorInfo) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -122,33 +122,13 @@ TEST_F(BioEnrollmentHandlerTest, NoBioEnrollmentSupport) {
   error_callback_.WaitForCallback();
   EXPECT_EQ(error_callback_.value(),
             FidoReturnCode::kAuthenticatorMissingBioEnrollment);
-
-  // Test unsupported bio-enrollment command.
-  test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
-                                       base::Optional<BioEnrollmentResponse>>
-      cb0;
-  handler->GetModality(cb0.callback());
-  cb0.WaitForCallback();
-
-  EXPECT_EQ(cb0.status(), CtapDeviceResponseCode::kCtap2ErrUnsupportedOption);
-  EXPECT_FALSE(cb0.value());
-
-  // Test second command - handler should not crash after last command.
-  test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
-                                       base::Optional<BioEnrollmentResponse>>
-      cb1;
-  handler->GetSensorInfo(cb1.callback());
-  cb1.WaitForCallback();
-
-  EXPECT_EQ(cb1.status(), CtapDeviceResponseCode::kCtap2ErrUnsupportedOption);
-  EXPECT_FALSE(cb1.value());
 }
 
 // Tests fingerprint enrollment lifecycle.
 TEST_F(BioEnrollmentHandlerTest, Enroll) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -176,7 +156,7 @@ TEST_F(BioEnrollmentHandlerTest, Enroll) {
 TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -194,7 +174,7 @@ TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
 TEST_F(BioEnrollmentHandlerTest, Enumerate) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -223,7 +203,7 @@ TEST_F(BioEnrollmentHandlerTest, Enumerate) {
 TEST_F(BioEnrollmentHandlerTest, Rename) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -249,7 +229,7 @@ TEST_F(BioEnrollmentHandlerTest, Rename) {
 TEST_F(BioEnrollmentHandlerTest, Delete) {
   VirtualCtap2Device::Config config;
   config.pin_support = true;
-  config.bio_enrollment_support = true;
+  config.bio_enrollment_preview_support = true;
 
   virtual_device_factory_.SetCtap2Config(config);
 
@@ -269,6 +249,25 @@ TEST_F(BioEnrollmentHandlerTest, Delete) {
 
   cb1.WaitForCallback();
   EXPECT_EQ(cb1.value(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
+}
+
+// Test cancelling using the non-preview command.
+TEST_F(BioEnrollmentHandlerTest, NonPreviewCancel) {
+  VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.bio_enrollment_support = true;
+
+  virtual_device_factory_.SetCtap2Config(config);
+
+  auto handler = MakeHandler();
+  ready_callback_.WaitForCallback();
+
+  // Cancel enrollment.
+  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb;
+  handler->Cancel(cb.callback());
+
+  cb.WaitForCallback();
+  EXPECT_EQ(cb.value(), CtapDeviceResponseCode::kSuccess);
 }
 
 }  // namespace

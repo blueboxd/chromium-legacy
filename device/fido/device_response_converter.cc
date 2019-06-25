@@ -301,7 +301,20 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
           option_map_it->second.GetBool();
     }
 
-    // TODO(noviv) add support for kBioEnrollmentMapKey
+    option_map_it = option_map.find(CBOR(kBioEnrollmentMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      using Availability =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability;
+
+      options.bio_enrollment_availability =
+          option_map_it->second.GetBool()
+              ? Availability::kSupportedAndProvisioned
+              : Availability::kSupportedButUnprovisioned;
+    }
+
     option_map_it = option_map.find(CBOR(kBioEnrollmentPreviewMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool()) {

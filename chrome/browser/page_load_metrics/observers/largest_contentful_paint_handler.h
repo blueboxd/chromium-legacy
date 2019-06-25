@@ -16,16 +16,17 @@ namespace page_load_metrics {
 class ContentfulPaintTimingInfo {
  public:
   explicit ContentfulPaintTimingInfo(
-      page_load_metrics::PageLoadMetricsObserver::LargestContentType);
+      page_load_metrics::PageLoadMetricsObserver::LargestContentType,
+      bool in_main_frame);
   explicit ContentfulPaintTimingInfo(
       const base::Optional<base::TimeDelta>&,
       const uint64_t& size,
-      const page_load_metrics::PageLoadMetricsObserver::LargestContentType);
+      const page_load_metrics::PageLoadMetricsObserver::LargestContentType,
+      bool in_main_frame);
   explicit ContentfulPaintTimingInfo(const ContentfulPaintTimingInfo& other);
   void Reset(const base::Optional<base::TimeDelta>&, const uint64_t& size);
-  base::Optional<base::TimeDelta> Time() const {
-    return time_;
-  }
+  base::Optional<base::TimeDelta> Time() const { return time_; }
+  bool InMainFrame() const { return in_main_frame_; }
   uint64_t Size() const { return size_; }
   page_load_metrics::PageLoadMetricsObserver::LargestContentType Type() const {
     return type_;
@@ -44,11 +45,12 @@ class ContentfulPaintTimingInfo {
   base::Optional<base::TimeDelta> time_;
   uint64_t size_;
   page_load_metrics::PageLoadMetricsObserver::LargestContentType type_;
+  bool in_main_frame_;
 };
 
 class ContentfulPaint {
  public:
-  ContentfulPaint();
+  explicit ContentfulPaint(bool in_main_frame);
   ContentfulPaintTimingInfo& Text() { return text_; }
   ContentfulPaintTimingInfo& Image() { return image_; }
   const ContentfulPaintTimingInfo& MergeTextAndImageTiming();

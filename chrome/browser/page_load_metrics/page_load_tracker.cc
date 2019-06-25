@@ -206,6 +206,7 @@ PageLoadTracker::PageLoadTracker(
 }
 
 PageLoadTracker::~PageLoadTracker() {
+  LOG(ERROR) << "~PageLoadTracker";
   if (app_entered_background_) {
     RecordAppBackgroundPageLoadCompleted(true);
   }
@@ -240,6 +241,7 @@ PageLoadTracker::~PageLoadTracker() {
   }
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
+  LOG(ERROR) << "OnComplete " << info.url << " " << did_commit_;
   for (const auto& observer : observers_) {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);

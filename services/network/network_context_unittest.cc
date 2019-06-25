@@ -53,6 +53,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/proxy_server.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
@@ -79,6 +80,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -3484,8 +3486,9 @@ TEST_F(NetworkContextTest, PreconnectOne) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(1, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
+  network_context->PreconnectSockets(
+      1, test_server.base_url(), net::LOAD_NORMAL,
+      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 }
 
@@ -3500,7 +3503,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
 
   const GURL server_http_url = GetHttpUrlFromHttps(test_server.base_url());
   network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true);
+                                     true /* privacy_mode_enabled */,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
   int num_sockets = GetSocketCountForGroup(
@@ -3513,7 +3517,8 @@ TEST_F(NetworkContextTest, PreconnectHSTS) {
   network_context->url_request_context()->transport_security_state()->AddHSTS(
       server_http_url.host(), expiry, false);
   network_context->PreconnectSockets(1, server_http_url, net::LOAD_NORMAL,
-                                     true);
+                                     true /* privacy_mode_enabled */,
+                                     net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(1u);
 
   // If HSTS weren't respected, the initial connection would have been reused.
@@ -3532,8 +3537,9 @@ TEST_F(NetworkContextTest, PreconnectZero) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(0, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
+  network_context->PreconnectSockets(
+      0, test_server.base_url(), net::LOAD_NORMAL,
+      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
   base::RunLoop().RunUntilIdle();
 
   int num_sockets =
@@ -3553,8 +3559,9 @@ TEST_F(NetworkContextTest, PreconnectTwo) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(2, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
+  network_context->PreconnectSockets(
+      2, test_server.base_url(), net::LOAD_NORMAL,
+      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
   connection_listener.WaitForAcceptedConnections(2u);
 
   int num_sockets =
@@ -3571,8 +3578,9 @@ TEST_F(NetworkContextTest, PreconnectFour) {
   test_server.SetConnectionListener(&connection_listener);
   ASSERT_TRUE(test_server.Start());
 
-  network_context->PreconnectSockets(4, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
+  network_context->PreconnectSockets(
+      4, test_server.base_url(), net::LOAD_NORMAL,
+      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
 
   connection_listener.WaitForAcceptedConnections(4u);
 
@@ -3594,8 +3602,9 @@ TEST_F(NetworkContextTest, PreconnectMax) {
       GetSocketPoolInfo(network_context.get(), "max_sockets_per_group");
   EXPECT_GT(76, max_num_sockets);
 
-  network_context->PreconnectSockets(76, test_server.base_url(),
-                                     net::LOAD_NORMAL, true);
+  network_context->PreconnectSockets(
+      76, test_server.base_url(), net::LOAD_NORMAL,
+      true /* privacy_mode_enabled */, net::NetworkIsolationKey());
 
   // Wait until |max_num_sockets| have been connected.
   connection_listener.WaitForAcceptedConnections(max_num_sockets);
@@ -3608,6 +3617,45 @@ TEST_F(NetworkContextTest, PreconnectMax) {
   int num_sockets =
       GetSocketPoolInfo(network_context.get(), "idle_socket_count");
   ASSERT_EQ(num_sockets, max_num_sockets);
+}
+
+// Make sure preconnects for the same URL but with different network isolation
+// keys are not merged.
+TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kPartitionConnectionsByNetworkIsolationKey);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+
+  ConnectionListener connection_listener;
+  net::EmbeddedTestServer test_server;
+  test_server.SetConnectionListener(&connection_listener);
+  ASSERT_TRUE(test_server.Start());
+
+  const net::NetworkIsolationKey kKey1(
+      url::Origin::Create(GURL("http://foo.test")));
+  const net::NetworkIsolationKey kKey2(
+      url::Origin::Create(GURL("http://bar.test")));
+  network_context->PreconnectSockets(1, test_server.base_url(),
+                                     net::LOAD_NORMAL,
+                                     true /* privacy_mode_enabled */, kKey1);
+  network_context->PreconnectSockets(2, test_server.base_url(),
+                                     net::LOAD_NORMAL,
+                                     true /* privacy_mode_enabled */, kKey2);
+  connection_listener.WaitForAcceptedConnections(3u);
+
+  net::ClientSocketPool::GroupId group_id1(
+      test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
+      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey1);
+  EXPECT_EQ(
+      1, GetSocketCountForGroup(network_context.get(), group_id1.ToString()));
+  net::ClientSocketPool::GroupId group_id2(
+      test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
+      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey2);
+  EXPECT_EQ(
+      2, GetSocketCountForGroup(network_context.get(), group_id2.ToString()));
 }
 
 // This tests both ClostAllConnetions and CloseIdleConnections.

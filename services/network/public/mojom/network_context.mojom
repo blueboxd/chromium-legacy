@@ -856,10 +856,14 @@ interface NetworkContext {
   // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
   // it is true, then the request must be sent over a connection that cannot be
   // tracked by the server.
+  // |network_isolation_key| specifies the NetworkIsolationKey to associate
+  // with the preconnected sockets. The sockets will only be used for requests
+  // associated with the same key.
   PreconnectSockets(uint32 num_streams,
                     url.mojom.Url url,
                     int32 load_flags,
-                    bool privacy_mode_enabled);
+                    bool privacy_mode_enabled,
+                    NetworkIsolationKey? network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
   CreateP2PSocketManager(P2PTrustedSocketManagerClient client,

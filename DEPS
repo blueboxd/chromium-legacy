@@ -158,7 +158,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '50710e758168bc5a6288251aa25237a267c5ed15',
+  'pdfium_revision': 'd1fb2c5fcaa3c381b519651df72ef08b64bc2e87',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -201,7 +201,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '304e5101f38227ea858688612e7bef77a9a35aae',
+  'catapult_revision': '8db999ee35fffb101c48baf7713006991ef1960e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -807,7 +807,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'f2482cb0559075fe480ba2573a17c6d0066eb041',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ce76d1e960eb22a2f6de4d2bd8f43bbebf8f0feb',
       'condition': 'checkout_linux',
   },
 
@@ -832,7 +832,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2cfafaf4aa2583fc9503eac3e2f163939ca1ce8b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '8812b932c914d4b114bd8c5a2dd5c96e3d38fa9c',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1396,7 +1396,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@754e1905674518265fed8a78eb85d436442c5142',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c0cc2343f646de73801b174b3737b4400b8ff42e',
     'condition': 'checkout_src_internal',
   },
 

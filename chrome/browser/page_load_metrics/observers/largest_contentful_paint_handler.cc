@@ -45,7 +45,8 @@ void MergeForSubframesWithAdjustedTime(
     const uint64_t& candidate_new_size) {
   DCHECK(inout_timing);
   const ContentfulPaintTimingInfo new_candidate(
-      candidate_new_time, candidate_new_size, inout_timing->Type());
+      candidate_new_time, candidate_new_size, inout_timing->Type(),
+      inout_timing->InMainFrame());
   const ContentfulPaintTimingInfo& merged_candidate =
       MergeTimingsBySizeAndTime(new_candidate, *inout_timing);
   inout_timing->Reset(merged_candidate.Time(), merged_candidate.Size());
@@ -70,13 +71,18 @@ bool IsSubframe(content::RenderFrameHost* subframe_rfh) {
 }  // namespace
 
 ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
-    PageLoadMetricsObserver::LargestContentType type)
-    : time_(base::Optional<base::TimeDelta>()), size_(0), type_(type) {}
+    PageLoadMetricsObserver::LargestContentType type,
+    bool in_main_frame)
+    : time_(base::Optional<base::TimeDelta>()),
+      size_(0),
+      type_(type),
+      in_main_frame_(in_main_frame) {}
 ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     const base::Optional<base::TimeDelta>& time,
     const uint64_t& size,
-    const page_load_metrics::PageLoadMetricsObserver::LargestContentType type)
-    : time_(time), size_(size), type_(type) {}
+    const page_load_metrics::PageLoadMetricsObserver::LargestContentType type,
+    bool in_main_frame)
+    : time_(time), size_(size), type_(type), in_main_frame_(in_main_frame) {}
 
 ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     const ContentfulPaintTimingInfo& other) = default;
@@ -88,6 +94,7 @@ ContentfulPaintTimingInfo::DataAsTraceValue() const {
   data->SetInteger("durationInMilliseconds", time_.value().InMilliseconds());
   data->SetInteger("size", size_);
   data->SetString("type", TypeInString());
+  data->SetBoolean("inMainFrame", InMainFrame());
   return data;
 }
 
@@ -115,15 +122,19 @@ void ContentfulPaintTimingInfo::Reset(
   time_ = time;
 }
 
-ContentfulPaint::ContentfulPaint()
-    : text_(PageLoadMetricsObserver::LargestContentType::kText),
-      image_(PageLoadMetricsObserver::LargestContentType::kImage) {}
+ContentfulPaint::ContentfulPaint(bool in_main_frame)
+    : text_(PageLoadMetricsObserver::LargestContentType::kText, in_main_frame),
+      image_(PageLoadMetricsObserver::LargestContentType::kImage,
+             in_main_frame) {}
 
 const ContentfulPaintTimingInfo& ContentfulPaint::MergeTextAndImageTiming() {
   return MergeTimingsBySizeAndTime(text_, image_);
 }
 
-LargestContentfulPaintHandler::LargestContentfulPaintHandler() = default;
+LargestContentfulPaintHandler::LargestContentfulPaintHandler()
+    : main_frame_contentful_paint_(true /*in_main_frame*/),
+      subframe_contentful_paint_(false /*in_main_frame*/) {}
+
 LargestContentfulPaintHandler::~LargestContentfulPaintHandler() = default;
 
 void LargestContentfulPaintHandler::RecordTiming(

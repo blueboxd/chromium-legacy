@@ -252,6 +252,7 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorGetInfo = 0x04,
   kAuthenticatorClientPin = 0x06,
   kAuthenticatorReset = 0x07,
+  kAuthenticatorBioEnrollment = 0x09,
   kAuthenticatorBioEnrollmentPreview = 0x40,
   kAuthenticatorCredentialManagement = 0x0a,
   kAuthenticatorCredentialManagementPreview = 0x41,
@@ -325,6 +326,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialManagementMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCredentialManagementPreviewMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
 
 // HID transport specific constants.

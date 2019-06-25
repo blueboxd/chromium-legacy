@@ -28,15 +28,15 @@ static void SetPinAuth(BioEnrollmentRequest* request,
 }
 
 // static
-BioEnrollmentRequest BioEnrollmentRequest::ForGetModality() {
-  BioEnrollmentRequest request;
+BioEnrollmentRequest BioEnrollmentRequest::ForGetModality(Version version) {
+  BioEnrollmentRequest request(version);
   request.get_modality = true;
   return request;
 }
 
 // static
-BioEnrollmentRequest BioEnrollmentRequest::ForGetSensorInfo() {
-  BioEnrollmentRequest request;
+BioEnrollmentRequest BioEnrollmentRequest::ForGetSensorInfo(Version version) {
+  BioEnrollmentRequest request(version);
   request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kGetFingerprintSensorInfo;
   return request;
@@ -44,8 +44,9 @@ BioEnrollmentRequest BioEnrollmentRequest::ForGetSensorInfo() {
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnrollBegin(
+    Version version,
     const pin::TokenResponse& token) {
-  BioEnrollmentRequest request;
+  BioEnrollmentRequest request(version);
   request.subcommand = BioEnrollmentSubCommand::kEnrollBegin;
   SetPinAuth(&request, token);
   return request;
@@ -53,9 +54,10 @@ BioEnrollmentRequest BioEnrollmentRequest::ForEnrollBegin(
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnrollNextSample(
+    Version version,
     const pin::TokenResponse& token,
     std::vector<uint8_t> template_id) {
-  BioEnrollmentRequest request;
+  BioEnrollmentRequest request(version);
   request.subcommand = BioEnrollmentSubCommand::kEnrollCaptureNextSample;
   request.params = cbor::Value::MapValue();
   request.params->emplace(
@@ -66,8 +68,8 @@ BioEnrollmentRequest BioEnrollmentRequest::ForEnrollNextSample(
 }
 
 // static
-BioEnrollmentRequest BioEnrollmentRequest::ForCancel() {
-  BioEnrollmentRequest request;
+BioEnrollmentRequest BioEnrollmentRequest::ForCancel(Version version) {
+  BioEnrollmentRequest request(version);
   request.modality = BioEnrollmentModality::kFingerprint;
   request.subcommand = BioEnrollmentSubCommand::kCancelCurrentEnrollment;
   return request;
@@ -75,8 +77,9 @@ BioEnrollmentRequest BioEnrollmentRequest::ForCancel() {
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForEnumerate(
+    Version version,
     const pin::TokenResponse& token) {
-  BioEnrollmentRequest request;
+  BioEnrollmentRequest request(version);
   request.subcommand = BioEnrollmentSubCommand::kEnumerateEnrollments;
   SetPinAuth(&request, token);
   return request;
@@ -84,10 +87,11 @@ BioEnrollmentRequest BioEnrollmentRequest::ForEnumerate(
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForRename(
+    Version version,
     const pin::TokenResponse& token,
     std::vector<uint8_t> id,
     std::string name) {
-  BioEnrollmentRequest request;
+  BioEnrollmentRequest request(version);
   request.subcommand = BioEnrollmentSubCommand::kSetFriendlyName;
   request.params = cbor::Value::MapValue();
   request.params->emplace(
@@ -99,9 +103,10 @@ BioEnrollmentRequest BioEnrollmentRequest::ForRename(
 
 // static
 BioEnrollmentRequest BioEnrollmentRequest::ForDelete(
+    Version version,
     const pin::TokenResponse& token,
     std::vector<uint8_t> id) {
-  BioEnrollmentRequest request;
+  BioEnrollmentRequest request(version);
   request.subcommand = BioEnrollmentSubCommand::kRemoveEnrollment;
   request.params = cbor::Value::MapValue();
   request.params->emplace(
@@ -114,7 +119,7 @@ BioEnrollmentRequest BioEnrollmentRequest::ForDelete(
 BioEnrollmentRequest::BioEnrollmentRequest(BioEnrollmentRequest&&) = default;
 BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;
-BioEnrollmentRequest::BioEnrollmentRequest() = default;
+BioEnrollmentRequest::BioEnrollmentRequest(Version v) : version(v) {}
 BioEnrollmentRequest::~BioEnrollmentRequest() = default;
 
 template <typename T>
@@ -297,7 +302,9 @@ AsCTAPRequestValuePair(const BioEnrollmentRequest& request) {
     map.emplace(static_cast<int>(Key::kGetModality), *request.get_modality);
   }
 
-  return {CtapRequestCommand::kAuthenticatorBioEnrollmentPreview,
+  return {request.version == BioEnrollmentRequest::Version::kDefault
+              ? CtapRequestCommand::kAuthenticatorBioEnrollment
+              : CtapRequestCommand::kAuthenticatorBioEnrollmentPreview,
           cbor::Value(std::move(map))};
 }
 

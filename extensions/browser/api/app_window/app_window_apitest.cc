@@ -117,7 +117,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlwaysOnTopNoPermissions) {
       "platform_apps/windows_api_always_on_top/no_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowApiTest, Get) {
+// https://crbug.com/978272 - semi-consistently timing out on Linux CFI bots,
+// and flaking in some Windows/ChromeOS try runs.
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, DISABLED_Get) {
   EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_get"))
       << message_;
 }

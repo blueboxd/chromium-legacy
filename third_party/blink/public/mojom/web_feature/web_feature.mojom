@@ -2318,6 +2318,10 @@ enum WebFeature {
   kPageLifecycleTransitionsOptOut = 2929,
   kPeriodicBackgroundSync = 2930,
   kPeriodicBackgroundSyncRegister = 2931,
+  kLazyLoadFrameLoadingAttributeEager = 2932,
+  kLazyLoadFrameLoadingAttributeLazy = 2933,
+  kLazyLoadImageLoadingAttributeEager = 2934,
+  kLazyLoadImageLoadingAttributeLazy = 2935,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

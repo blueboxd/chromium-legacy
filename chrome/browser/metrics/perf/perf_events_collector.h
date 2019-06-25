@@ -35,6 +35,13 @@ class PerfCollector : public MetricCollector {
   // arguments, starting with "perf" itself in |args[0]|.
   static PerfProtoType GetPerfProtoType(const std::vector<std::string>& args);
 
+  void OnPerfOutputComplete(
+      std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
+      std::unique_ptr<SampledProfile> sampled_profile,
+      PerfProtoType type,
+      bool has_cycles,
+      std::string perf_stdout);
+
   // Parses a PerfDataProto or PerfStatProto from serialized data |perf_stdout|,
   // if non-empty. Which proto to use depends on |subcommand|. If |perf_stdout|
   // is empty, it is counted as an error. |incognito_observer| indicates

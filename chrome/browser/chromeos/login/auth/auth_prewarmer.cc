@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -66,7 +67,7 @@ void AuthPrewarmer::DoPrewarm() {
   if (network_context) {
     // Do nothing if NetworkContext isn't available.
     network_context->PreconnectSockets(kConnectionsNeeded, url, kLoadFlags,
-                                       kShouldUsePrivacyMode);
+                                       kShouldUsePrivacyMode, base::nullopt);
   }
   if (!completion_callback_.is_null()) {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},

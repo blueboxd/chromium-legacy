@@ -261,6 +261,7 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
 
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
+  fragment->CheckType();
 
   return base::AdoptRef(new NGLayoutResult(std::move(fragment), this));
 }

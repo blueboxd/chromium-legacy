@@ -82,6 +82,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
                              int file_descriptor,
                              DBusMethodCallback<uint64_t> callback) = 0;
 
+  // Stops the perf session identified with |session_id| that was started by a
+  // prior call to GetPerfOutput(), and let the caller of GetPerfOutput() gather
+  // profiling data right away. If the profiler session as identified by
+  // |session_id| has ended, this method will silently succeed.
+  virtual void StopPerf(uint64_t session_id,
+                        VoidDBusMethodCallback callback) = 0;
+
   // Callback type for GetAllLogs()
   using GetLogsCallback =
       base::OnceCallback<void(bool succeeded,

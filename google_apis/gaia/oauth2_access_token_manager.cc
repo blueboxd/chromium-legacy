@@ -493,6 +493,19 @@ void OAuth2AccessTokenManager::CancelRequestsForAccount(
   CancelFetchers(fetchers_to_cancel);
 }
 
+void OAuth2AccessTokenManager::InvalidateAccessToken(
+    const CoreAccountId& account_id,
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  // TODO(https://crbug.com/967598): Use directly
+  // OAuth2AccessTokenManager::InvalidateAccessTokenImpl once this fully manages
+  // access tokens independently of OAuth2TokenService. For now, some tests need
+  // to call overridden of OAuth2TokenService::InvalidateAccessTokenImpl.
+  token_service_->InvalidateAccessTokenImpl(
+      account_id, GaiaUrls::GetInstance()->oauth2_chrome_client_id(), scopes,
+      access_token);
+}
+
 void OAuth2AccessTokenManager::InvalidateAccessTokenImpl(
     const CoreAccountId& account_id,
     const std::string& client_id,

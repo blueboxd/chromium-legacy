@@ -94,7 +94,7 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
   return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_WIN) && !defined(OS_MACOSX)
 gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
   return gfx::CreateVectorIcon(icon,
                                color_utils::DeriveDefaultIconColor(text_color));
@@ -317,6 +317,13 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
 #if defined(OS_WIN)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_MANAGED);
+#elif defined(OS_MACOSX)
+  int resource_id = color_utils::IsDark(text_color)
+                        ? IDR_BOOKMARK_BAR_FOLDER_MANAGED
+                        : IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE;
+  return *ui::ResourceBundle::GetSharedInstance()
+              .GetNativeImageNamed(resource_id)
+              .ToImageSkia();
 #else
   return GetFolderIcon(ui::MaterialDesignController::touch_ui()
                            ? vector_icons::kFolderManagedTouchIcon

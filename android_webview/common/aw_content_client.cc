@@ -31,7 +31,7 @@ void AwContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->allow_non_standard_schemes_in_origins = true;
 }
 
-base::string16 AwContentClient::GetLocalizedString(int message_id) const {
+base::string16 AwContentClient::GetLocalizedString(int message_id) {
   // TODO(boliu): Used only by WebKit, so only bundle those resources for
   // Android WebView.
   return l10n_util::GetStringUTF16(message_id);
@@ -39,20 +39,19 @@ base::string16 AwContentClient::GetLocalizedString(int message_id) const {
 
 base::StringPiece AwContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   // TODO(boliu): Used only by WebKit, so only bundle those resources for
   // Android WebView.
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
-base::RefCountedMemory* AwContentClient::GetDataResourceBytes(
-    int resource_id) const {
+base::RefCountedMemory* AwContentClient::GetDataResourceBytes(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-bool AwContentClient::IsDataResourceGzipped(int resource_id) const {
+bool AwContentClient::IsDataResourceGzipped(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 

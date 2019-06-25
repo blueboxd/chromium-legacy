@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":personalization_options",
     ":privacy_page",
     ":privacy_page_browser_proxy",
+    ":security_keys_credential_management_dialog",
     ":security_keys_reset_dialog",
     ":security_keys_set_pin_dialog",
     ":security_keys_subpage",
@@ -78,6 +79,20 @@ js_library("security_keys_set_pin_dialog") {
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("security_keys_pin_field") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("security_keys_credential_management_dialog") {
+  deps = [
+    ":security_keys_browser_proxy",
+    ":security_keys_pin_field",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("security_keys_reset_dialog") {

@@ -11,7 +11,22 @@ Polymer({
 
   properties: {
     /** @private */
+    enableCredentialManagement_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'enableSecurityKeysCredentialManagement');
+      }
+    },
+
+    /** @private */
     showSetPINDialog_: {
+      type: Boolean,
+      value: false,
+    },
+    /** @private */
+    showCredentialManagementDialog_: {
       type: Boolean,
       value: false,
     },
@@ -31,6 +46,17 @@ Polymer({
   onSetPINDialogClosed_: function() {
     this.showSetPINDialog_ = false;
     cr.ui.focusWithoutInk(this.$.setPINButton);
+  },
+
+  /** @private */
+  onCredentialManagement_: function() {
+    this.showCredentialManagementDialog_ = true;
+  },
+
+  /** @private */
+  onCredentialManagementDialogClosed_: function() {
+    this.showCredentialManagementDialog_ = false;
+    cr.ui.focusWithoutInk(this.$.credentialManagementButton);
   },
 
   /** @private */

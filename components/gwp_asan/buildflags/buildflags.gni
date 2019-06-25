@@ -10,3 +10,8 @@ declare_args() {
   enable_gwp_asan_malloc = (is_win || is_mac) && use_allocator_shim
   enable_gwp_asan_partitionalloc = (is_win || is_mac) && use_partition_alloc
 }
+
+declare_args() {
+  # Convenience definition
+  enable_gwp_asan = enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc
+}

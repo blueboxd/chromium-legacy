@@ -205,10 +205,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 
-// In QUIC, do not close connection if received an in-order ACK with decreased
-// largest_acked.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, true)
-
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
 // allowing the client to continue the handshake.
@@ -222,11 +218,6 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_dont_fetch_quic_private_keys_from_leto,
           false)
-
-// If true, terminate Google QUIC connections similary as IETF QUIC.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_terminate_gquic_connection_as_ietf,
-          true)
 
 // In v44 and above, where STOP_WAITING is never sent, close the connection if
 // it's received.
@@ -275,7 +266,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, disable QUIC version 44.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
 
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
@@ -283,7 +274,7 @@ QUIC_FLAG(bool,
           true)
 // If true, when detecting losses, use packets_acked of corresponding packet
 // number space.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, true)
 
 // QUIC version 99 will use this stream ID for the headers stream.
 QUIC_FLAG(int64_t, FLAGS_quic_headers_stream_id_in_v99, 0)

@@ -125,6 +125,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     // Whether a device with bio enrollment support has been provisioned.
     bool bio_enrollment_provisioned = false;
+    // Current template ID being enrolled, if any.
+    base::Optional<uint8_t> bio_current_template_id;
+    // Number of remaining samples in current enrollment.
+    uint8_t bio_remaining_samples = 4;
+    // Backing storage for enrollments and their friendly names.
+    std::map<uint8_t, std::string> bio_templates;
 
     // pending_assertions contains the second and subsequent assertions
     // resulting from a GetAssertion call. These values are awaiting a

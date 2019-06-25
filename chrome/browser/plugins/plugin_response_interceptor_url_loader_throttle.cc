@@ -30,6 +30,16 @@ PluginResponseInterceptorURLLoaderThrottle::
       weak_factory_(this) {}
 
 PluginResponseInterceptorURLLoaderThrottle::
+    PluginResponseInterceptorURLLoaderThrottle(
+        content::BrowserContext* browser_context,
+        int resource_type,
+        int frame_tree_node_id)
+    : browser_context_(browser_context),
+      resource_type_(resource_type),
+      frame_tree_node_id_(frame_tree_node_id),
+      weak_factory_(this) {}
+
+PluginResponseInterceptorURLLoaderThrottle::
     ~PluginResponseInterceptorURLLoaderThrottle() = default;
 
 void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
@@ -42,8 +52,17 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
     return;
   }
 
-  std::string extension_id = PluginUtils::GetExtensionIdForMimeType(
-      resource_context_, response_head->mime_type);
+  std::string extension_id;
+  if (resource_context_) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    extension_id = PluginUtils::GetExtensionIdForMimeType(
+        resource_context_, response_head->mime_type);
+  } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    extension_id = PluginUtils::GetExtensionIdForMimeType(
+        browser_context_, response_head->mime_type);
+  }
+
   if (extension_id.empty())
     return;
 

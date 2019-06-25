@@ -617,7 +617,7 @@ Polymer({
     }
 
     if (!CrOnc.isMobileNetwork(properties) &&
-        (properties.Connectable === false || properties.ErrorState)) {
+        (properties.Connectable === false || !!properties.ErrorState)) {
       this.showConfig_(
           true /* configAndConnect */, networkType, properties.GUID, name);
       return;

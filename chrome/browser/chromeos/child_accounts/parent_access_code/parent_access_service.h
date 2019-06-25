@@ -44,7 +44,9 @@ class ParentAccessService {
     // When Chrome is unable to automatically verify if the OS time is correct
     // the user becomes able to manually change the clock. The entry points are
     // the settings page (in-session) and the tray bubble (out-session).
-    kUpdateClock
+    kUpdateClock,
+    // Change timezone from the settings page.
+    kUpdateTimezone
   };
 
   // Registers preferences.

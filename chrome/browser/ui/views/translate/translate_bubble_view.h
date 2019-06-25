@@ -234,64 +234,58 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Updates the visibilities of child views according to the current view type.
   void UpdateChildVisibilities();
 
-  // Creates the 'before translate' view for the existing Button UI. Caller
-  // takes ownership of the returned view.
-  views::View* CreateViewBeforeTranslate();
+  // Creates the 'before translate' view.
+  std::unique_ptr<views::View> CreateViewBeforeTranslate();
 
   // Creates the view for TAB UI. This view is being used before/during/after
   // translate.
-  views::View* CreateViewTab();
+  std::unique_ptr<views::View> CreateViewTab();
 
   // AddTab function requires a view element to be shown below each tab.
   // This function creates an empty view so no extra white space below the tab.
   std::unique_ptr<views::View> CreateEmptyPane();
 
-  // Creates the 'translating' view for the existing Button UI. Caller takes
-  // ownership of the returned view.
-  views::View* CreateViewTranslating();
+  // Creates the 'translating' view.
+  std::unique_ptr<views::View> CreateViewTranslating();
 
-  // Creates the 'after translate' view for the existing Button UI. Caller takes
-  // ownership of the returned view.
-  views::View* CreateViewAfterTranslate();
+  // Creates the 'after translate' view.
+  std::unique_ptr<views::View> CreateViewAfterTranslate();
 
   // Creates the 'error' view. Caller takes ownership of the returned view.
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
-  views::View* CreateViewError();
+  std::unique_ptr<views::View> CreateViewError();
 
   // Creates the 'advanced' view. Caller takes ownership of the returned view.
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
-  views::View* CreateViewAdvanced();
+  std::unique_ptr<views::View> CreateViewAdvanced();
 
-  // Creates source language label and combobox for Tab UI advanced view.
-  views::View* TabUiCreateViewAdvanedSource();
+  // Creates source language label and combobox for Tab Ui advanced view
+  std::unique_ptr<views::View> TabUiCreateViewAdvanedSource();
 
-  // Creates source language label and combobox for Tab UI advanced view.
-  views::View* TabUiCreateViewAdvanedTarget();
+  // Creates source language label and combobox for Tab Ui advanced view
+  std::unique_ptr<views::View> TabUiCreateViewAdvanedTarget();
 
   // Creates the skeleton view for GM2 UI.
-  views::View* GM2CreateView(
+  std::unique_ptr<views::View> GM2CreateView(
       std::unique_ptr<views::Button> action_button,
       std::unique_ptr<views::View> status_indicator,
       bool active_option_button,
       std::unique_ptr<views::Label> source_language_label,
       std::unique_ptr<views::Label> target_language_label);
 
-  // Creates the 'before translate' view for Button_GM2 UI. Caller takes
-  // ownership of the returned view.
-  views::View* GM2CreateViewBeforeTranslate();
+  // Creates the 'before translate' view for Button_GM2 UI.
+  std::unique_ptr<views::View> GM2CreateViewBeforeTranslate();
 
-  // Creates the 'translating' view for Button_GM2 UI. Caller takes ownership
-  // of the returned view.
-  views::View* GM2CreateViewTranslating();
+  // Creates the 'translating' view for Button_GM2 UI.
+  std::unique_ptr<views::View> GM2CreateViewTranslating();
 
-  // Creates the 'after translate' view for Button_GM2 UI. Caller takes
-  // ownership of the returned view.
-  views::View* GM2CreateViewAfterTranslate();
+  // Creates the 'after translate' view for Button_GM2 UI.
+  std::unique_ptr<views::View> GM2CreateViewAfterTranslate();
 
   // Creates the 'advanced' view to show source/target language combobox under
   // TAB UI. Caller takes ownership of the returned view.
-  views::View* CreateViewAdvancedTabUi(
-      views::Combobox* combobox,
+  std::unique_ptr<views::View> CreateViewAdvancedTabUi(
+      std::unique_ptr<views::Combobox> combobox,
       std::unique_ptr<views::Label> language_title_label);
 
   // Get the current always translate checkbox
@@ -317,41 +311,46 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Handles the reset button in advanced view under Tab UI.
   void ResetLanguage();
 
+  // Retrieve the names of the from/to languages and reset the language
+  // indices.
+  void UpdateLanguageNames(base::string16* original_language_name,
+                           base::string16* target_language_name);
+
   static TranslateBubbleView* translate_bubble_view_;
 
-  views::View* before_translate_view_;
-  views::View* translating_view_;
-  views::View* after_translate_view_;
-  views::View* error_view_;
-  views::View* advanced_view_;
-  views::View* tab_translate_view_;
-  views::View* advanced_view_source_;
-  views::View* advanced_view_target_;
+  views::View* before_translate_view_ = nullptr;
+  views::View* translating_view_ = nullptr;
+  views::View* after_translate_view_ = nullptr;
+  views::View* error_view_ = nullptr;
+  views::View* advanced_view_ = nullptr;
+  views::View* tab_translate_view_ = nullptr;
+  views::View* advanced_view_source_ = nullptr;
+  views::View* advanced_view_target_ = nullptr;
 
   std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
   std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
 
-  views::Combobox* source_language_combobox_;
-  views::Combobox* target_language_combobox_;
+  views::Combobox* source_language_combobox_ = nullptr;
+  views::Combobox* target_language_combobox_ = nullptr;
 
-  views::Checkbox* before_always_translate_checkbox_;
-  views::Checkbox* advanced_always_translate_checkbox_;
-  views::TabbedPane* tabbed_pane_;
+  views::Checkbox* before_always_translate_checkbox_ = nullptr;
+  views::Checkbox* advanced_always_translate_checkbox_ = nullptr;
+  views::TabbedPane* tabbed_pane_ = nullptr;
 
   // Button_GM2 UI source/target language label class variable to be updated
   // based on user selction in
-  views::Label* gm2_source_language_label_;
-  views::Label* gm2_target_language_label_;
+  views::Label* gm2_source_language_label_ = nullptr;
+  views::Label* gm2_target_language_label_ = nullptr;
 
-  views::LabelButton* advanced_cancel_button_;
-  views::LabelButton* advanced_done_button_;
+  views::LabelButton* advanced_cancel_button_ = nullptr;
+  views::LabelButton* advanced_done_button_ = nullptr;
 
   // Default source/target language without user interaction.
   int previous_source_language_index_;
   int previous_target_language_index_;
 
   // Used to trigger the options menu in tests.
-  views::Button* before_translate_options_button_;
+  views::Button* before_translate_options_button_ = nullptr;
 
   std::unique_ptr<ui::SimpleMenuModel> options_menu_model_;
   std::unique_ptr<views::MenuRunner> options_menu_runner_;
@@ -367,7 +366,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   const language::TranslateUIBubbleModel bubble_ui_model_;
 
-  bool should_always_translate_;
+  bool should_always_translate_ = false;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 

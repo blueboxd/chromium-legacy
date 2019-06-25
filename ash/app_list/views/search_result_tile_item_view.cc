@@ -221,16 +221,16 @@ base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
   if (!result()->accessible_name().empty())
     accessible_name = result()->accessible_name();
   else
-    accessible_name = title_->text();
+    accessible_name = title_->GetText();
 
   if (rating_ && rating_->GetVisible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +
         l10n_util::GetStringFUTF16(IDS_APP_ACCESSIBILITY_STAR_RATING_ARC,
-                                   rating_->text());
+                                   rating_->GetText());
   }
   if (price_ && price_->GetVisible())
-    accessible_name += base::UTF8ToUTF16(", ") + price_->text();
+    accessible_name += base::UTF8ToUTF16(", ") + price_->GetText();
 
   if (result()->result_type() ==
       ash::SearchResultType::kPlayStoreReinstallApp) {
@@ -556,7 +556,7 @@ void SearchResultTileItemView::Layout() {
 
     // If there is no price set, we center the rating.
     const bool center_rating =
-        rating_ && rating_star_ && price_ && price_->text().empty();
+        rating_ && rating_star_ && price_ && price_->GetText().empty();
     const int rating_horizontal_offset =
         center_rating ? kSearchRatingCenteringOffset : 0;
 

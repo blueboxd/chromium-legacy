@@ -1613,7 +1613,7 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, Http2StreamReset) {
     stream_request_.reset();
 
     EXPECT_TRUE(has_failed());
-    EXPECT_EQ("Stream closed with error: net::ERR_SPDY_PROTOCOL_ERROR",
+    EXPECT_EQ("Stream closed with error: net::ERR_HTTP2_PROTOCOL_ERROR",
               failure_message());
 
     auto samples = histogram_tester.GetHistogramSamplesSinceCreation(

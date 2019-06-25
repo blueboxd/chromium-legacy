@@ -465,8 +465,9 @@ void ArcSessionManager::Initialize() {
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
   state_ = State::STOPPED;
 
-  arc_session_runner_->SetUserIdHashForProfile(
+  const std::string user_id_hash(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
+  arc_session_runner_->SetUserIdHashForProfile(user_id_hash);
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
@@ -487,6 +488,7 @@ void ArcSessionManager::Initialize() {
       profile_->GetPrefs(),
       cryptohome::Identification(
           multi_user_util::GetAccountIdFromProfile(profile_)));
+  data_remover_->set_user_id_hash_for_profile(user_id_hash);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();

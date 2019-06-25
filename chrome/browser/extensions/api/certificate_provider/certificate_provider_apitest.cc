@@ -140,7 +140,7 @@ void EnterWrongPin(chromeos::CertificateProviderService* service) {
   chromeos::RequestPinView* view =
       service->pin_dialog_manager()->active_view_for_testing();
   EXPECT_EQ(gfx::kGoogleRed600,
-            view->error_label_for_testing()->enabled_color());
+            view->error_label_for_testing()->GetEnabledColor());
 }
 
 class CertificateProviderApiTest : public extensions::ExtensionApiTest {

@@ -859,7 +859,7 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
 }
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
-AwContentBrowserClient::CreateURLLoaderThrottles(
+AwContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     const network::ResourceRequest& request,
     content::ResourceContext* resource_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,

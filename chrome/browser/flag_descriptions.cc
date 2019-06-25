@@ -3119,6 +3119,11 @@ const char kEnableMyFilesVolumeDescription[] =
     "Enables use of MyFiles as a read/write volume. This should be only "
     "used for testing or for trying to restore the previous Downloads content.";
 
+const char kEnableParentalControlsSettingsName[] =
+    "Enable Parental controls settings";
+const char kEnableParentalControlsSettingsDescription[] =
+    "Enable Parental Control options in settings.";
+
 const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";

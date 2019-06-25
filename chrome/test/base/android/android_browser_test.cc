@@ -4,7 +4,8 @@
 
 #include "chrome/test/base/android/android_browser_test.h"
 
-#include "chrome/browser/android/startup_bridge.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -27,16 +28,14 @@ void AndroidBrowserTest::SetUpDefaultCommandLine(
 }
 
 void AndroidBrowserTest::PreRunTestOnMainThread() {
-  android_startup::HandlePostNativeStartupSynchronously();
-
-  // Pump startup related events.
-  content::RunAllPendingInMessageLoop();
 }
 
 void AndroidBrowserTest::PostRunTestOnMainThread() {
-  // Sometimes tests leave Quit tasks in the MessageLoop (for shame), so let's
-  // run all pending messages here to avoid preempting the QuitBrowsers tasks.
-  // TODO(https://crbug.com/922118): Remove this once it is no longer possible
-  // to post QuitCurrent* tasks.
+  for (size_t i = 0; i < TabModelList::size(); ++i) {
+    while (TabModelList::get(i)->GetTabCount())
+      TabModelList::get(i)->CloseTabAt(0);
+  }
+
+  // Run any shutdown events from closing tabs.
   content::RunAllPendingInMessageLoop();
 }

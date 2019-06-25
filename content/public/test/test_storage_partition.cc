@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "content/public/browser/native_file_system_entry_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace content {
@@ -69,6 +70,11 @@ DOMStorageContext* TestStoragePartition::GetDOMStorageContext() {
 
 IndexedDBContext* TestStoragePartition::GetIndexedDBContext() {
   return indexed_db_context_;
+}
+
+NativeFileSystemEntryFactory*
+TestStoragePartition::GetNativeFileSystemEntryFactory() {
+  return nullptr;
 }
 
 ServiceWorkerContext* TestStoragePartition::GetServiceWorkerContext() {

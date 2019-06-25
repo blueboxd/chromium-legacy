@@ -1341,8 +1341,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (service_name == chromeos::assistant::mojom::kServiceName) {
     return std::make_unique<chromeos::assistant::Service>(
-        std::move(request), content::GetNetworkConnectionTracker(),
-        GetURLLoaderFactory()->Clone());
+        std::move(request), GetURLLoaderFactory()->Clone());
   }
 #endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
 

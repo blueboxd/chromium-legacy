@@ -40,7 +40,6 @@ class OneShotTimer;
 }  // namespace base
 
 namespace network {
-class NetworkConnectionTracker;
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
@@ -61,7 +60,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public ash::DefaultVoiceInteractionObserver {
  public:
   Service(service_manager::mojom::ServiceRequest request,
-          network::NetworkConnectionTracker* network_connection_tracker,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
               url_loader_factory_info);
   ~Service() override;
@@ -211,7 +209,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;
 
-  network::NetworkConnectionTracker* network_connection_tracker_;
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 

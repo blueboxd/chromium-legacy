@@ -1548,12 +1548,12 @@ TEST_F(OverviewSessionTest, CreateLabelUnderWindow) {
   ASSERT_TRUE(label);
 
   // Verify the label matches the window title.
-  EXPECT_EQ(window_title, label->text());
+  EXPECT_EQ(window_title, label->GetText());
 
   // Update the window title and check that the label is updated, too.
   const base::string16 updated_title = base::UTF8ToUTF16("Updated title");
   window->SetTitle(updated_title);
-  EXPECT_EQ(updated_title, label->text());
+  EXPECT_EQ(updated_title, label->GetText());
 
   // Labels are located based on target_bounds, not the actual window item
   // bounds.

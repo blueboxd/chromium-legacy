@@ -158,6 +158,12 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
 
   // 2. If type contains a MIME type that is not supported ..., then throw a
   // NotSupportedError exception and abort these steps.
+  //
+  // TODO(wolenetz): Refactor and use a less-strict version of isTypeSupported
+  // here. As part of that, CreateWebSourceBuffer in Chromium should inherit
+  // relaxation of impl's StreamParserFactory (since it returns false if a
+  // stream parser can't be constructed with |type|). See
+  // https://crbug.com/535738.
   if (!isTypeSupported(type)) {
     LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kNotSupportedError,

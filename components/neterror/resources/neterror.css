@@ -858,6 +858,16 @@ whereas Blink does not. */
   display: none;
 }
 
+#offline-instruction {
+  image-rendering: pixelated;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 60px;
+  width: fit-content;
+}
+
 @media (max-width: 420px) {
   #download-button {
     padding-bottom: 12px;

@@ -79,8 +79,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
-  void SignalSyncToken(const gpu::SyncToken& sync_token,
-                       base::OnceClosure callback) override;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,

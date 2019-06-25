@@ -35,6 +35,8 @@ const LayeredAPIResource kLayeredAPIResources[] = {
      Module::kElementsSwitch},
     {"elements/switch/reflection.mjs",
      IDR_LAYERED_API_ELEMENTS_SWITCH_REFLECTION_MJS, Module::kElementsSwitch},
+    {"elements/switch/style.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_STYLE_MJS,
+     Module::kElementsSwitch},
     {"elements/switch/track.mjs", IDR_LAYERED_API_ELEMENTS_SWITCH_TRACK_MJS,
      Module::kElementsSwitch},
 

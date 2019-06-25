@@ -84,7 +84,8 @@ TEST_F(StyledLabelTest, TrailingWhitespaceiIgnored) {
   styled()->Layout();
 
   ASSERT_EQ(1u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16("This is a test block of text"), LabelAt(0)->text());
+  EXPECT_EQ(ASCIIToUTF16("This is a test block of text"),
+            LabelAt(0)->GetText());
 }
 
 TEST_F(StyledLabelTest, RespectLeadingWhitespace) {
@@ -96,7 +97,7 @@ TEST_F(StyledLabelTest, RespectLeadingWhitespace) {
 
   ASSERT_EQ(1u, styled()->children().size());
   EXPECT_EQ(ASCIIToUTF16("   This is a test block of text"),
-            LabelAt(0)->text());
+            LabelAt(0)->GetText());
 }
 
 TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
@@ -106,7 +107,7 @@ TEST_F(StyledLabelTest, RespectLeadingSpacesInNonFirstLine) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
   ASSERT_EQ(2u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16(indented_line), LabelAt(1)->text());
+  EXPECT_EQ(ASCIIToUTF16(indented_line), LabelAt(1)->GetText());
 }
 
 TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
@@ -120,9 +121,9 @@ TEST_F(StyledLabelTest, CorrectWrapAtNewline) {
   styled()->SetBounds(0, 0, label_preferred_size.width(), 1000);
   styled()->Layout();
   ASSERT_EQ(2u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16(first_line), LabelAt(0)->text());
+  EXPECT_EQ(ASCIIToUTF16(first_line), LabelAt(0)->GetText());
   const auto* label_1 = LabelAt(1);
-  EXPECT_EQ(ASCIIToUTF16(second_line), label_1->text());
+  EXPECT_EQ(ASCIIToUTF16(second_line), label_1->GetText());
   EXPECT_EQ(styled()->GetHeightForWidth(1000), label_1->bounds().bottom());
 }
 
@@ -137,7 +138,7 @@ TEST_F(StyledLabelTest, FirstLineNotEmptyWhenLeadingWhitespaceTooLong) {
   styled()->Layout();
 
   ASSERT_EQ(1u, styled()->children().size());
-  EXPECT_EQ(ASCIIToUTF16("a"), LabelAt(0)->text());
+  EXPECT_EQ(ASCIIToUTF16("a"), LabelAt(0)->GetText());
   EXPECT_EQ(label_preferred_size.height(),
             styled()->GetHeightForWidth(label_preferred_size.width() / 2));
 }
@@ -198,9 +199,9 @@ TEST_F(StyledLabelTest, WrapLongWords) {
   EXPECT_EQ(gfx::Point(), label_0->origin());
   EXPECT_EQ(gfx::Point(0, styled()->height() / 2), label_1->origin());
 
-  EXPECT_FALSE(label_0->text().empty());
-  EXPECT_FALSE(label_1->text().empty());
-  EXPECT_EQ(ASCIIToUTF16(text), label_0->text() + label_1->text());
+  EXPECT_FALSE(label_0->GetText().empty());
+  EXPECT_FALSE(label_1->GetText().empty());
+  EXPECT_EQ(ASCIIToUTF16(text), label_0->GetText() + label_1->GetText());
 }
 
 TEST_F(StyledLabelTest, CreateLinks) {
@@ -383,26 +384,26 @@ TEST_F(StyledLabelTest, Color) {
   // Obtain the default text color for a label.
   Label* label = new Label(ASCIIToUTF16(text));
   container->AddChildView(label);
-  const SkColor kDefaultTextColor = label->enabled_color();
+  const SkColor kDefaultTextColor = label->GetEnabledColor();
 
   // Obtain the default text color for a link.
   Link* link = new Link(ASCIIToUTF16(text_link));
   container->AddChildView(link);
-  const SkColor kDefaultLinkColor = link->enabled_color();
+  const SkColor kDefaultLinkColor = link->GetEnabledColor();
 
-  EXPECT_EQ(SK_ColorBLUE, LabelAt(0)->enabled_color());
+  EXPECT_EQ(SK_ColorBLUE, LabelAt(0)->GetEnabledColor());
   EXPECT_EQ(kDefaultLinkColor,
-            LabelAt(1, Link::kViewClassName)->enabled_color());
-  EXPECT_EQ(kDefaultTextColor, LabelAt(2)->enabled_color());
+            LabelAt(1, Link::kViewClassName)->GetEnabledColor());
+  EXPECT_EQ(kDefaultTextColor, LabelAt(2)->GetEnabledColor());
 
   // Test adjusted color readability.
   styled()->SetDisplayedOnBackgroundColor(SK_ColorBLACK);
   styled()->Layout();
   label->SetBackgroundColor(SK_ColorBLACK);
 
-  const SkColor kAdjustedTextColor = label->enabled_color();
+  const SkColor kAdjustedTextColor = label->GetEnabledColor();
   EXPECT_NE(kAdjustedTextColor, kDefaultTextColor);
-  EXPECT_EQ(kAdjustedTextColor, LabelAt(2)->enabled_color());
+  EXPECT_EQ(kAdjustedTextColor, LabelAt(2)->GetEnabledColor());
 
   widget->CloseNow();
 }
@@ -478,10 +479,10 @@ TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
   styled()->Layout();
   ASSERT_EQ(1u, styled()->children().size());
   Label* sublabel = LabelAt(0);
-  EXPECT_EQ(style::CONTEXT_DIALOG_TITLE, sublabel->text_context());
+  EXPECT_EQ(style::CONTEXT_DIALOG_TITLE, sublabel->GetTextContext());
 
-  EXPECT_NE(SK_ColorBLACK, label.enabled_color());  // Sanity check,
-  EXPECT_EQ(label.enabled_color(), sublabel->enabled_color());
+  EXPECT_NE(SK_ColorBLACK, label.GetEnabledColor());  // Sanity check,
+  EXPECT_EQ(label.GetEnabledColor(), sublabel->GetEnabledColor());
 }
 
 TEST_F(StyledLabelTest, LineHeight) {

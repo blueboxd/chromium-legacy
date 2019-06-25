@@ -97,8 +97,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetSSLInfo(const net::SSLInfo& ssl_info) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
-  NavigationHandleImpl* GetNavigationHandle() const override;
-  content::GlobalRequestID GetGlobalRequestID() const override;
+  NavigationHandleImpl* GetNavigationHandle() override;
+  content::GlobalRequestID GetGlobalRequestID() override;
 
   // Additional utilites usable only inside content/.
 

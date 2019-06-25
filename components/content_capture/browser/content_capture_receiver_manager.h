@@ -86,6 +86,13 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
       bool ancestor_only,
       ContentCaptureSession* session);
 
+  // Builds ContentCaptureSession for |content_capture_receiver| into |session|,
+  // return true if succeed, this method returns the session that has been
+  // reported and shall be used for removing session.
+  bool BuildContentCaptureSessionLastSeen(
+      ContentCaptureReceiver* content_capture_receiver,
+      ContentCaptureSession* session);
+
   ContentCaptureReceiver* ContentCaptureReceiverForFrame(
       content::RenderFrameHost* render_frame_host);
 

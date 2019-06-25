@@ -1435,6 +1435,13 @@
     "expiry_milestone": 76
   },
   {
+    "name" : "enable-parental-controls-settings",
+    "owners" : [ "danan", "michaelpg" ],
+    // This flag is used to enable parental controls options in ChromeOS
+    // settings.
+    "expiry_milestone" : 79
+  },
+  {
     "name": "enable-parallel-downloading",
     "owners": [ "qinmin", "xingliu", "dtrainor" ],
     // This flag is used by dev teams on Android to disable this feature, since

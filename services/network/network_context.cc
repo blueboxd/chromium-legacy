@@ -764,18 +764,6 @@ bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
 }
 
-cors::PreflightCache::Metrics
-NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
-  return cors_preflight_controller_.ReportAndGatherCacheSizeMetric();
-}
-
-size_t NetworkContext::GatherActiveLoaderCount() {
-  size_t count = 0;
-  for (const auto& factory : url_loader_factories_)
-    count += factory->GetActiveLoaderCount();
-  return count;
-}
-
 void NetworkContext::ClearNetworkingHistorySince(
     base::Time time,
     base::OnceClosure completion_callback) {

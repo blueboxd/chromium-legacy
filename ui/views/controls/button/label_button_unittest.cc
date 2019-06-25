@@ -481,24 +481,24 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
 TEST_F(LabelButtonTest, HighlightedButtonStyle) {
   // The NativeTheme might not provide SK_ColorBLACK, but it should be the same
   // for normal and pressed states.
-  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->GetEnabledColor());
   button_->SetState(Button::STATE_PRESSED);
-  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->GetEnabledColor());
 }
 
 // Ensure the label gets the correct enabled color after
 // LabelButton::ResetColorsFromNativeTheme() is invoked.
 TEST_F(LabelButtonTest, ResetColorsFromNativeTheme) {
   ASSERT_FALSE(color_utils::IsInvertedColorScheme());
-  ASSERT_NE(button_->label()->background_color(), SK_ColorBLACK);
-  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+  ASSERT_NE(button_->label()->GetBackgroundColor(), SK_ColorBLACK);
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->GetEnabledColor());
 
   button_->label()->SetBackgroundColor(SK_ColorBLACK);
   button_->label()->SetAutoColorReadabilityEnabled(true);
-  EXPECT_NE(themed_normal_text_color_, button_->label()->enabled_color());
+  EXPECT_NE(themed_normal_text_color_, button_->label()->GetEnabledColor());
 
   button_->ResetColorsFromNativeTheme();
-  EXPECT_EQ(themed_normal_text_color_, button_->label()->enabled_color());
+  EXPECT_EQ(themed_normal_text_color_, button_->label()->GetEnabledColor());
 }
 
 // Test fixture for a LabelButton that has an ink drop configured.

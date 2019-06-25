@@ -13,6 +13,7 @@ mojom_component("base") {
     "file_error.mojom",
     "file_info.mojom",
     "file_path.mojom",
+    "generic_pending_receiver.mojom",
     "memory_allocator_dump_cross_process_uid.mojom",
     "memory_pressure_level.mojom",
     "process_id.mojom",

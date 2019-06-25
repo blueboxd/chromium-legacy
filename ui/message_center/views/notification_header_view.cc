@@ -302,9 +302,10 @@ void NotificationHeaderView::SetOverflowIndicator(int count) {
 void NotificationHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 
-  node_data->SetName(app_name_view_->text());
-  node_data->SetDescription(summary_text_view_->text() +
-                            base::ASCIIToUTF16(" ") + timestamp_view_->text());
+  node_data->SetName(app_name_view_->GetText());
+  node_data->SetDescription(summary_text_view_->GetText() +
+                            base::ASCIIToUTF16(" ") +
+                            timestamp_view_->GetText());
 
   if (is_expanded_)
     node_data->AddState(ax::mojom::State::kExpanded);
@@ -383,7 +384,7 @@ void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {
 }
 
 const base::string16& NotificationHeaderView::app_name_for_testing() const {
-  return app_name_view_->text();
+  return app_name_view_->GetText();
 }
 
 const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
@@ -391,11 +392,11 @@ const gfx::ImageSkia& NotificationHeaderView::app_icon_for_testing() const {
 }
 
 const base::string16& NotificationHeaderView::timestamp_for_testing() const {
-  return timestamp_view_->text();
+  return timestamp_view_->GetText();
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
-  const bool summary_visible = !summary_text_view_->text().empty();
+  const bool summary_visible = !summary_text_view_->GetText().empty();
   summary_text_divider_->SetVisible(summary_visible);
   summary_text_view_->SetVisible(summary_visible);
 

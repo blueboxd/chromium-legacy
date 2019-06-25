@@ -1,10 +1,10 @@
 include_rules = [
   "-components/devtools_bridge",
   "+cc/layers/layer.h",
-  "+chrome_jni_registration/chrome_jni_registration.h",
   "+chrome/android/test_support_jni_headers",
   "+chrome/lib/image_fetcher/public/android/jni_headers",
   "+chrome/lib/util/public/android/jni_headers",
+  "+chrome_jni_registration/chrome_jni_registration.h",
   "+device/vr/buildflags/buildflags.h",
   "+media/gpu",
   "+media/video",

@@ -76,7 +76,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void EnumerateCredentials(base::span<const uint8_t> pin_token,
                             EnumerateCredentialsCallback callback) override;
   void DeleteCredential(base::span<const uint8_t> pin_token,
-                        base::span<const uint8_t> credential_id,
+                        const PublicKeyCredentialDescriptor& credential_id,
                         DeleteCredentialCallback callback) override;
 
   void GetModality(BioEnrollmentCallback callback) override;

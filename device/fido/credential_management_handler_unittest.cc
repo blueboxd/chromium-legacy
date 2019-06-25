@@ -88,7 +88,7 @@ TEST_F(CredentialManagementHandlerTest, Test) {
   EXPECT_EQ(*num_remaining, 99u);
 
   handler->DeleteCredential(
-      opt_response->front().credentials.front().credential_id.id(),
+      opt_response->front().credentials.front().credential_id,
       delete_callback_.callback());
 
   delete_callback_.WaitForCallback();

@@ -846,7 +846,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
                                   base::UnguessableToken::Create()));
     std::unique_ptr<NavigationURLLoader> test_loader =
         NavigationURLLoader::Create(
-            browser_context_->GetResourceContext(),
+            browser_context_.get(), browser_context_->GetResourceContext(),
             BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
             std::move(request_info), nullptr, nullptr, nullptr, nullptr,
             &delegate);

@@ -114,11 +114,11 @@ CredentialManagementRequest::ForEnumerateCredentialsGetNext(Version version) {
 CredentialManagementRequest CredentialManagementRequest::ForDeleteCredential(
     Version version,
     base::span<const uint8_t> pin_token,
-    std::vector<uint8_t> credential_id) {
+    const PublicKeyCredentialDescriptor& credential_id) {
   cbor::Value::MapValue params_map;
   params_map.emplace(
       static_cast<int>(CredentialManagementRequestParamKey::kCredentialID),
-      std::move(credential_id));
+      AsCBOR(credential_id));
   base::Optional<std::vector<uint8_t>> pin_auth_bytes =
       cbor::Writer::Write(cbor::Value(params_map));
   DCHECK(pin_auth_bytes);
@@ -313,7 +313,9 @@ EnumerateCredentialsResponse::EnumerateCredentialsResponse(
     size_t credential_count_)
     : user(std::move(user_)),
       credential_id(std::move(credential_id_)),
-      credential_count(credential_count_) {}
+      credential_count(credential_count_) {
+  credential_id_cbor_bytes = *cbor::Writer::Write(AsCBOR(credential_id));
+}
 
 AggregatedEnumerateCredentialsResponse::AggregatedEnumerateCredentialsResponse(
     PublicKeyCredentialRpEntity rp_)

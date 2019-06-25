@@ -169,7 +169,7 @@ void PermissionsBubbleDialogDelegateView::AddedToWidget() {
   std::unique_ptr<views::Label> title =
       std::make_unique<PermissionsLabel>(GetWindowTitle());
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->set_collapse_when_hidden(true);
+  title->SetCollapseWhenHidden(true);
   title->SetMultiLine(true);
 
   // Elide from head in order to keep the most significant part of the origin

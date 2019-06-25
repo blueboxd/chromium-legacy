@@ -6200,7 +6200,6 @@ crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pas
 crbug.com/976045 [ Win ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/976157 inspector-protocol/runtime/runtime-console-basic-functions.js [ Pass Failure ]
 crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listener.html [ Pass Timeout Failure ]
 
 crbug.com/974710 [ Win7 ] http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
@@ -6216,3 +6215,10 @@ crbug.com/977015 [ Win ] http/tests/devtools/elements/shadow/shadow-distribution
 
 # Sheriff 2019-06-25
 crbug.com/978304 http/tests/devtools/elements/styles-4/undo-add-property.js [ Pass Timeout ]
+
+# Expected new failures until crbug.com/535738 is fixed. The failures also vary
+# based on codecs in build config, so just marking failure here instead of
+# specific expected text results.
+crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-implicit.html [ Failure ]
+crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-negative.html [ Failure ]
+crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-codecs-parameter.html [ Failure ]

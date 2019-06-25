@@ -451,11 +451,13 @@ INSTANTIATE_TEST_SUITE_P(
 class AutofillIsUPIVirtualPaymentAddress
     : public testing::TestWithParam<std::string> {};
 
-TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress) {
+TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Banks) {
   // Expected format is user@bank
-  EXPECT_TRUE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam())));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("user.name-1@" + GetParam())));
 
-  // Deviations should not match: bank, @bank, user@prefixbank, user@banksuffix.
+  // Deviations should not match: bank, @bank, user@prefixbank, user@banksuffix,
+  // disallowed symbols.
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam())));
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam() + "@")));
   EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("@" + GetParam())));
@@ -463,6 +465,7 @@ TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress) {
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@invalid" + GetParam())));
   EXPECT_FALSE(
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam() + ".com")));
+  EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("~user@" + GetParam())));
 }
 
 INSTANTIATE_TEST_SUITE_P(UPIVirtualPaymentAddress,
@@ -493,5 +496,16 @@ INSTANTIATE_TEST_SUITE_P(UPIVirtualPaymentAddress,
                                          "united",
                                          "vijb",
                                          "ybl"));
+
+TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Others) {
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("12345@HDFC0000001.ifsc.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("234567890123@aadhaar.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("9800011111@mobile.npci")));
+  EXPECT_TRUE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("1234123412341234@rupay.npci")));
+}
 
 }  // namespace autofill

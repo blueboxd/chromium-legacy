@@ -148,7 +148,7 @@ void CastDialogSinkButton::OverrideStatusText(
     const base::string16& status_text) {
   if (subtitle()) {
     if (!saved_status_text_)
-      saved_status_text_ = subtitle()->text();
+      saved_status_text_ = subtitle()->GetText();
     subtitle()->SetText(status_text);
   }
 }

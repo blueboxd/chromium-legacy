@@ -27,10 +27,6 @@ namespace cors {
 // network configuration is changed.
 class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
  public:
-  struct Metrics {
-    size_t num_entries = 0;
-    size_t memory_pressure_in_bytes = 0;
-  };
   PreflightCache();
   ~PreflightCache();
 
@@ -49,9 +45,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
                                       const net::HttpRequestHeaders& headers,
                                       bool is_revalidating);
 
-  // Reports and gather CORS preflight cache size metric.
-  Metrics ReportAndGatherSizeMetric();
-
   // Counts cached entries for testing.
   size_t CountEntriesForTesting() const;
 
@@ -67,9 +60,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightCache final {
   std::map<std::pair<std::string /* origin */, std::string /* url */>,
            std::unique_ptr<PreflightResult>>
       cache_;
-
-  // Estimated memory pressure of |cache_| in bytes.
-  size_t estimated_memory_pressure_in_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightCache);
 };

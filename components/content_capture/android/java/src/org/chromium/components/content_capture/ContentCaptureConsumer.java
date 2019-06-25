@@ -7,7 +7,8 @@ package org.chromium.components.content_capture;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * This abstract class is for consumer to consume the captured content.
+ * This abstract class is for consumer to consume the captured content. This object is used by
+ * multiple objects and typically released by the last RFH in the WebContents.
  */
 public abstract class ContentCaptureConsumer {
     private ContentCaptureReceiverManager mManager;
@@ -45,18 +46,13 @@ public abstract class ContentCaptureConsumer {
 
     public void onWebContentsChanged(WebContents current) {
         if (!ContentCaptureFeatures.isEnabled()) return;
-        if (mManager != null) mManager.setContentCaptureConsumer(null);
+        // Not reset previous mManager's ContentCaptureConsumer, because it will be used to notify
+        // of the removal of session.
         if (current != null) {
             mManager = ContentCaptureReceiverManager.createOrGet(current);
             mManager.setContentCaptureConsumer(this);
         } else {
             mManager = null;
         }
-    }
-
-    public void destroy() {
-        if (mManager == null) return;
-        mManager.setContentCaptureConsumer(null);
-        mManager = null;
     }
 }

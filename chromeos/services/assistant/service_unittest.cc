@@ -32,7 +32,7 @@ namespace assistant {
 namespace {
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
     base::TimeDelta::FromMilliseconds(1000);
-}
+}  // namespace
 
 class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
  public:
@@ -170,7 +170,6 @@ class AssistantServiceTest : public testing::Test {
 
     service_ = std::make_unique<Service>(
         test_connector_factory_.RegisterInstance(mojom::kServiceName),
-        nullptr /* network_connection_tracker */,
         shared_url_loader_factory_->Clone());
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(

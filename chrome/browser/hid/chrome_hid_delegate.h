@@ -19,11 +19,14 @@ class ChromeHidDelegate : public content::HidDelegate {
       content::RenderFrameHost* frame,
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       content::HidChooser::Callback callback) override;
-  bool CanRequestDevicePermission(content::RenderFrameHost* frame) override;
-  bool HasDevicePermission(content::RenderFrameHost* frame,
+  bool CanRequestDevicePermission(
+      content::WebContents* web_contents,
+      const url::Origin& requesting_origin) override;
+  bool HasDevicePermission(content::WebContents* web_contents,
+                           const url::Origin& requesting_origin,
                            const device::mojom::HidDeviceInfo& device) override;
   device::mojom::HidManager* GetHidManager(
-      content::RenderFrameHost* frame) override;
+      content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeHidDelegate);

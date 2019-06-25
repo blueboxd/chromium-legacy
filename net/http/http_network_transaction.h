@@ -422,8 +422,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Network error details for this transaction.
   NetErrorDetails net_error_details_;
 
-  // Number of retries made for network errors like ERR_SPDY_PING_FAILED,
-  // ERR_SPDY_SERVER_REFUSED_STREAM, ERR_QUIC_HANDSHAKE_FAILED and
+  // Number of retries made for network errors like ERR_HTTP2_PING_FAILED,
+  // ERR_HTTP2_SERVER_REFUSED_STREAM, ERR_QUIC_HANDSHAKE_FAILED and
   // ERR_QUIC_PROTOCOL_ERROR. Currently we stop after 3 tries
   // (including the initial request) and fail the request.
   // This count excludes retries on reused sockets since a well

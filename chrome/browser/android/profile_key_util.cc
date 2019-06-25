@@ -18,7 +18,7 @@ Profile* GetProfile() {
 
 }  // namespace
 
-ProfileKey* GetMainProfileKey() {
+ProfileKey* GetLastUsedProfileKey() {
   ProfileKey* key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
   if (!key)
     key = GetProfile()->GetProfileKey();

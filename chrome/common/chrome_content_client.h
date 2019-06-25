@@ -83,18 +83,15 @@ class ChromeContentClient : public content::ContentClient {
       std::vector<media::CdmHostFilePath>* cdm_host_file_paths) override;
 
   void AddAdditionalSchemes(Schemes* schemes) override;
-  base::string16 GetLocalizedString(int message_id) const override;
-  base::string16 GetLocalizedString(
-      int message_id,
-      const base::string16& replacement) const override;
-  base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) const override;
-  base::RefCountedMemory* GetDataResourceBytes(
-      int resource_id) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
-  gfx::Image& GetNativeImageNamed(int resource_id) const override;
-  base::DictionaryValue GetNetLogConstants() const override;
+  base::string16 GetLocalizedString(int message_id) override;
+  base::string16 GetLocalizedString(int message_id,
+                                    const base::string16& replacement) override;
+  base::StringPiece GetDataResource(int resource_id,
+                                    ui::ScaleFactor scale_factor) override;
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
+  bool IsDataResourceGzipped(int resource_id) override;
+  gfx::Image& GetNativeImageNamed(int resource_id) override;
+  base::DictionaryValue GetNetLogConstants() override;
   std::string GetProcessTypeNameInEnglish(int type) override;
 
   bool AllowScriptExtensionForServiceWorker(

@@ -36,7 +36,10 @@ grit("components_resources") {
   ]
 
   if (is_android && notouch_build) {
-    defines += [ "HIDE_ERROR_MESSAGE_FOR_DINO_PAGE" ]
+    defines += [
+      "HIDE_ERROR_MESSAGE_FOR_DINO_PAGE",
+      "SHOW_INSTRUCTIONS_FOR_DINO_PAGE",
+    ]
   }
 
   deps = [

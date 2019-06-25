@@ -165,13 +165,15 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
   // Don't intercept Ctrl-C if we only use a single message label supporting
   // text selection.
-  if (message_labels_.size() == 1u && message_labels_[0]->selectable())
+  if (message_labels_.size() == 1u && message_labels_[0]->GetSelectable())
     return false;
 
   ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
-  scw.WriteText(std::accumulate(
-      message_labels_.cbegin(), message_labels_.cend(), base::string16(),
-      [](base::string16& left, Label* right) { return left + right->text(); }));
+  scw.WriteText(std::accumulate(message_labels_.cbegin(),
+                                message_labels_.cend(), base::string16(),
+                                [](base::string16& left, Label* right) {
+                                  return left + right->GetText();
+                                }));
   return true;
 }
 

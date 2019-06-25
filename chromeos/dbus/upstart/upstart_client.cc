@@ -10,6 +10,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -35,9 +36,26 @@ UpstartClient* g_instance = nullptr;
 class UpstartClientImpl : public UpstartClient {
  public:
   explicit UpstartClientImpl(dbus::Bus* bus)
-      : bus_(bus), weak_ptr_factory_(this) {}
+      : bus_(bus), weak_ptr_factory_(this) {
+    dbus::ObjectProxy* arc_proxy = bus_->GetObjectProxy(
+        arc::kArcServiceName, dbus::ObjectPath(arc::kArcServicePath));
+    arc_proxy->ConnectToSignal(
+        arc::kArcInterfaceName, arc::kArcStopped,
+        base::Bind(&UpstartClientImpl::ArcStoppedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&UpstartClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 
   ~UpstartClientImpl() override = default;
+
+  void AddObserver(Observer* observer) override {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observers_.RemoveObserver(observer);
+  }
 
   // UpstartClient overrides:
   void StartJob(const std::string& job,
@@ -102,11 +120,25 @@ class UpstartClientImpl : public UpstartClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  // Called when the object is connected to the signal.
+  void SignalConnected(const std::string& interface_name,
+                       const std::string& signal_name,
+                       bool success) {
+    LOG_IF(ERROR, !success) << "Failed to connect to " << signal_name;
+  }
+
+  void ArcStoppedReceived(dbus::Signal* signal) {
+    for (auto& observer : observers_)
+      observer.ArcStopped();
+  }
+
   void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
     std::move(callback).Run(response);
   }
 
   dbus::Bus* bus_ = nullptr;
+
+  base::ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

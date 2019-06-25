@@ -122,10 +122,10 @@ class WebContentsTester {
 
   // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
   // call.
-  virtual const std::string& GetSaveFrameHeaders() const = 0;
+  virtual const std::string& GetSaveFrameHeaders() = 0;
 
   // Returns the suggested file name passed in the SaveFrameWithHeaders call.
-  virtual const base::string16& GetSuggestedFileName() const = 0;
+  virtual const base::string16& GetSuggestedFileName() = 0;
 
   // Returns whether a download request triggered via DownloadImage() is in
   // progress for |url|.

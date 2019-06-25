@@ -506,6 +506,23 @@ Polymer({
     return languageCode == prospectiveUILanguage;
   },
 
+  // <if expr="chromeos">
+  // TODO(hsuregan): Remove when SplitSettings is complete.
+  /**
+   * Incorporates pageVisibility check along with isProspectiveUILanguage_().
+   * @param {string} languageCode The language code identifying a language.
+   * @param {string} prospectiveUILanguage The prospective UI language.
+   * @return {boolean} True if the given language matches the prospective UI
+   *     pref (which may be different from the actual UI language).
+   * @private
+   */
+  shouldShowExplanation_: function(languageCode, prospectiveUILanguage) {
+    return this.pageVisibility &&
+        this.pageVisibility.uiDisplayedInThisLanguage &&
+        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage);
+  },
+  // </if>
+
   /**
    * @param {string} prospectiveUILanguage
    * @return {string}

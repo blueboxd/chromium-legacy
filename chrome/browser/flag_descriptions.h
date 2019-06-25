@@ -1860,6 +1860,9 @@ extern const char kEnableHomeLauncherDescription[];
 extern const char kEnableMyFilesVolumeName[];
 extern const char kEnableMyFilesVolumeDescription[];
 
+extern const char kEnableParentalControlsSettingsName[];
+extern const char kEnableParentalControlsSettingsDescription[];
+
 extern const char kEnablePlayStoreSearchName[];
 extern const char kEnablePlayStoreSearchDescription[];
 

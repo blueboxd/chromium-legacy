@@ -24,7 +24,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/current_locale_view.h"
 #include "ash/system/unified/ime_mode_view.h"
-#include "ash/system/unified/managed_device_view.h"
+#include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -129,7 +129,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           std::make_unique<UnifiedSliderBubbleController>(this)),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
-      managed_device_view_(new ManagedDeviceView(shelf)),
+      managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
       notification_counter_item_(new NotificationCounterView(shelf)),
       quiet_mode_view_(new QuietModeView(shelf)),
       time_view_(new tray::TimeTrayItemView(shelf)) {

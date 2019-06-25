@@ -13,6 +13,8 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
@@ -1336,15 +1338,19 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       const auto credential_id_it = params.find(cbor::Value(static_cast<int>(
           CredentialManagementRequestParamKey::kCredentialID)));
       if (credential_id_it == params.end() ||
-          !credential_id_it->second.is_bytestring()) {
+          !credential_id_it->second.is_map()) {
         return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
       }
-      const std::vector<uint8_t>& credential_id =
-          credential_id_it->second.GetBytestring();
-      if (!base::Contains(mutable_state()->registrations, credential_id)) {
+      auto credential_id = PublicKeyCredentialDescriptor::CreateFromCBORValue(
+          cbor::Value(credential_id_it->second.GetMap()));
+      if (!credential_id) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      if (!base::Contains(mutable_state()->registrations,
+                          credential_id->id())) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
-      mutable_state()->registrations.erase(credential_id);
+      mutable_state()->registrations.erase(credential_id->id());
       *response = {};
       return CtapDeviceResponseCode::kSuccess;
     }
@@ -1394,8 +1400,6 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
   }
 
   // Check for subcommands.
-  using SubCmd = BioEnrollmentSubCommand;
-
   it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
   if (it == request_map.end()) {
@@ -1408,34 +1412,45 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
   }
 
-  // List of enrollments currently on test key.
-  cbor::Value::MapValue id0;
-  id0.emplace(cbor::Value(static_cast<int>(
-                  BioEnrollmentTemplateInfoParam::kTemplateId)),
-              cbor::Value::BinaryValue{0, 0, 0, 1});
-  id0.emplace(cbor::Value(static_cast<int>(
-                  BioEnrollmentTemplateInfoParam::kTemplateFriendlyName)),
-              cbor::Value("Template0001"));
-
-  cbor::Value::ArrayValue enumerated_ids;
-  enumerated_ids.emplace_back(id0);
-
   // Template id from subcommand parameters, if it exists.
-  base::Optional<std::vector<uint8_t>> template_id;
-
+  base::Optional<uint8_t> template_id;
+  base::Optional<std::string> name;
   auto params_it = request_map.find(cbor::Value(
       static_cast<int>(BioEnrollmentRequestKey::kSubCommandParams)));
   if (params_it != request_map.end()) {
     const auto& params = params_it->second.GetMap();
     auto template_it = params.find(cbor::Value(
         static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId)));
-    if (template_it != params.end() && template_it->second.is_bytestring()) {
-      template_id = template_it->second.GetBytestring();
+    if (template_it != params.end()) {
+      if (!template_it->second.is_bytestring()) {
+        NOTREACHED() << "Template ID parameter must be a CBOR bytestring.";
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      // Simplification: for unit tests, enforce one byte template IDs
+      DCHECK_EQ(template_it->second.GetBytestring().size(), 1u);
+      template_id = template_it->second.GetBytestring()[0];
+    }
+    auto name_it = params.find(cbor::Value(
+        static_cast<int>(BioEnrollmentSubCommandParam::kTemplateFriendlyName)));
+    if (name_it != params.end()) {
+      if (!name_it->second.is_string()) {
+        NOTREACHED() << "Name parameter must be a CBOR string.";
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      name = name_it->second.GetString();
     }
   }
 
-  switch (it->second.GetUnsigned()) {
-    case static_cast<int>(SubCmd::kGetFingerprintSensorInfo):
+  auto cmd =
+      ToBioEnrollmentEnum<BioEnrollmentSubCommand>(it->second.GetUnsigned());
+  if (!cmd) {
+    // Invalid command is unsupported.
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  using SubCmd = BioEnrollmentSubCommand;
+  switch (*cmd) {
+    case SubCmd::kGetFingerprintSensorInfo:
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kModality),
           static_cast<int>(BioEnrollmentModality::kFingerprint));
@@ -1445,37 +1460,105 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
       response_map.emplace(
           static_cast<int>(
               BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
-          7);
+          config_.bio_enrollment_samples_required);
       break;
-    case static_cast<int>(SubCmd::kEnrollBegin):
+    case SubCmd::kEnrollBegin:
+      if (mutable_state()->bio_templates.size() ==
+          config_.bio_enrollment_capacity) {
+        return CtapDeviceResponseCode::kCtap2ErrKeyStoreFull;
+      }
+      mutable_state()->bio_current_template_id = 0;
+      while (mutable_state()->bio_templates.find(
+                 ++(*mutable_state()->bio_current_template_id)) !=
+             mutable_state()->bio_templates.end()) {
+        // Check for integer overflow (indicates full)
+        DCHECK(*mutable_state()->bio_current_template_id < 255);
+      }
+      mutable_state()->bio_remaining_samples =
+          config_.bio_enrollment_samples_required;
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kTemplateId),
-          std::vector<uint8_t>{0, 0, 0, 1});
+          std::vector<uint8_t>{*mutable_state()->bio_current_template_id});
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
           static_cast<int>(BioEnrollmentSampleStatus::kGood));
       response_map.emplace(
-          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 1);
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+          --mutable_state()->bio_remaining_samples);
       break;
-    case static_cast<int>(SubCmd::kEnrollCaptureNextSample):
+    case SubCmd::kEnrollCaptureNextSample:
+      if (!mutable_state()->bio_current_template_id ||
+          mutable_state()->bio_current_template_id != *template_id) {
+        NOTREACHED() << "Invalid current enrollment or template id parameter.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
           static_cast<int>(BioEnrollmentSampleStatus::kGood));
       response_map.emplace(
-          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples), 0);
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+          --mutable_state()->bio_remaining_samples);
+
+      if (mutable_state()->bio_remaining_samples == 0) {
+        mutable_state()
+            ->bio_templates[*mutable_state()->bio_current_template_id] =
+            base::StrCat(
+                {"Template", base::NumberToString(
+                                 *mutable_state()->bio_current_template_id)});
+        mutable_state()->bio_current_template_id = base::nullopt;
+      }
       break;
-    case static_cast<int>(SubCmd::kEnumerateEnrollments):
-      response_map.emplace(
-          static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos),
-          enumerated_ids);
-      break;
-    case static_cast<int>(SubCmd::kSetFriendlyName):
-    case static_cast<int>(SubCmd::kRemoveEnrollment):
-      if (template_id && *template_id == std::vector<uint8_t>{0, 0, 0, 2}) {
+    case SubCmd::kEnumerateEnrollments: {
+      if (mutable_state()->bio_templates.empty()) {
         return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
       }
-      [[fallthrough]];
-    case static_cast<int>(SubCmd::kCancelCurrentEnrollment):
+      cbor::Value::ArrayValue template_infos;
+      for (const auto& enroll : mutable_state()->bio_templates) {
+        cbor::Value::MapValue template_info;
+        template_info.emplace(cbor::Value(static_cast<int>(
+                                  BioEnrollmentTemplateInfoParam::kTemplateId)),
+                              std::vector<uint8_t>{enroll.first});
+        template_info.emplace(
+            cbor::Value(static_cast<int>(
+                BioEnrollmentTemplateInfoParam::kTemplateFriendlyName)),
+            cbor::Value(enroll.second));
+        template_infos.emplace_back(std::move(template_info));
+      }
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos),
+          std::move(template_infos));
+      break;
+    }
+    case SubCmd::kSetFriendlyName:
+      if (!template_id || !name) {
+        NOTREACHED() << "Could not parse template_id or name from parameters.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
+
+      // Template ID from parameter does not exist, cannot rename.
+      if (mutable_state()->bio_templates.find(*template_id) ==
+          mutable_state()->bio_templates.end()) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+
+      mutable_state()->bio_templates[*template_id] = *name;
+      return CtapDeviceResponseCode::kSuccess;
+    case SubCmd::kRemoveEnrollment:
+      if (!template_id) {
+        NOTREACHED() << "Could not parse template_id or name from parameters.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
+
+      // Template ID from parameter does not exist, cannot remove.
+      if (mutable_state()->bio_templates.find(*template_id) ==
+          mutable_state()->bio_templates.end()) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+
+      mutable_state()->bio_templates.erase(*template_id);
+      return CtapDeviceResponseCode::kSuccess;
+    case SubCmd::kCancelCurrentEnrollment:
+      mutable_state()->bio_current_template_id = base::nullopt;
       return CtapDeviceResponseCode::kSuccess;
     default:
       // Handle all other commands as if they were unsupported (will change

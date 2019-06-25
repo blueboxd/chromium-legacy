@@ -102,6 +102,7 @@ component("lib") {
       "//chromeos/assistant/internal/proto/google3",
       "//chromeos/dbus",
       "//chromeos/resources",
+      "//chromeos/services/network_config/public/mojom",
       "//chromeos/strings",
       "//libassistant/shared/internal_api:fuchsia_api_helper",
       "//libassistant/shared/internal_api/c:api_wrappers_entrypoint",
@@ -151,12 +152,14 @@ source_set("tests") {
   if (enable_cros_libassistant) {
     sources += [
       "platform/audio_output_provider_impl_unittest.cc",
+      "platform/network_provider_impl_unittest.cc",
       "platform/power_manager_provider_impl_unittest.cc",
       "platform/system_provider_impl_unittest.cc",
     ]
 
     deps += [
       "//chromeos/dbus",
+      "//chromeos/services/network_config/public/mojom",
       "//libassistant/shared/public",
       "//services/device/public/cpp:test_support",
     ]

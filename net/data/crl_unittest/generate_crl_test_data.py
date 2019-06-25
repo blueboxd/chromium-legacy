@@ -64,25 +64,31 @@ def Ascii2OpensslDer(txt):
   return 'DER:' + ''.join(['%02X' % ord(b) for b in der])
 
 
-def CreateCert(name, signer, pkey=None, crl_dp=None, key_usage=None):
+def CreateCert(name, signer, pkey=None, crl_dp=None, key_usage=None,
+               is_ca=True, version=2):
   global NEXT_SERIAL
   if pkey is None:
     pkey = crypto.PKey()
     pkey.generate_key(crypto.TYPE_RSA, 1024)
   cert = crypto.X509()
-  cert.set_version(2)
+  cert.set_version(version)
   cert.get_subject().CN = name
   cert.set_pubkey(pkey)
   cert.set_serial_number(NEXT_SERIAL)
   NEXT_SERIAL += 1
   cert.set_notBefore(CERT_DATE.strftime('%Y%m%d%H%M%SZ'))
   cert.set_notAfter(CERT_EXPIRE.strftime('%Y%m%d%H%M%SZ'))
-  if crl_dp:
-    cert.add_extensions(
-        [crypto.X509Extension('crlDistributionPoints', False, crl_dp)])
-  if key_usage:
-    cert.add_extensions(
-        [crypto.X509Extension('keyUsage', False, key_usage)])
+  if version == 2:
+    if crl_dp:
+      cert.add_extensions(
+          [crypto.X509Extension('crlDistributionPoints', False, crl_dp)])
+    if key_usage:
+      cert.add_extensions(
+          [crypto.X509Extension('keyUsage', False, key_usage)])
+    if is_ca is not None:
+      cert.add_extensions(
+          [crypto.X509Extension('basicConstraints', True,
+                                'CA:%s' % ('TRUE' if is_ca else 'FALSE'))])
   if signer:
     cert.set_issuer(signer['cert'].get_subject())
     cert.sign(signer['pkey'], 'sha256')
@@ -113,14 +119,20 @@ OTHER_CA = CreateCert('Test Other Intermediate CA', ROOT_CA)
 
 # The target cert, with a simple crlDistributionPoints pointing to an arbitrary
 # URL, other crlDistributionPoints fields not set.
-LEAF = CreateCert('Test Cert', CA, crl_dp='URI:http://example.com/foo.crl')
+LEAF = CreateCert('Test Cert', CA, crl_dp='URI:http://example.com/foo.crl', is_ca=False)
+
+# The target cert, with no basicConstraints.
+LEAF_NO_BASIC_CONSTRAINTS = CreateCert('Test Cert', CA, crl_dp='URI:http://example.com/foo.crl', is_ca=None)
 
 # The target cert, no crlDistributionPoints.
-LEAF_NO_CRLDP = CreateCert('Test Cert', CA)
+LEAF_NO_CRLDP = CreateCert('Test Cert', CA, is_ca=False)
+
+# V1 target cert
+LEAF_V1 = CreateCert('Test Cert', CA, version=0, is_ca=None)
 
 # The target cert, crlDistributionPoints with crlIssuer and
 # crlDistributionPoints set.
-LEAF_CRLDP_CRLISSUER = CreateCert('Test Cert', CA,
+LEAF_CRLDP_CRLISSUER = CreateCert('Test Cert', CA, is_ca=False,
     # It doesn't seem like you can set crlIssuers through the one-line openssl
     # interface, so just do it manually.
     crl_dp=Ascii2OpensslDer('''
@@ -150,7 +162,8 @@ LEAF_CRLDP_CRLISSUER = CreateCert('Test Cert', CA,
 
 # Self-issued intermediate with a new key signed by the |CA| key.
 CA_NEW_BY_OLD = CreateCert('Test Intermediate CA', CA,
-                           key_usage='critical, keyCertSign, cRLSign')
+                           key_usage='critical, keyCertSign, cRLSign',
+                           crl_dp='URI:http://example.com/foo.crl')
 
 # Target cert signed by |CA_NEW_BY_OLD|'s key.
 LEAF_BY_NEW = CreateCert(
@@ -406,6 +419,63 @@ crl_strings = {
      }
   ''',
 
+  'issuingDistributionPoint_with_onlyContainsUserCerts': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [1 PRIMITIVE] { `ff` }
+         }
+       }
+     }
+  ''',
+
+  'issuingDistributionPoint_with_uri_and_onlyContainsUserCerts': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [0] {
+             [0] {
+               [6 PRIMITIVE] { "http://example.com/foo.crl" }
+             }
+           }
+           [1 PRIMITIVE] { `ff` }
+         }
+       }
+     }
+  ''',
+
+  'issuingDistributionPoint_with_uri_and_onlyContainsCACerts': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [0] {
+             [0] {
+               [6 PRIMITIVE] { "http://example.com/foo.crl" }
+             }
+           }
+           [2 PRIMITIVE] { `ff` }
+         }
+       }
+     }
+  ''',
+
+  'issuingDistributionPoint_with_onlyContainsCACerts': '''
+     SEQUENCE {
+       OBJECT_IDENTIFIER { 2.5.29.28 }
+       BOOLEAN { `ff` }
+       OCTET_STRING {
+         SEQUENCE {
+           [2 PRIMITIVE] { `ff` }
+         }
+       }
+     }
+  ''',
 }
 
 
@@ -569,8 +639,110 @@ Store(
 
 
 Store(
+    'good_idp_onlycontainsusercerts',
+    'Leaf covered by CRLs and not revoked, CRL has IDP with '
+    'onlyContainsUserCerts',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsUserCerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'good_idp_onlycontainsusercerts_no_basic_constraints',
+    'Leaf covered by CRLs and not revoked, CRL has IDP with '
+    'onlyContainsUserCerts, leaf has no basicConstraints',
+    LEAF_NO_BASIC_CONSTRAINTS, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsUserCerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'good_idp_onlycontainscacerts',
+    'CA_NEW_BY_OLD covered by CRLs and not revoked, CRL has IDP with '
+    'onlyContainsCaCerts',
+    CA_NEW_BY_OLD, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsCACerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'good_idp_uri_and_onlycontainsusercerts',
+    'Leaf covered by CRLs and not revoked, CRL has IDP with URI and '
+    'onlyContainsUserCerts',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_uri_and_onlyContainsUserCerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'good_idp_uri_and_onlycontainscacerts',
+    'CA_NEW_BY_OLD covered by CRLs and not revoked, CRL has IDP with URI and '
+    'onlyContainsCACerts',
+    CA_NEW_BY_OLD, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_uri_and_onlyContainsCACerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
     'good_no_crldp',
-    'Leaf covered by CRLs and not revoked, leaf has no crlDistributionPoints',
+    'Leaf covered by CRLs and not revoked and has no crlDistributionPoints.\n'
+    'This tests the case where CheckCRL is called with a synthesized '
+    'distributionPoint.',
     LEAF_NO_CRLDP, CA,
     SignAsciiCRL('''
   INTEGER { 1 }
@@ -865,6 +1037,105 @@ Store(
   [0] {
     SEQUENCE {
       %(issuingDistributionPoint_with_indirectCRL)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_onlycontainscacerts',
+    'Leaf not covered by CRLs because IDP has onlyContainsCACerts',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsCACerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_onlycontainscacerts_no_basic_constraints',
+    'Leaf not covered by CRLs because IDP has onlyContainsCACerts, '
+    'leaf has no basicConstraints',
+    LEAF_NO_BASIC_CONSTRAINTS, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsCACerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_onlycontainsusercerts',
+    'CA_NEW_BY_OLD not covered by CRLs because IDP has '
+    'onlyContainsUserCerts',
+    CA_NEW_BY_OLD, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsUserCerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_uri_and_onlycontainsusercerts',
+    'CA_NEW_BY_OLD not covered by CRLs because IDP has '
+    'onlyContainsUserCerts (and URI, but the URI matches)',
+    CA_NEW_BY_OLD, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_uri_and_onlyContainsUserCerts)s
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'bad_idp_uri_and_onlycontainscacerts',
+    'Leaf not covered by CRLs because IDP has '
+    'onlyContainsCACerts (and URI, but the URI matches)',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_uri_and_onlyContainsCACerts)s
     }
   }
 ''' % crl_strings))
@@ -1401,6 +1672,54 @@ Store(
           }
         }
       }
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'invalid_idp_onlycontains_user_and_ca_certs',
+    'IssuingDistributionPoint extension is invalid, cannot specify more than '
+    'one of onlyContainsUserCerts and onlyContainsCACerts',
+    LEAF, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      SEQUENCE {
+        OBJECT_IDENTIFIER { 2.5.29.28 }
+        BOOLEAN { `ff` }
+        OCTET_STRING {
+          SEQUENCE {
+           [1 PRIMITIVE] { `ff` }
+           [2 PRIMITIVE] { `ff` }
+          }
+        }
+      }
+    }
+  }
+''' % crl_strings))
+
+
+Store(
+    'invalid_idp_onlycontainsusercerts_v1_leaf',
+    'v1 leaf is covered by CRL with onlyContainsUserCerts, which is invalid',
+    LEAF_V1, CA,
+    SignAsciiCRL('''
+  INTEGER { 1 }
+  %(sha256WithRSAEncryption)s
+  %(CA_name)s
+  %(thisUpdate)s
+  %(nextUpdate)s
+  # no revoked certs list
+  [0] {
+    SEQUENCE {
+      %(issuingDistributionPoint_with_onlyContainsUserCerts)s
     }
   }
 ''' % crl_strings))

@@ -42,7 +42,7 @@ bool ShillErrorIsIgnored(const std::string& shill_error) {
   return false;
 }
 
-// Error messages based on |error_name|, not network_state->error().
+// Error messages based on |error_name|, not network_state->GetError().
 base::string16 GetConnectErrorString(const std::string& error_name) {
   if (error_name == NetworkConnectionHandler::kErrorNotFound)
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
@@ -420,9 +420,9 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
       // a failsafe since more information is better than less when debugging
       // and we have encountered some strange edge cases before.
       NET_LOG(DEBUG) << "Notify: " << service_path
-                     << ": Network.last_error: " << network->last_error();
+                     << ": Network.GetError(): " << network->GetError();
       if (shill_error.empty())
-        shill_error = network->last_error();
+        shill_error = network->GetError();
     }
 
     if (ShillErrorIsIgnored(shill_error)) {
@@ -496,7 +496,7 @@ void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   const NetworkState* network = GetNetworkStateForGuid(network_id);
   if (!network)
     return;
-  std::string error = network->error();
+  std::string error = network->GetError();
   if (!error.empty()) {
     NET_LOG(ERROR) << "Notify ShowNetworkSettings: " << network_id
                    << ": Error: " << error;

@@ -352,7 +352,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     // the "inherit", "initial" and "unset" values must be ignored.
     const CSSValue* font_value =
         style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
-    if (font_value && font_value->IsCSSWideKeyword())
+    if (!font_value || font_value->IsCSSWideKeyword())
       return;
 
     FontDescription desc =

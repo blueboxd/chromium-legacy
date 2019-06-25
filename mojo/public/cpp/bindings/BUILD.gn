@@ -127,6 +127,8 @@ component("bindings") {
     "connection_error_callback.h",
     "connector.h",
     "filter_chain.h",
+    "generic_pending_receiver.cc",
+    "generic_pending_receiver.h",
     "interface_endpoint_client.h",
     "interface_endpoint_controller.h",
     "interface_ptr.h",

@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Test utilities for JavaScript tests of the local NTP.
  */
-
 
 /**
  * Object for individual "module" objects, that then contain tests.
  */
 var test = {};
-
 
 /**
  * Shortcut for document.getElementById.
@@ -22,7 +19,6 @@ var test = {};
 function $(id) {
   return document.getElementById(id);
 }
-
 
 /**
  * Sets up the page for the next test case. Recreates a part of
@@ -38,7 +34,6 @@ function setUpPage(templateId) {
   document.body.appendChild($(templateId).content.cloneNode(true));
 }
 
-
 /**
  * Aborts a test if a condition is not met.
  * @param {boolean} condition The condition that must be true.
@@ -49,7 +44,6 @@ function assert(condition, opt_message) {
     throw new Error(opt_message || 'Assertion failed');
   }
 }
-
 
 /**
  * Aborts a test if |got| !== true.
@@ -62,7 +56,6 @@ function assertTrue(got, opt_message) {
   }
 }
 
-
 /**
  * Aborts a test if |got| !== false.
  * @param {boolean} got The boolean that must be false.
@@ -73,7 +66,6 @@ function assertFalse(got, opt_message) {
     throw new Error(opt_message || `Expected: 'false', got: 'true'`);
   }
 }
-
 
 /**
  * Aborts a test if |expected| !== |got|.
@@ -87,7 +79,6 @@ function assertEquals(expected, got, opt_message) {
     throw new Error(opt_message || `Expected: '${expected}', got: '${got}'`);
   }
 }
-
 
 /**
  * Aborts a test if the |throws| function does not throw an error,
@@ -108,7 +99,6 @@ function assertThrows(expected, throws, opt_message) {
   }
   throw new Error(opt_message || 'Got no error.');
 }
-
 
 /**
  * Calls |runTest()| on all simple tests within the |test[moduleName]| object
@@ -141,7 +131,6 @@ function runSimpleTests(moduleName) {
   window.console.log(`Passed tests: ${passedTests}/${totalTests}`);
   return passedTests == totalTests;
 }
-
 
 /**
  * Sets up the environment using the |testModule.setUp()| function
@@ -177,7 +166,6 @@ function runTest(testModule, testName) {
   return true;
 }
 
-
 /**
  * Checks whether a given HTMLElement exists and is visible.
  * @param {HTMLElement|undefined} elem An HTMLElement.
@@ -188,7 +176,6 @@ function elementIsVisible(elem) {
       window.getComputedStyle(elem).visibility != 'hidden' &&
       window.getComputedStyle(elem).opacity > 0;
 }
-
 
 /**
  * Creates and initializes a LocalNTP object.
@@ -205,10 +192,8 @@ function initLocalNTP(isGooglePage, removeFakebox = false) {
   return localNTP;
 }
 
-
 // ***************************** HELPER CLASSES *****************************
 // Helper classes used for mocking in tests.
-
 
 /**
  * A property replacer utility class. Useful for substituting real functions
@@ -224,7 +209,6 @@ function Replacer() {
    */
   this.old_ = {};
 }
-
 
 /**
  * Replaces the property |propertyName| of the object |parent| with the
@@ -245,7 +229,6 @@ Replacer.prototype.replace = function(parent, propertyName, newValue) {
   parent[propertyName] = newValue;
 };
 
-
 /**
  * Resets every property that was overriden by |replace()| to its original
  * value.
@@ -256,7 +239,6 @@ Replacer.prototype.reset = function() {
   });
   this.old_ = {};
 };
-
 
 /**
  * Utility for testing code that uses |setTimeout()| and |clearTimeout()|.
@@ -269,26 +251,22 @@ function MockClock() {
    */
   this.time = 0;
 
-
   /**
    * Records the timeouts that have been set and not yet executed, as an array
    * of {callback, activationTime, id} objects, ordered by activationTime.
    */
   this.pendingTimeouts = [];
 
-
   /**
    * An internal counter for assigning timeout ids.
    */
   this.nextTimeoutId_ = 1;
-
 
   /**
    * Property replacer, used for replacing |setTimeout()| and |clearTimeout()|.
    */
   this.stubs_ = new Replacer();
 }
-
 
 /**
  * Sets the current time that sbox.getTime returns.
@@ -299,7 +277,6 @@ MockClock.prototype.setTime = function(msec) {
   this.time = msec;
 };
 
-
 /**
  * Advances the current time by the specified number of milliseconds.
  * @param {!number} msec The length of time to advance the current time by.
@@ -308,7 +285,6 @@ MockClock.prototype.advanceTime = function(msec) {
   assert(msec >= 0);
   this.time += msec;
 };
-
 
 /**
  * Restores the |setTimeout()| and |clearTimeout()| functions back to their
@@ -321,7 +297,6 @@ MockClock.prototype.reset = function() {
   this.stubs_.reset();
 };
 
-
 /**
  * Checks whether a timeout with this id has been set.
  * @param {!number} id The timeout id.
@@ -332,7 +307,6 @@ MockClock.prototype.isTimeoutSet = function(id) {
   return 0 < id && id <= this.nextTimeoutId_ &&
       this.pendingTimeouts.map(t => t.id).includes(id);
 };
-
 
 /**
  * Substitutes the global |setTimeout()| and |clearTimeout()| functions

@@ -493,7 +493,7 @@ public class CompositorViewHolder extends FrameLayout
             mInsetObserverView = null;
         }
         if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer.onWebContentsChanged(null);
             mContentCaptureConsumer = null;
         }
     }

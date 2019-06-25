@@ -494,7 +494,6 @@ check_targets = [
   "//third_party/logilab/*",
   "//third_party/lss/*",
   "//third_party/lzma_sdk/*",
-  "//third_party/mach_override/*",
   "//third_party/markdown/*",
   "//third_party/markupsafe/*",
   "//third_party/material_design_icons/*",

@@ -81,7 +81,7 @@ bool RequestPinView::Accept() {
   error_label_->SetVisible(true);
   error_label_->SetText(
       l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PROCESSING));
-  error_label_->SetTooltipText(error_label_->text());
+  error_label_->SetTooltipText(error_label_->GetText());
   error_label_->SetEnabledColor(SK_ColorGRAY);
   error_label_->SizeToPreferredSize();
   // The |textfield_| and OK button become disabled, but the user still can

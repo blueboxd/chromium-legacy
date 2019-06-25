@@ -22,6 +22,14 @@ if ((enable_basic_printing && is_win) || enable_print_preview) {
              "set enable_pdf=true.")
 }
 
+# Several targets want to include this header file. We separate it out
+# here so multiple targets can depend on it.
+source_set("printing_export") {
+  sources = [
+    "printing_export.h",
+  ]
+}
+
 component("printing") {
   sources = [
     "backend/print_backend.cc",
@@ -67,9 +75,6 @@ component("printing") {
     "printed_document_win.cc",
     "printing_context.cc",
     "printing_context.h",
-    "printing_export.h",
-    "printing_features.cc",
-    "printing_features.h",
     "printing_utils.cc",
     "printing_utils.h",
     "pwg_raster_settings.h",
@@ -84,6 +89,7 @@ component("printing") {
     "//printing/buildflags",
   ]
   deps = [
+    ":printing_export",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",

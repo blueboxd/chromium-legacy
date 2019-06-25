@@ -1,9 +1,10 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
 # tags: [ debug ]
-# tags: [ intel nvidia qualcomm-adreno-(tm)-418 ]
+# tags: [ intel nvidia qualcomm-adreno-(tm)-418 nvidia-0x1cb3]
 
  # TODO(kbr): flakily timing out on this configuration.
 crbug.com/648369 [ linux debug intel ] TraceTest_* [ RetryOnFailure ]
+crbug.com/978516 [ win10 nvidia-0x1cb3 ] TraceTest_* [ RetryOnFailure ]
 
 # Device traces are not supported on all machines.
 DeviceTraceTest_* [ Skip ]

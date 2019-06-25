@@ -372,7 +372,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
             {
                 // Add item 1 with icon.
@@ -406,7 +406,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
             {
                 // Add item 1 to no icon.
@@ -440,7 +440,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
             {
                 // Update item 1 with icon.
@@ -581,7 +581,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
         selectItem(dialog, 1, "key1", true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             Assert.assertEquals("key1", itemAdapter.getSelectedItemKey());
             mChooserDialog.setEnabled("key1", false);
             // The selected item is disabled, so no item is selected.
@@ -665,7 +665,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         selectItem(dialog, 2, "key2", true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final Button button = (Button) dialog.findViewById(R.id.positive);
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
             Assert.assertTrue(button.isEnabled());
 
@@ -699,7 +699,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         selectItem(dialog, 2, "key2", true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Button button = (Button) dialog.findViewById(R.id.positive);
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             Assert.assertTrue(button.isEnabled());
 
             // Remove the selected item.
@@ -723,7 +723,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             final ListView items = (ListView) dialog.findViewById(R.id.items);
             final Button button = (Button) dialog.findViewById(R.id.positive);
 
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             final String nonExistentKey = "key";
 
             // Initially the itemAdapter is empty.
@@ -775,7 +775,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             final ListView items = (ListView) dialog.findViewById(R.id.items);
             final Button button = (Button) dialog.findViewById(R.id.positive);
 
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
             final String nonExistentKey = "key";
 
             // Initially the itemAdapter is empty.
@@ -842,7 +842,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             Dialog dialog = mChooserDialog.getDialogForTesting();
             Assert.assertTrue(dialog.isShowing());
 
-            ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+            DeviceItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
             // Add item 1.
             mChooserDialog.addOrUpdateItem("key1", "desc1");

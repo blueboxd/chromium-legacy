@@ -28,7 +28,7 @@ class NativeFileSystemPermissionGrant
  public:
   using PermissionStatus = blink::mojom::PermissionStatus;
 
-  virtual PermissionStatus GetStatus() const = 0;
+  virtual PermissionStatus GetStatus() = 0;
 
   // Call this method to request permission for this grant. The |callback|
   // should be called after the status of this grant has been updated with

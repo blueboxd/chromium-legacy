@@ -1393,7 +1393,7 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyed(NO_WARN)) return;
 
         if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer.onWebContentsChanged(null);
             mContentCaptureConsumer = null;
         }
 

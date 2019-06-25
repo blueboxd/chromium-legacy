@@ -914,12 +914,12 @@ NavigationSimulatorImpl::GetLastThrottleCheckResult() {
   return last_throttle_check_result_.value();
 }
 
-NavigationHandleImpl* NavigationSimulatorImpl::GetNavigationHandle() const {
+NavigationHandleImpl* NavigationSimulatorImpl::GetNavigationHandle() {
   CHECK_GE(state_, STARTED);
   return request_->navigation_handle();
 }
 
-content::GlobalRequestID NavigationSimulatorImpl::GetGlobalRequestID() const {
+content::GlobalRequestID NavigationSimulatorImpl::GetGlobalRequestID() {
   CHECK_GT(state_, STARTED) << "The GlobalRequestID is not available until "
                                "after the navigation has completed "
                                "WillProcessResponse";

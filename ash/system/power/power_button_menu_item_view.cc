@@ -63,7 +63,7 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   title_->SetText(title_text);
   AddChildView(title_);
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
-  GetViewAccessibility().OverrideName(title_->text());
+  GetViewAccessibility().OverrideName(title_->GetText());
 
   SetBorder(views::CreateEmptyBorder(kItemBorderThickness, kItemBorderThickness,
                                      kItemBorderThickness,

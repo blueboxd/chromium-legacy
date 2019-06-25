@@ -69,6 +69,25 @@ ScriptPromise PeriodicSyncManager::getTags(ScriptState* script_state) {
   return promise;
 }
 
+ScriptPromise PeriodicSyncManager::unregister(ScriptState* script_state,
+                                              const String& tag) {
+  if (!registration_->active()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Unregister failed - no active Service Worker"));
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  GetBackgroundSyncServicePtr()->Unregister(
+      registration_->RegistrationId(), tag,
+      WTF::Bind(&PeriodicSyncManager::UnregisterCallback, WrapPersistent(this),
+                WrapPersistent(resolver)));
+  return promise;
+}
+
 const mojom::blink::PeriodicBackgroundSyncServicePtr&
 PeriodicSyncManager::GetBackgroundSyncServicePtr() {
   if (!background_sync_service_.get()) {
@@ -91,8 +110,7 @@ void PeriodicSyncManager::RegisterCallback(
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kUnknownError,
-          "Periodic Background Sync is disabled."));
+          DOMExceptionCode::kUnknownError, "Unknown error."));
       break;
     case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -132,12 +150,34 @@ void PeriodicSyncManager::GetRegistrationsCallback(
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kUnknownError,
-          "Periodic Background Sync is disabled."));
+          DOMExceptionCode::kUnknownError, "Unknown error."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kUnknownError, "No service worker is active."));
+      break;
+  }
+}
+
+void PeriodicSyncManager::UnregisterCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundSyncError error) {
+  switch (error) {
+    case mojom::blink::BackgroundSyncError::NONE:
+      resolver->Resolve();
+      break;
+    case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kUnknownError, "No service worker is active."));
+      break;
+    case mojom::blink::BackgroundSyncError::STORAGE:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kUnknownError, "Unknown error."));
+      break;
+    case mojom::blink::BackgroundSyncError::NOT_FOUND:
+    case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
+    case mojom::BackgroundSyncError::PERMISSION_DENIED:
+      NOTREACHED();
       break;
   }
 }

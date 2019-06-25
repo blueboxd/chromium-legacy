@@ -699,17 +699,21 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_live_journal) {
 
   s = transaction->Commit();
   if (!s.ok()) {
+    indexed_db::ReportOpenStatus(
+        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_METADATA_SETUP,
+        origin_);
     INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
     return s;
   }
 
-  if (clean_live_journal)
+  if (clean_live_journal) {
     s = CleanUpBlobJournal(LiveBlobJournalKey::Encode());
-  if (!s.ok()) {
-    indexed_db::ReportOpenStatus(
-        indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_CLEANUP_JOURNAL_ERROR,
-        origin_);
-    return s;
+    if (!s.ok()) {
+      indexed_db::ReportOpenStatus(
+          indexed_db::
+              INDEXED_DB_BACKING_STORE_OPEN_FAILED_CLEANUP_JOURNAL_ERROR,
+          origin_);
+    }
   }
 #if DCHECK_IS_ON()
   initialized_ = true;

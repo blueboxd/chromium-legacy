@@ -1,9 +1,6 @@
 # TODO(crbug.com/977736): Enable this.
 -ActiveDirectoryWebUILoginTest.PasswordChange_ReopenClearErrors
 
-# TODO(crbug.com/977737): Enable this.
--AppListClientImplBrowserTest.OpenSearchResult
-
 # TODO(crbug.com/977738): Enable this.
 -ChromePluginTest.InstalledPlugins
 

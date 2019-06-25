@@ -97,9 +97,9 @@ TEST_F(ParentAccessViewTest, UnlockTimeLimitsStrings) {
   StartView(ParentAccessRequestReason::kUnlockTimeLimits);
   ParentAccessView::TestApi test_api(view_);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE),
-            test_api.title_label()->text());
+            test_api.title_label()->GetText());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION),
-            test_api.description_label()->text());
+            test_api.description_label()->GetText());
 }
 
 // Tests that title and description are correctly set when reason is change
@@ -109,10 +109,10 @@ TEST_F(ParentAccessViewTest, ChangeTimeStrings) {
   ParentAccessView::TestApi test_api(view_);
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME),
-      test_api.title_label()->text());
+      test_api.title_label()->GetText());
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION),
-            test_api.description_label()->text());
+            test_api.description_label()->GetText());
 }
 
 // Tests that back button works.

@@ -577,19 +577,19 @@ PaymentRequestBrowserTestBase::GetProfileLabelValues(
   views::View* view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
 
   return line_labels;
 }
@@ -605,11 +605,11 @@ PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
   views::View* view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
   DCHECK(view);
-  labels.push_back(static_cast<views::Label*>(view)->text());
+  labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
   DCHECK(view);
-  labels.push_back(static_cast<views::Label*>(view)->text());
+  labels.push_back(static_cast<views::Label*>(view)->GetText());
   return labels;
 }
 
@@ -792,7 +792,7 @@ const base::string16& PaymentRequestBrowserTestBase::GetLabelText(
     DialogViewID view_id) {
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  return static_cast<views::Label*>(view)->text();
+  return static_cast<views::Label*>(view)->GetText();
 }
 
 const base::string16& PaymentRequestBrowserTestBase::GetStyledLabelText(
@@ -807,7 +807,7 @@ const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(
   views::View* view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) + type);
   DCHECK(view);
-  return static_cast<views::Label*>(view)->text();
+  return static_cast<views::Label*>(view)->GetText();
 }
 
 void PaymentRequestBrowserTestBase::SetCanMakePaymentEnabledPref(

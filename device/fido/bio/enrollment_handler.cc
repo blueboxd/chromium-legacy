@@ -245,8 +245,8 @@ void BioEnrollmentHandler::OnEnumerateTemplates(
     std::move(callback).Run(code, base::nullopt);
     return;
   }
-  if (!response || !response->enumerated_ids) {
-    // Response must have enumerated_ids.
+  if (!response || !response->template_infos) {
+    // Response must have template_infos.
     std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                             base::nullopt);
     return;

@@ -690,17 +690,23 @@ public class OfflinePageUtils {
      * @param tab The tab to be reloaded.
      */
     public static void reload(Tab tab) {
+        // Only the transition type with both RELOAD and FROM_ADDRESS_BAR set will force the
+        // navigation to be treated as reload (see ShouldTreatNavigationAsReload()). Without this,
+        // reloading an URL containing a hash will be treated as same document load and thus
+        // no loading is triggered.
+        int transitionTypeForReload = PageTransition.RELOAD | PageTransition.FROM_ADDRESS_BAR;
+
         OfflinePageItem offlinePage = getOfflinePage(tab);
         if (isShowingTrustedOfflinePage(tab) || offlinePage == null) {
             // If current page is an offline page, reload it with custom behavior defined in extra
             // header respected.
-            LoadUrlParams params = new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
+            LoadUrlParams params = new LoadUrlParams(tab.getOriginalUrl(), transitionTypeForReload);
             params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
             tab.loadUrl(params);
             return;
         }
 
-        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), PageTransition.RELOAD);
+        LoadUrlParams params = new LoadUrlParams(offlinePage.getUrl(), transitionTypeForReload);
         tab.loadUrl(params);
     }
 

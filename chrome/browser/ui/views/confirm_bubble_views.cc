@@ -40,7 +40,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 
   // Add the message label.
   auto label = std::make_unique<views::Label>(model_->GetMessageText());
-  DCHECK(!label->text().empty());
+  DCHECK(!label->GetText().empty());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SizeToFit(kMaxMessageWidth);

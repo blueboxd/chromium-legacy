@@ -14,7 +14,7 @@ FixedNativeFileSystemPermissionGrant::~FixedNativeFileSystemPermissionGrant() =
     default;
 
 FixedNativeFileSystemPermissionGrant::PermissionStatus
-FixedNativeFileSystemPermissionGrant::GetStatus() const {
+FixedNativeFileSystemPermissionGrant::GetStatus() {
   return status_;
 }
 

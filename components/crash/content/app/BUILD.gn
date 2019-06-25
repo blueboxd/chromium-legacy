@@ -5,6 +5,8 @@
 # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
 assert(!is_ios && !is_fuchsia)
 
+import("//components/gwp_asan/buildflags/buildflags.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -131,12 +133,16 @@ if (is_win) {
     deps = [
       "//base",
       "//components/browser_watcher:crash_stability",
-      "//components/gwp_asan/crash_handler",
+      "//components/gwp_asan/buildflags",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/crashpad/crashpad/minidump",
       "//third_party/crashpad/crashpad/util",
     ]
+
+    if (enable_gwp_asan) {
+      deps += [ "//components/gwp_asan/crash_handler" ]
+    }
   }
 
   # This source set contains the include file that declares the export thunks.
@@ -197,9 +203,13 @@ if (is_mac) {
     ]
 
     deps = [
-      "//components/gwp_asan/crash_handler",
+      "//components/gwp_asan/buildflags",
       "//third_party/crashpad/crashpad/handler:handler",
     ]
+
+    if (enable_gwp_asan) {
+      deps += [ "//components/gwp_asan/crash_handler" ]
+    }
 
     if (is_component_build) {
       ldflags = [

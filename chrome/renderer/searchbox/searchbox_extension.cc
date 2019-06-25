@@ -874,8 +874,10 @@ bool NewTabPageBindings::GetIsUsingMostVisited() {
 // static
 bool NewTabPageBindings::GetAreShortcutsVisible() {
   const SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
+                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
     return true;
+  }
 
   return search_box->AreShortcutsVisible();
 }

@@ -166,7 +166,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kWindow;
-    node_data->SetName(window_title_->text());
+    node_data->SetName(window_title_->GetText());
   }
 
   // aura::WindowObserver:

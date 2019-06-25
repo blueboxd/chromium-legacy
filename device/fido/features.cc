@@ -25,4 +25,7 @@ extern const base::Feature kWebAuthResidentKeys{
 extern const base::Feature kWebAuthBiometricEnrollment{
     "WebAuthenticationBiometricEnrollment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+extern const base::Feature kWebAuthCredentialManagement{
+    "WebAuthenticationCredentialManagement", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace device

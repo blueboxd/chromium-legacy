@@ -88,8 +88,6 @@ public class NativeBackgroundTaskTest {
         public void addStartupCompletedObserver(StartupCallback callback) {}
 
         @Override
-        public void initChromiumBrowserProcessForTests() {}
-        @Override
         public void setContentMainCallbackForTests(Runnable r) {}
 
         public void setIsStartupSuccessfullyCompleted(boolean flag) {

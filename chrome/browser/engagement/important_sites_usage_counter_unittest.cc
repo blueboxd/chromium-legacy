@@ -34,7 +34,11 @@ class ImportantSitesUsageCounterTest : public testing::Test {
     run_loop_.reset(new base::RunLoop());
   }
 
-  void TearDown() override { content::RunAllTasksUntilIdle(); }
+  void TearDown() override {
+    // Release the quota manager and wait for the database to be closed.
+    quota_manager_.reset();
+    content::RunAllTasksUntilIdle();
+  }
 
   TestingProfile* profile() { return &profile_; }
 

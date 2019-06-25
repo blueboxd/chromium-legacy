@@ -612,4 +612,15 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
   return flags;
 }
 
+bool CanvasRenderingContext2DState::HasPattern() const {
+  return FillStyle() && FillStyle()->GetCanvasPattern() &&
+         FillStyle()->GetCanvasPattern()->GetPattern();
+}
+
+// Only to be used if the CanvasRenderingContext2dState has Pattern
+bool CanvasRenderingContext2DState::PatternIsAccelerated() const {
+  DCHECK(HasPattern());
+  return FillStyle()->GetCanvasPattern()->GetPattern()->IsTextureBacked();
+}
+
 }  // namespace blink

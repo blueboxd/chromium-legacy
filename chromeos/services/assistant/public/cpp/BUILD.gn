@@ -11,6 +11,7 @@ source_set("manifest") {
   deps = [
     "//base",
     "//chromeos/services/assistant/public/mojom",
+    "//chromeos/services/network_config/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

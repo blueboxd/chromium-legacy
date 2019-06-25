@@ -357,7 +357,7 @@ public final class DownloadInfo {
                 // is set correctly in {@link DownloadSharedPreferenceEntry}. The states of
                 // notification UI and download home currently may not match. Also pending is
                 // related to Java side auto resumption on good network condition.
-                else if (DownloadUtils.isDownloadPaused(downloadItem)) {
+                else if (downloadInfo.isPaused()) {
                     offlineItem.state = OfflineItemState.PAUSED;
                 } else if (DownloadUtils.isDownloadPending(downloadItem)) {
                     offlineItem.state = OfflineItemState.PENDING;

@@ -16,7 +16,7 @@ namespace base {
 namespace subtle {
 Time TimeNowIgnoringOverride() {
   zx_time_t nanos_since_unix_epoch;
-  zx_status_t status = zx_clock_get_new(ZX_CLOCK_UTC, &nanos_since_unix_epoch);
+  zx_status_t status = zx_clock_get(ZX_CLOCK_UTC, &nanos_since_unix_epoch);
   ZX_CHECK(status == ZX_OK, status);
   // The following expression will overflow in the year 289938 A.D.:
   return Time::FromZxTime(nanos_since_unix_epoch);
@@ -86,7 +86,7 @@ namespace subtle {
 ThreadTicks ThreadTicksNowIgnoringOverride() {
   zx_time_t nanos_since_thread_started;
   zx_status_t status =
-      zx_clock_get_new(ZX_CLOCK_THREAD, &nanos_since_thread_started);
+      zx_clock_get(ZX_CLOCK_THREAD, &nanos_since_thread_started);
   ZX_CHECK(status == ZX_OK, status);
   DCHECK(nanos_since_thread_started != 0);
   return ThreadTicks() + TimeDelta::FromNanoseconds(nanos_since_thread_started);

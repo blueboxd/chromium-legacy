@@ -16,7 +16,7 @@ class MockNativeFileSystemPermissionGrant
  public:
   MockNativeFileSystemPermissionGrant();
 
-  MOCK_CONST_METHOD0(GetStatus, PermissionStatus());
+  MOCK_METHOD0(GetStatus, PermissionStatus());
   void RequestPermission(int process_id,
                          int frame_id,
                          base::OnceClosure callback) override;

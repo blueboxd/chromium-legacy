@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/test/trace_event_analyzer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -170,6 +171,82 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_OneText) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             DOMNodeIds::ExistingIdForNode(only_text));
+}
+
+TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_Candidate) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  {
+    SetBodyInnerHTML(R"HTML(
+      )HTML");
+    AppendDivElementToBody("The only text");
+    UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("LargestTextPaint::Candidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ("loading", events[0]->category);
+
+  EXPECT_TRUE(events[0]->HasArg("frame"));
+
+  EXPECT_TRUE(events[0]->HasArg("data"));
+  std::unique_ptr<base::Value> arg;
+  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+  base::DictionaryValue* arg_dict;
+  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  DOMNodeId node_id;
+  EXPECT_TRUE(arg_dict->GetInteger("DOMNodeId", &node_id));
+  EXPECT_GT(node_id, 0);
+  int size;
+  EXPECT_TRUE(arg_dict->GetInteger("size", &size));
+  EXPECT_GT(size, 0);
+  DOMNodeId candidate_index;
+  EXPECT_TRUE(arg_dict->GetInteger("candidateIndex", &candidate_index));
+  EXPECT_EQ(candidate_index, 1);
+  bool is_main_frame;
+  EXPECT_TRUE(arg_dict->GetBoolean("isMainFrame", &is_main_frame));
+  EXPECT_EQ(true, is_main_frame);
+  bool is_oopif;
+  EXPECT_TRUE(arg_dict->GetBoolean("isOOPIF", &is_oopif));
+  EXPECT_EQ(false, is_oopif);
+}
+
+TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_NoCandidate) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  {
+    SetBodyInnerHTML(R"HTML(
+      )HTML");
+    Element* element = AppendDivElementToBody("text");
+    UpdateAllLifecyclePhasesAndSimulateSwapTime();
+    RemoveElement(element);
+    UpdateAllLifecyclePhasesForTest();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("LargestTextPaint::NoCandidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ("loading", events[0]->category);
+
+  EXPECT_TRUE(events[0]->HasArg("frame"));
+
+  EXPECT_TRUE(events[0]->HasArg("data"));
+  std::unique_ptr<base::Value> arg;
+  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+  base::DictionaryValue* arg_dict;
+  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  DOMNodeId candidate_index;
+  EXPECT_TRUE(arg_dict->GetInteger("candidateIndex", &candidate_index));
+  EXPECT_EQ(candidate_index, 2);
+  bool is_main_frame;
+  EXPECT_TRUE(arg_dict->GetBoolean("isMainFrame", &is_main_frame));
+  EXPECT_EQ(true, is_main_frame);
+  bool is_oopif;
+  EXPECT_TRUE(arg_dict->GetBoolean("isOOPIF", &is_oopif));
+  EXPECT_EQ(false, is_oopif);
 }
 
 TEST_F(TextPaintTimingDetectorTest, AggregationBySelfPaintingInlineElement) {

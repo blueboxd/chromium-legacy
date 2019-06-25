@@ -393,7 +393,7 @@ void DownloadController::OnDownloadStarted(
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(download_item));
   ProfileKey* profile_key =
-      profile ? profile->GetProfileKey() : ::android::GetMainProfileKey();
+      profile ? profile->GetProfileKey() : ::android::GetLastUsedProfileKey();
 
   DownloadOfflineContentProviderFactory::GetForKey(profile_key)
       ->OnDownloadStarted(download_item);

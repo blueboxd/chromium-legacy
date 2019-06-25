@@ -62,10 +62,10 @@ void LargestTextPaintManager::PopulateTraceValue(
 
 void LargestTextPaintManager::ReportCandidateToTrace(
     const TextRecord& largest_text_record) {
+  if (!PaintTimingDetector::IsTracing())
+    return;
   auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, largest_text_record);
-  // TODO(crbug.com/976894): Check if the event is needed before preparing the
-  // trace value.
   TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestTextPaint::Candidate",
                                    largest_text_record.paint_time, "data",
                                    std::move(value), "frame",
@@ -73,6 +73,8 @@ void LargestTextPaintManager::ReportCandidateToTrace(
 }
 
 void LargestTextPaintManager::ReportNoCandidateToTrace() {
+  if (!PaintTimingDetector::IsTracing())
+    return;
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("candidateIndex", ++count_candidates_);
   value->SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
@@ -95,7 +97,7 @@ void LargestTextPaintManager::UpdateCandidate() {
   if (!changed)
     return;
 
-  if (largest_text_record && !largest_text_record->paint_time.is_null()) {
+  if (!time.is_null()) {
     if (auto* lcp_calculator =
             paint_timing_detector_->GetLargestContentfulPaintCalculator())
       lcp_calculator->OnLargestTextUpdated(largest_text_record);

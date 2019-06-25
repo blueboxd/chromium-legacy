@@ -6,6 +6,7 @@
 #define DEVICE_FIDO_CREDENTIAL_MANAGEMENT_HANDLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -40,7 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
       base::OnceCallback<void(CtapDeviceResponseCode)>;
   using FinishedCallback = base::OnceCallback<void(FidoReturnCode)>;
   using GetCredentialsCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode status,
+      CtapDeviceResponseCode,
       base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>,
       base::Optional<size_t>)>;
   using GetPINCallback =
@@ -61,9 +62,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   // on the device. The supplied callback receives the status returned by the
   // device and, if successful, the resident credentials stored and remaining
   // capacity left on the chosen authenticator.
+  //
+  // The returned AggregatedEnumerateCredentialsResponses will be sorted in
+  // ascending order by their RP ID. The |credentials| vector of each response
+  // will be sorted in ascending order by user name.
   void GetCredentials(GetCredentialsCallback callback);
-  void DeleteCredential(base::span<const uint8_t> credential_id,
+
+  // DeleteCredential attempts to delete the credential with the given
+  // |credential_id|.
+  void DeleteCredential(const PublicKeyCredentialDescriptor& credential_id,
                         DeleteCredentialCallback callback);
+
+  // DeleteCredentials deletes a list of credentials. Each entry in
+  // |credential_ids| must be a CBOR-serialized PublicKeyCredentialDescriptor.
+  // If any individual deletion fails, |callback| is invoked with the
+  // respective error, and deletion of the remaining credentials will be
+  // aborted (but others may have been deleted successfully already).
+  void DeleteCredentials(std::vector<std::vector<uint8_t>> credential_ids,
+                         DeleteCredentialCallback callback);
 
  private:
   enum class State {
@@ -101,6 +117,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
       CtapDeviceResponseCode status,
       base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>
           responses);
+  void OnDeleteCredentials(
+      std::vector<std::vector<uint8_t>> remaining_credential_ids,
+      CredentialManagementHandler::DeleteCredentialCallback callback,
+      CtapDeviceResponseCode status,
+      base::Optional<DeleteCredentialResponse> response);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

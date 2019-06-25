@@ -103,7 +103,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
           const base::string16 label_text =
               static_cast<HoverHighlightView*>(view.get())
                   ->text_label()
-                  ->text();
+                  ->GetText();
 
           const bool label_contains_loading =
               label_text.find(kLoading) != base::string16::npos;

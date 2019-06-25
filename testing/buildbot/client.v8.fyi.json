@@ -1462,7 +1462,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-blink-features=LayoutNG"
+          "--disable-blink-features=LayoutNG"
         ],
         "merge": {
           "args": [],

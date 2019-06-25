@@ -9,39 +9,6 @@ const _trackElement = Symbol();
 const _fillElement = Symbol();
 const _slotElement = Symbol();
 
-// Returns a function returning a CSSStyleSheet().
-// TODO(tkent): Share this stylesheet factory feature with elements/toast/.
-function styleSheetFactory() {
-  let styleSheet;
-  return () => {
-    if (!styleSheet) {
-      styleSheet = new CSSStyleSheet();
-      styleSheet.replaceSync(`
-.track {
-  display: inline-block;
-  inline-size: 10em;
-  block-size: 1em;
-  border: 1px solid black;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.trackFill {
-  display: inline-block;
-  background: red;
-  block-size: 100%;
-  inline-size: 0%;
-  border-radius: 0;
-  vertical-align: top;
-  box-sizing: border-box;
-  box-shadow: none;
-  transition: all linear 0.1s;
-}`);
-    }
-    return styleSheet;
-  };
-}
-
 export class SwitchTrack {
 
   /**
@@ -57,13 +24,6 @@ export class SwitchTrack {
    */
   get element() {
     return this[_trackElement];
-  }
-
-  /**
-   * @return {!CSSStyleSheet}
-   */
-  get styleSheet() {
-    return styleSheetFactory()();
   }
 
   /**
@@ -88,9 +48,9 @@ export class SwitchTrack {
    */
   _initializeDOM(factory) {
     this[_trackElement] = factory.createElement('div');
-    this[_trackElement].classList.add('track');
+    this[_trackElement].id = 'track';
     this[_fillElement] = factory.createElement('span');
-    this[_fillElement].classList.add('trackFill');
+    this[_fillElement].id = 'trackFill';
     this[_trackElement].appendChild(this[_fillElement]);
     this[_slotElement] = factory.createElement('slot');
     this._addSlot();

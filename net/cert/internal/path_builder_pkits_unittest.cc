@@ -54,11 +54,33 @@ class CrlCheckingPathBuilderDelegate : public SimplePathBuilderDelegate {
       if (reverse_i == 0 && path->last_cert_trust.IsTrustAnchor())
         continue;
 
+      // RFC 5280 6.3.3.  [If the CRL was not specified in a distribution
+      //                  point], assume a DP with both the reasons and the
+      //                  cRLIssuer fields omitted and a distribution point
+      //                  name of the certificate issuer.
+      // Since this implementation only supports URI names in distribution
+      // points, this means a default-initialized ParsedDistributionPoint is
+      // sufficient.
+      ParsedDistributionPoint fake_cert_dp;
+      ParsedDistributionPoint* cert_dp = &fake_cert_dp;
+
+      // If the target cert does have a distribution point, use it.
+      std::vector<ParsedDistributionPoint> distribution_points;
+      ParsedExtension crl_dp_extension;
+      if (certs[i]->GetExtension(CrlDistributionPointsOid(),
+                                 &crl_dp_extension)) {
+        ASSERT_TRUE(ParseCrlDistributionPoints(crl_dp_extension.value,
+                                               &distribution_points));
+        ASSERT_LE(distribution_points.size(), 1U);
+        if (!distribution_points.empty())
+          cert_dp = &distribution_points[0];
+      }
+
       bool cert_good = false;
 
       for (const auto& der_crl : der_crls_) {
-        CRLRevocationStatus crl_status = CheckCRL(
-            der_crl, certs, i, /*cert_dp=*/nullptr, verify_time_, max_age_);
+        CRLRevocationStatus crl_status =
+            CheckCRL(der_crl, certs, i, *cert_dp, verify_time_, max_age_);
         if (crl_status == CRLRevocationStatus::REVOKED) {
           path->errors.GetErrorsForCert(i)->AddError(
               cert_errors::kCertificateRevoked);

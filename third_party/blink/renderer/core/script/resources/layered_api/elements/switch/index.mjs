@@ -5,6 +5,7 @@
 import * as face from './face_utils.mjs';
 import * as reflection from './reflection.mjs';
 import { SwitchTrack } from './track.mjs';
+import { styleSheetFactory } from './style.mjs';
 
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';
@@ -46,7 +47,7 @@ export class StdSwitchElement extends HTMLElement {
     let factory = this.ownerDocument;
     let root = this.attachShadow({mode: 'closed'});
     let container = factory.createElement('span');
-    container.classList.add('container');
+    container.id = 'container';
     root.appendChild(container);
 
     this[_track] = new SwitchTrack(factory);
@@ -54,13 +55,12 @@ export class StdSwitchElement extends HTMLElement {
     this[_track].value = this.on;
 
     let thumbElement = container.appendChild(factory.createElement('span'));
-    thumbElement.classList.add('thumb');
+    thumbElement.id = 'thumb';
 
     this[_rippleElement] = thumbElement.appendChild(factory.createElement('span'));
-    this[_rippleElement].classList.add('ripple');
+    this[_rippleElement].id = 'ripple';
 
-    // TODO(tkent): Add stylesheets for std-switch too.
-    root.adoptedStyleSheets = [this[_track].styleSheet];
+    root.adoptedStyleSheets = [styleSheetFactory()()];
   }
 }
 

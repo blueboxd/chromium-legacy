@@ -78,7 +78,7 @@ void FidoAuthenticator::EnumerateCredentials(
 
 void FidoAuthenticator::DeleteCredential(
     base::span<const uint8_t> pin_token,
-    base::span<const uint8_t> credential_id,
+    const PublicKeyCredentialDescriptor& credential_id,
     DeleteCredentialCallback callback) {
   NOTREACHED();
 }

@@ -6,15 +6,11 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.util.ObjectsCompat;
-import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -22,10 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -39,10 +32,6 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A general-purpose dialog for presenting a list of things to pick from.
@@ -50,7 +39,7 @@ import java.util.Set;
  * The dialog is shown by the ItemChooserDialog constructor, and always calls
  * ItemSelectedCallback.onItemSelected() as it's closing.
  */
-public class ItemChooserDialog {
+public class ItemChooserDialog implements DeviceItemAdapter.Observer {
     /**
      * An interface to implement to get a callback when something has been
      * selected.
@@ -63,50 +52,6 @@ public class ItemChooserDialog {
          * without selecting anything.
          */
         void onItemSelected(String id);
-    }
-
-    /**
-     * A class representing one data row in the picker.
-     */
-    public static class ItemChooserRow {
-        private final String mKey;
-        private String mDescription;
-        private Drawable mIcon;
-        private String mIconDescription;
-
-        public ItemChooserRow(String key, String description, @Nullable Drawable icon,
-                @Nullable String iconDescription) {
-            mKey = key;
-            mDescription = description;
-            mIcon = icon;
-            mIconDescription = iconDescription;
-        }
-
-        /**
-         * Returns true if all parameters match the corresponding member.
-         *
-         * @param key Expected item unique identifier.
-         * @param description Expected item description.
-         * @param icon Expected item icon.
-         */
-        public boolean hasSameContents(String key, String description, @Nullable Drawable icon,
-                @Nullable String iconDescription) {
-            if (!TextUtils.equals(mKey, key)) return false;
-            if (!TextUtils.equals(mDescription, description)) return false;
-            if (!TextUtils.equals(mIconDescription, iconDescription)) return false;
-
-            if (icon == null ^ mIcon == null) return false;
-
-            // On Android NMR1 and above, Drawable#getConstantState() always returns a different
-            // value, so it does not make sense to compare it.
-            // TODO(crbug.com/773043): Find a way to compare the icons.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1 && mIcon != null
-                    && !mIcon.getConstantState().equals(icon.getConstantState())) {
-                return false;
-            }
-
-            return true;
-        }
     }
 
     /**
@@ -145,19 +90,6 @@ public class ItemChooserDialog {
     }
 
     /**
-     * Item holder for performance boost.
-     */
-    private static class ViewHolder {
-        private TextView mTextView;
-        private ImageView mImageView;
-
-        public ViewHolder(View view) {
-            mImageView = (ImageView) view.findViewById(R.id.icon);
-            mTextView = (TextView) view.findViewById(R.id.description);
-        }
-    }
-
-    /**
      * The various states the dialog can represent.
      */
     @IntDef({State.INITIALIZING_ADAPTER, State.STARTING, State.PROGRESS_UPDATE_AVAILABLE,
@@ -168,254 +100,6 @@ public class ItemChooserDialog {
         int STARTING = 1;
         int PROGRESS_UPDATE_AVAILABLE = 2;
         int DISCOVERY_IDLE = 3;
-    }
-
-    /**
-     * An adapter for keeping track of which items to show in the dialog.
-     */
-    public class ItemAdapter extends ArrayAdapter<ItemChooserRow>
-            implements AdapterView.OnItemClickListener {
-        private final LayoutInflater mInflater;
-
-        // The zero-based index of the item currently selected in the dialog,
-        // or -1 (INVALID_POSITION) if nothing is selected.
-        private int mSelectedItem = ListView.INVALID_POSITION;
-
-        // A set of keys that are marked as disabled in the dialog.
-        private Set<String> mDisabledEntries = new HashSet<String>();
-
-        // Item descriptions are counted in a map.
-        private Map<String, Integer> mItemDescriptionMap = new HashMap<>();
-
-        // Map of keys to items so that we can access the items in O(1).
-        private Map<String, ItemChooserRow> mKeyToItemMap = new HashMap<>();
-
-        // True when there is at least one row with an icon.
-        private boolean mHasIcon;
-
-        public ItemAdapter(Context context, int resource) {
-            super(context, resource);
-
-            mInflater = LayoutInflater.from(context);
-        }
-
-        @Override
-        public boolean isEmpty() {
-            boolean isEmpty = super.isEmpty();
-            if (isEmpty) {
-                assert mKeyToItemMap.isEmpty();
-                assert mDisabledEntries.isEmpty();
-                assert mItemDescriptionMap.isEmpty();
-            } else {
-                assert !mKeyToItemMap.isEmpty();
-                assert !mItemDescriptionMap.isEmpty();
-            }
-            return isEmpty;
-        }
-
-        /**
-         * Adds an item to the list to show in the dialog if the item
-         * was not in the chooser. Otherwise updates the items description, icon
-         * and icon description.
-         * @param key Unique identifier for that item.
-         * @param description Text in the row.
-         * @param icon Drawable to show next to the item.
-         * @param iconDescription Description of the icon.
-         */
-        public void addOrUpdate(String key, String description, @Nullable Drawable icon,
-                @Nullable String iconDescription) {
-            ItemChooserRow oldItem = mKeyToItemMap.get(key);
-            if (oldItem != null) {
-                if (oldItem.hasSameContents(key, description, icon, iconDescription)) {
-                    // No need to update anything.
-                    return;
-                }
-
-                if (!TextUtils.equals(oldItem.mDescription, description)) {
-                    removeFromDescriptionsMap(oldItem.mDescription);
-                    oldItem.mDescription = description;
-                    addToDescriptionsMap(oldItem.mDescription);
-                }
-
-                if (!ObjectsCompat.equals(icon, oldItem.mIcon)) {
-                    oldItem.mIcon = icon;
-                    oldItem.mIconDescription = iconDescription;
-                }
-
-                notifyDataSetChanged();
-                return;
-            }
-
-            assert !mKeyToItemMap.containsKey(key);
-            ItemChooserRow newItem = new ItemChooserRow(key, description, icon, iconDescription);
-            mKeyToItemMap.put(key, newItem);
-
-            addToDescriptionsMap(newItem.mDescription);
-            add(newItem);
-        }
-
-        public void removeItemWithKey(String key) {
-            ItemChooserRow oldItem = mKeyToItemMap.remove(key);
-            if (oldItem == null) return;
-            int oldItemPosition = getPosition(oldItem);
-            // If the removed item is the item that is currently selected, deselect it
-            // and disable the confirm button. Otherwise if the removed item is before
-            // the currently selected item, the currently selected item's index needs
-            // to be adjusted by one.
-            if (oldItemPosition == mSelectedItem) {
-                mSelectedItem = ListView.INVALID_POSITION;
-                mConfirmButton.setEnabled(false);
-            } else if (oldItemPosition < mSelectedItem) {
-                --mSelectedItem;
-            }
-            removeFromDescriptionsMap(oldItem.mDescription);
-            super.remove(oldItem);
-        }
-
-        @Override
-        public void clear() {
-            mSelectedItem = ListView.INVALID_POSITION;
-            mKeyToItemMap.clear();
-            mDisabledEntries.clear();
-            mItemDescriptionMap.clear();
-            mConfirmButton.setEnabled(false);
-            super.clear();
-        }
-
-        /**
-         * Returns the key of the currently selected item or blank if nothing is
-         * selected.
-         */
-        public String getSelectedItemKey() {
-            if (mSelectedItem == ListView.INVALID_POSITION) return "";
-            ItemChooserRow row = getItem(mSelectedItem);
-            if (row == null) return "";
-            return row.mKey;
-        }
-
-        /**
-         * Returns the text to be displayed on the chooser for an item. For items with the same
-         * description, their unique keys are appended to distinguish them.
-         * @param position The index of the item.
-         */
-        public String getDisplayText(int position) {
-            ItemChooserRow item = getItem(position);
-            String description = item.mDescription;
-            int counter = mItemDescriptionMap.get(description);
-            return counter == 1 ? description
-                    : mActivity.getString(R.string.item_chooser_item_name_with_id, description,
-                            item.mKey);
-        }
-
-        /**
-         * Sets whether the item is enabled. Disabled items are grayed out.
-         * @param id The id of the item to affect.
-         * @param enabled Whether the item should be enabled or not.
-         */
-        public void setEnabled(String id, boolean enabled) {
-            if (enabled) {
-                mDisabledEntries.remove(id);
-            } else {
-                mDisabledEntries.add(id);
-            }
-
-            if (mSelectedItem != ListView.INVALID_POSITION) {
-                ItemChooserRow selectedRow = getItem(mSelectedItem);
-                if (id.equals(selectedRow.mKey) && !enabled) {
-                    mSelectedItem = ListView.INVALID_POSITION;
-                    mConfirmButton.setEnabled(enabled);
-                }
-            }
-
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            ItemChooserRow item = getItem(position);
-            return !mDisabledEntries.contains(item.mKey);
-        }
-
-        @Override
-        public int getViewTypeCount() {
-            return 1;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder row;
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.item_chooser_dialog_row, parent, false);
-                row = new ViewHolder(convertView);
-                convertView.setTag(row);
-            } else {
-                row = (ViewHolder) convertView.getTag();
-            }
-
-            row.mTextView.setSelected(position == mSelectedItem);
-            row.mTextView.setEnabled(isEnabled(position));
-            row.mTextView.setText(getDisplayText(position));
-
-            // If there is at least one item with an icon then we set mImageView's
-            // visibility to INVISIBLE for all items with no icons. We do this
-            // so that all items' desriptions are aligned.
-            if (!mHasIcon) {
-                row.mImageView.setVisibility(View.GONE);
-            } else {
-                ItemChooserRow item = getItem(position);
-                if (item.mIcon != null) {
-                    row.mImageView.setContentDescription(item.mIconDescription);
-                    row.mImageView.setImageDrawable(item.mIcon);
-                    row.mImageView.setVisibility(View.VISIBLE);
-                } else {
-                    row.mImageView.setVisibility(View.INVISIBLE);
-                    row.mImageView.setImageDrawable(null);
-                    row.mImageView.setContentDescription(null);
-                }
-                row.mImageView.setSelected(position == mSelectedItem);
-            }
-            return convertView;
-        }
-
-        @Override
-        public void notifyDataSetChanged() {
-            mHasIcon = false;
-            for (ItemChooserRow row : mKeyToItemMap.values()) {
-                if (row.mIcon != null) mHasIcon = true;
-            }
-            super.notifyDataSetChanged();
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-            mSelectedItem = position;
-            mConfirmButton.setEnabled(true);
-            notifyDataSetChanged();
-        }
-
-        private void addToDescriptionsMap(String description) {
-            int count = mItemDescriptionMap.containsKey(description)
-                    ? mItemDescriptionMap.get(description)
-                    : 0;
-            mItemDescriptionMap.put(description, count + 1);
-        }
-
-        private void removeFromDescriptionsMap(String description) {
-            if (!mItemDescriptionMap.containsKey(description)) {
-                return;
-            }
-            int count = mItemDescriptionMap.get(description);
-            if (count == 1) {
-                mItemDescriptionMap.remove(description);
-            } else {
-                mItemDescriptionMap.put(description, count - 1);
-            }
-        }
     }
 
     private Activity mActivity;
@@ -438,7 +122,7 @@ public class ItemChooserDialog {
     private ItemChooserLabels mLabels;
 
     // The adapter containing the items to show in the dialog.
-    private ItemAdapter mItemAdapter;
+    private DeviceItemAdapter mItemAdapter;
 
     // How much of the height of the screen should be taken up by the listview.
     private static final float LISTVIEW_HEIGHT_PERCENT = 0.30f;
@@ -492,8 +176,9 @@ public class ItemChooserDialog {
             mDialog.dismiss();
         });
 
-        mItemAdapter = new ItemAdapter(mActivity, R.layout.item_chooser_dialog_row);
+        mItemAdapter = new DeviceItemAdapter(mActivity, R.layout.item_chooser_dialog_row);
         mItemAdapter.setNotifyOnChange(true);
+        mItemAdapter.setObserver(this);
         mListView.setAdapter(mItemAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mListView.setEmptyView(mEmptyMessage);
@@ -517,6 +202,12 @@ public class ItemChooserDialog {
                                         mActivity.getResources().getDisplayMetrics().density)));
                     }
                 });
+    }
+
+    // DeviceItemAdapter.Observer:
+    @Override
+    public void onItemSelectionChanged(boolean itemSelected) {
+        mConfirmButton.setEnabled(itemSelected);
     }
 
     /**
@@ -694,7 +385,7 @@ public class ItemChooserDialog {
      * Returns the ItemAdapter associated with this class. For use with tests only.
      */
     @VisibleForTesting
-    public ItemAdapter getItemAdapterForTesting() {
+    public DeviceItemAdapter getItemAdapterForTesting() {
         return mItemAdapter;
     }
 }

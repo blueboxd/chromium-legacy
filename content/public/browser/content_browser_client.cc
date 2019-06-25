@@ -719,9 +719,19 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
 }
 
 std::vector<std::unique_ptr<URLLoaderThrottle>>
-ContentBrowserClient::CreateURLLoaderThrottles(
+ContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     const network::ResourceRequest& request,
     ResourceContext* resource_context,
+    const base::RepeatingCallback<WebContents*()>& wc_getter,
+    NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  return std::vector<std::unique_ptr<URLLoaderThrottle>>();
+}
+
+std::vector<std::unique_ptr<URLLoaderThrottle>>
+ContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    BrowserContext* browser_context,
     const base::RepeatingCallback<WebContents*()>& wc_getter,
     NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
@@ -901,8 +911,13 @@ ContentBrowserClient::CreateWindowForPictureInPicture(
   return nullptr;
 }
 
+bool ContentBrowserClient::IsSafeRedirectTargetOnIO(const GURL& url,
+                                                    ResourceContext* context) {
+  return true;
+}
+
 bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
-                                                ResourceContext* context) {
+                                                BrowserContext* context) {
   return true;
 }
 

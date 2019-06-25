@@ -88,7 +88,6 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/mac/cfbundle_blocker.h"
 #include "components/crash/core/common/objc_zombie.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
@@ -167,8 +166,7 @@
 #include "chrome/child/pdf_child_init.h"
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC) || \
-    BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+#if BUILDFLAG(ENABLE_GWP_ASAN)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
@@ -631,8 +629,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // there have more impact.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
   ObjcEvilDoers::ZombieEnable(true, is_browser ? 10000 : 1000);
-
-  chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
   content::Profiling::ProcessStarted();

@@ -477,7 +477,7 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
 
 void FidoDeviceAuthenticator::DeleteCredential(
     base::span<const uint8_t> pin_token,
-    base::span<const uint8_t> credential_id,
+    const PublicKeyCredentialDescriptor& credential_id,
     DeleteCredentialCallback callback) {
   DCHECK(Options()->supports_credential_management ||
          Options()->supports_credential_management_preview);
@@ -487,7 +487,7 @@ void FidoDeviceAuthenticator::DeleteCredential(
           Options()->supports_credential_management
               ? CredentialManagementRequest::kDefault
               : CredentialManagementRequest::kPreview,
-          pin_token, fido_parsing_utils::Materialize(credential_id)),
+          pin_token, credential_id),
       std::move(callback), base::BindOnce(&DeleteCredentialResponse::Parse),
       /*string_fixup_predicate=*/nullptr);
 }

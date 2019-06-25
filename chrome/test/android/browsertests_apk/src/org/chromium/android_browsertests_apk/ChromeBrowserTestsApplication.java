@@ -12,11 +12,6 @@ import org.chromium.native_test.NativeBrowserTestApplication;
 
 /**
  * A basic chrome.browser.tests {@link android.app.Application}.
- *
- * TODO(danakj): This class sets up some of the things that ChromeApplication
- * does but we should maybe subclass ChromeApplication or share code. There are
- * many things missing from attachBaseContext() that ChromeApplication sets up
- * and it's not clear yet if they are needed or not.
  */
 public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication {
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";

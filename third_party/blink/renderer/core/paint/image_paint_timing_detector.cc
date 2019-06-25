@@ -91,6 +91,8 @@ void ImagePaintTimingDetector::PopulateTraceValue(
 
 void ImagePaintTimingDetector::ReportCandidateToTrace(
     ImageRecord& largest_image_record) {
+  if (!PaintTimingDetector::IsTracing())
+    return;
   DCHECK(!largest_image_record.paint_time.is_null());
   auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, largest_image_record);
@@ -101,6 +103,8 @@ void ImagePaintTimingDetector::ReportCandidateToTrace(
 }
 
 void ImagePaintTimingDetector::ReportNoCandidateToTrace() {
+  if (!PaintTimingDetector::IsTracing())
+    return;
   auto value = std::make_unique<TracedValue>();
   value->SetInteger("candidateIndex", ++count_candidates_);
   value->SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
@@ -123,7 +127,7 @@ void ImagePaintTimingDetector::UpdateCandidate() {
   bool changed = detector.NotifyIfChangedLargestImagePaint(time, size);
   if (!changed)
     return;
-  if (largest_image_record && !largest_image_record->paint_time.is_null()) {
+  if (!time.is_null()) {
     if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
       lcp_calculator->OnLargestImageUpdated(largest_image_record);
     // If an image has paint time, it must have been loaded.

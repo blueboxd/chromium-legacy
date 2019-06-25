@@ -625,7 +625,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
 int DownloadItemView::GetYForFilenameText() const {
   int text_height = font_list_.GetBaseline();
-  if (!status_label_->text().empty())
+  if (!status_label_->GetText().empty())
     text_height += kVerticalTextPadding + status_font_list_.GetBaseline();
   return (height() - text_height) / 2;
 }
@@ -997,7 +997,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   if (size.width() <= 200)
     return size;
 
-  base::string16 label_text = label->text();
+  base::string16 label_text = label->GetText();
   base::TrimWhitespace(label_text, base::TRIM_ALL, &label_text);
   DCHECK_EQ(base::string16::npos, label_text.find('\n'));
 
@@ -1107,9 +1107,9 @@ void DownloadItemView::ReleaseDropdown() {
 void DownloadItemView::UpdateAccessibleName() {
   base::string16 new_name;
   if (IsShowingWarningDialog()) {
-    new_name = dangerous_download_label_->text();
+    new_name = dangerous_download_label_->GetText();
   } else {
-    new_name = status_label_->text() + base::char16(' ') +
+    new_name = status_label_->GetText() + base::char16(' ') +
                model_->GetFileNameToReportUser().LossyDisplayName();
   }
 

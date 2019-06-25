@@ -2042,16 +2042,8 @@
     "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_fuzzer",
     "type": "fuzzer",
   },
-  "password_manager_form_parser_generic_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_generic_fuzzer",
-    "type": "fuzzer",
-  },
   "password_manager_form_parser_proto_fuzzer": {
     "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_proto_fuzzer",
-    "type": "fuzzer",
-  },
-  "password_manager_form_parser_proto_generic_fuzzer": {
-    "label": "//components/password_manager/core/browser/form_parsing/fuzzer:password_manager_form_parser_proto_generic_fuzzer",
     "type": "fuzzer",
   },
   "payment_method_manifest_fuzzer": {

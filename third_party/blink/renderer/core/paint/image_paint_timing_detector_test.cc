@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_performance.h"
@@ -229,6 +230,97 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_size, 25ul);
   EXPECT_TRUE(record->loaded);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_Candidate) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("loading");
+  {
+    SetBodyInnerHTML(R"HTML(
+      <img id="target"></img>
+    )HTML");
+    SetImageAndPaint("target", 5, 5);
+    UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("LargestImagePaint::Candidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ("loading", events[0]->category);
+
+  EXPECT_TRUE(events[0]->HasArg("frame"));
+
+  EXPECT_TRUE(events[0]->HasArg("data"));
+  std::unique_ptr<base::Value> arg;
+  EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+  base::DictionaryValue* arg_dict;
+  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  DOMNodeId node_id;
+  EXPECT_TRUE(arg_dict->GetInteger("DOMNodeId", &node_id));
+  EXPECT_GT(node_id, 0);
+  int size;
+  EXPECT_TRUE(arg_dict->GetInteger("size", &size));
+  EXPECT_GT(size, 0);
+  DOMNodeId candidate_index;
+  EXPECT_TRUE(arg_dict->GetInteger("candidateIndex", &candidate_index));
+  EXPECT_EQ(candidate_index, 2);
+  bool isMainFrame;
+  EXPECT_TRUE(arg_dict->GetBoolean("isMainFrame", &isMainFrame));
+  EXPECT_EQ(true, isMainFrame);
+  bool isOOPIF;
+  EXPECT_TRUE(arg_dict->GetBoolean("isOOPIF", &isOOPIF));
+  EXPECT_EQ(false, isOOPIF);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_NoCandidate) {
+  using trace_analyzer::Query;
+  trace_analyzer::Start("*");
+  {
+    SetBodyInnerHTML(R"HTML(
+      <img id="target"></img>
+    )HTML");
+    SetImageAndPaint("target", 5, 5);
+    UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+    GetDocument().getElementById("target")->remove();
+    UpdateAllLifecyclePhasesForTest();
+  }
+  auto analyzer = trace_analyzer::Stop();
+  trace_analyzer::TraceEventVector events;
+  Query q = Query::EventNameIs("LargestImagePaint::NoCandidate");
+  analyzer->FindEvents(q, &events);
+  EXPECT_EQ(2u, events.size());
+
+  {
+    EXPECT_EQ("loading", events[0]->category);
+    EXPECT_TRUE(events[0]->HasArg("frame"));
+    EXPECT_TRUE(events[0]->HasArg("data"));
+    std::unique_ptr<base::Value> arg;
+    EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
+    base::DictionaryValue* arg_dict;
+    EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+    DOMNodeId candidate_index;
+    EXPECT_TRUE(arg_dict->GetInteger("candidateIndex", &candidate_index));
+    EXPECT_EQ(candidate_index, 1);
+    bool is_main_frame;
+    EXPECT_TRUE(arg_dict->GetBoolean("isMainFrame", &is_main_frame));
+    EXPECT_EQ(true, is_main_frame);
+    bool is_oopif;
+    EXPECT_TRUE(arg_dict->GetBoolean("isOOPIF", &is_oopif));
+    EXPECT_EQ(false, is_oopif);
+  }
+
+  // Use block to reuse the temp variable names.
+  {
+    EXPECT_TRUE(events[1]->HasArg("data"));
+    std::unique_ptr<base::Value> arg;
+    EXPECT_TRUE(events[1]->GetArgAsValue("data", &arg));
+    base::DictionaryValue* arg_dict;
+    EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+    DOMNodeId candidate_index;
+    EXPECT_TRUE(arg_dict->GetInteger("candidateIndex", &candidate_index));
+    EXPECT_EQ(candidate_index, 3);
+  }
 }
 
 TEST_F(ImagePaintTimingDetectorTest, UpdatePerformanceTiming) {

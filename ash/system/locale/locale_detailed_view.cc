@@ -75,7 +75,7 @@ class LocaleItem : public ActionableView {
           kCheckCircleIcon, kMenuIconSize, gfx::kGoogleGreen700));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
-    SetAccessibleName(display_name_view->text());
+    SetAccessibleName(display_name_view->GetText());
   }
 
   ~LocaleItem() override = default;

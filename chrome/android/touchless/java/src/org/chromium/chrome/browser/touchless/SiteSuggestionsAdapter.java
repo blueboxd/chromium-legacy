@@ -180,6 +180,8 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                     (view)
                             -> mNavDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, UrlConstants.EXPLORE_URL));
+            ContextMenuManager.registerViewForTouchlessContextMenu(
+                    tile, new ContextMenuManager.EmptyDelegate());
         } else if (holder.getItemViewType() == ViewType.SUGGESTION_TYPE) {
             // If site suggestion, attach context menu handler; clicks navigate to site url.
             int itemCount = mModel.get(ITEM_COUNT_KEY);

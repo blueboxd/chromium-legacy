@@ -54,8 +54,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // URLLoaders.
   void ClearBindings();
 
-  size_t GetActiveLoaderCount() const { return loaders_.size(); }
-
  private:
   // Implements mojom::URLLoaderFactory.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,

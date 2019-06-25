@@ -61,8 +61,11 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
 }
 
 std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
-  if (controller()->GetSyncState() !=
-      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+  // Only show the (i) info icon for upload saves using implicit sync.
+  // GetLegalMessageLines() being empty denotes a local save.
+  if (controller()->GetLegalMessageLines().empty() ||
+      controller()->GetSyncState() !=
+          AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
     return nullptr;
   }
 

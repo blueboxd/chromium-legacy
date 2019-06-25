@@ -4,6 +4,15 @@
 
 cr.exportPath('settings');
 
+/**
+ * @typedef {{id: string,
+ *            relyingPartyId: string,
+ *            userName: string,
+ *            userDisplayName: string}}
+ * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+ */
+let Credential;
+
 cr.define('settings', function() {
   /** @interface */
   class SecurityKeysBrowserProxy {
@@ -27,6 +36,36 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<number>>}
      */
     setPIN(oldPIN, newPIN) {}
+
+    /**
+     * Starts a credential management operation.
+     *
+     * Callers must listen to errors that can occur during the operation via a
+     * 'security-keys-credential-management-error' WebListener. Values received
+     * via this listener are localized error strings. When the
+     * WebListener fires, the operation must be considered terminated.
+     *
+     * @return {!Promise} a promise that resolves when the handler is ready for
+     *     the authenticator PIN to be provided.
+     */
+    startCredentialManagement() {}
+
+    /**
+     * Provides a PIN for a credential management operation. The
+     * startCredentialManagement() promise must have resolved before this method
+     * may be called.
+     * @return {!Promise<?number>} a promise that resolves with null if the PIN
+     *     was correct or the number of retries remaining otherwise.
+     */
+    credentialManagementProvidePIN(pin) {}
+
+    /**
+     * Enumerates credentials on the authenticator. A correct PIN must have
+     * previously been supplied via credentialManagementProvidePIN() before this
+     * method may be called.
+     * @return {!Promise<!Array<!Credential>>}
+     */
+    credentialManagementEnumerate() {}
 
     /**
      * Starts a reset operation by flashing all security keys and sending a
@@ -60,6 +99,21 @@ cr.define('settings', function() {
     /** @override */
     setPIN(oldPIN, newPIN) {
       return cr.sendWithPromise('securityKeySetPIN', oldPIN, newPIN);
+    }
+
+    /** @override */
+    startCredentialManagement() {
+      return cr.sendWithPromise('securityKeyCredentialManagement');
+    }
+
+    /** @override */
+    credentialManagementProvidePIN(pin) {
+      return cr.sendWithPromise('securityKeyCredentialManagementPIN', pin);
+    }
+
+    /** @override */
+    credentialManagementEnumerate() {
+      return cr.sendWithPromise('securityKeyCredentialManagementEnumerate');
     }
 
     /** @override */

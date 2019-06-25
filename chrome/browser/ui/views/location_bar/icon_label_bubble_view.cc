@@ -159,7 +159,7 @@ void IconLabelBubbleView::InkDropRippleAnimationEnded(
 bool IconLabelBubbleView::ShouldShowLabel() const {
   if (slide_animation_.is_animating() || is_animation_paused_)
     return !IsShrinking() || (width() > image()->GetPreferredSize().width());
-  return label()->GetVisible() && !label()->text().empty();
+  return label()->GetVisible() && !label()->GetText().empty();
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
@@ -252,8 +252,8 @@ void IconLabelBubbleView::Layout() {
 
   float separator_width =
       GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x = label()->text().empty() ? image()->bounds().right()
-                                            : label()->bounds().right();
+  int separator_x = label()->GetText().empty() ? image()->bounds().right()
+                                               : label()->bounds().right();
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 

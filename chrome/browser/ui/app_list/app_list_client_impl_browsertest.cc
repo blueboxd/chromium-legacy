@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
 }
 
 // Test that OpenSearchResult that dismisses app list runs fine without
-// user-after-free.
+// use-after-free.
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   ASSERT_TRUE(client);
@@ -172,7 +172,12 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
 
   // Any app that opens a window to dismiss app list is good enough for this
   // test.
+#if defined(GOOGLE_CHROME_BUILD)
+  const std::string app_title = "chrome";
+#else
   const std::string app_title = "chromium";
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+
   const std::string app_result_id =
       "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
 

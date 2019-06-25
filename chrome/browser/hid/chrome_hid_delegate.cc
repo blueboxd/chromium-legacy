@@ -42,31 +42,32 @@ std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
 }
 
 bool ChromeHidDelegate::CanRequestDevicePermission(
-    content::RenderFrameHost* frame) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
+    content::WebContents* web_contents,
+    const url::Origin& requesting_origin) {
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = HidChooserContextFactory::GetForProfile(profile);
-  return chooser_context->CanRequestObjectPermission(
-      frame->GetLastCommittedOrigin(),
-      web_contents->GetMainFrame()->GetLastCommittedOrigin());
+  const auto& embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  return chooser_context->CanRequestObjectPermission(requesting_origin,
+                                                     embedding_origin);
 }
 
 bool ChromeHidDelegate::HasDevicePermission(
-    content::RenderFrameHost* frame,
+    content::WebContents* web_contents,
+    const url::Origin& requesting_origin,
     const device::mojom::HidDeviceInfo& device) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = HidChooserContextFactory::GetForProfile(profile);
-  return chooser_context->HasDevicePermission(
-      frame->GetLastCommittedOrigin(),
-      web_contents->GetMainFrame()->GetLastCommittedOrigin(), device);
+  const auto& embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  return chooser_context->HasDevicePermission(requesting_origin,
+                                              embedding_origin, device);
 }
 
 device::mojom::HidManager* ChromeHidDelegate::GetHidManager(
-    content::RenderFrameHost* frame) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
+    content::WebContents* web_contents) {
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = HidChooserContextFactory::GetForProfile(profile);

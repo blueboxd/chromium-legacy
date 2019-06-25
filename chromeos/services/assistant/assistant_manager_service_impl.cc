@@ -133,7 +133,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
-    network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
     : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
@@ -153,7 +152,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   platform_api_ = std::make_unique<PlatformApiImpl>(
       connector, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
-      network_connection_tracker, service->assistant_state()->locale().value());
+      service->assistant_state()->locale().value());
 
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,

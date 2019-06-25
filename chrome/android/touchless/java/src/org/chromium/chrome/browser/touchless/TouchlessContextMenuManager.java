@@ -10,8 +10,10 @@ import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
@@ -105,6 +107,9 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
 
     @Override
     protected @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
+        if (id == ContextMenuItemId.SEARCH) {
+            return org.chromium.chrome.R.string.search_or_type_web_address;
+        }
         if (id == ContextMenuItemId.ADD_TO_MY_APPS) {
             return R.string.menu_add_to_apps;
         }
@@ -115,6 +120,10 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     @Override
     protected boolean handleMenuItemClick(
             @ContextMenuItemId int itemId, ContextMenuManager.Delegate delegate) {
+        if (itemId == ContextMenuItemId.SEARCH) {
+            AppHooks.get().onSearchContextMenuClick();
+            return true;
+        }
         if (itemId == ContextMenuItemId.ADD_TO_MY_APPS) {
             Delegate touchlessDelegate = (Delegate) delegate;
             TouchlessAddToHomescreenManager touchlessAddToHomescreenManager =
@@ -122,7 +131,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
                             touchlessDelegate.getUrl(), touchlessDelegate.getTitle(),
                             touchlessDelegate.getIconBitmap());
             touchlessAddToHomescreenManager.start();
-            return false;
+            return true;
         }
         return super.handleMenuItemClick(itemId, delegate);
     }
@@ -132,6 +141,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
             @ContextMenuItemId int itemId, ContextMenuManager.Delegate delegate) {
         // Here we filter out any item IDs that don't make sense in touchless.
         switch (itemId) {
+            case ContextMenuItemId.SEARCH:
+                return true;
             case ContextMenuItemId.REMOVE:
                 // fall through
             case ContextMenuItemId.LEARN_MORE:
@@ -202,6 +213,8 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      */
     private @DrawableRes int getIconIdForMenuItem(@ContextMenuItemId int itemId) {
         switch (itemId) {
+            case ContextMenuItemId.SEARCH:
+                return R.drawable.ic_search;
             case ContextMenuItemId.REMOVE:
                 return R.drawable.ic_remove_circle_outline_24dp;
             case ContextMenuItemId.LEARN_MORE:

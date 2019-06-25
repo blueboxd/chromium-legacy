@@ -1884,7 +1884,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
 }
 
 // Test that we do not retry indefinitely when a server sends an error like
-// ERR_SPDY_PING_FAILED, ERR_SPDY_SERVER_REFUSED_STREAM,
+// ERR_HTTP2_PING_FAILED, ERR_HTTP2_SERVER_REFUSED_STREAM,
 // ERR_QUIC_HANDSHAKE_FAILED or ERR_QUIC_PROTOCOL_ERROR.
 TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   HttpRequestInfo request;
@@ -1923,7 +1923,7 @@ TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_SPDY_SERVER_REFUSED_STREAM));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_SERVER_REFUSED_STREAM));
 }
 
 TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
@@ -21105,6 +21105,132 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationH2) {
       EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
       EXPECT_EQ("3", response_data3);
       trans3.reset();
+    }
+  }
+}
+
+// Preconnect two sockets with different NetworkIsolationKeys when
+// features::kPartitionConnectionsByNetworkIsolationKey is enabled. Then issue a
+// request and make sure the correct socket is used. Loops three times,
+// expecting to use the first preconnect, second preconnect, and neither.
+TEST_F(HttpNetworkTransactionTest, NetworkIsolationPreconnect) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  enum class TestCase {
+    kUseFirstPreconnect,
+    kUseSecondPreconnect,
+    kDontUsePreconnect,
+  };
+
+  NetworkIsolationKey preconnect1_isolation_key(
+      url::Origin::Create(GURL("http://origin1/")));
+  NetworkIsolationKey preconnect2_isolation_key(
+      url::Origin::Create(GURL("http://origin2/")));
+  NetworkIsolationKey not_preconnected_isolation_key(
+      url::Origin::Create(GURL("http://origin3/")));
+
+  // Test that only preconnects with
+  for (TestCase test_case :
+       {TestCase::kUseFirstPreconnect, TestCase::kUseSecondPreconnect,
+        TestCase::kDontUsePreconnect}) {
+    SpdySessionDependencies session_deps;
+    // Make DNS lookups completely synchronously, so preconnects complete
+    // immediately.
+    session_deps.host_resolver->set_synchronous_mode(true);
+
+    const MockWrite kMockWrites[] = {
+        MockWrite(ASYNC, 0,
+                  "GET / HTTP/1.1\r\n"
+                  "Host: www.foo.com\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    const MockRead kMockReads[] = {
+        MockRead(ASYNC, 1,
+                 "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n"
+                 "hello"),
+    };
+
+    // Used for the socket that will actually be used, which may or may not be
+    // one of the preconnects
+    SequencedSocketData used_socket_data(MockConnect(SYNCHRONOUS, OK),
+                                         kMockReads, kMockWrites);
+
+    // Used for the preconnects that won't actually be used.
+    SequencedSocketData preconnect1_data(MockConnect(SYNCHRONOUS, OK),
+                                         base::span<const MockRead>(),
+                                         base::span<const MockWrite>());
+    SequencedSocketData preconnect2_data(MockConnect(SYNCHRONOUS, OK),
+                                         base::span<const MockRead>(),
+                                         base::span<const MockWrite>());
+
+    NetworkIsolationKey network_isolation_key_for_request;
+
+    switch (test_case) {
+      case TestCase::kUseFirstPreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect2_data);
+        network_isolation_key_for_request = preconnect1_isolation_key;
+        break;
+      case TestCase::kUseSecondPreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect1_data);
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        network_isolation_key_for_request = preconnect2_isolation_key;
+        break;
+      case TestCase::kDontUsePreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect1_data);
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect2_data);
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        network_isolation_key_for_request = not_preconnected_isolation_key;
+        break;
+    }
+
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+    // Preconnect sockets.
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.foo.com/");
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    request.network_isolation_key = preconnect1_isolation_key;
+    session->http_stream_factory()->PreconnectStreams(1, request);
+
+    request.network_isolation_key = preconnect2_isolation_key;
+    session->http_stream_factory()->PreconnectStreams(1, request);
+
+    request.network_isolation_key = network_isolation_key_for_request;
+
+    EXPECT_EQ(2, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+    // Make the request.
+    TestCompletionCallback callback;
+
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+    int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+    rv = callback.WaitForResult();
+    EXPECT_THAT(rv, IsOk());
+
+    const HttpResponseInfo* response = trans.GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_EQ(200, response->headers->response_code());
+
+    std::string response_data;
+    rv = ReadTransaction(&trans, &response_data);
+    EXPECT_THAT(rv, IsOk());
+    EXPECT_EQ("hello", response_data);
+
+    if (test_case != TestCase::kDontUsePreconnect) {
+      EXPECT_EQ(2, GetIdleSocketCountInTransportSocketPool(session.get()));
+    } else {
+      EXPECT_EQ(3, GetIdleSocketCountInTransportSocketPool(session.get()));
     }
   }
 }

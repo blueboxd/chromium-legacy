@@ -286,14 +286,14 @@ TEST_F(LabelTest, FontPropertyArial) {
 TEST_F(LabelTest, TextProperty) {
   base::string16 test_text(ASCIIToUTF16("A random string."));
   label()->SetText(test_text);
-  EXPECT_EQ(test_text, label()->text());
+  EXPECT_EQ(test_text, label()->GetText());
 }
 
 TEST_F(LabelTest, ColorProperty) {
   SkColor color = SkColorSetARGB(20, 40, 10, 5);
   label()->SetAutoColorReadabilityEnabled(false);
   label()->SetEnabledColor(color);
-  EXPECT_EQ(color, label()->enabled_color());
+  EXPECT_EQ(color, label()->GetEnabledColor());
 }
 
 TEST_F(LabelTest, AlignmentProperty) {
@@ -307,18 +307,18 @@ TEST_F(LabelTest, AlignmentProperty) {
     // The alignment should be flipped in RTL UI.
     label()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     EXPECT_EQ(reverse_alignment ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT,
-              label()->horizontal_alignment());
+              label()->GetHorizontalAlignment());
     label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     EXPECT_EQ(reverse_alignment ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT,
-              label()->horizontal_alignment());
+              label()->GetHorizontalAlignment());
     label()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    EXPECT_EQ(gfx::ALIGN_CENTER, label()->horizontal_alignment());
+    EXPECT_EQ(gfx::ALIGN_CENTER, label()->GetHorizontalAlignment());
 
     for (size_t j = 0; j < 2; ++j) {
       label()->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
       const bool rtl = j == 0;
       label()->SetText(rtl ? base::WideToUTF16(L"\x5d0") : ASCIIToUTF16("A"));
-      EXPECT_EQ(gfx::ALIGN_TO_HEAD, label()->horizontal_alignment());
+      EXPECT_EQ(gfx::ALIGN_TO_HEAD, label()->GetHorizontalAlignment());
     }
   }
 
@@ -328,7 +328,7 @@ TEST_F(LabelTest, AlignmentProperty) {
 TEST_F(LabelTest, ElideBehavior) {
   base::string16 text(ASCIIToUTF16("This is example text."));
   label()->SetText(text);
-  EXPECT_EQ(gfx::ELIDE_TAIL, label()->elide_behavior());
+  EXPECT_EQ(gfx::ELIDE_TAIL, label()->GetElideBehavior());
   gfx::Size size = label()->GetPreferredSize();
   label()->SetBoundsRect(gfx::Rect(size));
   EXPECT_EQ(text, label()->GetDisplayTextForTesting());
@@ -348,7 +348,7 @@ TEST_F(LabelTest, ElideBehaviorMinimumWidth) {
   label()->SetText(text);
 
   // Default should be |gfx::ELIDE_TAIL|.
-  EXPECT_EQ(gfx::ELIDE_TAIL, label()->elide_behavior());
+  EXPECT_EQ(gfx::ELIDE_TAIL, label()->GetElideBehavior());
   gfx::Size size = label()->GetMinimumSize();
   // Elidable labels have a minimum width that fits |gfx::kEllipsisUTF16|.
   EXPECT_EQ(gfx::Canvas::GetStringWidth(base::string16(gfx::kEllipsisUTF16),
@@ -367,7 +367,7 @@ TEST_F(LabelTest, ElideBehaviorMinimumWidth) {
 
   // Non-elidable single-line labels should take up their full text size, since
   // this behavior implies the text should not be cut off.
-  EXPECT_FALSE(label()->multi_line());
+  EXPECT_FALSE(label()->GetMultiLine());
   label()->SetElideBehavior(gfx::NO_ELIDE);
   size = label()->GetMinimumSize();
   EXPECT_EQ(text.length(), label()->GetDisplayTextForTesting().length());
@@ -377,11 +377,11 @@ TEST_F(LabelTest, ElideBehaviorMinimumWidth) {
 }
 
 TEST_F(LabelTest, MultiLineProperty) {
-  EXPECT_FALSE(label()->multi_line());
+  EXPECT_FALSE(label()->GetMultiLine());
   label()->SetMultiLine(true);
-  EXPECT_TRUE(label()->multi_line());
+  EXPECT_TRUE(label()->GetMultiLine());
   label()->SetMultiLine(false);
-  EXPECT_FALSE(label()->multi_line());
+  EXPECT_FALSE(label()->GetMultiLine());
 }
 
 TEST_F(LabelTest, ObscuredProperty) {
@@ -390,30 +390,30 @@ TEST_F(LabelTest, ObscuredProperty) {
   label()->SizeToPreferredSize();
 
   // The text should be unobscured by default.
-  EXPECT_FALSE(label()->obscured());
+  EXPECT_FALSE(label()->GetObscured());
   EXPECT_EQ(test_text, label()->GetDisplayTextForTesting());
-  EXPECT_EQ(test_text, label()->text());
+  EXPECT_EQ(test_text, label()->GetText());
 
   label()->SetObscured(true);
   label()->SizeToPreferredSize();
-  EXPECT_TRUE(label()->obscured());
+  EXPECT_TRUE(label()->GetObscured());
   EXPECT_EQ(base::string16(test_text.size(),
                            gfx::RenderText::kPasswordReplacementChar),
             label()->GetDisplayTextForTesting());
-  EXPECT_EQ(test_text, label()->text());
+  EXPECT_EQ(test_text, label()->GetText());
 
   label()->SetText(test_text + test_text);
   label()->SizeToPreferredSize();
   EXPECT_EQ(base::string16(test_text.size() * 2,
                            gfx::RenderText::kPasswordReplacementChar),
             label()->GetDisplayTextForTesting());
-  EXPECT_EQ(test_text + test_text, label()->text());
+  EXPECT_EQ(test_text + test_text, label()->GetText());
 
   label()->SetObscured(false);
   label()->SizeToPreferredSize();
-  EXPECT_FALSE(label()->obscured());
+  EXPECT_FALSE(label()->GetObscured());
   EXPECT_EQ(test_text + test_text, label()->GetDisplayTextForTesting());
-  EXPECT_EQ(test_text + test_text, label()->text());
+  EXPECT_EQ(test_text + test_text, label()->GetText());
 }
 
 TEST_F(LabelTest, ObscuredSurrogatePair) {
@@ -425,7 +425,7 @@ TEST_F(LabelTest, ObscuredSurrogatePair) {
   label()->SizeToPreferredSize();
   EXPECT_EQ(base::string16(1, gfx::RenderText::kPasswordReplacementChar),
             label()->GetDisplayTextForTesting());
-  EXPECT_EQ(test_text, label()->text());
+  EXPECT_EQ(test_text, label()->GetText());
 }
 
 // This test case verifies the label preferred size will change based on the
@@ -456,7 +456,7 @@ TEST_F(LabelTest, TooltipProperty) {
 
   // Initially, label has no bounds, its text does not fit, and therefore its
   // text should be returned as the tooltip text.
-  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
+  EXPECT_EQ(label()->GetText(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
@@ -477,7 +477,7 @@ TEST_F(LabelTest, TooltipProperty) {
   // When the tooltip text is set to an empty string, the original behavior is
   // restored.
   label()->SetTooltipText(base::string16());
-  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
+  EXPECT_EQ(label()->GetText(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
@@ -531,7 +531,7 @@ TEST_F(LabelTest, Accessibility) {
   ui::AXNodeData node_data;
   label()->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(ax::mojom::Role::kStaticText, node_data.role);
-  EXPECT_EQ(label()->text(),
+  EXPECT_EQ(label()->GetText(),
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
   EXPECT_FALSE(
       node_data.HasIntAttribute(ax::mojom::IntAttribute::kRestriction));
@@ -557,7 +557,7 @@ TEST_F(LabelTest, TextChangeWithoutLayout) {
 TEST_F(LabelTest, EmptyLabelSizing) {
   const gfx::Size expected_size(0, label()->font_list().GetHeight());
   EXPECT_EQ(expected_size, label()->GetPreferredSize());
-  label()->SetMultiLine(!label()->multi_line());
+  label()->SetMultiLine(!label()->GetMultiLine());
   EXPECT_EQ(expected_size, label()->GetPreferredSize());
 }
 
@@ -768,7 +768,7 @@ TEST_F(LabelTest, GetTooltipHandlerForPoint) {
   label()->SetBounds(0, 0, 10, 10);
 
   // By default, labels start out as tooltip handlers.
-  ASSERT_TRUE(label()->handles_tooltips());
+  ASSERT_TRUE(label()->GetHandlesTooltips());
 
   // There's a default tooltip if the text is too big to fit.
   EXPECT_EQ(label(), label()->GetTooltipHandlerForPoint(gfx::Point(2, 2)));
@@ -827,7 +827,7 @@ TEST_F(LabelTest, ResetRenderTextData) {
 
   // Querying fields or size information should not recompute the layout
   // unnecessarily.
-  EXPECT_EQ(ASCIIToUTF16("Example"), label()->text());
+  EXPECT_EQ(ASCIIToUTF16("Example"), label()->GetText());
   EXPECT_FALSE(label()->display_text_);
 
   EXPECT_EQ(preferred_size, label()->GetPreferredSize());
@@ -879,7 +879,7 @@ TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
   label.SetEnabled(false);
   EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
 
-  label.SetText(label.text() + ASCIIToUTF16("Changed"));
+  label.SetText(label.GetText() + ASCIIToUTF16("Changed"));
   EXPECT_TRUE(Increased(label.schedule_paint_count(), &count));
 
   label.SizeToPreferredSize();
@@ -946,20 +946,20 @@ TEST_F(LabelTest, DefaultDirectionalityIsFromText) {
 
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.
-  EXPECT_FALSE(label()->selectable());
+  EXPECT_FALSE(label()->GetSelectable());
 
   ASSERT_TRUE(label()->SetSelectable(true));
-  EXPECT_TRUE(label()->selectable());
+  EXPECT_TRUE(label()->GetSelectable());
 
   // Verify that making a label multiline still causes the label to support text
   // selection.
   label()->SetMultiLine(true);
-  EXPECT_TRUE(label()->selectable());
+  EXPECT_TRUE(label()->GetSelectable());
 
   // Verify that obscuring the label text causes the label to not support text
   // selection.
   label()->SetObscured(true);
-  EXPECT_FALSE(label()->selectable());
+  EXPECT_FALSE(label()->GetSelectable());
 }
 
 // Verify that labels supporting text selection get focus on clicks.
@@ -1022,7 +1022,7 @@ TEST_F(LabelSelectionTest, DoubleTripleClick) {
 
   // Triple clicking should select all the text.
   PerformClick(GetCursorPoint(0));
-  EXPECT_EQ(label()->text(), GetSelectedText());
+  EXPECT_EQ(label()->GetText(), GetSelectedText());
 
   // Clicking again should alternate to double click.
   PerformClick(GetCursorPoint(0));
@@ -1138,7 +1138,8 @@ TEST_F(LabelSelectionTest, MouseDragMultilineRTL) {
   label()->SetMultiLine(true);
   label()->SetText(ToRTL("012\n345"));
   // Sanity check.
-  EXPECT_EQ(WideToUTF16(L"\x5d0\x5d1\x5d2\n\x5d3\x5d4\x5d5"), label()->text());
+  EXPECT_EQ(WideToUTF16(L"\x5d0\x5d1\x5d2\n\x5d3\x5d4\x5d5"),
+            label()->GetText());
 
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
@@ -1286,7 +1287,7 @@ TEST_F(LabelSelectionTest, KeyboardActions) {
 
   // Obscured labels do not support text selection.
   label()->SetObscured(true);
-  EXPECT_FALSE(label()->selectable());
+  EXPECT_FALSE(label()->GetSelectable());
   event_generator()->PressKey(ui::VKEY_A, kControlCommandModifier);
   EXPECT_EQ(base::string16(), GetSelectedText());
 }
@@ -1318,7 +1319,7 @@ TEST_F(LabelSelectionTest, ContextMenuContents) {
   // An obscured label would not show a context menu and both COPY and
   // SELECT_ALL should be disabled for it.
   label()->SetObscured(true);
-  EXPECT_FALSE(label()->selectable());
+  EXPECT_FALSE(label()->GetSelectable());
   EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_COPY));
   EXPECT_FALSE(IsMenuCommandEnabled(IDS_APP_SELECT_ALL));
   label()->SetObscured(false);

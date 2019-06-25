@@ -456,7 +456,7 @@ void MobileActivator::ContinueConnecting() {
   const NetworkState* network = GetNetworkState(service_path_);
   if (network && network->IsConnectedState()) {
     if (NetworkState::StateIsPortalled(network->connection_state()) &&
-        network->error() == shill::kErrorDNSLookupFailed) {
+        network->GetError() == shill::kErrorDNSLookupFailed) {
       // It isn't an error to be in a restricted pool, but if DNS doesn't work,
       // then we're not getting traffic through at all.  Just disconnect and
       // try again.
@@ -538,7 +538,7 @@ void MobileActivator::EvaluateCellularNetwork(const NetworkState* network) {
   LOG(WARNING) << "Cellular:\n  service state=" << network->connection_state()
                << "\n  ui=" << GetStateDescription(state_)
                << "\n  activation=" << network->activation_state()
-               << "\n  error=" << network->error()
+               << "\n  error=" << network->GetError()
                << "\n  setvice_path=" << network->path()
                << "\n  connected=" << network->IsConnectedState();
 
@@ -570,8 +570,8 @@ MobileActivator::PlanActivationState MobileActivator::PickNextState(
     const std::string& activation = network->activation_state();
     if ((activation == shill::kActivationStatePartiallyActivated ||
          activation == shill::kActivationStateActivating) &&
-        (network->error().empty() ||
-         network->error() == shill::kErrorOtaspFailed)) {
+        (network->GetError().empty() ||
+         network->GetError() == shill::kErrorOtaspFailed)) {
       NET_LOG_EVENT("Activation failure detected ", network->path());
       switch (state_) {
         case PLAN_ACTIVATION_OTASP:

@@ -171,6 +171,10 @@ def sign_part(paths, config, part):
             be in |paths.work|.
     """
     command = ['codesign', '--sign', config.identity]
+    if config.notary_user:
+        # Assume if the config has notary authentication information that the
+        # products will be notarized, which requires a secure timestamp.
+        command.append('--timestamp')
     if part.sign_with_identifier:
         command.extend(['--identifier', part.identifier])
     reqs = part.requirements_string(config)

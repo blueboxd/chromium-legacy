@@ -468,7 +468,8 @@ void PaintPath(Canvas* canvas,
     canvas->sk_canvas()->scale(scale, scale);
   }
 
-  ScopedRTLFlipCanvas scoped_rtl_flip_canvas(canvas, canvas_size, flips_in_rtl);
+  if (flips_in_rtl)
+    scoped_canvas.FlipIfRTL(canvas_size);
 
   if (!clip_rect.isEmpty())
     canvas->sk_canvas()->clipRect(clip_rect);

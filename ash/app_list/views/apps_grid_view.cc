@@ -1750,9 +1750,9 @@ void AppsGridView::HandleKeyboardFoldering(ui::KeyboardCode key_code) {
   if (!CanMoveSelectedToTargetForKeyboardFoldering(target_index))
     return;
 
-  const base::string16 moving_view_title = selected_view_->title()->text();
+  const base::string16 moving_view_title = selected_view_->title()->GetText();
   AppListItemView* folder_item = MoveItemToFolder(selected_view_, target_index);
-  AnnounceFolderDrop(moving_view_title, folder_item->title()->text(),
+  AnnounceFolderDrop(moving_view_title, folder_item->title()->GetText(),
                      folder_item->is_folder());
   DCHECK(folder_item->is_folder());
   folder_item->RequestFocus();
@@ -3246,8 +3246,8 @@ void AppsGridView::MaybeCreateFolderDroppingAccessibilityEvent() {
       GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
   DCHECK(drop_view);
 
-  AnnounceFolderDrop(drag_view_->title()->text(), drop_view->title()->text(),
-                     drop_view->is_folder());
+  AnnounceFolderDrop(drag_view_->title()->GetText(),
+                     drop_view->title()->GetText(), drop_view->is_folder());
 }
 
 void AppsGridView::AnnounceFolderDrop(const base::string16& moving_view_title,

@@ -1540,17 +1540,7 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'password_manager_form_parser_generic_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'password_manager_form_parser_proto_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      'password_manager_form_parser_proto_generic_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
@@ -3827,7 +3817,7 @@
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
         'args': [
-          '--enable-blink-features=LayoutNG'
+          '--disable-blink-features=LayoutNG'
         ],
         'test': 'blink_unittests',
       },

@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Tests the Most Visited iframe on the local NTP.
  */
-
 
 /**
  * Most Visited's object for test and setup functions.
  */
 test.mostVisited = {};
 
-
 /**
  * ID of the Most Visited container.
  * @const {string}
  */
 test.mostVisited.MOST_VISITED = 'most-visited';
-
 
 /**
  * Enum for classnames.
@@ -33,13 +29,11 @@ test.mostVisited.CLASSES = {
   REORDERING: 'reordering',
 };
 
-
 /**
  * Utility to mock out parts of the DOM.
  * @type {Replacer}
  */
 test.mostVisited.stubs = new Replacer();
-
 
 /**
  * The MostVisited object.
@@ -47,13 +41,11 @@ test.mostVisited.stubs = new Replacer();
  */
 test.mostVisited.mostvisited = null;
 
-
 /**
  * The MostVisited grid.
  * @type {?Grid}
  */
 test.mostVisited.grid = null;
-
 
 /**
  * The restricted id of the item that will be reordered.
@@ -61,13 +53,11 @@ test.mostVisited.grid = null;
  */
 test.mostVisited.reorderRid = -1;
 
-
 /**
  * The new index to reorder the item to.
  * @type {number}
  */
 test.mostVisited.reorderNewIndex = -1;
-
 
 /**
  * Set up the text DOM and test environment.
@@ -92,7 +82,6 @@ test.mostVisited.setUp = function() {
   test.mostVisited.mostvisited.enableGridLayoutForTesting();
   test.mostVisited.grid = new test.mostVisited.mostvisited.Grid();
 };
-
 
 /**
  * Tests if the grid creates the correct tile layout.
@@ -158,7 +147,6 @@ test.mostVisited.testGridLayout = function() {
   assertEquals('50px', container.style.width);
   test.mostVisited.assertLayout(container, expectedLayout);
 };
-
 
 /**
  * Tests if the grid creates the correct tile layout in RTL. The (x,y) positions
@@ -227,7 +215,6 @@ test.mostVisited.testGridLayoutRtl = function() {
   test.mostVisited.assertLayout(container, expectedLayout);
 };
 
-
 /**
  * Tests if the grid resizes correctly according to window size.
  */
@@ -272,7 +259,6 @@ test.mostVisited.testGridResize = function() {
   test.mostVisited.assertLayout(container, expectedLayout);
   test.mostVisited.assertVisibility(container, 0);
 };
-
 
 /**
  * Tests if the grid resizes correctly in RTL according to window size. The
@@ -321,7 +307,6 @@ test.mostVisited.testGridResizeRtl = function() {
   test.mostVisited.assertVisibility(container, 0);
 };
 
-
 /**
  * Tests if the grid rebalances correctly when the window is resized.
  */
@@ -358,7 +343,6 @@ test.mostVisited.testGridResizeRebalance = function() {
   test.mostVisited.assertLayout(container, expectedLayoutRebalance);
   test.mostVisited.assertVisibility(container, 0);
 };
-
 
 /**
  * Tests if all tiles except the add button can be reordered.
@@ -422,7 +406,6 @@ test.mostVisited.testReorderStart = function() {
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 };
 
-
 /**
  * Tests if the tiles can be reordered using touch.
  */
@@ -483,7 +466,6 @@ test.mostVisited.testReorderStartTouch = function() {
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 };
-
 
 /**
  * Tests if the held tile properly follows the cursor.
@@ -588,7 +570,6 @@ test.mostVisited.testReorderFollowCursor = function() {
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 };
 
-
 /**
  * Tests if the held tile properly follows the cursor in RTL.
  */
@@ -676,7 +657,6 @@ test.mostVisited.testReorderFollowCursorRtl = function() {
   assertEquals(expectedTransform, tile.firstChild.style.transform);
 };
 
-
 /**
  * Tests if the held tile properly follows the cursor using touch.
  */
@@ -744,7 +724,6 @@ test.mostVisited.testReorderFollowCursorTouch = function() {
   // Stop the reorder flow.
   tile.firstChild.dispatchEvent(touchEnd);
 };
-
 
 /**
  * Tests if the tiles are translated properly when reordering.
@@ -845,7 +824,6 @@ test.mostVisited.testReorderInsert = function() {
   assertEquals(3, test.mostVisited.reorderRid);
   assertEquals(4, test.mostVisited.reorderNewIndex);
 };
-
 
 /**
  * Tests if the tiles are translated properly when reordering in RTL. The (x,y)
@@ -949,7 +927,6 @@ test.mostVisited.testReorderInsertRtl = function() {
   assertEquals(4, test.mostVisited.reorderNewIndex);
 };
 
-
 /**
  * Tests if the tiles are translated properly when reordering with an add
  * shortcut button present.
@@ -1014,7 +991,6 @@ test.mostVisited.testReorderInsertWithAddButton = function() {
   assertEquals(1, test.mostVisited.reorderRid);
   assertEquals(3, test.mostVisited.reorderNewIndex);
 };
-
 
 /**
  * Tests if the tiles are translated properly when reordering using touch.
@@ -1099,10 +1075,8 @@ test.mostVisited.testReorderInsertTouch = function() {
   assertEquals(4, test.mostVisited.reorderNewIndex);
 };
 
-
 // ***************************** HELPER FUNCTIONS *****************************
 // These are used by the tests above.
-
 
 /**
  * Creates and initializes a MostVisited object.
@@ -1113,7 +1087,6 @@ test.mostVisited.init = function() {
   mostVisited.init();
   return mostVisited;
 };
-
 
 /**
  * Fills and initializes the tile grid.
@@ -1126,7 +1099,6 @@ test.mostVisited.initGrid = function(container, params, numTiles) {
   test.mostVisited.fillTiles(container, numTiles);
   test.mostVisited.grid.init(container, params);
 };
-
 
 /**
  * Fills and initializes the tile grid with an add button.
@@ -1142,7 +1114,6 @@ test.mostVisited.initGridWithAdd = function(container, params, numTiles) {
   test.mostVisited.grid.init(container, params);
 };
 
-
 /**
  * Fills |container| with |numTiles| new grid tiles.
  * @param {!Element} container The grid container.
@@ -1153,7 +1124,6 @@ test.mostVisited.fillTiles = function(container, numTiles) {
     test.mostVisited.appendTile(container, i, false);
   }
 };
-
 
 /**
  * Appends a grid tile to |container|.
@@ -1167,7 +1137,6 @@ test.mostVisited.appendTile = function(container, rid, isAddButton) {
   container.appendChild(gridTile);
 };
 
-
 /**
  * Assert that the tile layout matches |expectedLayout|.
  * @param {!Element} container The grid container.
@@ -1180,7 +1149,6 @@ test.mostVisited.assertLayout = function(container, expectedLayout) {
     assertEquals(expectedLayout[i], tiles[i].style.transform);
   }
 };
-
 
 /**
  * Assert that all but the last |numHidden| tiles are visible.
@@ -1197,7 +1165,6 @@ test.mostVisited.assertVisibility = function(container, numHidden) {
     }
   }
 };
-
 
 /**
  * Assert that the tile layout matches |expectedLayout| after the reorder

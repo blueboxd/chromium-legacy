@@ -48,11 +48,6 @@ class PreflightCacheTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromSeconds(seconds));
   }
 
-  size_t EstimateMemoryPressure() {
-    PreflightCache::Metrics metrics = cache_.ReportAndGatherSizeMetric();
-    return metrics.memory_pressure_in_bytes;
-  }
-
  private:
   // testing::Test implementation.
   void SetUp() override { PreflightResult::SetTickClockForTesting(&clock_); }
@@ -127,44 +122,6 @@ TEST_F(PreflightCacheTest, CacheTimeout) {
   EXPECT_FALSE(CheckEntryAndRefreshCache(origin, other_url));
 
   EXPECT_EQ(0u, CountEntries());
-}
-
-TEST_F(PreflightCacheTest, EstimateMemoryPressure) {
-  const std::string origin1("origin1");
-  const std::string origin2("origin2");
-  const size_t entry_size = CreateEntry()->EstimateMemoryPressureInBytes();
-  const GURL url1("http://www.test.com/pulstar");
-  const GURL url2("http://www.test.com/blazingstar");
-
-  EXPECT_EQ(0u, CountEntries());
-  size_t expected_pressure = 0u;
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
-
-  AppendEntry(origin1, url1);
-  expected_pressure += origin1.length() + url1.spec().length() + entry_size;
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
-
-  // Overwriting does not change the pressure.
-  AppendEntry(origin1, url1);
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
-
-  // Add another entry.
-  AppendEntry(origin1, url2);
-  expected_pressure += origin1.length() + url2.spec().length() + entry_size;
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
-
-  // Expiring the cache entry should result in updating the memory pressure.
-  Advance(10);
-  EXPECT_FALSE(CheckEntryAndRefreshCache(origin1, url1));
-  expected_pressure = origin1.length() + url2.spec().length() + entry_size;
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
-
-  // Add another entry that have the same memory pressure, then purge one.
-  ASSERT_EQ(origin1.length(), origin2.length());
-  AppendEntry(origin2, url2);
-  EXPECT_EQ(expected_pressure * 2u, EstimateMemoryPressure());
-  MayPurge(1u, 1u);
-  EXPECT_EQ(expected_pressure, EstimateMemoryPressure());
 }
 
 }  // namespace

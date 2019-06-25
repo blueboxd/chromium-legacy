@@ -251,9 +251,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
 
-  // Reports metrics on a periodically triggered repeating timer.
-  void ReportMetrics();
-
   service_manager::ServiceBinding service_binding_{this};
 
   bool initialized_ = false;

@@ -2718,7 +2718,7 @@ class SessionClosingDelegate : public test::StreamDelegateDoNothing {
   ~SessionClosingDelegate() override = default;
 
   void OnClose(int status) override {
-    session_to_close_->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error");
+    session_to_close_->CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, "Error");
   }
 
  private:
@@ -5187,7 +5187,7 @@ TEST_F(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
   EXPECT_FALSE(session_);
 }
 
@@ -5814,7 +5814,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   SpdyStream* pushed_stream;
   int rv = session_->GetPushedStream(pushed_url, 2 /* pushed_stream_id */, IDLE,
                                      &pushed_stream);
-  EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE));
 
   // Read PUSH_PROMISE.
   data.Resume();
@@ -5845,7 +5845,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   // stream with ID |pushed_stream_id|.
   rv = session_->GetPushedStream(pushed_url, 4 /* pushed_stream_id */, IDLE,
                                  &pushed_stream);
-  EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE));
 
   // GetPushedStream() should return OK and return the pushed stream in
   // |pushed_stream| outparam if |pushed_stream_id| matches.
@@ -6597,19 +6597,19 @@ TEST(MapFramerErrorToProtocolError, MapsValues) {
 }
 
 TEST(MapFramerErrorToNetError, MapsValue) {
-  CHECK_EQ(ERR_SPDY_PROTOCOL_ERROR,
+  CHECK_EQ(ERR_HTTP2_PROTOCOL_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
-  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+  CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE));
-  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+  CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE));
-  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+  CHECK_EQ(ERR_HTTP2_FRAME_SIZE_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
-  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+  CHECK_EQ(ERR_HTTP2_FRAME_SIZE_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD));
 }
@@ -6633,15 +6633,15 @@ TEST(MapRstStreamStatusToProtocolError, MapsValues) {
 
 TEST(MapNetErrorToGoAwayStatus, MapsValue) {
   CHECK_EQ(spdy::ERROR_CODE_INADEQUATE_SECURITY,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY));
   CHECK_EQ(spdy::ERROR_CODE_FLOW_CONTROL_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_FLOW_CONTROL_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_FLOW_CONTROL_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_PROTOCOL_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_PROTOCOL_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_PROTOCOL_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_COMPRESSION_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_COMPRESSION_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_COMPRESSION_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_FRAME_SIZE_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_FRAME_SIZE_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_FRAME_SIZE_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_PROTOCOL_ERROR,
            MapNetErrorToGoAwayStatus(ERR_UNEXPECTED));
 }

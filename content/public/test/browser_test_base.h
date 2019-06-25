@@ -52,7 +52,7 @@ class BrowserTestBase : public testing::Test {
   virtual void SetUpCommandLine(base::CommandLine* command_line) {}
 
   // Override this to disallow accesses to be production-compatible.
-  virtual bool AllowFileAccessFromFiles() const;
+  virtual bool AllowFileAccessFromFiles();
 
   // Crash the Network Service process. Should only be called when
   // out-of-process Network Service is enabled. Re-applies any added host

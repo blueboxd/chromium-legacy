@@ -115,6 +115,11 @@ class CanvasRenderingContext2DState final
   void SetFillStyle(CanvasStyle*);
   CanvasStyle* FillStyle() const { return fill_style_.Get(); }
 
+  bool HasPattern() const;
+
+  // Only to be used if the CanvasRenderingContext2dState has Pattern
+  bool PatternIsAccelerated() const;
+
   CanvasStyle* Style(PaintType) const;
 
   enum Direction { kDirectionInherit, kDirectionRTL, kDirectionLTR };

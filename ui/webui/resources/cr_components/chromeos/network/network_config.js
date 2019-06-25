@@ -1492,20 +1492,13 @@ Polymer({
    * @private
    */
   setPropertiesCallback_: function(connect) {
-    this.setError_(this.getRuntimeError_());
-    if (this.error) {
-      console.error('setProperties error: ' + this.guid + ': ' + this.error);
-      this.propertiesSent_ = false;
-      return;
-    }
+    // Only attempt a connection if the network is not yet connected.
     const connectState = this.managedProperties.ConnectionState;
-    if (connect &&
-        (!connectState ||
-         connectState == CrOnc.ConnectionState.NOT_CONNECTED)) {
-      this.startConnect_(this.guid);
-      return;
-    }
-    this.close_();
+    const shouldConnect = connect &&
+        (!connectState || connectState == CrOnc.ConnectionState.NOT_CONNECTED);
+
+    this.handleNetworkConfigurationResponse_(
+        shouldConnect, this.guid, 'setProperties() error');
   },
 
   /**
@@ -1514,17 +1507,30 @@ Polymer({
    * @private
    */
   createNetworkCallback_: function(connect, guid) {
+    this.handleNetworkConfigurationResponse_(
+        connect, guid,
+        'createNetworkError() error; type: ' + this.managedProperties.Type);
+  },
+
+  /**
+   * @param {boolean} connect If true, connect after save.
+   * @param {string} guid
+   * @param {string} errorMessage The message to use in the case of an error.
+   * @private
+   */
+  handleNetworkConfigurationResponse_: function(connect, guid, errorMessage) {
     this.setError_(this.getRuntimeError_());
     if (this.error) {
       console.error(
-          'createNetworkError, type: ' + this.managedProperties.Type + ': ' +
-          'error: ' + this.error);
+          errorMessage + ', GUID: ' + guid + ', error: ' + this.error);
       this.propertiesSent_ = false;
       return;
     }
     if (connect) {
       this.startConnect_(guid);
+      return;
     }
+    this.close_();
   },
 
   /**

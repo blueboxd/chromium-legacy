@@ -27,7 +27,7 @@ namespace prefetch {
 static jboolean JNI_PrefetchBackgroundTask_StartPrefetchTask(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  ProfileKey* profile_key = ::android::GetMainProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
   DCHECK(profile_key);
 
   PrefetchService* prefetch_service =

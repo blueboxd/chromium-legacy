@@ -300,15 +300,16 @@ void UnknownSchemeCallback(
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool IsRedirectSafe(const GURL& from_url,
                     const GURL& to_url,
+                    BrowserContext* browser_context,
                     ResourceContext* resource_context) {
-  // TODO(http://crbug.com/824840): Make
-  // ContentBrowserClient::IsSafeRedirectTarget work on UI thread.
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    return IsSafeRedirectTarget(from_url, to_url);
+    return IsSafeRedirectTarget(from_url, to_url) &&
+           GetContentClient()->browser()->IsSafeRedirectTarget(to_url,
+                                                               browser_context);
   }
   return IsSafeRedirectTarget(from_url, to_url) &&
-         GetContentClient()->browser()->IsSafeRedirectTarget(to_url,
-                                                             resource_context);
+         GetContentClient()->browser()->IsSafeRedirectTargetOnIO(
+             to_url, resource_context);
 }
 
 // Runs |task| on the thread specified by |thread_id| if already on that thread,
@@ -340,6 +341,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors,
       std::unique_ptr<network::ResourceRequest> resource_request,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       const GURL& url,
       bool is_main_frame,
@@ -358,6 +360,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         proxied_factory_info_(std::move(proxied_factory_info)),
         known_schemes_(std::move(known_schemes)),
         bypass_redirect_checks_(bypass_redirect_checks),
+        browser_context_(browser_context),
         weak_factory_(this) {}
 
   ~URLLoaderRequestController() override {
@@ -1234,7 +1237,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                          const network::ResourceResponseHead& head) override {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
         !bypass_redirect_checks_ &&
-        !IsRedirectSafe(url_, redirect_info.new_url, resource_context_)) {
+        !IsRedirectSafe(url_, redirect_info.new_url, browser_context_,
+                        resource_context_)) {
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory (created through the embedder's
       // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
@@ -1367,10 +1371,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles() {
-    // TODO(http://crbug.com/824840): Create throttles on UI thread.
-    if (IsNavigationLoaderOnUIEnabled())
-      return {};
-    return GetContentClient()->browser()->CreateURLLoaderThrottles(
+    if (IsNavigationLoaderOnUIEnabled()) {
+      return GetContentClient()->browser()->CreateURLLoaderThrottles(
+          *resource_request_, browser_context_, web_contents_getter_,
+          navigation_ui_data_.get(), frame_tree_node_id_);
+    }
+    return GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
         *resource_request_, resource_context_, web_contents_getter_,
         navigation_ui_data_.get(), frame_tree_node_id_);
   }
@@ -1498,6 +1504,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Counts the time overhead of all the hops from the UI to the IO threads.
   base::TimeDelta ui_to_io_time_;
 
+  // Only used when NavigationLoaderOnUI is enabled:
+  BrowserContext* browser_context_;
+
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -1506,6 +1515,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 // TODO(https://crbug.com/790734): pass |navigation_ui_data| along with the
 // request so that it could be modified.
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
@@ -1555,7 +1565,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     request_controller_ = std::make_unique<URLLoaderRequestController>(
         /* initial_interceptors = */
         std::vector<std::unique_ptr<NavigationLoaderInterceptor>>(),
-        std::move(new_request), resource_context,
+        std::move(new_request), browser_context, resource_context,
         request_info->common_params.url, request_info->is_main_frame,
         /* proxied_url_loader_factory_request */ nullptr,
         /* proxied_url_loader_factory_info */ nullptr, std::set<std::string>(),
@@ -1685,11 +1695,11 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
-      std::move(initial_interceptors), std::move(new_request), resource_context,
-      request_info->common_params.url, request_info->is_main_frame,
-      std::move(proxied_factory_request), std::move(proxied_factory_info),
-      std::move(known_schemes), bypass_redirect_checks,
-      weak_factory_.GetWeakPtr());
+      std::move(initial_interceptors), std::move(new_request), browser_context,
+      resource_context, request_info->common_params.url,
+      request_info->is_main_frame, std::move(proxied_factory_request),
+      std::move(proxied_factory_info), std::move(known_schemes),
+      bypass_redirect_checks, weak_factory_.GetWeakPtr());
   RunOrPostTaskIfNecessary(
       FROM_HERE, GetLoaderRequestControllerThreadID(),
       base::BindOnce(&URLLoaderRequestController::Start,

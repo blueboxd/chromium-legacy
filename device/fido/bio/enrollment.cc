@@ -96,7 +96,10 @@ BioEnrollmentRequest BioEnrollmentRequest::ForRename(
   request.params = cbor::Value::MapValue();
   request.params->emplace(
       static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId),
-      cbor::Value(std::move(id)));
+      std::move(id));
+  request.params->emplace(
+      static_cast<int>(BioEnrollmentSubCommandParam::kTemplateFriendlyName),
+      std::move(name));
   SetPinAuth(&request, token);
   return request;
 }
@@ -121,16 +124,6 @@ BioEnrollmentRequest& BioEnrollmentRequest::operator=(BioEnrollmentRequest&&) =
     default;
 BioEnrollmentRequest::BioEnrollmentRequest(Version v) : version(v) {}
 BioEnrollmentRequest::~BioEnrollmentRequest() = default;
-
-template <typename T>
-static base::Optional<T> ToBioEnrollmentEnum(uint8_t v) {
-  // Check if enum-class is in range...
-  if (v < static_cast<int>(T::kMin) || v > static_cast<int>(T::kMax)) {
-    // ...to avoid UB.
-    return base::nullopt;
-  }
-  return static_cast<T>(v);
-}
 
 // static
 base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
@@ -224,7 +217,7 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
       return base::nullopt;
     }
 
-    std::vector<std::pair<std::vector<uint8_t>, std::string>> enumerated_ids;
+    std::vector<std::pair<std::vector<uint8_t>, std::string>> template_infos;
     for (const auto& bio_template : it->second.GetArray()) {
       if (!bio_template.is_map()) {
         return base::nullopt;
@@ -250,9 +243,9 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
         }
         name = template_it->second.GetString();
       }
-      enumerated_ids.push_back(std::make_pair(std::move(id), std::move(name)));
+      template_infos.push_back(std::make_pair(std::move(id), std::move(name)));
     }
-    response.enumerated_ids = std::move(enumerated_ids);
+    response.template_infos = std::move(template_infos);
   }
 
   return response;
@@ -267,7 +260,7 @@ bool BioEnrollmentResponse::operator==(const BioEnrollmentResponse& r) const {
          max_samples_for_enroll == r.max_samples_for_enroll &&
          template_id == r.template_id && last_status == r.last_status &&
          remaining_samples == r.remaining_samples &&
-         enumerated_ids == r.enumerated_ids;
+         template_infos == r.template_infos;
 }
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>

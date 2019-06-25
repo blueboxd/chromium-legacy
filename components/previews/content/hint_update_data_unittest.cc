@@ -64,8 +64,7 @@ TEST(HintUpdateDataTest, BuildFetchUpdateData) {
   EXPECT_EQ(update_time, *fetch_update->fetch_update_time());
   // Verify there are 2 store entries: 1 for the metadata entry plus
   // the 1 added hint entries.
-  // TODO(dougarnett): Increase expected count once metadata support added.
-  EXPECT_EQ(1ul, fetch_update->TakeUpdateEntries()->size());
+  EXPECT_EQ(2ul, fetch_update->TakeUpdateEntries()->size());
 }
 
 }  // namespace

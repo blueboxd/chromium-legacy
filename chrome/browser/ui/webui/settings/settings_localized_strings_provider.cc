@@ -2963,7 +2963,29 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
 
 void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
+      {"securityKeysPINTooShort",
+       IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
+      {"securityKeysCredentialWebsite",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},
+      {"securityKeysNoCredentialManagement",
+       IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT},
+      {"securityKeysCredentialManagementRemoved",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED},
+      {"securityKeysCredentialManagementDesc",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DESC},
+      {"securityKeysCredentialManagementDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_TITLE},
+      {"securityKeysCredentialManagementLabel",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_LABEL},
+      {"securityKeysCredentialManagementNoCredentials",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_CREDENTIALS},
+      {"securityKeysCredentialManagementPinPrompt",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_PIN_PROMPT},
+      {"securityKeysCredentialManagementTouch",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_TOUCH},
+      {"securityKeysCredentialUsername",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_USERNAME},
       {"securityKeysCurrentPIN", IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN},
       {"securityKeysCurrentPINIntro",
        IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_INTRO},
@@ -2999,6 +3021,8 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysResetStep2", IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2},
       {"securityKeysResetSuccess", IDS_SETTINGS_SECURITY_KEYS_RESET_SUCCESS},
       {"securityKeysResetTitle", IDS_SETTINGS_SECURITY_KEYS_RESET_TITLE},
+      {"securityKeysSavedCredentials",
+       IDS_SETTINGS_SECURITY_KEYS_SAVED_CREDENTIALS_TITLE},
       {"securityKeysSetPIN", IDS_SETTINGS_SECURITY_KEYS_SET_PIN},
       {"securityKeysSetPINChangeTitle",
        IDS_SETTINGS_SECURITY_KEYS_SET_PIN_CHANGE_TITLE},
@@ -3017,6 +3041,15 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "enableSecurityKeysSubpage",
       base::FeatureList::IsEnabled(device::kWebAuthPINSupport)
+#if defined(OS_WIN)
+          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
+              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
+#endif
+  );
+  html_source->AddBoolean(
+      "enableSecurityKeysCredentialManagement",
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
+          base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement)
 #if defined(OS_WIN)
           && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
               !device::WinWebAuthnApi::GetDefault()->IsAvailable())

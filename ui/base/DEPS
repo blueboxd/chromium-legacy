@@ -1,9 +1,9 @@
 include_rules = [
-  "+ui/base/ui_base_jni_headers",
   "+net",
   "+skia/ext",
   "+third_party/skia",
   "+third_party/zlib",
+  "+ui/base/ui_base_jni_headers",
   "+ui/display",
   "+ui/events",
   "+ui/gfx",

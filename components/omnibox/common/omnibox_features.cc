@@ -21,25 +21,15 @@ const base::Feature kHideFileUrlScheme {
 
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
-const base::Feature kHideSteadyStateUrlScheme {
-  "OmniboxUIExperimentHideSteadyStateUrlScheme",
-#if defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kHideSteadyStateUrlScheme{
+    "OmniboxUIExperimentHideSteadyStateUrlScheme",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to hide trivial subdomains from steady state URLs displayed in
 // the toolbar. It is restored during editing.
-const base::Feature kHideSteadyStateUrlTrivialSubdomains {
-  "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
-#if defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kHideSteadyStateUrlTrivialSubdomains{
+    "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to hide the path, query and ref from steady state URLs
 // displayed in the toolbar. It is restored during editing.

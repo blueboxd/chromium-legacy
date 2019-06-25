@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace dbus {
@@ -24,6 +25,13 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override {}
+    // Called when the ARC is stopped after it had already started.
+    virtual void ArcStopped() {}
+  };
+
   virtual ~UpstartClient();
 
   // Creates and initializes the global instance. |bus| must not be null.
@@ -37,6 +45,10 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
 
   // Returns the global instance if initialized. May return null.
   static UpstartClient* Get();
+
+  // Adds or removes an observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Starts an Upstart job.
   // |job|: Name of Upstart job.

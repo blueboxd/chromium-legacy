@@ -65,3 +65,7 @@ class TestCommands(unittest.TestCase):
         commands.run_command(['touch', path])
 
         self.assertTrue(commands.file_exists(path))
+
+    def test_run_command_output(self):
+        output = commands.run_command_output(['echo', 'hello world'])
+        self.assertEqual(b'hello world\n', output)

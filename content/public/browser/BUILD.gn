@@ -194,6 +194,7 @@ jumbo_source_set("browser_sources") {
     "native_event_processor_mac.h",
     "native_event_processor_observer_mac.h",
     "native_event_processor_observer_mac.mm",
+    "native_file_system_entry_factory.h",
     "native_file_system_permission_context.h",
     "native_file_system_permission_grant.h",
     "native_web_keyboard_event.h",

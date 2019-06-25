@@ -1753,7 +1753,7 @@
       },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
-          '--additional-driver-flag=--enable-blink-features=LayoutNG',
+          '--additional-driver-flag=--disable-blink-features=LayoutNG',
         ],
       },
       'WebKit Linux root_layer_scrolls Dummy Builder': {

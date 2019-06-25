@@ -72,8 +72,8 @@ TEST(FontStyleResolverTest, RelativeSize) {
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
   EXPECT_EQ(desc.Family().Family(), "Ahem");
-  EXPECT_EQ(desc.SpecifiedSize(), 16);
-  EXPECT_EQ(desc.ComputedSize(), 16);
+  EXPECT_EQ(desc.SpecifiedSize(), 10);
+  EXPECT_EQ(desc.ComputedSize(), 10);
 }
 
 }  // namespace blink

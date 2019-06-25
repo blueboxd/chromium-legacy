@@ -2246,6 +2246,7 @@ test("content_unittests") {
   is_linux_without_udev = is_linux && !use_udev
   if (!is_linux_without_udev && !is_android) {
     sources += [
+      "../browser/hid/hid_service_unittest.cc",
       "../browser/webauth/authenticator_impl_unittest.cc",
       "../browser/webauth/authenticator_mojom_traits_unittest.cc",
     ]
@@ -2255,6 +2256,7 @@ test("content_unittests") {
       "//device/fido",
       "//device/fido:mocks",
       "//device/fido:test_support",
+      "//services/device/public/cpp/hid:test_support",
     ]
   }
 

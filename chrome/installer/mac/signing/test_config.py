@@ -12,8 +12,13 @@ config = imp.load_source('signing.config', os.path.join(THIS_DIR,
 
 class TestConfig(config.CodeSignConfig):
 
-    def __init__(self, identity='[IDENTITY]', keychain='[KEYCHAIN]'):
-        super(TestConfig, self).__init__(identity, keychain)
+    def __init__(self,
+                 identity='[IDENTITY]',
+                 keychain='[KEYCHAIN]',
+                 notary_user='[NOTARY-USER]',
+                 notary_password='[NOTARY-PASSWORD]'):
+        super(TestConfig, self).__init__(identity, keychain, notary_user,
+                                         notary_password)
 
     @property
     def app_product(self):

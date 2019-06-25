@@ -21,6 +21,7 @@ class BackgroundSyncContext;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
 class IndexedDBContext;
+class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 
@@ -104,6 +105,7 @@ class TestStoragePartition : public StoragePartition {
     indexed_db_context_ = context;
   }
   IndexedDBContext* GetIndexedDBContext() override;
+  NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
 
   void set_service_worker_context(ServiceWorkerContext* context) {
     service_worker_context_ = context;

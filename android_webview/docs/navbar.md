@@ -1,6 +1,6 @@
 # WebView docs (go/webview-docs)
 
-* [Home][home]
+* [Home](/android_webview/docs/README.md)
 * [Quick start](/android_webview/docs/quick-start.md)
 * [Device setup](/android_webview/docs/device-setup.md)
 * [Build instructions](/android_webview/docs/build-instructions.md)

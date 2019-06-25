@@ -346,7 +346,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |pushed_stream_id| must not be kNoPushedStreamFound.
   //
   // Returns ERR_CONNECTION_CLOSED if the connection is being closed.
-  // Returns ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE if the pushed stream is not
+  // Returns ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE if the pushed stream is not
   //   available any longer, for example, if the server has reset it.
   // Returns OK if the stream is still available, and returns the stream in
   //   |*spdy_stream|.  If the stream is still open, updates its priority to

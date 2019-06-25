@@ -39,7 +39,7 @@ class CastURLLoaderThrottle : public content::URLLoaderThrottle {
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  bool makes_unsafe_redirect() const override;
+  bool makes_unsafe_redirect() override;
 
   void ResumeRequest(int error, net::HttpRequestHeaders headers);
 

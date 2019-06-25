@@ -99,11 +99,9 @@ namespace blink {
 
 namespace {
 
-// TODO(steimel): When modern media controls launches, remove above constants
-// and rename below constants.
 // (2px left border + 6px left padding + 56px button + 6px right padding + 2px
 // right border) = 72px.
-constexpr int kModernMinWidthForOverlayPlayButton = 72;
+constexpr int kMinWidthForOverlayPlayButton = 72;
 
 constexpr int kMinScrubbingMessageWidth = 300;
 
@@ -119,8 +117,8 @@ const char* kStateCSSClasses[8] = {
 };
 
 // The padding in pixels inside the button panel.
-constexpr int kModernControlsAudioButtonPadding = 20;
-constexpr int kModernControlsVideoButtonPadding = 26;
+constexpr int kAudioButtonPadding = 20;
+constexpr int kVideoButtonPadding = 26;
 
 const char kShowDefaultPosterCSSClass[] = "use-default-poster";
 const char kActAsAudioControlsCSSClass[] = "audio-only";
@@ -186,12 +184,11 @@ bool PreferHiddenVolumeControls(const Document& document) {
 
 // If you change this value, then also update the corresponding value in
 // web_tests/media/media-controls.js.
-constexpr base::TimeDelta
-    kModernTimeWithoutMouseMovementBeforeHidingMediaControls =
-        base::TimeDelta::FromSecondsD(2.5);
+constexpr base::TimeDelta kTimeWithoutMouseMovementBeforeHidingMediaControls =
+    base::TimeDelta::FromSecondsD(2.5);
 
 base::TimeDelta GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
-  return kModernTimeWithoutMouseMovementBeforeHidingMediaControls;
+  return kTimeWithoutMouseMovementBeforeHidingMediaControls;
 }
 
 }  // namespace
@@ -424,39 +421,33 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     (-webkit-media-controls)
 // +-MediaControlLoadingPanelElement
 // |    (-internal-media-controls-loading-panel)
-// |    {if ModernMediaControlsEnabled}
 // +-MediaControlOverlayEnclosureElement
 // |    (-webkit-media-controls-overlay-enclosure)
-// | +-MediaControlOverlayPlayButtonElement
-// | |    (-webkit-media-controls-overlay-play-button)
-// | | {if mediaControlsOverlayPlayButtonEnabled}
 // | \-MediaControlCastButtonElement
 // |     (-internal-media-controls-overlay-cast-button)
 // \-MediaControlPanelEnclosureElement
 //   |    (-webkit-media-controls-enclosure)
 //   \-MediaControlPanelElement
 //     |    (-webkit-media-controls-panel)
-//     |  {if ModernMediaControlsEnabled and is video element and is Android}
 //     +-MediaControlScrubbingMessageElement
 //     |  (-internal-media-controls-scrubbing-message)
-//     |  {if ModernMediaControlsEnabled, otherwise
-//     |   contents are directly attached to parent.
+//     |  {if is video element}
 //     +-MediaControlOverlayPlayButtonElement
 //     |  (-webkit-media-controls-overlay-play-button)
-//     |  {if ModernMediaControlsEnabled}
+//     |  {if mediaControlsOverlayPlayButtonEnabled}
 //     +-MediaControlButtonPanelElement
 //     |  |  (-internal-media-controls-button-panel)
 //     |  |  <video> only, otherwise children are directly attached to parent
 //     |  +-MediaControlPlayButtonElement
 //     |  |    (-webkit-media-controls-play-button)
-//     |  |    {only present if audio only or ModernMediaControls is disabled}
+//     |  |    {if !mediaControlsOverlayPlayButtonEnabled}
 //     |  +-MediaControlCurrentTimeDisplayElement
 //     |  |    (-webkit-media-controls-current-time-display)
 //     |  +-MediaControlRemainingTimeDisplayElement
 //     |  |    (-webkit-media-controls-time-remaining-display)
 //     |  +-HTMLDivElement
 //     |  |    (-internal-media-controls-button-spacer)
-//     |  |    {if ModernMediaControls is enabled and is video element}
+//     |  |    {if is video element}
 //     |  +-MediaControlVolumeControlContainerElement
 //     |  |  |  (-webkit-media-controls-volume-control-container)
 //     |  |  +-HTMLDivElement
@@ -465,20 +456,10 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |  |  |    (-webkit-media-controls-mute-button)
 //     |  |  +-MediaControlVolumeSliderElement
 //     |  |       (-webkit-media-controls-volume-slider)
-//     |  |       {if not ModernMediaControlsEnabled}
 //     |  +-MediaControlPictureInPictureButtonElement
 //     |  |    (-webkit-media-controls-picture-in-picture-button)
 //     |  +-MediaControlFullscreenButtonElement
 //     |  |    (-webkit-media-controls-fullscreen-button)
-//     |  +-MediaControlDownloadButtonElement
-//     |  |    (-internal-media-controls-download-button)
-//     |  |    {on the overflow menu if ModernMediaControls is enabled}
-//     |  +-MediaControlToggleClosedCaptionsButtonElement
-//     |  |    (-webkit-media-controls-toggle-closed-captions-button)
-//     |  |    {on the overflow menu if ModernMediaControls is enabled}
-//     |  +-MediaControlCastButtonElement
-//     |       (-internal-media-controls-cast-button)
-//     |       {on the overflow menu if ModernMediaControls is enabled}
 //     \-MediaControlTimelineElement
 //          (-webkit-media-controls-timeline)
 // +-MediaControlTextTrackListElement
@@ -521,8 +502,8 @@ void MediaControlsImpl::InitializeControls() {
 
   panel_ = MakeGarbageCollected<MediaControlPanelElement>(*this);
 
-  // If using the modern media controls, the buttons should belong to a
-  // seperate button panel. This is because they are displayed in two lines.
+  // On the video controls, the buttons belong to a separate button panel. This
+  // is because they are displayed in two lines.
   if (ShouldShowVideoControls()) {
     media_button_panel_ =
         MakeGarbageCollected<MediaControlButtonPanelElement>(*this);
@@ -1255,7 +1236,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       WebSize overlay_play_button_size =
           overlay_play_button_->GetSizeOrDefault();
       if (controls_size.height >= overlay_play_button_size.height &&
-          controls_size.width >= kModernMinWidthForOverlayPlayButton) {
+          controls_size.width >= kMinWidthForOverlayPlayButton) {
         overlay_play_button_->SetDoesFit(true);
         controls_size.height -= overlay_play_button_size.height;
       } else {
@@ -1263,7 +1244,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       }
     }
 
-    controls_size.width -= kModernControlsVideoButtonPadding;
+    controls_size.width -= kVideoButtonPadding;
 
     // Allocate vertical room for the column elements.
     for (MediaControlElementBase* element : column_elements) {
@@ -1280,7 +1261,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     play_button_->SetIsWanted(!overlay_play_button_ ||
                               !overlay_play_button_->DoesFit());
   } else {
-    controls_size.width -= kModernControlsAudioButtonPadding;
+    controls_size.width -= kAudioButtonPadding;
 
     // Undo any IsWanted/DoesFit changes made in the above block if we're
     // switching to act as audio controls.
@@ -1740,9 +1721,9 @@ void MediaControlsImpl::OnVolumeChange() {
       html_names::kDisabledAttr,
       MediaElement().HasAudio() ? AtomicString() : AtomicString(""));
 
-  // On modern media controls, if the volume slider is being used we don't want
-  // to update controls visibility, since this can shift the position of the
-  // volume slider and make it unusable.
+  // If the volume slider is being used we don't want to update controls
+  // visibility, since this can shift the position of the volume slider and make
+  // it unusable.
   if (!volume_slider_ || !volume_slider_->IsHovered())
     BatchedControlUpdate batch(this);
 }

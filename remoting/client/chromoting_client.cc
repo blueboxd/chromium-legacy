@@ -129,6 +129,11 @@ void ChromotingClient::Start(
   }
 }
 
+void ChromotingClient::Close() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  connection_->Disconnect(protocol::OK);
+}
+
 void ChromotingClient::SetCapabilities(
     const protocol::Capabilities& capabilities) {
   DCHECK(thread_checker_.CalledOnValidThread());

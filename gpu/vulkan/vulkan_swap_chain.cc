@@ -106,6 +106,8 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
   end_write_semaphore_ = VK_NULL_HANDLE;
 
   VkSemaphore vk_semaphore = CreateSemaphore(device);
+  DCHECK(vk_semaphore != VK_NULL_HANDLE);
+
   uint32_t next_image = 0;
   // Acquire then next image.
   result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX, vk_semaphore,
@@ -151,16 +153,16 @@ bool VulkanSwapChain::InitializeSwapChain(
   VkSwapchainKHR new_swap_chain = VK_NULL_HANDLE;
   result = vkCreateSwapchainKHR(device, &swap_chain_create_info, nullptr,
                                 &new_swap_chain);
-  if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkCreateSwapchainKHR() failed: " << result;
-    result = vkCreateSwapchainKHR(device, &swap_chain_create_info, nullptr,
-                                  &new_swap_chain);
-  }
 
   if (old_swap_chain) {
     auto* fence_helper = device_queue_->GetFenceHelper();
     fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(old_swap_chain));
+  }
+
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkCreateSwapchainKHR() failed: " << result;
+    return false;
   }
 
   swap_chain_ = new_swap_chain;
@@ -212,6 +214,8 @@ bool VulkanSwapChain::InitializeSwapImages(
   }
 
   VkSemaphore vk_semaphore = CreateSemaphore(device);
+  DCHECK(vk_semaphore != VK_NULL_HANDLE);
+
   // Acquire the initial buffer.
   result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX, vk_semaphore,
                                  VK_NULL_HANDLE, &current_image_);

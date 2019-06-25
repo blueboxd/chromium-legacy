@@ -1198,7 +1198,7 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
   if (metadata.title.empty())
     metadata.title = SanitizeMediaTitle(web_contents()->GetTitle());
 
-  const ContentClient* content_client = content::GetContentClient();
+  ContentClient* content_client = content::GetContentClient();
   const GURL& url = web_contents()->GetLastCommittedURL();
 
   // If the url is a file then we should display a placeholder.

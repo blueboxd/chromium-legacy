@@ -93,7 +93,7 @@ class NotificationButtonMD : public views::LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
-  SkColor enabled_color_for_testing() { return label()->enabled_color(); }
+  SkColor enabled_color_for_testing() { return label()->GetEnabledColor(); }
 
   const base::Optional<base::string16>& placeholder() const {
     return placeholder_;

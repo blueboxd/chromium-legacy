@@ -208,7 +208,7 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
               base::StringPiece(
                   reinterpret_cast<const char*>(crl_response_bytes.data()),
                   crl_response_bytes.size()),
-              certs, target_cert_index, &distribution_point, base::Time::Now(),
+              certs, target_cert_index, distribution_point, base::Time::Now(),
               max_age);
 
           switch (crl_status) {

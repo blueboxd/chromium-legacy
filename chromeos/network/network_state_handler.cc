@@ -1061,7 +1061,7 @@ void NetworkStateHandler::ClearLastErrorForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);
   if (network)
-    network->clear_last_error();
+    network->ClearError();
 }
 
 void NetworkStateHandler::SetCheckPortalList(
@@ -1178,7 +1178,7 @@ void NetworkStateHandler::SetErrorForTest(const std::string& service_path,
     NET_LOG(ERROR) << "No matching NetworkState for: " << service_path;
     return;
   }
-  network_state->error_ = error;
+  network_state->last_error_ = error;
 }
 
 //------------------------------------------------------------------------------

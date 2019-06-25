@@ -530,8 +530,8 @@ TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
   EXPECT_TRUE(title_label()->GetVisible());
   EXPECT_TRUE(artist_label()->GetVisible());
 
-  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->text());
-  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
@@ -559,9 +559,10 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   EXPECT_TRUE(artist_label()->GetVisible());
   EXPECT_TRUE(header_row()->summary_text_for_testing()->GetVisible());
 
-  EXPECT_EQ(metadata.title, title_label()->text());
-  EXPECT_EQ(metadata.artist, artist_label()->text());
-  EXPECT_EQ(metadata.album, header_row()->summary_text_for_testing()->text());
+  EXPECT_EQ(metadata.title, title_label()->GetText());
+  EXPECT_EQ(metadata.artist, artist_label()->GetText());
+  EXPECT_EQ(metadata.album,
+            header_row()->summary_text_for_testing()->GetText());
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 

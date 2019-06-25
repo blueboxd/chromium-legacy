@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "device/fido/fido_constants.h"
 
 namespace base {
@@ -18,6 +19,9 @@ class ListValue;
 }
 
 namespace device {
+struct AggregatedEnumerateCredentialsResponse;
+class FidoDiscoveryFactory;
+class CredentialManagementHandler;
 class SetPINRequestHandler;
 class ResetRequestHandler;
 }  // namespace device
@@ -50,21 +54,49 @@ class SecurityKeysHandler : public SettingsPageUIHandler {
     kWaitingForResetNoCallbackYet,
     kWaitingForResetHaveCallback,
     kWaitingForCompleteReset,
+
+    kCredentialManagementStart,
+    kCredentialManagementPIN,
+    kCredentialManagementReady,
+    kCredentialManagementGettingCredentials,
   };
 
   void Close();
+
+  // PIN
   void HandleStartSetPIN(const base::ListValue* args);
   void OnGatherPIN(base::Optional<int64_t> num_retries);
   void OnSetPINComplete(device::CtapDeviceResponseCode code);
   void HandleSetPIN(const base::ListValue* args);
+
+  // Reset
   void HandleReset(const base::ListValue* args);
   void OnResetSent();
   void HandleCompleteReset(const base::ListValue* args);
   void OnResetFinished(device::CtapDeviceResponseCode result);
+
+  // Credential Management
+  void HandleCredentialManagement(const base::ListValue* args);
+  void HandleCredentialManagementPIN(const base::ListValue* args);
+  void HandleCredentialManagementEnumerate(const base::ListValue* args);
+  void OnCredentialManagementReady();
+  void OnHaveCredentials(
+      device::CtapDeviceResponseCode status,
+      base::Optional<
+          std::vector<device::AggregatedEnumerateCredentialsResponse>>
+          responses,
+      base::Optional<size_t> remaining_credentials);
+  void OnCredentialManagementGatherPIN(int64_t num_retries,
+                                       base::OnceCallback<void(std::string)>);
+  void OnCredentialManagementFinished(device::FidoReturnCode status);
+
   void HandleClose(const base::ListValue* args);
 
   State state_;
+  base::OnceCallback<void(std::string)> credential_management_provide_pin_cb_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
   std::unique_ptr<device::SetPINRequestHandler> set_pin_;
+  std::unique_ptr<device::CredentialManagementHandler> credential_management_;
   std::unique_ptr<device::ResetRequestHandler> reset_;
   base::Optional<device::CtapDeviceResponseCode> reset_result_;
   std::string callback_id_;

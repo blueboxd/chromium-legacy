@@ -211,6 +211,8 @@ static_library("arc_base") {
     "//chromeos/constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus:common",
+    "//chromeos/dbus:concierge_proto",
+    "//chromeos/dbus:dbus",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/upstart",
@@ -232,6 +234,7 @@ static_library("arc_base") {
     ":connection_holder",
     ":prefs",
     "//components/arc/common",
+    "//dbus",
   ]
 }
 
@@ -345,6 +348,7 @@ source_set("unit_tests") {
     "session/arc_data_remover_unittest.cc",
     "session/arc_session_impl_unittest.cc",
     "session/arc_session_runner_unittest.cc",
+    "session/arc_vm_client_adapter_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]

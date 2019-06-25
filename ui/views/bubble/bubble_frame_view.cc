@@ -104,7 +104,7 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
     const base::string16& title_text) {
   auto title = std::make_unique<Label>(title_text, style::CONTEXT_DIALOG_TITLE);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->set_collapse_when_hidden(true);
+  title->SetCollapseWhenHidden(true);
   title->SetMultiLine(true);
   return title;
 }

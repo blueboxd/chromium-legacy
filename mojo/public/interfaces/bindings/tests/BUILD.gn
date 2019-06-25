@@ -301,6 +301,7 @@ mojom("test_interfaces") {
     ":echo",
     ":test_mojom_import",
     ":test_mojom_import2",
+    "//mojo/public/mojom/base",
   ]
 
   support_lazy_serialization = true

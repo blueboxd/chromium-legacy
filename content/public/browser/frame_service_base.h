@@ -53,6 +53,9 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
   // trying to get it from the RenderFrameHost pointer directly.
   const url::Origin& origin() const { return origin_; }
 
+  // Returns the RenderFrameHost held by this object.
+  RenderFrameHost* render_frame_host() const { return render_frame_host_; }
+
   // Subclasses can use this to check thread safety.
   // For example: DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   THREAD_CHECKER(thread_checker_);

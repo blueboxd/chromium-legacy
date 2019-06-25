@@ -6,6 +6,7 @@ package org.chromium.components.content_capture;
 
 import android.graphics.Rect;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ public class ContentCaptureData {
     private ArrayList<ContentCaptureData> mChildren;
 
     @CalledByNative
-    private static ContentCaptureData createContentCaptureData(
+    @VisibleForTesting
+    public static ContentCaptureData createContentCaptureData(
             Object parent, long id, String value, int x, int y, int width, int height) {
         ContentCaptureData data = new ContentCaptureData(id, value, x, y, width, height);
         if (parent != null) {

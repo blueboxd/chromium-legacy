@@ -114,7 +114,7 @@ void MdTextButton::OnThemeChanged() {
 }
 
 SkColor MdTextButton::GetInkDropBaseColor() const {
-  return color_utils::DeriveDefaultIconColor(label()->enabled_color());
+  return color_utils::DeriveDefaultIconColor(label()->GetEnabledColor());
 }
 
 void MdTextButton::StateChanged(ButtonState old_state) {
@@ -240,20 +240,20 @@ void MdTextButton::UpdatePadding() {
 void MdTextButton::UpdateColors() {
   bool is_disabled = state() == STATE_DISABLED;
   SkColor enabled_text_color =
-      style::GetColor(*this, label()->text_context(),
+      style::GetColor(*this, label()->GetTextContext(),
                       is_prominent_ ? style::STYLE_DIALOG_BUTTON_DEFAULT
                                     : style::STYLE_PRIMARY);
   if (!explicitly_set_normal_color()) {
     const auto colors = explicitly_set_colors();
     LabelButton::SetEnabledTextColors(enabled_text_color);
     // Disabled buttons need the disabled color explicitly set.
-    // This ensures that label()->enabled_color() returns the correct color as
+    // This ensures that label()->GetEnabledColor() returns the correct color as
     // the basis for calculating the stroke color. enabled_text_color isn't used
     // since a descendant could have overridden the label enabled color.
     if (is_disabled) {
-      LabelButton::SetTextColor(STATE_DISABLED,
-                                style::GetColor(*this, label()->text_context(),
-                                                style::STYLE_DISABLED));
+      LabelButton::SetTextColor(
+          STATE_DISABLED, style::GetColor(*this, label()->GetTextContext(),
+                                          style::STYLE_DISABLED));
     }
     set_explicitly_set_colors(colors);
   }

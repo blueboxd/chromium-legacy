@@ -59,7 +59,6 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 }  // namespace
 
 Service::Service(service_manager::mojom::ServiceRequest request,
-                 network::NetworkConnectionTracker* network_connection_tracker,
                  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                      url_loader_factory_info)
     : service_binding_(this, std::move(request)),
@@ -67,7 +66,6 @@ Service::Service(service_manager::mojom::ServiceRequest request,
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       power_manager_observer_(this),
-      network_connection_tracker_(network_connection_tracker),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
@@ -361,7 +359,7 @@ void Service::CreateAssistantManagerService() {
   DCHECK(url_loader_factory_info_);
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
       service_binding_.GetConnector(), std::move(battery_monitor), this,
-      network_connection_tracker_, std::move(url_loader_factory_info_));
+      std::move(url_loader_factory_info_));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();

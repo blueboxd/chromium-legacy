@@ -22,7 +22,7 @@ def copy_files(source, dest):
 
 
 def move_file(source, dest):
-    os.rename(source, dest)
+    shutil.move(source, dest)
 
 
 def make_dir(at):
@@ -37,6 +37,11 @@ def write_file(path, contents):
 def run_command(args, **kwargs):
     print('Running command: {}'.format(args))
     subprocess.check_call(args, **kwargs)
+
+
+def run_command_output(args, **kwargs):
+    print('Running command: {}'.format(args))
+    return subprocess.check_output(args, **kwargs)
 
 
 class PlistContext(object):

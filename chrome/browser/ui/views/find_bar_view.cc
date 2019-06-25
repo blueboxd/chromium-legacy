@@ -270,7 +270,7 @@ base::string16 FindBarView::GetFindSelectedText() const {
 }
 
 base::string16 FindBarView::GetMatchCountText() const {
-  return match_count_text_->text();
+  return match_count_text_->GetText();
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,

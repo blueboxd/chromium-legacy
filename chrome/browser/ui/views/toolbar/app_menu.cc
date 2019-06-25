@@ -161,8 +161,9 @@ class InMenuButtonBackground : public views::Background {
     if (type_ == LEADING_BORDER) {
       // We need to flip the canvas for RTL iff the button is not auto-flipping
       // already, so we end up flipping exactly once.
-      gfx::ScopedRTLFlipCanvas scoped_canvas(
-          canvas, view->width(), !view->flip_canvas_on_paint_for_rtl_ui());
+      gfx::ScopedCanvas scoped_canvas(canvas);
+      if (!view->flip_canvas_on_paint_for_rtl_ui())
+        scoped_canvas.FlipIfRTL(view->width());
       ui::NativeTheme::ExtraParams params;
       gfx::Rect separator_bounds =
           gfx::Rect(0, 0, MenuConfig::instance().separator_thickness, h);

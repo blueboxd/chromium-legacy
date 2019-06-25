@@ -405,7 +405,7 @@ def RunTestOnSwarming(args, unknown_args, output_dir, use_new_perf_format):
   # TODO(https://crbug.com/819719): Remove this when possible.
   cipd_packages = [
     '.swarming_module:infra/python/cpython/'
-    '${platform}:version:2.7.14.chromium14',
+    '${platform}:version:2.7.15.chromium14',
 
     '.swarming_module:infra/tools/luci/logdog/butler/'
     '${platform}:git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c',

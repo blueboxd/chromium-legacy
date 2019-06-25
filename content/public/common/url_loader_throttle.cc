@@ -60,7 +60,7 @@ void URLLoaderThrottle::WillOnCompleteWithError(
     const network::URLLoaderCompletionStatus& status,
     bool* defer) {}
 
-bool URLLoaderThrottle::makes_unsafe_redirect() const {
+bool URLLoaderThrottle::makes_unsafe_redirect() {
   return false;
 }
 

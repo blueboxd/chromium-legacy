@@ -294,7 +294,7 @@ class PaymentSheetRowBuilder {
         std::make_unique<views::Label>(section_name_);
     chevron->SetImage(gfx::CreateVectorIcon(
         views::kSubmenuArrowIcon,
-        color_utils::DeriveDefaultIconColor(label->enabled_color())));
+        color_utils::DeriveDefaultIconColor(label->GetEnabledColor())));
     std::unique_ptr<PaymentRequestRowView> section = CreatePaymentSheetRow(
         listener_, section_name_, accessible_content_, std::move(content_view),
         std::move(extra_content_view), std::move(chevron),

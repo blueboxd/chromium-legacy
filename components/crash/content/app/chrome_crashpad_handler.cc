@@ -4,14 +4,20 @@
 
 #include <memory>
 
-#include "components/gwp_asan/crash_handler/crash_handler.h"
+#include "components/gwp_asan/buildflags/buildflags.h"
 #include "third_party/crashpad/crashpad/handler/handler_main.h"
 #include "third_party/crashpad/crashpad/handler/user_stream_data_source.h"
 
+#if BUILDFLAG(ENABLE_GWP_ASAN)
+#include "components/gwp_asan/crash_handler/crash_handler.h"
+#endif
+
 int main(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
+#if BUILDFLAG(ENABLE_GWP_ASAN)
   user_stream_data_sources.push_back(
       std::make_unique<gwp_asan::UserStreamDataSource>());
+#endif
 
   return crashpad::HandlerMain(argc, argv, &user_stream_data_sources);
 }

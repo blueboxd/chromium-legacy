@@ -177,7 +177,7 @@ void Tab::SetSelected(bool selected) {
 }
 
 const base::string16& Tab::GetTitleText() const {
-  return title_->text();
+  return title_->GetText();
 }
 
 void Tab::SetTitleText(const base::string16& text) {
@@ -315,7 +315,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* data) {
   data->role = ax::mojom::Role::kTab;
-  data->SetName(title()->text());
+  data->SetName(title()->GetText());
   data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
 }
 

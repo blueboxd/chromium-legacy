@@ -625,8 +625,8 @@ NET_ERROR(UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT, -334)
 // There are no supported proxies in the provided list.
 NET_ERROR(NO_SUPPORTED_PROXIES, -336)
 
-// There is a SPDY protocol error.
-NET_ERROR(SPDY_PROTOCOL_ERROR, -337)
+// There is an HTTP/2 protocol error.
+NET_ERROR(HTTP2_PROTOCOL_ERROR, -337)
 
 // Credentials could not be established during HTTP Authentication.
 NET_ERROR(INVALID_AUTH_CREDENTIALS, -338)
@@ -657,9 +657,9 @@ NET_ERROR(RESPONSE_BODY_TOO_BIG_TO_DRAIN, -345)
 // The HTTP response contained multiple distinct Content-Length headers.
 NET_ERROR(RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH, -346)
 
-// SPDY Headers have been received, but not all of them - status or version
+// HTTP/2 headers have been received, but not all of them - status or version
 // headers are missing, so we're expecting additional frames to complete them.
-NET_ERROR(INCOMPLETE_SPDY_HEADERS, -347)
+NET_ERROR(INCOMPLETE_HTTP2_HEADERS, -347)
 
 // No PAC URL configuration could be retrieved from DHCP. This can indicate
 // either a failure to retrieve the DHCP configuration, or that there was no
@@ -677,10 +677,10 @@ NET_ERROR(RESPONSE_HEADERS_MULTIPLE_LOCATION, -350)
 // stream id corresponding to the request indicating that this request has not
 // been processed yet, or a RST_STREAM frame with error code REFUSED_STREAM.
 // Client MAY retry (on a different connection).  See RFC7540 Section 8.1.4.
-NET_ERROR(SPDY_SERVER_REFUSED_STREAM, -351)
+NET_ERROR(HTTP2_SERVER_REFUSED_STREAM, -351)
 
-// SPDY server didn't respond to the PING message.
-NET_ERROR(SPDY_PING_FAILED, -352)
+// HTTP/2 server didn't respond to the PING message.
+NET_ERROR(HTTP2_PING_FAILED, -352)
 
 // Obsolete.  Kept here to avoid reuse, as the old error can still appear on
 // histograms.
@@ -708,17 +708,17 @@ NET_ERROR(QUIC_HANDSHAKE_FAILED, -358)
 // histograms.
 // NET_ERROR(REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC, -359)
 
-// Transport security is inadequate for the SPDY version.
-NET_ERROR(SPDY_INADEQUATE_TRANSPORT_SECURITY, -360)
+// Transport security is inadequate for the HTTP/2 version.
+NET_ERROR(HTTP2_INADEQUATE_TRANSPORT_SECURITY, -360)
 
-// The peer violated SPDY flow control.
-NET_ERROR(SPDY_FLOW_CONTROL_ERROR, -361)
+// The peer violated HTTP/2 flow control.
+NET_ERROR(HTTP2_FLOW_CONTROL_ERROR, -361)
 
-// The peer sent an improperly sized SPDY frame.
-NET_ERROR(SPDY_FRAME_SIZE_ERROR, -362)
+// The peer sent an improperly sized HTTP/2 frame.
+NET_ERROR(HTTP2_FRAME_SIZE_ERROR, -362)
 
-// Decoding or encoding of compressed SPDY headers failed.
-NET_ERROR(SPDY_COMPRESSION_ERROR, -363)
+// Decoding or encoding of compressed HTTP/2 headers failed.
+NET_ERROR(HTTP2_COMPRESSION_ERROR, -363)
 
 // Proxy Auth Requested without a valid Client Socket Handle.
 NET_ERROR(PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION, -364)
@@ -747,14 +747,14 @@ NET_ERROR(CONTENT_DECODING_INIT_FAILED, -371)
 // Received HTTP/2 RST_STREAM frame with NO_ERROR error code.  This error should
 // be handled internally by HTTP/2 code, and should not make it above the
 // SpdyStream layer.
-NET_ERROR(SPDY_RST_STREAM_NO_ERROR_RECEIVED, -372)
+NET_ERROR(HTTP2_RST_STREAM_NO_ERROR_RECEIVED, -372)
 
 // The pushed stream claimed by the request is no longer available.
-NET_ERROR(SPDY_PUSHED_STREAM_NOT_AVAILABLE, -373)
+NET_ERROR(HTTP2_PUSHED_STREAM_NOT_AVAILABLE, -373)
 
 // A pushed stream was claimed and later reset by the server. When this happens,
 // the request should be retried.
-NET_ERROR(SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
+NET_ERROR(HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
 
 // An HTTP transaction was retried too many times due for authentication or
 // invalid certificates. This may be due to a bug in the net stack that would
@@ -763,14 +763,14 @@ NET_ERROR(SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
 NET_ERROR(TOO_MANY_RETRIES, -375)
 
 // Received an HTTP/2 frame on a closed stream.
-NET_ERROR(SPDY_STREAM_CLOSED, -376)
+NET_ERROR(HTTP2_STREAM_CLOSED, -376)
 
 // Client is refusing an HTTP/2 stream.
-NET_ERROR(SPDY_CLIENT_REFUSED_STREAM, -377)
+NET_ERROR(HTTP2_CLIENT_REFUSED_STREAM, -377)
 
 // A pushed HTTP/2 stream was claimed by a request based on matching URL and
 // request headers, but the pushed response headers do not match the request.
-NET_ERROR(SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH, -378)
+NET_ERROR(HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH, -378)
 
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)

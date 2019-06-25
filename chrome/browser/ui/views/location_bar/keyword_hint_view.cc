@@ -78,7 +78,7 @@ KeywordHintView::~KeywordHintView() {}
 void KeywordHintView::SetKeyword(const base::string16& keyword) {
   // When the virtual keyboard is visible, we show a modified touch UI
   // containing only the chip and no surrounding labels.
-  const bool was_touch_ui = leading_label_->text().empty();
+  const bool was_touch_ui = leading_label_->GetText().empty();
   const bool is_touch_ui =
       LocationBarView::IsVirtualKeyboardVisible(GetWidget());
   if (is_touch_ui == was_touch_ui && keyword_ == keyword)
@@ -124,8 +124,8 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
 
     const base::string16 tab_key_name =
         l10n_util::GetStringUTF16(IDS_OMNIBOX_KEYWORD_HINT_KEY_ACCNAME);
-    SetAccessibleName(leading_label_->text() + tab_key_name +
-                      trailing_label_->text());
+    SetAccessibleName(leading_label_->GetText() + tab_key_name +
+                      trailing_label_->GetText());
   }
 
   // Fire an accessibility event, causing the hint to be spoken.

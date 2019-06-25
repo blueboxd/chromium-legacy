@@ -33,7 +33,6 @@ action("verify_resources") {
     "../host/win/version.rc.jinja2",
     "../resources/play_store_resources.cc",
     "../webapp/crd/js/background.js",
-    "../webapp/crd/js/butter_bar.js",
     "../webapp/base/js/error.js",
     "../webapp/crd/js/host_list.js",
     "../webapp/crd/js/host_setup_dialog.js",

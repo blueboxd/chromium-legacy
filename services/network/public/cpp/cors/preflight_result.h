@@ -71,9 +71,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
                             const net::HttpRequestHeaders& headers,
                             bool is_revalidating) const;
 
-  // Estimates rough memory pressures in bytes caused by this instance.
-  size_t EstimateMemoryPressureInBytes() const;
-
   // Refers the cache expiry time.
   base::TimeTicks absolute_expiry_time() const { return absolute_expiry_time_; }
 

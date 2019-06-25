@@ -9,25 +9,24 @@
 WebEngineContentClient::WebEngineContentClient() = default;
 WebEngineContentClient::~WebEngineContentClient() = default;
 
-base::string16 WebEngineContentClient::GetLocalizedString(
-    int message_id) const {
+base::string16 WebEngineContentClient::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 
 base::StringPiece WebEngineContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* WebEngineContentClient::GetDataResourceBytes(
-    int resource_id) const {
+    int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-gfx::Image& WebEngineContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& WebEngineContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }

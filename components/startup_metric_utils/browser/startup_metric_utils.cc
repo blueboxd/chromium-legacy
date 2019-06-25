@@ -320,18 +320,6 @@ void RecordSystemUptimeHistogram() {
       GetSystemUptimeOnProcessLaunch());
 }
 
-void RecordTimeOfDayGMTHistogram() {
-  base::Time::Exploded now_exploded;
-  base::Time::Now().UTCExplode(&now_exploded);
-
-  // We log the time as sparse histogram because we should only be recording a
-  // single value per Chrome lifetime. The format of the time is HHMM.
-  // Log the time in 10 minute intervals to make the histogram easier to read.
-  base::UmaHistogramSparse(
-      "Startup.TimeOfDayGMT",
-      100 * now_exploded.hour + 10 * (now_exploded.minute / 10));
-}
-
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. This is a nop on other
 // platforms.
@@ -601,7 +589,6 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   AddStartupEventsForTelemetry();
   RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
-  RecordTimeOfDayGMTHistogram();
 
   // Record values stored prior to startup temperature evaluation.
   if (ShouldLogStartupHistogram()) {

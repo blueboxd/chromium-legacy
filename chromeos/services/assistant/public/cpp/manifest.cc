@@ -8,6 +8,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace chromeos {
@@ -31,6 +32,9 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability("device", "device:wake_lock")
           .RequireCapability("identity", "identity_accessor")
           .RequireCapability("media_session", "app")
+          .RequireCapability(
+              chromeos::network_config::mojom::kServiceName,
+              chromeos::network_config::mojom::kNetworkConfigCapability)
 
           .Build()};
   return *manifest;

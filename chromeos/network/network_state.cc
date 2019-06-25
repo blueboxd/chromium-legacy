@@ -104,12 +104,11 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == shill::kConnectableProperty) {
     return GetBooleanValue(key, value, &connectable_);
   } else if (key == shill::kErrorProperty) {
-    if (!GetStringValue(key, value, &error_))
+    std::string error;
+    if (!GetStringValue(key, value, &error))
       return false;
-    if (ErrorIsValid(error_))
-      last_error_ = error_;
-    else
-      error_.clear();
+    if (ErrorIsValid(error))
+      last_error_ = error;
     return true;
   } else if (key == shill::kWifiFrequency) {
     return GetIntegerValue(key, value, &frequency_);
@@ -379,6 +378,14 @@ bool NetworkState::SecurityRequiresPassphraseOnly() const {
   return type() == shill::kTypeWifi &&
          (security_class() == shill::kSecurityPsk ||
           security_class() == shill::kSecurityWep);
+}
+
+const std::string& NetworkState::GetError() const {
+  return last_error_;
+}
+
+void NetworkState::ClearError() {
+  last_error_.clear();
 }
 
 std::string NetworkState::connection_state() const {

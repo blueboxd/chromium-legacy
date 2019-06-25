@@ -201,5 +201,5 @@ void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
 
 void DesktopMediaSourceView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(label_->text());
+  node_data->SetName(label_->GetText());
 }

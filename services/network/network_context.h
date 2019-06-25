@@ -402,12 +402,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // consulting NetworkContextClient.OnCanSendReportingReports()
   bool SkipReportingPermissionCheck() const;
 
-  // Reports and gather CORS preflight cache size metric.
-  cors::PreflightCache::Metrics ReportAndGatherCorsPreflightCacheSizeMetric();
-
-  // Gather active URLLoader count.
-  size_t GatherActiveLoaderCount();
-
   // Creates a new url loader factory bound to this network context. For use
   // inside the network service.
   mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();

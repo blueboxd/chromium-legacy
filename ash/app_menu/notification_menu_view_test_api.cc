@@ -20,7 +20,7 @@ NotificationMenuViewTestAPI::NotificationMenuViewTestAPI(
 NotificationMenuViewTestAPI::~NotificationMenuViewTestAPI() = default;
 
 base::string16 NotificationMenuViewTestAPI::GetCounterViewContents() const {
-  return notification_menu_view_->header_view_->counter_->text();
+  return notification_menu_view_->header_view_->counter_->GetText();
 }
 
 int NotificationMenuViewTestAPI::GetItemViewCount() const {

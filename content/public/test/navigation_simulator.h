@@ -302,13 +302,13 @@ class NavigationSimulator {
   // Returns the NavigationHandle associated with the navigation being
   // simulated. It is an error to call this before Start() or after the
   // navigation has finished (successfully or not).
-  virtual NavigationHandle* GetNavigationHandle() const = 0;
+  virtual NavigationHandle* GetNavigationHandle() = 0;
 
   // Returns the GlobalRequestID for the simulated navigation request. Can be
   // invoked after the navigation has completed. It is an error to call this
   // before the simulated navigation has completed its WillProcessResponse
   // callback.
-  virtual GlobalRequestID GetGlobalRequestID() const = 0;
+  virtual GlobalRequestID GetGlobalRequestID() = 0;
 
  private:
   // This interface should only be implemented inside content.

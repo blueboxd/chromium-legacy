@@ -182,7 +182,7 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
 
   auto* title = new views::Label(item.title);
   title->SetFontList(font_list);
-  title->set_collapse_when_hidden(true);
+  title->SetCollapseWhenHidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(kRegularTextColorMD);
   title->SetAutoColorReadabilityEnabled(false);
@@ -191,7 +191,7 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
       IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER, item.message));
   message->SetFontList(font_list);
-  message->set_collapse_when_hidden(true);
+  message->SetCollapseWhenHidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColorMD);
   message->SetAutoColorReadabilityEnabled(false);

@@ -52,6 +52,7 @@ class CookieStoreContext;
 class BlobRegistryWrapper;
 class PrefetchURLLoaderService;
 class GeneratedCodeCacheContext;
+class NativeFileSystemEntryFactory;
 class NativeFileSystemManagerImpl;
 
 class CONTENT_EXPORT StoragePartitionImpl
@@ -103,6 +104,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   IdleManager* GetIdleManager();
   LockManager* GetLockManager();  // override; TODO: Add to interface
   IndexedDBContextImpl* GetIndexedDBContext() override;
+  NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
   SharedWorkerServiceImpl* GetSharedWorkerService() override;

@@ -1464,7 +1464,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   delegate->Start(std::move(request_info), http_session_.get());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate->error(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
   EXPECT_EQ(delegate->response_headers().end(),
             delegate->response_headers().find(":status"));
   EXPECT_EQ(0, delegate->on_data_read_count());
@@ -1494,7 +1494,7 @@ TEST_F(BidirectionalStreamTest, PropagateProtocolError) {
   entry = entries[index];
   int net_error = OK;
   EXPECT_TRUE(entry.params->GetInteger("net_error", &net_error));
-  EXPECT_THAT(net_error, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(net_error, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnHeadersReceived) {
@@ -1704,7 +1704,7 @@ TEST_F(BidirectionalStreamTest, DeleteStreamDuringOnFailed) {
             delegate->response_headers().find(":status"));
   EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(0, delegate->on_data_read_count());
-  EXPECT_THAT(delegate->error(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(delegate->error(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
   // Bytes sent excludes the RST frame.

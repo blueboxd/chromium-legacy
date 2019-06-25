@@ -1154,9 +1154,9 @@ int HttpStreamFactory::Job::DoCreateStream() {
           net_log_);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
-    spdy_session->CloseSessionOnError(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY,
+    spdy_session->CloseSessionOnError(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY,
                                       "");
-    return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
+    return ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY;
   }
 
   url::SchemeHostPort scheme_host_port(

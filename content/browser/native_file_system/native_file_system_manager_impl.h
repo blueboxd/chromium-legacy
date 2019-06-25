@@ -12,6 +12,7 @@
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -44,15 +45,10 @@ class NativeFileSystemTransferTokenImpl;
 class CONTENT_EXPORT NativeFileSystemManagerImpl
     : public base::RefCountedThreadSafe<NativeFileSystemManagerImpl,
                                         BrowserThread::DeleteOnIOThread>,
+      public NativeFileSystemEntryFactory,
       public blink::mojom::NativeFileSystemManager {
  public:
-  struct CONTENT_EXPORT BindingContext {
-    BindingContext(const url::Origin& origin, int process_id, int frame_id)
-        : origin(origin), process_id(process_id), frame_id(frame_id) {}
-    url::Origin origin;
-    int process_id;
-    int frame_id;
-  };
+  using BindingContext = NativeFileSystemEntryFactory::BindingContext;
 
   // State that is shared between handles that are derived from each other.
   // Handles that are created through ChooseEntries or GetSandboxedFileSystem
@@ -93,6 +89,14 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       bool include_accepts_all,
       ChooseEntriesCallback callback) override;
 
+  // NativeFileSystemEntryFactory:
+  blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPath(
+      const BindingContext& binding_context,
+      const base::FilePath& file_path) override;
+  blink::mojom::NativeFileSystemEntryPtr CreateDirectoryEntryFromPath(
+      const BindingContext& binding_context,
+      const base::FilePath& directory_path) override;
+
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
   blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
@@ -113,18 +117,6 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const BindingContext& binding_context,
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state);
-
-  // Creates a new NativeFileSystemEntryPtr from the path to a file. Assumes the
-  // passed in path is valid and represents a file.
-  blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPath(
-      const BindingContext& binding_context,
-      const base::FilePath& file_path);
-
-  // Creates a new NativeFileSystemEntryPtr from the path to a directory.
-  // Assumes the passed in path is valid and represents a directory.
-  blink::mojom::NativeFileSystemEntryPtr CreateDirectoryEntryFromPath(
-      const BindingContext& binding_context,
-      const base::FilePath& directory_path);
 
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(

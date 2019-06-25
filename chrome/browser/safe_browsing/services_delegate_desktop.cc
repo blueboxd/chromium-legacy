@@ -116,6 +116,9 @@ void ServicesDelegateDesktop::ShutdownServices() {
   resource_request_detector_.reset();
   incident_service_.reset();
 
+  // Delete the VerdictCacheManager instances
+  cache_manager_map_.clear();
+
   // Delete the ChromePasswordProtectionService instances.
   password_protection_service_map_.clear();
 

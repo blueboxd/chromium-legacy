@@ -53,6 +53,10 @@ void IceConnectionToHost::Connect(
   SetState(CONNECTING, OK);
 }
 
+void IceConnectionToHost::Disconnect(ErrorCode error) {
+  session_->Close(error);
+}
+
 const SessionConfig& IceConnectionToHost::config() {
   return session_->config();
 }

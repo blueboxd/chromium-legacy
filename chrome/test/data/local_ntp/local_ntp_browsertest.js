@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Tests the local NTP.
  */
-
 
 /**
  * Enum for HTML element ids.
@@ -24,12 +22,10 @@ const IDS = {
   SUCCESS_CONTAINER: 'mv-notice-container',
 };
 
-
 /**
  * Local NTP's object for test and setup functions.
  */
 test.localNtp = {};
-
 
 /**
  * Sets up the page for each individual test.
@@ -38,11 +34,9 @@ test.localNtp.setUp = function() {
   setUpPage('local-ntp-template');
 };
 
-
 // ******************************* SIMPLE TESTS *******************************
 // These are run by runSimpleTests above.
 // Functions from test_utils.js are automatically imported.
-
 
 /**
  * Tests that Google NTPs show a fakebox and logo.
@@ -53,7 +47,6 @@ test.localNtp.testShowsFakeboxAndLogoIfGoogle = function() {
   assertTrue(elementIsVisible($('logo')));
 };
 
-
 /**
  * Tests that non-Google NTPs do not show a fakebox.
  */
@@ -63,7 +56,6 @@ test.localNtp.testDoesNotShowFakeboxIfNotGoogle = function() {
   assertFalse(elementIsVisible($('logo')));
 };
 
-
 /**
  * Tests the fakebox is hidden if the "remove-ntp-fakebox" feature is enabled.
  */
@@ -71,7 +63,6 @@ test.localNtp.testDoesNotShowFakeboxIfRemoveFeatureEnabled = function() {
   initLocalNTP(/*isGooglePage=*/ true, /*removeFakebox=*/ true);
   assertFalse(elementIsVisible($('fakebox-container')));
 };
-
 
 /**
  * Tests that the embeddedSearch.newTabPage.mostVisited API is
@@ -98,7 +89,6 @@ test.localNtp.testMostVisitedContents = function() {
   assert(!window.chrome.embeddedSearch.newTabPage.getMostVisitedItemData(
       window.chrome.embeddedSearch.newTabPage.mostVisited[0].rid));
 };
-
 
 /**
  * Tests that the custom link notifications for success and error are shown.
@@ -160,7 +150,6 @@ test.localNtp.testCustomLinkNotifications = function() {
   assertNoNotificationVisible();
 };
 
-
 /**
  * Tests that notifications for success and error are shown properly when a
  * promo is visible (i.e. the promo should not be visible when a notification is
@@ -201,7 +190,6 @@ test.localNtp.testNotificationsWithPromo = function() {
   fireTransitionEnd($(IDS.ERROR_CONTAINER), 'bottom');
   assertNoNotificationVisible(/*hasPromo=*/ true);
 };
-
 
 /**
  * Tests that different notification types will be displayed properly if they
@@ -281,10 +269,8 @@ test.localNtp.testMultipleNotificationsShown = function() {
   assertNoNotificationVisible(/*hasPromo=*/ true);
 };
 
-
 // ***************************** HELPER FUNCTIONS *****************************
 // Helper functions used in tests.
-
 
 /**
  * Add a test promo to the page.
@@ -297,7 +283,6 @@ function addTestPromo() {
   $('ntp-contents').appendChild(promo);
 }
 
-
 /**
  * Fires a "transitionend" event on the element.
  * @param {!Element} element The element on which to fire a transitionEnd event.
@@ -308,7 +293,6 @@ function fireTransitionEnd(element, propertyName) {
   event.propertyName = propertyName;
   element.dispatchEvent(event);
 }
-
 
 /**
  * Check that no notification is visible. If a promo exists, check that the
@@ -323,7 +307,6 @@ function assertNoNotificationVisible(hasPromo = false) {
     assertTrue(elementIsVisible($(IDS.PROMO)), 'Promo is not visible');
   }
 }
-
 
 /**
  * Check that the success notification is visible. If a promo exists, check that

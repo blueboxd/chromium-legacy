@@ -79,15 +79,15 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
   switch (state) {
     case STICKY_KEY_STATE_ENABLED:
       style = gfx::Font::NORMAL;
-      label_color = SkColorSetA(enabled_color(), 0xFF);
+      label_color = SkColorSetA(GetEnabledColor(), 0xFF);
       break;
     case STICKY_KEY_STATE_LOCKED:
       style = gfx::Font::UNDERLINE;
-      label_color = SkColorSetA(enabled_color(), 0xFF);
+      label_color = SkColorSetA(GetEnabledColor(), 0xFF);
       break;
     default:
       style = gfx::Font::NORMAL;
-      label_color = SkColorSetA(enabled_color(), 0x80);
+      label_color = SkColorSetA(GetEnabledColor(), 0x80);
   }
 
   SetEnabledColor(label_color);

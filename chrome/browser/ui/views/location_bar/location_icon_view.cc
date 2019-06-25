@@ -87,7 +87,7 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // If no display text exists, ensure that the accessibility label is added.
   auto accessibility_label = base::UTF16ToUTF8(
       delegate_->GetLocationBarModel()->GetSecureAccessibilityText());
-  if (label()->text().empty() && !accessibility_label.empty()) {
+  if (label()->GetText().empty() && !accessibility_label.empty()) {
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                                   accessibility_label);
   }
@@ -105,7 +105,7 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
   int width = 0;
 
   base::string16 text = GetText();
-  if (text == label()->text()) {
+  if (text == label()->GetText()) {
     // Optimize this common case by not creating a new label.
     // GetPreferredSize is not dependent on the label's current
     // width, so this returns the same value as the branch below.

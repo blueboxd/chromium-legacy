@@ -42,7 +42,7 @@ void SetTooltipAndAccessibleName(views::Button* parent,
                                  bool set_tooltip) {
   const base::string16 accessible_name =
       second == nullptr ? first->text()
-                        : base::JoinString({first->text(), second->text()},
+                        : base::JoinString({first->text(), second->GetText()},
                                            base::ASCIIToUTF16("\n"));
   if (set_tooltip) {
     const int available_width = available_space.width() - taken_width;
@@ -256,7 +256,7 @@ gfx::Insets HoverButton::GetInsets() const {
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
-  if (subtitle_ && !subtitle_->text().empty())
+  if (subtitle_ && !subtitle_->GetText().empty())
     subtitle_->SetElideBehavior(elide_behavior);
 }
 

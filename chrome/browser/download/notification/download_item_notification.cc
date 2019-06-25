@@ -773,7 +773,7 @@ base::string16 DownloadItemNotification::GetInProgressSubStatusString() const {
 
 base::string16 DownloadItemNotification::GetSubStatusString() const {
   if (item_->IsDangerous())
-    return base::string16();
+    return GetWarningStatusString();
 
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
@@ -816,7 +816,7 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
 
 base::string16 DownloadItemNotification::GetStatusString() const {
   if (item_->IsDangerous())
-    return GetWarningStatusString();
+    return base::string16();
 
   // The hostname. (E.g.:"example.com" or "127.0.0.1")
   base::string16 host_name = url_formatter::FormatUrlForSecurityDisplay(

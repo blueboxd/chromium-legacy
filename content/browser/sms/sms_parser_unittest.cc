@@ -95,6 +95,88 @@ TEST(SmsParserTest, TwoTokens) {
   ASSERT_EQ(origin, url::Origin::Create(url));
 }
 
+TEST(SmsParserTest, DifferentPorts) {
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com:8443/");
+
+    GURL url("https://a.com");
+    ASSERT_NE(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com:8443/");
+
+    GURL url("https://a.com:443");
+    ASSERT_NE(origin, url::Origin::Create(url));
+  }
+}
+
+TEST(SmsParserTest, ImplicitPort) {
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com:443/");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com:8443/");
+
+    GURL url("https://a.com");
+    ASSERT_NE(origin, url::Origin::Create(url));
+  }
+}
+
+TEST(SmsParserTest, Redirector) {
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com/redirect?https://b.com");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com/redirect?https:%2f%2fb.com");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://a.com/redirect#https:%2f%2fb.com");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+}
+
+TEST(SmsParserTest, UsernameAndPassword) {
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://b.com@a.com/");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://b.com:c.com@a.com/");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+  {
+    base::Optional<url::Origin> origin =
+        SmsParser::Parse("To: https://b.com:noodle@a.com:443/");
+
+    GURL url("https://a.com");
+    ASSERT_EQ(origin, url::Origin::Create(url));
+  }
+}
+
 TEST(SmsParserTest, AppHash) {
   base::Optional<url::Origin> origin =
       SmsParser::Parse("<#> Hello World\nTo: https://example.com?s3LhKBB0M33");

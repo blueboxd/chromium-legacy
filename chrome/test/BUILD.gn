@@ -471,6 +471,7 @@ if (is_android) {
       ":test_support_ui_android",
       "//chrome:chrome_android_core",
       "//chrome/android:app_hooks_java",
+      "//components/crash/android:crashpad_main",
 
       # TODO(crbug.com/961849): This is needed for ShellManager which is what
       # the ChromeBrowserTestsActivity is using to build the java UI. It's
@@ -544,7 +545,11 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:base_java_test_support",
+      "//build/android/buildhooks:build_hooks_android_java",
       "//chrome/android:chrome_all_java",
+      "//components/crash/android:handler_java",
+      "//components/crash/android:java",
+      "//components/module_installer/android:module_installer_impl_java",
       "//content/public/android:content_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/shell/android:content_shell_browsertests_java",
@@ -3128,7 +3133,6 @@ test("unit_tests") {
     "../common/crash_keys_unittest.cc",
     "../common/heap_profiler_controller_unittest.cc",
     "../common/ini_parser_unittest.cc",
-    "../common/mac/cfbundle_blocker_unittest.mm",
     "../common/mac/mock_launchd.h",
     "../common/mac/mock_launchd.mm",
     "../common/mac/staging_watcher_unittest.mm",

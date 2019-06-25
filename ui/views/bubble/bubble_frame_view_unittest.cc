@@ -1108,8 +1108,8 @@ TEST_F(BubbleFrameViewTest, NoElideTitle) {
   // Sanity check: Title labels default to multiline and elide tail. Either of
   // which result in the Layout system making the title and resulting dialog
   // very narrow.
-  EXPECT_EQ(gfx::ELIDE_TAIL, title_label->elide_behavior());
-  EXPECT_TRUE(title_label->multi_line());
+  EXPECT_EQ(gfx::ELIDE_TAIL, title_label->GetElideBehavior());
+  EXPECT_TRUE(title_label->GetMultiLine());
   EXPECT_GT(empty_bubble_width, title_label->size().width());
   EXPECT_EQ(empty_bubble_width, bubble->GetClientAreaBoundsInScreen().width());
 

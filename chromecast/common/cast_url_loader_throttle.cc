@@ -38,7 +38,7 @@ void CastURLLoaderThrottle::WillStartRequest(
   }
 }
 
-bool CastURLLoaderThrottle::makes_unsafe_redirect() const {
+bool CastURLLoaderThrottle::makes_unsafe_redirect() {
   // Yes, this makes cross-scheme redirects.
   return true;
 }

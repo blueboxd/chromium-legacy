@@ -118,6 +118,7 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"picrmi32.dll",               // PicRec.
     L"picrmi64.dll",               // PicRec.
     L"prntrack.dll",               // Pharos Systems.
+    L"prochook.dll",               // Unknown (GBill-Tools?) (crbug.com/974722).
     L"protector.dll",              // Unknown (suspected malware).
     L"radhslib.dll",               // Radiant Naomi Internet Filter.
     L"radprlib.dll",               // Radiant Naomi Internet Filter.

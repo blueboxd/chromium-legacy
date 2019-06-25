@@ -80,7 +80,8 @@ PublicAccountWarningDialog::PublicAccountWarningDialog(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
     label->SetEnabledColor(SK_ColorGRAY);
 
-    auto* bullet_view = new BulletView(label->enabled_color(), kBulletRadiusDp);
+    auto* bullet_view =
+        new BulletView(label->GetEnabledColor(), kBulletRadiusDp);
     bullet_view->SetPreferredSize(
         gfx::Size(kBulletContainerSizeDp, kBulletContainerSizeDp));
 

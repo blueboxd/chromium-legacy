@@ -48,6 +48,11 @@ constexpr char const* kTestParams[] = {
     "good_no_crldp.pem",
     "good_key_rollover.pem",
     "good_idp_contains_uri.pem",
+    "good_idp_onlycontainsusercerts.pem",
+    "good_idp_onlycontainsusercerts_no_basic_constraints.pem",
+    "good_idp_onlycontainscacerts.pem",
+    "good_idp_uri_and_onlycontainsusercerts.pem",
+    "good_idp_uri_and_onlycontainscacerts.pem",
     "revoked.pem",
     "revoked_no_nextupdate.pem",
     "revoked_fake_crlentryextension.pem",
@@ -64,6 +69,11 @@ constexpr char const* kTestParams[] = {
     "bad_key_rollover_signature.pem",
     "bad_idp_contains_wrong_uri.pem",
     "bad_idp_indirectcrl.pem",
+    "bad_idp_onlycontainsusercerts.pem",
+    "bad_idp_onlycontainscacerts.pem",
+    "bad_idp_onlycontainscacerts_no_basic_constraints.pem",
+    "bad_idp_uri_and_onlycontainsusercerts.pem",
+    "bad_idp_uri_and_onlycontainscacerts.pem",
     "invalid_mismatched_signature_algorithm.pem",
     "invalid_revoked_empty_sequence.pem",
     "invalid_v1_with_extension.pem",
@@ -91,6 +101,8 @@ constexpr char const* kTestParams[] = {
     "invalid_garbage_crlentry.pem",
     "invalid_idp_dpname_choice_extra_data.pem",
     "invalid_idp_empty_sequence.pem",
+    "invalid_idp_onlycontains_user_and_ca_certs.pem",
+    "invalid_idp_onlycontainsusercerts_v1_leaf.pem",
 };
 
 struct PrintTestName {
@@ -136,12 +148,16 @@ TEST_P(CheckCRLTest, FromFile) {
     certs.push_back(issuer_cert_2);
   }
 
-  // Assumes that all the test data certs have at most 1 CRL distributionPoint.
-  // If the cert has a CRL distributionPoint, it is used for verifying the CRL,
-  // otherwise the CRL is verified with no distributionPoint.
+  // Assumes that all the target certs in the test data certs have at most 1
+  // CRL distributionPoint. If the cert has a CRL distributionPoint, it is
+  // used for verifying the CRL, otherwise the CRL is verified with a
+  // synthesized distributionPoint. This is allowed since there are some
+  // conditions that require a V1 certificate to test, which cannot have a
+  // crlDistributionPoints extension.
   // TODO(https://crbug.com/749276): This seems slightly hacky. Maybe the
   // distribution point to use should be specified separately in the test PEM?
-  ParsedDistributionPoint* cert_dp = nullptr;
+  ParsedDistributionPoint fake_cert_dp;
+  ParsedDistributionPoint* cert_dp = &fake_cert_dp;
   std::vector<ParsedDistributionPoint> distribution_points;
   ParsedExtension crl_dp_extension;
   if (cert->GetExtension(CrlDistributionPointsOid(), &crl_dp_extension)) {
@@ -151,6 +167,7 @@ TEST_P(CheckCRLTest, FromFile) {
     if (!distribution_points.empty())
       cert_dp = &distribution_points[0];
   }
+  ASSERT_TRUE(cert_dp);
 
   // Mar 9 00:00:00 2017 GMT
   base::Time kVerifyTime =
@@ -163,7 +180,7 @@ TEST_P(CheckCRLTest, FromFile) {
     expected_revocation_status = CRLRevocationStatus::REVOKED;
 
   CRLRevocationStatus revocation_status =
-      CheckCRL(crl_data, certs, /*target_cert_index=*/0, cert_dp, kVerifyTime,
+      CheckCRL(crl_data, certs, /*target_cert_index=*/0, *cert_dp, kVerifyTime,
                kAgeOneWeek);
   EXPECT_EQ(expected_revocation_status, revocation_status);
 
@@ -176,7 +193,7 @@ TEST_P(CheckCRLTest, FromFile) {
   ASSERT_FALSE(other_certs.empty());
   certs.insert(certs.begin(), other_certs[0]);
   revocation_status = CheckCRL(crl_data, certs, /*target_cert_index=*/1,
-                               cert_dp, kVerifyTime, kAgeOneWeek);
+                               *cert_dp, kVerifyTime, kAgeOneWeek);
   EXPECT_EQ(expected_revocation_status, revocation_status);
 }
 

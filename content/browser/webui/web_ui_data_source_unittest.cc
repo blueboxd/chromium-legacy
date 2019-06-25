@@ -27,14 +27,13 @@ class TestClient : public TestContentClient {
   TestClient() : is_gzipped_(false) {}
   ~TestClient() override {}
 
-  base::string16 GetLocalizedString(int message_id) const override {
+  base::string16 GetLocalizedString(int message_id) override {
     if (message_id == kDummyStringId)
       return base::UTF8ToUTF16(kDummyString);
     return base::string16();
   }
 
-  base::RefCountedMemory* GetDataResourceBytes(
-      int resource_id) const override {
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) override {
     base::RefCountedStaticMemory* bytes = nullptr;
     if (resource_id == kDummyDefaultResourceId) {
       bytes = new base::RefCountedStaticMemory(
@@ -46,9 +45,7 @@ class TestClient : public TestContentClient {
     return bytes;
   }
 
-  bool IsDataResourceGzipped(int resource_id) const override {
-    return is_gzipped_;
-  }
+  bool IsDataResourceGzipped(int resource_id) override { return is_gzipped_; }
 
   // Sets the response for |IsDataResourceGzipped()|.
   void SetIsDataResourceGzipped(bool is_gzipped) { is_gzipped_ = is_gzipped; }

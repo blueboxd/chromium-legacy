@@ -103,57 +103,6 @@ void NativeFileSystemManagerImpl::ChooseEntries(
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
-blink::mojom::NativeFileSystemFileHandlePtr
-NativeFileSystemManagerImpl::CreateFileHandle(
-    const BindingContext& binding_context,
-    const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(url.is_valid());
-  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
-            handle_state.file_system.is_valid())
-      << url.mount_type();
-
-  blink::mojom::NativeFileSystemFileHandlePtr result;
-  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
-                                this, binding_context, url, handle_state),
-                            mojo::MakeRequest(&result));
-  return result;
-}
-
-blink::mojom::NativeFileSystemDirectoryHandlePtr
-NativeFileSystemManagerImpl::CreateDirectoryHandle(
-    const BindingContext& binding_context,
-    const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(url.is_valid());
-  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
-            handle_state.file_system.is_valid())
-      << url.mount_type();
-
-  blink::mojom::NativeFileSystemDirectoryHandlePtr result;
-  directory_bindings_.AddBinding(
-      std::make_unique<NativeFileSystemDirectoryHandleImpl>(
-          this, binding_context, url, handle_state),
-      mojo::MakeRequest(&result));
-  return result;
-}
-
-blink::mojom::NativeFileSystemFileWriterPtr
-NativeFileSystemManagerImpl::CreateFileWriter(
-    const BindingContext& binding_context,
-    const storage::FileSystemURL& url,
-    const SharedHandleState& handle_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  blink::mojom::NativeFileSystemFileWriterPtr result;
-  writer_bindings_.AddBinding(std::make_unique<NativeFileSystemFileWriterImpl>(
-                                  this, binding_context, url, handle_state),
-                              mojo::MakeRequest(&result));
-  return result;
-}
-
 blink::mojom::NativeFileSystemEntryPtr
 NativeFileSystemManagerImpl::CreateFileEntryFromPath(
     const BindingContext& binding_context,
@@ -223,6 +172,57 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
                                 std::move(url.file_system)))
               .PassInterface()),
       url.base_name);
+}
+
+blink::mojom::NativeFileSystemFileHandlePtr
+NativeFileSystemManagerImpl::CreateFileHandle(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const SharedHandleState& handle_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(url.is_valid());
+  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
+            handle_state.file_system.is_valid())
+      << url.mount_type();
+
+  blink::mojom::NativeFileSystemFileHandlePtr result;
+  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
+                                this, binding_context, url, handle_state),
+                            mojo::MakeRequest(&result));
+  return result;
+}
+
+blink::mojom::NativeFileSystemDirectoryHandlePtr
+NativeFileSystemManagerImpl::CreateDirectoryHandle(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const SharedHandleState& handle_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(url.is_valid());
+  DCHECK_EQ(url.mount_type() == storage::kFileSystemTypeIsolated,
+            handle_state.file_system.is_valid())
+      << url.mount_type();
+
+  blink::mojom::NativeFileSystemDirectoryHandlePtr result;
+  directory_bindings_.AddBinding(
+      std::make_unique<NativeFileSystemDirectoryHandleImpl>(
+          this, binding_context, url, handle_state),
+      mojo::MakeRequest(&result));
+  return result;
+}
+
+blink::mojom::NativeFileSystemFileWriterPtr
+NativeFileSystemManagerImpl::CreateFileWriter(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const SharedHandleState& handle_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  blink::mojom::NativeFileSystemFileWriterPtr result;
+  writer_bindings_.AddBinding(std::make_unique<NativeFileSystemFileWriterImpl>(
+                                  this, binding_context, url, handle_state),
+                              mojo::MakeRequest(&result));
+  return result;
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(

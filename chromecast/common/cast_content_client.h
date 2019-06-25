@@ -21,12 +21,11 @@ class CastContentClient : public content::ContentClient {
   // content::ContentClient implementation:
   void SetActiveURL(const GURL& url, std::string top_origin) override;
   void AddAdditionalSchemes(Schemes* schemes) override;
-  base::string16 GetLocalizedString(int message_id) const override;
-  base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
-  gfx::Image& GetNativeImageNamed(int resource_id) const override;
+  base::string16 GetLocalizedString(int message_id) override;
+  base::StringPiece GetDataResource(int resource_id,
+                                    ui::ScaleFactor scale_factor) override;
+  bool IsDataResourceGzipped(int resource_id) override;
+  gfx::Image& GetNativeImageNamed(int resource_id) override;
 #if defined(OS_ANDROID)
   ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID

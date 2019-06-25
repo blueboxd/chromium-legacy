@@ -3702,7 +3702,7 @@ class ThrottlingContentBrowserClient : public TestContentBrowserClient {
   ~ThrottlingContentBrowserClient() override {}
 
   // ContentBrowserClient overrides:
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,

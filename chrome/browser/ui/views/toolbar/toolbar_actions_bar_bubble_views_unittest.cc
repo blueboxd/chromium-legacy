@@ -204,7 +204,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutListView) {
   EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_TRUE(bubble()->item_list());
-  EXPECT_EQ(ItemListString(), bubble()->item_list()->text());
+  EXPECT_EQ(ItemListString(), bubble()->item_list()->GetText());
 
   CloseBubble();
 }
@@ -415,7 +415,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewLabelTextOnly) {
   ASSERT_TRUE(extra_view);
   EXPECT_EQ("Label", std::string(extra_view->GetClassName()));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
-            static_cast<views::Label*>(extra_view.get())->text());
+            static_cast<views::Label*>(extra_view.get())->GetText());
   CloseBubble();
 }
 
@@ -442,7 +442,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
     std::string class_name = v->GetClassName();
     if (class_name == "Label") {
       EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
-                static_cast<const views::Label*>(v)->text());
+                static_cast<const views::Label*>(v)->GetText());
     } else {
       ASSERT_EQ("ImageView", class_name);
       EXPECT_TRUE(gfx::test::AreImagesEqual(

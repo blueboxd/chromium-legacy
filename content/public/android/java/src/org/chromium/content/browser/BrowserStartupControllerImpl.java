@@ -463,25 +463,6 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         ServicificationStartupUma.getInstance().commit();
     }
 
-    /**
-     * Initialization needed for tests. Mainly used by content browsertests.
-     */
-    @Override
-    public void initChromiumBrowserProcessForTests() {
-        ResourceExtractor resourceExtractor = ResourceExtractor.get();
-        resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
-        resourceExtractor.startExtractingResources("en");
-        resourceExtractor.waitForCompletion();
-        nativeSetCommandLineFlags(false);
-
-        mFullBrowserStartupDone = true;
-        mStartupSuccess = true;
-        for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
-            asyncStartupCallback.onSuccess();
-        }
-        mAsyncStartupCallbacks.clear();
-    }
-
     private static native void nativeSetCommandLineFlags(boolean singleProcess);
 
     // Is this an official build of Chrome? Only native code knows for sure. Official build

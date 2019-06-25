@@ -60,7 +60,7 @@ gfx::Insets Link::GetInsets() const {
   gfx::Insets insets = Label::GetInsets();
   if (GetFocusStyle() == FocusStyle::RING &&
       GetFocusBehavior() != FocusBehavior::NEVER) {
-    DCHECK(!text().empty());
+    DCHECK(!GetText().empty());
     insets += gfx::Insets(kFocusBorderPadding);
   }
   return insets;
@@ -248,7 +248,7 @@ void Link::RecalculateFont() {
 
 void Link::ConfigureFocus() {
   // Disable focusability for empty links.
-  if (text().empty()) {
+  if (GetText().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {
 #if defined(OS_MACOSX)

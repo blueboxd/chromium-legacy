@@ -265,7 +265,7 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
     }
 
     if (check_error_state) {
-      const std::string& error = network->error();
+      const std::string& error = network->GetError();
       if (error == shill::kErrorBadPassphrase) {
         InvokeConnectErrorCallback(service_path, error_callback,
                                    kErrorBadPassphrase);

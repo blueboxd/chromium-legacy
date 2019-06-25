@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <body>
+<style>
+std-switch {
+  /* TODO(tkent): Should have margin in UA style? */
+  margin: 0.5em;
+}
+</style>
 <script type="module" async>
 import 'std:elements/switch';
 
@@ -7,7 +13,7 @@ import 'std:elements/switch';
 </script>
 
 <div><std-switch></std-switch></div>
-<div><std-switch>off</std-switch></div>
+<div><std-switch><div style="display:inline-block; text-align:right; width:100%;">off</div></std-switch></div>
 <div><std-switch on></std-switch></div>
 <div><std-switch on>on</std-switch></div>
 

@@ -258,17 +258,6 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoEncodeAccelerator() {
                               .video_encode_accelerator_supported_profiles));
 }
 
-void GpuVideoAcceleratorFactoriesImpl::SignalSyncToken(
-    const gpu::SyncToken& sync_token,
-    base::OnceClosure callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (CheckContextLost())
-    return;
-
-  context_provider_->ContextSupport()->SignalSyncToken(sync_token,
-                                                       std::move(callback));
-}
-
 std::unique_ptr<gfx::GpuMemoryBuffer>
 GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer(
     const gfx::Size& size,

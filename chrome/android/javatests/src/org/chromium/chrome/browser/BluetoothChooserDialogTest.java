@@ -255,7 +255,7 @@ public class BluetoothChooserDialogTest {
         Assert.assertEquals(View.VISIBLE, items.getVisibility());
         Assert.assertEquals(View.GONE, progress.getVisibility());
 
-        ItemChooserDialog.ItemAdapter itemAdapter =
+        DeviceItemAdapter itemAdapter =
                 mChooserDialog.mItemChooserDialog.getItemAdapterForTesting();
         Assert.assertTrue(itemAdapter.getItem(0).hasSameContents(
                 "id-1", "Name 1", null /* icon */, null /* iconDescription */));

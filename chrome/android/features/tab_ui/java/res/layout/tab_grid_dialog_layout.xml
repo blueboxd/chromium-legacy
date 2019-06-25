@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/dialog_container_view"
-    android:background="@color/modern_primary_color">
+    android:background="@drawable/tab_grid_card_background">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_sheet_peek_height"

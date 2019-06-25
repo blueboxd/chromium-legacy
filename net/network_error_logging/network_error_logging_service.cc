@@ -109,8 +109,8 @@ const struct {
      "tls.unrecognized_name_alert"},
     // tls.failed?
 
-    {ERR_SPDY_PING_FAILED, kApplicationPhase, "h2.ping_failed"},
-    {ERR_SPDY_PROTOCOL_ERROR, kConnectionPhase, "h2.protocol.error"},
+    {ERR_HTTP2_PING_FAILED, kApplicationPhase, "h2.ping_failed"},
+    {ERR_HTTP2_PROTOCOL_ERROR, kConnectionPhase, "h2.protocol.error"},
 
     {ERR_QUIC_PROTOCOL_ERROR, kConnectionPhase, "h3.protocol.error"},
 

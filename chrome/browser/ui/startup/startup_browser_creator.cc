@@ -69,11 +69,8 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -286,18 +283,6 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   // before calling this function. However chromeos/login/login_utils.cc
   // calls this function directly (see comments there) so it has to be checked
   // again.
-
-#if defined(KIOSK_NEXT)
-  // FeatureList::IsEnabled has side effects so we call it first before doing
-  // an early return if possible
-  DCHECK(!chromeos::ProfileHelper::IsSigninProfile(profile));
-  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-    const PrefService* prefs = profile->GetPrefs();
-    if (prefs->GetBoolean(ash::prefs::kKioskNextShellEnabled)) {
-      return true;
-    }
-  }
-#endif  // defined(KIOSK_NEXT)
 
   if (command_line.HasSwitch(switches::kSilentLaunch))
     return true;

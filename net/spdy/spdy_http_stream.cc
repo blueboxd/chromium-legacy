@@ -399,7 +399,7 @@ void SpdyHttpStream::OnHeadersReceived(
                              response_headers, *response_info_)) {
     // Cancel will call OnClose, which might call callbacks and might destroy
     // |this|.
-    stream_->Cancel(ERR_SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH);
+    stream_->Cancel(ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH);
 
     return;
   }

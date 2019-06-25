@@ -44,7 +44,7 @@ ProfileKey* ProfileKeyAndroid::FromProfileKeyAndroid(
 // static
 ScopedJavaLocalRef<jobject> ProfileKeyAndroid::GetLastUsedProfileKey(
     JNIEnv* env) {
-  ProfileKey* key = ::android::GetMainProfileKey();
+  ProfileKey* key = ::android::GetLastUsedProfileKey();
   if (key == nullptr) {
     NOTREACHED() << "ProfileKey not found.";
     return ScopedJavaLocalRef<jobject>();

@@ -514,6 +514,11 @@ void NetworkConfigurationHandler::ConfigurationCompleted(
     std::unique_ptr<base::DictionaryValue> configure_properties,
     const network_handler::ServiceResultCallback& callback,
     const dbus::ObjectPath& service_path) {
+  // It is possible that the newly-configured network was already being tracked
+  // by |network_state_handler_|. If this is the case, clear any existing error
+  // from a previous connection attempt.
+  network_state_handler_->ClearLastErrorForNetwork(service_path.value());
+
   // Shill should send a network list update, but to ensure that Shill sends
   // the newly configured properties immediately, request an update here.
   network_state_handler_->RequestUpdateForNetwork(service_path.value());
@@ -532,6 +537,10 @@ void NetworkConfigurationHandler::ProfileEntryDeleterCompleted(
     const std::string& guid,
     bool success) {
   if (success) {
+    // Since the configuration was removed, clear any associated error to ensure
+    // that the UI does not display stale errors from a previous configuration.
+    network_state_handler_->ClearLastErrorForNetwork(service_path);
+
     for (auto& observer : observers_)
       observer.OnConfigurationRemoved(service_path, guid);
   }

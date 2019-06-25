@@ -395,7 +395,7 @@ static_library("test_support") {
     ]
   }
 
-  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
+  if (enable_gwp_asan) {
     deps += [ "//components/gwp_asan/client" ]
   }
 }

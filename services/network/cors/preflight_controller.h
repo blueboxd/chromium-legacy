@@ -64,9 +64,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory);
 
-  // Reports and gather CORS preflight cache size metric.
-  PreflightCache::Metrics ReportAndGatherCacheSizeMetric();
-
  private:
   class PreflightLoader;
 

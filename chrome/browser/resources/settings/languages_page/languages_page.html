@@ -220,28 +220,35 @@
                     $i18n{translateTargetLabel}
                   </div>
 <if expr="chromeos or is_win">
-                  <template is="dom-if"
-                  if="[[pageVisibility.uiDisplayedInThisLanguage]]">
-                    <div class="explain-selected"
-                        hidden="[[!isProspectiveUILanguage_(
-                            item.language.code,
-                            languages.prospectiveUILanguage)]]">
-                      $i18n{isDisplayedInThisLanguage}
-                    </div>
-                  </template>
+                  <div class="explain-selected"
+<if expr="is_win">
+                      hidden="[[!isProspectiveUILanguage_(
+                          item.language.code,
+                          languages.prospectiveUILanguage)]]">
 </if>
+<if expr="chromeos">
+                      hidden="[[!shouldShowExplanation_(
+                          item.language.code,
+                          languages.prospectiveUILanguage,
+                          pageVisibility.uiDisplayedInThisLanguage)]]">
+</if>
+                    $i18n{isDisplayedInThisLanguage}
+                  </div>
+</if> <!-- chromeos or is_win -->
                 </div>
 <if expr="chromeos or is_win">
                 <template is="dom-if" if="[[isRestartRequired_(
                     item.language.code, languages.prospectiveUILanguage)]]"
                     restamp>
                   <cr-button id="restartButton"
+<if expr="chromeos">
                       hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
+</if>
                       on-click="onRestartTap_">
                     $i18n{restart}
                   </cr-button>
                 </template>
-</if>
+</if> <!-- chromeos or is_win -->
                 <cr-icon-button class="icon-more-vert"
                     title="$i18n{moreActions}" id="more-[[item.language.code]]"
                     on-click="onDotsTap_"></cr-icon-button>
@@ -411,7 +418,9 @@
                 class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
               <cr-checkbox id="uiLanguageItem"
+<if expr="chromeos">
                   hidden="[[!pageVisibility.uiDisplayedInThisLanguage]]"
+</if>
                   class="dropdown-item"
                   checked="[[isProspectiveUILanguage_(
                       detailLanguage_.language.code,
@@ -424,7 +433,7 @@
                     !detailLanguage_.language.isProhibitedLanguage]]">
                 </iron-icon>
               </cr-checkbox>
-</if>
+</if> <!-- chromeos or is_win -->
               <cr-checkbox id="offerTranslations"
                   class="dropdown-item"
                   checked="[[detailLanguage_.translateEnabled]]"

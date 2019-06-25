@@ -538,9 +538,9 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
 
   // Non-visible networks (with null network_state_) do not set ErrorState.
   if (network_state_) {
-    if (!network_state_->error().empty()) {
+    if (!network_state_->GetError().empty()) {
       onc_object_->SetKey(::onc::network_config::kErrorState,
-                          base::Value(network_state_->error()));
+                          base::Value(network_state_->GetError()));
     }
   }
 

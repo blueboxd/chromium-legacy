@@ -151,28 +151,25 @@ class CONTENT_EXPORT ContentClient {
   virtual bool CanSendWhileSwappedOut(const IPC::Message* message);
 
   // Returns a string resource given its id.
-  virtual base::string16 GetLocalizedString(int message_id) const;
+  virtual base::string16 GetLocalizedString(int message_id);
 
   // Returns a string resource given its id and replace $1 with the given
   // replacement.
-  virtual base::string16 GetLocalizedString(
-      int message_id,
-      const base::string16& replacement) const;
+  virtual base::string16 GetLocalizedString(int message_id,
+                                            const base::string16& replacement);
 
   // Return the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) const;
+  virtual base::StringPiece GetDataResource(int resource_id,
+                                            ui::ScaleFactor scale_factor);
 
   // Returns the raw bytes of a scale independent data resource.
-  virtual base::RefCountedMemory* GetDataResourceBytes(
-      int resource_id) const;
+  virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id);
 
   // Returns whether the contents of a resource are compressed (with gzip).
-  virtual bool IsDataResourceGzipped(int resource_id) const;
+  virtual bool IsDataResourceGzipped(int resource_id);
 
   // Returns a native image given its id.
-  virtual gfx::Image& GetNativeImageNamed(int resource_id) const;
+  virtual gfx::Image& GetNativeImageNamed(int resource_id);
 
   // Called by content::GetProcessTypeNameInEnglish for process types that it
   // doesn't know about because they're from the embedder.
@@ -184,7 +181,7 @@ class CONTENT_EXPORT ContentClient {
   // |GetNetConstants()| and passed to FileNetLogObserver - see documentation
   // of |FileNetLogObserver::CreateBounded()| for more information.  The
   // convention is to put new constants under a subdict at the key "clientInfo".
-  virtual base::DictionaryValue GetNetLogConstants() const;
+  virtual base::DictionaryValue GetNetLogConstants();
 
   // Returns whether or not V8 script extensions should be allowed for a
   // service worker.

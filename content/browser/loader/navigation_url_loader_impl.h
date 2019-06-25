@@ -23,6 +23,7 @@ struct RedirectInfo;
 
 namespace content {
 
+class BrowserContext;
 class NavigationLoaderInterceptor;
 class PrefetchedSignedExchangeCache;
 class ResourceContext;
@@ -35,6 +36,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   // Note |initial_interceptors| is there for test purposes only.
   NavigationURLLoaderImpl(
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,

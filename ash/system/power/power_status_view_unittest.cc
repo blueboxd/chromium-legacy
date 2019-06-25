@@ -47,7 +47,7 @@ class PowerStatusViewTest : public AshTestBase {
   }
 
   base::string16 RemainingTimeInView() const {
-    return view_->time_status_label_->text();
+    return view_->time_status_label_->GetText();
   }
 
  private:

@@ -124,15 +124,6 @@ base::Optional<CorsErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
                          method);
 }
 
-size_t PreflightResult::EstimateMemoryPressureInBytes() const {
-  size_t bytes = 0;
-  for (const auto& method : methods_)
-    bytes += method.size();
-  for (const auto& header : headers_)
-    bytes += header.size();
-  return bytes;
-}
-
 base::Optional<CorsErrorStatus>
 PreflightResult::EnsureAllowedCrossOriginHeaders(
     const net::HttpRequestHeaders& headers,

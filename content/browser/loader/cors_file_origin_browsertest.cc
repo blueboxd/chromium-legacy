@@ -117,7 +117,7 @@ class CorsFileOriginBrowserTest
   }
 
  private:
-  bool AllowFileAccessFromFiles() const override { return false; }
+  bool AllowFileAccessFromFiles() override { return false; }
   virtual bool IsWebSecurityEnabled() const { return true; }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -200,7 +200,7 @@ class CorsFileOriginBrowserTest
 class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() const override { return true; }
+  bool AllowFileAccessFromFiles() override { return true; }
 };
 
 // Tests end to end Origin header and CORS check behaviors with
@@ -208,7 +208,7 @@ class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
 class CorsFileOriginBrowserTestWithDisableWebSecurity
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() const override { return false; }
+  bool AllowFileAccessFromFiles() override { return false; }
   bool IsWebSecurityEnabled() const override { return false; }
 };
 

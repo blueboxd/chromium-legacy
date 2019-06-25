@@ -347,6 +347,9 @@ void ChromotingSession::Core::Disconnect() {
                                    ChromotingEvent::ConnectionError::NONE);
     session_state_ = protocol::ConnectionToHost::CLOSED;
 
+    // Make sure we send a session-terminate to the host.
+    client_->Close();
+
     Invalidate();
   }
 }

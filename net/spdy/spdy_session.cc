@@ -553,42 +553,42 @@ Error MapFramerErrorToNetError(
     case http2::Http2DecoderAdapter::SPDY_NO_ERROR:
       return OK;
     case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
-      return ERR_SPDY_FRAME_SIZE_ERROR;
+      return ERR_HTTP2_FRAME_SIZE_ERROR;
     case http2::Http2DecoderAdapter::SPDY_ZLIB_INIT_FAILURE:
-      return ERR_SPDY_COMPRESSION_ERROR;
+      return ERR_HTTP2_COMPRESSION_ERROR;
     case http2::Http2DecoderAdapter::SPDY_UNSUPPORTED_VERSION:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE:
-      return ERR_SPDY_COMPRESSION_ERROR;
+      return ERR_HTTP2_COMPRESSION_ERROR;
     case http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE:
-      return ERR_SPDY_COMPRESSION_ERROR;
+      return ERR_HTTP2_COMPRESSION_ERROR;
     case http2::Http2DecoderAdapter::SPDY_GOAWAY_FRAME_CORRUPT:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_RST_STREAM_FRAME_CORRUPT:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INVALID_PADDING:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INVALID_DATA_FRAME_FLAGS:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_FLAGS:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_UNEXPECTED_FRAME:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INTERNAL_FRAMER_ERROR:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME_SIZE:
-      return ERR_SPDY_FRAME_SIZE_ERROR;
+      return ERR_HTTP2_FRAME_SIZE_ERROR;
     case http2::Http2DecoderAdapter::SPDY_INVALID_STREAM_ID:
-      return ERR_SPDY_PROTOCOL_ERROR;
+      return ERR_HTTP2_PROTOCOL_ERROR;
     case http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD:
-      return ERR_SPDY_FRAME_SIZE_ERROR;
+      return ERR_HTTP2_FRAME_SIZE_ERROR;
     case http2::Http2DecoderAdapter::LAST_ERROR:
       NOTREACHED();
   }
   NOTREACHED();
-  return ERR_SPDY_PROTOCOL_ERROR;
+  return ERR_HTTP2_PROTOCOL_ERROR;
 }
 
 SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
@@ -631,15 +631,15 @@ spdy::SpdyErrorCode MapNetErrorToGoAwayStatus(Error err) {
   switch (err) {
     case OK:
       return spdy::ERROR_CODE_NO_ERROR;
-    case ERR_SPDY_PROTOCOL_ERROR:
+    case ERR_HTTP2_PROTOCOL_ERROR:
       return spdy::ERROR_CODE_PROTOCOL_ERROR;
-    case ERR_SPDY_FLOW_CONTROL_ERROR:
+    case ERR_HTTP2_FLOW_CONTROL_ERROR:
       return spdy::ERROR_CODE_FLOW_CONTROL_ERROR;
-    case ERR_SPDY_FRAME_SIZE_ERROR:
+    case ERR_HTTP2_FRAME_SIZE_ERROR:
       return spdy::ERROR_CODE_FRAME_SIZE_ERROR;
-    case ERR_SPDY_COMPRESSION_ERROR:
+    case ERR_HTTP2_COMPRESSION_ERROR:
       return spdy::ERROR_CODE_COMPRESSION_ERROR;
-    case ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY:
+    case ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY:
       return spdy::ERROR_CODE_INADEQUATE_SECURITY;
     default:
       return spdy::ERROR_CODE_PROTOCOL_ERROR;
@@ -1008,7 +1008,7 @@ int SpdySession::GetPushedStream(const GURL& url,
   if (active_it == active_streams_.end()) {
     // A previously claimed pushed stream might not be available, for example,
     // if the server has reset it in the meanwhile.
-    return ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE;
+    return ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE;
   }
 
   net_log_.AddEvent(
@@ -1862,7 +1862,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
     LOG(WARNING) << description;
     RecordSpdyPushedStreamFateHistogram(
         SpdyPushedStreamFate::kPromisedStreamIdParityError);
-    CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
+    CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, description);
     return;
   }
 
@@ -1873,7 +1873,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
     LOG(WARNING) << description;
     RecordSpdyPushedStreamFateHistogram(
         SpdyPushedStreamFate::kAssociatedStreamIdParityError);
-    CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
+    CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, description);
     return;
   }
 
@@ -1884,7 +1884,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
     LOG(WARNING) << description;
     RecordSpdyPushedStreamFateHistogram(
         SpdyPushedStreamFate::kStreamIdOutOfOrder);
-    CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, description);
+    CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, description);
     return;
   }
 
@@ -2110,14 +2110,14 @@ void SpdySession::ResetStreamIterator(ActiveStreamMap::iterator it,
   if (error == ERR_FAILED) {
     error_code = spdy::ERROR_CODE_INTERNAL_ERROR;
   } else if (error == ERR_ABORTED ||
-             error == ERR_SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH) {
+             error == ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH) {
     error_code = spdy::ERROR_CODE_CANCEL;
-  } else if (error == ERR_SPDY_FLOW_CONTROL_ERROR) {
+  } else if (error == ERR_HTTP2_FLOW_CONTROL_ERROR) {
     error_code = spdy::ERROR_CODE_FLOW_CONTROL_ERROR;
   } else if (error == ERR_TIMED_OUT ||
-             error == ERR_SPDY_CLIENT_REFUSED_STREAM) {
+             error == ERR_HTTP2_CLIENT_REFUSED_STREAM) {
     error_code = spdy::ERROR_CODE_REFUSED_STREAM;
-  } else if (error == ERR_SPDY_STREAM_CLOSED) {
+  } else if (error == ERR_HTTP2_STREAM_CLOSED) {
     error_code = spdy::ERROR_CODE_STREAM_CLOSED;
   }
   spdy::SpdyStreamId stream_id = it->first;
@@ -2584,7 +2584,7 @@ void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
     case spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL:
       if ((value != 0 && value != 1) || (support_websocket_ && value == 0)) {
         DoDrainSession(
-            ERR_SPDY_PROTOCOL_ERROR,
+            ERR_HTTP2_PROTOCOL_ERROR,
             "Invalid value for spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL.");
         return;
       }
@@ -2599,7 +2599,7 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
   for (const auto& value : active_streams_) {
     if (!value.second->AdjustSendWindowSize(delta_window_size)) {
       DoDrainSession(
-          ERR_SPDY_FLOW_CONTROL_ERROR,
+          ERR_HTTP2_FLOW_CONTROL_ERROR,
           base::StringPrintf(
               "New spdy::SETTINGS_INITIAL_WINDOW_SIZE value overflows "
               "flow control window of stream %d.",
@@ -2611,7 +2611,7 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
   for (auto* const stream : created_streams_) {
     if (!stream->AdjustSendWindowSize(delta_window_size)) {
       DoDrainSession(
-          ERR_SPDY_FLOW_CONTROL_ERROR,
+          ERR_HTTP2_FLOW_CONTROL_ERROR,
           base::StringPrintf(
               "New spdy::SETTINGS_INITIAL_WINDOW_SIZE value overflows "
               "flow control window of stream %d.",
@@ -2702,7 +2702,7 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   if (now > last_read_time_ + hung_interval_ ||
       last_read_time_ < last_check_time) {
     check_ping_status_pending_ = false;
-    DoDrainSession(ERR_SPDY_PING_FAILED, "Failed ping.");
+    DoDrainSession(ERR_HTTP2_PING_FAILED, "Failed ping.");
     return;
   }
 
@@ -2999,7 +2999,7 @@ void SpdySession::OnStreamError(spdy::SpdyStreamId stream_id,
     return;
   }
 
-  ResetStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR, description);
+  ResetStreamIterator(it, ERR_HTTP2_PROTOCOL_ERROR, description);
 }
 
 void SpdySession::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
@@ -3017,7 +3017,7 @@ void SpdySession::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
 
   if (!ping_in_flight_) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_UNEXPECTED_PING);
-    DoDrainSession(ERR_SPDY_PROTOCOL_ERROR, "Unexpected PING ACK.");
+    DoDrainSession(ERR_HTTP2_PROTOCOL_ERROR, "Unexpected PING ACK.");
     return;
   }
 
@@ -3052,11 +3052,11 @@ void SpdySession::OnRstStream(spdy::SpdyStreamId stream_id,
 
   if (it->second->ShouldRetryRSTPushStream()) {
     CloseActiveStreamIterator(it,
-                              ERR_SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER);
+                              ERR_HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER);
   } else if (error_code == spdy::ERROR_CODE_NO_ERROR) {
-    CloseActiveStreamIterator(it, ERR_SPDY_RST_STREAM_NO_ERROR_RECEIVED);
+    CloseActiveStreamIterator(it, ERR_HTTP2_RST_STREAM_NO_ERROR_RECEIVED);
   } else if (error_code == spdy::ERROR_CODE_REFUSED_STREAM) {
-    CloseActiveStreamIterator(it, ERR_SPDY_SERVER_REFUSED_STREAM);
+    CloseActiveStreamIterator(it, ERR_HTTP2_SERVER_REFUSED_STREAM);
   } else if (error_code == spdy::ERROR_CODE_HTTP_1_1_REQUIRED) {
     // TODO(bnc): Record histogram with number of open streams capped at 50.
     if (net_log().IsCapturing()) {
@@ -3069,12 +3069,12 @@ void SpdySession::OnRstStream(spdy::SpdyStreamId stream_id,
     RecordProtocolErrorHistogram(
         PROTOCOL_ERROR_RST_STREAM_FOR_NON_ACTIVE_STREAM);
     if (net_log().IsCapturing()) {
-      it->second->LogStreamError(ERR_SPDY_PROTOCOL_ERROR,
+      it->second->LogStreamError(ERR_HTTP2_PROTOCOL_ERROR,
                                  "Server reset stream.");
     }
     // TODO(mbelshe): Map from Spdy-protocol errors to something sensical.
     //                For now, it doesn't matter much - it is a protocol error.
-    CloseActiveStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR);
+    CloseActiveStreamIterator(it, ERR_HTTP2_PROTOCOL_ERROR);
   }
 }
 
@@ -3096,7 +3096,7 @@ void SpdySession::OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
     // TODO(bnc): Record histogram with number of open streams capped at 50.
     DoDrainSession(ERR_HTTP_1_1_REQUIRED, "HTTP_1_1_REQUIRED for stream.");
   } else if (error_code == spdy::ERROR_CODE_NO_ERROR) {
-    StartGoingAway(last_accepted_stream_id, ERR_SPDY_SERVER_REFUSED_STREAM);
+    StartGoingAway(last_accepted_stream_id, ERR_HTTP2_SERVER_REFUSED_STREAM);
   } else {
     StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
   }
@@ -3247,7 +3247,7 @@ void SpdySession::OnWindowUpdate(spdy::SpdyStreamId stream_id,
     if (delta_window_size < 1) {
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
       DoDrainSession(
-          ERR_SPDY_PROTOCOL_ERROR,
+          ERR_HTTP2_PROTOCOL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size " +
               base::NumberToString(delta_window_size));
       return;
@@ -3269,7 +3269,7 @@ void SpdySession::OnWindowUpdate(spdy::SpdyStreamId stream_id,
 
     if (delta_window_size < 1) {
       ResetStreamIterator(
-          it, ERR_SPDY_FLOW_CONTROL_ERROR,
+          it, ERR_HTTP2_FLOW_CONTROL_ERROR,
           "Received WINDOW_UPDATE with an invalid delta_window_size.");
       return;
     }
@@ -3331,7 +3331,7 @@ void SpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
         num_active_pushed_streams_ >= max_concurrent_pushed_streams_) {
       RecordSpdyPushedStreamFateHistogram(
           SpdyPushedStreamFate::kTooManyPushedStreams);
-      ResetStream(stream_id, ERR_SPDY_CLIENT_REFUSED_STREAM,
+      ResetStream(stream_id, ERR_HTTP2_CLIENT_REFUSED_STREAM,
                   "Stream concurrency limit reached.");
       return;
     }
@@ -3486,7 +3486,7 @@ void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
   if (delta_window_size > max_delta_window_size) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
     DoDrainSession(
-        ERR_SPDY_PROTOCOL_ERROR,
+        ERR_HTTP2_PROTOCOL_ERROR,
         "Received WINDOW_UPDATE [delta: " +
             base::NumberToString(delta_window_size) +
             "] for session overflows session_send_window_size_ [current: " +
@@ -3566,7 +3566,7 @@ void SpdySession::DecreaseRecvWindowSize(int32_t delta_window_size) {
       session_recv_window_size_ - session_unacked_recv_window_bytes_) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION);
     DoDrainSession(
-        ERR_SPDY_FLOW_CONTROL_ERROR,
+        ERR_HTTP2_FLOW_CONTROL_ERROR,
         "delta_window_size is " + base::NumberToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
             "window size of " +

@@ -47,9 +47,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   // framework does not want. Trampoline it.
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
-  MOCK_METHOD2(SignalSyncToken,
-               void(const gpu::SyncToken& sync_token,
-                    base::OnceClosure callback));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
                VideoEncodeAccelerator::SupportedProfiles());

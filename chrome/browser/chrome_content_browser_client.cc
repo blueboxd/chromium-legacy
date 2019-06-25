@@ -258,6 +258,7 @@
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -4662,13 +4663,14 @@ class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
 }  // namespace
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
-ChromeContentBrowserClient::CreateURLLoaderThrottles(
+ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     const network::ResourceRequest& request,
     content::ResourceContext* resource_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
@@ -4768,6 +4770,54 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       std::move(delegate), navigation_ui_data, wc_getter);
   if (signin_throttle)
     result.push_back(std::move(signin_throttle));
+
+  return result;
+}
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+ChromeContentBrowserClient::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  ChromeNavigationUIData* chrome_navigation_ui_data =
+      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
+
+  if (chrome_navigation_ui_data &&
+      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
+    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
+        chrome_navigation_ui_data->prerender_mode(),
+        chrome_navigation_ui_data->prerender_histogram_prefix(),
+        base::BindOnce(GetPrerenderCanceller, wc_getter),
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+  }
+
+  bool is_off_the_record = profile->IsOffTheRecord();
+  bool is_signed_in = !is_off_the_record &&
+                      !profile->GetPrefs()
+                           ->GetString(prefs::kGoogleServicesUserAccountId)
+                           .empty();
+
+  chrome::mojom::DynamicParams dynamic_params = {
+      profile->GetPrefs()->GetBoolean(prefs::kForceGoogleSafeSearch),
+      profile->GetPrefs()->GetInteger(prefs::kForceYouTubeRestrict),
+      profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps),
+      variations::VariationsHttpHeaderProvider::GetInstance()
+          ->GetClientDataHeader(is_signed_in)};
+  result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
+      is_off_the_record, std::move(dynamic_params)));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
+      browser_context, request.resource_type, frame_tree_node_id));
+#endif
 
   return result;
 }
@@ -5225,14 +5275,32 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
 #endif
 }
 
-bool ChromeContentBrowserClient::IsSafeRedirectTarget(
+bool ChromeContentBrowserClient::IsSafeRedirectTargetOnIO(
     const GURL& url,
     content::ResourceContext* context) {
+  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     const Extension* extension =
         io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
+    if (!extension)
+      return false;
+    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+        extension, url.path());
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  return true;
+}
+
+bool ChromeContentBrowserClient::IsSafeRedirectTarget(
+    const GURL& url,
+    content::BrowserContext* context) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    const Extension* extension = extensions::ExtensionRegistry::Get(context)
+                                     ->enabled_extensions()
+                                     .GetByID(url.host());
     if (!extension)
       return false;
     return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(

@@ -74,7 +74,7 @@ void Checkbox::SetMultiLine(bool multi_line) {
 }
 
 bool Checkbox::GetMultiLine() const {
-  return label()->multi_line();
+  return label()->GetMultiLine();
 }
 
 void Checkbox::SetAssociatedLabel(View* labelling_view) {

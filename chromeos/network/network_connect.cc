@@ -334,8 +334,9 @@ void NetworkConnectImpl::ConnectToNetworkId(const std::string& network_id) {
   NET_LOG_USER("ConnectToNetwork", network_id);
   const NetworkState* network = GetNetworkStateFromId(network_id);
   if (network) {
-    if (!network->error().empty() && !network->security_class().empty()) {
-      NET_LOG_USER("Configure: " + network->error(), network_id);
+    const std::string& network_error = network->GetError();
+    if (!network_error.empty() && !network->security_class().empty()) {
+      NET_LOG_USER("Configure: " + network_error, network_id);
       // If the network is in an error state, show the configuration UI
       // directly to avoid a spurious notification.
       HandleUnconfiguredNetwork(network_id);

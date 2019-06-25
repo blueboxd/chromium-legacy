@@ -367,7 +367,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     base::RepeatingCallback<WebContents*()> wc_getter =
         base::BindRepeating([]() -> WebContents* { return nullptr; });
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
-        GetContentClient()->browser()->CreateURLLoaderThrottles(
+        GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
             *resource_request, resource_context, wc_getter,
             nullptr /* navigation_ui_data */, -1 /* frame_tree_node_id */);
 

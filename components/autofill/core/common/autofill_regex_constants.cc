@@ -384,63 +384,118 @@ const char kFlightRe[] =
 // validation.cc
 /////////////////////////////////////////////////////////////////////////////
 const char kUPIVirtualPaymentAddressRe[] =
-    "^\\w+@("
-    "airtel|"       // My Airtel-Recharge, Bill, Bank
-    "allbank|"      // Allahabad Bank UPI
-    "andb|"         // Andhra Bank ONE
-    "axisbank|"     // Axis Pay
-    "axisgo|"       // Ola
-    "barodampay|"   // Baroda MPay
-    "boi|"          // BHIM BOI UPI
-    "centralbank|"  // Cent UPI
-    "cnrb|"         // Canara Bank UPI - Empower
-    "csbpay|"       // CSB UPI
-    "dbs|"          // digibank by DBS
-    "dcb|"          // DCB Bank
-    "denabank|"     // Dena Bank E-UPI
-    "fbl|"          // Cointab
-    "federal|"      // Lotza
-    "hdfcbank|"     // HDFC Bank MobileBanking
-    "hsbc|"         // HSBC Simply Pay
-    "icici|"        // Pockets- ICICI Bank
-    "idbi|"         // PayWiz
-    "idfcbank|"     // IDFC Bank UPI App
-    "indianbank|"   // Indian Bank UPI
-    "indus|"        // Indus Pay
-    "iob|"          // IOB UPI
-    "jkb|"          // BHIM JK Bank UPI
-    "jsb|"          // JetPay UPI
-    "kaypay|"       // KayPay
-    "kbl|"          // KBL Smartz
-    "kotak|"        // kotak Mahindra Bank
-    "kvb|"          // KVB Upay
-    "lvb|"          // LVB UPay
-    "mahb|"         // MAHAUPI
-    "obc|"          // Oriental BHIM UPI
-    "okicici|"      // Tez
-    "okhdfcbank|"   // Tez
-    "okaxis|"       // Tez
-    "paytm|"        // Paytm
-    "pingpay|"      // Samsung Pay
-    "pnb|"          // PNB UPI
-    "pockets|"      // Pockets- ICICI Bank
-    "psb|"          // PSB UPI App
-    "rbl|"          // RBL Pay
-    "sbi|"          // SBI Pay
-    "scb|"          // Standard Chartered
-    "sib|"          // SIB M-Pay (UPI Pay)
-    "syndicate|"    // Synd UPI
-    "tjsb|"         // TranZapp
-    "ubi|"          // United UPI
-    "uboi|"         // Union Bank UPI
-    "uco|"          // UCO UPI
-    "unionbank|"    // Union Bank UPI
-    "united|"       // United UPI
-    "upi|"          // BHIM Bharat Interface for Money
-    "utbi|"         // United UPI
-    "vijb|"         // Vijaya UPI App
-    "ybl|"          // Yes Pay
-    "yesbank"       // NuPay
+    "^[\\w.+-_]+@("        // eg user@
+    "\\w+\\.ifsc\\.npci|"  // IFSC code
+    "aadhaar\\.npci|"      // Aadhaar number
+    "mobile\\.npci|"       // Mobile number
+    "rupay\\.npci|"        // RuPay card number
+    "airtel|"  // List of banks https://www.npci.org.in/upi-live-members
+    "airtelpaymentsbank|"
+    "albk|"
+    "allahabadbank|"
+    "allbank|"
+    "andb|"
+    "apb|"
+    "apl|"
+    "axis|"
+    "axisbank|"
+    "axisgo|"
+    "bandhan|"
+    "barodampay|"
+    "birla|"
+    "boi|"
+    "cbin|"
+    "cboi|"
+    "centralbank|"
+    "cmsidfc|"
+    "cnrb|"
+    "csbcash|"
+    "csbpay|"
+    "cub|"
+    "dbs|"
+    "dcb|"
+    "dcbbank|"
+    "denabank|"
+    "dlb|"
+    "eazypay|"
+    "equitas|"
+    "ezeepay|"
+    "fbl|"
+    "federal|"
+    "finobank|"
+    "hdfcbank|"
+    "hsbc|"
+    "icici|"
+    "idbi|"
+    "idbibank|"
+    "idfc|"
+    "idfcbank|"
+    "idfcnetc|"
+    "ikwik|"
+    "imobile|"
+    "indbank|"
+    "indianbank|"
+    "indianbk|"
+    "indus|"
+    "iob|"
+    "jkb|"
+    "jsb|"
+    "jsbp|"
+    "karb|"
+    "karurvysyabank|"
+    "kaypay|"
+    "kbl|"
+    "kbl052|"
+    "kmb|"
+    "kmbl|"
+    "kotak|"
+    "kvb|"
+    "kvbank|"
+    "lime|"
+    "lvb|"
+    "lvbank|"
+    "mahb|"
+    "obc|"
+    "okaxis|"
+    "okbizaxis|"
+    "okhdfcbank|"
+    "okicici|"
+    "oksbi|"
+    "paytm|"
+    "payzapp|"
+    "pingpay|"
+    "pnb|"
+    "pockets|"
+    "psb|"
+    "purz|"
+    "rajgovhdfcbank|"
+    "rbl|"
+    "sbi|"
+    "sc|"
+    "scb|"
+    "scbl|"
+    "scmobile|"
+    "sib|"
+    "srcb|"
+    "synd|"
+    "syndbank|"
+    "syndicate|"
+    "tjsb|"
+    "tjsp|"
+    "ubi|"
+    "uboi|"
+    "uco|"
+    "unionbank|"
+    "unionbankofindia|"
+    "united|"
+    "upi|"
+    "utbi|"
+    "vijayabank|"
+    "vijb|"
+    "vjb|"
+    "ybl|"
+    "yesbank|"
+    "yesbankltd"
     ")$";
 
 /////////////////////////////////////////////////////////////////////////////

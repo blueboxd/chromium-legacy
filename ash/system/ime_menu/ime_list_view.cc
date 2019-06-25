@@ -102,7 +102,7 @@ class ImeListItemView : public ActionableView {
           gfx::CreateVectorIcon(kCheckCircleIcon, kMenuIconSize, button_color));
       tri_view->AddView(TriView::Container::END, checked_image);
     }
-    SetAccessibleName(label_view->text());
+    SetAccessibleName(label_view->GetText());
   }
 
   ~ImeListItemView() override = default;

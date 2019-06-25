@@ -56,8 +56,15 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
         std::move(metadata_component_entry));
   } else if (fetch_update_time_.has_value()) {
     hint_entry_key_prefix_ = HintCacheStore::GetFetchedHintEntryKeyPrefix();
-
-    // TODO(dougarnett): add metadata entry for Fetch update?
+    previews::proto::StoreEntry metadata_fetched_entry;
+    metadata_fetched_entry.set_entry_type(
+        static_cast<previews::proto::StoreEntryType>(
+            HintCacheStore::StoreEntryType::kMetadata));
+    metadata_fetched_entry.set_update_time_secs(
+        fetch_update_time_->ToDeltaSinceWindowsEpoch().InSeconds());
+    entries_to_save_->emplace_back(HintCacheStore::GetMetadataTypeEntryKey(
+                                       HintCacheStore::MetadataType::kFetched),
+                                   std::move(metadata_fetched_entry));
   } else {
     NOTREACHED();
   }

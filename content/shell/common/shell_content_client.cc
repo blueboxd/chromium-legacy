@@ -24,7 +24,7 @@ ShellContentClient::ShellContentClient() {}
 
 ShellContentClient::~ShellContentClient() {}
 
-base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
+base::string16 ShellContentClient::GetLocalizedString(int message_id) {
   if (switches::IsRunWebTestsSwitchPresent()) {
     switch (message_id) {
       case IDS_FORM_OTHER_DATE_LABEL:
@@ -48,7 +48,7 @@ base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
 
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   if (switches::IsRunWebTestsSwitchPresent()) {
     switch (resource_id) {
       case IDR_BROKENIMAGE:
@@ -65,21 +65,21 @@ base::StringPiece ShellContentClient::GetDataResource(
 }
 
 base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
-    int resource_id) const {
+    int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-bool ShellContentClient::IsDataResourceGzipped(int resource_id) const {
+bool ShellContentClient::IsDataResourceGzipped(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
-gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
 
-base::DictionaryValue ShellContentClient::GetNetLogConstants() const {
+base::DictionaryValue ShellContentClient::GetNetLogConstants() {
   base::DictionaryValue client_constants;
   client_constants.SetString("name", "content_shell");
   client_constants.SetString(

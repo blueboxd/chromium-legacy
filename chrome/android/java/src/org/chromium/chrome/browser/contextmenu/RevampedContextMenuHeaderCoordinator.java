@@ -31,8 +31,7 @@ class RevampedContextMenuHeaderCoordinator {
     RevampedContextMenuHeaderCoordinator(Activity activity, ContextMenuParams params) {
         mContext = activity;
         mModel = buildModel(getTitle(params), getUrl(activity, params));
-        mMediator = new RevampedContextMenuHeaderMediator(
-                activity, mModel, params.getUrl(), params.isImage());
+        mMediator = new RevampedContextMenuHeaderMediator(activity, mModel, params);
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {

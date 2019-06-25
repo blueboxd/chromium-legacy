@@ -249,8 +249,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
  private:
   // win::SettingsAppMonitor::Delegate:
   void OnInitialized(HRESULT result) override {
-    UMA_HISTOGRAM_BOOLEAN("SettingsAppMonitor.InitializationResult",
-                          SUCCEEDED(result));
+    // UMA indicates that this succeeds > 99.98% of the time.
     if (SUCCEEDED(result)) {
       base::RecordAction(
           base::UserMetricsAction("SettingsAppMonitor.Initialized"));

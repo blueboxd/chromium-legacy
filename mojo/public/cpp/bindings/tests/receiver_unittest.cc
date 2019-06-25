@@ -550,6 +550,25 @@ TEST_P(ReceiverTest, InvalidPendingReceivers) {
   EXPECT_FALSE(null_pending);
 }
 
+TEST_P(ReceiverTest, GenericPendingReceiver) {
+  Remote<sample::Service> remote;
+  GenericPendingReceiver receiver;
+  EXPECT_FALSE(receiver.is_valid());
+  EXPECT_FALSE(receiver.interface_name().has_value());
+
+  receiver = GenericPendingReceiver(remote.BindNewPipeAndPassReceiver());
+  ASSERT_TRUE(receiver.is_valid());
+  EXPECT_EQ(sample::Service::Name_, receiver.interface_name());
+
+  auto ping_receiver = receiver.As<test::PingService>();
+  EXPECT_FALSE(ping_receiver.is_valid());
+  EXPECT_TRUE(receiver.is_valid());
+
+  auto sample_receiver = receiver.As<sample::Service>();
+  EXPECT_TRUE(sample_receiver.is_valid());
+  EXPECT_FALSE(receiver.is_valid());
+}
+
 using StrongBindingTest = BindingsTestBase;
 
 TEST_P(StrongBindingTest, CloseDestroysImplAndPipe) {

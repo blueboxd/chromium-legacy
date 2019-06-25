@@ -101,12 +101,12 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
 
   const base::string16& GetHoverCardTitle(
       const TabHoverCardBubbleView* hover_card) {
-    return hover_card->title_label_->text();
+    return hover_card->title_label_->GetText();
   }
 
   const base::string16& GetHoverCardDomain(
       const TabHoverCardBubbleView* hover_card) {
-    return hover_card->domain_label_->text();
+    return hover_card->domain_label_->GetText();
   }
 
   void MouseExitTabStrip() {

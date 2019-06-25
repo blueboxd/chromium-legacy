@@ -21,6 +21,7 @@ class HttpRequestHeaders;
 namespace content {
 
 class AppCacheNavigationHandle;
+class BrowserContext;
 class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
@@ -45,6 +46,7 @@ class CONTENT_EXPORT NavigationURLLoader {
   // structure. Information like has_user_gesture and
   // should_replace_current_entry shouldn't be needed at this layer.
   static std::unique_ptr<NavigationURLLoader> Create(
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,

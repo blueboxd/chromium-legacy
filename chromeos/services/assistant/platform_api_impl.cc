@@ -82,7 +82,6 @@ PlatformApiImpl::PlatformApiImpl(
     device::mojom::BatteryMonitorPtr battery_monitor,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
-    network::NetworkConnectionTracker* network_connection_tracker,
     std::string pref_locale)
     : audio_input_provider_(connector,
                             media::AudioDeviceDescription::kDefaultDeviceId,
@@ -91,7 +90,7 @@ PlatformApiImpl::PlatformApiImpl(
                              media_session,
                              background_task_runner,
                              media::AudioDeviceDescription::kDefaultDeviceId),
-      network_provider_(network_connection_tracker),
+      network_provider_(connector),
       pref_locale_(pref_locale) {
   // Only enable native power features if they are supported by the UI.
   std::unique_ptr<PowerManagerProviderImpl> provider;

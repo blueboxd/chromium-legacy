@@ -36,6 +36,7 @@ class CONTENT_EXPORT IndexedDBOriginStateHandle {
  protected:
   friend class IndexedDBFactoryImpl;
   friend class IndexedDBFactoryTest;
+  friend class IndexedDBBrowserTest;
   friend class indexed_db_backing_store_unittest::IndexedDBBackingStoreTest;
 
   // Returns null if the factory was destroyed, which should only happen on

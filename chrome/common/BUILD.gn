@@ -143,8 +143,6 @@ static_library("common") {
     "logging_chrome.h",
     "mac/app_shim_launch.h",
     "mac/app_shim_param_traits.h",
-    "mac/cfbundle_blocker.h",
-    "mac/cfbundle_blocker.mm",
     "mac/launchd.h",
     "mac/launchd.mm",
     "mac/service_management.h",
@@ -467,10 +465,7 @@ static_library("common") {
   }
 
   if (is_mac) {
-    public_deps += [
-      "//third_party/google_toolbox_for_mac",
-      "//third_party/mach_override",
-    ]
+    public_deps += [ "//third_party/google_toolbox_for_mac" ]
 
     libs = [ "ServiceManagement.framework" ]
   }

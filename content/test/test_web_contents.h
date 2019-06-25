@@ -95,8 +95,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       NavigationHandle* navigation_handle,
       scoped_refptr<net::HttpResponseHeaders> response_headers) override;
   void SetOpener(WebContents* opener) override;
-  const std::string& GetSaveFrameHeaders() const override;
-  const base::string16& GetSuggestedFileName() const override;
+  const std::string& GetSaveFrameHeaders() override;
+  const base::string16& GetSuggestedFileName() override;
   bool HasPendingDownloadImage(const GURL& url) override;
   bool TestDidDownloadImage(
       const GURL& url,

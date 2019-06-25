@@ -483,7 +483,7 @@ void BrowserTestBase::TearDown() {
 #endif
 }
 
-bool BrowserTestBase::AllowFileAccessFromFiles() const {
+bool BrowserTestBase::AllowFileAccessFromFiles() {
   return true;
 }
 

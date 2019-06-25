@@ -140,8 +140,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->connection_state = technology_enabled
                                  ? GetMojoConnectionStateType(network)
                                  : mojom::ConnectionStateType::kNotConnected;
-  if (!network->error().empty())
-    result->error_state = network->error();
+  if (!network->GetError().empty())
+    result->error_state = network->GetError();
   result->guid = network->guid();
   result->name = network->name();
   result->priority = network->priority();

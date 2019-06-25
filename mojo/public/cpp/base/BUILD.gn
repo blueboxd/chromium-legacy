@@ -38,6 +38,8 @@ component("shared_typemap_traits") {
     "file_mojom_traits.h",
     "file_path_mojom_traits.cc",
     "file_path_mojom_traits.h",
+    "generic_pending_receiver_mojom_traits.cc",
+    "generic_pending_receiver_mojom_traits.h",
     "shared_memory_mojom_traits.cc",
     "shared_memory_mojom_traits.h",
     "time_mojom_traits.cc",

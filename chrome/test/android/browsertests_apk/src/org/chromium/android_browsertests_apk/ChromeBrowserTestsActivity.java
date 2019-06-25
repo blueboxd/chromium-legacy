@@ -4,135 +4,76 @@
 
 package org.chromium.android_browsertests_apk;
 
-import android.os.Bundle;
-import android.view.Window;
-import android.view.WindowManager;
+import android.content.Intent;
 
-import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.init.BrowserParts;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
-import org.chromium.native_test.NativeBrowserTestActivity;
+import org.chromium.native_test.NativeTest;
 
 import java.io.File;
 
 /**
  * Android activity for running chrome browser tests.
  */
-public class ChromeBrowserTestsActivity extends NativeBrowserTestActivity {
+public class ChromeBrowserTestsActivity extends ChromeTabbedActivity {
     private static final String TAG = "cr_browser_test";
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        appendCommandLineFlags(
-                "--remote-debugging-socket-name android_browsertests_devtools_remote");
-    }
+    private NativeTest mTest = new NativeTest();
 
     @Override
-    protected void initializeBrowserProcess() {
-        // TODO(ajwong): This is forked from ContentShellBrowserTestActivity. Should it be pulled
-        // out into a static?
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Cannot load android_browsertests.", e);
-            System.exit(-1);
+    public void performPreInflationStartup() {
+        // These steps for NativeTest are usually performed in onCreate, but we can not
+        // override onCreate in this class since a super class marks it as final. The
+        // performPreInflationStartup() steps is another early step in initialization of the
+        // activity so we do that here.
+        mTest.preCreate(this);
+        super.performPreInflationStartup();
+        // Sets up the command line for tests.
+        mTest.postCreate(this);
+        // Append things we want for Android-based browser tests. C++ will also append things.
+        for (String flag : NativeBrowserTest.BROWSER_TESTS_FLAGS) {
+            mTest.appendCommandLineFlags(flag);
         }
+        mTest.appendCommandLineFlags(
+                "--remote-debugging-socket-name android_browsertests_devtools_remote");
 
-        // Don't use the production BrowserStartupController, as we want to replace it with
-        // one that doesn't actually run ContentMain(). The BrowserTestBase class does the
-        // work of ContentMain() itself once we pass control to C++ to run tests. That occurs
-        // after this current method runs.
-        // This replacement startup controller will be used when the C++ code calls into
-        // ChromeBrowserTestsActivity.handlePostNativeStartup() to modify that behaviour.
-        BrowserStartupController startupController = new BrowserStartupController() {
-            @Override
-            public void startBrowserProcessesAsync(boolean startGpuProcess,
-                    boolean startServiceManagerOnly, final StartupCallback callback) {
-                assert false; // Browser tests do a sync startup.
-            }
+        NativeBrowserTest.deletePrivateDataDirectory(getPrivateDataDirectory());
 
-            @Override
-            public void startBrowserProcessesSync(boolean singleProcess) {
-                ThreadUtils.assertOnUiThread();
-                mStartupCompleted = true;
-                // Runs the stuff that BrowserStartupController wants to do, without actually
-                // running a chrome process.
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .initChromiumBrowserProcessForTests();
-            }
-
-            @Override
-            public boolean isStartupSuccessfullyCompleted() {
-                ThreadUtils.assertOnUiThread();
-                // Technically C++ code should call through and set this after starting the browser
-                // process but it will have done so by the time it goes through
-                // handlePostNativeStartupSynchronously() which will call
-                // startBrowserProcessesSync() in this class.
-                return mStartupCompleted;
-            }
-
-            @Override
-            public boolean isServiceManagerSuccessfullyStarted() {
-                ThreadUtils.assertOnUiThread();
-                // Technically C++ code should call through and set this after starting the service
-                // manager but it will have done so by the time it goes through
-                // handlePostNativeStartupSynchronously() which will call
-                // startBrowserProcessesSync() in this class.
-                return mStartupCompleted;
-            }
-
-            @Override
-            public void addStartupCompletedObserver(StartupCallback callback) {
-                ThreadUtils.assertOnUiThread();
-                // Pass the callback through to the "real" BrowserStartupController because many
-                // pieces of code will do the same, and we want them all in one place. The
-                // initChromiumBrowserProcessForTests() will run them all so that none are missed.
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(callback);
-            }
-
-            @Override
-            public void initChromiumBrowserProcessForTests() {
-                assert false;
-            }
-
-            @Override
-            public void setContentMainCallbackForTests(Runnable completionCallback) {
-                assert false;
-            }
-
-            private boolean mStartupCompleted;
-        };
-        ChromeBrowserInitializer.setBrowserStartupControllerForTesting(startupController);
-
-        // This does the pre-native stuff before handing control to C++ with runTests. Then
-        // C++ will call back through handlePostNativeStartupSynchronously() to do the
-        // post-native startup in ChromeBrowserInitializer.
-        final BrowserParts parts = new EmptyBrowserParts() {};
-        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-
-        Window wind = this.getWindow();
-        wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
-        // TODO(danakj): Make startup async and inherit from ChromeTabbedActivity.
-        NativeBrowserTest.javaStartupTasksComplete();
-        runTests();
+        // Replace ContentMain() with running our NativeTest suite.
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                .setContentMainCallbackForTests(() -> {
+                    // This jumps into C++ to set up and run the test harness. The test harness runs
+                    // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
+                    // to be called. We delay that until finishNativeInitialization() is done which
+                    // marks the end of the startup tasks posted from C++ in ContentMain() and then
+                    // by Java in BrowserStartupControllerImpl::browserStartupComplete().
+                    mTest.postStart(this, false);
+                });
     }
 
+    /**
+     * Tests should not go through the first run process every time.
+     */
     @Override
-    protected File getPrivateDataDirectory() {
+    protected boolean requiresFirstRunToBeCompleted(Intent intent) {
+        return false;
+    }
+
+    /**
+     * This is the point at which Java initialization tasks are done and tests can be run.
+     * While mTest.postStart() runs the test harness, it waits for Java initialization
+     * tasks, and this signals that they are done.
+     */
+    @Override
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+        NativeBrowserTest.javaStartupTasksComplete();
+    }
+
+    private File getPrivateDataDirectory() {
         // TODO(agrieve): We should not be touching the side-loaded test data directory.
         //     https://crbug.com/617734
         return new File(UrlUtils.getIsolatedTestRoot(),

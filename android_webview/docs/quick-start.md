@@ -176,6 +176,15 @@ APK](/android_webview/tools/remove_preinstalled_webview.py).
 Check the "Current WebView package" in the dumpsys output. You're probably
 hitting one of the cases above.
 
+### INSTALL\_FAILED\_UPDATE\_INCOMPATIBLE: Package ... signatures do not match previously installed version
+
+This is probably because you've already installed Chrome Debug (ex. with the
+Google-only `monochrome_apk` target, or through a Google-only official build).
+This guide borrows that app's package name, but the locally compiled APK may not
+have the same signing key, causing the `adb install` error. You should remove
+the conflicting package with `out/Default/bin/system_webview_apk uninstall`, and
+then try installing WebView again.
+
 ### I couldn't install the APK/... is NOT installed.
 
 This could fail for an even wider variety of reasons than already listed. Please

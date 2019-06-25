@@ -46,6 +46,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool credential_management_support = false;
     bool bio_enrollment_support = false;
     bool bio_enrollment_preview_support = false;
+    uint8_t bio_enrollment_capacity = 10;
+    uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.

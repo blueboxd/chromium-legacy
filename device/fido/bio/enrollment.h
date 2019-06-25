@@ -96,6 +96,16 @@ enum class BioEnrollmentSampleStatus : uint8_t {
   kMax = kNoUserPresenceTransition
 };
 
+template <typename T>
+static base::Optional<T> ToBioEnrollmentEnum(uint8_t v) {
+  // Check if enum-class is in range...
+  if (v < static_cast<int>(T::kMin) || v > static_cast<int>(T::kMax)) {
+    // ...to avoid possible undefined behavior (casting from int to enum).
+    return base::nullopt;
+  }
+  return static_cast<T>(v);
+}
+
 struct BioEnrollmentRequest {
   enum Version {
     kDefault,
@@ -156,7 +166,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentResponse {
   base::Optional<BioEnrollmentSampleStatus> last_status;
   base::Optional<uint8_t> remaining_samples;
   base::Optional<std::vector<std::pair<std::vector<uint8_t>, std::string>>>
-      enumerated_ids;
+      template_infos;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

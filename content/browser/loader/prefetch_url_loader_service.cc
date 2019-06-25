@@ -181,7 +181,7 @@ PrefetchURLLoaderService::CreateURLLoaderThrottles(
       !request_context_getter_->GetURLRequestContext())
     return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
   int frame_tree_node_id = frame_tree_node_id_getter.Run();
-  return GetContentClient()->browser()->CreateURLLoaderThrottles(
+  return GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
       request, resource_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                           frame_tree_node_id),

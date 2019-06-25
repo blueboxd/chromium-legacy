@@ -44,6 +44,11 @@ typedef std::vector<BlobJournalEntryType> BlobJournalType;
 
 CONTENT_EXPORT void EncodeByte(unsigned char value, std::string* into);
 CONTENT_EXPORT void EncodeBool(bool value, std::string* into);
+
+// Unlike EncodeVarInt, this is a 'dumb' implementation of a variable int
+// encoder. It writes, little-endian', until there are no more '1' bits in the
+// number. The Decoder must know how to calculate the size of the encoded int,
+// typically by having this reside at the end of the value or key.
 CONTENT_EXPORT void EncodeInt(int64_t value, std::string* into);
 CONTENT_EXPORT void EncodeVarInt(int64_t value, std::string* into);
 CONTENT_EXPORT void EncodeString(const base::string16& value,
@@ -215,7 +220,7 @@ class MaxDatabaseIdKey {
 
 class DataVersionKey {
  public:
-  static std::string Encode();
+  CONTENT_EXPORT static std::string Encode();
 };
 
 class BlobJournalKey {

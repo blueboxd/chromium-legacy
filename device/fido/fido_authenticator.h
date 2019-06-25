@@ -164,9 +164,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                                       GetCredentialsMetadataCallback callback);
   virtual void EnumerateCredentials(base::span<const uint8_t> pin_token,
                                     EnumerateCredentialsCallback callback);
-  virtual void DeleteCredential(base::span<const uint8_t> pin_token,
-                                base::span<const uint8_t> credential_id,
-                                DeleteCredentialCallback callback);
+  virtual void DeleteCredential(
+      base::span<const uint8_t> pin_token,
+      const PublicKeyCredentialDescriptor& credential_id,
+      DeleteCredentialCallback callback);
 
   // Biometric enrollment commands.
   virtual void GetModality(BioEnrollmentCallback callback);

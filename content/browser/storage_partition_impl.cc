@@ -51,6 +51,7 @@
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/session_storage_usage_info.h"
@@ -1053,6 +1054,11 @@ LockManager* StoragePartitionImpl::GetLockManager() {
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_.get();
+}
+
+NativeFileSystemEntryFactory*
+StoragePartitionImpl::GetNativeFileSystemEntryFactory() {
+  return native_file_system_manager_.get();
 }
 
 CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {

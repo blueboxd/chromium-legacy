@@ -79,7 +79,7 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
   auto color_reference_label = std::make_unique<views::Label>(
       base::string16(), CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
   const SkColor icon_color = color_utils::DeriveDefaultIconColor(
-      color_reference_label->enabled_color());
+      color_reference_label->GetEnabledColor());
 
   auto item_image = std::make_unique<views::ImageView>();
   if (vector_icon) {

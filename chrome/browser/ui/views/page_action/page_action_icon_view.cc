@@ -72,7 +72,7 @@ bool PageActionIconView::Update() {
 }
 
 SkColor PageActionIconView::GetLabelColorForTesting() const {
-  return label()->enabled_color();
+  return label()->GetEnabledColor();
 }
 
 void PageActionIconView::ExecuteForTesting() {

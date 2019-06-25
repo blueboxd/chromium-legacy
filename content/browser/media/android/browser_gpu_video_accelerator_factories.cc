@@ -117,10 +117,6 @@ BrowserGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return nullptr;
 }
 
-void BrowserGpuVideoAcceleratorFactories::SignalSyncToken(
-    const gpu::SyncToken& sync_token,
-    base::OnceClosure callback) {}
-
 std::unique_ptr<gfx::GpuMemoryBuffer>
 BrowserGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
     const gfx::Size& size,

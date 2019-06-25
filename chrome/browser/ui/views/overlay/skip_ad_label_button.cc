@@ -36,8 +36,8 @@ SkipAdLabelButton::SkipAdLabelButton(ButtonListener* listener)
 
   // Accessibility.
   SetFocusForPlatform();
-  SetAccessibleName(label()->text());
-  SetTooltipText(label()->text());
+  SetAccessibleName(label()->GetText());
+  SetTooltipText(label()->GetText());
   SetInstallFocusRingOnFocus(true);
 }
 

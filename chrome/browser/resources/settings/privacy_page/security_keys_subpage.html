@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="../settings_shared_css.html">
 
+<link rel="import" href="security_keys_credential_management_dialog.html">
 <link rel="import" href="security_keys_set_pin_dialog.html">
 <link rel="import" href="security_keys_reset_dialog.html">
 
@@ -17,6 +18,14 @@
       label="$i18n{securityKeysSetPIN}"
       sub-label="$i18n{securityKeysSetPINDesc}"
       on-click="onSetPIN_"></cr-link-row>
+    <template is="dom-if" if="[[enableCredentialManagement_]]">
+      <cr-link-row
+        id="credentialManagementButton"
+        class="hr"
+        label="$i18n{securityKeysCredentialManagementLabel}"
+        sub-label="$i18n{securityKeysCredentialManagementDesc}"
+        on-click="onCredentialManagement_"></cr-link-row>
+    </template>
     <cr-link-row
       id="resetButton"
       class="hr"
@@ -27,6 +36,12 @@
     <template is="dom-if" if="[[showSetPINDialog_]]" restamp>
       <settings-security-keys-set-pin-dialog on-close="onSetPINDialogClosed_">
       </settings-security-keys-set-pin-dialog>
+    </template>
+
+    <template is="dom-if" if="[[showCredentialManagementDialog_]]" restamp>
+      <settings-security-keys-credential-management-dialog
+        on-close="onCredentialManagementDialogClosed_">
+      </settings-security-keys-credential-management-dialog>
     </template>
 
     <template is="dom-if" if="[[showResetDialog_]]" restamp>

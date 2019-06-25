@@ -71,7 +71,7 @@ ChosenObjectView::ChosenObjectView(
   auto label = std::make_unique<views::Label>(
       PageInfoUI::ChosenObjectToUIString(*info_), CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
-      PageInfoUI::GetChosenObjectIcon(*info_, false, label->enabled_color()));
+      PageInfoUI::GetChosenObjectIcon(*info_, false, label->GetEnabledColor()));
   layout->AddView(std::move(label));
 
   // Create the delete button.

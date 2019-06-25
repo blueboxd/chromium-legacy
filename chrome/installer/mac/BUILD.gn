@@ -39,6 +39,7 @@ _mac_signing_sources = [
   "signing/commands.py",
   "signing/model.py",
   "signing/modification.py",
+  "signing/notarize.py",
   "signing/pipeline.py",
   "signing/signing.py",
 ]
@@ -87,6 +88,7 @@ copy("copies") {
     "dirdiffer.sh",
     "dirpatcher.sh",
     "dmgdiffer.sh",
+    "notarize_thing.py",
     "pkg-dmg",
     "sign_chrome.py",
   ]
@@ -120,6 +122,7 @@ group("mac_signing_tests") {
            "signing/config.py.in",
            "signing/model_test.py",
            "signing/modification_test.py",
+           "signing/notarize_test.py",
            "signing/pipeline_test.py",
            "signing/run_mac_signing_tests.py",
            "signing/signing_test.py",

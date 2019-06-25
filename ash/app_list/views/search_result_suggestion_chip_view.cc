@@ -211,7 +211,7 @@ void SearchResultSuggestionChipView::SetText(const base::string16& text) {
 }
 
 const base::string16& SearchResultSuggestionChipView::GetText() const {
-  return text_view_->text();
+  return text_view_->GetText();
 }
 
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {

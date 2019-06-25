@@ -1095,6 +1095,7 @@ interface PeriodicSyncManager
     method constructor
     method getTags
     method register
+    method unregister
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
     getter onchange

@@ -122,9 +122,10 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     auto color_reference = std::make_unique<views::Label>(
         base::string16(), views::style::CONTEXT_DIALOG_TITLE,
         views::style::STYLE_PRIMARY);
-    views::SetImageFromVectorIcon(
-        back_arrow.get(), vector_icons::kBackArrowIcon,
-        color_utils::DeriveDefaultIconColor(color_reference->enabled_color()));
+    views::SetImageFromVectorIcon(back_arrow.get(),
+                                  vector_icons::kBackArrowIcon,
+                                  color_utils::DeriveDefaultIconColor(
+                                      color_reference->GetEnabledColor()));
     back_arrow->SizeToPreferredSize();
     back_arrow->SetX(dialog_insets.left());
     back_arrow->SetY(dialog_insets.top());

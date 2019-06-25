@@ -62,6 +62,12 @@ class CORE_EXPORT PaintTimingDetector
 
   void DidChangePerformanceTiming();
 
+  inline static bool IsTracing() {
+    bool tracing_enabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("loading", &tracing_enabled);
+    return tracing_enabled;
+  }
+
   FloatRect CalculateVisualRect(const IntRect& visual_rect,
                                 const PropertyTreeState&) const;
 

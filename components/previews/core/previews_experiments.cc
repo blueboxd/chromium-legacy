@@ -322,7 +322,7 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
 net::EffectiveConnectionType GetSessionMaxECTThreshold() {
   return GetParamValueAsECTByFeature(features::kSlowPageTriggering,
                                      kSessionMaxECTTrigger,
-                                     net::EFFECTIVE_CONNECTION_TYPE_2G);
+                                     net::EFFECTIVE_CONNECTION_TYPE_3G);
 }
 
 bool ArePreviewsAllowed() {

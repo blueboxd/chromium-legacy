@@ -173,7 +173,7 @@ PermissionSelectorRow::PermissionSelectorRow(
       PageInfoUI::PermissionTypeToUIString(permission.type),
       CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
-      PageInfoUI::GetPermissionIcon(permission, label->enabled_color()));
+      PageInfoUI::GetPermissionIcon(permission, label->GetEnabledColor()));
   label_ = layout->AddView(std::move(label));
   // Create the menu model.
   menu_model_.reset(new PermissionMenuModel(
@@ -284,7 +284,7 @@ void PermissionSelectorRow::PermissionChanged(
     const PageInfoUI::PermissionInfo& permission) {
   // Change the permission icon to reflect the selected setting.
   icon_->SetImage(
-      PageInfoUI::GetPermissionIcon(permission, label_->enabled_color()));
+      PageInfoUI::GetPermissionIcon(permission, label_->GetEnabledColor()));
 
   bool use_default = permission.setting == CONTENT_SETTING_DEFAULT;
   auto* combobox = static_cast<internal::PermissionCombobox*>(combobox_);

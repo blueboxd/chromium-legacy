@@ -77,10 +77,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& device_path() const { return device_path_; }
   const std::string& guid() const { return guid_; }
   const std::string& profile_path() const { return profile_path_; }
-  const std::string& error() const { return error_; }
-  const std::string& last_error() const { return last_error_; }
-  void clear_last_error() { last_error_.clear(); }
   ::onc::ONCSource onc_source() const { return onc_source_; }
+
+  // Provides the error for the last attempt to connect/configure the network
+  // (an empty string signifies no error at all). Note that this value can be
+  // cleared - see ClearError() below.
+  const std::string& GetError() const;
+
+  // Clears the error associated with this network. Should be called whenever
+  // a connection to this network is initiated or the associated configuration
+  // is updated/removed.
+  void ClearError();
 
   // Returns |connection_state_| if visible, kStateIdle otherwise.
   std::string connection_state() const;
@@ -269,12 +276,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   int priority_ = 0;  // kPriority, used for organizing known networks.
   ::onc::ONCSource onc_source_ = ::onc::ONC_SOURCE_UNKNOWN;
 
-  // Reflects the current Shill Service.Error property. This might get cleared
-  // by Shill shortly after a failure.
-  std::string error_;
-
-  // Last non empty Service.Error property. Cleared by NetworkConnectionHandler
-  // when a connection attempt is initiated.
+  // Last non empty Service.Error property. Expected to be cleared via
+  // ClearError() when a connection attempt is initiated and when an associated
+  // configuration is updated/removed.
   std::string last_error_;
 
   // Cached copy of the Shill Service IPConfig object. For ipv6 properties use

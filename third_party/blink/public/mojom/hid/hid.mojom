@@ -68,4 +68,23 @@ struct HidDeviceFilter {
 // peripherals from the render process. The implementation is responsible for
 // checking device access permissions and should not return information about a
 // device unless permission to access that device has already been granted.
-interface HidService {};
+interface HidService {
+  // Retrieves information about all devices that this client has permission to
+  // access.
+  GetDevices() => (array<device.mojom.HidDeviceInfo> devices);
+
+  // Requests access to a device. A chooser dialog is displayed with a list of
+  // connected devices. If |filters| is non-empty, only devices that match one
+  // or more of the filters will be included in the chooser list. If |filters|
+  // is empty, all connected devices are included. |device| contains the chosen
+  // device, or nullptr if the chooser dialog was canceled.
+  RequestDevice(array<HidDeviceFilter> filters)
+      => (device.mojom.HidDeviceInfo? device);
+
+  // Opens a connection to the device with GUID matching |device_guid|. |client|
+  // will be notified when an input report is received from the device.
+  // |connection| contains the opened connection, or nullptr if the device could
+  // not be opened.
+  Connect(string device_guid, device.mojom.HidConnectionClient client)
+      => (device.mojom.HidConnection? connection);
+};

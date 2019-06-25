@@ -1557,7 +1557,7 @@ public class BidirectionalStreamTest {
         checkSpecificErrorCode(NetError.ERR_ADDRESS_UNREACHABLE,
                 NetworkException.ERROR_ADDRESS_UNREACHABLE, false);
         // BidirectionalStream specific retryable error codes.
-        checkSpecificErrorCode(NetError.ERR_SPDY_PING_FAILED, NetworkException.ERROR_OTHER, true);
+        checkSpecificErrorCode(NetError.ERR_HTTP2_PING_FAILED, NetworkException.ERROR_OTHER, true);
         checkSpecificErrorCode(
                 NetError.ERR_QUIC_HANDSHAKE_FAILED, NetworkException.ERROR_OTHER, true);
     }

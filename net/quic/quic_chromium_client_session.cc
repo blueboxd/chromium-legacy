@@ -1591,9 +1591,11 @@ void QuicChromiumClientSession::OnConnectionClosed(
     const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
+
+  logger_->OnConnectionClosed(frame, source);
+
   const quic::QuicErrorCode error = frame.quic_error_code;
   const std::string& error_details = frame.error_details;
-  logger_->OnConnectionClosed(error, error_details, source);
 
   RecordConnectionCloseErrorCode(error, source, session_key_.host(),
                                  IsCryptoHandshakeConfirmed());

@@ -2117,7 +2117,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseWithoutHeaders) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 // Test that the transaction doesn't crash when we get two replies on the same
@@ -2161,7 +2161,7 @@ TEST_F(SpdyNetworkTransactionTest, ResponseWithTwoSynReplies) {
   EXPECT_TRUE(response->was_fetched_via_spdy);
   std::string response_data;
   rv = ReadTransaction(trans, &response_data);
-  EXPECT_THAT(rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   helper.VerifyDataConsumed();
 }
@@ -2191,7 +2191,7 @@ TEST_F(SpdyNetworkTransactionTest, ResetReplyWithTransferEncoding) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   helper.session()->spdy_session_pool()->CloseAllSessions();
   helper.VerifyDataConsumed();
@@ -4540,7 +4540,7 @@ TEST_F(SpdyNetworkTransactionTest, InvalidResponseHeaders) {
                                        nullptr);
     helper.RunToCompletion(&data);
     TransactionHelperResult out = helper.output();
-    EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+    EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
   }
 }
 
@@ -4568,7 +4568,7 @@ TEST_F(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_COMPRESSION_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_COMPRESSION_ERROR));
 }
 
 TEST_F(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
@@ -4589,7 +4589,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_COMPRESSION_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_COMPRESSION_ERROR));
 }
 
 TEST_F(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
@@ -4610,7 +4610,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_FRAME_SIZE_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_FRAME_SIZE_ERROR));
 }
 
 // Test that we shutdown correctly on write errors.
@@ -6106,11 +6106,11 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersTwice) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 // Tests that receiving HEADERS, DATA, HEADERS, and DATA in that sequence will
-// trigger a ERR_SPDY_PROTOCOL_ERROR because trailing HEADERS must not be
+// trigger a ERR_HTTP2_PROTOCOL_ERROR because trailing HEADERS must not be
 // followed by any DATA frames.
 TEST_F(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   spdy::SpdySerializedFrame req(
@@ -6143,7 +6143,7 @@ TEST_F(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 struct PushUrlTestParams {
@@ -7040,7 +7040,7 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
   helper.VerifyDataConsumed();
 }
 
@@ -7074,7 +7074,7 @@ TEST_F(SpdyNetworkTransactionTest, InitialWindowSizeOverflow) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
 }
 
 // Test that after hitting a send window size of 0, the write process
@@ -7585,7 +7585,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   histogram_tester.ExpectBucketCount(
       "Net.SpdyPushedStreamFate",
@@ -7624,7 +7624,7 @@ TEST_F(SpdyNetworkTransactionTest,
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 
   histogram_tester.ExpectBucketCount(
       "Net.SpdyPushedStreamFate",
@@ -7723,7 +7723,7 @@ TEST_F(SpdyNetworkTransactionTest, CRLFInHeaderValue) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
 
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 // Regression test for https://crbug.com/603182.
@@ -7742,7 +7742,7 @@ TEST_F(SpdyNetworkTransactionTest, RstStreamNoError) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 // Regression test for https://crbug.com/603182.
@@ -7801,7 +7801,7 @@ TEST_F(SpdyNetworkTransactionTest, 100Continue) {
 // has not been sent and received."  (RFC7540 Section 8.1)
 // Regression test for https://crbug.com/606990.  Server responds before POST
 // data are sent and closes connection: this must result in
-// ERR_CONNECTION_CLOSED (as opposed to ERR_SPDY_PROTOCOL_ERROR).
+// ERR_CONNECTION_CLOSED (as opposed to ERR_HTTP2_PROTOCOL_ERROR).
 TEST_F(SpdyNetworkTransactionTest, ResponseBeforePostDataSent) {
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -7910,7 +7910,7 @@ class SpdyNetworkTransactionTLSUsageCheckTest
                                        nullptr);
     helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
     TransactionHelperResult out = helper.output();
-    EXPECT_THAT(out.rv, IsError(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY));
+    EXPECT_THAT(out.rv, IsError(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY));
   }
 };
 
@@ -7956,7 +7956,7 @@ TEST_F(SpdyNetworkTransactionTest, InsecureUrlCreatesSecureSpdySession) {
 
   helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY));
 }
 
 TEST_F(SpdyNetworkTransactionTest, RequestHeadersCallback) {

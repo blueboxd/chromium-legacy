@@ -12,21 +12,27 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace arc {
 
 class ArcContainerClientAdapter
     : public ArcClientAdapter,
-      public chromeos::SessionManagerClient::Observer {
+      public chromeos::SessionManagerClient::Observer,
+      public chromeos::UpstartClient::Observer {
  public:
   ArcContainerClientAdapter() {
     if (chromeos::SessionManagerClient::Get())
       chromeos::SessionManagerClient::Get()->AddObserver(this);
+    if (chromeos::UpstartClient::Get())
+      chromeos::UpstartClient::Get()->AddObserver(this);
   }
 
   ~ArcContainerClientAdapter() override {
     if (chromeos::SessionManagerClient::Get())
       chromeos::SessionManagerClient::Get()->RemoveObserver(this);
+    if (chromeos::UpstartClient::Get())
+      chromeos::UpstartClient::Get()->RemoveObserver(this);
   }
 
   // ArcClientAdapter overrides:
@@ -53,6 +59,12 @@ class ArcContainerClientAdapter
 
   // chromeos::SessionManagerClient::Observer overrides:
   void ArcInstanceStopped() override {
+    for (auto& observer : observer_list_)
+      observer.ArcInstanceStopped();
+  }
+
+  // chromeos::UpstartClient::Observer overrides:
+  void ArcStopped() override {
     for (auto& observer : observer_list_)
       observer.ArcInstanceStopped();
   }

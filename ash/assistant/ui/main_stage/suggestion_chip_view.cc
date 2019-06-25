@@ -156,7 +156,7 @@ void SuggestionChipView::SetText(const base::string16& text) {
 }
 
 const base::string16& SuggestionChipView::GetText() const {
-  return text_view_->text();
+  return text_view_->GetText();
 }
 
 }  // namespace ash

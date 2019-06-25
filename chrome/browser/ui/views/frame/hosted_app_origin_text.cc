@@ -97,5 +97,5 @@ void HostedAppOriginText::AnimationComplete() {
 
 void HostedAppOriginText::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kApplication;
-  node_data->SetName(label_->text());
+  node_data->SetName(label_->GetText());
 }

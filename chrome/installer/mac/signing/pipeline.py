@@ -11,7 +11,84 @@ The pipeline module orchestrates the entire signing process, which includes:
 
 import os.path
 
-from . import commands, model, modification, signing
+from . import commands, model, modification, notarize, signing
+
+
+def _customize_and_sign_chrome(paths, dist_config, dest_dir):
+    """Does channel customization and signing of a Chrome distribution. The
+    resulting app bundle is moved into |dest_dir|.
+
+    Args:
+        paths: A |model.Paths| object.
+        dist_config: A |config.CodeSignConfig| for the |model.Distribution|.
+        dest_dir: The directory into which the product will be placed when
+            the operations are completed.
+    """
+    # Copy the app to sign into the work dir.
+    commands.copy_files(
+        os.path.join(paths.input, dist_config.base_config.app_dir), paths.work)
+
+    # Customize the app bundle.
+    modification.customize_distribution(paths, dist_config.distribution,
+                                        dist_config)
+
+    signing.sign_chrome(paths, dist_config)
+
+    app_path = os.path.join(paths.work, dist_config.app_dir)
+    commands.make_dir(dest_dir)
+    commands.move_file(app_path, os.path.join(dest_dir, dist_config.app_dir))
+
+
+def _staple_chrome(paths, dist_config):
+    """Staples all the executable components of the Chrome app bundle.
+
+    Args:
+        paths: A |model.Paths| object.
+        dist_config: A |config.CodeSignConfig| for the customized product.
+    """
+    parts = signing.get_parts(dist_config)
+    # Only staple the signed, bundled executables.
+    part_paths = [
+        part.path
+        for part in parts.values()
+        if part.path[-4:] in ('.app', '.xpc')
+    ]
+    # Reverse-sort the paths so that more nested paths are stapled before
+    # less-nested ones.
+    part_paths.sort(reverse=True)
+    for part_path in part_paths:
+        notarize.staple(os.path.join(paths.work, part_path))
+
+
+def _package_and_sign_dmg(paths, dist_config):
+    """Packages, signs, and verifies a DMG for a signed build product.
+
+    Args:
+        paths: A |model.Paths| object.
+        dist_config: A |config.CodeSignConfig| for the |dist|.
+
+    Returns:
+        The path to the signed DMG file.
+    """
+    dist = dist_config.distribution
+
+    dmg_path = _package_dmg(paths, dist, dist_config)
+
+    # dmg_identifier is like dmg_name but without the .dmg suffix. If a
+    # brand code is in use, use the actual brand code instead of the
+    # name fragment, to avoid leaking the association between brand
+    # codes and their meanings.
+    dmg_identifier = dist_config.dmg_basename
+    if dist.branding_code:
+        dmg_identifier = dist_config.dmg_basename.replace(
+            dist.dmg_name_fragment, dist.branding_code)
+
+    product = model.CodeSignedProduct(
+        dmg_path, dmg_identifier, sign_with_identifier=True)
+    signing.sign_part(paths, dist_config, product)
+    signing.verify_part(paths, product)
+
+    return dmg_path
 
 
 def _package_dmg(paths, dist, config):
@@ -111,54 +188,83 @@ def _package_installer_tools(paths, config):
                              cwd=paths.work)
 
 
-def sign_all(orig_paths, config, package_dmg=True):
+def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
     """For each distribution in |config|, performs customization, signing, and
     DMG packaging and places the resulting signed DMG in |orig_paths.output|.
     The |paths.input| must contain the products to customize and sign.
 
     Args:
-        oring_paths: A |model.Paths| object.
+        orig_paths: A |model.Paths| object.
         config: The |config.CodeSignConfig| object.
         package_dmg: If True, the signed application bundle will be packaged
             into a DMG, which will also be signed. If False, the signed app
             bundle will be copied to |paths.output|.
+        do_notarization: If True, the signed application bundle will be sent for
+            notarization by Apple. The resulting notarization ticket will then
+            be stapled. If |package_dmg| is also True, the stapled application
+            will be packaged in the DMG and then the DMG itself will be
+            notarized and stapled.
     """
-    for dist in config.distributions:
-        with commands.WorkDirectory(orig_paths) as paths:
-            dist_config = dist.to_config(config)
+    with commands.WorkDirectory(orig_paths) as notary_paths:
+        # First, sign all the distributions and optionally submit the
+        # notarization requests.
+        uuids_to_config = {}
+        for dist in config.distributions:
+            with commands.WorkDirectory(orig_paths) as paths:
+                dist_config = dist.to_config(config)
 
-            # Copy the app to sign into the work dir.
-            commands.copy_files(
-                os.path.join(paths.input, config.app_dir), paths.work)
+                # If not packaging into a DMG, simply move the signed bundle to
+                # the output directory.
+                if not package_dmg and not do_notarization:
+                    dest_dir = paths.output
+                else:
+                    dest_dir = notary_paths.work
 
-            # Customize the app bundle.
-            modification.customize_distribution(paths, dist, dist_config)
+                dest_dir = os.path.join(dest_dir, dist_config.dmg_basename)
+                _customize_and_sign_chrome(paths, dist_config, dest_dir)
 
-            signing.sign_chrome(paths, dist_config)
+                # If the build products are to be notarized, ZIP the app bundle
+                # and submit it for notarization.
+                if do_notarization:
+                    zip_file = os.path.join(notary_paths.work,
+                                            dist_config.dmg_basename + '.zip')
+                    commands.run_command([
+                        'zip', '--recurse-paths', '--symlinks', '--quiet',
+                        '--no-dir-entries', zip_file, dist_config.app_dir
+                    ],
+                                         cwd=dest_dir)
+                    uuid = notarize.submit(zip_file, dist_config)
+                    uuids_to_config[uuid] = dist_config
 
-            # If not packaging into a DMG, simply copy the signed bundle to the
-            # output directory.
-            if not package_dmg:
-                dest_dir = os.path.join(paths.output, dist_config.dmg_basename)
-                commands.make_dir(dest_dir)
-                commands.copy_files(
-                    os.path.join(paths.work, dist_config.app_dir), dest_dir)
-                continue
+        # Wait for app notarization results to come back, stapling as they do.
+        if do_notarization:
+            for result in notarize.wait_for_results(uuids_to_config.keys(),
+                                                    config):
+                dist_config = uuids_to_config[result]
+                dest_dir = os.path.join(notary_paths.work,
+                                        dist_config.dmg_basename)
+                _staple_chrome(notary_paths.replace_work(dest_dir), dist_config)
 
-            dmg_path = _package_dmg(paths, dist, dist_config)
+        # After all apps are optionally notarized, package the DMGs.
+        uuids_to_dmg_path = {}
+        if package_dmg:
+            for dist in config.distributions:
+                dist_config = dist.to_config(config)
+                paths = orig_paths.replace_work(
+                    os.path.join(notary_paths.work, dist_config.dmg_basename))
 
-            # dmg_identifier is like dmg_name but without the .dmg suffix. If a
-            # brand code is in use, use the actual brand code instead of the
-            # name fragment, to avoid leaking the association between brand
-            # codes and their meanings.
-            dmg_identifier = dist_config.dmg_basename
-            if dist.branding_code:
-                dmg_identifier = dist_config.dmg_basename.replace(
-                    dist.dmg_name_fragment, dist.branding_code)
+                dmg_path = _package_and_sign_dmg(paths, dist_config)
 
-            product = model.CodeSignedProduct(
-                dmg_path, dmg_identifier, sign_with_identifier=True)
-            signing.sign_part(paths, dist_config, product)
-            signing.verify_part(paths, product)
+                if do_notarization:
+                    uuid = notarize.submit(dmg_path, dist_config)
+                    uuids_to_dmg_path[uuid] = dmg_path
+
+            # Wait for DMG notarization results to come back, stapling as they
+            # do.
+            if do_notarization:
+                for result in notarize.wait_for_results(
+                        uuids_to_dmg_path.keys(), config):
+                    dmg_path = uuids_to_dmg_path[result]
+                    notarize.staple(dmg_path)
 
     _package_installer_tools(orig_paths, config)

@@ -82,7 +82,7 @@ public class TabGridDialogParent {
         mStatusBarHeight = context.getResources().getDimensionPixelSize(statusBarHeightResourceId);
         mTabGridCardPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
         mToolbarHeight =
-                (int) context.getResources().getDimension(R.dimen.bottom_sheet_peek_height);
+                (int) context.getResources().getDimension(R.dimen.tab_group_toolbar_height);
         mContainerParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mComponentCallbacks = new ComponentCallbacks() {

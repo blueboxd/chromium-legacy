@@ -13,9 +13,14 @@
 #include "services/device/public/mojom/hid.mojom-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-forward.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 class RenderFrameHost;
+class WebContents;
 
 class CONTENT_EXPORT HidDelegate {
  public:
@@ -29,22 +34,30 @@ class CONTENT_EXPORT HidDelegate {
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       HidChooser::Callback callback) = 0;
 
-  // Returns whether |frame| has permission to request access to a device.
-  virtual bool CanRequestDevicePermission(RenderFrameHost* frame) = 0;
+  // Returns whether the main frame owned by |web_contents| has permission to
+  // request access to a device. |requesting_origin| is the origin of the
+  // frame that would make the request.
+  virtual bool CanRequestDevicePermission(
+      WebContents* web_contents,
+      const url::Origin& requesting_origin) = 0;
 
-  // Returns whether |frame| has permission to access |device|.
+  // Returns whether the main frame owned by |web_contents| has permission to
+  // access |device|. |requesting_origin| is the origin of the frame making
+  // the request.
   virtual bool HasDevicePermission(
-      RenderFrameHost* frame,
+      WebContents* web_contents,
+      const url::Origin& requesting_origin,
       const device::mojom::HidDeviceInfo& device) = 0;
 
   // Returns an open connection to the HidManager interface owned by the
-  // embedder and being used to serve requests from |frame|.
+  // embedder and being used to serve requests from |web_contents|.
   //
   // Content and the embedder must use the same connection so that the embedder
   // can process connect/disconnect events for permissions management purposes
   // before they are delivered to content. Otherwise race conditions are
   // possible.
-  virtual device::mojom::HidManager* GetHidManager(RenderFrameHost* frame) = 0;
+  virtual device::mojom::HidManager* GetHidManager(
+      WebContents* web_contents) = 0;
 };
 
 }  // namespace content

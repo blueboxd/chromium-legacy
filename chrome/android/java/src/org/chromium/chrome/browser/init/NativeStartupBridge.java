@@ -39,16 +39,4 @@ public class NativeStartupBridge {
             }
         });
     }
-
-    @CalledByNative
-    private static void handlePostNativeStartupSynchronously() {
-        final BrowserParts parts = new EmptyBrowserParts() {};
-        try {
-            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(
-                    /*isAsync=*/false, parts);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Cannot handlePostNativeStartup synchronously.", e);
-            System.exit(-1);
-        }
-    }
 }

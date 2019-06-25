@@ -1174,9 +1174,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
-  CreateURLLoaderThrottles(
+  CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id);
+  // Same as above but called on UI thread.
+  virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id);
@@ -1483,7 +1491,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
   // This is called on the IO thread.
-  virtual bool IsSafeRedirectTarget(const GURL& url, ResourceContext* context);
+  virtual bool IsSafeRedirectTargetOnIO(const GURL& url,
+                                        ResourceContext* context);
+  // Same as above but called on UI thread.
+  virtual bool IsSafeRedirectTarget(const GURL& url, BrowserContext* context);
 
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(

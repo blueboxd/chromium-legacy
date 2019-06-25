@@ -419,9 +419,10 @@ def _GetDesiredVsToolchainHashes():
   to build with."""
   env_version = GetVisualStudioVersion()
   if env_version == '2017':
-    # VS 2017 Update 9 (15.9.12) with 10.0.18362.0 SDK, 10.0.17134 version of
-    # d3dcompiler_47.dll, with ARM64 libraries.
-    toolchain_hash = 'b83892920cc15ef223a1b81cc64d98e1197d3678'
+    # VS 2017 Update 9 (15.9.12) with 10.0.18362 SDK, 10.0.17763 version of
+    # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
+    # libraries.
+    toolchain_hash = '418b3076791776573a815eb298c8aa590307af63'
     # Third parties that do not have access to the canonical toolchain can map
     # canonical toolchain version to their own toolchain versions.
     toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash

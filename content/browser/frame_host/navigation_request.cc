@@ -1757,7 +1757,7 @@ void NavigationRequest::OnStartChecksComplete(
   begin_params_->headers = headers.ToString();
 
   loader_ = NavigationURLLoader::Create(
-      browser_context->GetResourceContext(), partition,
+      browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_, begin_params_.Clone(), site_for_cookies,
           top_frame_origin, frame_tree_node_->IsMainFrame(),

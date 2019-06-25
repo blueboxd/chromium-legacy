@@ -55,9 +55,9 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
     EXPECT_TRUE(!view || !view->GetVisible() ||
-                static_cast<views::Label*>(view)->text().empty())
+                static_cast<views::Label*>(view)->GetText().empty())
         << "Found unexpected display item: "
-        << static_cast<views::Label*>(view)->text();
+        << static_cast<views::Label*>(view)->GetText();
   }
 
   // Verifies that the shipping address section does not display any warning
@@ -68,7 +68,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
     if (!view || !view->GetVisible())
       return;
 
-    EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->text());
+    EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->GetText());
   }
 
   // Verifies that the shipping address section has |expected_message| in the

@@ -595,6 +595,21 @@
             ]
         }
     ],
+    "AutoFetchOnNetErrorPage": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutoFetchOnNetErrorPage"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDoNotMigrateUnsupportedLocalCards": [
         {
             "platforms": [
@@ -3358,24 +3373,6 @@
             ]
         }
     ],
-    "OfflineContentOnDinoPage": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_AutoFetch",
-                    "enable_features": [
-                        "AutoFetchOnNetErrorPage"
-                    ],
-                    "disable_features": [
-                        "NewNetErrorPageUI"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfflineIndicator": [
         {
             "platforms": [
@@ -4140,24 +4137,6 @@
                     "enable_features": [
                         "NoScriptPreviews",
                         "OptimizationHints"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PreviewsSlowPageTriggering": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "SlowPageTriggeringFor4G_20190312",
-                    "params": {
-                        "session_max_ect_trigger": "4G"
-                    },
-                    "enable_features": [
-                        "PreviewsSlowPageTriggering"
                     ]
                 }
             ]

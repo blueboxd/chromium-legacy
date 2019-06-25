@@ -1596,7 +1596,7 @@ bool BrowserAccessibility::AccessibilityPerformAction(
 
 base::string16 BrowserAccessibility::GetLocalizedStringForImageAnnotationStatus(
     ax::mojom::ImageAnnotationStatus status) const {
-  const ContentClient* content_client = content::GetContentClient();
+  ContentClient* content_client = content::GetContentClient();
 
   int message_id = 0;
   switch (status) {
@@ -1628,13 +1628,13 @@ base::string16 BrowserAccessibility::GetLocalizedStringForImageAnnotationStatus(
 
 base::string16
 BrowserAccessibility::GetLocalizedRoleDescriptionForUnlabeledImage() const {
-  const ContentClient* content_client = content::GetContentClient();
+  ContentClient* content_client = content::GetContentClient();
   return content_client->GetLocalizedString(
       IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION);
 }
 
 base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
-  const ContentClient* content_client = content::GetContentClient();
+  ContentClient* content_client = content::GetContentClient();
   const ui::AXNodeData& data = GetData();
 
   switch (data.role) {
@@ -1663,7 +1663,7 @@ base::string16 BrowserAccessibility::GetStyleNameAttributeAsLocalizedString()
   const BrowserAccessibility* current_node = this;
   while (current_node) {
     if (current_node->GetData().role == ax::mojom::Role::kMark) {
-      const ContentClient* content_client = content::GetContentClient();
+      ContentClient* content_client = content::GetContentClient();
       return content_client->GetLocalizedString(IDS_AX_ROLE_MARK);
     }
     current_node = current_node->PlatformGetParent();

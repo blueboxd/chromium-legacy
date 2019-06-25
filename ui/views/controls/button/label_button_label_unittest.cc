@@ -43,7 +43,7 @@ class TestLabel : public LabelButtonLabel {
   // LabelButtonLabel:
   void SchedulePaintInRect(const gfx::Rect& r) override {
     LabelButtonLabel::SchedulePaintInRect(r);
-    *last_color_ = enabled_color();
+    *last_color_ = GetEnabledColor();
   }
 
  private:

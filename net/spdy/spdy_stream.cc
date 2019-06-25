@@ -272,7 +272,7 @@ void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
         "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
         "send_window_size_ [current: %d]",
         delta_window_size, stream_id_, send_window_size_);
-    session_->ResetStream(stream_id_, ERR_SPDY_FLOW_CONTROL_ERROR, desc);
+    session_->ResetStream(stream_id_, ERR_HTTP2_FLOW_CONTROL_ERROR, desc);
   }
 }
 
@@ -342,7 +342,7 @@ void SpdyStream::DecreaseRecvWindowSize(int32_t delta_window_size) {
   // the peer, that means that the receive window is not being respected.
   if (delta_window_size > recv_window_size_ - unacked_recv_window_bytes_) {
     session_->ResetStream(
-        stream_id_, ERR_SPDY_FLOW_CONTROL_ERROR,
+        stream_id_, ERR_HTTP2_FLOW_CONTROL_ERROR,
         "delta_window_size is " + base::NumberToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
             "window size of " + base::NumberToString(recv_window_size_));
@@ -389,16 +389,16 @@ void SpdyStream::OnHeadersReceived(
           response_headers.find(spdy::kHttp2StatusHeader);
       if (it == response_headers.end()) {
         const std::string error("Response headers do not include :status.");
-        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
         return;
       }
 
       int status;
       if (!StringToInt(it->second, &status)) {
         const std::string error("Cannot parse :status.");
-        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
         return;
       }
 
@@ -428,8 +428,8 @@ void SpdyStream::OnHeadersReceived(
           // the response headers only after request headers are sent.
           if (io_state_ == STATE_IDLE) {
             const std::string error("Response received before request sent.");
-            LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-            session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+            LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+            session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
             return;
           }
           break;
@@ -458,8 +458,8 @@ void SpdyStream::OnHeadersReceived(
       // Second header block is trailers.
       if (type_ == SPDY_PUSH_STREAM) {
         const std::string error("Trailers not supported for push stream.");
-        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
         return;
       }
 
@@ -470,8 +470,8 @@ void SpdyStream::OnHeadersReceived(
     case TRAILERS_RECEIVED:
       // No further header blocks are allowed after trailers.
       const std::string error("Header block received after trailers.");
-      LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-      session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+      LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+      session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
       break;
   }
 }
@@ -499,22 +499,22 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 
   if (response_state_ == READY_FOR_HEADERS) {
     const std::string error("DATA received before headers.");
-    LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-    session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+    LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+    session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
     return;
   }
 
   if (response_state_ == TRAILERS_RECEIVED && buffer) {
     const std::string error("DATA received after trailers.");
-    LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-    session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+    LogStreamError(ERR_HTTP2_PROTOCOL_ERROR, error);
+    session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR, error);
     return;
   }
 
   if (io_state_ == STATE_HALF_CLOSED_REMOTE) {
     const std::string error("DATA received on half-closed (remove) stream.");
-    LogStreamError(ERR_SPDY_STREAM_CLOSED, error);
-    session_->ResetStream(stream_id_, ERR_SPDY_STREAM_CLOSED, error);
+    LogStreamError(ERR_HTTP2_STREAM_CLOSED, error);
+    session_->ResetStream(stream_id_, ERR_HTTP2_STREAM_CLOSED, error);
     return;
   }
 
@@ -674,9 +674,9 @@ void SpdyStream::OnClose(int status) {
   // In most cases, the stream should already be CLOSED. The exception is when a
   // SpdySession is shutting down while the stream is in an intermediate state.
   io_state_ = STATE_CLOSED;
-  if (status == ERR_SPDY_RST_STREAM_NO_ERROR_RECEIVED) {
+  if (status == ERR_HTTP2_RST_STREAM_NO_ERROR_RECEIVED) {
     if (response_state_ == READY_FOR_HEADERS) {
-      status = ERR_SPDY_PROTOCOL_ERROR;
+      status = ERR_HTTP2_PROTOCOL_ERROR;
     } else {
       status = OK;
     }
@@ -881,7 +881,7 @@ void SpdyStream::SaveResponseHeaders(
     int status) {
   DCHECK(response_headers_.empty());
   if (response_headers.find("transfer-encoding") != response_headers.end()) {
-    session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR,
+    session_->ResetStream(stream_id_, ERR_HTTP2_PROTOCOL_ERROR,
                           "Received transfer-encoding header");
     return;
   }
@@ -897,7 +897,7 @@ void SpdyStream::SaveResponseHeaders(
       (status / 100 != 2 && status / 100 != 3 && status != 416)) {
     SpdySession::RecordSpdyPushedStreamFateHistogram(
         SpdyPushedStreamFate::kUnsupportedStatusCode);
-    session_->ResetStream(stream_id_, ERR_SPDY_CLIENT_REFUSED_STREAM,
+    session_->ResetStream(stream_id_, ERR_HTTP2_CLIENT_REFUSED_STREAM,
                           "Unsupported status code for pushed stream.");
     return;
   }

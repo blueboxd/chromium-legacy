@@ -106,7 +106,7 @@ class NavigationURLLoaderTest : public testing::Test {
                                   base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
-        browser_context_->GetResourceContext(),
+        browser_context_.get(), browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate);
   }

@@ -443,6 +443,11 @@ public abstract class AppHooks {
     public void performPrivateImeCommand(WebContents webContents, String action, Bundle data) {}
 
     /**
+     * Called when the Search Context Menu Item is clicked.
+     */
+    public void onSearchContextMenuClick() {}
+
+    /**
      * @param registry The Chrome interface registry for the RenderFrameHost.
      * @param renderFrameHost The RenderFrameHost the Interface Registry is for.
      */

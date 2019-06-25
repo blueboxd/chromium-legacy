@@ -54,13 +54,19 @@ Polymer({
           activeTimeZoneDisplayName,
           prefs.generated.resolve_timezone_by_geolocation_on_off.value,
           prefs.generated.resolve_timezone_by_geolocation_method_short.value)`
-    }
+    },
+
+    /** @private */
+    isChild_: {type: Boolean, value: loadTimeData.getBoolean('isChild')},
   },
 
   /** @override */
   attached: function() {
     this.addWebUIListener(
         'can-set-date-time-changed', this.onCanSetDateTimeChanged_.bind(this));
+    this.addWebUIListener(
+        'access-code-validation-complete',
+        this.openTimeZoneSubpage_.bind(this));
 
     chrome.send('dateTimePageReady');
   },
@@ -99,7 +105,24 @@ Polymer({
     return id ? this.i18n(id) : '';
   },
 
+  /**
+   * Called when the timezone row is clicked. Child accounts need parental
+   * approval to modify their timezone, this method starts this process on the
+   * C++ side, and once it is complete the 'access-code-validation-complete'
+   * event is triggered which invokes openTimeZoneSubpage_. For non-child
+   * accounts the method is invoked immediately.
+   * @private
+   */
   onTimeZoneSettings_: function() {
+    if (this.isChild_) {
+      chrome.send('handleShowParentAccessForTimeZone');
+      return;
+    }
+    this.openTimeZoneSubpage_();
+  },
+
+  /** @private */
+  openTimeZoneSubpage_: function() {
     settings.navigateTo(settings.routes.DATETIME_TIMEZONE_SUBPAGE);
   },
 });

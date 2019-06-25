@@ -15,7 +15,9 @@ _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
 sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
+from devil.android import device_errors
 from devil.android import device_utils
+from devil.android.sdk import adb_wrapper
 from devil.android.sdk import version_codes
 from devil.utils import logging_common
 
@@ -46,7 +48,17 @@ def Asan(args):
         logging.info('disable-verity output:')
         for line in verity_output.splitlines():
           logging.info('  %s', line)
-      device.Reboot()
+      try:
+        device.Reboot()
+      except device_errors.CommandFailedError:
+        logging.exception('Failed to reboot device.')
+        logging.error('Devices visible to adb:')
+        for entry in adb_wrapper.AdbWrapper.Devices(desired_state=None,
+                                                    long_list=True):
+          logging.error('  %s: %s',
+                        entry[0].GetDeviceSerial(),
+                        ' '.join(entry[1:]))
+
     # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
     # get tripped up by the root timeout.
     device.EnableRoot()

@@ -15,6 +15,10 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -100,6 +104,45 @@ void GetPluginContentSettingInternal(
     *setting = ContentSetting::CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 }
 
+// Helper function to get the mime type to extension map using data from either
+// ProfileIOData or Profile.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+base::flat_map<std::string, std::string> GetMimeTypeToExtensionIdMapInternal(
+    bool profile_is_off_the_record,
+    bool always_open_pdf_externally,
+    base::RepeatingCallback<const extensions::Extension*(const std::string&)>
+        get_extension,
+    base::RepeatingCallback<bool(const std::string&)> is_incognito_enabled) {
+  base::flat_map<std::string, std::string> mime_type_to_extension_id_map;
+  std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
+  // Go through the white-listed extensions and try to use them to intercept
+  // the URL request.
+  for (const std::string& extension_id : whitelist) {
+    const extensions::Extension* extension = get_extension.Run(extension_id);
+    // The white-listed extension may not be installed, so we have to NULL check
+    // |extension|.
+    if (!extension || (profile_is_off_the_record &&
+                       !is_incognito_enabled.Run(extension_id))) {
+      continue;
+    }
+
+    if (extension_id == extension_misc::kPdfExtensionId &&
+        always_open_pdf_externally) {
+      continue;
+    }
+
+    if (MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension)) {
+      for (const auto& supported_mime_type : handler->mime_type_set()) {
+        DCHECK(!base::Contains(mime_type_to_extension_id_map,
+                               supported_mime_type));
+        mime_type_to_extension_id_map[supported_mime_type] = extension_id;
+      }
+    }
+  }
+  return mime_type_to_extension_id_map;
+}
+#endif
+
 }  // namespace
 
 // static
@@ -175,41 +218,54 @@ std::string PluginUtils::GetExtensionIdForMimeType(
 }
 
 // static
+std::string PluginUtils::GetExtensionIdForMimeType(
+    content::BrowserContext* browser_context,
+    const std::string& mime_type) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto map = GetMimeTypeToExtensionIdMapInternal(
+      profile->IsOffTheRecord(),
+      profile->GetPrefs()->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally),
+      base::BindRepeating(
+          [](content::BrowserContext* context,
+             const std::string& extension_id) {
+            return extensions::ExtensionRegistry::Get(context)
+                ->enabled_extensions()
+                .GetByID(extension_id);
+          },
+          browser_context),
+      base::BindRepeating(
+          [](content::BrowserContext* context,
+             const std::string& extension_id) {
+            return extensions::util::IsIncognitoEnabled(extension_id, context);
+          },
+          browser_context));
+  auto it = map.find(mime_type);
+  if (it != map.end())
+    return it->second;
+#endif
+  return std::string();
+}
+
 base::flat_map<std::string, std::string>
 PluginUtils::GetMimeTypeToExtensionIdMap(
     content::ResourceContext* resource_context) {
-  base::flat_map<std::string, std::string> mime_type_to_extension_id_map;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  bool profile_is_off_the_record = io_data->IsOffTheRecord();
-  const scoped_refptr<const extensions::InfoMap> extension_info_map(
+  scoped_refptr<extensions::InfoMap> extension_info_map(
       io_data->GetExtensionInfoMap());
-  std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
-  // Go through the white-listed extensions and try to use them to intercept
-  // the URL request.
-  for (const std::string& extension_id : whitelist) {
-    const extensions::Extension* extension =
-        extension_info_map->extensions().GetByID(extension_id);
-    // The white-listed extension may not be installed, so we have to NULL check
-    // |extension|.
-    if (!extension || (profile_is_off_the_record &&
-                       !extension_info_map->IsIncognitoEnabled(extension_id))) {
-      continue;
-    }
-
-    if (extension_id == extension_misc::kPdfExtensionId &&
-        io_data->always_open_pdf_externally()->GetValue()) {
-      continue;
-    }
-
-    if (MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension)) {
-      for (const auto& supported_mime_type : handler->mime_type_set()) {
-        DCHECK(!base::Contains(mime_type_to_extension_id_map,
-                               supported_mime_type));
-        mime_type_to_extension_id_map[supported_mime_type] = extension_id;
-      }
-    }
-  }
+  return GetMimeTypeToExtensionIdMapInternal(
+      io_data->IsOffTheRecord(),
+      io_data->always_open_pdf_externally()->GetValue(),
+      base::BindRepeating(
+          [](const scoped_refptr<extensions::InfoMap>& info_map,
+             const std::string& extension_id) {
+            return info_map->extensions().GetByID(extension_id);
+          },
+          extension_info_map),
+      base::BindRepeating(&extensions::InfoMap::IsIncognitoEnabled,
+                          extension_info_map));
+#else
+  return {};
 #endif
-  return mime_type_to_extension_id_map;
 }

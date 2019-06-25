@@ -337,6 +337,8 @@ TEST_F(DisplayLockContextTest,
 }
 
 TEST_F(DisplayLockContextTest, FindInPageWithChangedContent) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <style>

@@ -37,7 +37,6 @@ class Size;
 namespace gpu {
 class GpuMemoryBufferManager;
 class SharedImageInterface;
-struct SyncToken;
 }
 
 namespace viz {
@@ -97,9 +96,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // VideoEncodeAccelerator interface.
   virtual std::unique_ptr<VideoEncodeAccelerator>
   CreateVideoEncodeAccelerator() = 0;
-
-  virtual void SignalSyncToken(const gpu::SyncToken& sync_token,
-                               base::OnceClosure callback) = 0;
 
   virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,

@@ -20,6 +20,7 @@ namespace content {
 static NavigationURLLoaderFactory* g_loader_factory = nullptr;
 
 std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
@@ -35,8 +36,9 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
         std::move(navigation_ui_data), service_worker_handle, delegate);
   }
   return std::make_unique<NavigationURLLoaderImpl>(
-      resource_context, storage_partition, std::move(request_info),
-      std::move(navigation_ui_data), service_worker_handle, appcache_handle,
+      browser_context, resource_context, storage_partition,
+      std::move(request_info), std::move(navigation_ui_data),
+      service_worker_handle, appcache_handle,
       std::move(prefetched_signed_exchange_cache), delegate,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>());
 }

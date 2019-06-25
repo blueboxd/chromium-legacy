@@ -35,8 +35,6 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     media_task_runner_handle_.reset(
         new base::ThreadTaskRunnerHandle(media_task_runner_));
     mock_gpu_factories_.reset(new MockGpuVideoAcceleratorFactories(sii_.get()));
-    EXPECT_CALL(*mock_gpu_factories_.get(), SignalSyncToken(_, _))
-        .Times(AtLeast(0));
     gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
         media_task_runner_, copy_task_runner_.get(),
         mock_gpu_factories_.get()));

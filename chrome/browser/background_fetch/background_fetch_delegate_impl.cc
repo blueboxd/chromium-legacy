@@ -266,7 +266,7 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
     // The fetch should be thought of as one download. So the origin will be
     // used as the URL, and the |request_method| is set to GET.
     limiter->CanDownload(
-        wc_getter, origin.GetURL(), "GET",
+        wc_getter, origin.GetURL(), "GET", base::nullopt,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &BackgroundFetchDelegateImpl::
                 DidGetPermissionFromDownloadRequestLimiter,

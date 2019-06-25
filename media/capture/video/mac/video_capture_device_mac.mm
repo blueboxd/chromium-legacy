@@ -455,7 +455,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
   }
 
   client_->OnIncomingCapturedData(video_frame, video_frame_length, frame_format,
-                                  color_space, 0, base::TimeTicks::Now(),
+                                  color_space, 0 /* clockwise_rotation */,
+                                  false /* flip_y */, base::TimeTicks::Now(),
                                   timestamp);
 }
 

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_WRITABLE_FILE_STREAM_H_
 
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -17,13 +18,13 @@ class ExceptionState;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-class NativeFileSystemFileHandle;
 
 class NativeFileSystemWritableFileStream final : public WritableStream {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit NativeFileSystemWritableFileStream(NativeFileSystemFileHandle*);
+  explicit NativeFileSystemWritableFileStream(
+      mojom::blink::NativeFileSystemFileWriterPtr);
 
   void Trace(Visitor* visitor) override;
 
@@ -51,7 +52,7 @@ class NativeFileSystemWritableFileStream final : public WritableStream {
                      uint64_t bytes_written);
   void TruncateComplete(mojom::blink::NativeFileSystemErrorPtr result);
 
-  Member<NativeFileSystemFileHandle> file_;
+  mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr_;
 
   Member<ScriptPromiseResolver> pending_operation_;
 };

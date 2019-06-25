@@ -219,10 +219,11 @@ class DesktopCaptureDeviceTest : public testing::Test {
                  int size,
                  const media::VideoCaptureFormat&,
                  const gfx::ColorSpace&,
-                 int,
-                 base::TimeTicks,
-                 base::TimeDelta,
-                 int) {
+                 int /* clockwise_rotation */,
+                 bool /* flip_y */,
+                 base::TimeTicks /* reference_time */,
+                 base::TimeDelta /* timestamp */,
+                 int /* frame_feedback_id */) {
     ASSERT_TRUE(output_frame_);
     ASSERT_EQ(output_frame_->stride() * output_frame_->size().height(), size);
     memcpy(output_frame_->data(), frame, size);
@@ -270,7 +271,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(SaveArg<1>(&frame_size), SaveArg<2>(&format),
                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
@@ -309,7 +310,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -355,7 +356,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -405,7 +406,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(WithArg<2>(Invoke(&format_checker,
                                   &FormatChecker::ExpectAcceptableSize)),
@@ -457,7 +458,7 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
                 SaveArg<1>(&frame_size),
@@ -506,7 +507,7 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
       CreateMockVideoCaptureDeviceClient());
   EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(
           DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
                 SaveArg<1>(&frame_size),
@@ -572,11 +573,11 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
               task_runner, task_runner->GetMockTickClock());
         }));
 
-    EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+    EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
         .WillRepeatedly(DoAll(
             WithArg<2>(
                 Invoke(&format_checker, &FormatChecker::ExpectAcceptableSize)),
-            WithArg<6>(Invoke([&done_event, &nb_frames,
+            WithArg<7>(Invoke([&done_event, &nb_frames,
                                &task_runner](base::TimeDelta timestamp) {
               ++nb_frames;
 

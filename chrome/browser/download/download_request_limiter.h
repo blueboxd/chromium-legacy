@@ -88,21 +88,19 @@ class DownloadRequestLimiter
   class TabDownloadState : public content_settings::Observer,
                            public content::WebContentsObserver {
    public:
-    // Creates a new TabDownloadState. |controller| is the controller the
-    // TabDownloadState tracks the state of and is the host for any dialogs that
-    // are displayed. |originating_controller| is used to determine the host of
-    // the initial download. If |originating_controller| is null, |controller|
-    // is used. |originating_controller| is typically null, but differs from
-    // |controller| in the case of a constrained popup requesting the download.
+    // Creates a new TabDownloadState. |host| is DownloadRequestLimiter object
+    // that owns this object. This object will listen to all the navigations
+    // and downloads happening on the |web_contents| to determine the new
+    // download status.
     TabDownloadState(DownloadRequestLimiter* host,
-                     content::WebContents* web_contents,
-                     content::WebContents* originating_web_contents);
+                     content::WebContents* web_contents);
     ~TabDownloadState() override;
 
     // Sets the current limiter state and the underlying automatic downloads
     // content setting. Sends a notification that the content setting has been
     // changed (if it has changed).
-    void SetDownloadStatusAndNotify(DownloadStatus status);
+    void SetDownloadStatusAndNotify(const GURL& request_origin,
+                                    DownloadStatus status);
 
     // Status of the download.
     DownloadStatus download_status() const { return status_; }
@@ -118,6 +116,8 @@ class DownloadRequestLimiter
       return download_count_;
     }
 
+    const GURL& origin() const { return origin_; }
+
     bool download_seen() const { return download_seen_; }
     void set_download_seen() { download_seen_ = true; }
 
@@ -132,13 +132,16 @@ class DownloadRequestLimiter
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
-    void PromptUserForDownload(DownloadRequestLimiter::Callback callback);
+    void PromptUserForDownload(DownloadRequestLimiter::Callback callback,
+                               const GURL& request_origin);
 
     // Invoked from DownloadRequestDialogDelegate. Notifies the delegates and
     // changes the status appropriately. Virtual for testing.
-    virtual void Cancel();
-    virtual void CancelOnce();
-    virtual void Accept();
+    virtual void Cancel(const GURL& request_origin);
+    virtual void CancelOnce(const GURL& request_origin);
+    virtual void Accept(const GURL& request_origin);
+
+    DownloadStatus GetDownloadStatus(const GURL& request_origin);
 
    protected:
     // Used for testing.
@@ -160,8 +163,9 @@ class DownloadRequestLimiter
         ContentSettingsType content_type,
         const std::string& resource_identifier) override;
 
-    // Remember to either block or allow automatic downloads from this origin.
-    void SetContentSetting(ContentSetting setting);
+    // Remember to either block or allow automatic downloads from
+    // |request_origin|.
+    void SetContentSetting(ContentSetting setting, const GURL& request_origin);
 
     // Notifies the callbacks as to whether the download is allowed or not.
     // Returns false if it didn't notify all callbacks.
@@ -169,7 +173,8 @@ class DownloadRequestLimiter
 
     // Set the download limiter state and notify if it has changed. Callers must
     // guarantee that |status| and |setting| correspond to each other.
-    void SetDownloadStatusAndNotifyImpl(DownloadStatus status,
+    void SetDownloadStatusAndNotifyImpl(const GURL& request_origin,
+                                        DownloadStatus status,
                                         ContentSetting setting);
 
     // Check if download is restricted (either requires prompting or is blocked)
@@ -183,8 +188,14 @@ class DownloadRequestLimiter
     // Host of the first page the download started on. This may be empty.
     std::string initial_page_host_;
 
+    // Current tab status and UI status. Renderer initiated navigations will
+    // not change these values if the current tab state is restricted.
     DownloadStatus status_;
     DownloadUiStatus ui_status_;
+
+    // Origin for initiating the current download. The value was kept for
+    // updating the omnibox decoration.
+    GURL origin_;
 
     size_t download_count_;
 
@@ -197,9 +208,9 @@ class DownloadRequestLimiter
     // callbacks.
     std::vector<DownloadRequestLimiter::Callback> callbacks_;
 
-    // A list of hosts that won't cause tab's download state to change if the
-    // state is PROMPT_BEFORE_DOWNLOAD or DOWNLOADS_NOT_ALLOWED.
-    std::set<std::string> restricted_hosts_;
+    // Origins that have restricted download state.
+    using DownloadStatusMap = std::map<GURL, DownloadStatus>;
+    DownloadStatusMap restricted_status_map_;
 
     ScopedObserver<HostContentSettingsMap, content_settings::Observer>
         observer_;
@@ -223,11 +234,16 @@ class DownloadRequestLimiter
   // omnibox decoration.
   DownloadUiStatus GetDownloadUiStatus(content::WebContents* web_contents);
 
+  // Returns the download origin that is associated with the current UI status
+  // for the purposes of showing an omnibox decoration.
+  GURL GetDownloadOrigin(content::WebContents* web_contents);
+
   // Check if download can proceed and notifies the callback on UI thread.
   void CanDownload(const content::ResourceRequestInfo::WebContentsGetter&
                        web_contents_getter,
                    const GURL& url,
                    const std::string& request_method,
+                   base::Optional<url::Origin> request_initiator,
                    Callback callback);
 
  private:
@@ -255,15 +271,14 @@ class DownloadRequestLimiter
   //
   // The returned TabDownloadState is owned by the DownloadRequestLimiter and
   // deleted when no longer needed (the Remove method is invoked).
-  TabDownloadState* GetDownloadState(
-      content::WebContents* web_contents,
-      content::WebContents* originating_web_contents,
-      bool create);
+  TabDownloadState* GetDownloadState(content::WebContents* web_contents,
+                                     bool create);
 
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
   void CanDownloadImpl(content::WebContents* originating_contents,
                        const std::string& request_method,
+                       base::Optional<url::Origin> request_initiator,
                        Callback callback);
 
   // Invoked when decision to download has been made.
@@ -271,6 +286,7 @@ class DownloadRequestLimiter
       const content::ResourceRequestInfo::WebContentsGetter&
           web_contents_getter,
       const std::string& request_method,
+      base::Optional<url::Origin> request_initiator,
       Callback orig_callback,
       bool allow);
 

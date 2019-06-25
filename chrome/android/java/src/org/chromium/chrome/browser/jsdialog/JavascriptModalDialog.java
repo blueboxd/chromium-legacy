@@ -75,7 +75,6 @@ public abstract class JavascriptModalDialog implements ModalDialogProperties.Con
                                    .with(ModalDialogProperties.TITLE, mTitle)
                                    .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
                                    .with(ModalDialogProperties.CONTROLLER, this)
-                                   .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
                                    .with(ModalDialogProperties.CONTENT_DESCRIPTION, mMessage)
                                    .build();
             mDialogModel.set(TouchlessDialogProperties.ALT_ACTION,

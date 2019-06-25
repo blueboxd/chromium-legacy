@@ -140,7 +140,7 @@ ui::AXTreeUpdate BrowserAccessibilityManagerMac::GetEmptyDocument() {
   return update;
 }
 
-BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
+BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
 
   // For editable combo boxes, focus should stay on the combo box so the user

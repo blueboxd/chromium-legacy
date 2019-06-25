@@ -633,7 +633,8 @@ void OwnBufferFrameDeliverer::PaintAndDeliverNextFrame(
   client()->OnIncomingCapturedData(
       buffer_.get(), frame_size, device_state()->format,
       GetDefaultColorSpace(device_state()->format.pixel_format),
-      0 /* rotation */, now, CalculateTimeSinceFirstInvocation(now));
+      0 /* rotation */, false /* flip_y */, now,
+      CalculateTimeSinceFirstInvocation(now));
 }
 
 ClientBufferFrameDeliverer::ClientBufferFrameDeliverer(
@@ -706,7 +707,7 @@ void JpegEncodingFrameDeliverer::PaintAndDeliverNextFrame(
   base::TimeTicks now = base::TimeTicks::Now();
   client()->OnIncomingCapturedData(
       &jpeg_buffer_[0], frame_size, device_state()->format,
-      gfx::ColorSpace::CreateJpeg(), 0 /* rotation */, now,
+      gfx::ColorSpace::CreateJpeg(), 0 /* rotation */, false /* flip_y */, now,
       CalculateTimeSinceFirstInvocation(now));
 }
 

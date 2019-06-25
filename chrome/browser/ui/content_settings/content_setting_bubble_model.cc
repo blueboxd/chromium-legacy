@@ -1400,15 +1400,16 @@ ContentSettingDownloadsBubbleModel::AsDownloadsBubbleModel() {
 // Initialize the radio group by setting the appropriate labels for the
 // content type and setting the default value based on the content setting.
 void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
-  const GURL& url = web_contents()->GetURL();
-  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
-
   DownloadRequestLimiter* download_request_limiter =
       g_browser_process->download_request_limiter();
+  const GURL& download_origin =
+      download_request_limiter->GetDownloadOrigin(web_contents());
+  base::string16 display_host =
+      url_formatter::FormatUrlForSecurityDisplay(download_origin);
   DCHECK(download_request_limiter);
 
   RadioGroup radio_group;
-  radio_group.url = url;
+  radio_group.url = download_origin;
   switch (download_request_limiter->GetDownloadUiStatus(web_contents())) {
     case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
       radio_group.radio_items = {
@@ -1428,7 +1429,8 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       return;
   }
   radio_group.user_managed = GetSettingManagedByUser(
-      url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(), nullptr);
+      download_origin, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(),
+      nullptr);
   set_radio_group(radio_group);
 }
 

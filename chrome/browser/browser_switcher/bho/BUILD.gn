@@ -103,4 +103,8 @@ midl("ie_bho_idl") {
   sources = [
     "ie_bho_idl.idl",
   ]
+
+  # We have a custom output directory (that excludes the toolchain details).
+  generated_dir =
+      "//third_party/win_build_output/midl/chrome/browser/browser_switcher/bho"
 }

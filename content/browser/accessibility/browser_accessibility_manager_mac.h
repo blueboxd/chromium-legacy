@@ -31,7 +31,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
-  BrowserAccessibility* GetFocus() override;
+  BrowserAccessibility* GetFocus() const override;
 
   // Implementation of BrowserAccessibilityManager.
   void FireFocusEvent(BrowserAccessibility* node) override;

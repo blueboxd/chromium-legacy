@@ -36,10 +36,35 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
                                  const storage::FileSystemURL& url,
                                  const SharedHandleState& handle_state);
   ~NativeFileSystemFileWriterImpl() override;
+  void Write(uint64_t offset,
+             blink::mojom::BlobPtr data,
+             WriteCallback callback) override;
+  void WriteStream(uint64_t offset,
+                   mojo::ScopedDataPipeConsumerHandle stream,
+                   WriteStreamCallback callback) override;
 
+  void Truncate(uint64_t length, TruncateCallback callback) override;
   void Close(CloseCallback callback) override;
 
  private:
+  // State that is kept for the duration of a write operation, to keep track of
+  // progress until the write completes.
+  struct WriteState;
+
+  void WriteImpl(uint64_t offset,
+                 blink::mojom::BlobPtr data,
+                 WriteCallback callback);
+  void DoWriteBlob(WriteCallback callback,
+                   uint64_t position,
+                   std::unique_ptr<storage::BlobDataHandle> blob);
+  void WriteStreamImpl(uint64_t offset,
+                       mojo::ScopedDataPipeConsumerHandle stream,
+                       WriteStreamCallback callback);
+  void DidWrite(WriteState* state,
+                base::File::Error result,
+                int64_t bytes,
+                bool complete);
+  void TruncateImpl(uint64_t length, TruncateCallback callback);
   void CloseImpl(CloseCallback callback);
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;

@@ -1926,7 +1926,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   BrowserAccessibilityManager* manager = owner_->manager();
   BrowserAccessibility* focusedChild = manager->GetFocus();
-  if (!focusedChild->IsDescendantOf(owner_))
+  if (focusedChild && !focusedChild->IsDescendantOf(owner_))
     focusedChild = nullptr;
 
   // If it's not multiselectable, try to skip iterating over the

@@ -93,7 +93,7 @@ void BrowserAccessibilityManagerWin::UserIsReloading() {
     FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
 }
 
-BrowserAccessibility* BrowserAccessibilityManagerWin::GetFocus() {
+BrowserAccessibility* BrowserAccessibilityManagerWin::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
   return GetActiveDescendant(focus);
 }
@@ -102,7 +102,6 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
-
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
   FireUiaAccessibilityEvent(UIA_AutomationFocusChangedEventId, node);
 }
@@ -499,7 +498,7 @@ void BrowserAccessibilityManagerWin::FireUiaTextContainerEvent(
   }
 }
 
-bool BrowserAccessibilityManagerWin::CanFireEvents() {
+bool BrowserAccessibilityManagerWin::CanFireEvents() const {
   if (!BrowserAccessibilityManager::CanFireEvents())
     return false;
   BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
@@ -619,7 +618,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
 }
 
 bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
-    BrowserAccessibility* node) {
+    BrowserAccessibility* node) const {
   if (!node || !node->CanFireEvents())
     return false;
 

@@ -125,6 +125,8 @@ base::Optional<PreviewsType> ConvertProtoOptimizationTypeToPreviewsType(
       return PreviewsType::LITE_PAGE_REDIRECT;
     case optimization_guide::proto::OPTIMIZATION_NONE:
       return PreviewsType::NONE;
+    case optimization_guide::proto::DEFER_ALL_SCRIPT:
+      return PreviewsType::DEFER_ALL_SCRIPT;
   }
 }
 
@@ -143,6 +145,8 @@ bool IsEnabledOptimizationType(
     case optimization_guide::proto::OPTIMIZATION_NONE:
       // Always consider enabled to allow as no-op optimization.
       return true;
+    case optimization_guide::proto::DEFER_ALL_SCRIPT:
+      return previews::params::IsDeferAllScriptPreviewsEnabled();
   }
 }
 

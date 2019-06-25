@@ -59,6 +59,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
                               const VideoCaptureFormat& frame_format,
                               const gfx::ColorSpace& color_space,
                               int rotation,  // Clockwise.
+                              bool flip_y,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp);
 

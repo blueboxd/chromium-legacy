@@ -1633,7 +1633,7 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
   return nullptr;
 }
 
-bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
+bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
   return frame_tree_node()->IsMainFrame();
 }
 

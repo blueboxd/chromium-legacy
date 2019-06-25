@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -40,7 +41,8 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
             WindowAndroid windowAndroid) {
         mNativeAutofillPopup = nativeAutofillPopupViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
-        if (activity == null || notEnoughScreenSpace(activity)) {
+        if (activity == null || notEnoughScreenSpace(activity)
+                || FeatureUtilities.isNoTouchModeEnabled()) {
             mAutofillPopup = null;
             mContext = null;
         } else {

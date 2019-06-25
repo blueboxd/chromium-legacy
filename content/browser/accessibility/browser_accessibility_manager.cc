@@ -181,6 +181,10 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
 }
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
+  if (last_focused_node_tree_id_ &&
+      ax_tree_id_ == *last_focused_node_tree_id_) {
+    SetLastFocusedNode(nullptr);
+  }
   tree_.reset(nullptr);
   event_generator_.ReleaseTree();
   ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
@@ -228,37 +232,46 @@ ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
 
 void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   BrowserAccessibility* focus = GetFocus();
+  // If |focus| is nullptr it means that we have no way of knowing where the
+  // focus is.
+  //
+  // One case when this would happen is when the current tree hasn't connected
+  // to its parent tree yet. That would mean that we have no way of getting to
+  // the top document which holds global focus information for the whole page.
+  //
+  // Note that if there is nothing focused on the page, then the focus should
+  // not be nullptr. The rootnode of the top document should be focused instead.
+  if (!focus)
+    return;
 
+  DCHECK(focus->instance_active());
   // Don't fire focus events if the window itself doesn't have focus.
   // Bypass this check for some tests.
   if (!never_suppress_or_delay_events_for_testing_ &&
       !g_focus_change_callback_for_testing.Get()) {
     if (delegate_ && !delegate_->AccessibilityViewHasFocus())
-      focus = nullptr;
-
+      return;
     if (!CanFireEvents())
-      focus = nullptr;
+      return;
   }
 
-  // Don't allow the document to be focused if it has no children and
-  // hasn't finished loading yet. Wait for at least a tiny bit of content,
-  // or for the document to actually finish loading.
-  if (focus && focus == focus->manager()->GetRoot() &&
+  // Don't allow the top document to be focused if it has no children and hasn't
+  // finished loading yet. Wait for at least a tiny bit of content, or for the
+  // document to actually finish loading.
+  if (focus == focus->manager()->GetRoot() &&
       focus->PlatformChildCount() == 0 &&
       !focus->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy) &&
       !focus->manager()->GetTreeData().loaded) {
-    focus = nullptr;
+    return;
   }
 
   BrowserAccessibility* last_focused_node = GetLastFocusedNode();
-  if (focus != last_focused_node) {
-    if (focus)
-      FireFocusEvent(focus);
-  }
+  if (focus != last_focused_node)
+    FireFocusEvent(focus);
   SetLastFocusedNode(focus);
 }
 
-bool BrowserAccessibilityManager::CanFireEvents() {
+bool BrowserAccessibilityManager::CanFireEvents() const {
   return true;
 }
 
@@ -276,7 +289,7 @@ void BrowserAccessibilityManager::FireGeneratedEvent(
   }
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
+BrowserAccessibility* BrowserAccessibilityManager::GetRoot() const {
   ui::AXNode* root = GetRootAsAXNode();
   return root ? GetFromAXNode(root) : nullptr;
 }
@@ -296,8 +309,8 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32_t id) const {
   return nullptr;
 }
 
-BrowserAccessibility*
-BrowserAccessibilityManager::GetParentNodeFromParentTree() {
+BrowserAccessibility* BrowserAccessibilityManager::GetParentNodeFromParentTree()
+    const {
   ui::AXNode* parent = GetParentNodeFromParentTreeAsAXNode();
   ui::AXTreeID parent_tree_id = GetParentTreeID();
   BrowserAccessibilityManager* parent_manager =
@@ -374,7 +387,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // If this page is hidden by an interstitial, suppress all events.
   BrowserAccessibilityManager* root_manager = GetRootManager();
-  if (root_manager->hidden_by_interstitial_page()) {
+  if (root_manager && root_manager->hidden_by_interstitial_page()) {
     event_generator_.ClearEvents();
     return true;
   }
@@ -397,7 +410,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
   // itself isn't focused or if focus hasn't changed.
-  root_manager->FireFocusEventsIfNeeded();
+  FireFocusEventsIfNeeded();
 
   // Fire any events related to changes to the tree.
   for (auto targeted_event : event_generator_) {
@@ -428,7 +441,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!event_target || !event_target->CanFireEvents())
       continue;
 
-    if (event.event_type == ax::mojom::Event::kHover)
+    if (root_manager && event.event_type == ax::mojom::Event::kHover)
       root_manager->CacheHitTestResult(event_target);
 
     FireBlinkEvent(event.event_type, event_target);
@@ -499,7 +512,7 @@ void BrowserAccessibilityManager::ActivateFindInPageResult(int request_id) {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
-    BrowserAccessibility* focus) {
+    BrowserAccessibility* focus) const {
   if (!focus)
     return nullptr;
 
@@ -536,40 +549,50 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
   return focus;
 }
 
-bool BrowserAccessibilityManager::NativeViewHasFocus() {
+bool BrowserAccessibilityManager::NativeViewHasFocus() const {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   return delegate && delegate->AccessibilityViewHasFocus();
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
+BrowserAccessibility* BrowserAccessibilityManager::GetFocus() const {
   BrowserAccessibilityManager* root_manager = GetRootManager();
-  if (!root_manager)
-    root_manager = this;
-  ui::AXTreeID focused_tree_id = root_manager->GetTreeData().focused_tree_id;
+  if (!root_manager) {
+    // We can't retrieved the globally focused object since we don't have access
+    // to the top document. If we return the focus in the current or a
+    // descendent tree, it might be wrong, since the top document might have
+    // another frame as the tree with the focus.
+    return nullptr;
+  }
 
+  ui::AXTreeID focused_tree_id = root_manager->GetTreeData().focused_tree_id;
   BrowserAccessibilityManager* focused_manager = nullptr;
   if (focused_tree_id != ui::AXTreeIDUnknown())
     focused_manager = BrowserAccessibilityManager::FromID(focused_tree_id);
 
-  // BrowserAccessibilityManager::FromID(focused_tree_id) may return nullptr
-  // if the tree is not created or has been destroyed.
+  // BrowserAccessibilityManager::FromID(focused_tree_id) may return nullptr if
+  // the tree is not created or has been destroyed. In this case, we don't
+  // really know where the focus is, so we should return nullptr. However, due
+  // to a bug in RenderFrameHostImpl this is currently not possible.
+  //
+  // TODO(nektar): Fix All the issues identified in crbug.com/956748
   if (!focused_manager)
-    focused_manager = root_manager;
+    return GetFocusFromThisOrDescendantFrame();
 
   return focused_manager->GetFocusFromThisOrDescendantFrame();
 }
 
 BrowserAccessibility*
-BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() {
+BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() const {
   int32_t focus_id = GetTreeData().focus_id;
   BrowserAccessibility* obj = GetFromID(focus_id);
+  // If nothing is focused, then the top document has the focus.
   if (!obj)
     return GetRoot();
 
   if (obj->HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
     AXTreeID child_tree_id = AXTreeID::FromString(
         obj->GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
-    BrowserAccessibilityManager* child_manager =
+    const BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager)
       return child_manager->GetFocusFromThisOrDescendantFrame();
@@ -1194,26 +1217,25 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
-  // When the root changes and this is the root manager, we may need to
-  // fire a new focus event.
-  if (root_changed && last_focused_node_tree_id_ &&
-      ax_tree_id_ == last_focused_node_tree_id_.value())
+  const bool ax_tree_id_changed =
+      GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
+      GetTreeData().tree_id != ax_tree_id_;
+  // When the tree that contains the focus is destroyed and re-created, we
+  // should fire a new focus event. Also, whenever the tree ID or the root of
+  // this tree changes we may need to fire an event on our parent node in the
+  // parent tree to ensure that we're properly connected.
+  if (ax_tree_id_changed && last_focused_node_tree_id_ &&
+      ax_tree_id_ == *last_focused_node_tree_id_) {
     SetLastFocusedNode(nullptr);
+  }
+  if (ax_tree_id_changed || root_changed)
+    connected_to_parent_tree_node_ = false;
 
-  bool ax_tree_id_changed = false;
-  if (GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
-      GetTreeData().tree_id != ax_tree_id_) {
+  if (ax_tree_id_changed) {
     ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
     ax_tree_id_ = GetTreeData().tree_id;
     ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
-    ax_tree_id_changed = true;
   }
-
-  // Whenever the tree ID or the root of this tree changes we may need to
-  // fire an event on our parent node in the parent tree to ensure that
-  // we're properly connected.
-  if (ax_tree_id_changed || root_changed)
-    connected_to_parent_tree_node_ = false;
 
   // Calls OnDataChanged on newly created or reparented nodes.
   for (const auto change : changes) {
@@ -1322,24 +1344,34 @@ ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetRootDelegate(
   return manager->GetRoot();
 }
 
-BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
+BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()
+    const {
   BrowserAccessibility* parent = GetParentNodeFromParentTree();
-  if (!parent)
-    return this;
+  if (parent) {
+    DCHECK(parent->instance_active())
+        << "The BrowserAccessibility object in the parent tree that is hosting "
+           "this tree should not have been destroyed before its child tree.";
+    return parent->manager() ? parent->manager()->GetRootManager() : nullptr;
+  }
 
-  return parent->manager()->GetRootManager();
+  if (IsRootTree())
+    return const_cast<BrowserAccessibilityManager*>(this);
+
+  // The current tree is disconnected from its parent, so we can't retrieve the
+  // root manager yet.
+  return nullptr;
 }
 
 BrowserAccessibilityDelegate*
-BrowserAccessibilityManager::GetDelegateFromRootManager() {
+BrowserAccessibilityManager::GetDelegateFromRootManager() const {
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager)
     return root_manager->delegate();
   return nullptr;
 }
 
-bool BrowserAccessibilityManager::IsRootTree() {
-  return delegate()->AccessibilityIsMainFrame() &&
+bool BrowserAccessibilityManager::IsRootTree() const {
+  return delegate_ && delegate_->AccessibilityIsMainFrame() &&
          GetTreeData().parent_tree_id == ui::AXTreeIDUnknown();
 }
 
@@ -1395,7 +1427,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   if (root_manager && root_manager != this)
     return root_manager->CachingAsyncHitTest(scaled_point);
 
-  if (delegate()) {
+  if (delegate_) {
     // This triggers an asynchronous request to compute the true object that's
     // under |scaled_point|.
     HitTest(scaled_point - GetViewBounds().OffsetFromOrigin());

@@ -956,6 +956,16 @@
       </intent-filter>
     </activity>
     <activity-alias
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.webapps.SecureWebAppLauncher"
+        android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity">
+      <intent-filter>
+        <action
+            android:name="org.chromium.chrome.browser.webapps.WebappManager.ACTION_START_SECURE_WEBAPP"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity-alias>
+    <activity-alias
         android:exported="true"
         android:name="com.google.android.apps.chrome.IntentDispatcher"
         android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity">

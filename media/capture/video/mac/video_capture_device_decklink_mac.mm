@@ -298,7 +298,8 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
     frame_receiver_->OnIncomingCapturedData(
         video_data, video_frame->GetRowBytes() * video_frame->GetHeight(),
         capture_format, gfx::ColorSpace(),
-        0,  // Rotation.
+        0,      // Rotation.
+        false,  // Vertical flip.
         now, timestamp);
   }
   return S_OK;
@@ -491,13 +492,14 @@ void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
     const VideoCaptureFormat& frame_format,
     const gfx::ColorSpace& color_space,
     int rotation,  // Clockwise.
+    bool flip_y,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   base::AutoLock lock(lock_);
-  if (client_) {
-    client_->OnIncomingCapturedData(data, length, frame_format, color_space,
-                                    rotation, reference_time, timestamp);
-  }
+  if (!client_)
+    return;
+  client_->OnIncomingCapturedData(data, length, frame_format, color_space,
+                                  rotation, flip_y, reference_time, timestamp);
 }
 
 void VideoCaptureDeviceDeckLinkMac::SendErrorString(

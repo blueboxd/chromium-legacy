@@ -21,11 +21,6 @@ using storage::FileSystemOperation;
 
 namespace content {
 
-struct NativeFileSystemFileHandleImpl::WriteState {
-  WriteCallback callback;
-  uint64_t bytes_written = 0;
-};
-
 NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
     NativeFileSystemManagerImpl* manager,
     const BindingContext& context,
@@ -74,53 +69,6 @@ void NativeFileSystemFileHandleImpl::Remove(RemoveCallback callback) {
       base::BindOnce(&NativeFileSystemFileHandleImpl::RemoveImpl,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce([](RemoveCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
-      }),
-      std::move(callback));
-}
-
-void NativeFileSystemFileHandleImpl::Write(uint64_t offset,
-                                           blink::mojom::BlobPtr data,
-                                           WriteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemFileHandleImpl::WriteImpl,
-                     weak_factory_.GetWeakPtr(), offset, std::move(data)),
-      base::BindOnce([](WriteCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-            0);
-      }),
-      std::move(callback));
-}
-
-void NativeFileSystemFileHandleImpl::WriteStream(
-    uint64_t offset,
-    mojo::ScopedDataPipeConsumerHandle stream,
-    WriteStreamCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemFileHandleImpl::WriteStreamImpl,
-                     weak_factory_.GetWeakPtr(), offset, std::move(stream)),
-      base::BindOnce([](WriteStreamCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
-            0);
-      }),
-      std::move(callback));
-}
-
-void NativeFileSystemFileHandleImpl::Truncate(uint64_t length,
-                                              TruncateCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemFileHandleImpl::TruncateImpl,
-                     weak_factory_.GetWeakPtr(), length),
-      base::BindOnce([](TruncateCallback callback) {
         std::move(callback).Run(
             NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
       }),
@@ -186,6 +134,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
       blink::mojom::SerializedBlob::New(uuid, "application/octet-stream",
                                         info.size, blob_ptr.PassInterface()));
 }
+
 void NativeFileSystemFileHandleImpl::RemoveImpl(RemoveCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(GetWritePermissionStatus(),
@@ -197,82 +146,6 @@ void NativeFileSystemFileHandleImpl::RemoveImpl(RemoveCallback callback) {
                    std::move(callback).Run(NativeFileSystemError::New(result));
                  },
                  std::move(callback)));
-}
-
-void NativeFileSystemFileHandleImpl::WriteImpl(uint64_t offset,
-                                               blink::mojom::BlobPtr data,
-                                               WriteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(GetWritePermissionStatus(),
-            blink::mojom::PermissionStatus::GRANTED);
-
-  blob_context()->GetBlobDataFromBlobPtr(
-      std::move(data),
-      base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteBlob,
-                     weak_factory_.GetWeakPtr(), std::move(callback), offset));
-}
-
-void NativeFileSystemFileHandleImpl::DoWriteBlob(
-    WriteCallback callback,
-    uint64_t position,
-    std::unique_ptr<BlobDataHandle> blob) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!blob) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_FAILED), 0);
-    return;
-  }
-
-  operation_runner()->Write(
-      url(), std::move(blob), position,
-      base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
-                          weak_factory_.GetWeakPtr(),
-                          base::Owned(new WriteState{std::move(callback)})));
-}
-
-void NativeFileSystemFileHandleImpl::WriteStreamImpl(
-    uint64_t offset,
-    mojo::ScopedDataPipeConsumerHandle stream,
-    WriteStreamCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(GetWritePermissionStatus(),
-            blink::mojom::PermissionStatus::GRANTED);
-
-  operation_runner()->Write(
-      url(), std::move(stream), offset,
-      base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
-                          weak_factory_.GetWeakPtr(),
-                          base::Owned(new WriteState{std::move(callback)})));
-}
-
-void NativeFileSystemFileHandleImpl::DidWrite(WriteState* state,
-                                              base::File::Error result,
-                                              int64_t bytes,
-                                              bool complete) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  DCHECK(state);
-  state->bytes_written += bytes;
-  if (complete) {
-    std::move(state->callback)
-        .Run(NativeFileSystemError::New(result), state->bytes_written);
-  }
-}
-
-void NativeFileSystemFileHandleImpl::TruncateImpl(uint64_t length,
-                                                  TruncateCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(GetWritePermissionStatus(),
-            blink::mojom::PermissionStatus::GRANTED);
-
-  operation_runner()->Truncate(
-      url(), length,
-      base::BindOnce(
-          [](TruncateCallback callback, base::File::Error result) {
-            std::move(callback).Run(NativeFileSystemError::New(result));
-          },
-          std::move(callback)));
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(

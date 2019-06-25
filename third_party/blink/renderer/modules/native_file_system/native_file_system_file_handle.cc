@@ -32,17 +32,17 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
   ScriptPromise result = resolver->Promise();
 
   mojo_ptr_->CreateFileWriter(WTF::Bind(
-      [](ScriptPromiseResolver* resolver, NativeFileSystemFileHandle* handle,
+      [](ScriptPromiseResolver* resolver,
          mojom::blink::NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemFileWriterPtr writer) {
         if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
-              handle, std::move(writer)));
+          resolver->Resolve(
+              MakeGarbageCollected<NativeFileSystemWriter>(std::move(writer)));
         } else {
           resolver->Reject(file_error::CreateDOMException(result->error_code));
         }
       },
-      WrapPersistent(resolver), WrapPersistent(this)));
+      WrapPersistent(resolver)));
 
   return result;
 }
@@ -52,8 +52,19 @@ ScriptPromise NativeFileSystemFileHandle::createWritable(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  resolver->Resolve(
-      MakeGarbageCollected<NativeFileSystemWritableFileStream>(this));
+  mojo_ptr_->CreateFileWriter(WTF::Bind(
+      [](ScriptPromiseResolver* resolver,
+         mojom::blink::NativeFileSystemErrorPtr result,
+         mojom::blink::NativeFileSystemFileWriterPtr writer) {
+        if (result->error_code == base::File::FILE_OK) {
+          resolver->Resolve(
+              MakeGarbageCollected<NativeFileSystemWritableFileStream>(
+                  std::move(writer)));
+        } else {
+          resolver->Reject(file_error::CreateDOMException(result->error_code));
+        }
+      },
+      WrapPersistent(resolver)));
   return result;
 }
 

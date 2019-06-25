@@ -16,8 +16,9 @@
 // an unsuspecting user.
 class DownloadPermissionRequest : public PermissionRequest {
  public:
-  explicit DownloadPermissionRequest(
-      base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
+  DownloadPermissionRequest(
+      base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host,
+      const GURL& request_origin);
   ~DownloadPermissionRequest() override;
 
  private:

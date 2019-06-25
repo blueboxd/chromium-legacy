@@ -307,11 +307,11 @@ class VideoCaptureDeviceTest
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
         .Times(0);
-    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+    ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
         .WillByDefault(
             Invoke([this](const uint8_t* data, int length,
                           const media::VideoCaptureFormat& frame_format,
-                          const gfx::ColorSpace&, int, base::TimeTicks,
+                          const gfx::ColorSpace&, int, bool, base::TimeTicks,
                           base::TimeDelta, int) {
               ASSERT_GT(length, 0);
               ASSERT_TRUE(data);

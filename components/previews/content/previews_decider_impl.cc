@@ -51,11 +51,11 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
     case PreviewsType::LITE_PAGE_REDIRECT:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
     // These types do not have server optimization hints.
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
-    case PreviewsType::DEFER_ALL_SCRIPT:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
@@ -333,7 +333,8 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
       return ShouldAllowPreviewPerOptimizationHints(previews_data, url, type,
                                                     passed_reasons);
     } else if (type == PreviewsType::RESOURCE_LOADING_HINTS ||
-               type == PreviewsType::NOSCRIPT) {
+               type == PreviewsType::NOSCRIPT ||
+               type == PreviewsType::DEFER_ALL_SCRIPT) {
       return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
     }
   }
@@ -373,7 +374,8 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(PreviewsUserData* previews_data,
                                               PreviewsType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(PreviewsType::NOSCRIPT == type ||
-         PreviewsType::RESOURCE_LOADING_HINTS == type);
+         PreviewsType::RESOURCE_LOADING_HINTS == type ||
+         PreviewsType::DEFER_ALL_SCRIPT == type);
   if (previews_black_list_ && !blacklist_ignored_) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     // The blacklist will disallow certain hosts for periods of time based on
@@ -412,7 +414,8 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
-         type == PreviewsType::RESOURCE_LOADING_HINTS);
+         type == PreviewsType::RESOURCE_LOADING_HINTS ||
+         type == PreviewsType::DEFER_ALL_SCRIPT);
   // For LitePageRedirect, ensure it is not blacklisted for this request, and
   // hints have been fully loaded.
   //
@@ -446,7 +449,8 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(type == PreviewsType::NOSCRIPT ||
-         type == PreviewsType::RESOURCE_LOADING_HINTS);
+         type == PreviewsType::RESOURCE_LOADING_HINTS ||
+         type == PreviewsType::DEFER_ALL_SCRIPT);
 
   if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
     return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;

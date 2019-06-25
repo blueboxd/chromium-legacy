@@ -367,7 +367,15 @@ void NGPhysicalFragment::CheckType() const {
         DCHECK(layout_object_.IsBox());
       }
       if (IsColumnBox()) {
-        // TODO(kojii): Column box can fail following checks, needs review.
+        // Column fragments are associated with the same layout object as their
+        // multicol container. The fragments themselves are regular in-flow
+        // block container fragments for most purposes.
+        DCHECK(layout_object_.IsLayoutBlockFlow());
+        DCHECK(IsBox());
+        DCHECK(!IsFloating());
+        DCHECK(!IsOutOfFlowPositioned());
+        DCHECK(!IsAtomicInline());
+        DCHECK(!IsBlockFormattingContextRoot());
         break;
       }
       if (layout_object_.IsLayoutNGListMarker()) {

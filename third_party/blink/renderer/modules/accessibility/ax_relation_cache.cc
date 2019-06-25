@@ -9,6 +9,8 @@
 
 namespace blink {
 
+using namespace html_names;
+
 AXRelationCache::AXRelationCache(AXObjectCacheImpl* object_cache)
     : object_cache_(object_cache) {}
 
@@ -167,6 +169,14 @@ void AXRelationCache::UpdateAriaOwns(
                                       validated_owned_child_axids);
 }
 
+bool AXRelationCache::MayHaveHTMLLabelViaForAttribute(
+    const HTMLElement& labelable) {
+  const AtomicString& id = labelable.GetIdAttribute();
+  if (id.IsEmpty())
+    return false;
+  return all_previously_seen_label_target_ids_.Contains(id);
+}
+
 // Fill source_objects with AXObjects for relations pointing to target.
 void AXRelationCache::GetReverseRelated(
     Node* target,
@@ -260,8 +270,12 @@ void AXRelationCache::TextChanged(AXObject* object) {
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
-  if (HTMLElement* control = ToHTMLLabelElement(node)->control())
-    TextChanged(Get(control));
+  const AtomicString& id = ToHTMLElement(node)->FastGetAttribute(kForAttr);
+  if (!id.IsEmpty()) {
+    all_previously_seen_label_target_ids_.insert(id);
+    if (HTMLElement* control = ToHTMLLabelElement(node)->control())
+      TextChanged(Get(control));
+  }
 }
 
 }  // namespace blink

@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/ShortcutHelper_jni.h"
 #include "chrome/browser/android/color_helpers.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
@@ -114,11 +115,13 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
       java_short_name, java_best_primary_icon_url, java_bitmap,
       is_icon_maskable, info.display, info.orientation, info.source,
       OptionalSkColorToJavaColor(info.theme_color),
-      OptionalSkColorToJavaColor(info.background_color), callback_pointer);
+      OptionalSkColorToJavaColor(info.background_color), callback_pointer,
+      false /* isShortcutAsWebapp */);
 }
 
 // Adds a shortcut which opens in a browser tab to the launcher.
-void AddShortcutWithSkBitmap(const ShortcutInfo& info,
+void AddShortcutWithSkBitmap(content::WebContents* web_contents,
+                             const ShortcutInfo& info,
                              const std::string& id,
                              const SkBitmap& icon_bitmap,
                              bool is_icon_maskable) {
@@ -129,12 +132,17 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
       base::android::ConvertUTF8ToJavaString(env, info.url.spec());
   ScopedJavaLocalRef<jstring> java_user_title =
       base::android::ConvertUTF16ToJavaString(env, info.user_title);
+  ScopedJavaLocalRef<jstring> java_best_primary_icon_url =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             info.best_primary_icon_url.spec());
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (!icon_bitmap.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
-
-  Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
-                                  java_bitmap, is_icon_maskable, info.source);
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  Java_ShortcutHelper_addShortcut(env, tab ? tab->GetJavaObject() : nullptr,
+                                  java_id, java_url, java_user_title,
+                                  java_bitmap, is_icon_maskable, info.source,
+                                  java_best_primary_icon_url);
 }
 
 }  // anonymous namespace
@@ -183,7 +191,8 @@ void ShortcutHelper::AddToLauncherWithSkBitmap(
                        info.minimum_splash_image_size_in_px, webapp_id));
     return;
   }
-  AddShortcutWithSkBitmap(info, webapp_id, icon_bitmap, is_icon_maskable);
+  AddShortcutWithSkBitmap(web_contents, info, webapp_id, icon_bitmap,
+                          is_icon_maskable);
 }
 
 void ShortcutHelper::ShowWebApkInstallInProgressToast() {

@@ -551,6 +551,7 @@ bool DownloadManagerImpl::InterceptDownload(
           RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
               info.render_process_id, info.render_frame_id);
       params.from_download_cross_origin_redirect = true;
+      params.initiator_origin = info.request_initiator;
       web_contents->GetController().LoadURLWithParams(params);
     }
     if (info.request_handle)
@@ -917,6 +918,8 @@ void DownloadManagerImpl::InterceptNavigation(
 
   const GURL& url = resource_request->url;
   const std::string& method = resource_request->method;
+  base::Optional<url::Origin> request_initiator =
+      resource_request->request_initiator;
 
   ResourceRequestInfo::WebContentsGetter web_contents_getter =
       base::BindRepeating(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
@@ -930,6 +933,7 @@ void DownloadManagerImpl::InterceptNavigation(
           std::move(url_loader_client_endpoints));
 
   delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url, method,
+                                  std::move(request_initiator),
                                   std::move(on_download_checks_done));
 }
 
@@ -1454,6 +1458,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
       if (delegate_) {
         delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
                                         method,
+                                        base::nullopt /*request_initiator*/,
                                         std::move(on_can_download_checks_done));
         return;
       }

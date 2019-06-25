@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -47,6 +48,11 @@ public class WebappLauncherActivity extends Activity {
      */
     public static final String ACTION_START_WEBAPP =
             "com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP";
+
+    public static final String SECURE_WEBAPP_LAUNCHER =
+            "org.chromium.chrome.browser.webapps.SecureWebAppLauncher";
+    public static final String ACTION_START_SECURE_WEBAPP =
+            "org.chromium.chrome.browser.webapps.WebappManager.ACTION_START_SECURE_WEBAPP";
 
     /**
      * Delay in ms for relaunching WebAPK as a result of getting intent with extra
@@ -156,6 +162,12 @@ public class WebappLauncherActivity extends Activity {
         // {@link WebApkInfo#create()} and {@link WebappInfo#create()} return null if the intent
         // does not specify required values such as the uri.
         if (webappInfo == null) return false;
+
+        // The component is not exported and can only be launched by Chrome.
+        if (intent.getComponent().equals(new ComponentName(
+                    ContextUtils.getApplicationContext(), SECURE_WEBAPP_LAUNCHER))) {
+            return true;
+        }
 
         String webappUrl = webappInfo.uri().toString();
         String webappMac = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_MAC);

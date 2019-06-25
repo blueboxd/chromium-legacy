@@ -55,7 +55,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       optimization_guide::proto::NOSCRIPT);
   get_hints_request_->add_supported_optimizations(
       optimization_guide::proto::RESOURCE_LOADING);
-  // TODO(dougarnett): Add DEFER_ALL_SCRIPT once supported.
+  get_hints_request_->add_supported_optimizations(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
   static_assert(static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT) + 1 ==
                     static_cast<int>(PreviewsType::LAST),
                 "PreviewsType has been updated, make sure Optimization Guide "

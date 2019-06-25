@@ -25,8 +25,7 @@ class NativeFileSystemWriter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit NativeFileSystemWriter(NativeFileSystemFileHandle*,
-                                  mojom::blink::NativeFileSystemFileWriterPtr);
+  explicit NativeFileSystemWriter(mojom::blink::NativeFileSystemFileWriterPtr);
 
   ScriptPromise write(ScriptState*,
                       uint64_t position,

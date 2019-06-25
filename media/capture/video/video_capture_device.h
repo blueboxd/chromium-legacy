@@ -144,11 +144,13 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // OnConsumerReportingUtilization(). This identifier is needed because
     // frames are consumed asynchronously and multiple frames can be "in flight"
     // at the same time.
+    // TODO(crbug.com/978143): remove |frame_feedback_id| default value.
     virtual void OnIncomingCapturedData(const uint8_t* data,
                                         int length,
                                         const VideoCaptureFormat& frame_format,
                                         const gfx::ColorSpace& color_space,
                                         int clockwise_rotation,
+                                        bool flip_y,
                                         base::TimeTicks reference_time,
                                         base::TimeDelta timestamp,
                                         int frame_feedback_id = 0) = 0;
@@ -161,6 +163,7 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // |buffer| when creating the content of the output buffer.
     // |clockwise_rotation|, |reference_time|, |timestamp|, and
     // |frame_feedback_id| serve the same purposes as in OnIncomingCapturedData.
+    // TODO(crbug.com/978143): remove |frame_feedback_id| default value.
     virtual void OnIncomingCapturedGfxBuffer(
         gfx::GpuMemoryBuffer* buffer,
         const VideoCaptureFormat& frame_format,

@@ -161,11 +161,14 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
  public:
   explicit PortalCreatedObserver(RenderFrameHostImpl* render_frame_host_impl)
       : render_frame_host_impl_(render_frame_host_impl) {
-    render_frame_host_impl_->frame_host_binding_for_testing()
-        .SwapImplForTesting(this);
+    old_impl_ = render_frame_host_impl_->frame_host_binding_for_testing()
+                    .SwapImplForTesting(this);
   }
 
-  ~PortalCreatedObserver() override {}
+  ~PortalCreatedObserver() override {
+    render_frame_host_impl_->frame_host_binding_for_testing()
+        .SwapImplForTesting(old_impl_);
+  }
 
   FrameHost* GetForwardingInterface() override {
     return render_frame_host_impl_;
@@ -222,6 +225,7 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
 
  private:
   RenderFrameHostImpl* render_frame_host_impl_;
+  mojom::FrameHost* old_impl_;
   base::RunLoop* run_loop_ = nullptr;
   Portal* portal_ = nullptr;
 };
@@ -809,6 +813,47 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RemovePortalWhenUnloading) {
   // and should destroy the Portal object as well, so that the activate message
   // is not processed.
   EXPECT_TRUE(ExecJs(main_frame, "div.remove();"));
+}
+
+// Tests that a portal can navigate while orphaned.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedNavigation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(ExecJs(
+        main_frame, JsReplace("var portal = document.createElement('portal');"
+                              "portal.src = $1;"
+                              "document.body.appendChild(portal);",
+                              a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet; wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  // Block the activate callback so that the predecessor portal stays orphaned.
+  EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
+                     "window.onportalactivate = e => { while(true) {} };"));
+
+  // Acticate the portal and navigate the predecessor.
+  TestNavigationObserver main_frame_navigation_observer(web_contents_impl);
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();"
+                     "window.location.reload()");
+  portal_interceptor->WaitForActivate();
+  main_frame_navigation_observer.Wait();
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

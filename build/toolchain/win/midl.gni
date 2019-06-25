@@ -21,6 +21,10 @@ import("//build/config/win/visual_studio_version.gni")
 #   out_dir (optional)
 #       Directory to write the generated files to. Defaults to target_gen_dir.
 #
+#   generated_dir (optional)
+#       Directory where generated files were previously persisted.
+#       Defaults to third_party\win_build_output\midl\|out_dir|.
+#
 #   dynamic_guid (optional)
 #       If the GUID is not constant across builds, the current GUID.
 #
@@ -40,6 +44,14 @@ template("midl") {
     out_dir = invoker.out_dir
   } else {
     out_dir = target_gen_dir
+  }
+
+  if (defined(invoker.generated_dir)) {
+    generated_dir = rebase_path(invoker.generated_dir)
+  } else {
+    # midl.py expects 'gen' to be replaced with 'midl'.
+    generated_dir = rebase_path("//third_party/win_build_output") + "/midl/" +
+                    rebase_path(rebase_path(out_dir, root_build_dir), "gen")
   }
 
   if (defined(invoker.dynamic_guid)) {
@@ -99,6 +111,7 @@ template("midl") {
 
     args = [
       win_tool_arch,
+      generated_dir,
       rebase_path(out_dir, root_build_dir),
       dynamic_guid,
       type_library_file,

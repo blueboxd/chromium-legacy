@@ -953,10 +953,15 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accFocus(VARIANT* focus_child) {
     focus_child->vt = VT_I4;
     focus_child->lVal = CHILDID_SELF;
   } else if (focus_accessible) {
+    Microsoft::WRL::ComPtr<IDispatch> focus_idispatch;
+    if (FAILED(
+            focus_accessible->QueryInterface(IID_PPV_ARGS(&focus_idispatch)))) {
+      focus_child->vt = VT_EMPTY;
+      return E_FAIL;
+    }
+
     focus_child->vt = VT_DISPATCH;
-    focus_child->pdispVal = focus_accessible;
-    focus_child->pdispVal->AddRef();
-    return S_OK;
+    focus_child->pdispVal = focus_idispatch.Detach();
   } else {
     focus_child->vt = VT_EMPTY;
   }

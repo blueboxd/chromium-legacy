@@ -76,9 +76,10 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
       // Automatic downloads are handled by DownloadRequestLimiter.
       DownloadRequestLimiter::TabDownloadState* tab_download_state =
           g_browser_process->download_request_limiter()->GetDownloadState(
-              web_contents, web_contents, true);
+              web_contents, true);
       tab_download_state->set_download_seen();
       tab_download_state->SetDownloadStatusAndNotify(
+          web_contents->GetVisibleURL().GetOrigin(),
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }

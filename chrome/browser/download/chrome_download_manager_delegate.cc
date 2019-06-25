@@ -249,11 +249,13 @@ void CheckCanDownload(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     CanDownloadCallback can_download_cb) {
   DownloadRequestLimiter* limiter =
       g_browser_process->download_request_limiter();
   if (limiter) {
     limiter->CanDownload(web_contents_getter, url, request_method,
+                         std::move(request_initiator),
                          base::BindOnce(std::move(can_download_cb), true));
   }
 }
@@ -265,11 +267,12 @@ void OnDownloadAcquireFileAccessPermissionDone(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     CanDownloadCallback can_download_cb,
     bool granted) {
   if (granted) {
     CheckCanDownload(web_contents_getter, url, request_method,
-                     std::move(can_download_cb));
+                     std::move(request_initiator), std::move(can_download_cb));
   } else {
     std::move(can_download_cb).Run(false, false);
   }
@@ -1387,6 +1390,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CanDownloadCallback cb = base::BindOnce(
@@ -1396,9 +1400,11 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
       base::Bind(&OnDownloadAcquireFileAccessPermissionDone,
-                 web_contents_getter, url, request_method, base::Passed(&cb)));
+                 web_contents_getter, url, request_method,
+                 std::move(request_initiator), base::Passed(&cb)));
 #else
-  CheckCanDownload(web_contents_getter, url, request_method, std::move(cb));
+  CheckCanDownload(web_contents_getter, url, request_method,
+                   std::move(request_initiator), std::move(cb));
 #endif
 }
 

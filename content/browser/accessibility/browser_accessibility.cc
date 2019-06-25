@@ -1368,12 +1368,12 @@ gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
-  auto* parent = PlatformGetParent();
+  if (!instance_active())
+    return nullptr;
+
+  BrowserAccessibility* parent = PlatformGetParent();
   if (parent)
     return parent->GetNativeViewAccessible();
-
-  if (!manager_)
-    return nullptr;
 
   BrowserAccessibilityDelegate* delegate =
       manager_->GetDelegateFromRootManager();
@@ -1404,7 +1404,7 @@ gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetFocus() {
-  auto* focused = manager()->GetFocus();
+  BrowserAccessibility* focused = manager()->GetFocus();
   if (!focused)
     return nullptr;
 

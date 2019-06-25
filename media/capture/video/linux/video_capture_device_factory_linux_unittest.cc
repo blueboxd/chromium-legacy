@@ -128,7 +128,7 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest,
 
   base::RunLoop wait_loop;
   static const int kFrameToReceive = 3;
-  EXPECT_CALL(*client_ptr, OnIncomingCapturedData(_, _, _, _, _, _, _, _))
+  EXPECT_CALL(*client_ptr, OnIncomingCapturedData(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(InvokeWithoutArgs([&wait_loop]() {
         static int received_frame_count = 0;
         received_frame_count++;

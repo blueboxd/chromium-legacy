@@ -44,6 +44,7 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
                               const VideoCaptureFormat& format,
                               const gfx::ColorSpace& color_space,
                               int rotation,
+                              bool flip_y,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp,
                               int frame_feedback_id) override;

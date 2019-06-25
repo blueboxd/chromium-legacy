@@ -184,16 +184,6 @@ Close the bug as "Won't Fix".
 
 ## Step 2: Check Alerts Regularly
 
- * **IMPORTANT: Check the [perf bot page](https://ci.chromium.org/buildbot/chromium.perf/Android%20Builder%20Perf/)
- several times a day to make sure it isn't broken (and ping/file a bug if it is).**
-   * At the very least you need to check this once in the morning and once in
-   the afternoon.
-   * If you don't and the builder is broken either you or the next sheriff will
-   have to manually build and diff the broken range (via. `diagnose_bloat.py`)
-   to see if we missed any regressions.
-   * This is necessary even if the next passing build doesn't create an alert
-   because the range could contain a large regression with multiple offsetting
-   decreases.
  * Check [alert page](https://chromeperf.appspot.com/alerts?sheriff=Binary%20Size%20Sheriff) regularly for new alerts.
  * Join [g/chrome-binary-size-alerts](https://goto.google.com/chrome-binary-size-alerts).
  * Deal with alerts as outlined above.

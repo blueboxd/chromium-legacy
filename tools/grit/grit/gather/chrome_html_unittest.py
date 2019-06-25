@@ -145,6 +145,36 @@ class ChromeHtmlUnittest(unittest.TestCase):
       '''))
     tmp_dir.CleanUp()
 
+  def testFileResourcesPreprocess(self):
+    '''Tests preprocessed image file resources with available high DPI
+    assets.'''
+
+    tmp_dir = util.TempDir({
+      'test.css': '''
+      .image {
+        background: url('test.png');
+      }
+      ''',
+
+      'test.png': 'PNG DATA',
+
+      '1.4x/test.png': '1.4x PNG DATA',
+
+      '1.8x/test.png': '1.8x PNG DATA',
+    })
+
+    html = chrome_html.ChromeHtml(tmp_dir.GetPath('test.css'))
+    html.SetDefines({'scale_factors': '1.4x,1.8x'})
+    html.SetAttributes({'flattenhtml': 'false', 'preprocess': 'true'})
+    html.Parse()
+    self.failUnlessEqual(StandardizeHtml(html.GetData('en', 'utf-8')),
+                         StandardizeHtml('''
+      .image {
+        background: -webkit-image-set(url('test.png') 1x, url('1.4x/test.png') 1.4x, url('1.8x/test.png') 1.8x);
+      }
+      '''))
+    tmp_dir.CleanUp()
+
   def testFileResourcesDoubleQuotes(self):
     '''Tests inlined image file resources if url() filename is double quoted.'''
 

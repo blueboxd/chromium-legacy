@@ -60,5 +60,5 @@
 -assumenosideeffects class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
   public <init>();
   public <clinit>();
-  *** build() return null;
+  *** build();
 }

@@ -195,8 +195,8 @@ class VideoCaptureControllerTest
         stub_frame->data(0),
         media::VideoFrame::AllocationSize(stub_frame->format(),
                                           stub_frame->coded_size()),
-        format, color_space, rotation, base::TimeTicks(), base::TimeDelta(),
-        frame_feedback_id);
+        format, color_space, rotation, false /* flip_y */, base::TimeTicks(),
+        base::TimeDelta(), frame_feedback_id);
   }
 
   TestBrowserThreadBundle bundle_;

@@ -893,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Set focus to the radio group.
   auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
-  ExecuteScript(L"document.body.children[0].focus()");
+  ExecuteScript(L"document.body.children[0].focus();");
   waiter->WaitForNotification();
 
   // Check that the accessibility tree of the browser has been updated.
@@ -1003,7 +1003,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestNotificationFocusChanged) {
   // The role attribute causes the node to be in the accessibility tree.
-  LoadInitialAccessibilityTreeFromHtml("<div role=group tabindex='-1'></div>");
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div role="group" tabindex="-1">
+      </div>)HTML");
 
   // Check the browser's copy of the renderer accessibility tree.
   SCOPED_TRACE("Check initial tree");
@@ -1015,34 +1017,182 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.AppendExpectedChild(&group_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 
-  // Focus the div in the document
-  std::unique_ptr<AccessibilityNotificationWaiter> waiter(
-      new AccessibilityNotificationWaiter(shell()->web_contents(),
-                                          ui::kAXModeComplete,
-                                          ax::mojom::Event::kFocus));
-  ExecuteScript(L"document.body.children[0].focus()");
-  waiter->WaitForNotification();
+  {
+    // Focus the div in the document
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+    ExecuteScript(L"document.body.children[0].focus();");
+    waiter.WaitForNotification();
+  }
 
   // Check that the accessibility tree of the browser has been updated.
   SCOPED_TRACE("Check updated tree after focusing div");
   group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED);
   document_checker.CheckAccessible(GetRendererAccessible());
 
-  // Focus the document accessible. This will un-focus the current node.
-  waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kBlur));
-  Microsoft::WRL::ComPtr<IAccessible> document_accessible(
-      GetRendererAccessible());
-  ASSERT_NE(document_accessible.Get(), reinterpret_cast<IAccessible*>(NULL));
-  base::win::ScopedVariant childid_self(CHILDID_SELF);
-  HRESULT hr = document_accessible->accSelect(SELFLAG_TAKEFOCUS, childid_self);
-  ASSERT_EQ(S_OK, hr);
-  waiter->WaitForNotification();
+  {
+    // Focus the document accessible. This will un-focus the current node.
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kBlur);
+    Microsoft::WRL::ComPtr<IAccessible> document_accessible(
+        GetRendererAccessible());
+    ASSERT_NE(nullptr, document_accessible.Get());
+    base::win::ScopedVariant childid_self(CHILDID_SELF);
+    HRESULT hr =
+        document_accessible->accSelect(SELFLAG_TAKEFOCUS, childid_self);
+    ASSERT_EQ(S_OK, hr);
+    waiter.WaitForNotification();
+  }
 
   // Check that the accessibility tree of the browser has been updated.
   SCOPED_TRACE("Check updated tree after focusing document again");
   group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   document_checker.CheckAccessible(GetRendererAccessible());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, FocusEventOnPageLoad) {
+  // Some screen readers, such as older versions of Jaws, require a focus event
+  // on the top document after the page loads, if there is no focused element on
+  // the page.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL html_data_url(
+      "data:text/html," +
+      net::EscapeQueryParamValue(R"HTML(<p> Hello</ p>)HTML", false));
+  NavigateToURL(shell(), html_data_url);
+  WaitForAccessibilityFocusChange();
+  waiter.WaitForNotification();
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+  base::win::ScopedVariant focus;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+  EXPECT_EQ(VT_I4, focus.type());
+  EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, NoFocusEventOnRootChange) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <p>Hello</p>
+      )HTML");
+
+  // Adding an iframe as a direct descendant of the root will reserialize the
+  // root node.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLayoutComplete);
+  ExecuteScript(
+      L"let iframe = document.createElement('iframe');"
+      L"iframe.srcdoc = '<button>Button</button>';"
+      L"document.body.appendChild(iframe);");
+  waiter.WaitForNotification();
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+  base::win::ScopedVariant focus;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+  EXPECT_EQ(VT_I4, focus.type());
+  EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       FocusEventOnFocusedIframeAddedAndRemoved) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <button autofocus>Outer button</button>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+
+  {
+    AccessibilityNotificationWaiter iframe_waiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+    ExecuteScript(
+        L"let iframe = document.createElement('iframe');"
+        L"iframe.srcdoc = '<button autofocus>Inner button</button>';"
+        L"document.body.appendChild(iframe);");
+    WaitForAccessibilityFocusChange();
+    iframe_waiter.WaitForNotification();
+
+    const BrowserAccessibility* inner_button =
+        FindNode(ax::mojom::Role::kButton, "Inner button");
+    ASSERT_NE(nullptr, inner_button);
+    const auto* inner_button_win =
+        ToBrowserAccessibilityWin(inner_button)->GetCOM();
+    ASSERT_NE(nullptr, inner_button_win);
+
+    base::win::ScopedVariant focus;
+    base::win::ScopedVariant childid_self(CHILDID_SELF);
+    ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+    EXPECT_EQ(VT_DISPATCH, focus.type());
+    EXPECT_EQ(inner_button_win, V_DISPATCH(focus.ptr()));
+  }
+
+  {
+    AccessibilityNotificationWaiter iframe_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kLayoutComplete);
+    ExecuteScript(L"document.body.removeChild(iframe);");
+    WaitForAccessibilityFocusChange();
+    iframe_waiter.WaitForNotification();
+
+    base::win::ScopedVariant focus;
+    base::win::ScopedVariant childid_self(CHILDID_SELF);
+    ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+    EXPECT_EQ(VT_I4, focus.type());
+    EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       NoFocusEventOnIframeAddedAndRemoved) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <button autofocus>Outer button</button>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+
+  const BrowserAccessibility* outer_button =
+      FindNode(ax::mojom::Role::kButton, "Outer button");
+  ASSERT_NE(nullptr, outer_button);
+  const auto* outer_button_win =
+      ToBrowserAccessibilityWin(outer_button)->GetCOM();
+  ASSERT_NE(nullptr, outer_button_win);
+
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLayoutComplete);
+    ExecuteScript(
+        L"let iframe = document.createElement('iframe');"
+        L"iframe.srcdoc = '<button>Inner button</button>';"
+        L"document.body.appendChild(iframe);");
+    waiter.WaitForNotification();
+
+    base::win::ScopedVariant focus;
+    base::win::ScopedVariant childid_self(CHILDID_SELF);
+    ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+    EXPECT_EQ(VT_DISPATCH, focus.type());
+    EXPECT_EQ(outer_button_win, V_DISPATCH(focus.ptr()));
+  }
+
+  {
+    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                           ui::kAXModeComplete,
+                                           ax::mojom::Event::kLayoutComplete);
+    ExecuteScript(L"document.body.removeChild(iframe);");
+    waiter.WaitForNotification();
+
+    base::win::ScopedVariant focus;
+    base::win::ScopedVariant childid_self(CHILDID_SELF);
+    ASSERT_HRESULT_SUCCEEDED(document->get_accFocus(focus.Receive()));
+    EXPECT_EQ(VT_DISPATCH, focus.type());
+    EXPECT_EQ(outer_button_win, V_DISPATCH(focus.ptr()));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,

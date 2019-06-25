@@ -13,10 +13,6 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom.h"
 
-namespace storage {
-class BlobDataHandle;
-}  // namespace storage
-
 namespace content {
 
 // This is the browser side implementation of the
@@ -48,43 +44,16 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                          RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
   void Remove(RemoveCallback callback) override;
-  void Write(uint64_t offset,
-             blink::mojom::BlobPtr data,
-             WriteCallback callback) override;
-  void WriteStream(uint64_t offset,
-                   mojo::ScopedDataPipeConsumerHandle stream,
-                   WriteStreamCallback callback) override;
-  void Truncate(uint64_t length, TruncateCallback callback) override;
   void CreateFileWriter(CreateFileWriterCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
 
  private:
-  // State that is kept for the duration of a write operation, to keep track of
-  // progress until the write completes.
-  struct WriteState;
-
   void DidGetMetaDataForBlob(AsBlobCallback callback,
                              base::File::Error result,
                              const base::File::Info& info);
 
   void RemoveImpl(RemoveCallback callback);
-
-  void WriteImpl(uint64_t offset,
-                 blink::mojom::BlobPtr data,
-                 WriteCallback callback);
-  void DoWriteBlob(WriteCallback callback,
-                   uint64_t position,
-                   std::unique_ptr<storage::BlobDataHandle> blob);
-  void WriteStreamImpl(uint64_t offset,
-                       mojo::ScopedDataPipeConsumerHandle stream,
-                       WriteStreamCallback callback);
-  void DidWrite(WriteState* state,
-                base::File::Error result,
-                int64_t bytes,
-                bool complete);
-
-  void TruncateImpl(uint64_t length, TruncateCallback callback);
   void CreateFileWriterImpl(CreateFileWriterCallback callback);
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;

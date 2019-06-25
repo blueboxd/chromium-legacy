@@ -2147,7 +2147,6 @@
     ],
     "isolated_scripts": [
       {
-        "experiment_percentage": 100,
         "isolate_name": "chrome_sizes",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -2170,7 +2169,6 @@
     ],
     "isolated_scripts": [
       {
-        "experiment_percentage": 100,
         "isolate_name": "chrome_sizes",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
@@ -2207,7 +2205,6 @@
     ],
     "isolated_scripts": [
       {
-        "experiment_percentage": 100,
         "isolate_name": "chrome_sizes",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"

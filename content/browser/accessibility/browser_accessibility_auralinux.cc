@@ -40,15 +40,15 @@ BrowserAccessibilityAuraLinux::GetNativeViewAccessible() {
   return node_->GetNativeViewAccessible();
 }
 
+void BrowserAccessibilityAuraLinux::UpdatePlatformAttributes() {
+  GetNode()->UpdateHypertext();
+}
+
 void BrowserAccessibilityAuraLinux::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
   DCHECK(node_);
   node_->DataChanged();
-}
-
-void BrowserAccessibilityAuraLinux::UpdatePlatformAttributes() {
-  GetNode()->UpdateHypertext();
 }
 
 bool BrowserAccessibilityAuraLinux::IsNative() const {

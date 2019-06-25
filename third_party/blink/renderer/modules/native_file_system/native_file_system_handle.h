@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-class NativeFileSystemDirectoryHandle;
 class FileSystemHandlePermissionDescriptor;
 
 class NativeFileSystemHandle : public ScriptWrappable {
@@ -31,14 +30,7 @@ class NativeFileSystemHandle : public ScriptWrappable {
   virtual bool isDirectory() const { return false; }
   const String& name() const { return name_; }
 
-  ScriptPromise moveTo(ScriptState*,
-                       NativeFileSystemDirectoryHandle* parent,
-                       const String& new_name = String());
-  ScriptPromise copyTo(ScriptState*,
-                       NativeFileSystemDirectoryHandle* parent,
-                       const String& new_name = String());
   ScriptPromise remove(ScriptState*);
-
   ScriptPromise queryPermission(ScriptState*,
                                 const FileSystemHandlePermissionDescriptor*);
   ScriptPromise requestPermission(ScriptState*,

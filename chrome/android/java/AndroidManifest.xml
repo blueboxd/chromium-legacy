@@ -723,6 +723,16 @@ by a child template that "extends" this file.
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!-- Non-exported alias that only Chrome can launch to verify shortcut intent comes from
+             Chrome (ShortcutManager on O+ launches under the shortcut creator's uid). -->
+        <activity-alias android:name="org.chromium.chrome.browser.webapps.SecureWebAppLauncher"
+            android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.webapps.WebappManager.ACTION_START_SECURE_WEBAPP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
         <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappManager"
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity">
         </activity-alias>

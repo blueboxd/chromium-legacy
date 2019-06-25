@@ -502,10 +502,11 @@ def DoInline(
   # of the text we just inlined.
   flat_text = CheckConditionalElements(flat_text)
 
+  # Allow custom modifications before inlining images.
+  if rewrite_function:
+    flat_text = rewrite_function(input_filepath, flat_text, distribution)
+
   if not preprocess_only:
-    # Allow custom modifications before inlining images.
-    if rewrite_function:
-      flat_text = rewrite_function(input_filepath, flat_text, distribution)
     flat_text = _SRC_RE.sub(SrcReplace, flat_text)
     flat_text = _SRCSET_RE.sub(SrcsetReplace, flat_text)
 

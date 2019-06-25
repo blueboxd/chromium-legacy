@@ -83,14 +83,10 @@ GetDefaultMultiDeviceSetupClient() {
 // EasyUnlockService factory function injected into testing profiles.
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  std::unique_ptr<EasyUnlockServiceRegular> service(
-      new EasyUnlockServiceRegular(
-          Profile::FromBrowserContext(context),
-          nullptr /* secure_channel_client */,
-          std::make_unique<MockEasyUnlockNotificationController>(),
-          GetDefaultDeviceSyncClient(), GetDefaultMultiDeviceSetupClient()));
-  service->Initialize();
-  return std::move(service);
+  return std::make_unique<EasyUnlockServiceRegular>(
+      Profile::FromBrowserContext(context), nullptr /* secure_channel_client */,
+      std::make_unique<MockEasyUnlockNotificationController>(),
+      GetDefaultDeviceSyncClient(), GetDefaultMultiDeviceSetupClient());
 }
 
 }  // namespace
@@ -164,6 +160,10 @@ class EasyUnlockServiceTest : public testing::Test {
     mock_user_manager_->AddUser(
         AccountId::FromUserEmailGaiaId(email, *gaia_id));
     profile.get()->set_profile_name(email);
+
+    // Only initialize the service once the profile is completely ready. If done
+    // earlier, indirect usage of user_manager::KnownUser would crash.
+    EasyUnlockService::Get(profile.get())->Initialize();
 
     return profile;
   }

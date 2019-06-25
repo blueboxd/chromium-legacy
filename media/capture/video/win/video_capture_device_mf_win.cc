@@ -1008,8 +1008,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
     // build a gfx::ColorSpace. See http://crbug.com/959988.
     client_->OnIncomingCapturedData(
         data, length, selected_video_capability_->supported_format,
-        gfx::ColorSpace(), GetCameraRotation(facing_mode_), reference_time,
-        timestamp);
+        gfx::ColorSpace(), GetCameraRotation(facing_mode_), false /* flip_y */,
+        reference_time, timestamp);
   }
 
   while (!video_stream_take_photo_callbacks_.empty()) {

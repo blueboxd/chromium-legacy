@@ -4666,11 +4666,12 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="OptimizationGuide">
+<event name="OptimizationGuide" singular="True">
   <owner>sophiechang@chromium.org</owner>
   <summary>
-    Optimization guide metrics associated with a page load. See
-    //components/optimization_guide/.
+    Optimization guide metrics associated with a page load. It is recorded when
+    the optimization guide was consulted in making a decision for the page load.
+    See //components/optimization_guide/.
   </summary>
   <metric name="HintGenerationTimestamp">
     <summary>

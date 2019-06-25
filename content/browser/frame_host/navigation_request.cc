@@ -2207,11 +2207,13 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   FrameTreeNode* parent_ftn = frame_tree_node()->parent();
   RenderFrameHostImpl* parent =
       parent_ftn ? parent_ftn->current_frame_host() : nullptr;
-  if (!parent && frame_tree_node()
-                     ->current_frame_host()
-                     ->GetRenderViewHost()
-                     ->GetDelegate()
-                     ->IsPortal()) {
+  if (!parent &&
+      frame_tree_node()
+          ->current_frame_host()
+          ->GetRenderViewHost()
+          ->GetDelegate()
+          ->IsPortal() &&
+      frame_tree_node()->render_manager()->GetOuterDelegateNode()) {
     parent = frame_tree_node()
                  ->render_manager()
                  ->GetOuterDelegateNode()

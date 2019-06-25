@@ -197,6 +197,8 @@ crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pa
 crbug.com/974720 [ Mac10.13 ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 
+crbug.com/978436 external/wpt/svg/coordinate-systems/viewBox-scaling-text-001.html [ Failure ]
+
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
@@ -3210,7 +3212,6 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/svg/coordinate-systems/viewBox-scaling-text-001.html [ Failure ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/script-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/script-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/basic/header-value-combining.any.sharedworker.html [ Timeout ]

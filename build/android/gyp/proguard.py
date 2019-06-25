@@ -278,19 +278,20 @@ def main(args):
         #     method 'int close()' is not being kept as 'a', but remapped to 'c'
         _RemoveMethodMappings(options.apply_mapping, f)
         proguard.mapping(f.name)
+      with build_utils.TempDir() as d:
+        proguard.tmp_dir(d)
+        input_strings = proguard.build()
+        if f.name in input_strings:
+          input_strings[input_strings.index(f.name)] = '$M'
 
-      input_strings = proguard.build()
-      if f.name in input_strings:
-        input_strings[input_strings.index(f.name)] = '$M'
-
-      build_utils.CallAndWriteDepfileIfStale(
-          proguard.CheckOutput,
-          options,
-          input_paths=input_paths,
-          input_strings=input_strings,
-          output_paths=proguard.GetOutputs(),
-          depfile_deps=proguard.GetDepfileDeps(),
-          add_pydeps=False)
+        build_utils.CallAndWriteDepfileIfStale(
+            proguard.CheckOutput,
+            options,
+            input_paths=input_paths,
+            input_strings=input_strings,
+            output_paths=proguard.GetOutputs(),
+            depfile_deps=proguard.GetDepfileDeps(),
+            add_pydeps=False)
 
 
 if __name__ == '__main__':

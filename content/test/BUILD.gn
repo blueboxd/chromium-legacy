@@ -1626,7 +1626,7 @@ test("content_unittests") {
     "../browser/memory/test_memory_monitor.cc",
     "../browser/memory/test_memory_monitor.h",
     "../browser/native_file_system/file_system_chooser_unittest.cc",
-    "../browser/native_file_system/native_file_system_file_handle_impl_unittest.cc",
+    "../browser/native_file_system/native_file_system_file_writer_impl_unittest.cc",
     "../browser/native_file_system/native_file_system_handle_base_unittest.cc",
     "../browser/native_file_system/native_file_system_manager_impl_unittest.cc",
     "../browser/net/network_quality_observer_impl_unittest.cc",

@@ -4918,7 +4918,10 @@ jumbo_split_static_library("browser") {
       "supervised_user/supervised_user_whitelist_service.h",
       "supervised_user/supervised_users.h",
     ]
-    deps += [ "//chrome/common:supervised_user_commands_mojom" ]
+    deps += [
+      "//chrome/browser/supervised_user/kids_chrome_management:proto",
+      "//chrome/common:supervised_user_commands_mojom",
+    ]
   }
   if (enable_supervised_users && !is_android) {
     sources += [

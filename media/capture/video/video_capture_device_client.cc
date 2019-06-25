@@ -194,6 +194,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const VideoCaptureFormat& format,
     const gfx::ColorSpace& data_color_space,
     int rotation,
+    bool flip_y,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
@@ -313,14 +314,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
+    // TODO(crbug.com/953128): Deprecate PIXEL_FORMAT_RGB32
     case PIXEL_FORMAT_RGB32:
-// Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
-// platforms.
-#if defined(OS_WIN)
-      flip = true;
-      FALLTHROUGH;
-#endif
     case PIXEL_FORMAT_ARGB:
+      // Windows platforms e.g. send the data vertically flipped sometimes.
+      flip = flip_y;
       fourcc_format = libyuv::FOURCC_ARGB;
       break;
     case PIXEL_FORMAT_MJPEG:

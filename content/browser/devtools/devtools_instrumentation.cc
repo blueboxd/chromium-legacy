@@ -162,7 +162,9 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
   }
   FrameTreeNode* parent = frame_tree_node->parent();
   if (!parent) {
-    if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal()) {
+    if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal() &&
+        WebContentsImpl::FromFrameTreeNode(frame_tree_node)
+            ->GetOuterWebContents()) {
       parent = WebContentsImpl::FromFrameTreeNode(frame_tree_node)
                    ->GetOuterWebContents()
                    ->GetFrameTree()

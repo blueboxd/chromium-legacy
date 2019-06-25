@@ -91,7 +91,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
 
   // Returns true if this delegate represents the main (topmost) frame in a
   // tree of frames.
-  virtual bool AccessibilityIsMainFrame() = 0;
+  virtual bool AccessibilityIsMainFrame() const = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {
@@ -161,10 +161,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void FireFocusEventsIfNeeded();
 
   // Return whether or not we are currently able to fire events.
-  virtual bool CanFireEvents();
+  virtual bool CanFireEvents() const;
 
   // Return a pointer to the root of the tree.
-  BrowserAccessibility* GetRoot();
+  BrowserAccessibility* GetRoot() const;
 
   // Returns a pointer to the BrowserAccessibility object for a given AXNode.
   BrowserAccessibility* GetFromAXNode(const ui::AXNode* node) const;
@@ -174,7 +174,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibility* GetFromID(int32_t id) const;
 
   // If this tree has a parent tree, return the parent node in that tree.
-  BrowserAccessibility* GetParentNodeFromParentTree();
+  BrowserAccessibility* GetParentNodeFromParentTree() const;
 
   // Get the AXTreeData for this frame.
   const ui::AXTreeData& GetTreeData() const;
@@ -305,19 +305,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibilityManagerMac* ToBrowserAccessibilityManagerMac();
 #endif
 
-  // Return the object that has focus, starting at the top of the frame tree.
-  virtual BrowserAccessibility* GetFocus();
+  // Returns the object that has focus, starting at the top of the frame tree,
+  // or returns nullptr if this manager doesn't have access to the top document.
+  virtual BrowserAccessibility* GetFocus() const;
 
   // Return the object that has focus, only considering this frame and
   // descendants.
-  BrowserAccessibility* GetFocusFromThisOrDescendantFrame();
+  BrowserAccessibility* GetFocusFromThisOrDescendantFrame() const;
 
   // Given a focused node |focus|, returns a descendant of that node if it
   // has an active descendant, otherwise returns |focus|.
-  BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus);
+  BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus) const;
 
   // Returns true if native focus is anywhere in this WebContents or not.
-  bool NativeViewHasFocus();
+  bool NativeViewHasFocus() const;
 
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.
@@ -405,15 +406,18 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
   // If this BrowserAccessibilityManager is a child frame or guest frame,
-  // return the BrowserAccessibilityManager from the highest ancestor frame
-  // in the frame tree.
-  BrowserAccessibilityManager* GetRootManager();
+  // returns the BrowserAccessibilityManager from the top document in the frame
+  // tree. If the current frame is not connected to its parent frame yet, or if
+  // it got disconnected after being reparented, return nullptr to indicate that
+  // we don't have access to the root manager yet.
+  BrowserAccessibilityManager* GetRootManager() const;
 
-  // Returns the BrowserAccessibilityDelegate from |GetRootManager|, above.
-  BrowserAccessibilityDelegate* GetDelegateFromRootManager();
+  // Returns the BrowserAccessibilityDelegate from |GetRootManager| above, or
+  // returns nullptr in case we don't have access to the root manager yet.
+  BrowserAccessibilityDelegate* GetDelegateFromRootManager() const;
 
   // Returns whether this is the top document.
-  bool IsRootTree();
+  bool IsRootTree() const;
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
@@ -448,7 +452,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   static void SetLastFocusedNode(BrowserAccessibility* node);
   static BrowserAccessibility* GetLastFocusedNode();
 
- protected:
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
 
@@ -459,7 +462,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   std::unique_ptr<ui::AXSerializableTree> tree_;
 
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
-  std::unordered_map<int32_t, BrowserAccessibility*> id_wrapper_map_;
+  std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
   // True if the user has initiated a navigation to another page.
   bool user_is_navigating_away_;

@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/avatar_icon_util.h"
 
 #include <string>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -16,20 +17,25 @@
 namespace {
 
 // Separator of URL path components.
-const char kURLPathSeparator[] = "/";
+constexpr char kURLPathSeparator[] = "/";
 
-// Constants describing image URL format.
+// Constants describing legacy image URL format.
 // See https://crbug.com/733306#c3 for details.
-const size_t kImageURLPathComponentsCount = 6;
-const size_t kImageURLPathComponentsCountWithOptions = 7;
-const size_t kImageURLPathOptionsComponentPosition = 5;
+constexpr size_t kLegacyURLPathComponentsCount = 6;
+constexpr size_t kLegacyURLPathComponentsCountWithOptions = 7;
+constexpr size_t kLegacyURLPathOptionsComponentPosition = 5;
+// Constants describing content image URL format.
+// See https://crbug.com/911332#c15 for details.
+constexpr size_t kContentURLPathMinComponentsCount = 2;
+constexpr size_t kContentURLPathMaxComponentsCount = 3;
+constexpr char kContentURLOptionsStartChar = '=';
 // Various options that can be embedded in image URL.
-const char kImageURLOptionSeparator[] = "-";
-const char kImageURLOptionSizePattern[] = R"(s\d+)";
-const char kImageURLOptionSizeFormat[] = "s%d";
-const char kImageURLOptionSquareCrop[] = "c";
+constexpr char kImageURLOptionSeparator[] = "-";
+constexpr char kImageURLOptionSizePattern[] = R"(s\d+)";
+constexpr char kImageURLOptionSizeFormat[] = "s%d";
+constexpr char kImageURLOptionSquareCrop[] = "c";
 // Option to disable default avatar if user doesn't have a custom one.
-const char kImageURLOptionNoSilhouette[] = "ns";
+constexpr char kImageURLOptionNoSilhouette[] = "ns";
 
 std::string BuildImageURLOptionsString(int image_size,
                                        bool no_silhouette,
@@ -53,6 +59,62 @@ std::string BuildImageURLOptionsString(int image_size,
   return base::JoinString(url_options, kImageURLOptionSeparator);
 }
 
+// Returns an empty vector if |url_components| couldn't be processed as a legacy
+// image URL.
+std::vector<std::string> TryProcessAsLegacyImageURL(
+    std::vector<std::string> url_components,
+    int image_size,
+    bool no_silhouette) {
+  if (url_components.back().empty())
+    return {};
+
+  if (url_components.size() == kLegacyURLPathComponentsCount) {
+    url_components.insert(
+        url_components.begin() + kLegacyURLPathOptionsComponentPosition,
+        BuildImageURLOptionsString(image_size, no_silhouette, std::string()));
+    return url_components;
+  }
+
+  if (url_components.size() == kLegacyURLPathComponentsCountWithOptions) {
+    std::string options =
+        url_components.at(kLegacyURLPathOptionsComponentPosition);
+    url_components[kLegacyURLPathOptionsComponentPosition] =
+        BuildImageURLOptionsString(image_size, no_silhouette, options);
+    return url_components;
+  }
+
+  return {};
+}
+
+// Returns an empty vector if |url_components| couldn't be processed as a
+// content image URL.
+std::vector<std::string> TryProcessAsContentImageURL(
+    std::vector<std::string> url_components,
+    int image_size,
+    bool no_silhouette) {
+  if (url_components.size() < kContentURLPathMinComponentsCount ||
+      url_components.size() > kContentURLPathMaxComponentsCount ||
+      url_components.back().empty()) {
+    return {};
+  }
+
+  std::string* options_component = &url_components.back();
+  // Extract existing options from |options_component|.
+  const size_t options_pos =
+      options_component->find(kContentURLOptionsStartChar);
+  std::string component_without_options =
+      options_component->substr(0, options_pos);
+  std::string existing_options =
+      options_pos == std::string::npos
+          ? ""
+          : options_component->substr(options_pos + 1);
+  // Update options in |options_component|.
+  *options_component =
+      component_without_options + kContentURLOptionsStartChar +
+      BuildImageURLOptionsString(image_size, no_silhouette, existing_options);
+  return url_components;
+}
+
 }  // namespace
 
 namespace signin {
@@ -66,24 +128,20 @@ GURL GetAvatarImageURLWithOptions(const GURL& old_url,
       base::SplitString(old_url.path(), kURLPathSeparator,
                         base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
 
-  if (components.size() < kImageURLPathComponentsCount ||
-      components.size() > kImageURLPathComponentsCountWithOptions ||
-      components.back().empty()) {
+  auto new_components =
+      TryProcessAsContentImageURL(components, image_size, no_silhouette);
+
+  if (new_components.empty()) {
+    new_components =
+        TryProcessAsLegacyImageURL(components, image_size, no_silhouette);
+  }
+
+  if (new_components.empty()) {
+    // URL doesn't match any known patterns, so return unchanged.
     return old_url;
   }
 
-  if (components.size() == kImageURLPathComponentsCount) {
-    components.insert(
-        components.begin() + kImageURLPathOptionsComponentPosition,
-        BuildImageURLOptionsString(image_size, no_silhouette, std::string()));
-  } else {
-    DCHECK_EQ(kImageURLPathComponentsCountWithOptions, components.size());
-    std::string options = components.at(kImageURLPathOptionsComponentPosition);
-    components[kImageURLPathOptionsComponentPosition] =
-        BuildImageURLOptionsString(image_size, no_silhouette, options);
-  }
-
-  std::string new_path = base::JoinString(components, kURLPathSeparator);
+  std::string new_path = base::JoinString(new_components, kURLPathSeparator);
   GURL::Replacements replacement;
   replacement.SetPathStr(new_path);
   return old_url.ReplaceComponents(replacement);

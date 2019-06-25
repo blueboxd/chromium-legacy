@@ -50,7 +50,6 @@ public class TouchlessPermissionDialogModel {
                         .with(ModalDialogProperties.TITLE, delegate.getTitleText())
                         .with(ModalDialogProperties.TITLE_ICON, icon)
                         .with(ModalDialogProperties.CONTROLLER, controller)
-                        .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
                         .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
                         .build();
 

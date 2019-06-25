@@ -100,7 +100,8 @@ TEST_F(VideoCaptureDeviceClientTest, Minimal) {
   }
   device_client_->OnIncomingCapturedData(
       data, kScratchpadSizeInBytes, kFrameFormat, kColorSpace,
-      0 /*clockwise rotation*/, base::TimeTicks(), base::TimeDelta());
+      0 /* clockwise rotation */, false /* flip_y */, base::TimeTicks(),
+      base::TimeDelta());
 
   const gfx::Size kBufferDimensions(10, 10);
   const VideoCaptureFormat kFrameFormatNV12(
@@ -139,7 +140,8 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
   EXPECT_CALL(*receiver_, MockOnFrameReadyInBuffer(_, _, _)).Times(0);
   device_client_->OnIncomingCapturedData(
       data, kScratchpadSizeInBytes, kFrameFormat, kColorSpace,
-      0 /*clockwise rotation*/, base::TimeTicks(), base::TimeDelta());
+      0 /* clockwise rotation */, false /* flip_y */, base::TimeTicks(),
+      base::TimeDelta());
 
   const gfx::Size kBufferDimensions(10, 10);
   const VideoCaptureFormat kFrameFormatNV12(
@@ -185,13 +187,16 @@ TEST_F(VideoCaptureDeviceClientTest, DropsFrameIfNoBuffer) {
   // Pass three frames. The third will be dropped.
   device_client_->OnIncomingCapturedData(
       data, kScratchpadSizeInBytes, kFrameFormat, kColorSpace,
-      0 /*clockwise rotation*/, base::TimeTicks(), base::TimeDelta());
+      0 /* clockwise rotation */, false /* flip_y */, base::TimeTicks(),
+      base::TimeDelta());
   device_client_->OnIncomingCapturedData(
       data, kScratchpadSizeInBytes, kFrameFormat, kColorSpace,
-      0 /*clockwise rotation*/, base::TimeTicks(), base::TimeDelta());
+      0 /* clockwise rotation */, false /* flip_y */, base::TimeTicks(),
+      base::TimeDelta());
   device_client_->OnIncomingCapturedData(
       data, kScratchpadSizeInBytes, kFrameFormat, kColorSpace,
-      0 /*clockwise rotation*/, base::TimeTicks(), base::TimeDelta());
+      0 /* clockwise rotation */, false /* flip_y */, base::TimeTicks(),
+      base::TimeDelta());
   Mock::VerifyAndClearExpectations(receiver_);
 }
 
@@ -237,7 +242,7 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureGoodPixelFormats) {
     device_client_->OnIncomingCapturedData(
         data, params.requested_format.ImageAllocationSize(),
         params.requested_format, kColorSpace, 0 /* clockwise_rotation */,
-        base::TimeTicks(), base::TimeDelta());
+        false /* flip_y */, base::TimeTicks(), base::TimeDelta());
     Mock::VerifyAndClearExpectations(receiver_);
   }
 }
@@ -277,7 +282,7 @@ TEST_F(VideoCaptureDeviceClientTest, CheckRotationsAndCrops) {
     device_client_->OnIncomingCapturedData(
         data, params.requested_format.ImageAllocationSize(),
         params.requested_format, gfx::ColorSpace(), size_and_rotation.rotation,
-        base::TimeTicks(), base::TimeDelta());
+        false /* flip_y */, base::TimeTicks(), base::TimeDelta());
 
     EXPECT_EQ(coded_size.width(), size_and_rotation.output_resolution.width());
     EXPECT_EQ(coded_size.height(),

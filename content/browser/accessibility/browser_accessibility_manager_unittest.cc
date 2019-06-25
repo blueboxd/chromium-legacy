@@ -1589,8 +1589,9 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
           initial_state, test_browser_accessibility_delegate_.get(),
           new CountedBrowserAccessibilityFactory()));
 
-  ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(2, manager->GetFocus()->GetId());
+  EXPECT_EQ(1, manager->GetRoot()->GetId());
+  ASSERT_NE(nullptr, manager->GetFocus());
+  EXPECT_EQ(2, manager->GetFocus()->GetId());
 
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
@@ -1604,8 +1605,9 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
-  ASSERT_EQ(3, manager->GetRoot()->GetId());
-  ASSERT_EQ(3, manager->GetFocus()->GetId());
+  EXPECT_EQ(3, manager->GetRoot()->GetId());
+  ASSERT_NE(nullptr, manager->GetFocus());
+  EXPECT_EQ(3, manager->GetFocus()->GetId());
 }
 
 TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
@@ -1634,8 +1636,9 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
           initial_state, test_browser_accessibility_delegate_.get(),
           new CountedBrowserAccessibilityFactory()));
 
-  ASSERT_EQ(1, manager->GetRoot()->GetId());
-  ASSERT_EQ(2, manager->GetFocus()->GetId());
+  EXPECT_EQ(1, manager->GetRoot()->GetId());
+  ASSERT_NE(nullptr, manager->GetFocus());
+  EXPECT_EQ(2, manager->GetFocus()->GetId());
 
   // Now replace the tree with a new tree consisting of a single root.
   ui::AXNodeData root2;
@@ -1651,8 +1654,9 @@ TEST_F(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
-  ASSERT_EQ(3, manager->GetRoot()->GetId());
-  ASSERT_EQ(3, manager->GetFocus()->GetId());
+  EXPECT_EQ(3, manager->GetRoot()->GetId());
+  ASSERT_NE(nullptr, manager->GetFocus());
+  EXPECT_EQ(3, manager->GetFocus()->GetId());
 }
 
 TEST_F(BrowserAccessibilityManagerTest, TreeUpdatesAreMergedWhenPossible) {

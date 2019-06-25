@@ -91,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityObjectModelBrowserTest,
   waiter2.WaitForNotification();
 
   BrowserAccessibility* focus = GetManager()->GetFocus();
-  EXPECT_EQ(focus->GetId(), button->GetId());
+  ASSERT_NE(nullptr, focus);
+  EXPECT_EQ(button->GetId(), focus->GetId());
 }
 
 }  // namespace content

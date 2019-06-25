@@ -22,7 +22,7 @@ class TestBrowserAccessibilityDelegate : public BrowserAccessibilityDelegate {
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
-  bool AccessibilityIsMainFrame() override;
+  bool AccessibilityIsMainFrame() const override;
 
   bool got_fatal_error() const;
   void reset_got_fatal_error();

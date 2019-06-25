@@ -17,9 +17,9 @@
 namespace blink {
 
 NativeFileSystemWritableFileStream::NativeFileSystemWritableFileStream(
-    NativeFileSystemFileHandle* file)
-    : file_(file) {
-  DCHECK(file_);
+    mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr)
+    : mojo_ptr_(std::move(mojo_ptr)) {
+  DCHECK(mojo_ptr_);
 }
 
 ScriptPromise NativeFileSystemWritableFileStream::write(
@@ -57,7 +57,7 @@ ScriptPromise NativeFileSystemWritableFileStream::write(
 ScriptPromise NativeFileSystemWritableFileStream::truncate(
     ScriptState* script_state,
     uint64_t size) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -65,7 +65,7 @@ ScriptPromise NativeFileSystemWritableFileStream::truncate(
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  file_->MojoHandle()->Truncate(
+  mojo_ptr_->Truncate(
       size, WTF::Bind(&NativeFileSystemWritableFileStream::TruncateComplete,
                       WrapPersistent(this)));
   return result;
@@ -100,7 +100,7 @@ ScriptPromise NativeFileSystemWritableFileStream::WriteBlob(
     ScriptState* script_state,
     uint64_t position,
     Blob* blob) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -108,10 +108,9 @@ ScriptPromise NativeFileSystemWritableFileStream::WriteBlob(
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  file_->MojoHandle()->Write(
-      position, blob->AsMojoBlob(),
-      WTF::Bind(&NativeFileSystemWritableFileStream::WriteComplete,
-                WrapPersistent(this)));
+  mojo_ptr_->Write(position, blob->AsMojoBlob(),
+                   WTF::Bind(&NativeFileSystemWritableFileStream::WriteComplete,
+                             WrapPersistent(this)));
   return result;
 }
 
@@ -170,7 +169,6 @@ void NativeFileSystemWritableFileStream::Serialize(
 
 void NativeFileSystemWritableFileStream::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  visitor->Trace(file_);
   visitor->Trace(pending_operation_);
 }
 

@@ -917,7 +917,8 @@ bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
 void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
                                           const VideoCaptureFormat& format,
-                                          base::TimeDelta timestamp) {
+                                          base::TimeDelta timestamp,
+                                          bool flip_y) {
   if (first_ref_time_.is_null())
     first_ref_time_ = base::TimeTicks::Now();
 
@@ -934,7 +935,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   // DXVA_NominalRangeto build a gfx::ColorSpace. See http://crbug.com/959992.
   client_->OnIncomingCapturedData(buffer, length, format, gfx::ColorSpace(),
                                   GetCameraRotation(device_descriptor_.facing),
-                                  base::TimeTicks::Now(), timestamp);
+                                  flip_y, base::TimeTicks::Now(), timestamp);
 
   while (!take_photo_callbacks_.empty()) {
     TakePhotoCallback cb = std::move(take_photo_callbacks_.front());

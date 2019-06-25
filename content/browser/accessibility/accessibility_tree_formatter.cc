@@ -101,6 +101,9 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;
 
+  // Normalize any Windows-style line endings by removing \r.
+  base::RemoveChars(line, base::ASCIIToUTF16("\r"), &line);
+
   // Replace literal newlines with "<newline>"
   base::ReplaceChars(line, base::ASCIIToUTF16("\n"),
                      base::ASCIIToUTF16("<newline>"), &line);

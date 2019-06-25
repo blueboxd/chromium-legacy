@@ -517,9 +517,9 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
 }
 
 TEST_F(PreviewsHintsTest,
-       IsWhitelistedForSecondOptimizationNoScriptWithFirstDisabled) {
+       IsWhitelistedForSecondOptimizationDeferAllScriptWithFirstDisabled) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitWithFeatures({features::kNoScriptPreviews},
+  scoped_list.InitWithFeatures({features::kDeferAllScriptPreviews},
                                {features::kResourceLoadingHints});
   optimization_guide::proto::Configuration config;
 
@@ -528,7 +528,7 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with NOSCRIPT optimization
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =
@@ -537,7 +537,8 @@ TEST_F(PreviewsHintsTest,
       optimization_guide::proto::RESOURCE_LOADING);
   optimization_guide::proto::Optimization* optimization2 =
       page_hint1->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization2->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
 
   ParseConfig(config);
 
@@ -547,7 +548,7 @@ TEST_F(PreviewsHintsTest,
   std::string serialized_hint_version_string;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold,
+      PreviewsType::DEFER_ALL_SCRIPT, &inflation_percent, &ect_threshold,
       &serialized_hint_version_string));
   EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
@@ -559,7 +560,7 @@ TEST_F(PreviewsHintsTest,
        IsWhitelistedForSecondOptimizationResourceLoadingWithFirstDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures({features::kResourceLoadingHints},
-                               {features::kNoScriptPreviews});
+                               {features::kDeferAllScriptPreviews});
   optimization_guide::proto::Configuration config;
 
   optimization_guide::proto::Hint* hint1 = config.add_hints();
@@ -567,12 +568,13 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with NOSCRIPT optimization
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =
       page_hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization1->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
   optimization_guide::proto::Optimization* optimization2 =
       page_hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(

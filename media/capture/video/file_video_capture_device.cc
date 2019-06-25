@@ -434,7 +434,8 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   // Leave the color space unset for compatibility purposes but this
   // information should be retrieved from the container when possible.
   client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_,
-                                  gfx::ColorSpace(), 0, current_time,
+                                  gfx::ColorSpace(), 0 /* clockwise_rotation */,
+                                  false /* flip_y */, current_time,
                                   current_time - first_ref_time_);
 
   // Process waiting photo callbacks

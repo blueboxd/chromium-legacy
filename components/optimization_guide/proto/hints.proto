@@ -118,6 +118,9 @@ enum OptimizationType {
   LITE_PAGE_REDIRECT = 3;
   // This optimization does nothing (no-op).
   OPTIMIZATION_NONE = 4;
+  // This optimization defers execution of parser-blocking script until after
+  // parsing completes.
+  DEFER_ALL_SCRIPT = 5;
 }
 
 // Presents semantics for how page load URLs should be matched.

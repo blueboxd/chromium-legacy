@@ -25,8 +25,10 @@ static DWORD GetArea(const BITMAPINFOHEADER& info_header) {
 }
 
 SinkInputPin::SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer)
-    : PinBase(filter), requested_frame_rate_(0), observer_(observer) {
-}
+    : PinBase(filter),
+      requested_frame_rate_(0),
+      flip_y_(false),
+      observer_(observer) {}
 
 void SinkInputPin::SetRequestedMediaFormat(
     VideoPixelFormat pixel_format,
@@ -93,7 +95,8 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
   }
   if (sub_type == MEDIASUBTYPE_RGB32 &&
       pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
+    resulting_format_.pixel_format = PIXEL_FORMAT_ARGB;
+    flip_y_ = true;
     return true;
   }
   if (sub_type == kMediaSubTypeY16 &&
@@ -229,7 +232,8 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
     timestamp = base::TimeDelta::FromMicroseconds(start_time / 10);
   }
 
-  observer_->FrameReceived(buffer, length, resulting_format_, timestamp);
+  observer_->FrameReceived(buffer, length, resulting_format_, timestamp,
+                           flip_y_);
   return S_OK;
 }
 

@@ -123,6 +123,7 @@ class ChromeDownloadManagerDelegate
           web_contents_getter,
       const GURL& url,
       const std::string& request_method,
+      base::Optional<url::Origin> request_initiator,
       content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,

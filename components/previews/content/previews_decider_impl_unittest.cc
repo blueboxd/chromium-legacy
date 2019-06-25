@@ -193,14 +193,16 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       PreviewsType type,
       net::EffectiveConnectionType* ect_threshold) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
-                type == PreviewsType::RESOURCE_LOADING_HINTS);
+                type == PreviewsType::RESOURCE_LOADING_HINTS ||
+                type == PreviewsType::DEFER_ALL_SCRIPT);
     // Use default ect trigger threshold for the preview type.
     *ect_threshold = previews::params::GetECTThresholdForPreview(type);
     if (type == PreviewsType::NOSCRIPT) {
       return url.host().compare("whitelisted.example.com") == 0 ||
              url.host().compare("noscript_only_whitelisted.example.com") == 0;
     }
-    if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
+    if (type == PreviewsType::RESOURCE_LOADING_HINTS ||
+        type == PreviewsType::DEFER_ALL_SCRIPT) {
       return url.host().compare("whitelisted.example.com") == 0;
     }
     return false;
@@ -425,6 +427,7 @@ class PreviewsDeciderImplTest : public ProtoDatabaseProviderTestBase {
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT)] = 0;
 
     std::unique_ptr<TestPreviewsDeciderImpl> previews_decider_impl =
         std::make_unique<TestPreviewsDeciderImpl>(&clock_);
@@ -1186,7 +1189,7 @@ TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kLitePageServerPreviews,
        features::kOptimizationHints, features::kNoScriptPreviews,
-       features::kResourceLoadingHints},
+       features::kResourceLoadingHints, features::kDeferAllScriptPreviews},
       {});
   InitializeUIService();
 
@@ -1202,6 +1205,11 @@ TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::RESOURCE_LOADING_HINTS));
+
+  // DeferAllScript is allowed before commit without hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::DEFER_ALL_SCRIPT));
 
   // LitePageRedirect is not allowed before commit without hints.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
@@ -1221,6 +1229,9 @@ TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::DEFER_ALL_SCRIPT));
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::LITE_PAGE_REDIRECT));
@@ -1406,6 +1417,185 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
 
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
+        static_cast<int>(
+            PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
+        1);
+  }
+}
+
+TEST_F(PreviewsDeciderImplTest, DeferAllScriptNotAllowedByDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOptimizationHints}, {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::DEFER_ALL_SCRIPT));
+}
+
+TEST_F(PreviewsDeciderImplTest,
+       DeferAllScriptDisallowedWithoutOptimizationHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kDeferAllScriptPreviews},
+      {features::kOptimizationHints});
+  InitializeUIService();
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::DEFER_ALL_SCRIPT));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+}
+
+TEST_F(PreviewsDeciderImplTest, DeferAllScriptAllowedByFeatureAndWhitelist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kDeferAllScriptPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  for (const auto& test_ect : {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+                               net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+                               net::EFFECTIVE_CONNECTION_TYPE_3G}) {
+    ReportEffectiveConnectionType(test_ect);
+
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+
+    // Check whitelisted URL.
+    EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+        &user_data, GURL("https://whitelisted.example.com"), false,
+        PreviewsType::DEFER_ALL_SCRIPT));
+    EXPECT_EQ(test_ect, user_data.navigation_ect());
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.DeferAllScript",
+        static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+  }
+}
+
+TEST_F(PreviewsDeciderImplTest,
+       DeferAllScriptAllowedByFeatureWithoutKnownHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kDeferAllScriptPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+
+  // Verify preview allowed initially for url without known hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::DEFER_ALL_SCRIPT));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.DeferAllScript",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+}
+
+TEST_F(PreviewsDeciderImplTest, DeferAllScriptCommitTimeWhitelistCheck) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kDeferAllScriptPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  InitializeOptimizationGuideHints();
+
+  // First verify not allowed for non-whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://www.google.com"),
+        PreviewsType::DEFER_ALL_SCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.DeferAllScript",
+        static_cast<int>(
+            PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+        1);
+  }
+
+  // Now verify preview for whitelisted url.
+  {
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_TRUE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::DEFER_ALL_SCRIPT));
+
+    // Expect no eligibility logging.
+    histogram_tester.ExpectTotalCount(
+        "Previews.EligibilityReason.DeferAllScript", 0);
+  }
+
+  // Verify preview not allowed for whitelisted url when network is not slow.
+  {
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_4G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::DEFER_ALL_SCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.DeferAllScript",
+        static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
+  }
+
+  // Verify preview not allowed for whitelisted url for unknown network quality.
+  {
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::DEFER_ALL_SCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.DeferAllScript",
+        static_cast<int>(PreviewsEligibilityReason::DEVICE_OFFLINE), 1);
+  }
+
+  // Verify preview not allowed for session limited ECT threshold.
+  {
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Offline"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::DEFER_ALL_SCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.DeferAllScript",
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
         1);

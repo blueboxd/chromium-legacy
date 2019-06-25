@@ -104,7 +104,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   void FrameReceived(const uint8_t* buffer,
                      int length,
                      const VideoCaptureFormat& format,
-                     base::TimeDelta timestamp) override;
+                     base::TimeDelta timestamp,
+                     bool flip_y) override;
   void FrameDropped(VideoCaptureFrameDropReason reason) override;
 
   bool CreateCapabilityMap();

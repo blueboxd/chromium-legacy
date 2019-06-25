@@ -329,7 +329,11 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     return gpu::ContextResult::kTransientFailure;
   }
 
-  if (!context->GetGLStateRestorer()) {
+  // The GLStateRestorer is not used with the passthrough command decoder
+  // because not all state is tracked in the decoder. Virtualized contexts are
+  // also not used.
+  if (!context->GetGLStateRestorer() &&
+      !context_group_->use_passthrough_cmd_decoder()) {
     context->SetGLStateRestorer(
         new GLStateRestorerImpl(gles2_decoder_->AsWeakPtr()));
   }

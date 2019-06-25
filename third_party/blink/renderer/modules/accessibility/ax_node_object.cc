@@ -2876,7 +2876,9 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().native_source = kAXTextFromNativeHTMLLabel;
     }
 
-    LabelsNodeList* labels = html_element->labels();
+    LabelsNodeList* labels = nullptr;
+    if (AXObjectCache().MayHaveHTMLLabel(*html_element))
+      labels = html_element->labels();
     if (labels && labels->length() > 0) {
       HeapVector<Member<Element>> label_elements;
       for (unsigned label_index = 0; label_index < labels->length();

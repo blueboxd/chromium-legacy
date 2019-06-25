@@ -295,10 +295,10 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
   DCHECK(identity_manager);
   const CoreAccountInfo account_info =
       identity_manager->GetPrimaryAccountInfo();
+
   // A regular signed-in (i.e., non-login) profile should always have an email.
-  // TODO(crbug.com/857494): Enable this DCHECK once all browser tests create
-  // correctly signed in profiles.
-  // DCHECK(!account_info.email.empty());
+  DCHECK(!account_info.email.empty());
+
   return AccountIdFromAccountInfo(account_info);
 }
 
@@ -364,17 +364,16 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
       profile()->GetPrefs(), multidevice_setup_client_));
 
-  // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
-  // shutdown. Revisit this condition after migration is fully completed.
+  // TODO(crbug.com/857494): Thousands of unrelated browser_tests provide a
+  // profile with an empty email to this service, causing crashes further on.
+  // Investigate what this service is doing so differently (i.e., incorrectly)
+  // from others that causes such issues with so many browser_tests.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    // Note: There is no local state in tests.
-    if (g_browser_process->local_state()) {
-      pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
-                                              GetAccountId());
-    }
-
-    LoadRemoteDevices();
+    pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
+                                            GetAccountId());
   }
+
+  LoadRemoteDevices();
 
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
@@ -394,6 +393,8 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
   device_sync_client_->RemoveObserver(this);
 
   multidevice_setup_client_->RemoveObserver(this);
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {

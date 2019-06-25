@@ -48,8 +48,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
-  BrowserAccessibility* GetFocus() override;
-  bool CanFireEvents() override;
+  BrowserAccessibility* GetFocus() const override;
+  bool CanFireEvents() const override;
   gfx::Rect GetViewBounds() override;
 
   void FireFocusEvent(BrowserAccessibility* node) override;
@@ -84,7 +84,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
-  bool ShouldFireEventForNode(BrowserAccessibility* node);
+  bool ShouldFireEventForNode(BrowserAccessibility* node) const;
 
  private:
   void HandleSelectedStateChanged(BrowserAccessibility* node);

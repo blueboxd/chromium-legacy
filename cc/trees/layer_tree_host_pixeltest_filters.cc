@@ -76,25 +76,31 @@ class LayerTreeHostFiltersPixelTest
   bool layer_transforms_should_scale_layer_contents_ = true;
 };
 
+LayerTreeTest::RendererType const kRendererTypes[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+    LayerTreeTest::RENDERER_SOFTWARE,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
+};
+
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE
-#if defined(ENABLE_CC_VULKAN_TESTS)
-                                           ,
-                                           LayerTreeTest::RENDERER_SKIA_VK
-#endif
-                                           ));
+                         ::testing::ValuesIn(kRendererTypes));
 
 using LayerTreeHostFiltersPixelTestNonVulkan = LayerTreeHostFiltersPixelTest;
+
+LayerTreeTest::RendererType const kRendererTypesNonVulkan[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+    LayerTreeTest::RENDERER_SOFTWARE,
+};
 
 // TODO(crbug.com/963446): Enable these tests for Vulkan.
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTestNonVulkan,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE));
+                         ::testing::ValuesIn(kRendererTypesNonVulkan));
 
 using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
 
@@ -105,15 +111,17 @@ INSTANTIATE_TEST_SUITE_P(,
 
 using LayerTreeHostFiltersPixelTestGPU = LayerTreeHostFiltersPixelTest;
 
+LayerTreeTest::RendererType const kRendererTypesGpu[] = {
+    LayerTreeTest::RENDERER_GL,
+    LayerTreeTest::RENDERER_SKIA_GL,
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    LayerTreeTest::RENDERER_SKIA_VK,
+#endif
+};
+
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTestGPU,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL
-#if defined(ENABLE_CC_VULKAN_TESTS)
-                                           ,
-                                           LayerTreeTest::RENDERER_SKIA_VK
-#endif
-                                           ));
+                         ::testing::ValuesIn(kRendererTypesGpu));
 
 TEST_P(LayerTreeHostFiltersPixelTestGPU, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
@@ -395,14 +403,7 @@ class LayerTreeHostFiltersScaledPixelTest
 
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersScaledPixelTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL,
-                                           LayerTreeTest::RENDERER_SOFTWARE
-#if defined(ENABLE_CC_VULKAN_TESTS)
-                                           ,
-                                           LayerTreeTest::RENDERER_SKIA_VK
-#endif
-                                           ));
+                         ::testing::ValuesIn(kRendererTypes));
 
 TEST_P(LayerTreeHostFiltersScaledPixelTest, StandardDpi) {
   RunPixelTestType(100, 1.f);
@@ -1113,13 +1114,7 @@ class BackdropFilterWithDeviceScaleFactorTest
 // when fixed.
 INSTANTIATE_TEST_SUITE_P(,
                          BackdropFilterWithDeviceScaleFactorTest,
-                         ::testing::Values(LayerTreeTest::RENDERER_GL,
-                                           LayerTreeTest::RENDERER_SKIA_GL
-#if defined(ENABLE_CC_VULKAN_TESTS)
-                                           ,
-                                           LayerTreeTest::RENDERER_SKIA_VK
-#endif
-                                           ));
+                         ::testing::ValuesIn(kRendererTypesGpu));
 
 TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
   RunPixelTestType(

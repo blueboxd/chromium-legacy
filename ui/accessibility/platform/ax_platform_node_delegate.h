@@ -146,8 +146,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Platforms with touch accessibility use a different asynchronous interface.
   virtual gfx::NativeViewAccessible HitTestSync(int x, int y) = 0;
 
-  // Return the node within this node's subtree (inclusive) that currently
-  // has focus.
+  // Return the node within this node's subtree (inclusive) that currently has
+  // focus, or return nullptr if this subtree is not connected to the top
+  // document through its ancestry chain.
   virtual gfx::NativeViewAccessible GetFocus() = 0;
 
   // Get whether this node is offscreen.

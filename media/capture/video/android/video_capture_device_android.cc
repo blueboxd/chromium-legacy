@@ -629,9 +629,9 @@ void VideoCaptureDeviceAndroid::SendIncomingDataToClient(
   base::AutoLock lock(lock_);
   if (!client_)
     return;
-  client_->OnIncomingCapturedData(data, length, capture_format_,
-                                  capture_color_space_, rotation,
-                                  reference_time, timestamp);
+  client_->OnIncomingCapturedData(
+      data, length, capture_format_, capture_color_space_, rotation,
+      false /* flip_y */, reference_time, timestamp);
 }
 
 VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {

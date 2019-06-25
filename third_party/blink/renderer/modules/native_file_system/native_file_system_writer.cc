@@ -25,10 +25,8 @@
 namespace blink {
 
 NativeFileSystemWriter::NativeFileSystemWriter(
-    NativeFileSystemFileHandle* file,
     mojom::blink::NativeFileSystemFileWriterPtr mojo_ptr)
-    : mojo_ptr_(std::move(mojo_ptr)), file_(file) {
-  DCHECK(file_);
+    : mojo_ptr_(std::move(mojo_ptr)) {
   DCHECK(mojo_ptr_);
 }
 
@@ -67,7 +65,7 @@ ScriptPromise NativeFileSystemWriter::write(
 ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
                                                 uint64_t position,
                                                 Blob* blob) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -75,7 +73,7 @@ ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  file_->MojoHandle()->Write(
+  mojo_ptr_->Write(
       position, blob->AsMojoBlob(),
       WTF::Bind(&NativeFileSystemWriter::WriteComplete, WrapPersistent(this)));
   return result;
@@ -173,7 +171,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
     uint64_t position,
     ReadableStream* stream,
     ExceptionState& exception_state) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -193,7 +191,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
   ScriptPromise result = pending_operation_->Promise();
   auto* client = MakeGarbageCollected<StreamWriterClient>(this);
   stream_loader_->Start(consumer, client);
-  file_->MojoHandle()->WriteStream(
+  mojo_ptr_->WriteStream(
       position, client->TakeDataPipe(),
       WTF::Bind(&StreamWriterClient::WriteComplete, WrapPersistent(client)));
   return result;
@@ -201,7 +199,7 @@ ScriptPromise NativeFileSystemWriter::WriteStream(
 
 ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
                                                uint64_t size) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));
@@ -209,14 +207,13 @@ ScriptPromise NativeFileSystemWriter::truncate(ScriptState* script_state,
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
-  file_->MojoHandle()->Truncate(
-      size, WTF::Bind(&NativeFileSystemWriter::TruncateComplete,
-                      WrapPersistent(this)));
+  mojo_ptr_->Truncate(size, WTF::Bind(&NativeFileSystemWriter::TruncateComplete,
+                                      WrapPersistent(this)));
   return result;
 }
 
 ScriptPromise NativeFileSystemWriter::close(ScriptState* script_state) {
-  if (!file_ || pending_operation_) {
+  if (!mojo_ptr_ || pending_operation_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError));

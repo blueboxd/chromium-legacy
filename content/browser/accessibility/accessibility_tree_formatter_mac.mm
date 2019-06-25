@@ -43,12 +43,16 @@ const char kRangeLenDictAttr[] = "len";
 
 std::unique_ptr<base::DictionaryValue> PopulatePosition(
     const BrowserAccessibility& node) {
+  DCHECK(node.instance_active());
+  BrowserAccessibilityManager* root_manager = node.manager()->GetRootManager();
+  DCHECK(root_manager);
+
   std::unique_ptr<base::DictionaryValue> position(new base::DictionaryValue);
   // The NSAccessibility position of an object is in global coordinates and
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
-  BrowserAccessibility* root = node.manager()->GetRootManager()->GetRoot();
+  BrowserAccessibility* root = root_manager->GetRoot();
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
   NSPoint root_position = [[cocoa_root position] pointValue];
   NSSize root_size = [[cocoa_root size] sizeValue];

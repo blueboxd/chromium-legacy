@@ -673,6 +673,41 @@ TEST_F(PreviewsOptimizationGuideTest,
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
+       ProcessHintsWithValidCommandLineOverrideForDeferAllScript) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitWithFeatures({features::kDeferAllScriptPreviews}, {});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint = config.add_hints();
+  hint->set_key("somedomain.org");
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("defer_default_2g");
+  optimization_guide::proto::Optimization* optimization =
+      page_hint->add_whitelisted_optimizations();
+  optimization->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
+
+  std::string encoded_config;
+  config.SerializeToString(&encoded_config);
+  base::Base64Encode(encoded_config, &encoded_config);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kHintsProtoOverride, encoded_config);
+  CreateServiceAndGuide();
+
+  // Verify page matches and ECT thresholds.
+  PreviewsUserData user_data(kDefaultPageId);
+  net::EffectiveConnectionType ect_threshold;
+
+  EXPECT_TRUE(guide()->GetHintsForTesting());
+  EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
+      &user_data, GURL("https://somedomain.org/defer_default_2g"),
+      PreviewsType::DEFER_ALL_SCRIPT, &ect_threshold));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
        ProcessHintsWithValidCommandLineOverrideAndPreexistingData) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures(

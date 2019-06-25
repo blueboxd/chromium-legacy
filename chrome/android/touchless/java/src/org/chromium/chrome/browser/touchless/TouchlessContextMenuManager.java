@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
@@ -59,12 +59,12 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         }
     }
 
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
     private final ModalDialogManager mDialogManager;
     private PropertyModel mTouchlessMenuModel;
     private ModalDialogManager mModalDialogManager;
 
-    public TouchlessContextMenuManager(Activity activity, ModalDialogManager dialogManager,
+    public TouchlessContextMenuManager(ChromeActivity activity, ModalDialogManager dialogManager,
             NativePageNavigationDelegate navigationDelegate,
             TouchEnabledDelegate touchEnabledDelegate, Runnable closeContextMenuCallback,
             String userActionPrefix) {

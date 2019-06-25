@@ -233,6 +233,8 @@ class MODULES_EXPORT AXObjectCacheImpl
                       const Vector<String>& id_vector,
                       HeapVector<Member<AXObject>>& owned_children);
 
+  bool MayHaveHTMLLabel(const HTMLElement& elem);
+
   // Synchronously returns whether or not we currently have permission to
   // call AOM event listeners.
   bool CanCallAOMEventListeners() const;

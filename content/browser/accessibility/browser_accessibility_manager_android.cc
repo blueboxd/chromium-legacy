@@ -63,9 +63,9 @@ bool BrowserAccessibilityManagerAndroid::ShouldExposePasswordText() {
   return wcax ? wcax->ShouldExposePasswordText() : false;
 }
 
-BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() {
+BrowserAccessibility* BrowserAccessibilityManagerAndroid::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
-  if (!focus->IsPlainTextField())
+  if (focus && !focus->IsPlainTextField())
     return GetActiveDescendant(focus);
   return focus;
 }
@@ -160,7 +160,8 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       if (node->manager() == GetRootManager()) {
         auto* android_focused =
             static_cast<BrowserAccessibilityAndroid*>(GetFocus());
-        wcax->HandlePageLoaded(android_focused->unique_id());
+        if (android_focused)
+          wcax->HandlePageLoaded(android_focused->unique_id());
       }
       break;
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:

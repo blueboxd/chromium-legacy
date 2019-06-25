@@ -310,7 +310,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
-  bool AccessibilityIsMainFrame() override;
+  bool AccessibilityIsMainFrame() const override;
 
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(RenderProcessHost* host,
@@ -402,7 +402,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
-  FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+  FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
   // Methods to add/remove/reset/query child FrameTreeNodes of this frame.
   // See class-level comment for FrameTreeNode for how the frame tree is

@@ -208,9 +208,6 @@
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
         },
-        # TODO(crbug.com/961548): Promote these out of experiment if/when they
-        # pass.
-        'experiment_percentage': 100,
       },
     },
 

@@ -115,7 +115,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   waiter2.WaitForNotification();
 
   BrowserAccessibility* focus = GetManager()->GetFocus();
-  EXPECT_EQ(focus->GetId(), target->GetId());
+  ASSERT_NE(nullptr, focus);
+  EXPECT_EQ(target->GetId(), focus->GetId());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,

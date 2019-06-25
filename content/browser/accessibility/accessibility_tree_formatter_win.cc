@@ -277,11 +277,14 @@ std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterWin::BuildAccessibilityTree(
     BrowserAccessibility* start_node) {
   DCHECK(start_node);
+  DCHECK(start_node->instance_active());
+  BrowserAccessibilityManager* root_manager =
+      start_node->manager()->GetRootManager();
+  DCHECK(root_manager);
 
   base::win::ScopedVariant variant_self(CHILDID_SELF);
   LONG root_x, root_y, root_width, root_height;
-  BrowserAccessibility* root =
-      start_node->manager()->GetRootManager()->GetRoot();
+  BrowserAccessibility* root = root_manager->GetRoot();
   HRESULT hr = ToBrowserAccessibilityWin(root)->GetCOM()->accLocation(
       &root_x, &root_y, &root_width, &root_height, variant_self);
   DCHECK(SUCCEEDED(hr));

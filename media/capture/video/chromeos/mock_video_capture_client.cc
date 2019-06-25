@@ -44,14 +44,14 @@ void MockVideoCaptureClient::OnIncomingCapturedData(
     const VideoCaptureFormat& format,
     const gfx::ColorSpace& color_space,
     int rotation,
+    bool flip_y,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     int frame_feedback_id) {
   ASSERT_GT(length, 0);
   ASSERT_TRUE(data);
-  if (frame_cb_) {
+  if (frame_cb_)
     std::move(frame_cb_).Run();
-  }
 }
 
 void MockVideoCaptureClient::OnIncomingCapturedGfxBuffer(
@@ -63,9 +63,8 @@ void MockVideoCaptureClient::OnIncomingCapturedGfxBuffer(
     int frame_feedback_id) {
   ASSERT_TRUE(buffer);
   ASSERT_GT(buffer->GetSize().width() * buffer->GetSize().height(), 0);
-  if (frame_cb_) {
+  if (frame_cb_)
     std::move(frame_cb_).Run();
-  }
 }
 
 // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.

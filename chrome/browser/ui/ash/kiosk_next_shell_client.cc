@@ -4,15 +4,7 @@
 
 #include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 
-#include <utility>
-
-#include "apps/launcher.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "components/account_id/account_id.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/constants.h"
 
 namespace {
 
@@ -41,13 +33,5 @@ KioskNextShellClient* KioskNextShellClient::Get() {
 }
 
 void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
-  has_launched_ = true;
-  Profile* profile =
-      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          extension_misc::kKioskNextHomeAppId);
-  DCHECK(app);
-  apps::LaunchPlatformApp(profile, app,
-                          extensions::AppLaunchSource::kSourceChromeInternal);
+  // TODO(https://crbug.com/977019): Finish cleaning up this class.
 }

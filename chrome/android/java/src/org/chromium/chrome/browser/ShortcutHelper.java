@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -39,6 +40,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappActivity;
@@ -48,6 +51,7 @@ import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
+import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -189,20 +193,30 @@ public class ShortcutHelper {
             final String userTitle, final String name, final String shortName, final String iconUrl,
             final Bitmap icon, boolean isIconAdaptive, @WebDisplayMode final int displayMode,
             final int orientation, final int source, final long themeColor,
-            final long backgroundColor, final long callbackPointer) {
+            final long backgroundColor, final long callbackPointer,
+            final boolean isShortcutAsWebapp) {
         new AsyncTask<Intent>() {
             @Override
             protected Intent doInBackground() {
                 // Encoding {@link icon} as a string and computing the mac are expensive.
 
+                // Shortcuts as Webapps on O+ launch into a non-exported component for verification.
+                boolean usesMacForVerification =
+                        !isShortcutAsWebapp || Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+
                 // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
                 String encodedIcon = encodeBitmapAsString(icon);
 
-                Intent shortcutIntent = createWebappShortcutIntent(id,
-                        sDelegate.getFullscreenAction(), url, scopeUrl, name, shortName,
-                        encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation, themeColor,
-                        backgroundColor, iconUrl.isEmpty(), isIconAdaptive);
-                shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
+                String action = usesMacForVerification
+                        ? sDelegate.getFullscreenAction()
+                        : WebappLauncherActivity.ACTION_START_SECURE_WEBAPP;
+                Intent shortcutIntent = createWebappShortcutIntent(id, action, url, scopeUrl, name,
+                        shortName, encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation,
+                        themeColor, backgroundColor, iconUrl.isEmpty(), isIconAdaptive);
+
+                if (usesMacForVerification) {
+                    shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
+                }
                 shortcutIntent.putExtra(EXTRA_SOURCE, source);
                 return shortcutIntent;
             }
@@ -213,11 +227,10 @@ public class ShortcutHelper {
                 // Store the webapp data so that it is accessible without the intent. Once this
                 // process is complete, call back to native code to start the splash image
                 // download.
-                WebappRegistry.getInstance().register(
-                        id, storage -> {
-                            storage.updateFromShortcutIntent(resultIntent);
-                            nativeOnWebappDataStored(callbackPointer);
-                        });
+                WebappRegistry.getInstance().register(id, storage -> {
+                    storage.updateFromShortcutIntent(resultIntent);
+                    if (callbackPointer != 0) nativeOnWebappDataStored(callbackPointer);
+                });
                 if (shouldShowToastWhenAddingShortcut()) {
                     showAddedToHomescreenToast(userTitle);
                 }
@@ -231,13 +244,23 @@ public class ShortcutHelper {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    public static void addShortcut(String id, String url, String userTitle, Bitmap icon,
-            boolean isIconAdaptive, int source) {
-        Context context = ContextUtils.getApplicationContext();
-        final Intent shortcutIntent = createShortcutIntent(url);
+    public static void addShortcut(@Nullable Tab tab, String id, String url, String userTitle,
+            Bitmap icon, boolean isIconAdaptive, int source, String iconUrl) {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            // There are no tabs in NoTouchMode, so we want to give shortcuts a more app-like
+            // experience.
+            long themeColor = (tab == null) ? MANIFEST_COLOR_INVALID_OR_MISSING
+                                            : TabThemeColorHelper.getColor(tab);
+            addWebapp(id, url, getScopeFromUrl(url), userTitle, userTitle, userTitle, iconUrl, icon,
+                    isIconAdaptive, WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT,
+                    source, themeColor, MANIFEST_COLOR_INVALID_OR_MISSING, 0 /* callbackPointer */,
+                    true /* isShortcutAsWebapp */);
+            return;
+        }
+        Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
-        shortcutIntent.setPackage(context.getPackageName());
+        shortcutIntent.setPackage(ContextUtils.getApplicationContext().getPackageName());
         sDelegate.addShortcutToHomescreen(userTitle, icon, isIconAdaptive, shortcutIntent);
         if (shouldShowToastWhenAddingShortcut()) {
             showAddedToHomescreenToast(userTitle);

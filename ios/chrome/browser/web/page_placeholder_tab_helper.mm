@@ -124,8 +124,15 @@ void PagePlaceholderTabHelper::DisplaySnapshotImage(UIImage* snapshot) {
   UIView* web_state_view = web_state_->GetView();
   NamedGuide* guide = [NamedGuide guideWithName:kContentAreaGuide
                                            view:web_state_view];
-  DCHECK(guide) << "The ContentArea named guide must be in the WebState view's "
-                   "hierarchy to properly position the page placeholder.";
+
+  // TODO(crbug.com/971364): It is a known issue that the guide may be nil,
+  // causing a crash when attempting to display the placeholder. Choose to not
+  // display the placeholder rather than crashing, since the placeholder is not
+  // critical to the user experience.
+  if (!guide) {
+    displaying_placeholder_ = false;
+    return;
+  }
   placeholder_view_.image = snapshot;
   [web_state_view addSubview:placeholder_view_];
   AddSameConstraints(guide, placeholder_view_);

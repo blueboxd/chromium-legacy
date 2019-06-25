@@ -74,11 +74,6 @@ def AssertUsesSdk(manifest_node,
   Will only assert if both the passed value is not None and the value of
   attribute exist.
   """
-  # TODO(crbug.com/891996): Activate once all dependency repos have been
-  # updated.
-  # pylint: disable=unreachable
-  return
-
   uses_sdk_node = manifest_node.find('./uses-sdk')
   if uses_sdk_node is None:
     return

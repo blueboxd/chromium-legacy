@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.webapps.TouchlessAddToHomescreenDialog;
@@ -16,14 +16,14 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
  * Add to homescreen manager specifically for touchless devices.
  */
 class TouchlessAddToHomescreenManager implements AddToHomescreenDialog.Delegate {
-    private final Activity mActivity;
+    private final ChromeActivity mActivity;
     private final ModalDialogManager mDialogManager;
     private final String mUrl;
     private final String mTitle;
     private final Bitmap mIconBitmap;
 
-    public TouchlessAddToHomescreenManager(Activity activity, ModalDialogManager dialogManager,
-            String url, String title, Bitmap iconBitmap) {
+    public TouchlessAddToHomescreenManager(ChromeActivity activity,
+            ModalDialogManager dialogManager, String url, String title, Bitmap iconBitmap) {
         mActivity = activity;
         mDialogManager = dialogManager;
         mUrl = url;
@@ -42,7 +42,8 @@ class TouchlessAddToHomescreenManager implements AddToHomescreenDialog.Delegate 
 
     @Override
     public void addToHomescreen(String title) {
-        ShortcutHelper.addShortcut(mUrl, mUrl, title, mIconBitmap, false, 0);
+        ShortcutHelper.addShortcut(
+                mActivity.getActivityTab(), mUrl, mUrl, title, mIconBitmap, false, 0, "");
     }
 
     @Override

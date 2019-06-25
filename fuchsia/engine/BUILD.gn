@@ -105,6 +105,8 @@ component("web_engine_core") {
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
+    "browser/navigation_controller_impl.cc",
+    "browser/navigation_controller_impl.h",
     "browser/web_engine_browser_context.cc",
     "browser/web_engine_browser_context.h",
     "browser/web_engine_browser_main.cc",

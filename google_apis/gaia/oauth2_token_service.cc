@@ -156,11 +156,6 @@ OAuth2TokenService::StartRequestForClient(
                                                client_secret, scopes, consumer);
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-OAuth2TokenService::GetURLLoaderFactory() const {
-  return delegate_->GetURLLoaderFactory();
-}
-
 std::unique_ptr<OAuth2TokenService::Request>
 OAuth2TokenService::StartRequestWithContext(
     const CoreAccountId& account_id,

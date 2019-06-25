@@ -15,6 +15,7 @@
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/video_decoder.h"
@@ -234,6 +235,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // |decoder_task_runner_|.
   base::WeakPtr<V4L2SliceVideoDecoder> weak_this_;
   base::WeakPtrFactory<V4L2SliceVideoDecoder> weak_this_factory_;
+
+  SEQUENCE_CHECKER(client_sequence_checker_);
+  SEQUENCE_CHECKER(decoder_sequence_checker_);
 };
 
 }  // namespace media

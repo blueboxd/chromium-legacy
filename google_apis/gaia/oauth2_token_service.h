@@ -139,7 +139,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
   // This method does the same as |StartRequest| except it uses the
   // URLLoaderfactory given by |url_loader_factory| instead of using the one
-  // returned by |GetURLLoaderFactory| implemented by derived classes.
+  // returned by Delegate::GetURLLoaderFactory().
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   std::unique_ptr<Request> StartRequestWithContext(
       const CoreAccountId& account_id,
@@ -298,10 +298,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
  private:
   friend class OAuth2TokenServiceDelegate;
-
-  // Provide a URLLoaderFactory used for fetching access tokens with the
-  // |StartRequest| method.
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
 
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
 

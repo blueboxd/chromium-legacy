@@ -46,7 +46,7 @@ class LayoutManagerImpl : public aura::LayoutManager {
   LayoutManagerImpl() = default;
   ~LayoutManagerImpl() override = default;
 
-  // aura::LayoutManager.
+  // aura::LayoutManager implementation.
   void OnWindowResized() override {
     // Resize the child to match the size of the parent
     if (child_) {
@@ -76,32 +76,6 @@ class LayoutManagerImpl : public aura::LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
-
-void UpdateNavigationStateFromNavigationEntry(
-    content::NavigationEntry* entry,
-    content::WebContents* web_contents,
-    fuchsia::web::NavigationState* navigation_state) {
-  DCHECK(entry);
-  DCHECK(web_contents);
-  DCHECK(navigation_state);
-
-  navigation_state->set_title(base::UTF16ToUTF8(entry->GetTitleForDisplay()));
-  navigation_state->set_url(entry->GetURL().spec());
-
-  switch (entry->GetPageType()) {
-    case content::PageType::PAGE_TYPE_NORMAL:
-    case content::PageType::PAGE_TYPE_INTERSTITIAL:
-      navigation_state->set_page_type(fuchsia::web::PageType::NORMAL);
-      break;
-    case content::PageType::PAGE_TYPE_ERROR:
-      navigation_state->set_page_type(fuchsia::web::PageType::ERROR);
-      break;
-  }
-
-  navigation_state->set_can_go_back(web_contents->GetController().CanGoBack());
-  navigation_state->set_can_go_forward(
-      web_contents->GetController().CanGoForward());
-}
 
 class FrameFocusRules : public wm::BaseFocusRules {
  public:
@@ -197,9 +171,9 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      fidl::InterfaceRequest<fuchsia::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
       context_(context),
+      navigation_controller_(web_contents_.get()),
       log_level_(kLogSeverityNone),
-      binding_(this, std::move(frame_request)),
-      weak_factory_(this) {
+      binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
   binding_.set_error_handler([this](zx_status_t status) {
@@ -218,6 +192,39 @@ FrameImpl::~FrameImpl() {
 
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
   return zx::unowned_channel(binding_.channel());
+}
+
+FrameImpl::OriginScopedScript::OriginScopedScript() = default;
+
+FrameImpl::OriginScopedScript::OriginScopedScript(
+    std::vector<std::string> origins,
+    base::ReadOnlySharedMemoryRegion script)
+    : origins_(std::move(origins)), script_(std::move(script)) {}
+
+FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
+    FrameImpl::OriginScopedScript&& other) {
+  origins_ = std::move(other.origins_);
+  script_ = std::move(other.script_);
+  return *this;
+}
+
+FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+void FrameImpl::TearDownView() {
+  if (window_tree_host_) {
+    aura::client::SetFocusClient(root_window(), nullptr);
+    wm::SetActivationClient(root_window(), nullptr);
+    root_window()->RemovePreTargetHandler(focus_controller_.get());
+    web_contents_->GetNativeView()->Hide();
+    window_tree_host_->Hide();
+    window_tree_host_->compositor()->SetVisible(false);
+    window_tree_host_ = nullptr;
+
+    // Allows posted focus events to process before the FocusController is torn
+    // down.
+    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                       std::move(focus_controller_));
+  }
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
@@ -254,7 +261,7 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
 
 void FrameImpl::GetNavigationController(
     fidl::InterfaceRequest<fuchsia::web::NavigationController> controller) {
-  controller_bindings_.AddBinding(this, std::move(controller));
+  navigation_controller_.AddBinding(std::move(controller));
 }
 
 void FrameImpl::ExecuteJavaScriptNoResult(
@@ -412,18 +419,7 @@ void FrameImpl::PostMessage(std::string origin,
 
 void FrameImpl::SetNavigationEventListener(
     fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener) {
-  // Reset the event buffer state.
-  waiting_for_navigation_event_ack_ = false;
-  previous_navigation_state_ = {};
-  pending_navigation_event_ = {};
-
-  if (listener) {
-    navigation_listener_.Bind(std::move(listener));
-    navigation_listener_.set_error_handler(
-        [this](zx_status_t status) { SetNavigationEventListener(nullptr); });
-  } else {
-    navigation_listener_.Unbind();
-  }
+  navigation_controller_.SetEventListener(std::move(listener));
 }
 
 void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
@@ -432,164 +428,6 @@ void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
 
 void FrameImpl::SetEnableInput(bool enable_input) {
   discarding_event_filter_.set_discard_events(!enable_input);
-}
-
-FrameImpl::OriginScopedScript::OriginScopedScript() = default;
-
-FrameImpl::OriginScopedScript::OriginScopedScript(
-    std::vector<std::string> origins,
-    base::ReadOnlySharedMemoryRegion script)
-    : origins_(std::move(origins)), script_(std::move(script)) {}
-
-FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
-    FrameImpl::OriginScopedScript&& other) {
-  origins_ = std::move(other.origins_);
-  script_ = std::move(other.script_);
-  return *this;
-}
-
-FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
-
-void FrameImpl::TearDownView() {
-  if (window_tree_host_) {
-    aura::client::SetFocusClient(root_window(), nullptr);
-    wm::SetActivationClient(root_window(), nullptr);
-    root_window()->RemovePreTargetHandler(focus_controller_.get());
-    web_contents_->GetNativeView()->Hide();
-    window_tree_host_->Hide();
-    window_tree_host_->compositor()->SetVisible(false);
-    window_tree_host_ = nullptr;
-
-    // Allows posted focus events to process before the FocusController is torn
-    // down.
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       std::move(focus_controller_));
-  }
-}
-
-void FrameImpl::OnNavigationEntryChanged() {
-  fuchsia::web::NavigationState new_state;
-  new_state.set_is_main_document_loaded(is_main_document_loaded_);
-  UpdateNavigationStateFromNavigationEntry(
-      web_contents_->GetController().GetVisibleEntry(), web_contents_.get(),
-      &new_state);
-
-  DiffNavigationEntries(previous_navigation_state_, new_state,
-                        &pending_navigation_event_);
-  previous_navigation_state_ = std::move(new_state);
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FrameImpl::MaybeSendNavigationEvent,
-                                weak_factory_.GetWeakPtr()));
-}
-
-void FrameImpl::MaybeSendNavigationEvent() {
-  if (!navigation_listener_)
-    return;
-
-  if (pending_navigation_event_.IsEmpty() ||
-      waiting_for_navigation_event_ack_) {
-    return;
-  }
-
-  waiting_for_navigation_event_ack_ = true;
-
-  // Send the event to the observer and, upon acknowledgement, revisit this
-  // function to send another update.
-  navigation_listener_->OnNavigationStateChanged(
-      std::move(pending_navigation_event_), [this]() {
-        waiting_for_navigation_event_ack_ = false;
-        MaybeSendNavigationEvent();
-      });
-
-  pending_navigation_event_ = {};
-}
-
-void FrameImpl::LoadUrl(std::string url,
-                        fuchsia::web::LoadUrlParams params,
-                        LoadUrlCallback callback) {
-  fuchsia::web::NavigationController_LoadUrl_Result result;
-  GURL validated_url(url);
-  if (!validated_url.is_valid()) {
-    result.set_err(fuchsia::web::NavigationControllerError::INVALID_URL);
-    callback(std::move(result));
-    return;
-  }
-
-  content::NavigationController::LoadURLParams params_converted(validated_url);
-  if (params.has_headers()) {
-    std::vector<std::string> extra_headers;
-    extra_headers.reserve(params.headers().size());
-    for (const auto& header : params.headers()) {
-      // TODO(crbug.com/964732): Check there is no colon in |header_name|.
-      base::StringPiece header_name(
-          reinterpret_cast<const char*>(header.name.data()),
-          header.name.size());
-      base::StringPiece header_value(
-          reinterpret_cast<const char*>(header.value.data()),
-          header.value.size());
-      extra_headers.emplace_back(
-          base::StrCat({header_name, ": ", header_value}));
-    }
-    params_converted.extra_headers = base::JoinString(extra_headers, "\n");
-  }
-
-  if (validated_url.scheme() == url::kDataScheme)
-    params_converted.load_type = content::NavigationController::LOAD_TYPE_DATA;
-
-  params_converted.transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  if (params.has_was_user_activated() && params.was_user_activated()) {
-    params_converted.was_activated = content::WasActivatedOption::kYes;
-  } else {
-    params_converted.was_activated = content::WasActivatedOption::kNo;
-  }
-
-  web_contents_->GetController().LoadURLWithParams(params_converted);
-  result.set_response(fuchsia::web::NavigationController_LoadUrl_Response());
-  callback(std::move(result));
-}
-
-void FrameImpl::GoBack() {
-  if (web_contents_->GetController().CanGoBack())
-    web_contents_->GetController().GoBack();
-}
-
-void FrameImpl::GoForward() {
-  if (web_contents_->GetController().CanGoForward())
-    web_contents_->GetController().GoForward();
-}
-
-void FrameImpl::Stop() {
-  web_contents_->Stop();
-}
-
-void FrameImpl::Reload(fuchsia::web::ReloadType type) {
-  content::ReloadType internal_reload_type;
-  switch (type) {
-    case fuchsia::web::ReloadType::PARTIAL_CACHE:
-      internal_reload_type = content::ReloadType::NORMAL;
-      break;
-    case fuchsia::web::ReloadType::NO_CACHE:
-      internal_reload_type = content::ReloadType::BYPASSING_CACHE;
-      break;
-  }
-  web_contents_->GetController().Reload(internal_reload_type, false);
-}
-
-void FrameImpl::GetVisibleEntry(
-    fuchsia::web::NavigationController::GetVisibleEntryCallback callback) {
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetVisibleEntry();
-  if (!entry) {
-    callback({});
-    return;
-  }
-
-  fuchsia::web::NavigationState state;
-  state.set_is_main_document_loaded(is_main_document_loaded_);
-  UpdateNavigationStateFromNavigationEntry(entry, web_contents_.get(), &state);
-  callback(std::move(state));
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {
@@ -685,74 +523,7 @@ void FrameImpl::ReadyToCommitNavigation(
   }
 }
 
-void FrameImpl::TitleWasSet(content::NavigationEntry* entry) {
-  // The title was changed after the document was loaded.
-  OnNavigationEntryChanged();
-}
-
-void FrameImpl::DocumentAvailableInMainFrame() {
-  // The main document is loaded, but not necessarily all the subresources. Some
-  // fields like "title" will change here.
-
-  OnNavigationEntryChanged();
-}
-
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
   context_->OnDevToolsPortReady();
-
-  // The document and its statically-declared subresources are loaded.
-  is_main_document_loaded_ = true;
-  OnNavigationEntryChanged();
-}
-
-void FrameImpl::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
-    return;
-
-  is_main_document_loaded_ = false;
-  OnNavigationEntryChanged();
-}
-
-void DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
-                           const fuchsia::web::NavigationState& new_entry,
-                           fuchsia::web::NavigationState* difference) {
-  DCHECK(difference);
-
-  DCHECK(new_entry.has_title());
-  if (!old_entry.has_title() || (new_entry.title() != old_entry.title())) {
-    difference->set_title(new_entry.title());
-  }
-
-  DCHECK(new_entry.has_url());
-  if (!old_entry.has_url() || (new_entry.url() != old_entry.url())) {
-    difference->set_url(new_entry.url());
-  }
-
-  DCHECK(new_entry.has_page_type());
-  if (!old_entry.has_page_type() ||
-      (new_entry.page_type() != old_entry.page_type())) {
-    difference->set_page_type(new_entry.page_type());
-  }
-
-  DCHECK(new_entry.has_can_go_back());
-  if (!old_entry.has_can_go_back() ||
-      old_entry.can_go_back() != new_entry.can_go_back()) {
-    difference->set_can_go_back(new_entry.can_go_back());
-  }
-
-  DCHECK(new_entry.has_can_go_forward());
-  if (!old_entry.has_can_go_forward() ||
-      old_entry.can_go_forward() != new_entry.can_go_forward()) {
-    difference->set_can_go_forward(new_entry.can_go_forward());
-  }
-
-  DCHECK(new_entry.has_is_main_document_loaded());
-  if (!old_entry.has_is_main_document_loaded() ||
-      old_entry.is_main_document_loaded() !=
-          new_entry.is_main_document_loaded()) {
-    difference->set_is_main_document_loaded(
-        new_entry.is_main_document_loaded());
-  }
 }

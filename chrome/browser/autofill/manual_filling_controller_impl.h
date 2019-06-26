@@ -17,7 +17,9 @@
 
 namespace autofill {
 class AddressAccessoryController;
+class CreditCardAccessoryController;
 }
+
 class AccessoryController;
 class PasswordAccessoryController;
 class TouchToFillController;
@@ -59,6 +61,7 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
+      base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
@@ -90,6 +93,7 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
+      base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
       std::unique_ptr<ManualFillingViewInterface> view);
 
   // Returns true if the keyboard accessory needs to be shown.
@@ -115,11 +119,11 @@ class ManualFillingControllerImpl
   autofill::mojom::FocusedFieldType focused_field_type_ =
       autofill::mojom::FocusedFieldType::kUnknown;
 
-  // The password accessory controller object to forward view requests to.
+  // Controllers which handle events relating to a specific tab and the
+  // associated data.
   base::WeakPtr<PasswordAccessoryController> pwd_controller_;
-
-  // The address accessory controller object to forward view requests to.
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
+  base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller_;
 
   // The touch to fill controller object to forward view requests to.
   base::WeakPtr<TouchToFillController> touch_to_fill_controller_;

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "net/base/request_priority.h"
 #include "net/third_party/quiche/src/quic/core/http/http_encoder.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -350,6 +351,23 @@ class QuicTestPacketMaker {
   }
 
  private:
+  // QpackEncoder::DecoderStreamErrorDelegate implementation that does nothing
+  class DecoderStreamErrorDelegate
+      : public quic::QpackEncoder::DecoderStreamErrorDelegate {
+   public:
+    ~DecoderStreamErrorDelegate() override = default;
+
+    void OnDecoderStreamError(quic::QuicStringPiece error_message) override;
+  };
+
+  // QpackEncoderStreamSender::Delegate implementation that does nothing.
+  class EncoderStreamSenderDelegate : public quic::QpackStreamSenderDelegate {
+   public:
+    ~EncoderStreamSenderDelegate() override = default;
+
+    void WriteStreamData(quic::QuicStringPiece data) override;
+  };
+
   std::unique_ptr<quic::QuicReceivedPacket> MakePacket(
       const quic::QuicPacketHeader& header,
       const quic::QuicFrame& frame);
@@ -373,6 +391,15 @@ class QuicTestPacketMaker {
                                                 bool fin,
                                                 quic::QuicStringPiece data);
 
+  std::vector<quic::QuicStreamFrame> GenerateNextStreamFrames(
+      quic::QuicStreamId stream_id,
+      bool fin,
+      const std::vector<std::string>& data);
+
+  std::vector<std::string> QpackEncodeHeaders(quic::QuicStreamId stream_id,
+                                              spdy::SpdyHeaderBlock headers,
+                                              size_t* encoded_data_length);
+
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
   quic::QuicConnectionId DestinationConnectionId() const;
@@ -387,7 +414,10 @@ class QuicTestPacketMaker {
   std::string host_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
-  quic::HttpEncoder encoder_;
+  quic::HttpEncoder http_encoder_;
+  DecoderStreamErrorDelegate decoder_stream_error_delegate_;
+  EncoderStreamSenderDelegate encoder_stream_sender_delegate_;
+  quic::QpackEncoder qpack_encoder_;
   quic::test::MockRandom random_generator_;
   std::map<quic::QuicStreamId, quic::QuicStreamOffset> stream_offsets_;
   quic::QuicPacketHeader header_;

@@ -17,6 +17,17 @@ UserInfo::Field::Field(base::string16 display_text,
       is_obfuscated_(is_obfuscated),
       selectable_(selectable) {}
 
+UserInfo::Field::Field(base::string16 display_text,
+                       base::string16 a11y_description,
+                       std::string id,
+                       bool is_obfuscated,
+                       bool selectable)
+    : display_text_(std::move(display_text)),
+      a11y_description_(std::move(a11y_description)),
+      id_(std::move(id)),
+      is_obfuscated_(is_obfuscated),
+      selectable_(selectable) {}
+
 UserInfo::Field::Field(const Field& field) = default;
 
 UserInfo::Field::Field(Field&& field) = default;
@@ -29,7 +40,7 @@ UserInfo::Field& UserInfo::Field::operator=(Field&& field) = default;
 
 bool UserInfo::Field::operator==(const UserInfo::Field& field) const {
   return display_text_ == field.display_text_ &&
-         a11y_description_ == field.a11y_description_ &&
+         a11y_description_ == field.a11y_description_ && id_ == field.id_ &&
          is_obfuscated_ == field.is_obfuscated_ &&
          selectable_ == field.selectable_;
 }
@@ -37,6 +48,7 @@ bool UserInfo::Field::operator==(const UserInfo::Field& field) const {
 std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
   os << "(display text: \"" << field.display_text() << "\", "
      << "a11y_description: \"" << field.a11y_description() << "\", "
+     << "id: \"" << field.id() << "\", "
      << "is " << (field.selectable() ? "" : "not ") << "selectable, "
      << "is " << (field.is_obfuscated() ? "" : "not ") << "obfuscated)";
   return os;
@@ -195,6 +207,30 @@ AccessorySheetData::Builder& AccessorySheetData::Builder::AppendField(
   accessory_sheet_data_.mutable_user_info_list().back().add_field(
       UserInfo::Field(std::move(display_text), std::move(a11y_description),
                       is_obfuscated, selectable));
+  return *this;
+}
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::AppendField(
+    base::string16 display_text,
+    base::string16 a11y_description,
+    std::string id,
+    bool is_obfuscated,
+    bool selectable) && {
+  // Calls AppendField(...)& since |this| is an lvalue.
+  return std::move(AppendField(std::move(display_text),
+                               std::move(a11y_description), std::move(id),
+                               is_obfuscated, selectable));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::AppendField(
+    base::string16 display_text,
+    base::string16 a11y_description,
+    std::string id,
+    bool is_obfuscated,
+    bool selectable) & {
+  accessory_sheet_data_.mutable_user_info_list().back().add_field(
+      UserInfo::Field(std::move(display_text), std::move(a11y_description),
+                      std::move(id), is_obfuscated, selectable));
   return *this;
 }
 

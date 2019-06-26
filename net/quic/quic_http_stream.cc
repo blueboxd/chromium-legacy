@@ -345,9 +345,12 @@ bool QuicHttpStream::IsConnectionReused() const {
 }
 
 int64_t QuicHttpStream::GetTotalReceivedBytes() const {
-  // TODO(sclittle): Currently, this only includes headers and response body
-  // bytes. Change this to include QUIC overhead as well.
-  int64_t total_received_bytes = headers_bytes_received_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_received_bytes =
+      quic::VersionUsesQpack(quic_session()->GetQuicVersion())
+          ? 0
+          : headers_bytes_received_;
   if (stream_) {
     DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
     // Only count the uniquely received bytes.
@@ -359,9 +362,12 @@ int64_t QuicHttpStream::GetTotalReceivedBytes() const {
 }
 
 int64_t QuicHttpStream::GetTotalSentBytes() const {
-  // TODO(sclittle): Currently, this only includes request headers and body
-  // bytes. Change this to include QUIC overhead as well.
-  int64_t total_sent_bytes = headers_bytes_sent_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_sent_bytes =
+      quic::VersionUsesQpack(quic_session()->GetQuicVersion())
+          ? 0
+          : headers_bytes_sent_;
   if (stream_) {
     total_sent_bytes += stream_->stream_bytes_written();
   } else {

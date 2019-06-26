@@ -14,19 +14,22 @@ import org.chromium.base.annotations.CalledByNative;
 public final class UserInfoField {
     private final String mDisplayText;
     private final String mA11yDescription;
+    private final String mId;
     private final boolean mIsObfuscated;
     private final Callback<UserInfoField> mCallback;
 
     /**
      * @param displayText The text to display. Plain text if |isObfuscated| is false.
      * @param a11yDescription The description used for accessibility.
+     * @param id An ID representing this object for filling purposes. May be empty.
      * @param isObfuscated If true, the displayed caption is transformed into stars.
      * @param callback Called when the user taps the suggestions.
      */
-    public UserInfoField(String displayText, String a11yDescription, boolean isObfuscated,
-            Callback<UserInfoField> callback) {
+    public UserInfoField(String displayText, String a11yDescription, String id,
+            boolean isObfuscated, Callback<UserInfoField> callback) {
         mDisplayText = displayText;
         mA11yDescription = a11yDescription;
+        mId = id;
         mIsObfuscated = isObfuscated;
         mCallback = callback;
     }
@@ -45,6 +48,14 @@ public final class UserInfoField {
     @CalledByNative
     public String getA11yDescription() {
         return mA11yDescription;
+    }
+
+    /**
+     * Returns an ID representing this object for filling purposes. May be empty.
+     */
+    @CalledByNative
+    public String getId() {
+        return mId;
     }
 
     /**

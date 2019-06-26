@@ -5,6 +5,7 @@
 
 <android.support.v7.widget.RecyclerView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/credit_card_sheet"
     android:fillViewport="true"
     android:layout_height="match_parent"
     android:layout_width="match_parent"

@@ -126,9 +126,10 @@ public class PasswordAccessorySheetControllerTest {
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords for this site");
         testData.getUserInfoList().add(new UserInfo(null));
-        testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Password", "Password for Name", true, field -> {}));
+                new UserInfoField("Name", "Name", "", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfoField("Password", "Password for Name", "", true, field -> {}));
         testData.getFooterCommands().add(new FooterCommand("Manage passwords", result -> {}));
 
         mCoordinator.registerDataProvider(testProvider);
@@ -162,9 +163,10 @@ public class PasswordAccessorySheetControllerTest {
 
         // As soon UserInfo is available, discard the title.
         testData.getUserInfoList().add(new UserInfo(null));
-        testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Password", "Password for Name", true, field -> {}));
+                new UserInfoField("Name", "Name", "", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfoField("Password", "Password for Name", "", true, field -> {}));
         testProvider.notifyObservers(testData);
 
         assertThat(mSheetDataPieces.size(), is(2));
@@ -205,16 +207,16 @@ public class PasswordAccessorySheetControllerTest {
 
         // If the tab is shown with X interactive item, record "X" samples.
         UserInfo userInfo1 = new UserInfo(null);
-        userInfo1.addField(new UserInfoField("Interactive 1", "", false, (v) -> {}));
-        userInfo1.addField(new UserInfoField("Non-Interactive 1", "", true, null));
+        userInfo1.addField(new UserInfoField("Interactive 1", "", "", false, (v) -> {}));
+        userInfo1.addField(new UserInfoField("Non-Interactive 1", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo1);
         UserInfo userInfo2 = new UserInfo(null);
-        userInfo2.addField(new UserInfoField("Interactive 2", "", false, (v) -> {}));
-        userInfo2.addField(new UserInfoField("Non-Interactive 2", "", true, null));
+        userInfo2.addField(new UserInfoField("Interactive 2", "", "", false, (v) -> {}));
+        userInfo2.addField(new UserInfoField("Non-Interactive 2", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo2);
         UserInfo userInfo3 = new UserInfo(null);
-        userInfo3.addField(new UserInfoField("Interactive 3", "", false, (v) -> {}));
-        userInfo3.addField(new UserInfoField("Non-Interactive 3", "", true, null));
+        userInfo3.addField(new UserInfoField("Interactive 3", "", "", false, (v) -> {}));
+        userInfo3.addField(new UserInfoField("Non-Interactive 3", "", "", true, null));
         accessorySheetData.getUserInfoList().add(userInfo3);
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();

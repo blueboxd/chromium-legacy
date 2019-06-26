@@ -161,10 +161,11 @@ public class CreditCardAccessorySheetViewTest {
     private UserInfo createInfo(
             String number, String month, String year, String name, AtomicBoolean clickRecorder) {
         UserInfo info = new UserInfo(null);
-        info.addField(new UserInfoField(number, number, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(month, month, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(year, year, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(name, name, false, item -> clickRecorder.set(true)));
+        info.addField(
+                new UserInfoField(number, number, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(month, month, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(year, year, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(name, name, "", false, item -> clickRecorder.set(true)));
         return info;
     }
 

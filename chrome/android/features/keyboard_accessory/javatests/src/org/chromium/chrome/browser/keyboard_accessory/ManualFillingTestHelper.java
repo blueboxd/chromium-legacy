@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -275,6 +276,12 @@ public class ManualFillingTestHelper {
         return (AddressAccessorySheetCoordinator) getManualFillingCoordinator()
                 .getMediatorForTesting()
                 .getOrCreateSheet(AccessoryTabType.ADDRESSES);
+    }
+
+    public CreditCardAccessorySheetCoordinator getOrCreateCreditCardAccessorySheet() {
+        return (CreditCardAccessorySheetCoordinator) getManualFillingCoordinator()
+                .getMediatorForTesting()
+                .getOrCreateSheet(AccessoryTabType.CREDIT_CARDS);
     }
 
     // ----------------------------------

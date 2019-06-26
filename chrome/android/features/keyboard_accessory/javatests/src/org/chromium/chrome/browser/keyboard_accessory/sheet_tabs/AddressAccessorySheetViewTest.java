@@ -168,30 +168,30 @@ public class AddressAccessorySheetViewTest {
             String addressHomeCountry, String phoneHomeWholeNumber, String emailAddress,
             AtomicBoolean clickRecorder) {
         UserInfo info = new UserInfo(null);
+        info.addField(new UserInfoField(
+                nameFirst, nameFirst, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(
+                nameMiddle, nameMiddle, "", false, item -> clickRecorder.set(true)));
         info.addField(
-                new UserInfoField(nameFirst, nameFirst, false, item -> clickRecorder.set(true)));
-        info.addField(
-                new UserInfoField(nameMiddle, nameMiddle, false, item -> clickRecorder.set(true)));
-        info.addField(
-                new UserInfoField(nameLast, nameLast, false, item -> clickRecorder.set(true)));
+                new UserInfoField(nameLast, nameLast, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                companyName, companyName, false, item -> clickRecorder.set(true)));
+                companyName, companyName, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeLine1, addressHomeLine1, false, item -> clickRecorder.set(true)));
+                addressHomeLine1, addressHomeLine1, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeLine2, addressHomeLine2, false, item -> clickRecorder.set(true)));
+                addressHomeLine2, addressHomeLine2, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeZip, addressHomeZip, false, item -> clickRecorder.set(true)));
+                addressHomeZip, addressHomeZip, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeCity, addressHomeCity, false, item -> clickRecorder.set(true)));
+                addressHomeCity, addressHomeCity, "", false, item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                addressHomeState, addressHomeState, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(
-                addressHomeCountry, addressHomeCountry, false, item -> clickRecorder.set(true)));
-        info.addField(new UserInfoField(phoneHomeWholeNumber, phoneHomeWholeNumber, false,
+                addressHomeState, addressHomeState, "", false, item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(addressHomeCountry, addressHomeCountry, "", false,
+                item -> clickRecorder.set(true)));
+        info.addField(new UserInfoField(phoneHomeWholeNumber, phoneHomeWholeNumber, "", false,
                 item -> clickRecorder.set(true)));
         info.addField(new UserInfoField(
-                emailAddress, emailAddress, false, item -> clickRecorder.set(true)));
+                emailAddress, emailAddress, "", false, item -> clickRecorder.set(true)));
         return info;
     }
 

@@ -58,7 +58,7 @@ class CreditCardAccessoryControllerTest
   }
 
  protected:
-  testing::StrictMock<MockManualFillingController> mock_mf_controller_;
+  testing::NiceMock<MockManualFillingController> mock_mf_controller_;
   autofill::TestPersonalDataManager data_manager_;
   TestingProfile profile_;
 };
@@ -67,7 +67,7 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
   autofill::CreditCard card = test::GetCreditCard();
   data_manager_.AddCreditCard(card);
 
-  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
+  autofill::AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
                                       base::string16());
 
   EXPECT_CALL(mock_mf_controller_, RefreshSuggestions(_))
@@ -77,14 +77,18 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
   ASSERT_TRUE(cc_controller);
   cc_controller->RefreshSuggestions();
 
-  ASSERT_EQ(result, CreditCardAccessorySheetDataBuilder()
-                        .AddUserInfo()
-                        .AppendSimpleField(card.ObfuscatedLastFourDigits())
-                        .AppendSimpleField(card.ExpirationMonthAsString())
-                        .AppendSimpleField(card.Expiration4DigitYearAsString())
-                        .AppendSimpleField(
-                            card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
-                        .Build());
+  ASSERT_EQ(
+      result,
+      CreditCardAccessorySheetDataBuilder()
+          .AddUserInfo()
+          .AppendField(card.ObfuscatedLastFourDigits(),
+                       card.ObfuscatedLastFourDigits(), card.guid(),
+                       /*is_obfuscated=*/false,
+                       /*selectable=*/true)
+          .AppendSimpleField(card.ExpirationMonthAsString())
+          .AppendSimpleField(card.Expiration4DigitYearAsString())
+          .AppendSimpleField(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
+          .Build());
 }
 
 }  // namespace autofill

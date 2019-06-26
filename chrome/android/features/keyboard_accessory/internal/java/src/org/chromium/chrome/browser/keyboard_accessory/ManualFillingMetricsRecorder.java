@@ -21,6 +21,8 @@ public class ManualFillingMetricsRecorder {
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED =
             "KeyboardAccessory.AccessorySheetSuggestionsSelected";
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS = "Passwords";
+    private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_CREDIT_CARDS =
+            "CreditCards";
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_ADDRESSES = "Addresses";
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_TOUCH_TO_FILL =
             "TouchToFill";
@@ -42,6 +44,8 @@ public class ManualFillingMetricsRecorder {
                 return baseHistogram;
             case AccessoryTabType.PASSWORDS:
                 return baseHistogram + "." + UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS;
+            case AccessoryTabType.CREDIT_CARDS:
+                return baseHistogram + "." + UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_CREDIT_CARDS;
             case AccessoryTabType.ADDRESSES:
                 return baseHistogram + "." + UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_ADDRESSES;
             case AccessoryTabType.TOUCH_TO_FILL:

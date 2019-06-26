@@ -25,6 +25,11 @@ class UserInfo {
           base::string16 a11y_description,
           bool is_obfuscated,
           bool selectable);
+    Field(base::string16 display_text,
+          base::string16 a11y_description,
+          std::string id,
+          bool is_obfuscated,
+          bool selectable);
     Field(const Field& field);
     Field(Field&& field);
 
@@ -37,6 +42,8 @@ class UserInfo {
 
     const base::string16& a11y_description() const { return a11y_description_; }
 
+    const std::string& id() const { return id_; }
+
     bool is_obfuscated() const { return is_obfuscated_; }
 
     bool selectable() const { return selectable_; }
@@ -46,6 +53,7 @@ class UserInfo {
    private:
     base::string16 display_text_;
     base::string16 a11y_description_;
+    std::string id_;  // Optional, if needed to complete filling.
     bool is_obfuscated_;
     bool selectable_;
   };
@@ -181,6 +189,17 @@ class AccessorySheetData::Builder {
                         bool selectable) &&;
   Builder& AppendField(base::string16 display_text,
                        base::string16 a11y_description,
+                       bool is_obfuscated,
+                       bool selectable) &;
+
+  Builder&& AppendField(base::string16 display_text,
+                        base::string16 a11y_description,
+                        std::string id,
+                        bool is_obfuscated,
+                        bool selectable) &&;
+  Builder& AppendField(base::string16 display_text,
+                       base::string16 a11y_description,
+                       std::string id,
                        bool is_obfuscated,
                        bool selectable) &;
 

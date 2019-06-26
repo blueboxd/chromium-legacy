@@ -126,9 +126,9 @@ public class PasswordAccessorySheetViewTest {
 
         UserInfo testInfo = new UserInfo(null);
         testInfo.addField(new UserInfoField(
-                "Name Suggestion", "Name Suggestion", false, item -> clicked.set(true)));
+                "Name Suggestion", "Name Suggestion", "", false, item -> clicked.set(true)));
         testInfo.addField(new UserInfoField(
-                "Password Suggestion", "Password Suggestion", true, item -> clicked.set(true)));
+                "Password Suggestion", "Password Suggestion", "", true, item -> clicked.set(true)));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.add(new AccessorySheetDataPiece(
                     testInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));

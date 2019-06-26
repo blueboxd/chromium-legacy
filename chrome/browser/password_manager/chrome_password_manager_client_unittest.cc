@@ -73,6 +73,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
+#include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
@@ -761,6 +762,7 @@ class ChromePasswordManagerClientAndroidTest
   autofill::TestAutofillClient test_autofill_client_;
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
+  NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
 };
 
 std::unique_ptr<password_manager::ContentPasswordManagerDriver>
@@ -774,7 +776,7 @@ void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
     content::WebContents* web_contents) {
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
       web_contents, mock_pwd_controller_.AsWeakPtr(),
-      mock_address_controller_.AsWeakPtr(),
+      mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }
 

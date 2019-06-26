@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
+#include "chrome/browser/autofill/credit_card_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
@@ -21,6 +22,7 @@ using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
 using autofill::AddressAccessoryController;
+using autofill::CreditCardAccessoryController;
 using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 
@@ -68,17 +70,21 @@ void ManualFillingControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
+    base::WeakPtr<CreditCardAccessoryController> cc_controller,
     std::unique_ptr<ManualFillingViewInterface> view) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(pwd_controller);
   DCHECK(address_controller);
+  DCHECK(cc_controller);
   DCHECK(view);
 
-  web_contents->SetUserData(
-      UserDataKey(), base::WrapUnique(new ManualFillingControllerImpl(
-                         web_contents, std::move(pwd_controller),
-                         std::move(address_controller), std::move(view))));
+  web_contents->SetUserData(UserDataKey(),
+                            // Using `new` to access a non-public constructor.
+                            base::WrapUnique(new ManualFillingControllerImpl(
+                                web_contents, std::move(pwd_controller),
+                                std::move(address_controller),
+                                std::move(cc_controller), std::move(view))));
 
   FromWebContents(web_contents)->Initialize();
 }
@@ -180,6 +186,8 @@ void ManualFillingControllerImpl::Initialize() {
   DCHECK(FromWebContents(web_contents_)) << "Don't call from constructor!";
   if (address_controller_)
     address_controller_->RefreshSuggestions();
+  if (cc_controller_)
+    cc_controller_->RefreshSuggestions();
 }
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
@@ -195,6 +203,11 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
     DCHECK(address_controller_);
   }
+  if (CreditCardAccessoryController::AllowedForWebContents(web_contents)) {
+    cc_controller_ =
+        CreditCardAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
+    DCHECK(cc_controller_);
+  }
   if (TouchToFillController::AllowedForWebContents(web_contents)) {
     touch_to_fill_controller_ =
         TouchToFillController::GetOrCreate(web_contents)->AsWeakPtr();
@@ -206,10 +219,12 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
+    base::WeakPtr<CreditCardAccessoryController> cc_controller,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
       pwd_controller_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
+      cc_controller_(std::move(cc_controller)),
       view_(std::move(view)) {}
 
 bool ManualFillingControllerImpl::ShouldShowAccessory() const {
@@ -263,7 +278,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
     case AccessoryTabType::PASSWORDS:
       return pwd_controller_.get();
     case AccessoryTabType::CREDIT_CARDS:
-      // TODO(crbug.com/902425): return credit card controller.
+      return cc_controller_.get();
     case AccessoryTabType::TOUCH_TO_FILL:
       return touch_to_fill_controller_.get();
     case AccessoryTabType::ALL:
@@ -284,7 +299,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();
     case AccessoryAction::MANAGE_CREDIT_CARDS:
-      // TODO(crbug.com/902425): Return credit card controller.
+      return cc_controller_.get();
     case AccessoryAction::AUTOFILL_SUGGESTION:
     case AccessoryAction::COUNT:
       break;  // Intentional failure;

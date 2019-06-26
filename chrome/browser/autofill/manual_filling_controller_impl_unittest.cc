@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
+#include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
@@ -61,7 +62,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_pwd_controller_.AsWeakPtr(),
-        mock_address_controller_.AsWeakPtr(),
+        mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
         std::make_unique<NiceMock<MockManualFillingView>>());
     NavigateAndCommit(GURL(kExampleSite));
   }
@@ -91,6 +92,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
  protected:
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
+  NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
 };
 
 TEST_F(ManualFillingControllerTest, IsNotRecreatedForSameWebContents) {
@@ -294,6 +296,12 @@ TEST_F(ManualFillingControllerTest, ForwardsAddressManagingToController) {
   EXPECT_CALL(mock_address_controller_,
               OnOptionSelected(AccessoryAction::MANAGE_ADDRESSES));
   controller()->OnOptionSelected(AccessoryAction::MANAGE_ADDRESSES);
+}
+
+TEST_F(ManualFillingControllerTest, ForwardsCreditCardManagingToController) {
+  EXPECT_CALL(mock_cc_controller_,
+              OnOptionSelected(AccessoryAction::MANAGE_CREDIT_CARDS));
+  controller()->OnOptionSelected(AccessoryAction::MANAGE_CREDIT_CARDS);
 }
 
 TEST_F(ManualFillingControllerTest, OnAutomaticGenerationRequested) {

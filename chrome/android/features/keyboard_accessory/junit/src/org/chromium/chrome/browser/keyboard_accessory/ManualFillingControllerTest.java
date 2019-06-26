@@ -205,8 +205,9 @@ public class ManualFillingControllerTest {
             AccessorySheetData sheetData =
                     new AccessorySheetData(AccessoryTabType.PASSWORDS, "Passwords");
             UserInfo userInfo = new UserInfo(null);
-            userInfo.addField(new UserInfoField("(No username)", "No username", false, null));
-            userInfo.addField(new UserInfoField(passwordString, "Password", true, null));
+            userInfo.addField(
+                    new UserInfoField("(No username)", "No username", /*id=*/"", false, null));
+            userInfo.addField(new UserInfoField(passwordString, "Password", /*id=*/"", true, null));
             sheetData.getUserInfoList().add(userInfo);
             mAccessorySheetDataProvider.notifyObservers(sheetData);
         }

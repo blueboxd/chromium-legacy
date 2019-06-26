@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -71,9 +72,19 @@ static constexpr float kStartOpacity = 1;
 
 namespace {
 
-float HighlightTargetOpacity() {
-  // For web tests we don't fade out.
-  return WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0;
+EffectPaintPropertyNode::State LinkHighlightEffectNodeState(
+    float opacity,
+    CompositorElementId element_id) {
+  EffectPaintPropertyNode::State state;
+  state.opacity = opacity;
+  state.local_transform_space = &TransformPaintPropertyNode::Root();
+  state.compositor_element_id = element_id;
+  state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
+  // EffectPaintPropertyNode::Update does not pay attention to changes in
+  // has_active_opacity_animation so we assume that the effect node is
+  // always animating.
+  state.has_active_opacity_animation = true;
+  return state;
 }
 
 }  // namespace
@@ -111,14 +122,9 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
   compositor_animation_->AttachElement(element_id_);
   geometry_needs_update_ = true;
 
-  EffectPaintPropertyNode::State state;
-  state.opacity = HighlightTargetOpacity();
-  state.local_transform_space = &TransformPaintPropertyNode::Root();
-  state.compositor_element_id = element_id_;
-  state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
-  state.has_active_opacity_animation = true;
-  effect_ = EffectPaintPropertyNode::Create(EffectPaintPropertyNode::Root(),
-                                            std::move(state));
+  effect_ = EffectPaintPropertyNode::Create(
+      EffectPaintPropertyNode::Root(),
+      LinkHighlightEffectNodeState(kStartOpacity, element_id_));
 #if DCHECK_IS_ON()
   effect_->SetDebugName("LinkHighlightEffect");
 #endif
@@ -354,6 +360,14 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   const auto& timing_function = *CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE);
 
+  float target_opacity = WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0;
+
+  // Since the notification about the animation finishing may not arrive in
+  // time to remove the link highlight before it's drawn without an animation
+  // we set the opacity to the final target opacity to avoid a flash of the
+  // initial opacity. https://crbug.com/974160
+  UpdateOpacity(target_opacity);
+
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, kStartOpacity, timing_function));
   // Make sure we have displayed for at least minPreFadeDuration before starting
@@ -366,8 +380,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));
   }
   curve->AddKeyframe(CompositorFloatKeyframe(
-      (kFadeDuration + extra_duration_required).InSecondsF(),
-      HighlightTargetOpacity(), timing_function));
+      (kFadeDuration + extra_duration_required).InSecondsF(), target_opacity,
+      timing_function));
 
   auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
       *curve, compositor_target_property::OPACITY, 0, 0);
@@ -391,6 +405,10 @@ void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
   // release resources as soon as possible.
   ClearGraphicsLayerLinkHighlightPointer();
   ReleaseResources();
+
+  // Reset the link highlight opacity to clean up after the animation now that
+  // we have removed the node and it won't be displayed.
+  UpdateOpacity(kStartOpacity);
 }
 
 void LinkHighlightImpl::UpdateGeometry() {
@@ -532,6 +550,11 @@ void LinkHighlightImpl::SetPaintArtifactCompositorNeedsUpdate() {
     else
       frame_view->GraphicsLayersDidChange();
   }
+}
+
+void LinkHighlightImpl::UpdateOpacity(float opacity) {
+  effect_->Update(EffectPaintPropertyNode::Root(),
+                  LinkHighlightEffectNodeState(opacity, element_id_));
 }
 
 }  // namespace blink

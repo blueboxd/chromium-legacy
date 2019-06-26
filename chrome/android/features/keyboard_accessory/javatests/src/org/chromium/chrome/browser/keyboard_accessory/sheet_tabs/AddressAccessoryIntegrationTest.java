@@ -136,7 +136,7 @@ public class AddressAccessoryIntegrationTest {
         // Scroll to last element and click the second icon:
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isKeyboardAccessoryTabLayout()),
-                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(1)));
+                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(2)));
 
         // Wait for the sheet to come up and be stable.
         whenDisplayed(withId(R.id.addresses_sheet));

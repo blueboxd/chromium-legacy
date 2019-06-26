@@ -21,6 +21,7 @@ class AudioParameters;
 namespace blink {
 
 class AudioTrackEncoder;
+class MediaStreamComponent;
 class Thread;
 
 // AudioTrackRecorder is a MediaStreamAudioSink that encodes the audio buses
@@ -30,7 +31,11 @@ class Thread;
 // the "capture thread"). It owns an internal thread to use for encoding, on
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
-class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
+class MODULES_EXPORT AudioTrackRecorder
+    : public GarbageCollectedFinalized<AudioTrackRecorder>,
+      public WebMediaStreamAudioSink {
+  USING_PRE_FINALIZER(AudioTrackRecorder, Prefinalize);
+
  public:
   enum class CodecId {
     // Do not change the order of codecs. Add new ones right before LAST.
@@ -47,7 +52,7 @@ class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
   static CodecId GetPreferredCodecId();
 
   AudioTrackRecorder(CodecId codec,
-                     const WebMediaStreamTrack& track,
+                     MediaStreamComponent* track,
                      OnEncodedAudioCB on_encoded_audio_cb,
                      int32_t bits_per_second);
   ~AudioTrackRecorder() override;
@@ -60,6 +65,8 @@ class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
   void Pause();
   void Resume();
 
+  void Trace(blink::Visitor*);
+
  private:
   // Creates an audio encoder from |codec|. Returns nullptr if the codec is
   // invalid.
@@ -68,12 +75,17 @@ class MODULES_EXPORT AudioTrackRecorder : public WebMediaStreamAudioSink {
       OnEncodedAudioCB on_encoded_audio_cb,
       int32_t bits_per_second);
 
+  void ConnectToTrack();
+  void DisconnectFromTrack();
+
+  void Prefinalize();
+
   // Used to check that MediaStreamAudioSink's methods are called on the
   // capture audio thread.
   THREAD_CHECKER(capture_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on destruction.
-  const WebMediaStreamTrack track_;
+  Member<MediaStreamComponent> track_;
 
   // Thin wrapper around OpusEncoder.
   // |encoder_| should be initialized before |encoder_thread_| such that

@@ -83,18 +83,18 @@ class VideoTrackRecorderTest
   ~VideoTrackRecorderTest() {
     blink_track_.Reset();
     blink_source_.Reset();
-    video_track_recorder_.reset();
+    video_track_recorder_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
-    video_track_recorder_.reset(new VideoTrackRecorder(
+    video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorder>(
         codec, blink_track_,
         ConvertToBaseCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
                                      CrossThreadUnretained(this))),
         0 /* bits_per_second */,
-        scheduler::GetSingleThreadTaskRunnerForTesting()));
+        scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   MOCK_METHOD5(DoOnEncodedVideo,
@@ -141,7 +141,7 @@ class VideoTrackRecorderTest
   MediaStreamVideoTrack* track_;
   WebMediaStreamTrack blink_track_;
 
-  std::unique_ptr<VideoTrackRecorder> video_track_recorder_;
+  Persistent<VideoTrackRecorder> video_track_recorder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorderTest);

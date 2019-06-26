@@ -109,11 +109,11 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         first_source_cache_pos_(0) {
     ResetDecoder(first_params_);
     PrepareBlinkTrack();
-    audio_track_recorder_.reset(new AudioTrackRecorder(
+    audio_track_recorder_ = MakeGarbageCollected<AudioTrackRecorder>(
         codec_, blink_track_,
         WTF::BindRepeating(&AudioTrackRecorderTest::OnEncodedAudio,
                            WTF::Unretained(this)),
-        0 /* bits_per_second */));
+        0 /* bits_per_second */);
   }
 
   ~AudioTrackRecorderTest() {
@@ -121,7 +121,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
     opus_decoder_ = nullptr;
     blink_track_.Reset();
     WebHeap::CollectAllGarbageForTesting();
-    audio_track_recorder_.reset();
+    audio_track_recorder_ = nullptr;
     // Let the message loop run to finish destroying the recorder properly.
     base::RunLoop().RunUntilIdle();
   }
@@ -207,7 +207,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
   }
 
   // ATR and WebMediaStreamTrack for fooling it.
-  std::unique_ptr<AudioTrackRecorder> audio_track_recorder_;
+  Persistent<AudioTrackRecorder> audio_track_recorder_;
   WebMediaStreamTrack blink_track_;
 
   // The codec we'll use for compression the audio.

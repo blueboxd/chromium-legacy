@@ -44,6 +44,7 @@ const char* kUnsupportedDisplay =
 const char* kElementIsDisconnected = "Element is disconnected.";
 const char* kLockCommitted = "Lock commit was requested.";
 const char* kInvalidOptions = "Invalid options.";
+const char* kElementIsNested = "Element is nested under a locked element.";
 }  // namespace rejection_names
 
 // Helper function to convert a display locking state to a string. Used in
@@ -253,6 +254,10 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
     return update_resolver_->Promise();
   }
 
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_)) {
+    return GetRejectedPromise(script_state, rejection_names::kElementIsNested);
+  }
+
   MakeResolver(script_state, &update_resolver_);
   StartUpdateIfNeeded();
   return update_resolver_->Promise();
@@ -326,10 +331,12 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
     return GetResolvedPromise(script_state);
 
   // If we're in a state where a co-operative update doesn't make sense (e.g. we
-  // haven't acquired the lock, or we're already sync committing), then do
-  // whatever commit() would do.
-  if (state_ == kCommitting || !ConnectedToView())
+  // haven't acquired the lock, or we're already sync committing, or we're under
+  // a nested lock), then do whatever commit() would do.
+  if (state_ == kCommitting || !ConnectedToView() ||
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_)) {
     return commit(script_state);
+  }
 
   // If we have a commit resolver already, return it.
   if (commit_resolver_) {

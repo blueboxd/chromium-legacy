@@ -15,8 +15,9 @@
 #include "build/build_config.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
@@ -61,6 +62,7 @@ struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
 
 namespace blink {
 
+class MediaStreamVideoTrack;
 class Thread;
 
 // VideoTrackRecorder is a MediaStreamVideoSink that encodes the video frames
@@ -69,7 +71,11 @@ class Thread;
 // MediaStreamVideo* classes that are constructed/configured on Main Render
 // thread but that pass frames on Render IO thread. It has an internal Encoder
 // with its own threading subtleties, see the implementation file.
-class MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
+class MODULES_EXPORT VideoTrackRecorder
+    : public GarbageCollectedFinalized<VideoTrackRecorder>,
+      public WebMediaStreamSink {
+  USING_PRE_FINALIZER(VideoTrackRecorder, Prefinalize);
+
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {
@@ -257,7 +263,7 @@ class MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
 
   VideoTrackRecorder(
       CodecId codec,
-      const WebMediaStreamTrack& track,
+      MediaStreamComponent* track,
       const OnEncodedVideoCB& on_encoded_video_cb,
       int32_t bits_per_second,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
@@ -269,6 +275,8 @@ class MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
   void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               base::TimeTicks capture_time);
 
+  void Trace(blink::Visitor*);
+
  private:
   friend class VideoTrackRecorderTest;
   void InitializeEncoder(CodecId codec,
@@ -279,11 +287,16 @@ class MODULES_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
                          base::TimeTicks capture_time);
   void OnError();
 
+  void ConnectToTrack(const VideoCaptureDeliverFrameCB& callback);
+  void DisconnectFromTrack();
+
+  void Prefinalize();
+
   // Used to check that we are destroyed on the same thread we were created.
   THREAD_CHECKER(main_thread_checker_);
 
   // We need to hold on to the Blink track to remove ourselves on dtor.
-  WebMediaStreamTrack track_;
+  Member<MediaStreamComponent> track_;
 
   // Inner class to encode using whichever codec is configured.
   scoped_refptr<Encoder> encoder_;

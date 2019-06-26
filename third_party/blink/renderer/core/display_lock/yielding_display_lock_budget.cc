@@ -44,9 +44,7 @@ void YieldingDisplayLockBudget::OnLifecycleChange(
     const LifecycleData& lifecycle_data) {
   if (first_lifecycle_count_ == 0)
     first_lifecycle_count_ = lifecycle_data.count;
-  deadline_ =
-      lifecycle_data.start_time +
-      base::TimeDelta::FromMillisecondsD(GetCurrentBudgetMs(lifecycle_data));
+  deadline_ = lifecycle_data.start_time + GetCurrentBudget(lifecycle_data);
 
   // Figure out the next phase we would run. If we had completed a phase before,
   // then we should try to complete the next one, otherwise we'll start with the
@@ -77,24 +75,24 @@ bool YieldingDisplayLockBudget::NeedsLifecycleUpdates() const {
   return false;
 }
 
-double YieldingDisplayLockBudget::GetCurrentBudgetMs(
+base::TimeDelta YieldingDisplayLockBudget::GetCurrentBudget(
     const LifecycleData& lifecycle_data) const {
   int lifecycle_count = lifecycle_data.count - first_lifecycle_count_ + 1;
   if (base::TimeTicks::IsHighResolution()) {
     if (lifecycle_count < 3)
-      return 4.;
+      return base::TimeDelta::FromMilliseconds(4);
     if (lifecycle_count < 10)
-      return 8.;
+      return base::TimeDelta::FromMilliseconds(8);
     if (lifecycle_count < 60)
-      return 16.;
+      return base::TimeDelta::FromMilliseconds(16);
   } else {
     // Without a high resolution clock, the resolution can be as bad as 15ms, so
     // increase the budgets accordingly to ensure we don't abort before doing
     // any phases.
     if (lifecycle_count < 60)
-      return 16.;
+      return base::TimeDelta::FromMilliseconds(16);
   }
-  return 1e9;
+  return base::TimeDelta::FromMilliseconds(1e9);
 }
 
 }  // namespace blink

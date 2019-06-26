@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -25,11 +26,13 @@ namespace autofill {
 
 namespace {
 
-base::string16 GetTitle(bool unused) {
-  return l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE);
+base::string16 GetTitle(bool has_suggestions) {
+  return l10n_util::GetStringUTF16(
+      has_suggestions ? IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE
+                      : IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_EMPTY_MESSAGE);
 }
 
-void AddField(const base::string16& data, UserInfo* user_info) {
+void AddSimpleField(const base::string16& data, UserInfo* user_info) {
   user_info->add_field(UserInfo::Field(data, data,
                                        /*is_password=*/false,
                                        /*selectable=*/true));
@@ -40,20 +43,24 @@ UserInfo TranslateCard(const CreditCard* data) {
 
   UserInfo user_info;
 
-  AddField(data->ObfuscatedLastFourDigits(), &user_info);
+  base::string16 obfuscated_number = data->ObfuscatedLastFourDigits();
+  user_info.add_field(UserInfo::Field(obfuscated_number, obfuscated_number,
+                                      data->guid(), /*is_password=*/false,
+                                      /*selectable=*/true));
 
   if (data->HasValidExpirationDate()) {
-    AddField(data->ExpirationMonthAsString(), &user_info);
-    AddField(data->Expiration4DigitYearAsString(), &user_info);
+    AddSimpleField(data->ExpirationMonthAsString(), &user_info);
+    AddSimpleField(data->Expiration4DigitYearAsString(), &user_info);
   } else {
-    AddField(base::string16(), &user_info);
-    AddField(base::string16(), &user_info);
+    AddSimpleField(base::string16(), &user_info);
+    AddSimpleField(base::string16(), &user_info);
   }
 
   if (data->HasNameOnCard()) {
-    AddField(data->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL), &user_info);
+    AddSimpleField(data->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
+                   &user_info);
   } else {
-    AddField(base::string16(), &user_info);
+    AddSimpleField(base::string16(), &user_info);
   }
 
   return user_info;
@@ -61,8 +68,42 @@ UserInfo TranslateCard(const CreditCard* data) {
 
 }  // namespace
 
-CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() =
-    default;
+CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() {
+  if (personal_data_manager_)
+    personal_data_manager_->RemoveObserver(this);
+}
+
+void CreditCardAccessoryControllerImpl::OnFillingTriggered(
+    const UserInfo::Field& selection) {
+  autofill::ContentAutofillDriver* driver =
+      autofill::ContentAutofillDriver::GetForRenderFrameHost(
+          web_contents_->GetFocusedFrame());
+  if (!driver)
+    return;
+
+  // Credit card number fields have a GUID populated to allow deobfuscation
+  // before filling.
+  if (selection.id().empty()) {
+    driver->RendererShouldFillFieldWithValue(selection.display_text());
+    return;
+  }
+
+  auto card_iter = std::find_if(cards_cache_.begin(), cards_cache_.end(),
+                                [&selection](const auto* card) {
+                                  return card->guid() == selection.id();
+                                });
+
+  DCHECK(card_iter != cards_cache_.end())
+      << "Tried to fill card with unknown GUID";
+
+  CreditCard* matching_card = *card_iter;
+  if (matching_card->record_type() ==
+      CreditCard::RecordType::MASKED_SERVER_CARD) {
+    // Unmasking server cards is not yet supported
+    return;
+  }
+  driver->RendererShouldFillFieldWithValue(matching_card->number());
+}
 
 void CreditCardAccessoryControllerImpl::OnOptionSelected(
     AccessoryAction selected_action) {
@@ -104,9 +145,9 @@ CreditCardAccessoryController* CreditCardAccessoryController::GetIfExisting(
 }
 
 void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
-  const std::vector<CreditCard*> suggestions = GetSuggestions();
+  FetchSuggestionsFromPersonalDataManager();
   std::vector<UserInfo> info_to_add;
-  std::transform(suggestions.begin(), suggestions.end(),
+  std::transform(cards_cache_.begin(), cards_cache_.end(),
                  std::back_inserter(info_to_add), &TranslateCard);
 
   const std::vector<FooterCommand> footer_commands = {FooterCommand(
@@ -114,10 +155,15 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
       AccessoryAction::MANAGE_CREDIT_CARDS)};
 
   bool has_suggestions = !info_to_add.empty();
+
   GetManualFillingController()->RefreshSuggestions(
       autofill::CreateAccessorySheetData(
           AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
           std::move(info_to_add), std::move(footer_commands)));
+}
+
+void CreditCardAccessoryControllerImpl::OnPersonalDataChanged() {
+  RefreshSuggestions();
 }
 
 // static
@@ -138,7 +184,13 @@ void CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
 CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
-      personal_data_manager_for_testing_(nullptr) {}
+      personal_data_manager_(
+          autofill::PersonalDataManagerFactory::GetForProfile(
+              Profile::FromBrowserContext(
+                  web_contents_->GetBrowserContext()))) {
+  if (personal_data_manager_)
+    personal_data_manager_->AddObserver(this);
+}
 
 CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
     content::WebContents* web_contents,
@@ -146,21 +198,19 @@ CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
     PersonalDataManager* personal_data_manager)
     : web_contents_(web_contents),
       mf_controller_(mf_controller),
-      personal_data_manager_for_testing_(personal_data_manager) {}
+      personal_data_manager_(personal_data_manager) {
+  if (personal_data_manager_)
+    personal_data_manager_->AddObserver(this);
+}
 
-const std::vector<CreditCard*>
-CreditCardAccessoryControllerImpl::GetSuggestions() {
-  const PersonalDataManager* personal_data_manager =
-      personal_data_manager_for_testing_;
-  if (!personal_data_manager) {
-    personal_data_manager = autofill::PersonalDataManagerFactory::GetForProfile(
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+void CreditCardAccessoryControllerImpl::
+    FetchSuggestionsFromPersonalDataManager() {
+  if (!personal_data_manager_) {
+    cards_cache_.clear();  // No data available.
+  } else {
+    cards_cache_ = personal_data_manager_->GetCreditCardsToSuggest(
+        /*include_server_cards=*/true);
   }
-  if (!personal_data_manager) {
-    return {};  // No data available.
-  }
-  return personal_data_manager->GetCreditCardsToSuggest(
-      /*include_server_cards=*/true);
 }
 
 base::WeakPtr<ManualFillingController>

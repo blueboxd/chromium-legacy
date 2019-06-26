@@ -38,7 +38,9 @@ using autofill::PasswordForm;
 using autofill::UserInfo;
 using autofill::password_generation::PasswordGenerationUIData;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -162,7 +164,8 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
           static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
-          field.is_obfuscated(), field.selectable());
+          ConvertUTF8ToJavaString(env, field.id()), field.is_obfuscated(),
+          field.selectable());
     }
   }
 
@@ -182,9 +185,11 @@ UserInfo::Field ManualFillingViewAndroid::ConvertJavaUserInfoField(
       env, Java_UserInfoField_getDisplayText(env, j_field_to_convert));
   base::string16 a11y_description = ConvertJavaStringToUTF16(
       env, Java_UserInfoField_getA11yDescription(env, j_field_to_convert));
+  std::string id = ConvertJavaStringToUTF8(
+      env, Java_UserInfoField_getId(env, j_field_to_convert));
   bool is_obfuscated = Java_UserInfoField_isObfuscated(env, j_field_to_convert);
   bool selectable = Java_UserInfoField_isSelectable(env, j_field_to_convert);
-  return UserInfo::Field(display_text, a11y_description, is_obfuscated,
+  return UserInfo::Field(display_text, a11y_description, id, is_obfuscated,
                          selectable);
 }
 

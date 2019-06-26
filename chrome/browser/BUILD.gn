@@ -5378,6 +5378,8 @@ static_library("test_support") {
       "android/download/mock_download_controller.h",
       "autofill/mock_address_accessory_controller.cc",
       "autofill/mock_address_accessory_controller.h",
+      "autofill/mock_credit_card_accessory_controller.cc",
+      "autofill/mock_credit_card_accessory_controller.h",
       "autofill/mock_manual_filling_view.cc",
       "autofill/mock_manual_filling_view.h",
       "autofill/mock_password_accessory_controller.cc",

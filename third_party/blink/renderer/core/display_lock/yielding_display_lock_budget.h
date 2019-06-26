@@ -35,7 +35,7 @@ class CORE_EXPORT YieldingDisplayLockBudget final : public DisplayLockBudget {
  protected:
   friend class DisplayLockBudgetTest;
 
-  double GetCurrentBudgetMs(const LifecycleData& lifecycle_data) const;
+  base::TimeDelta GetCurrentBudget(const LifecycleData& lifecycle_data) const;
 
  private:
   unsigned first_lifecycle_count_ = 0;

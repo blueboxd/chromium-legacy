@@ -116,6 +116,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
       const LayoutBoxModelObject&);
 
   void SetPaintArtifactCompositorNeedsUpdate();
+  void UpdateOpacity(float opacity);
 
   class LinkHighlightFragment : private cc::ContentLayerClient {
    public:

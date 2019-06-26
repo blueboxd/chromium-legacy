@@ -322,12 +322,6 @@ void WindowPerformance::ReportLongTask(
   }
 }
 
-// We buffer Element Timing and Event Timing (long-latency events) entries until
-// onload, i.e., LoadEventStart is not reached yet.
-bool WindowPerformance::ShouldBufferEntries() {
-  return !timing() || !timing()->loadEventStart();
-}
-
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             base::TimeTicks start_time,
                                             base::TimeTicks processing_start,
@@ -387,7 +381,7 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (ShouldBufferEntries() && !IsEventTimingBufferFull())
+    if (!IsEventTimingBufferFull())
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
@@ -412,7 +406,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                       WebFeature::kElementTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
-  if (ShouldBufferEntries() && !IsElementTimingBufferFull())
+  if (!IsElementTimingBufferFull())
     AddElementTimingBuffer(*entry);
 }
 
@@ -437,8 +431,7 @@ void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
   auto* entry = MakeGarbageCollected<LayoutShift>(now(), jank_fraction);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
-  if (ShouldBufferEntries())
-    AddLayoutJankBuffer(*entry);
+  AddLayoutJankBuffer(*entry);
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(

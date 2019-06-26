@@ -19,6 +19,7 @@
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler_client.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -268,9 +269,9 @@ bool MediaRecorderHandler::Start(int timeslice) {
         media::BindToCurrentLoop(WTF::BindRepeating(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.emplace_back(new VideoTrackRecorder(
-        video_codec_id_, WebMediaStreamTrack(video_tracks_[0]),
-        on_encoded_video_cb, video_bits_per_second_, task_runner_));
+    video_recorders_.emplace_back(MakeGarbageCollected<VideoTrackRecorder>(
+        video_codec_id_, video_tracks_[0], on_encoded_video_cb,
+        video_bits_per_second_, task_runner_));
   }
 
   if (use_audio_tracks) {
@@ -286,9 +287,9 @@ bool MediaRecorderHandler::Start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
-    audio_recorders_.emplace_back(new AudioTrackRecorder(
-        audio_codec_id_, WebMediaStreamTrack(audio_tracks_[0]),
-        std::move(on_encoded_audio_cb), audio_bits_per_second_));
+    audio_recorders_.emplace_back(MakeGarbageCollected<AudioTrackRecorder>(
+        audio_codec_id_, audio_tracks_[0], std::move(on_encoded_audio_cb),
+        audio_bits_per_second_));
   }
 
   recording_ = true;
@@ -568,6 +569,8 @@ void MediaRecorderHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);
+  visitor->Trace(video_recorders_);
+  visitor->Trace(audio_recorders_);
 }
 
 }  // namespace blink

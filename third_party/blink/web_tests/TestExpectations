@@ -261,8 +261,6 @@ crbug.com/882663 virtual/display-lock/inspector-protocol/css [ Skip ]
 Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Pass ]
 
 # Display locking failures
-crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update.html [ Timeout ]
-crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 
 # Sheriff 2018/05/25
@@ -5457,6 +5455,7 @@ crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-go
 
 # User Activation
 crbug.com/736415 external/wpt/html/user-activation/activation-api-iframe.tenative.html [ Failure ]
+crbug.com/978620 external/wpt/html/user-activation/activation-hierarchy-parent-manual.sub.tentative.html [ Timeout ]
 
 # Sheriff 2018-07-05
 crbug.com/860731 fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass ]

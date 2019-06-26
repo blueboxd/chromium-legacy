@@ -122,9 +122,10 @@ public class AddressAccessorySheetControllerTest {
         final AccessorySheetData testData =
                 new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
         testData.getUserInfoList().add(new UserInfo(null));
-        testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Street", "Street", true, field -> {}));
+                new UserInfoField("Name", "Name", "", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfoField("Street", "Street", "", true, field -> {}));
 
         mCoordinator.registerDataProvider(testProvider);
         testProvider.notifyObservers(testData);
@@ -149,9 +150,10 @@ public class AddressAccessorySheetControllerTest {
 
         // As soon UserInfo is available, discard the title.
         testData.getUserInfoList().add(new UserInfo(null));
-        testData.getUserInfoList().get(0).addField(new UserInfoField("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Address", "Address for Name", true, field -> {}));
+                new UserInfoField("Name", "Name", "", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfoField("Address", "Address for Name", "", true, field -> {}));
         testProvider.notifyObservers(testData);
 
         assertThat(mSheetDataPieces.size(), is(1));

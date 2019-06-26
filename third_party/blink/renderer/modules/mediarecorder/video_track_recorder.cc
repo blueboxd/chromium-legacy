@@ -19,9 +19,12 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vea_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/vpx_encoder.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -427,7 +430,7 @@ bool VideoTrackRecorder::CanUseAcceleratedEncoder(CodecId codec,
 
 VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
-    const WebMediaStreamTrack& track,
+    MediaStreamComponent* track,
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
@@ -436,26 +439,19 @@ VideoTrackRecorder::VideoTrackRecorder(
       main_task_runner_(std::move(main_task_runner)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  DCHECK(!track_.IsNull());
-  DCHECK(track_.GetPlatformTrack());
+  DCHECK(track_);
+  DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeVideo);
 
   initialize_encoder_callback_ = WTF::BindRepeating(
       &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),
       codec, on_encoded_video_callback, bits_per_second);
 
   // InitializeEncoder() will be called on Render Main thread.
-  MediaStreamVideoSink::ConnectToTrack(
-      track_,
-      media::BindToCurrentLoop(WTF::BindRepeating(
-          initialize_encoder_callback_, true /* allow_vea_encoder */)),
-      false);
+  ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
+      initialize_encoder_callback_, true /* allow_vea_encoder */)));
 }
 
-VideoTrackRecorder::~VideoTrackRecorder() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  MediaStreamVideoSink::DisconnectFromTrack();
-  track_.Reset();
-}
+VideoTrackRecorder::~VideoTrackRecorder() = default;
 
 void VideoTrackRecorder::Pause() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
@@ -502,7 +498,7 @@ void VideoTrackRecorder::InitializeEncoder(
   if (encoder_)
     return;
 
-  MediaStreamVideoSink::DisconnectFromTrack();
+  DisconnectFromTrack();
 
   const gfx::Size& input_size = frame->visible_rect().size();
   if (allow_vea_encoder && CanUseAcceleratedEncoder(codec, input_size.width(),
@@ -539,11 +535,8 @@ void VideoTrackRecorder::InitializeEncoder(
     encoder_->SetPaused(should_pause_encoder_on_initialization_);
 
   // StartFrameEncode() will be called on Render IO thread.
-  MediaStreamVideoSink::ConnectToTrack(
-      track_,
-      ConvertToBaseCallback(CrossThreadBindRepeating(
-          &VideoTrackRecorder::Encoder::StartFrameEncode, encoder_)),
-      false);
+  ConnectToTrack(ConvertToBaseCallback(CrossThreadBindRepeating(
+      &VideoTrackRecorder::Encoder::StartFrameEncode, encoder_)));
 }
 
 void VideoTrackRecorder::OnError() {
@@ -552,13 +545,35 @@ void VideoTrackRecorder::OnError() {
 
   // InitializeEncoder() will be called to reinitialize encoder on Render Main
   // thread.
-  MediaStreamVideoSink::DisconnectFromTrack();
+  DisconnectFromTrack();
   encoder_ = nullptr;
-  MediaStreamVideoSink::ConnectToTrack(
-      track_,
-      media::BindToCurrentLoop(WTF::BindRepeating(initialize_encoder_callback_,
-                                                  false /*allow_vea_encoder*/)),
-      false);
+  ConnectToTrack(media::BindToCurrentLoop(WTF::BindRepeating(
+      initialize_encoder_callback_, false /*allow_vea_encoder*/)));
+}
+
+void VideoTrackRecorder::ConnectToTrack(
+    const VideoCaptureDeliverFrameCB& callback) {
+  auto* video_track =
+      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
+  video_track->AddSink(this, callback, false);
+}
+
+void VideoTrackRecorder::DisconnectFromTrack() {
+  auto* video_track =
+      static_cast<MediaStreamVideoTrack*>(track_->GetPlatformTrack());
+  video_track->RemoveSink(this);
+}
+
+void VideoTrackRecorder::Trace(blink::Visitor* visitor) {
+  visitor->Trace(track_);
+}
+
+void VideoTrackRecorder::Prefinalize() {
+  // TODO(crbug.com/704136) : Remove this method when moving
+  // MediaStreamVideoTrack to Oilpan's heap.
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DisconnectFromTrack();
+  track_ = nullptr;
 }
 
 }  // namespace blink

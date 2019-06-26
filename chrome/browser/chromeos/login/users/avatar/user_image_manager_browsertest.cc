@@ -138,7 +138,7 @@ class UserImageManagerTest : public LoginManagerTest,
  public:
   std::unique_ptr<net::test_server::BasicHttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
-    if (request.relative_url != "/avatar.jpg")
+    if (request.relative_url.find("/avatar.jpg") == std::string::npos)
       return nullptr;
 
     // Check whether the token string is the same.

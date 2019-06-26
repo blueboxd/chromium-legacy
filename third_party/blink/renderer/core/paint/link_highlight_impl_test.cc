@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -294,6 +295,8 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
       !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
+  bool was_running_web_test = WebTestSupport::IsRunningWebTest();
+  WebTestSupport::SetIsRunningWebTest(false);
   int page_width = 640;
   int page_height = 480;
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
@@ -317,7 +320,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // The highlight should create one additional layer.
   EXPECT_EQ(layer_count_before_highlight + 1, ContentLayerCount());
 
-  const auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
+  auto& highlights = web_view_impl->GetPage()->GetLinkHighlights();
   auto* highlight = highlights.link_highlights_.at(0).get();
   ASSERT_TRUE(highlight);
 
@@ -336,12 +339,25 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // node.
   EXPECT_EQ(highlight->Effect().GetCompositorElementId(),
             highlight->ElementIdForTesting());
+
+  // Initially the highlight node has full opacity as it is expected to remain
+  // visible until the user completes a tap. See https://crbug.com/974631
+  EXPECT_EQ(1.f, highlight->Effect().Opacity());
+  EXPECT_TRUE(highlight->Effect().HasActiveOpacityAnimation());
+
+  // After starting the highlight animation the effect node's opacity should
+  // be 0.f as it will be overridden bt the animation but may become visible
+  // before the animation is destructed. See https://crbug.com/974160
+  highlights.StartHighlightAnimationIfNeeded();
+  EXPECT_EQ(0.f, highlight->Effect().Opacity());
   EXPECT_TRUE(highlight->Effect().HasActiveOpacityAnimation());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layer count by one.
   EXPECT_EQ(layer_count_before_highlight, ContentLayerCount());
+
+  WebTestSupport::SetIsRunningWebTest(was_running_web_test);
 }
 
 TEST_P(LinkHighlightImplTest, MultiColumn) {

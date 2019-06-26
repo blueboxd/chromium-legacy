@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_opus_encoder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_pcm_encoder.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
@@ -42,7 +44,7 @@ AudioTrackRecorder::CodecId AudioTrackRecorder::GetPreferredCodecId() {
 }
 
 AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
-                                       const WebMediaStreamTrack& track,
+                                       MediaStreamComponent* track,
                                        OnEncodedAudioCB on_encoded_audio_cb,
                                        int32_t bits_per_second)
     : track_(track),
@@ -53,17 +55,14 @@ AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
           ThreadCreationParams(WebThreadType::kAudioEncoderThread))),
       encoder_task_runner_(encoder_thread_->GetTaskRunner()) {
   DCHECK(IsMainThread());
-  DCHECK(!track_.IsNull());
-  DCHECK(MediaStreamAudioTrack::From(track_));
+  DCHECK(track_);
+  DCHECK(track_->Source()->GetType() == MediaStreamSource::kTypeAudio);
 
   // Connect the source provider to the track as a sink.
-  WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
+  ConnectToTrack();
 }
 
-AudioTrackRecorder::~AudioTrackRecorder() {
-  DCHECK(IsMainThread());
-  WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
-}
+AudioTrackRecorder::~AudioTrackRecorder() = default;
 
 // Creates an audio encoder from the codec. Returns nullptr if the codec is
 // invalid.
@@ -120,6 +119,32 @@ void AudioTrackRecorder::Resume() {
   PostCrossThreadTask(
       *encoder_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&AudioTrackEncoder::set_paused, encoder_, false));
+}
+
+void AudioTrackRecorder::ConnectToTrack() {
+  auto* audio_track =
+      static_cast<MediaStreamAudioTrack*>(track_->GetPlatformTrack());
+  DCHECK(audio_track);
+  audio_track->AddSink(this);
+}
+
+void AudioTrackRecorder::DisconnectFromTrack() {
+  auto* audio_track =
+      static_cast<MediaStreamAudioTrack*>(track_->GetPlatformTrack());
+  DCHECK(audio_track);
+  audio_track->RemoveSink(this);
+}
+
+void AudioTrackRecorder::Trace(blink::Visitor* visitor) {
+  visitor->Trace(track_);
+}
+
+void AudioTrackRecorder::Prefinalize() {
+  // TODO(crbug.com/704136) : Remove this method when moving
+  // MediaStreamAudioTrack to Oilpan's heap.
+  DCHECK(IsMainThread());
+  DisconnectFromTrack();
+  track_ = nullptr;
 }
 
 }  // namespace blink

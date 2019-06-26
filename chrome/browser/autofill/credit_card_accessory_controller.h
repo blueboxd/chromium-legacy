@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_AUTOFILL_CREDIT_CARD_ACCESSORY_CONTROLLER_H_
 #define CHROME_BROWSER_AUTOFILL_CREDIT_CARD_ACCESSORY_CONTROLLER_H_
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/accessory_controller.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace content {
 class WebContents;
@@ -15,10 +18,17 @@ namespace autofill {
 
 // Interface for credit card-specific keyboard accessory controller between the
 // ManualFillingController and Autofill backend logic.
-class CreditCardAccessoryController : public AccessoryController {
+class CreditCardAccessoryController
+    : public base::SupportsWeakPtr<CreditCardAccessoryController>,
+      public AccessoryController,
+      public PersonalDataManagerObserver {
  public:
   CreditCardAccessoryController() = default;
   ~CreditCardAccessoryController() override = default;
+  // Disallow copy and assign
+  CreditCardAccessoryController(const CreditCardAccessoryController&) = delete;
+  CreditCardAccessoryController& operator=(
+      const CreditCardAccessoryController&) = delete;
 
   // Returns true if the accessory controller may exist for |web_contents|.
   // Otherwise it returns false.

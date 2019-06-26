@@ -14,6 +14,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.containsString;
 
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.isTransformed;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
@@ -40,6 +41,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
+
 /**
  * Integration tests for password accessory views.
  */
@@ -126,6 +128,7 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
 
         // Click the suggestion.
         whenDisplayed(withText("ShorterPassword")).perform(click());

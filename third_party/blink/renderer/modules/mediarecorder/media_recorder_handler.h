@@ -135,8 +135,8 @@ class MODULES_EXPORT MediaRecorderHandler
   // |client_| is a weak pointer, and is valid for the lifetime of this object.
   MediaRecorderHandlerClient* client_;
 
-  Vector<std::unique_ptr<VideoTrackRecorder>> video_recorders_;
-  Vector<std::unique_ptr<AudioTrackRecorder>> audio_recorders_;
+  HeapVector<Member<VideoTrackRecorder>> video_recorders_;
+  HeapVector<Member<AudioTrackRecorder>> audio_recorders_;
 
   // Worker class doing the actual Webm Muxing work.
   std::unique_ptr<media::WebmMuxer> webm_muxer_;

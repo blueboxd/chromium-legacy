@@ -32,6 +32,7 @@
 #include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
+#include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
@@ -57,6 +58,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_write_blocked_list.h"
+#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -215,6 +218,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
                       false),
         random_generator_(0),
         printer_(version_) {
+    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
@@ -279,6 +283,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
     EXPECT_CALL(*send_algorithm_, InSlowStart()).WillRepeatedly(Return(false));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(testing::AtLeast(1));
+    EXPECT_CALL(*send_algorithm_, OnCongestionEvent(_, _, _, _, _))
+        .Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
         .WillRepeatedly(Return(quic::kMaxOutgoingPacketSize));
     EXPECT_CALL(*send_algorithm_, PacingRate(_))
@@ -649,6 +655,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
         version_.transport_version, n);
   }
 
+  QuicFlagSaver saver_;
+
   const quic::ParsedQuicVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
 
@@ -701,7 +709,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicHttpStreamTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
                        ::testing::Bool()));
 
 TEST_P(QuicHttpStreamTest, RenewStreamForAuth) {
@@ -920,8 +928,10 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
   spdy::SpdyHeaderBlock trailers;
   size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
-  trailers[quic::kFinalOffsetHeaderKey] =
-      base::NumberToString(strlen(kResponseBody) + header.length());
+  if (!quic::VersionUsesQpack(version_.transport_version)) {
+    trailers[quic::kFinalOffsetHeaderKey] =
+        base::NumberToString(strlen(kResponseBody) + header.length());
+  }
   ProcessPacket(ConstructResponseTrailersPacket(4, kFin, std::move(trailers),
                                                 &spdy_trailers_frame_length));
 
@@ -1127,6 +1137,14 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 }
 
 TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
+  // TODO(nharper): Figure out why this test does not send packets
+  // when TLS is used.
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    Initialize();
+
+    return;
+  }
+
   // By default the test setup defaults handshake to be confirmed. Manually set
   // it to be not confirmed.
   crypto_client_stream_factory_.set_handshake_mode(
@@ -1920,7 +1938,7 @@ TEST_P(QuicHttpStreamTest, ServerPushGetRequest) {
 
   // Now sending a matching request will have successful rendezvous
   // with the promised stream.
-  EXPECT_EQ(OK, promised_stream_->SendRequest(headers_, &response_,
+  ASSERT_EQ(OK, promised_stream_->SendRequest(headers_, &response_,
                                               callback_.callback()));
 
   EXPECT_EQ(

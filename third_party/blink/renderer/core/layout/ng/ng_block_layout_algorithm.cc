@@ -674,7 +674,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   // Only layout absolute and fixed children if we aren't going to revisit this
   // layout.
-  if (unpositioned_floats_.IsEmpty()) {
+  if (!container_builder_.AdjoiningFloatTypes() ||
+      ConstraintSpace().ForcedBfcBlockOffset()) {
     NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
                           &container_builder_)
         .Run();

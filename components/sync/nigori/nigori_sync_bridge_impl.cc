@@ -212,6 +212,45 @@ bool UpdateEncryptedTypes(const NigoriSpecifics& specifics,
   return true;
 }
 
+// Updates |specifics|'s individual datatypes encryption state based on
+// |encrypted_types|.
+void UpdateNigoriSpecificsFromEncryptedTypes(
+    ModelTypeSet encrypted_types,
+    sync_pb::NigoriSpecifics* specifics) {
+  static_assert(45 == ModelType::NUM_ENTRIES,
+                "If adding an encryptable type, update handling below.");
+  specifics->set_encrypt_bookmarks(encrypted_types.Has(BOOKMARKS));
+  specifics->set_encrypt_preferences(encrypted_types.Has(PREFERENCES));
+  specifics->set_encrypt_autofill_profile(
+      encrypted_types.Has(AUTOFILL_PROFILE));
+  specifics->set_encrypt_autofill(encrypted_types.Has(AUTOFILL));
+  specifics->set_encrypt_autofill_wallet_metadata(
+      encrypted_types.Has(AUTOFILL_WALLET_METADATA));
+  specifics->set_encrypt_themes(encrypted_types.Has(THEMES));
+  specifics->set_encrypt_typed_urls(encrypted_types.Has(TYPED_URLS));
+  specifics->set_encrypt_extensions(encrypted_types.Has(EXTENSIONS));
+  specifics->set_encrypt_search_engines(encrypted_types.Has(SEARCH_ENGINES));
+  specifics->set_encrypt_sessions(encrypted_types.Has(SESSIONS));
+  specifics->set_encrypt_apps(encrypted_types.Has(APPS));
+  specifics->set_encrypt_app_settings(encrypted_types.Has(APP_SETTINGS));
+  specifics->set_encrypt_extension_settings(
+      encrypted_types.Has(EXTENSION_SETTINGS));
+  specifics->set_encrypt_app_notifications(
+      encrypted_types.Has(DEPRECATED_APP_NOTIFICATIONS));
+  specifics->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
+  specifics->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
+  specifics->set_encrypt_favicon_tracking(
+      encrypted_types.Has(FAVICON_TRACKING));
+  specifics->set_encrypt_articles(encrypted_types.Has(DEPRECATED_ARTICLES));
+  specifics->set_encrypt_app_list(encrypted_types.Has(APP_LIST));
+  specifics->set_encrypt_arc_package(encrypted_types.Has(ARC_PACKAGE));
+  specifics->set_encrypt_printers(encrypted_types.Has(PRINTERS));
+  specifics->set_encrypt_reading_list(encrypted_types.Has(READING_LIST));
+  specifics->set_encrypt_mountain_shares(encrypted_types.Has(MOUNTAIN_SHARES));
+  specifics->set_encrypt_send_tab_to_self(
+      encrypted_types.Has(SEND_TAB_TO_SELF));
+}
+
 }  // namespace
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
@@ -263,6 +302,48 @@ void NigoriSyncBridgeImpl::Init() {
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (passphrase_type_) {
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::UNKNOWN:
+      NOTREACHED();
+      return;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      // Attempt to set the explicit passphrase when one was already set. It's
+      // possible if we received new NigoriSpecifics during the passphrase
+      // setup.
+      DVLOG(1) << "Attempt to set explicit passphrase failed, because one was "
+                  "already set.";
+      // TODO(crbug.com/922900): investigate whether we need to call
+      // OnPassphraseRequired() to prompt for decryption passphrase.
+      return;
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      break;
+  }
+  DCHECK(cryptographer_.is_ready());
+  passphrase_type_ = NigoriSpecifics::CUSTOM_PASSPHRASE;
+  cryptographer_.AddKey({KeyDerivationParams::CreateForPbkdf2(), passphrase});
+  encrypt_everything_ = true;
+  custom_passphrase_time_ = base::Time::Now();
+  processor_->Put(GetData());
+  for (auto& observer : observers_) {
+    observer.OnPassphraseAccepted();
+  }
+  for (auto& observer : observers_) {
+    observer.OnPassphraseTypeChanged(
+        ProtoPassphraseTypeToEnum(passphrase_type_), custom_passphrase_time_);
+  }
+  for (auto& observer : observers_) {
+    observer.OnCryptographerStateChanged(&cryptographer_);
+  }
+  for (auto& observer : observers_) {
+    observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
+                                     encrypt_everything_);
+  }
+  // OnLocalSetPassphraseEncryption() is intentionally not called here, because
+  // it's needed only for the Directory implementation unit tests.
+  // TODO(crbug.com/922900): persist |passphrase| in corresponding storage.
+  // TODO(crbug.com/922900): support SCRYPT key derivation method.
   NOTIMPLEMENTED();
 }
 
@@ -586,6 +667,9 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   cryptographer_.GetKeys(specifics.mutable_encryption_keybag());
   specifics.set_keybag_is_frozen(true);
   specifics.set_encrypt_everything(encrypt_everything_);
+  if (encrypt_everything_) {
+    UpdateNigoriSpecificsFromEncryptedTypes(EncryptableUserTypes(), &specifics);
+  }
   specifics.set_passphrase_type(passphrase_type_);
   if (passphrase_type_ == NigoriSpecifics::KEYSTORE_PASSPHRASE) {
     cryptographer_.EncryptString(cryptographer_.GetDefaultNigoriKeyData(),
@@ -604,6 +688,7 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_nigori() = std::move(specifics);
   entity_data->name = kNigoriNonUniqueName;
+  entity_data->is_folder = true;
   return entity_data;
 }
 

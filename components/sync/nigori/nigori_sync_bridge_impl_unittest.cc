@@ -20,6 +20,7 @@ namespace {
 using testing::_;
 using testing::Eq;
 using testing::Ne;
+using testing::Not;
 using testing::NotNull;
 
 const char kNigoriKeyName[] = "nigori-key";
@@ -52,6 +53,20 @@ MATCHER(HasKeystoreNigori, "") {
          !specifics.keystore_decryptor_token().blob().empty() &&
          specifics.keybag_is_frozen() &&
          specifics.has_keystore_migration_time();
+}
+
+MATCHER(HasCustomPassphraseNigori, "") {
+  const std::unique_ptr<EntityData>& entity_data = arg;
+  if (!entity_data || !entity_data->specifics.has_nigori()) {
+    return false;
+  }
+  const sync_pb::NigoriSpecifics& specifics = entity_data->specifics.nigori();
+  return specifics.passphrase_type() ==
+             sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE &&
+         !specifics.encryption_keybag().blob().empty() &&
+         !specifics.has_keystore_decryptor_token() &&
+         specifics.encrypt_everything() && specifics.keybag_is_frozen() &&
+         specifics.has_custom_passphrase_time();
 }
 
 MATCHER_P(CanDecryptWith, key_params, "") {
@@ -463,6 +478,54 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, CanDecryptWith(kOldKeyParams));
   EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+}
+
+// Tests custom passphrase setup logic. Initially Nigori node will be
+// initialized with keystore Nigori due to sync with default Nigori. After
+// SetEncryptionPassphrase() call observers should be notified about state
+// changes, custom passphrase Nigori should be put into the processor and
+// exposed through GetData(), cryptographer should encrypt data with custom
+// passphrase.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldPutAndNotifyObserversWhenSetEncryptionPassphrase) {
+  EntityData default_entity_data;
+  *default_entity_data.specifics.mutable_nigori() =
+      sync_pb::NigoriSpecifics::default_instance();
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
+              Eq(base::nullopt));
+  ASSERT_THAT(bridge()->GetData(), Not(HasCustomPassphraseNigori()));
+
+  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
+                               /*encrypted_types=*/EncryptableUserTypes(),
+                               /*encrypt_everything=*/true));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+                                      /*passphrase_time=*/NotNullTime()));
+  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
+  bridge()->SetEncryptionPassphrase(kPassphraseKeyParams.password);
+  EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+}
+
+// Tests that SetEncryptionPassphrase() call doesn't lead to custom passphrase
+// change in case we already have one.
+TEST_F(NigoriSyncBridgeImplTest, ShouldNotAllowCustomPassphraseChange) {
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams("passphrase"), {});
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*observer(), OnPassphraseAccepted()).Times(0);
+  bridge()->SetEncryptionPassphrase("new_passphrase");
 }
 
 }  // namespace

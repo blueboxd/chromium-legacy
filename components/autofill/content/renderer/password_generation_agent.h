@@ -140,26 +140,15 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
       blink::WebInputElement element,
       uint32_t confirmation_password_renderer_id);
 
-  // Runs HTML parsing based classifier and saves its outcome to proto.
-  // TODO(crbug.com/621442): Remove client-side form classifier when server-side
-  // classifier is ready.
-  void RunFormClassifierAndSaveVote(const blink::WebFormElement& web_form,
-                                    const PasswordForm& form);
-
   void LogMessage(autofill::SavePasswordProgressLogger::StringID message_id);
   void LogBoolean(autofill::SavePasswordProgressLogger::StringID message_id,
                   bool truth_value);
-  void LogNumber(autofill::SavePasswordProgressLogger::StringID message_id,
-                 int number);
 
   // Creates a password form to presave a generated password. It copies behavior
   // of CreatePasswordFormFromWebForm/FromUnownedInputElements, but takes
   // |password_value| from |generation_element_| and empties |username_value|.
   // If a form creating is failed, returns an empty unique_ptr.
   std::unique_ptr<PasswordForm> CreatePasswordFormToPresave();
-
-  // Element where we want to trigger automatic password generation UI on.
-  blink::WebInputElement automatic_generation_element_;
 
   // Contains the current element where generation is offered at the moment. It
   // can be either automatic or manual password generation.

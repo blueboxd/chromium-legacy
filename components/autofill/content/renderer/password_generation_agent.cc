@@ -184,7 +184,6 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
       }
     }
   }
-  automatic_generation_element_.Reset();
   current_generation_item_.reset();
   last_focused_password_element_.Reset();
   generation_enabled_fields_.clear();
@@ -368,19 +367,8 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
     return false;
   }
 
-  // Automatic generation depends on whether the new parser is on because the
-  // new parser sends now information to the renderer about fields for
-  // generation. In case when the new old parser is used the old path for
-  // automatic generation is used. So detecting which automatic generation
-  // depends on which parser is used.
-  // TODO(https://crbug.com/831123): Remove this variable when the old parser is
-  // gone.
-  bool automatic_generation_available_with_the_old_parser =
-      last_focused_password_element_ == automatic_generation_element_;
-
   current_generation_item_->is_manually_triggered_ =
-      !is_automatic_generation_available &&
-      !automatic_generation_available_with_the_old_parser;
+      !is_automatic_generation_available;
   return true;
 }
 
@@ -644,14 +632,6 @@ void PasswordGenerationAgent::LogBoolean(Logger::StringID message_id,
     return;
   RendererSavePasswordProgressLogger logger(GetPasswordManagerDriver().get());
   logger.LogBoolean(message_id, truth_value);
-}
-
-void PasswordGenerationAgent::LogNumber(Logger::StringID message_id,
-                                        int number) {
-  if (!password_agent_->logging_state_active())
-    return;
-  RendererSavePasswordProgressLogger logger(GetPasswordManagerDriver().get());
-  logger.LogNumber(message_id, number);
 }
 
 }  // namespace autofill

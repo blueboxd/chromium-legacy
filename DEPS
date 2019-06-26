@@ -811,7 +811,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'effb0bcb66db74f394cb2f91607623cedb6f6e77',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7bf0ecb40e23d6b6eec2aab01dfcec9fb5bb9a1f',
       'condition': 'checkout_linux',
   },
 
@@ -1364,7 +1364,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '6f0b34abee8dba611c253738d955c59f703c147a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e8df48220589004f434c5aa99090d992b590290d',
+    Var('webrtc_git') + '/src.git' + '@' + 'c57b0ee11c438a0c9c11b5b452527a3a74e79604',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

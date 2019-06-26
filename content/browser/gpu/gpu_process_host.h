@@ -26,6 +26,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_mode.h"
@@ -138,7 +139,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
       const base::Optional<gpu::GpuFeatureInfo>&
-          gpu_feature_info_for_hardware_gpu) override;
+          gpu_feature_info_for_hardware_gpu,
+      const gpu::GpuExtraInfo& gpu_extra_info) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt) override;

@@ -65,6 +65,13 @@ bool URLRequestFtpJob::IsSafeRedirect(const GURL& location) {
 }
 
 bool URLRequestFtpJob::GetMimeType(std::string* mime_type) const {
+  // When auth has been cancelled, return a blank text/plain page instead of
+  // triggering a download.
+  if (auth_data_ && auth_data_->state == AUTH_STATE_CANCELED) {
+    *mime_type = "text/plain";
+    return true;
+  }
+
   if (ftp_transaction_->GetResponseInfo()->is_directory_listing) {
     *mime_type = "text/vnd.chromium.ftp-dir";
     return true;
@@ -115,6 +122,11 @@ void URLRequestFtpJob::Kill() {
 }
 
 void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
+  // Don't expose the challenge if it has already been successfully
+  // authenticated.
+  if (!auth_data_ || auth_data_->state == AUTH_STATE_HAVE_AUTH)
+    return;
+
   std::unique_ptr<AuthChallengeInfo> challenge = GetAuthChallengeInfo();
   if (challenge)
     info->auth_challenge = *challenge;
@@ -172,9 +184,7 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
 
     NotifyHeadersComplete();
   } else if (ftp_transaction_ /* May be null if creation fails. */ &&
-             ftp_transaction_->GetResponseInfo()->needs_auth &&
-             // If auth is cancelled, cancel the request with an error below.
-             (!auth_data_ || auth_data_->state != AUTH_STATE_CANCELED)) {
+             ftp_transaction_->GetResponseInfo()->needs_auth) {
     HandleAuthNeededResponse();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
@@ -246,15 +256,16 @@ void URLRequestFtpJob::CancelAuth() {
 
   auth_data_->state = AUTH_STATE_CANCELED;
 
-  // Once the auth is cancelled, end the request with an error. Schedule this
-  // for later so that we don't cause any recursing into the caller as a result
-  // of this call.
-  OnStartCompletedAsync(ERR_FTP_FAILED);
+  ftp_transaction_.reset();
+  NotifyHeadersComplete();
 }
 
 int URLRequestFtpJob::ReadRawData(IOBuffer* buf, int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!read_in_progress_);
+
+  if (!ftp_transaction_)
+    return 0;
 
   int rv =
       ftp_transaction_->Read(buf, buf_size,

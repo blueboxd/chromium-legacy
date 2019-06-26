@@ -95,12 +95,12 @@ class RendererWebAudioDeviceImplTest
                                               base::TimeDelta));
   MOCK_METHOD3(CreateSwitchableAudioRendererSink,
                scoped_refptr<media::SwitchableAudioRendererSink>(
-                   SourceType,
+                   blink::WebAudioDeviceSourceType,
                    int,
                    const media::AudioSinkParameters&));
 
   scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
-      SourceType source_type,
+      blink::WebAudioDeviceSourceType source_type,
       int render_frame_id,
       const media::AudioSinkParameters& params) override {
     scoped_refptr<media::MockAudioRendererSink> mock_sink =

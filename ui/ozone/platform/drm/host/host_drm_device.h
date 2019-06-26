@@ -119,7 +119,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void BindInterfaceDeviceCursor(
       ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const;
 
-  void OnDrmServiceStartedCallback(bool success);
+  void OnDrmServiceStarted();
 
   // TODO(rjkroege): Get rid of the need for this method in a subsequent CL.
   void PollForSingleThreadReady(int previous_delay);

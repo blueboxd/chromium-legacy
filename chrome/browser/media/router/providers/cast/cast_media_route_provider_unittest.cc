@@ -22,24 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(crbug.com/969812): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_CreateRoute DISABLED_CreateRoute
-#define MAYBE_CreateRouteFailsInvalidSource \
-  DISABLED_CreateRouteFailsInvalidSource
-#define MAYBE_StartObservingMediaSinks DISABLED_StartObservingMediaSinks
-#define MAYBE_TerminateRoute DISABLED_TerminateRoute
-#define MAYBE_BroadcastRequest DISABLED_BroadcastRequest
-#define MAYBE_CreateRouteFailsInvalidSink DISABLED_CreateRouteFailsInvalidSink
-#else
-#define MAYBE_CreateRoute CreateRoute
-#define MAYBE_CreateRouteFailsInvalidSource CreateRouteFailsInvalidSource
-#define MAYBE_StartObservingMediaSinks StartObservingMediaSinks
-#define MAYBE_TerminateRoute TerminateRoute
-#define MAYBE_BroadcastRequest BroadcastRequest
-#define MAYBE_CreateRouteFailsInvalidSink CreateRouteFailsInvalidSink
-#endif
-
 using ::testing::_;
 
 namespace media_router {
@@ -68,9 +50,10 @@ class CastMediaRouteProviderTest : public testing::Test {
     router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
         &mock_router_, mojo::MakeRequest(&router_ptr));
 
-    CastSessionTracker::SetInstanceForTest(
+    session_tracker_ = std::unique_ptr<CastSessionTracker>(
         new CastSessionTracker(&media_sink_service_, &message_handler_,
                                socket_service_.task_runner()));
+    CastSessionTracker::SetInstanceForTest(session_tracker_.get());
 
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<CastMediaRouteProvider>(
@@ -85,6 +68,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   void TearDown() override {
     provider_.reset();
     CastSessionTracker::SetInstanceForTest(nullptr);
+    session_tracker_.reset();
   }
 
   void ExpectCreateRouteSuccessAndSetRoute(
@@ -129,6 +113,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   cast_channel::MockCastSocketService socket_service_;
   cast_channel::MockCastMessageHandler message_handler_;
 
+  std::unique_ptr<CastSessionTracker> session_tracker_;
   TestMediaSinkService media_sink_service_;
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastMediaRouteProvider> provider_;
@@ -140,7 +125,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CastMediaRouteProviderTest);
 };
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_StartObservingMediaSinks) {
+TEST_F(CastMediaRouteProviderTest, StartObservingMediaSinks) {
   MediaSource::Id non_cast_source("not-a-cast-source:foo");
   EXPECT_CALL(app_discovery_service_, DoStartObservingMediaSinks(_)).Times(0);
   provider_->StartObservingMediaSinks(non_cast_source);
@@ -153,7 +138,7 @@ TEST_F(CastMediaRouteProviderTest, MAYBE_StartObservingMediaSinks) {
   EXPECT_TRUE(app_discovery_service_.callbacks().empty());
 }
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_BroadcastRequest) {
+TEST_F(CastMediaRouteProviderTest, BroadcastRequest) {
   media_sink_service_.AddOrUpdateSink(CreateCastSink(1));
   media_sink_service_.AddOrUpdateSink(CreateCastSink(2));
   MediaSource::Id source_id(
@@ -171,7 +156,7 @@ TEST_F(CastMediaRouteProviderTest, MAYBE_BroadcastRequest) {
   EXPECT_TRUE(app_discovery_service_.callbacks().empty());
 }
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSink) {
+TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSink) {
   // Sink does not exist.
   provider_->CreateRoute(
       kCastSource, "sinkId", kPresentationId, origin_, kTabId, kRouteTimeout,
@@ -181,7 +166,7 @@ TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSink) {
                      RouteRequestResult::ResultCode::SINK_NOT_FOUND));
 }
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSource) {
+TEST_F(CastMediaRouteProviderTest, CreateRouteFailsInvalidSource) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
@@ -193,7 +178,7 @@ TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRouteFailsInvalidSource) {
                      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER));
 }
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRoute) {
+TEST_F(CastMediaRouteProviderTest, CreateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 
@@ -206,7 +191,7 @@ TEST_F(CastMediaRouteProviderTest, MAYBE_CreateRoute) {
           base::Unretained(this)));
 }
 
-TEST_F(CastMediaRouteProviderTest, MAYBE_TerminateRoute) {
+TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
   MediaSinkInternal sink = CreateCastSink(1);
   media_sink_service_.AddOrUpdateSink(sink);
 

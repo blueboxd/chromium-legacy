@@ -81,10 +81,6 @@
 #include "components/nacl/common/nacl_process_type.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/features/feature_util.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
 #include "flapper_version.h"  // nogncheck  In SHARED_INTERMEDIATE_DIR.
@@ -633,8 +629,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->secure_schemes.push_back(chrome::kChromeNativeScheme);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (extensions::feature_util::ExtensionServiceWorkersEnabled())
-    schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+  schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
 
   // As far as Blink is concerned, they should be allowed to receive CORS
   // requests. At the Extensions layer, requests will actually be blocked unless

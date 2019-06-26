@@ -25,6 +25,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_domain_guilt.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_mode.h"
@@ -83,11 +84,14 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuExtraInfo(const gpu::GpuExtraInfo& gpu_extra_info);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
 
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
+
+  gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,

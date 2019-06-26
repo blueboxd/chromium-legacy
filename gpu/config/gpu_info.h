@@ -177,32 +177,6 @@ struct GPU_EXPORT Dx12VulkanVersionInfo {
 };
 #endif
 
-// Specification of a feature that can be enabled/disable in ANGLE
-struct GPU_EXPORT ANGLEFeature {
-  ANGLEFeature();
-  ANGLEFeature(const ANGLEFeature& other);
-  ANGLEFeature(ANGLEFeature&& other);
-  ~ANGLEFeature();
-  ANGLEFeature& operator=(const ANGLEFeature& other);
-  ANGLEFeature& operator=(ANGLEFeature&& other);
-
-  // Name of the feature in camel_case.
-  std::string name;
-
-  // Name of the category that the feature belongs to.
-  std::string category;
-
-  // One sentence description of the feature, why it's available.
-  std::string description;
-
-  // Full link to cr/angle bug if applicable.
-  std::string bug;
-
-  // Status, can be "enabled" or "disabled".
-  std::string status;
-};
-using ANGLEFeatures = std::vector<ANGLEFeature>;
-
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
     GPUDevice();
@@ -365,10 +339,6 @@ struct GPU_EXPORT GPUInfo {
 
   bool oop_rasterization_supported;
 
-  // List of the currently available ANGLE features. May be empty if not
-  // applicable.
-  ANGLEFeatures angle_features;
-
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 
@@ -415,9 +385,6 @@ struct GPU_EXPORT GPUInfo {
 
     virtual void BeginDx12VulkanVersionInfo() = 0;
     virtual void EndDx12VulkanVersionInfo() = 0;
-
-    virtual void BeginANGLEFeature() = 0;
-    virtual void EndANGLEFeature() = 0;
 
    protected:
     virtual ~Enumerator() = default;

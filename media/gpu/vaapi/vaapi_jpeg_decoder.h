@@ -11,11 +11,14 @@
 
 #include "base/macros.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
 struct JpegFrameHeader;
 class ScopedVAImage;
+
+constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 // Returns the internal format required for a JPEG image given its parsed
 // |frame_header|. If the image's subsampling format is not one of 4:2:0, 4:2:2,
@@ -41,6 +44,14 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   // nullptr on failure and sets *|status| to the reason for failure.
   std::unique_ptr<ScopedVAImage> GetImage(uint32_t preferred_image_fourcc,
                                           VaapiImageDecodeStatus* status);
+
+ private:
+  // The current VA surface for decoding.
+  VASurfaceID va_surface_id_;
+  // The coded size associated with |va_surface_id_|.
+  gfx::Size coded_size_;
+  // The VA RT format associated with |va_surface_id_|.
+  unsigned int va_rt_format_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecoder);
 };

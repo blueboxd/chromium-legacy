@@ -327,7 +327,8 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   voice_input_toggle_ = ash::AssistantButton::Create(
       this, ash::kMicIcon, kButtonSizeDip, kIconSizeDip,
       IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
-      ash::AssistantButtonId::kVoiceInputToggle);
+      ash::AssistantButtonId::kVoiceInputToggle,
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_TOOLTIP);
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
@@ -378,7 +379,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
   keyboard_input_toggle_ = ash::AssistantButton::Create(
       this, ash::kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
       IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-      ash::AssistantButtonId::kKeyboardInputToggle);
+      ash::AssistantButtonId::kKeyboardInputToggle,
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   input_modality_layout_container_->AddChildView(voice_layout_container_);

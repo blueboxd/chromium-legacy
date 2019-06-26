@@ -120,10 +120,17 @@ class LogoServiceImpl : public LogoService,
   // will be NULL if there wasn't a valid, up-to-date logo in the cache.
   void OnCachedLogoRead(std::unique_ptr<EncodedLogo> cached_logo);
 
-  // Called when the cached logo has been decoded into an SkBitmap. |image| will
-  // be NULL if decoding failed.
+  // Called when the light cached image has been decoded into an SkBitmap.
+  // |image| will be NULL if decoding failed.
+  void OnLightCachedImageDecoded(std::unique_ptr<EncodedLogo> cached_logo,
+                                 const SkBitmap& image);
+
+  // Called when both the light and dark cached images have been decoded into an
+  // SkBitmap. |image| will be NULL if decoding failed. |dark_image| will be
+  // NULL if decoding failed or no dark image is provided.
   void OnCachedLogoAvailable(std::unique_ptr<EncodedLogo> encoded_logo,
-                             const SkBitmap& image);
+                             const SkBitmap& image,
+                             const SkBitmap& dark_image);
 
   // Stores |logo| in the cache.
   void SetCachedLogo(std::unique_ptr<EncodedLogo> logo);
@@ -140,13 +147,23 @@ class LogoServiceImpl : public LogoService,
                          bool from_http_cache,
                          std::unique_ptr<EncodedLogo> logo);
 
-  // Called when the fresh logo has been decoded into an SkBitmap. |image| will
+  // Called when the light image has been decoded into an SkBitmap. |image| will
   // be NULL if decoding failed.
+  void OnLightFreshImageDecoded(std::unique_ptr<EncodedLogo> logo,
+                                bool download_failed,
+                                bool parsing_failed,
+                                bool from_http_cache,
+                                const SkBitmap& image);
+
+  // Called when both the light and dark images have been decoded into an
+  // SkBitmap. |image| will be NULL if decoding failed. |dark_image| will be
+  // null if decoding failed or no dark image is provided.
   void OnFreshLogoAvailable(std::unique_ptr<EncodedLogo> logo,
                             bool download_failed,
                             bool parsing_failed,
                             bool from_http_cache,
-                            const SkBitmap& image);
+                            const SkBitmap& image,
+                            const SkBitmap& dark_image);
 
   // Invoked by |loader|.
   void OnURLLoadComplete(const network::SimpleURLLoader* source,

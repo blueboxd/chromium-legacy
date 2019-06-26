@@ -69,8 +69,11 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
+  void UpdateGpuExtraInfo(const gpu::GpuExtraInfo& process_info);
+
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
+  gpu::GpuExtraInfo GetGpuExtraInfo() const;
 
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) const;
@@ -188,6 +191,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // pure software (in the viz case).
   gpu::GpuFeatureInfo gpu_feature_info_for_hardware_gpu_;
   gpu::GPUInfo gpu_info_for_hardware_gpu_;
+
+  gpu::GpuExtraInfo gpu_extra_info_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

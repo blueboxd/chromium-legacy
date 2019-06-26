@@ -501,8 +501,13 @@ by a child template that "extends" this file.
             {# We can only use blocks once in Jinja, for future substitutions we use
             self.supports_video_persistence(). #}
             {% block supports_video_persistence %}
+            {% if notouch_build == "true" %}
+            android:supportsPictureInPicture="false"
+            android:resizeableActivity="false"
+            {% else %}
             android:supportsPictureInPicture="true"
             android:resizeableActivity="true"
+            {% endif %}
             {% endblock %}
             {% block chrome_activity_common %}
             android:windowSoftInputMode="adjustResize"

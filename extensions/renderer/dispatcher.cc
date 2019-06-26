@@ -41,7 +41,6 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/common/features/feature_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -1011,11 +1010,9 @@ void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
   SetCurrentFeatureSessionType(session_type);
   script_context_set_->set_is_lock_screen_context(is_lock_screen_context);
 
-  if (feature_util::ExtensionServiceWorkersEnabled()) {
-    // chrome-extension: resources should be allowed to register ServiceWorkers.
-    blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
-        blink::WebString::FromUTF8(extensions::kExtensionScheme));
-  }
+  // chrome-extension: resources should be allowed to register ServiceWorkers.
+  blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
+      blink::WebString::FromUTF8(extensions::kExtensionScheme));
 
   blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingWasmEvalCSP(
       blink::WebString::FromUTF8(extensions::kExtensionScheme));

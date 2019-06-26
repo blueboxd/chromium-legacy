@@ -550,6 +550,11 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
   }
 }
 
+void GpuDataManagerImplPrivate::UpdateGpuExtraInfo(
+    const gpu::GpuExtraInfo& gpu_extra_info) {
+  gpu_extra_info_ = gpu_extra_info;
+}
+
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
   return gpu_feature_info_;
 }
@@ -557,6 +562,10 @@ gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfoForHardwareGpu()
     const {
   return gpu_feature_info_for_hardware_gpu_;
+}
+
+gpu::GpuExtraInfo GpuDataManagerImplPrivate::GetGpuExtraInfo() const {
+  return gpu_extra_info_;
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(

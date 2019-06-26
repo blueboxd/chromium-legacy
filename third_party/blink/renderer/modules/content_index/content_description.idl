@@ -12,10 +12,10 @@ enum ContentCategory {
 };
 
 dictionary ContentDescription {
-    DOMString id;
-    DOMString title;
-    DOMString description;
-    ContentCategory category;
-    USVString iconUrl;
-    USVString launchUrl;
+    required DOMString id;
+    required DOMString title;
+    required DOMString description;
+    required ContentCategory category;
+    required USVString iconUrl;
+    required USVString launchUrl;
 };

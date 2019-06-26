@@ -153,12 +153,6 @@ IN_PROC_BROWSER_TEST_F(StubBindingsTest, ApiCoverage) {
       {"display.updateOutputMode", "promise {}"},
       {"display.getHdcpVersion", "promise \"0\""},
 
-      {"metrics.logBoolToUma"},
-      {"metrics.logIntToUma"},
-      {"metrics.logEventToUma"},
-      {"metrics.logHistogramValueToUma"},
-      {"metrics.setMplVersion"},
-
       {"accessibility.getAccessibilitySettings",
        "promise {\"isColorInversionEnabled\":false,"
        "\"isScreenReaderEnabled\":false}"},

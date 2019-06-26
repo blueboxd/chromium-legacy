@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -32,12 +33,34 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
                                           "the ServiceWorkerRegistration."));
   }
 
-  // TODO(crbug.com/973844): Fetch the icon and add a struct trait to convert
-  // from `ContentDescription` to `mojom::blink::ContentDescriptionPtr`.
-  return ScriptPromise::RejectWithDOMException(
-      script_state, MakeGarbageCollected<DOMException>(
-                        DOMExceptionCode::kNotSupportedError,
-                        "ContentIndex::add is not yet implemented"));
+  auto mojo_description = mojom::blink::ContentDescription::From(description);
+  if (!mojo_description) {
+    return ScriptPromise::Reject(
+        script_state,
+        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
+                                          "Invalid URLs provided."));
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // TODO(crbug.com/973844): Fetch the icon.
+  GetService()->Add(registration_->RegistrationId(),
+                    std::move(mojo_description), SkBitmap(),
+                    WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
+                              WrapPersistent(resolver)));
+
+  return promise;
+}
+
+void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
+                          mojom::blink::ContentIndexError error) {
+  ScriptState* script_state = resolver->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNotSupportedError,
+      "ContentIndex::add is not yet implemented"));
 }
 
 ScriptPromise ContentIndex::deleteDescription(ScriptState* script_state,
@@ -97,6 +120,11 @@ void ContentIndex::DidGetDescriptions(
     Vector<mojom::blink::ContentDescriptionPtr> descriptions) {
   ScriptState* script_state = resolver->GetScriptState();
   ScriptState::Scope scope(script_state);
+
+  HeapVector<Member<ContentDescription>> blink_descriptions;
+  blink_descriptions.ReserveCapacity(descriptions.size());
+  for (const auto& description : descriptions)
+    blink_descriptions.push_back(description.To<blink::ContentDescription*>());
 
   resolver->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kNotSupportedError,

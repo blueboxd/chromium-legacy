@@ -283,28 +283,6 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
 
-  // Populate the list of ANGLE features by querying the functions exposed by
-  // EGL_ANGLE_feature_control if it's available.
-  if (gl::GLSurfaceEGL::IsANGLEFeatureControlSupported()) {
-    EGLDisplay display = gl::GLSurfaceEGL::GetHardwareDisplay();
-    EGLAttrib feature_count = 0;
-    eglQueryDisplayAttribANGLE(display, EGL_FEATURE_COUNT_ANGLE,
-                               &feature_count);
-    gpu_info->angle_features.resize(static_cast<size_t>(feature_count));
-    for (size_t i = 0; i < gpu_info->angle_features.size(); i++) {
-      gpu_info->angle_features[i].name =
-          QueryEGLStringi(display, EGL_FEATURE_NAME_ANGLE, i);
-      gpu_info->angle_features[i].category =
-          QueryEGLStringi(display, EGL_FEATURE_CATEGORY_ANGLE, i);
-      gpu_info->angle_features[i].description =
-          QueryEGLStringi(display, EGL_FEATURE_DESCRIPTION_ANGLE, i);
-      gpu_info->angle_features[i].bug =
-          QueryEGLStringi(display, EGL_FEATURE_BUG_ANGLE, i);
-      gpu_info->angle_features[i].status =
-          QueryEGLStringi(display, EGL_FEATURE_STATUS_ANGLE, i);
-    }
-  }
-
   IdentifyActiveGPU(gpu_info);
   return true;
 }
@@ -424,6 +402,32 @@ void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
 #else
   CollectBasicGraphicsInfo(gpu_info);
 #endif  // OS_ANDROID
+}
+
+bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info) {
+  // Populate the list of ANGLE features by querying the functions exposed by
+  // EGL_ANGLE_feature_control if it's available.
+  if (gl::GLSurfaceEGL::IsANGLEFeatureControlSupported()) {
+    EGLDisplay display = gl::GLSurfaceEGL::GetHardwareDisplay();
+    EGLAttrib feature_count = 0;
+    eglQueryDisplayAttribANGLE(display, EGL_FEATURE_COUNT_ANGLE,
+                               &feature_count);
+    gpu_extra_info->angle_features.resize(static_cast<size_t>(feature_count));
+    for (size_t i = 0; i < gpu_extra_info->angle_features.size(); i++) {
+      gpu_extra_info->angle_features[i].name =
+          QueryEGLStringi(display, EGL_FEATURE_NAME_ANGLE, i);
+      gpu_extra_info->angle_features[i].category =
+          QueryEGLStringi(display, EGL_FEATURE_CATEGORY_ANGLE, i);
+      gpu_extra_info->angle_features[i].description =
+          QueryEGLStringi(display, EGL_FEATURE_DESCRIPTION_ANGLE, i);
+      gpu_extra_info->angle_features[i].bug =
+          QueryEGLStringi(display, EGL_FEATURE_BUG_ANGLE, i);
+      gpu_extra_info->angle_features[i].status =
+          QueryEGLStringi(display, EGL_FEATURE_STATUS_ANGLE, i);
+    }
+  }
+
+  return true;
 }
 
 }  // namespace gpu

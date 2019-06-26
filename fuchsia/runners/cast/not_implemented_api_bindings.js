@@ -154,30 +154,6 @@ if (!cast.__platform__._notImplemented) {
   }
 
 
-  if (!cast.__platform__.metrics) {
-    cast.__platform__.metrics = {};
-
-    cast.__platform__.metrics.logBoolToUma =
-        cast.__platform__._notImplemented(
-            'metrics.logBoolToUma');
-
-    cast.__platform__.metrics.logIntToUma =
-        cast.__platform__._notImplemented(
-            'metrics.logIntToUma');
-
-    cast.__platform__.metrics.logEventToUma =
-        cast.__platform__._notImplemented(
-            'metrics.logEventToUma');
-
-    cast.__platform__.metrics.logHistogramValueToUma =
-        cast.__platform__._notImplemented(
-            'metrics.logHistogramValueToUma');
-
-    cast.__platform__.metrics.setMplVersion =
-        cast.__platform__._notImplemented('metrics.setMplVersion');
-  }
-
-
   if (!cast.__platform__.accessibility) {
     cast.__platform__.accessibility = {};
 

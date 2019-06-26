@@ -287,7 +287,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
       AudioDeviceFactory::NewSwitchableAudioRendererSink(
-          AudioDeviceFactory::kSourceMediaElement,
+          blink::WebAudioDeviceSourceType::kMediaElement,
           render_frame_->GetRoutingID(),
           media::AudioSinkParameters(0, sink_id.Utf8()));
 

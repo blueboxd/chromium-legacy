@@ -42,11 +42,6 @@ void HostDrmDevice::AsyncStartDrmDevice(const DrmDeviceConnector& connector) {
 
   connector.BindInterfaceDrmDevice(&drm_device_ptr_);
 
-  // Launch the DRM thread.
-  auto callback =
-      base::BindOnce(&HostDrmDevice::OnDrmServiceStartedCallback, this);
-  drm_device_ptr_->StartDrmDevice(std::move(callback));
-
   // Bind the cursor interface pointers.
   ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui, cursor_ptr_io;
   connector.BindInterfaceDeviceCursor(&cursor_ptr_ui);
@@ -59,6 +54,8 @@ void HostDrmDevice::AsyncStartDrmDevice(const DrmDeviceConnector& connector) {
   // Stash the cursor_proxy so that we can install it in the callback.
   cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
                                                     std::move(cursor_ptr_io));
+
+  OnDrmServiceStarted();
 }
 
 // TODO(rjkroege): Remove the need for this entry point.
@@ -67,27 +64,18 @@ void HostDrmDevice::BlockingStartDrmDevice() {
   // blocking.
   base::RunLoop().RunUntilIdle();
 
-  bool success;
-  drm_device_ptr_->StartDrmDevice(&success);
-  CHECK(success)
-      << "drm thread failed to successfully start in single process mode.";
-  if (!connected_)
-    OnDrmServiceStartedCallback(true);
-  return;
+  OnDrmServiceStarted();
 }
 
-// The callback is executed in response to getting back a message from a
-// DrmDevice service that we launched earlier via ServiceManager.
-void HostDrmDevice::OnDrmServiceStartedCallback(bool success) {
+void HostDrmDevice::OnDrmServiceStarted() {
   // This can be called multiple times in the course of single-threaded startup.
   // Ignore invocations after we've started.
   if (connected_)
     return;
 
-  if (success == true) {
-    connected_ = true;
-    RunObservers();
-  }
+  connected_ = true;
+  RunObservers();
+
   // TODO(rjkroege): Handle failure of launching a viz process with the
   // ServiceManager.
 }
@@ -403,17 +391,14 @@ void HostDrmDevice::OnGpuServiceLaunched(
 
   drm_device_ptr_ = std::move(drm_device_ptr);
 
-  // Make sure that we've launched the DRM device service in the Viz process.
-  auto callback =
-      base::BindOnce(&HostDrmDevice::OnDrmServiceStartedCallback, this);
-  drm_device_ptr_->StartDrmDevice(std::move(callback));
-
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. As a result, it has an InterfacePtr for both
   // the window server and I/O thread.  cursor_ptr_io is already bound correctly
   // to an I/O thread by GpuProcessHost.
   cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
                                                     std::move(cursor_ptr_io));
+
+  OnDrmServiceStarted();
 }
 
 void HostDrmDevice::OnGpuServiceLaunchedCompositor(

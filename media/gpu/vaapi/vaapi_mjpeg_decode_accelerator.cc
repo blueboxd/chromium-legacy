@@ -58,7 +58,7 @@ VaapiJpegDecodeStatusToError(VaapiImageDecodeStatus status) {
   switch (status) {
     case VaapiImageDecodeStatus::kSuccess:
       return chromeos_camera::MjpegDecodeAccelerator::Error::NO_ERRORS;
-    case VaapiImageDecodeStatus::kParseJpegFailed:
+    case VaapiImageDecodeStatus::kParseFailed:
       return chromeos_camera::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
     case VaapiImageDecodeStatus::kUnsupportedSubsampling:
       return chromeos_camera::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;

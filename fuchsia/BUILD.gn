@@ -13,7 +13,6 @@ fidl_library("cast_fidl") {
   sources = [
     "fidl/cast/api_bindings.fidl",
     "fidl/cast/application_config.fidl",
-    "fidl/cast/cast_channel.fidl",
     "fidl/cast/queryable_data.fidl",
   ]
 
@@ -103,7 +102,6 @@ group("gn_all") {
     "http:http_service_tests",
     "runners:cast_runner",
     "runners:cast_runner_browsertests",
-    "runners:cast_runner_integration_tests",
     "runners:web_runner",
     "//chromecast/bindings:bindings_manager_fuchsia",
   ]

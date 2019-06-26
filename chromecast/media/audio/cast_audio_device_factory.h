@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/audio/audio_sink_parameters.h"
+#include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 
 namespace media {
 class AudioCapturerSource;
@@ -31,13 +32,13 @@ class CastAudioDeviceFactory : public content::AudioDeviceFactory {
       base::TimeDelta auth_timeout) override;
 
   scoped_refptr<::media::AudioRendererSink> CreateAudioRendererSink(
-      content::AudioDeviceFactory::SourceType source_type,
+      blink::WebAudioDeviceSourceType source_type,
       int render_frame_id,
       const ::media::AudioSinkParameters& params) override;
 
   scoped_refptr<::media::SwitchableAudioRendererSink>
   CreateSwitchableAudioRendererSink(
-      content::AudioDeviceFactory::SourceType source_type,
+      blink::WebAudioDeviceSourceType source_type,
       int render_frame_id,
       const ::media::AudioSinkParameters& params) override;
 

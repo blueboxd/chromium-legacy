@@ -35,7 +35,7 @@ views::ImageButton* CreateCaptionButton(const gfx::VectorIcon& icon,
                                         views::ButtonListener* listener) {
   return AssistantButton::Create(listener, icon, kCaptionButtonSizeDip,
                                  kVectorIconSizeDip, accessible_name_id,
-                                 button_id, gfx::kGoogleGrey700);
+                                 button_id);
 }
 
 }  // namespace

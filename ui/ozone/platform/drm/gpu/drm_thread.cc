@@ -358,14 +358,6 @@ void DrmThread::SetGammaCorrection(
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
 }
 
-void DrmThread::StartDrmDevice(StartDrmDeviceCallback callback) {
-  // We currently assume that |Init| always succeeds so return true to indicate
-  // when the DRM thread has completed launching.  In particular, the invocation
-  // of the callback in the client triggers the invocation of DRM thread
-  // readiness observers.
-  std::move(callback).Run(true);
-}
-
 // DrmThread requires a BindingSet instead of a simple Binding because it will
 // be used from multiple threads in multiple processes.
 void DrmThread::AddBindingCursorDevice(

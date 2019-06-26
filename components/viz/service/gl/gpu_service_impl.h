@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/sequence_id.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -76,6 +77,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                  const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
                  const base::Optional<gpu::GpuFeatureInfo>&
                      gpu_feature_info_for_hardware_gpu,
+                 const gpu::GpuExtraInfo& gpu_extra_info,
                  gpu::VulkanImplementation* vulkan_implementation,
                  base::OnceClosure exit_callback);
 
@@ -292,6 +294,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // pure software (in the viz case).
   base::Optional<gpu::GPUInfo> gpu_info_for_hardware_gpu_;
   base::Optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu_;
+
+  // Information about the GPU process populated on creation.
+  gpu::GpuExtraInfo gpu_extra_info_;
 
   scoped_refptr<mojom::ThreadSafeGpuHostPtr> gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

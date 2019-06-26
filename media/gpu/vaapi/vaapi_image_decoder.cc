@@ -11,9 +11,7 @@
 namespace media {
 
 VaapiImageDecoder::VaapiImageDecoder(VAProfile va_profile)
-    : va_profile_(va_profile),
-      va_surface_id_(VA_INVALID_SURFACE),
-      va_rt_format_(kInvalidVaRtFormat) {}
+    : va_profile_(va_profile) {}
 
 VaapiImageDecoder::~VaapiImageDecoder() = default;
 

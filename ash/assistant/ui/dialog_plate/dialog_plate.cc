@@ -277,10 +277,11 @@ void DialogPlate::InitLayout() {
   InitVoiceLayoutContainer();
 
   // Settings.
-  settings_button_ =
-      AssistantButton::Create(this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
-                              IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME,
-                              AssistantButtonId::kSettings);
+  settings_button_ = AssistantButton::Create(
+      this, kSettingsIcon, kButtonSizeDip, kIconSizeDip,
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME_TOOLTIP,
+      AssistantButtonId::kSettings,
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME_TOOLTIP);
   AddChildView(settings_button_);
 
   // Artificially trigger event to set initial state.
@@ -329,7 +330,8 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   voice_input_toggle_ =
       AssistantButton::Create(this, kMicIcon, kButtonSizeDip, kIconSizeDip,
                               IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
-                              AssistantButtonId::kVoiceInputToggle);
+                              AssistantButtonId::kVoiceInputToggle,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_TOOLTIP);
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
 
   input_modality_layout_container_->AddChildView(keyboard_layout_container_);
@@ -354,7 +356,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
   keyboard_input_toggle_ =
       AssistantButton::Create(this, kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
                               IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-                              AssistantButtonId::kKeyboardInputToggle);
+                              AssistantButtonId::kKeyboardInputToggle,
+                              IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP);
   voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   // Spacer.

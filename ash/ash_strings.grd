@@ -1841,10 +1841,16 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME" desc="Accessibility name for a keyboard image button when clicked shows an input textfield for user to type in queries.">
         Start a text query
       </message>
+      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_TOOLTIP" desc="Tooltip for a keyboard image button when clicked shows an input textfield for user to type in queries.">
+        Text input
+      </message>
       <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME" desc="Accessibility name for a microphone image button when clicked starts listening for user's voice queries.">
         Start a voice query
       </message>
-      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME" desc="Accessibility name for a settings image button when clicked shows Assistant settings.">
+      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_TOOLTIP" desc="Tooltip for a microphone image button when clicked starts listening for user's voice queries.">
+        Voice input
+      </message>
+      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_SETTINGS_ACCNAME_TOOLTIP" desc="Accessibility name and tooltip for a settings image button when clicked shows Assistant settings.">
         Assistant Settings
       </message>
       <message name="IDS_ASH_ASSISTANT_ERROR_GENERIC" desc="Generic message shown when Assistant is in an error state.">

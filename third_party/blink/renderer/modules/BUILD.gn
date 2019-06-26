@@ -279,6 +279,7 @@ jumbo_source_set("unit_tests") {
     "canvas/canvas2d/canvas_rendering_context_2d_test.cc",
     "canvas/htmlcanvas/html_canvas_element_module_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_test.cc",
+    "content_index/content_description_type_converter_test.cc",
     "credentialmanager/credentials_container_test.cc",
     "credentialmanager/password_credential_test.cc",
     "csspaint/document_paint_definition_test.cc",

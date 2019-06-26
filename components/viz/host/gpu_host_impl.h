@@ -23,6 +23,7 @@
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -82,7 +83,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         const gpu::GpuFeatureInfo& gpu_feature_info,
         const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
         const base::Optional<gpu::GpuFeatureInfo>&
-            gpu_feature_info_for_hardware_gpu) = 0;
+            gpu_feature_info_for_hardware_gpu,
+        const gpu::GpuExtraInfo& gpu_extra_info) = 0;
     virtual void DidFailInitialize() = 0;
     virtual void DidCreateContextSuccessfully() = 0;
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
@@ -225,7 +227,8 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
       const base::Optional<gpu::GpuFeatureInfo>&
-          gpu_feature_info_for_hardware_gpu) override;
+          gpu_feature_info_for_hardware_gpu,
+      const gpu::GpuExtraInfo& gpu_extra_info) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& url) override;

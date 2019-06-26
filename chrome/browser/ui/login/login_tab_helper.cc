@@ -36,11 +36,16 @@ void LoginTabHelper::DidFinishNavigation(
   // TODO(https://crbug.com/969097): handle auth challenges that lead to
   // downloads (i.e. don't commit).
 
-  int response_code = navigation_handle->GetResponseHeaders()->response_code();
-  if (response_code !=
-          net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
-      response_code != net::HttpStatusCode::HTTP_UNAUTHORIZED) {
-    return;
+  // Show a login prompt with the navigation's AuthChallengeInfo on FTP
+  // navigations and on HTTP 401/407 responses.
+  if (!navigation_handle->GetURL().SchemeIs(url::kFtpScheme)) {
+    int response_code =
+        navigation_handle->GetResponseHeaders()->response_code();
+    if (response_code !=
+            net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
+        response_code != net::HttpStatusCode::HTTP_UNAUTHORIZED) {
+      return;
+    }
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();

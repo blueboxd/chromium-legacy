@@ -190,7 +190,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   media::AudioSinkParameters sink_params(session_id_, output_device_id_);
   sink_params.processing_id = source->GetAudioProcessingId();
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_, sink_params);
+      blink::WebAudioDeviceSourceType::kWebRtc, source_render_frame_id_,
+      sink_params);
 
   media::OutputDeviceStatus sink_status =
       sink_->GetOutputDeviceInfo().device_status();
@@ -378,7 +379,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   sink_params.processing_id = source_->GetAudioProcessingId();
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
-          AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_,
+          blink::WebAudioDeviceSourceType::kWebRtc, source_render_frame_id_,
           sink_params);
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
@@ -693,7 +694,7 @@ void WebRtcAudioRenderer::PrepareSink() {
 
   // Specify the latency info to be passed to the browser side.
   new_sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
-      AudioDeviceFactory::AudioDeviceFactory::kSourceWebRtc));
+      blink::WebAudioDeviceSourceType::kWebRtc));
   sink_->Initialize(new_sink_params, this);
 }
 

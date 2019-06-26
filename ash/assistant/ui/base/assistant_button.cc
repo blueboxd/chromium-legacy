@@ -54,9 +54,14 @@ views::ImageButton* AssistantButton::Create(views::ButtonListener* listener,
                                             int icon_size_in_dip,
                                             int accessible_name_id,
                                             AssistantButtonId button_id,
+                                            base::Optional<int> tooltip_id,
                                             SkColor icon_color) {
   auto* button = new AssistantButton(listener, button_id);
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+
+  if (tooltip_id)
+    button->SetTooltipText(l10n_util::GetStringUTF16(tooltip_id.value()));
+
   button->SetImage(views::Button::STATE_NORMAL,
                    gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));
   button->SetPreferredSize(gfx::Size(size_in_dip, size_in_dip));

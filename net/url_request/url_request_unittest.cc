@@ -12842,7 +12842,7 @@ TEST_F(URLRequestTestFTP, RawBodyBytes) {
   EXPECT_EQ(6, req->GetRawBodyBytes());
 }
 
-TEST_F(URLRequestTestFTP, AuthCancellation) {
+TEST_F(URLRequestTestFTP, FtpAuthCancellation) {
   ftp_test_server_.set_no_anonymous_ftp_user(true);
   ASSERT_TRUE(ftp_test_server_.Start());
   TestDelegate d;
@@ -12853,8 +12853,13 @@ TEST_F(URLRequestTestFTP, AuthCancellation) {
   d.RunUntilComplete();
 
   ASSERT_TRUE(d.auth_required_called());
-  EXPECT_EQ(ERR_FTP_FAILED, d.request_status());
+  EXPECT_EQ(OK, d.request_status());
   EXPECT_TRUE(req->auth_challenge_info());
+  std::string mime_type;
+  req->GetMimeType(&mime_type);
+  EXPECT_EQ("text/plain", mime_type);
+  EXPECT_EQ("", d.data_received());
+  EXPECT_EQ(-1, req->GetExpectedContentSize());
 }
 
 class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {

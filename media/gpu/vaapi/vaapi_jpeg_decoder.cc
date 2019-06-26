@@ -213,7 +213,9 @@ unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header) {
 }
 
 VaapiJpegDecoder::VaapiJpegDecoder()
-    : VaapiImageDecoder(VAProfileJPEGBaseline) {}
+    : VaapiImageDecoder(VAProfileJPEGBaseline),
+      va_surface_id_(VA_INVALID_SURFACE),
+      va_rt_format_(kInvalidVaRtFormat) {}
 
 VaapiJpegDecoder::~VaapiJpegDecoder() {
   if (vaapi_wrapper_) {
@@ -236,7 +238,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   if (!ParseJpegPicture(encoded_image.data(), encoded_image.size(),
                         &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
-    *status = VaapiImageDecodeStatus::kParseJpegFailed;
+    *status = VaapiImageDecodeStatus::kParseFailed;
     return nullptr;
   }
 
@@ -252,7 +254,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   // Make sure this JPEG can be decoded.
   if (!IsVaapiSupportedJpeg(parse_result)) {
     VLOGF(1) << "The supplied JPEG is unsupported";
-    *status = VaapiImageDecodeStatus::kUnsupportedJpeg;
+    *status = VaapiImageDecodeStatus::kUnsupportedImage;
     return nullptr;
   }
 
@@ -283,7 +285,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillPictureParameters(parse_result.frame_header, &pic_param);
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType, &pic_param)) {
     VLOGF(1) << "Could not submit VAPictureParameterBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitPicParamsFailed;
+    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
     return nullptr;
   }
 
@@ -292,7 +294,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillIQMatrix(parse_result.q_table, &iq_matrix);
   if (!vaapi_wrapper_->SubmitBuffer(VAIQMatrixBufferType, &iq_matrix)) {
     VLOGF(1) << "Could not submit VAIQMatrixBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitIQMatrixFailed;
+    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
     return nullptr;
   }
 
@@ -302,7 +304,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                    &huffman_table);
   if (!vaapi_wrapper_->SubmitBuffer(VAHuffmanTableBufferType, &huffman_table)) {
     VLOGF(1) << "Could not submit VAHuffmanTableBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitHuffmanFailed;
+    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
     return nullptr;
   }
 
@@ -311,7 +313,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
   FillSliceParameters(parse_result, &slice_param);
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType, &slice_param)) {
     VLOGF(1) << "Could not submit VASliceParameterBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitSliceParamsFailed;
+    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
     return nullptr;
   }
 
@@ -320,7 +322,7 @@ scoped_refptr<VASurface> VaapiJpegDecoder::Decode(
                                     parse_result.data_size,
                                     const_cast<char*>(parse_result.data))) {
     VLOGF(1) << "Could not submit VASliceDataBufferType";
-    *status = VaapiImageDecodeStatus::kSubmitSliceDataFailed;
+    *status = VaapiImageDecodeStatus::kSubmitVABuffersFailed;
     return nullptr;
   }
 

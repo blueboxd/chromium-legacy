@@ -34,8 +34,6 @@ source_set("cast_runner_core") {
   sources = [
     "cast/api_bindings_client.cc",
     "cast/api_bindings_client.h",
-    "cast/cast_channel_bindings.cc",
-    "cast/cast_channel_bindings.h",
     "cast/cast_component.cc",
     "cast/cast_component.h",
     "cast/cast_platform_bindings_ids.h",
@@ -43,15 +41,11 @@ source_set("cast_runner_core") {
     "cast/cast_runner.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
-    "cast/queryable_data_bindings.cc",
-    "cast/queryable_data_bindings.h",
     "cast/touch_input_bindings.cc",
     "cast/touch_input_bindings.h",
   ]
   data = [
-    "cast/cast_channel_bindings.js",
     "cast/not_implemented_api_bindings.js",
-    "cast/queryable_data_bindings.js",
     "cast/touch_input_bindings.js",
   ]
   data_deps = [
@@ -105,8 +99,6 @@ source_set("cast_runner_test_core") {
   sources = [
     "cast/fake_application_config_manager.cc",
     "cast/fake_application_config_manager.h",
-    "cast/fake_queryable_data.cc",
-    "cast/fake_queryable_data.h",
     "cast/test_api_bindings.cc",
     "cast/test_api_bindings.h",
   ]
@@ -147,10 +139,8 @@ test("cast_runner_integration_tests") {
 test("cast_runner_browsertests") {
   sources = [
     "cast/api_bindings_client_browsertest.cc",
-    "cast/cast_channel_bindings_browsertest.cc",
     "cast/named_message_port_connector_browsertest.cc",
     "cast/not_implemented_api_bindings_browsertest.cc",
-    "cast/queryable_data_bindings_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   data = [

@@ -20,7 +20,6 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/common/features/feature_util.h"
 #include "extensions/common/switches.h"
 
 using crx_file::id_util::HashedIdInHex;

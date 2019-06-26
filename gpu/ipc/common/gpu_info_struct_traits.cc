@@ -350,15 +350,6 @@ bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
 }
 #endif
 
-// static
-bool StructTraits<gpu::mojom::ANGLEFeatureDataView, gpu::ANGLEFeature>::Read(
-    gpu::mojom::ANGLEFeatureDataView data,
-    gpu::ANGLEFeature* out) {
-  return data.ReadName(&out->name) && data.ReadCategory(&out->category) &&
-         data.ReadDescription(&out->description) && data.ReadBug(&out->bug) &&
-         data.ReadStatus(&out->status);
-}
-
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
     gpu::mojom::GpuInfoDataView data,
     gpu::GPUInfo* out) {
@@ -412,8 +403,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadVideoEncodeAcceleratorSupportedProfiles(
              &out->video_encode_accelerator_supported_profiles) &&
          data.ReadImageDecodeAcceleratorSupportedProfiles(
-             &out->image_decode_accelerator_supported_profiles) &&
-         data.ReadAngleFeatures(&out->angle_features);
+             &out->image_decode_accelerator_supported_profiles);
 }
 
 }  // namespace mojo

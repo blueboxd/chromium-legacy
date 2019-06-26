@@ -19,6 +19,7 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
 #include "media/base/silent_sink_suspender.h"
+#include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -32,20 +33,20 @@ namespace content {
 
 namespace {
 
-AudioDeviceFactory::SourceType GetLatencyHintSourceType(
+blink::WebAudioDeviceSourceType GetLatencyHintSourceType(
     WebAudioLatencyHint::AudioContextLatencyCategory latency_category) {
   switch (latency_category) {
     case WebAudioLatencyHint::kCategoryInteractive:
-      return AudioDeviceFactory::kSourceWebAudioInteractive;
+      return blink::WebAudioDeviceSourceType::kWebAudioInteractive;
     case WebAudioLatencyHint::kCategoryBalanced:
-      return AudioDeviceFactory::kSourceWebAudioBalanced;
+      return blink::WebAudioDeviceSourceType::kWebAudioBalanced;
     case WebAudioLatencyHint::kCategoryPlayback:
-      return AudioDeviceFactory::kSourceWebAudioPlayback;
+      return blink::WebAudioDeviceSourceType::kWebAudioPlayback;
     case WebAudioLatencyHint::kCategoryExact:
-      return AudioDeviceFactory::kSourceWebAudioExact;
+      return blink::WebAudioDeviceSourceType::kWebAudioExact;
   }
   NOTREACHED();
-  return AudioDeviceFactory::kSourceWebAudioInteractive;
+  return blink::WebAudioDeviceSourceType::kWebAudioInteractive;
 }
 
 int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
 
@@ -58,6 +59,9 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 // On Android, this calls CollectContextGraphicsInfo().
 // On other platforms, this calls CollectBasicGraphicsInfo().
 GPU_EXPORT void CollectGraphicsInfoForTesting(GPUInfo* gpu_info);
+
+// Collect Graphics info related to the current process
+GPU_EXPORT bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info);
 
 }  // namespace gpu
 

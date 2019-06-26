@@ -104,7 +104,7 @@ CastAudioDeviceFactory::CreateFinalAudioRendererSink(
 
 scoped_refptr<::media::AudioRendererSink>
 CastAudioDeviceFactory::CreateAudioRendererSink(
-    content::AudioDeviceFactory::SourceType source_type,
+    blink::WebAudioDeviceSourceType source_type,
     int render_frame_id,
     const ::media::AudioSinkParameters& params) {
   // Use default implementation.
@@ -113,7 +113,7 @@ CastAudioDeviceFactory::CreateAudioRendererSink(
 
 scoped_refptr<::media::SwitchableAudioRendererSink>
 CastAudioDeviceFactory::CreateSwitchableAudioRendererSink(
-    content::AudioDeviceFactory::SourceType source_type,
+    blink::WebAudioDeviceSourceType source_type,
     int render_frame_id,
     const ::media::AudioSinkParameters& params) {
   return base::MakeRefCounted<NonSwitchableAudioRendererSink>(NewOutputDevice(

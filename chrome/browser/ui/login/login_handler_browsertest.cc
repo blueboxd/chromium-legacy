@@ -1628,14 +1628,41 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
 }
 
+// Tests that FTP auth challenges appear over a blank committed interstitial.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuth) {
+  net::SpawnedTestServer ftp_server(
+      net::SpawnedTestServer::TYPE_FTP,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp")));
+  ftp_server.set_no_anonymous_ftp_user(true);
+  ASSERT_TRUE(ftp_server.Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Navigate to an FTP server and wait for the auth prompt to appear.
+  WindowedAuthNeededObserver auth_needed_waiter(controller);
+  ui_test_utils::NavigateToURL(browser(), ftp_server.GetURL(""));
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+  EXPECT_EQ("<head></head><body></body>",
+            content::EvalJs(contents, "document.documentElement.innerHTML"));
+
+  // Supply credentials and wait for the page to successfully load.
+  LoginHandler* handler = *observer.handlers().begin();
+  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+  handler->SetAuth(base::ASCIIToUTF16("chrome"), base::ASCIIToUTF16("chrome"));
+  auth_supplied_waiter.Wait();
+  const base::string16 kExpectedTitle = base::ASCIIToUTF16("Index of /");
+  content::TitleWatcher title_watcher(contents, kExpectedTitle);
+  EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+}
+
 // Tests that FTP auth prompts do not appear when credentials have been
 // previously entered and cached.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuthWithCache) {
-  // TODO(https://crbug.com/972188): support FTP auth with committed
-  // interstitials.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kHTTPAuthCommittedInterstitials);
   net::SpawnedTestServer ftp_server(
       net::SpawnedTestServer::TYPE_FTP,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data/ftp")));

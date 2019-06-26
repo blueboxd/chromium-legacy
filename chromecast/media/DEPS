@@ -16,6 +16,7 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gfx/overlay_transform.h",
   "+services/service_manager/public",
+  "+third_party/blink/public/platform/audio/web_audio_device_source_type.h",
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
 ]

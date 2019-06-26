@@ -22,6 +22,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/service/main/viz_main_impl.h"
 #include "content/child/child_thread_impl.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"

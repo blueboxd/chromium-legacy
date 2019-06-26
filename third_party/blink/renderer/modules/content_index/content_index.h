@@ -39,6 +39,8 @@ class ContentIndex final : public ScriptWrappable {
   mojom::blink::ContentIndexService* GetService();
 
   // Callbacks.
+  void DidAdd(ScriptPromiseResolver* resolver,
+              mojom::blink::ContentIndexError error);
   void DidDeleteDescription(ScriptPromiseResolver* resolver,
                             mojom::blink::ContentIndexError error);
   void DidGetDescriptions(

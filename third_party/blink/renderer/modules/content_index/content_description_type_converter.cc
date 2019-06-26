@@ -1,0 +1,78 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
+
+#include "third_party/blink/public/mojom/content_index/content_index.mojom-blink.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+
+namespace mojo {
+
+namespace {
+
+blink::mojom::ContentCategory GetContentCategory(const WTF::String& category) {
+  if (category == "homepage")
+    return blink::mojom::ContentCategory::HOME_PAGE;
+  if (category == "article")
+    return blink::mojom::ContentCategory::ARTICLE;
+  if (category == "video")
+    return blink::mojom::ContentCategory::VIDEO;
+  if (category == "audio")
+    return blink::mojom::ContentCategory::AUDIO;
+
+  NOTREACHED();
+  return blink::mojom::ContentCategory::ARTICLE;
+}
+
+WTF::String GetContentCategory(blink::mojom::ContentCategory category) {
+  switch (category) {
+    case blink::mojom::ContentCategory::HOME_PAGE:
+      return "homepage";
+    case blink::mojom::ContentCategory::ARTICLE:
+      return "article";
+    case blink::mojom::ContentCategory::VIDEO:
+      return "video";
+    case blink::mojom::ContentCategory::AUDIO:
+      return "audio";
+  }
+}
+
+}  // namespace
+
+blink::mojom::blink::ContentDescriptionPtr TypeConverter<
+    blink::mojom::blink::ContentDescriptionPtr,
+    const blink::ContentDescription*>::Convert(const blink::ContentDescription*
+                                                   description) {
+  blink::KURL icon_url(description->iconUrl());
+  blink::KURL launch_url(description->launchUrl());
+  if (!icon_url.IsValid() || !launch_url.IsValid())
+    return nullptr;
+
+  auto result = blink::mojom::blink::ContentDescription::New();
+  result->id = description->id();
+  result->title = description->title();
+  result->description = description->description();
+  result->category = GetContentCategory(description->category());
+  result->icon_url = std::move(icon_url);
+  result->launch_url = std::move(launch_url);
+
+  return result;
+}
+
+blink::ContentDescription*
+TypeConverter<blink::ContentDescription*,
+              blink::mojom::blink::ContentDescriptionPtr>::
+    Convert(const blink::mojom::blink::ContentDescriptionPtr& description) {
+  auto* result = blink::MakeGarbageCollected<blink::ContentDescription>();
+  result->setId(description->id);
+  result->setTitle(description->title);
+  result->setDescription(description->description);
+  result->setCategory(GetContentCategory(description->category));
+  result->setIconUrl(description->icon_url.GetString());
+  result->setLaunchUrl(description->launch_url.GetString());
+  return result;
+}
+
+}  // namespace mojo

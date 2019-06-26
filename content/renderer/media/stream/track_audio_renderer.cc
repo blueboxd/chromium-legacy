@@ -150,8 +150,8 @@ void TrackAudioRenderer::Start() {
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_);
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      {session_id_, output_device_id_});
+      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
+      playout_render_frame_id_, {session_id_, output_device_id_});
 
   base::AutoLock auto_lock(thread_lock_);
   prior_elapsed_render_time_ = base::TimeDelta();
@@ -247,8 +247,8 @@ void TrackAudioRenderer::SwitchOutputDevice(
 
   scoped_refptr<media::AudioRendererSink> new_sink =
       AudioDeviceFactory::NewAudioRendererSink(
-          AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-          {session_id_, device_id});
+          blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
+          playout_render_frame_id_, {session_id_, device_id});
 
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
@@ -318,7 +318,7 @@ void TrackAudioRenderer::MaybeStartSink() {
 
   // Specify the latency info to be passed to the browser side.
   sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
-      AudioDeviceFactory::kSourceNonRtcAudioTrack));
+      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack));
 
   sink_->Initialize(sink_params, this);
   sink_->Start();
@@ -348,8 +348,8 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   sink_->Stop();
   sink_started_ = false;
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
-      {session_id_, output_device_id_});
+      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
+      playout_render_frame_id_, {session_id_, output_device_id_});
   MaybeStartSink();
 }
 

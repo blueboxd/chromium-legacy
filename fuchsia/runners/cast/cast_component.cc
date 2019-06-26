@@ -100,15 +100,6 @@ void CastComponent::InitializeCastPlatformBindings() {
         CHECK(result.is_response()) << "Couldn't inject stub bindings.";
       });
 
-  cast_channel_ = std::make_unique<CastChannelBindings>(
-      frame(), &connector_,
-      agent_manager_->ConnectToAgentService<chromium::cast::CastChannel>(
-          CastRunner::kAgentComponentUrl));
-
-  queryable_data_ = std::make_unique<QueryableDataBindings>(
-      frame(),
-      agent_manager_->ConnectToAgentService<chromium::cast::QueryableData>(
-          CastRunner::kAgentComponentUrl));
   touch_input_ = std::make_unique<TouchInputBindings>(touch_input_policy_,
                                                       frame(), &connector_);
 }

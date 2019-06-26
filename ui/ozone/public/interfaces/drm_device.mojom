@@ -20,10 +20,6 @@ import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
 // All functions in DrmDevice are implemented by the lower privilege viz
 // process.
 interface DrmDevice {
-  // Starts the DRM service and returns true on success.
-  [Sync]
-  StartDrmDevice() => (bool success);
-
   // Creates scanout capable DRM buffers to back |widget|.
   CreateWindow(gfx.mojom.AcceleratedWidget widget);
 

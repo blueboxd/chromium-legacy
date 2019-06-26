@@ -37,6 +37,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "gpu/config/gpu_extra_info.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_lists_version.h"
@@ -503,9 +504,10 @@ std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
 }
 
 std::unique_ptr<base::ListValue> GetANGLEFeatures() {
-  gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+  gpu::GpuExtraInfo gpu_extra_info =
+      GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
   auto angle_features_list = std::make_unique<base::ListValue>();
-  for (const auto& feature : gpu_info.angle_features) {
+  for (const auto& feature : gpu_extra_info.angle_features) {
     auto angle_feature = std::make_unique<base::DictionaryValue>();
     angle_feature->SetString("name", feature.name);
     angle_feature->SetString("category", feature.category);

@@ -146,6 +146,8 @@ blink_core_sources("loader") {
     "threadable_loader.cc",
     "threadable_loader.h",
     "threadable_loader_client.h",
+    "threaded_icon_loader.cc",
+    "threaded_icon_loader.h",
     "worker_fetch_context.cc",
     "worker_fetch_context.h",
     "worker_resource_fetcher_properties.cc",

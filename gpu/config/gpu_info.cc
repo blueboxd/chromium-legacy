@@ -106,17 +106,6 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
 }
 #endif
 
-void EnumerateANGLEFeature(const gpu::ANGLEFeature& feature,
-                           gpu::GPUInfo::Enumerator* enumerator) {
-  enumerator->BeginANGLEFeature();
-  enumerator->AddString("name", feature.name);
-  enumerator->AddString("category", feature.category);
-  enumerator->AddString("description", feature.description);
-  enumerator->AddString("bug", feature.bug);
-  enumerator->AddString("status", feature.status);
-  enumerator->EndANGLEFeature();
-}
-
 }  // namespace
 
 namespace gpu {
@@ -160,13 +149,6 @@ operator=(const ImageDecodeAcceleratorSupportedProfile& other) = default;
 
 ImageDecodeAcceleratorSupportedProfile& ImageDecodeAcceleratorSupportedProfile::
 operator=(ImageDecodeAcceleratorSupportedProfile&& other) = default;
-
-ANGLEFeature::ANGLEFeature() = default;
-ANGLEFeature::ANGLEFeature(const ANGLEFeature& other) = default;
-ANGLEFeature::ANGLEFeature(ANGLEFeature&& other) = default;
-ANGLEFeature::~ANGLEFeature() = default;
-ANGLEFeature& ANGLEFeature::operator=(const ANGLEFeature& other) = default;
-ANGLEFeature& ANGLEFeature::operator=(ANGLEFeature&& other) = default;
 
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
@@ -275,8 +257,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 #endif
 
     bool oop_rasterization_supported;
-
-    ANGLEFeatures angle_features;
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -346,9 +326,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
-  for (const auto& angle_feature : angle_features)
-    EnumerateANGLEFeature(angle_feature, enumerator);
-  enumerator->EndAuxAttributes();
 }
 
 }  // namespace gpu

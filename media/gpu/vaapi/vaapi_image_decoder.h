@@ -14,26 +14,19 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/config/gpu_info.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
 class VASurface;
 class VaapiWrapper;
 
-constexpr unsigned int kInvalidVaRtFormat = 0u;
-
 enum class VaapiImageDecodeStatus : uint32_t {
   kSuccess,
-  kParseJpegFailed,
-  kUnsupportedJpeg,
+  kParseFailed,
+  kUnsupportedImage,
   kUnsupportedSubsampling,
   kSurfaceCreationFailed,
-  kSubmitPicParamsFailed,
-  kSubmitIQMatrixFailed,
-  kSubmitHuffmanFailed,
-  kSubmitSliceParamsFailed,
-  kSubmitSliceDataFailed,
+  kSubmitVABuffersFailed,
   kExecuteDecodeFailed,
   kUnsupportedSurfaceFormat,
   kCannotGetImage,
@@ -77,14 +70,9 @@ class VaapiImageDecoder {
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
+ private:
   // The VA profile used for the current image decoder.
   const VAProfile va_profile_;
-  // The current VA surface for decoding.
-  VASurfaceID va_surface_id_;
-  // The coded size associated with |va_surface_id_|.
-  gfx::Size coded_size_;
-  // The VA RT format associated with |va_surface_id_|.
-  unsigned int va_rt_format_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiImageDecoder);
 };

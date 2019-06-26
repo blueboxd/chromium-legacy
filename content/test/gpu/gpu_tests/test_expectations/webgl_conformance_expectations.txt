@@ -7,6 +7,7 @@
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
+# tags: [ intel_lt_25.20.100.6444 mesa_lt_17.1.6 ]
 
 
 # ===================================
@@ -174,8 +175,8 @@ crbug.com/929009 [ win intel ] conformance/glsl/misc/shader-with-non-reserved-wo
 # case biuDepthRange_001_to_002 first.
 # Temporarily skip these two cases now because this issue blocks
 # WEBGL_video_texture implementation.
-crbug.com/907195 [ win intel opengl passthrough ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
-crbug.com/907195 [ win intel opengl passthrough ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
+crbug.com/907195 [ win intel opengl passthrough intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
 
 # Win7 / Intel failures
 [ win7 intel no-passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
@@ -379,7 +380,7 @@ crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-no
 ####################
 
 # Already fixed with Mesa 17.1.6
-crbug.com/680675 [ linux intel ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 
 # NVIDIA
 crbug.com/524144 [ linux nvidia no-passthrough ] conformance/extensions/oes-element-index-uint.html [ RetryOnFailure ]

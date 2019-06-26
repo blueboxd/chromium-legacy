@@ -6,6 +6,7 @@ module viz.mojom;
 
 import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
+import "gpu/ipc/common/gpu_extra_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "services/viz/privileged/interfaces/gl/context_lost_reason.mojom";
 import "url/mojom/url.mojom";
@@ -19,7 +20,8 @@ interface GpuHost {
   DidInitialize(gpu.mojom.GpuInfo gpu_info,
                 gpu.mojom.GpuFeatureInfo gpu_feature_info,
                 gpu.mojom.GpuInfo? gpu_info_for_hardware_gpu,
-                gpu.mojom.GpuFeatureInfo? gpu_feature_info_for_hardware_gpu);
+                gpu.mojom.GpuFeatureInfo? gpu_feature_info_for_hardware_gpu,
+                gpu.mojom.GpuExtraInfo gpu_extra_info);
   DidFailInitialize();
 
   DidCreateContextSuccessfully();

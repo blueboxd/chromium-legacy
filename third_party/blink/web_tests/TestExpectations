@@ -6177,6 +6177,7 @@ crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
 crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listener.html [ Pass Timeout Failure ]
@@ -6206,3 +6207,8 @@ crbug.com/978587 external/wpt/largest-contentful-paint/observe-image.html [ Pass
 
 crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]
 crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Pass Crash ]
+
+# Disable until v8 https://chromium-review.googlesource.com/c/v8/v8/+/1649174 merges
+crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-navigation.js [ Skip ]
+crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-remove.js [ Skip ]
+crbug.com/967927 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Skip ]

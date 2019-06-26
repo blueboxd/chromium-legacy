@@ -130,6 +130,12 @@ void GpuDataManagerImpl::UpdateGpuFeatureInfo(
                                  gpu_feature_info_for_hardware_gpu);
 }
 
+void GpuDataManagerImpl::UpdateGpuExtraInfo(
+    const gpu::GpuExtraInfo& gpu_extra_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateGpuExtraInfo(gpu_extra_info);
+}
+
 gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfo();
@@ -144,6 +150,11 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
     const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfoForHardwareGpu();
+}
+
+gpu::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetGpuExtraInfo();
 }
 
 void GpuDataManagerImpl::UpdateGpuPreferences(

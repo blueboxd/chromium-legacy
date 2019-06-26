@@ -220,32 +220,6 @@ struct StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
 #endif
 
 template <>
-struct StructTraits<gpu::mojom::ANGLEFeatureDataView, gpu::ANGLEFeature> {
-  static bool Read(gpu::mojom::ANGLEFeatureDataView data,
-                   gpu::ANGLEFeature* out);
-
-  static const std::string& name(const gpu::ANGLEFeature& input) {
-    return input.name;
-  }
-
-  static const std::string& category(const gpu::ANGLEFeature& input) {
-    return input.category;
-  }
-
-  static const std::string& description(const gpu::ANGLEFeature& input) {
-    return input.description;
-  }
-
-  static const std::string& bug(const gpu::ANGLEFeature& input) {
-    return input.bug;
-  }
-
-  static const std::string& status(const gpu::ANGLEFeature& input) {
-    return input.status;
-  }
-};
-
-template <>
 struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool Read(gpu::mojom::GpuInfoDataView data, gpu::GPUInfo* out);
 
@@ -405,11 +379,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 
   static bool oop_rasterization_supported(const gpu::GPUInfo& input) {
     return input.oop_rasterization_supported;
-  }
-
-  static std::vector<gpu::ANGLEFeature> angle_features(
-      const gpu::GPUInfo& input) {
-    return input.angle_features;
   }
 };
 

@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
@@ -63,6 +64,22 @@ const TestParam kTestCases[] = {
     {"OddDimensionsImage41x23", kOddDimensionsImageFilename},
 };
 
+constexpr size_t kMaxNumberPlanes = base::size(VAImage().pitches);
+static_assert(kMaxNumberPlanes <= 3u, "The number of planes should be <= 3");
+static_assert(
+    base::size(VAImage().pitches) == base::size(VAImage().offsets),
+    "The number of VAImage pitches is not equal to the number of offsets");
+
+struct DecodedVAImage {
+  uint32_t va_fourcc;
+  uint32_t number_of_planes;  // Can not be greater than kMaxNumberPlanes.
+  gfx::Size coded_size;
+  struct {
+    uint8_t* data;
+    int stride;
+  } planes[kMaxNumberPlanes];
+};
+
 constexpr double kMinSsim = 0.995;
 
 // This file is not supported by the VAAPI, so we don't define expectations on
@@ -77,25 +94,55 @@ constexpr int k420MCUSize = 16;
 // JPEG decoding.
 constexpr gfx::Size kLargestSupportedSize(16 * 1024, 16 * 1024);
 
+// Takes a ScopedVAImage and returns a DecodedVAImage object that represents
+// the same decoded result.
+DecodedVAImage ScopedVAImageToDecodedVAImage(
+    const ScopedVAImage* decoded_image) {
+  DecodedVAImage converted_result{};
+
+  converted_result.va_fourcc = decoded_image->image()->format.fourcc;
+  converted_result.number_of_planes = decoded_image->image()->num_planes;
+  converted_result.coded_size =
+      gfx::Size(base::strict_cast<int>(decoded_image->image()->width),
+                base::strict_cast<int>(decoded_image->image()->height));
+
+  DCHECK_LE(base::strict_cast<size_t>(converted_result.number_of_planes),
+            kMaxNumberPlanes);
+
+  // This is safe because |number_of_planes| is retrieved from the VA-API and it
+  // can not be greater than 3, which is also the size of the |planes| array.
+  for (uint32_t i = 0u; i < converted_result.number_of_planes; ++i) {
+    converted_result.planes[i].data =
+        static_cast<uint8_t*>(decoded_image->va_buffer()->data()) +
+        decoded_image->image()->offsets[i];
+    converted_result.planes[i].stride =
+        base::checked_cast<int>(decoded_image->image()->pitches[i]);
+  }
+
+  return converted_result;
+}
+
 // Compares the result of sw decoding |encoded_image| with |decoded_image| using
 // SSIM. Returns true if all conversions work and SSIM is above a given
 // threshold (kMinSsim), or false otherwise.
 bool CompareImages(base::span<const uint8_t> encoded_image,
-                   const ScopedVAImage* decoded_image) {
+                   const DecodedVAImage& decoded_image) {
   JpegParseResult parse_result;
   const bool result = ParseJpegPicture(encoded_image.data(),
                                        encoded_image.size(), &parse_result);
   if (!result)
     return false;
 
-  const uint16_t coded_width = parse_result.frame_header.coded_width;
-  const uint16_t coded_height = parse_result.frame_header.coded_height;
-  if (coded_width != decoded_image->image()->width ||
-      coded_height != decoded_image->image()->height) {
+  const int coded_width =
+      base::strict_cast<int>(parse_result.frame_header.coded_width);
+  const int coded_height =
+      base::strict_cast<int>(parse_result.frame_header.coded_height);
+  if (coded_width != decoded_image.coded_size.width() ||
+      coded_height != decoded_image.coded_size.height()) {
     DLOG(ERROR) << "Wrong expected decoded JPEG coded size, " << coded_width
                 << "x" << coded_height << " versus VaAPI provided "
-                << decoded_image->image()->width << "x"
-                << decoded_image->image()->height;
+                << decoded_image.coded_size.width() << "x"
+                << decoded_image.coded_size.height();
     return false;
   }
 
@@ -117,28 +164,15 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
     return false;
   }
 
-  const uint32_t va_fourcc = decoded_image->image()->format.fourcc;
+  const uint32_t va_fourcc = decoded_image.va_fourcc;
   double ssim = 0;
   if (va_fourcc == VA_FOURCC_I420) {
-    const auto* decoded_data_y =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[0];
-    const auto* decoded_data_u =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[1];
-    const auto* decoded_data_v =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[2];
-
     ssim = libyuv::I420Ssim(
         libyuv_y_plane.get(), width, libyuv_u_plane.get(), half_width,
-        libyuv_v_plane.get(), half_width, decoded_data_y,
-        base::checked_cast<int>(decoded_image->image()->pitches[0]),
-        decoded_data_u,
-        base::checked_cast<int>(decoded_image->image()->pitches[1]),
-        decoded_data_v,
-        base::checked_cast<int>(decoded_image->image()->pitches[2]), width,
-        height);
+        libyuv_v_plane.get(), half_width, decoded_image.planes[0].data,
+        decoded_image.planes[0].stride, decoded_image.planes[1].data,
+        decoded_image.planes[1].stride, decoded_image.planes[2].data,
+        decoded_image.planes[2].stride, width, height);
   } else if (va_fourcc == VA_FOURCC_NV12 || va_fourcc == VA_FOURCC_YUY2 ||
              va_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
     // Temporary planes to hold intermediate conversions to I420 (i.e. NV12 to
@@ -148,30 +182,16 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
     auto temp_v = std::make_unique<uint8_t[]>(half_width * half_height);
 
     if (va_fourcc == VA_FOURCC_NV12) {
-      const auto* decoded_data_y =
-          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-          decoded_image->image()->offsets[0];
-      const auto* decoded_data_uv =
-          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-          decoded_image->image()->offsets[1];
-
       conversion_result = libyuv::NV12ToI420(
-          decoded_data_y,
-          base::checked_cast<int>(decoded_image->image()->pitches[0]),
-          decoded_data_uv,
-          base::checked_cast<int>(decoded_image->image()->pitches[1]),
+          decoded_image.planes[0].data, decoded_image.planes[0].stride,
+          decoded_image.planes[1].data, decoded_image.planes[1].stride,
           temp_y.get(), width, temp_u.get(), half_width, temp_v.get(),
           half_width, width, height);
     } else {
       // |va_fourcc| is YUY2 or YUYV, which are handled the same.
-      const auto* decoded_data_yuyv =
-          static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-          decoded_image->image()->offsets[0];
-
       // TODO(crbug.com/868400): support other formats/planarities/pitches.
       conversion_result = libyuv::YUY2ToI420(
-          decoded_data_yuyv,
-          base::checked_cast<int>(decoded_image->image()->pitches[0]),
+          decoded_image.planes[0].data, decoded_image.planes[0].stride,
           temp_y.get(), width, temp_u.get(), half_width, temp_v.get(),
           half_width, width, height);
     }
@@ -465,7 +485,8 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
     if (actual_fourcc == VA_FOURCC_I420 || actual_fourcc == VA_FOURCC_NV12 ||
         actual_fourcc == VA_FOURCC_YUY2 ||
         actual_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
-      ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
+      ASSERT_TRUE(CompareImages(
+          encoded_image, ScopedVAImageToDecodedVAImage(scoped_image.get())));
     }
     DVLOG(1) << "Got a " << FourccToString(scoped_image->image()->format.fourcc)
              << " VAImage (preferred " << FourccToString(image_format.fourcc)
@@ -513,7 +534,8 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
     std::unique_ptr<ScopedVAImage> scoped_image = Decode(jpeg_data_span);
     ASSERT_TRUE(scoped_image)
         << "Decode unexpectedly failed for size = " << test_size.ToString();
-    EXPECT_TRUE(CompareImages(jpeg_data_span, scoped_image.get()))
+    EXPECT_TRUE(CompareImages(
+        jpeg_data_span, ScopedVAImageToDecodedVAImage(scoped_image.get())))
         << "The SSIM check unexpectedly failed for size = "
         << test_size.ToString();
   }
@@ -568,7 +590,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
   }
 }
 
@@ -617,7 +639,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
   }
 }
 

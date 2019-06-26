@@ -973,7 +973,8 @@ void GpuProcessHost::DidInitialize(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
-        gpu_feature_info_for_hardware_gpu) {
+        gpu_feature_info_for_hardware_gpu,
+    const gpu::GpuExtraInfo& gpu_extra_info) {
   if (GetGpuCrashCount() > 0) {
     LOG(WARNING) << "Reinitialized the GPU process after a crash. The reported "
                     "initialization time was "
@@ -986,6 +987,7 @@ void GpuProcessHost::DidInitialize(
     gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info,
                                            gpu_feature_info_for_hardware_gpu);
     gpu_data_manager->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
+    gpu_data_manager->UpdateGpuExtraInfo(gpu_extra_info);
   }
 
 #if defined(OS_ANDROID)

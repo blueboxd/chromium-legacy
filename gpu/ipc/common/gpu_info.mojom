@@ -116,15 +116,6 @@ struct Dx12VulkanVersionInfo {
   uint32 vulkan_version;
 };
 
-// gpu::ANGLEFeature
-struct ANGLEFeature {
-  string name;
-  string category;
-  string description;
-  string bug;
-  string status;
-};
-
 // Corresponds to |gpu::GPUInfo| in gpu/config/gpu_info.h
 struct GpuInfo {
   mojo_base.mojom.TimeDelta initialization_time;
@@ -176,6 +167,4 @@ struct GpuInfo {
   uint64 system_visual;
   uint64 rgba_visual;
   bool oop_rasterization_supported;
-
-  array<ANGLEFeature> angle_features;
 };

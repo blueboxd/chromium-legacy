@@ -193,6 +193,7 @@ mojom("interfaces") {
     "capabilities.mojom",
     "context_result.mojom",
     "dx_diag_node.mojom",
+    "gpu_extra_info.mojom",
     "gpu_feature_info.mojom",
     "gpu_info.mojom",
     "mailbox.mojom",

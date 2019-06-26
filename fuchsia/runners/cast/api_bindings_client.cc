@@ -27,22 +27,11 @@ ApiBindingsClient::ApiBindingsClient(
   bindings_service_->GetAll(
       fit::bind_member(this, &ApiBindingsClient::OnBindingsReceived));
 
-  bindings_service_.set_error_handler([this](zx_status_t status) mutable {
-    ZX_LOG_IF(ERROR, status != ZX_OK, status)
-        << "ApiBindings disconnected before bindings were read.";
-
-    if (!bindings_) {
-      // The Agent disconnected before sending a bindings response,
-      // so it's possible that the Agent doesn't yet implement the ApiBindings
-      // service. Populate the bindings with an empty set so initialization may
-      // continue.
-      // TODO(crbug.com/953958): Remove this fallback once the Agent implements
-      // ApiBindings.
-      LOG(WARNING)
-          << "Couldn't receive bindings from Agent, proceeding anyway.";
-      OnBindingsReceived({});
-    }
-  });
+  bindings_service_.set_error_handler(
+      [](zx_status_t status) mutable {
+        ZX_LOG(FATAL, status)
+            << "ApiBindings service disconnected before entries were returned.";
+      });
 }
 
 void ApiBindingsClient::OnBindingsReceived(

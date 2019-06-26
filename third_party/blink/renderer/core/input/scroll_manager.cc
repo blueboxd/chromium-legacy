@@ -324,7 +324,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
             if (area)
               area->MarkHoverStateDirty();
           },
-          scrollable_area));
+          WrapWeakPersistent(scrollable_area)));
     }
     ScrollResult result = scrollable_area->UserScroll(
         granularity, ToScrollDelta(physical_direction, 1), std::move(callback));

@@ -91,7 +91,6 @@ class DrmThread : public base::Thread,
   void IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic);
 
   // ozone::mojom::DrmDevice
-  void StartDrmDevice(StartDrmDeviceCallback callback) override;
   void CreateWindow(gfx::AcceleratedWidget widget) override;
   void DestroyWindow(gfx::AcceleratedWidget widget) override;
   void SetWindowBounds(gfx::AcceleratedWidget widget,

@@ -101,7 +101,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
           ->Subscribe(base::Bind(&PrintingMessageFilter::ShutdownOnUIThread,
                                  base::Unretained(this)));
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
-  is_printing_enabled_.MoveToThread(
+  is_printing_enabled_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 

@@ -3311,10 +3311,14 @@ source_set("spdy_test_tools") {
   sources = [
     "spdy/fuzzing/hpack_fuzz_util.cc",
     "spdy/fuzzing/hpack_fuzz_util.h",
+    "spdy/platform/impl/spdy_test_impl.h",
+    "third_party/quiche/src/spdy/platform/api/spdy_test.h",
   ]
   deps = [
     ":net",
     "//base",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 

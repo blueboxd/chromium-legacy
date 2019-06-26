@@ -208,6 +208,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // Start composition over a given UTF-16 code range from existing text. This
   // should only be used for composition scenario when IME wants to start
   // composition on existing text. Returns whether the operation was successful.
+  // Must not be called with an invalid range.
   virtual bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;

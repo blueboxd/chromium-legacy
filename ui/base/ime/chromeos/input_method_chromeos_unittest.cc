@@ -884,6 +884,20 @@ TEST_F(InputMethodChromeOSTest, SurroundingText_EventOrder) {
   IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
 }
 
+TEST_F(InputMethodChromeOSTest, SetCompositionRange_InvalidRange) {
+  // Focus on a text field.
+  input_type_ = TEXT_INPUT_TYPE_TEXT;
+  ime_->OnTextInputTypeChanged(this);
+
+  // Insert some text and place the cursor.
+  surrounding_text_ = UTF8ToUTF16("abc");
+  text_range_ = gfx::Range(0, 3);
+  selection_range_ = gfx::Range(1, 1);
+
+  EXPECT_FALSE(ime_->SetCompositionRange(0, 4, {}));
+  EXPECT_EQ(0U, composition_text_.text.length());
+}
+
 class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {
  public:
   InputMethodChromeOSKeyEventTest() {}

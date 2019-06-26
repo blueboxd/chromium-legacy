@@ -1954,6 +1954,9 @@ TEST_F(TextfieldModelTest, SetCompositionFromExistingText) {
   TextfieldModel model(nullptr);
   model.SetText(base::ASCIIToUTF16("abcde"));
 
+  model.SetCompositionFromExistingText(gfx::Range(0, 1));
+  EXPECT_TRUE(model.HasCompositionText());
+
   model.SetCompositionFromExistingText(gfx::Range(1, 3));
   EXPECT_TRUE(model.HasCompositionText());
 
@@ -1961,6 +1964,18 @@ TEST_F(TextfieldModelTest, SetCompositionFromExistingText) {
   composition.text = base::ASCIIToUTF16("123");
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("a123de", model.text());
+}
+
+TEST_F(TextfieldModelTest, SetCompositionFromExistingText_Empty) {
+  TextfieldModel model(nullptr);
+  model.SetText(base::ASCIIToUTF16("abc"));
+
+  model.SetCompositionFromExistingText(gfx::Range(0, 2));
+  EXPECT_TRUE(model.HasCompositionText());
+
+  model.SetCompositionFromExistingText(gfx::Range(1, 1));
+  EXPECT_FALSE(model.HasCompositionText());
+  EXPECT_STR_EQ("abc", model.text());
 }
 
 }  // namespace views

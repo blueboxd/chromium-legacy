@@ -313,16 +313,24 @@ bool InputMethodChromeOS::SetCompositionRange(
     uint32_t before,
     uint32_t after,
     const std::vector<ui::ImeTextSpan>& text_spans) {
+  TextInputClient* client = GetTextInputClient();
+
   if (IsTextInputTypeNone())
     return false;
 
   // The given range and spans are relative to the current selection.
   gfx::Range range;
-  if (!GetTextInputClient()->GetEditableSelectionRange(&range))
+  if (!client->GetEditableSelectionRange(&range))
     return false;
 
   const gfx::Range composition_range(range.start() - before,
                                      range.end() + after);
+
+  // Check that the composition range is valid.
+  gfx::Range text_range;
+  client->GetTextRange(&text_range);
+  if (!text_range.Contains(composition_range))
+    return false;
 
   // If we have pending key events, then delay the operation until
   // |ProcessKeyEventPostIME|. Otherwise, process it immediately.
@@ -332,8 +340,8 @@ bool InputMethodChromeOS::SetCompositionRange(
         PendingSetCompositionRange{composition_range, text_spans};
     return true;
   } else {
-    return GetTextInputClient()->SetCompositionFromExistingText(
-        composition_range, text_spans);
+    return client->SetCompositionFromExistingText(composition_range,
+                                                  text_spans);
   }
 }
 

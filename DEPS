@@ -281,7 +281,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '8da8f7162b76a63aa5d3c2062d12f872f9dc1dac',
+  'quiche_revision': '8f3a576515ada564d3e2b560220649f49a21dec1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -811,7 +811,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '6b62fc005e97553dabbd09c1064d111341ccb352',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'effb0bcb66db74f394cb2f91607623cedb6f6e77',
       'condition': 'checkout_linux',
   },
 

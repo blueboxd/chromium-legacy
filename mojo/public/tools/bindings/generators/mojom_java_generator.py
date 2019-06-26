@@ -152,7 +152,7 @@ def GetNameForElement(element):
   raise Exception('Unexpected element: %s' % element)
 
 def GetInterfaceResponseName(method):
-  return UpperCamelCase(method.name + 'Response')
+  return UpperCamelCase(method.name + '_Response')
 
 def ParseStringAttribute(attribute):
   assert isinstance(attribute, basestring)

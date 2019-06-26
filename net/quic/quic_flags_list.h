@@ -272,6 +272,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
           true)
+
 // If true, when detecting losses, use packets_acked of corresponding packet
 // number space.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, true)
@@ -286,3 +287,12 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_drop_invalid_small_initial_connection_id,
     false)
+
+// When true, QUIC Version Negotiation packets will randomly include fake
+// versions.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
+          false)
+
+// If true, use predictable version negotiation versions.
+QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)

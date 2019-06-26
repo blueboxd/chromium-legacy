@@ -669,7 +669,11 @@ void TextfieldModel::SetCompositionText(
 }
 
 void TextfieldModel::SetCompositionFromExistingText(const gfx::Range& range) {
-  DCHECK(!HasCompositionText());
+  if (range.is_empty()) {
+    ClearComposition();
+    return;
+  }
+
   composition_range_ = range;
   render_text_->SetCompositionRange(range);
 }

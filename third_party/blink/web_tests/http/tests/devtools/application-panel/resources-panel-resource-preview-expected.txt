@@ -20,6 +20,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
 log: visible view: unknown
@@ -43,6 +45,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
     Images
@@ -71,6 +75,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
     Images
@@ -99,6 +105,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
     Images

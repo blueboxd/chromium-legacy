@@ -27,6 +27,8 @@ Cache
 Background Services
  Background Fetch
  Background Sync
+ Notifications
+ Push Messaging
 Frames
  top
 
@@ -53,6 +55,8 @@ Cache
 Background Services
  Background Fetch
  Background Sync
+ Notifications
+ Push Messaging
 Frames
  top
 
@@ -83,6 +87,8 @@ Cache
 Background Services
  Background Fetch
  Background Sync
+ Notifications
+ Push Messaging
 Frames
  top
 

@@ -22,6 +22,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
 Visible view is a query view: true
@@ -47,6 +49,8 @@ Cache
 Background Services
   Background Fetch
   Background Sync
+  Notifications
+  Push Messaging
 Frames
   top
 Visible view is a query view: false

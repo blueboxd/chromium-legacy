@@ -314,6 +314,7 @@ source_set("blink_headers") {
     "platform/web_rtc_stats_response.h",
     "platform/web_rtc_void_request.h",
     "platform/web_runtime_features.h",
+    "platform/web_scoped_page_pauser.h",
     "platform/web_screen_info.h",
     "platform/web_scroll_anchor_data.h",
     "platform/web_scroll_into_view_params.h",

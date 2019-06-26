@@ -143,6 +143,7 @@
 #include "third_party/blink/public/platform/web_memory_pressure_listener.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -1018,18 +1019,14 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 
   std::unique_ptr<blink::scheduler::WebThreadScheduler::RendererPauseHandle>
       renderer_paused_handle;
+  std::unique_ptr<blink::WebScopedPagePauser> page_pauser_handle;
 
   if (pumping_events) {
     renderer_paused_handle = main_thread_scheduler_->PauseRenderer();
-    WebView::WillEnterModalLoop();
+    page_pauser_handle = blink::WebScopedPagePauser::Create();
   }
 
-  bool rv = ChildThreadImpl::Send(msg);
-
-  if (pumping_events)
-    WebView::DidExitModalLoop();
-
-  return rv;
+  return ChildThreadImpl::Send(msg);
 }
 
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {

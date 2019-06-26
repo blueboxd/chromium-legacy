@@ -408,13 +408,6 @@ class WebView {
   virtual void SetBaseBackgroundColorOverride(SkColor) {}
   virtual void ClearBaseBackgroundColorOverride() {}
 
-  // Modal dialog support ------------------------------------------------
-
-  // Call these methods before and after running a nested, modal event loop
-  // to suspend script callbacks and resource loads.
-  BLINK_EXPORT static void WillEnterModalLoop();
-  BLINK_EXPORT static void DidExitModalLoop();
-
   // Scheduling -----------------------------------------------------------
 
   virtual PageScheduler* Scheduler() const = 0;

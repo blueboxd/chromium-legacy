@@ -60,6 +60,7 @@ blink_core_sources("exported") {
     "web_remote_frame_impl.cc",
     "web_remote_frame_impl.h",
     "web_render_theme.cc",
+    "web_scoped_page_pauser.cc",
     "web_scoped_user_gesture.cc",
     "web_scoped_window_focus_allowed_indicator.cc",
     "web_script_controller.cc",

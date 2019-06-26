@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -164,7 +165,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       view->GetChromeClient().NotifyPopupOpeningObservers();
 
     // 2. Disable active objects
-    WebView::WillEnterModalLoop();
+    page_pauser_ = WebScopedPagePauser::Create();
 
     // 3. Process messages until quitNow is called.
     message_loop_->Run();
@@ -193,7 +194,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // NOTE: This code used to be above right after the |mesasge_loop_->Run()|
     // code, but it is moved here to support browser-side navigation.
     message_loop_->QuitNow();
-    WebView::DidExitModalLoop();
+    page_pauser_.reset();
     WebFrameWidgetBase::SetIgnoreInputEvents(false);
   }
 
@@ -212,6 +213,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   bool running_for_debug_break_;
   bool running_for_page_wait_;
   std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
+  std::unique_ptr<WebScopedPagePauser> page_pauser_;
 
   static ClientMessageLoopAdapter* instance_;
 };

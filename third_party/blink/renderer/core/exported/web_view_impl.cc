@@ -205,24 +205,6 @@ const double WebView::kTextSizeMultiplierRatio = 1.2;
 const double WebView::kMinTextSizeMultiplier = 0.5;
 const double WebView::kMaxTextSizeMultiplier = 3.0;
 
-// Used to defer all page activity in cases where the embedder wishes to run
-// a nested event loop. Using a stack enables nesting of message loop
-// invocations.
-static Vector<std::unique_ptr<ScopedPagePauser>>& PagePauserStack() {
-  DEFINE_STATIC_LOCAL(Vector<std::unique_ptr<ScopedPagePauser>>, pauser_stack,
-                      ());
-  return pauser_stack;
-}
-
-void WebView::WillEnterModalLoop() {
-  PagePauserStack().push_back(std::make_unique<ScopedPagePauser>());
-}
-
-void WebView::DidExitModalLoop() {
-  DCHECK(PagePauserStack().size());
-  PagePauserStack().pop_back();
-}
-
 // static
 HashSet<WebViewImpl*>& WebViewImpl::AllInstances() {
   DEFINE_STATIC_LOCAL(HashSet<WebViewImpl*>, all_instances, ());

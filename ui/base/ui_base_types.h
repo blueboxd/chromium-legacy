@@ -39,6 +39,38 @@ enum ModalType {
   MODAL_TYPE_SYSTEM = 3   // Window is modal to all other windows.
 };
 
+// The class of window and its overall z-order. Not all platforms provide this
+// level of z-order granularity. For such platforms, which only provide a
+// distinction between "normal" and "always on top" windows, any of the values
+// here that aren't |kNormal| are treated equally as "always on top".
+enum class ZOrderLevel {
+  // The default level for windows.
+  kNormal = 0,
+
+  // A "floating" window z-ordered above other normal windows.
+  //
+  // Note this is the traditional _desktop_ concept of a "floating window".
+  // Android has a concept of "freeform window mode" in which apps are presented
+  // in separate "floating" windows that can be moved and resized by the user.
+  // That's not what this is.
+  kFloatingWindow,
+
+  // UI elements are used to annotate positions on the screen, and thus must
+  // appear above floating windows.
+  kFloatingUIElement,
+
+  // There have been horrific security decisions that have been made on the web
+  // platform that are now expected behavior and cannot easily be changed. The
+  // only way to mitigate problems with these decisions is to inform the user by
+  // presenting them with a message that they are in a state that they might not
+  // expect, and this message must be presented in a UI that cannot be
+  // interfered with or covered up. Thus this level for Security UI that must be
+  // Z-ordered in front of everything else. Note that this is useful in
+  // situations where window modality (as in ModalType) cannot or should not be
+  // used.
+  kSecuritySurface,
+};
+
 // TODO(varunjain): Remove MENU_SOURCE_NONE (crbug.com/250964)
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base

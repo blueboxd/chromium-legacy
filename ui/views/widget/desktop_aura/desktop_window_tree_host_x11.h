@@ -131,8 +131,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool HasCapture() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
-  bool IsAlwaysOnTop() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   bool SetWindowTitle(const base::string16& title) override;
@@ -357,8 +357,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_ = false;
 
-  // True if the window should stay on top of most other windows.
-  bool is_always_on_top_ = false;
+  // The z-order level of the window; the window exhibits "always on top"
+  // behavior if > 0.
+  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
 
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_ = false;

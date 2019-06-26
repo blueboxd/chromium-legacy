@@ -35,7 +35,6 @@
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
-#import "ui/gfx/mac/nswindow_frame_controls.h"
 
 using extensions::AppWindow;
 using extensions::PlatformAppBrowserTest;
@@ -45,6 +44,10 @@ using ::testing::Invoke;
 using ::testing::Return;
 
 namespace {
+
+bool IsNSWindowFloating(NSWindow* window) {
+  return [window level] != NSNormalWindowLevel;
+}
 
 class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
  protected:
@@ -239,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
-  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
+  EXPECT_TRUE(IsNSWindowFloating(ns_window));
 
   [ns_window toggleFullScreen:nil];
   [waiter waitForEnterCount:1 exitCount:0];
@@ -247,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
               AppWindow::FULLSCREEN_TYPE_OS);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
-  EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
+  EXPECT_FALSE(IsNSWindowFloating(ns_window));
 
   app_window->Restore();
   EXPECT_FALSE(window->IsFullscreenOrPending());
@@ -256,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
-  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
+  EXPECT_TRUE(IsNSWindowFloating(ns_window));
 
   app_window->Fullscreen();
   EXPECT_TRUE(window->IsFullscreenOrPending());
@@ -265,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
               AppWindow::FULLSCREEN_TYPE_WINDOW_API);
   EXPECT_TRUE(window->IsFullscreen());
   EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
-  EXPECT_FALSE(gfx::IsNSWindowAlwaysOnTop(ns_window));
+  EXPECT_FALSE(IsNSWindowFloating(ns_window));
 
   [ns_window toggleFullScreen:nil];
   [waiter waitForEnterCount:2 exitCount:2];
@@ -273,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
             app_window->fullscreen_types_for_test());
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
-  EXPECT_TRUE(gfx::IsNSWindowAlwaysOnTop(ns_window));
+  EXPECT_TRUE(IsNSWindowFloating(ns_window));
 }
 
 // Test Minimize, Restore combinations with their native equivalents.

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
@@ -57,6 +58,17 @@ using blink::WebMediaSource;
 using blink::WebSourceBuffer;
 
 namespace blink {
+
+namespace {
+// These values are written to logs. New enum values can be added, but existing
+// ones must never be renumbered or deleted and reused.
+enum class MseExecutionContext {
+  kWindow = 0,
+  kDedicatedWorker = 1,
+  kSharedWorker = 2,
+  kMax = kSharedWorker
+};
+}  // namespace
 
 static bool ThrowExceptionIfClosed(bool is_open,
                                    ExceptionState& exception_state) {
@@ -123,6 +135,29 @@ MediaSource::MediaSource(ExecutionContext* context)
       live_seekable_range_(MakeGarbageCollected<TimeRanges>()),
       added_to_registry_counter_(0) {
   DVLOG(1) << __func__ << " this=" << this;
+
+  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled() ||
+         IsMainThread());
+
+  MseExecutionContext type = MseExecutionContext::kWindow;
+  if (!IsMainThread()) {
+    if (context->IsDedicatedWorkerGlobalScope())
+      type = MseExecutionContext::kDedicatedWorker;
+    else if (context->IsSharedWorkerGlobalScope())
+      type = MseExecutionContext::kSharedWorker;
+    else
+      CHECK(false) << "Invalid execution context for MSE usage";
+  }
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, mse_execution_context_histogram,
+      ("Media.MSE.ExecutionContext",
+       static_cast<int>(MseExecutionContext::kMax) + 1));
+  mse_execution_context_histogram.Count(static_cast<int>(type));
+
+  // TODO(wolenetz): Actually enable experimental usage of MediaSource from
+  // dedicated and shared worker contexts. See https://crbug.com/878133.
+  CHECK(type == MseExecutionContext::kWindow)
+      << "MSE is not yet supported from workers";
 }
 
 MediaSource::~MediaSource() {

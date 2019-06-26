@@ -80,7 +80,7 @@ TEST_F(AlwaysOnTopControllerTest, NotifyKeyboardBoundsChanging) {
 }
 
 TEST_F(AlwaysOnTopControllerTest,
-       AlwaysOnTopContainerReturnedForAlwaysOnTopWindow) {
+       AlwaysOnTopContainerReturnedForFloatingWindow) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AlwaysOnTopController* always_on_top_controller =
       controller->always_on_top_controller();
@@ -88,7 +88,8 @@ TEST_F(AlwaysOnTopControllerTest,
   const gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> always_on_top_window(
       CreateTestWindowInShellWithBounds(bounds));
-  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
+                                    ui::ZOrderLevel::kFloatingWindow);
 
   aura::Window* container =
       always_on_top_controller->GetContainer(always_on_top_window.get());
@@ -96,7 +97,7 @@ TEST_F(AlwaysOnTopControllerTest,
   EXPECT_EQ(kShellWindowId_AlwaysOnTopContainer, container->id());
 }
 
-TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForAlwaysOnTopPipWindow) {
+TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForFloatingPipWindow) {
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AlwaysOnTopController* always_on_top_controller =
       controller->always_on_top_controller();
@@ -108,7 +109,8 @@ TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForAlwaysOnTopPipWindow) {
   wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
   const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
-  pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  pip_window->SetProperty(aura::client::kZOrderingKey,
+                          ui::ZOrderLevel::kFloatingWindow);
   EXPECT_TRUE(window_state->IsPip());
 
   aura::Window* container =
@@ -134,11 +136,12 @@ TEST_F(AlwaysOnTopControllerTest,
 }
 
 TEST_F(AlwaysOnTopControllerTest,
-       AlwaysOnTopWindowMovedBetweenContainersWhenPipStateChanges) {
+       FloatingWindowMovedBetweenContainersWhenPipStateChanges) {
   const gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(bounds));
-  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->SetProperty(aura::client::kZOrderingKey,
+                      ui::ZOrderLevel::kFloatingWindow);
 
   EXPECT_EQ(kShellWindowId_AlwaysOnTopContainer, window->parent()->id());
 

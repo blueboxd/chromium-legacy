@@ -149,7 +149,8 @@ TEST_F(OverviewGridTest, AlwaysOnTopWindow) {
   // window. So the first window will not animate.
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(400, 400));
-  window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window2->SetProperty(aura::client::kZOrderingKey,
+                       ui::ZOrderLevel::kFloatingWindow);
   std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
                                            gfx::RectF(100.f, 100.f)};
   CheckAnimationStates({window1.get(), window2.get()}, target_bounds,

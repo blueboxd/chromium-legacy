@@ -64,8 +64,8 @@ bool TestBrowserWindow::IsActive() const {
   return false;
 }
 
-bool TestBrowserWindow::IsAlwaysOnTop() const {
-  return false;
+ui::ZOrderLevel TestBrowserWindow::GetZOrderLevel() const {
+  return ui::ZOrderLevel::kNormal;
 }
 
 gfx::NativeWindow TestBrowserWindow::GetNativeWindow() const {

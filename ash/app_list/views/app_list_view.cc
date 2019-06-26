@@ -1894,7 +1894,7 @@ void AppListView::OnBoundsAnimationCompleted() {
 
     // Reset the search box to be shown again. This is done after the animation
     // is complete in order to minimize work during the animation.
-    search_box_view_->SetSearchBoxActive(false /*active*/, ui::ET_LAST);
+    search_box_view_->ClearSearchAndDeactivateSearchBox();
   }
 
   // Layout if the animation was completed.

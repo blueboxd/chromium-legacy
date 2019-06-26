@@ -2347,7 +2347,8 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 
   wm::GetWindowState(window_two)
       ->set_autohide_shelf_when_maximized_or_fullscreen(true);
-  window_two->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window_two->SetProperty(aura::client::kZOrderingKey,
+                          ui::ZOrderLevel::kFloatingWindow);
 
   auto* shelf_window = shelf->GetWindow();
   aura::Window* container = shelf_window->GetRootWindow()->GetChildById(
@@ -3099,7 +3100,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   // Set always on top so it is put in the PIP container.
-  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->SetProperty(aura::client::kZOrderingKey,
+                      ui::ZOrderLevel::kFloatingWindow);
   window->Show();
   const wm::WMEvent pip_event(wm::WM_EVENT_PIP);
   wm::GetWindowState(window)->OnWMEvent(&pip_event);

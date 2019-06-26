@@ -18,6 +18,33 @@ video::-webkit-media-controls-touchless {
   margin-bottom: env(safe-area-inset-bottom);
 }
 
+video::-webkit-media-controls-touchless.use-default-poster {
+  background: #333;
+}
+
+video::-internal-media-controls-touchless-error-info {
+  display: none;
+  height: 72px;
+  width: 72px;
+  border-radius: 50%;
+  opacity: 0.3;
+  background-color: rgba(255, 255, 255, 0.9);
+  background-size: 50%;
+  background-image: -webkit-image-set(url(ic_no_source.svg) 1x);
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+video::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-error-info"] {
+  display: block;
+}
+
 video::-internal-media-controls-touchless-overlay {
   width: 104px;
   height: 104px;
@@ -33,6 +60,10 @@ video::-internal-media-controls-touchless-overlay {
   left: 0;
   bottom: 0;
   right: 0;
+}
+
+video::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-overlay"] {
+  display: none;
 }
 
 video::-internal-media-controls-touchless-overlay.transparent {
@@ -146,12 +177,14 @@ video::-internal-media-controls-touchless-timeline {
 
 video::-internal-media-controls-touchless-timeline-loaded {
   height: 100%;
+  width: 0; /* We are using style attribute to override this. */
   border-radius: 0 2px 2px 0;
   background-color: rgba(255, 255, 255, 0.54);
 }
 
 video::-internal-media-controls-touchless-timeline-progress {
   height: 100%;
+  width: 0; /* We are using style attribute to override this. */
   border-radius: 0 2px 2px 0;
   background-color: rgba(255, 255, 255, 1.0);
 }

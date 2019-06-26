@@ -233,7 +233,7 @@ OverlayWindowViews::OverlayWindowViews(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateWindowBounds();
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.visible_on_all_workspaces = true;
   params.remove_standard_frame = true;
   params.name = "PictureInPictureWindow";

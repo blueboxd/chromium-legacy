@@ -25,8 +25,10 @@ class VIEWS_EXPORT Separator : public View {
   Separator();
   ~Separator() override;
 
+  SkColor GetColor() const;
   void SetColor(SkColor color);
 
+  int GetPreferredHeight() const;
   void SetPreferredHeight(int height);
 
   // Overridden from View:

@@ -42,7 +42,7 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void Reset() override {}
   void OnControlsListUpdated() override {}
   void OnTrackElementFailedToLoad() override {}
-  void NetworkStateChanged() override {}
+  void NetworkStateChanged() override;
   LayoutObject* PanelLayoutObject() override;
   LayoutObject* TimelineLayoutObject() override;
   LayoutObject* ButtonPanelLayoutObject() override;
@@ -62,8 +62,8 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void OnPause() override;
   void OnEnterFullscreen() override;
   void OnExitFullscreen() override;
-  void OnError() override {}
-  void OnLoadedMetadata() override {}
+  void OnError() override;
+  void OnLoadedMetadata() override;
   void OnKeyPress(KeyboardEvent* event) override {}
   void OnKeyDown(KeyboardEvent* event) override;
   void OnKeyUp(KeyboardEvent* event) override {}
@@ -81,10 +81,14 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   friend class MediaControlsTouchlessImplTest;
 
   enum class ArrowDirection;
+  enum class ControlsState;
   ArrowDirection OrientArrowPress(ArrowDirection direction);
   void HandleOrientedArrowPress(ArrowDirection direction);
 
   WebScreenOrientationType GetOrientation();
+
+  ControlsState State();
+  void UpdateCSSFromState();
 
   void HandleTopButtonPress();
   void HandleBottomButtonPress();
@@ -95,6 +99,8 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   void MaybeChangeVolume(double);
 
   void Download();
+
+  HTMLVideoElement& VideoElement();
 
   // Node
   bool IsMediaControls() const override { return true; }

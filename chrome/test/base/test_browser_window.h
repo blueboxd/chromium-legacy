@@ -54,8 +54,8 @@ class TestBrowserWindow : public BrowserWindow {
   void Deactivate() override {}
   bool IsActive() const override;
   void FlashFrame(bool flash) override {}
-  bool IsAlwaysOnTop() const override;
-  void SetAlwaysOnTop(bool always_on_top) override {}
+  ui::ZOrderLevel GetZOrderLevel() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override {}
   gfx::NativeWindow GetNativeWindow() const override;
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;

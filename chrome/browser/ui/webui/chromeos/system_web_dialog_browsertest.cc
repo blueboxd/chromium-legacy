@@ -81,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, NonModalTest) {
   dialog->ShowSystemDialog();
   EXPECT_FALSE(ash::ShellTestApi().IsSystemModalWindowOpen());
   aura::Window* window_to_test = dialog->dialog_window();
-  EXPECT_TRUE(window_to_test->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            window_to_test->GetProperty(aura::client::kZOrderingKey));
 }
 
 using SystemWebDialogTest = InProcessBrowserTest;

@@ -286,7 +286,7 @@ TEST_F(LastWindowClosedTest, AlwaysOnTop) {
 
   // Moving the widget to the always-on-top container does not trigger the
   // dialog because the window didn't close.
-  widget->SetAlwaysOnTop(true);
+  widget->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
   EXPECT_FALSE(controller->dialog_for_testing());
 
   // Closing the window triggers the dialog.
@@ -302,7 +302,7 @@ TEST_F(LastWindowClosedTest, MultipleContainers) {
   // Create two windows in different containers.
   std::unique_ptr<views::Widget> normal_widget = CreateTestWidget();
   std::unique_ptr<views::Widget> always_on_top_widget = CreateTestWidget();
-  always_on_top_widget->SetAlwaysOnTop(true);
+  always_on_top_widget->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
 
   // Closing the last window shows the dialog.
   always_on_top_widget.reset();

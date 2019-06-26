@@ -117,7 +117,7 @@ class PipWindowResizerTest : public AshTestBase,
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = screen_bounds;
-    params.keep_on_top = true;
+    params.z_order = ui::ZOrderLevel::kFloatingWindow;
     params.context = root_window;
     widget->Init(params);
     widget->Show();

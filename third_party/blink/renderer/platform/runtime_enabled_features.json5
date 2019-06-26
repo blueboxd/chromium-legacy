@@ -699,7 +699,6 @@
     },
     {
       name: "HeapUnifiedGCScheduling",
-      status: "stable",
     },
     {
       name: "HrefTranslate",
@@ -916,8 +915,20 @@
       status: "experimental",
     },
     {
+      name: "MediaSourceInWorkers",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceNewAbortAndDuration",
       status: "experimental",
+    },
+    {
+      // This is used in cases of mixed specification of stable and
+      // experimental MediaSource features, such as in the IDL for an interface
+      // constructor where exposure of the constructor in Window vs other
+      // contexts can vary in stable vs experimental.
+      name: "MediaSourceStable",
+      status: "stable",
     },
     {
       name: "MergeBlockingNonBlockingPools",

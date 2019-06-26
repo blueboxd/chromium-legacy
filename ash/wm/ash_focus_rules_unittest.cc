@@ -112,7 +112,8 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
   aura::Window* CreateWindowInAlwaysOnTopContainer() {
     aura::Window* window =
         CreateWindowInContainer(kShellWindowId_AlwaysOnTopContainer);
-    window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    window->SetProperty(aura::client::kZOrderingKey,
+                        ui::ZOrderLevel::kFloatingWindow);
     return window;
   }
 

@@ -196,7 +196,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.remove_standard_frame = true;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.name = "ScreenCaptureNotificationUIViews";
 
 #if defined(OS_CHROMEOS)
@@ -208,7 +208,6 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
 
   widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   widget->Init(params);
-  widget->SetAlwaysOnTop(true);
 
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));

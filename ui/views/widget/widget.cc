@@ -149,7 +149,6 @@ Widget::InitParams::InitParams(Type type)
       opacity(INFER_OPACITY),
       accept_events(true),
       activatable(ACTIVATABLE_DEFAULT),
-      keep_on_top(type == TYPE_MENU || type == TYPE_DRAG),
       visible_on_all_workspaces(false),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
@@ -175,6 +174,22 @@ bool Widget::InitParams::CanActivate() const {
   return type != InitParams::TYPE_CONTROL && type != InitParams::TYPE_POPUP &&
          type != InitParams::TYPE_MENU && type != InitParams::TYPE_TOOLTIP &&
          type != InitParams::TYPE_DRAG;
+}
+
+ui::ZOrderLevel Widget::InitParams::EffectiveZOrderLevel() const {
+  if (z_order.has_value())
+    return z_order.value();
+
+  switch (type) {
+    case TYPE_MENU:
+      return ui::ZOrderLevel::kFloatingWindow;
+      break;
+    case TYPE_DRAG:
+      return ui::ZOrderLevel::kFloatingUIElement;
+      break;
+    default:
+      return ui::ZOrderLevel::kNormal;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -682,12 +697,12 @@ bool Widget::IsActive() const {
   return native_widget_->IsActive();
 }
 
-void Widget::SetAlwaysOnTop(bool on_top) {
-  native_widget_->SetAlwaysOnTop(on_top);
+void Widget::SetZOrderLevel(ui::ZOrderLevel order) {
+  native_widget_->SetZOrderLevel(order);
 }
 
-bool Widget::IsAlwaysOnTop() const {
-  return native_widget_->IsAlwaysOnTop();
+ui::ZOrderLevel Widget::GetZOrderLevel() const {
+  return native_widget_->GetZOrderLevel();
 }
 
 void Widget::SetVisibleOnAllWorkspaces(bool always_visible) {

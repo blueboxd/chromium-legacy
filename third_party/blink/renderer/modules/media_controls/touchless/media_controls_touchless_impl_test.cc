@@ -59,6 +59,8 @@ class MockWebMediaPlayerForTouchlessImpl : public EmptyWebMediaPlayer {
   bool has_audio_ = false;
 };
 
+}  // namespace
+
 class MockChromeClientForTouchlessImpl : public EmptyChromeClient {
  public:
   explicit MockChromeClientForTouchlessImpl()
@@ -122,6 +124,14 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
 
   TestMenuHostArgList& GetMenuHostArgList() {
     return test_media_controls_host_->GetMenuHostArgList();
+  }
+
+  void SetNetworkState(HTMLMediaElement::NetworkState state) {
+    MediaElement().SetNetworkState(state);
+  }
+
+  void SetReadyState(HTMLMediaElement::ReadyState state) {
+    MediaElement().SetReadyState(state);
   }
 
   void SimulateKeydownEvent(Element& element, int key_code) {
@@ -393,10 +403,12 @@ TEST_F(MediaControlsTouchlessImplTest, ContextMenuMojomTest) {
                                        UserGestureToken::kNewGesture);
   test::RunPendingTasks();
 
-  KeyboardEventInit* keyboard_event_init = KeyboardEventInit::Create();
-  keyboard_event_init->setKey("SoftRight");
-  Event* keyboard_event =
-      MakeGarbageCollected<KeyboardEvent>("keydown", keyboard_event_init);
+  WebKeyboardEvent web_keyboard_event(
+      WebInputEvent::kKeyUp, WebInputEvent::Modifiers::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  // TODO: Cleanup magic numbers once https://crbug.com/949766 lands.
+  web_keyboard_event.dom_key = 0x00200310;
+  Event* keyboard_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
 
   // Test fullscreen function.
   SetMenuResponse(mojom::blink::MenuItem::FULLSCREEN);
@@ -447,6 +459,26 @@ TEST_F(MediaControlsTouchlessImplTest, ContextMenuMojomTest) {
 
   SetMenuResponseAndShowMenu(mojom::blink::MenuItem::CAPTIONS, -1);
   EXPECT_NE(track->mode(), TextTrack::ShowingKeyword());
+}
+
+TEST_F(MediaControlsTouchlessImplTest, NoSourceTest) {
+  EXPECT_TRUE(MediaControls().classList().contains("state-no-source"));
+
+  LoadMediaWithDuration(10);
+  EXPECT_FALSE(MediaControls().classList().contains("state-no-source"));
+}
+
+TEST_F(MediaControlsTouchlessImplTest, DefaultPosterTest) {
+  LoadMediaWithDuration(10);
+
+  SetNetworkState(HTMLMediaElement::NetworkState::kNetworkLoading);
+  test::RunPendingTasks();
+  EXPECT_TRUE(MediaControls().classList().contains("use-default-poster"));
+
+  SetNetworkState(HTMLMediaElement::NetworkState::kNetworkIdle);
+  SetReadyState(HTMLMediaElement::ReadyState::kHaveMetadata);
+  test::RunPendingTasks();
+  EXPECT_FALSE(MediaControls().classList().contains("use-default-poster"));
 }
 
 TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
@@ -567,7 +599,5 @@ TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
   EXPECT_FALSE(IsControlsVisible(volume_container));
   EXPECT_TRUE(IsControlsVisible(overlay));
 }
-
-}  // namespace
 
 }  // namespace blink

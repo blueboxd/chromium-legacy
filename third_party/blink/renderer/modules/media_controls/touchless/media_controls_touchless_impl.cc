@@ -48,6 +48,10 @@ constexpr double kVolumeToChangeForTouchless = 0.05;
 
 const char kInlineCSSClass[] = "inline";
 
+const char kNoSourceCSSClass[] = "state-no-source";
+
+const char kUseDefaultPosterCSSClass[] = "use-default-poster";
+
 }  // namespace
 
 enum class MediaControlsTouchlessImpl::ArrowDirection {
@@ -55,6 +59,12 @@ enum class MediaControlsTouchlessImpl::ArrowDirection {
   kDown,
   kLeft,
   kRight,
+};
+
+enum class MediaControlsTouchlessImpl::ControlsState {
+  kNoSource,
+  kPreReady,
+  kReady,
 };
 
 MediaControlsTouchlessImpl::MediaControlsTouchlessImpl(
@@ -87,6 +97,9 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
       MakeGarbageCollected<MediaControlsTouchlessVolumeContainerElement>(
           *controls);
 
+  MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-touchless-error-info", controls);
+
   controls->ParserAppendChild(controls->bottom_container_);
   controls->ParserAppendChild(controls->overlay_);
   controls->ParserAppendChild(controls->volume_container_);
@@ -110,6 +123,8 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
 
   if (!media_element.IsFullscreen())
     controls->classList().Add(kInlineCSSClass);
+
+  controls->UpdateCSSFromState();
 
   shadow_root.ParserAppendChild(controls);
   return controls;
@@ -142,6 +157,10 @@ void MediaControlsTouchlessImpl::MaybeShow() {
 
 void MediaControlsTouchlessImpl::Hide() {
   SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
+}
+
+void MediaControlsTouchlessImpl::NetworkStateChanged() {
+  UpdateCSSFromState();
 }
 
 LayoutObject* MediaControlsTouchlessImpl::PanelLayoutObject() {
@@ -435,6 +454,63 @@ void MediaControlsTouchlessImpl::MaybeJump(int seconds) {
   double new_time = std::max(0.0, MediaElement().currentTime() + seconds);
   new_time = std::min(new_time, MediaElement().duration());
   MediaElement().setCurrentTime(new_time);
+}
+
+MediaControlsTouchlessImpl::ControlsState MediaControlsTouchlessImpl::State() {
+  HTMLMediaElement::NetworkState network_state =
+      MediaElement().getNetworkState();
+  HTMLMediaElement::ReadyState ready_state = MediaElement().getReadyState();
+
+  switch (network_state) {
+    case HTMLMediaElement::kNetworkEmpty:
+    case HTMLMediaElement::kNetworkNoSource:
+      return ControlsState::kNoSource;
+    case HTMLMediaElement::kNetworkLoading:
+      if (ready_state == HTMLMediaElement::kHaveNothing)
+        return ControlsState::kPreReady;
+      else
+        return ControlsState::kReady;
+    case HTMLMediaElement::kNetworkIdle:
+      if (ready_state == HTMLMediaElement::kHaveNothing)
+        return ControlsState::kPreReady;
+      break;
+  }
+
+  return ControlsState::kReady;
+}
+
+void MediaControlsTouchlessImpl::UpdateCSSFromState() {
+  ControlsState state = State();
+
+  if (state == ControlsState::kNoSource)
+    classList().Add(kNoSourceCSSClass);
+  else
+    classList().Remove(kNoSourceCSSClass);
+
+  if (!MediaElement().IsHTMLVideoElement())
+    return;
+
+  if (MediaElement().ShouldShowControls() &&
+      !VideoElement().HasAvailableVideoFrame() &&
+      VideoElement().PosterImageURL().IsEmpty() &&
+      state <= ControlsState::kPreReady) {
+    classList().Add(kUseDefaultPosterCSSClass);
+  } else {
+    classList().Remove(kUseDefaultPosterCSSClass);
+  }
+}
+
+HTMLVideoElement& MediaControlsTouchlessImpl::VideoElement() {
+  DCHECK(MediaElement().IsHTMLVideoElement());
+  return *ToHTMLVideoElement(&MediaElement());
+}
+
+void MediaControlsTouchlessImpl::OnError() {
+  UpdateCSSFromState();
+}
+
+void MediaControlsTouchlessImpl::OnLoadedMetadata() {
+  UpdateCSSFromState();
 }
 
 void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {

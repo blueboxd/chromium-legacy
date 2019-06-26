@@ -223,6 +223,10 @@ void LocationBarView::Init() {
   // |browser_| may be null when LocationBarView is used for non-Browser windows
   // such as PresentationReceiverWindowView, which do not support page actions.
   if (browser_) {
+    // The send tab to self icon is intentionally the first one added so it is
+    // the left most icon.
+    if (send_tab_to_self::IsSendingEnabled())
+      params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
@@ -233,8 +237,6 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);
-    if (send_tab_to_self::IsSendingEnabled())
-      params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   params.icon_color = icon_color;

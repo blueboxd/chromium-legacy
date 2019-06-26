@@ -142,16 +142,13 @@ void ContentsView::Init(AppListModel* model) {
 void ContentsView::ResetForShow() {
   SetActiveState(ash::AppListState::kStateApps);
   GetAppsContainerView()->ResetForShowApps();
-  // We clear the search when hiding so when app list appears it is not showing
-  // search results.
-  GetSearchBoxView()->ClearSearch();
-
+  GetSearchBoxView()->ResetForShow();
   // In side shelf, the opacity of the contents is not animated so set it to the
   // final state. In tablet mode, opacity of the elements is controlled by the
   // HomeLauncherGestureHandler which expects these elements to be opaque.
   // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
   const float initial_opacity =
-      app_list_view_->is_side_shelf() || app_list_view()->is_tablet_mode()
+      app_list_view_->is_side_shelf() || app_list_view_->is_tablet_mode()
           ? 1.0f
           : 0.0f;
   GetSearchBoxView()->layer()->SetOpacity(initial_opacity);

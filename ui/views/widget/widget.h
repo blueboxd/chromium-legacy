@@ -217,6 +217,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // case where |activatable| is |ACTIVATABLE_DEFAULT|.
     bool CanActivate() const;
 
+    // Returns the z-order level, based on the overriding |z_order| but also
+    // taking into account special levels due to |type|.
+    ui::ZOrderLevel EffectiveZOrderLevel() const;
+
     Type type;
     // If null, a default implementation will be constructed. The default
     // implementation deletes itself when the Widget closes.
@@ -234,7 +238,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     WindowOpacity opacity;
     bool accept_events;
     Activatable activatable;
-    bool keep_on_top;
+    base::Optional<ui::ZOrderLevel> z_order;
     bool visible_on_all_workspaces;
     // See Widget class comment above.
     Ownership ownership;
@@ -536,12 +540,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const;
 
-  // Sets the widget to be on top of all other widgets in the windowing system.
-  void SetAlwaysOnTop(bool on_top);
+  // Sets the z-order of the widget. This only applies to top-level widgets.
+  void SetZOrderLevel(ui::ZOrderLevel order);
 
-  // Returns whether the widget has been set to be on top of most other widgets
-  // in the windowing system.
-  bool IsAlwaysOnTop() const;
+  // Gets the z-order of the widget. This only applies to top-level widgets.
+  ui::ZOrderLevel GetZOrderLevel() const;
 
   // Sets the widget to be visible on all work spaces.
   void SetVisibleOnAllWorkspaces(bool always_visible);

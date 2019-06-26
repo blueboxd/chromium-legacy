@@ -732,6 +732,7 @@ class CORE_EXPORT HTMLMediaElement
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class MediaControlsImplTest;
+  friend class MediaControlsTouchlessImplTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;

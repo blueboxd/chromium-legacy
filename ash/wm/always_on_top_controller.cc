@@ -44,7 +44,11 @@ aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
   DCHECK(always_on_top_container_);
   DCHECK(pip_container_);
 
-  if (!window->GetProperty(aura::client::kAlwaysOnTopKey)) {
+  // On other platforms, there are different window levels. For now, treat any
+  // window with non-normal level as "always on top". Perhaps the nuance of
+  // multiple levels will be needed later.
+  if (window->GetProperty(aura::client::kZOrderingKey) ==
+      ui::ZOrderLevel::kNormal) {
     aura::Window* root = always_on_top_container_->GetRootWindow();
 
     // TODO(afakhry): Do we need to worry about the context of |window| here? Or
@@ -103,7 +107,7 @@ void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
                                                     const void* key,
                                                     intptr_t old) {
   if (window != always_on_top_container_ && window != pip_container_ &&
-      key == aura::client::kAlwaysOnTopKey) {
+      key == aura::client::kZOrderingKey) {
     ReparentWindow(window);
   }
 }

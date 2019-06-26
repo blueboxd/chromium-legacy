@@ -62,7 +62,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   // ui::BaseWindow:
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
-  bool IsAlwaysOnTop() const override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

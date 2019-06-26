@@ -32,8 +32,8 @@ class ShellNativeAppWindow : public NativeAppWindow {
   void Minimize() override;
   void Restore() override;
   void FlashFrame(bool flash) override;
-  bool IsAlwaysOnTop() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
 
   // web_modal::ModalDialogHost overrides:
   gfx::NativeView GetHostView() const override;

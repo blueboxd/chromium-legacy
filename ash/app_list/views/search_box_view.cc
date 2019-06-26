@@ -113,6 +113,12 @@ void SearchBoxView::Init(bool is_tablet_mode) {
   SearchBoxViewBase::Init();
 }
 
+void SearchBoxView::ResetForShow() {
+  ClearSearch();
+  SetSearchBoxBackgroundCornerRadius(
+      GetSearchBoxBorderCornerRadiusForState(contents_view_->GetActiveState()));
+}
+
 void SearchBoxView::ClearSearch() {
   search_box::SearchBoxViewBase::ClearSearch();
   app_list_view_->SetStateFromSearchBoxView(

@@ -454,7 +454,7 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
 
 void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
   if (on_top) {
-    divider_widget_->SetAlwaysOnTop(true);
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
 
     // Special handling when put divider into always_on_top container. We want
     // to put it at the bottom so it won't block other always_on_top windows.
@@ -464,7 +464,7 @@ void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
     always_on_top_container->StackChildAtBottom(
         divider_widget_->GetNativeWindow());
   } else {
-    divider_widget_->SetAlwaysOnTop(false);
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   }
 }
 

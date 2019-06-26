@@ -65,7 +65,7 @@ void CreateAndShowWidget(views::WidgetDelegateView* delegate,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.accept_events = false;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.delegate = delegate;
   params.bounds = bounds;
   ash_util::SetupWidgetInitParamsForContainer(

@@ -357,7 +357,7 @@ void TaskManagerView::Init() {
 
 void TaskManagerView::InitAlwaysOnTopState() {
   RetrieveSavedAlwaysOnTopState();
-  GetWidget()->SetAlwaysOnTop(is_always_on_top_);
+  GetWidget()->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
 }
 
 void TaskManagerView::ActivateSelectedTab() {

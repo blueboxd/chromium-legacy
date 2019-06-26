@@ -133,6 +133,7 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
 
   remove_standard_frame_ = params.remove_standard_frame;
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
+  z_order_ = params.EffectiveZOrderLevel();
 
   // We don't have an HWND yet, so scale relative to the nearest screen.
   gfx::Rect pixel_bounds =
@@ -367,12 +368,16 @@ bool DesktopWindowTreeHostWin::HasCapture() const {
   return message_handler_->HasCapture();
 }
 
-void DesktopWindowTreeHostWin::SetAlwaysOnTop(bool always_on_top) {
-  message_handler_->SetAlwaysOnTop(always_on_top);
+void DesktopWindowTreeHostWin::SetZOrderLevel(ui::ZOrderLevel order) {
+  z_order_ = order;
+  // Emulate the multiple window levels provided by other platforms by
+  // collapsing the z-order enum into kNormal = normal, everything else = always
+  // on top.
+  message_handler_->SetAlwaysOnTop(order != ui::ZOrderLevel::kNormal);
 }
 
-bool DesktopWindowTreeHostWin::IsAlwaysOnTop() const {
-  return message_handler_->IsAlwaysOnTop();
+ui::ZOrderLevel DesktopWindowTreeHostWin::GetZOrderLevel() const {
+  return z_order_;
 }
 
 void DesktopWindowTreeHostWin::SetVisibleOnAllWorkspaces(bool always_visible) {

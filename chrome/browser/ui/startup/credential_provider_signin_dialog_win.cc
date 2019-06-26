@@ -483,7 +483,7 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams init_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  init_params.keep_on_top = true;
+  init_params.z_order = ui::ZOrderLevel::kFloatingWindow;
   views::WebDialogView* web_view = view.release();
   init_params.name = "GCPW";  // Used for debugging only.
   init_params.delegate = web_view;

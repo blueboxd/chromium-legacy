@@ -39,6 +39,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   void Init(bool is_tablet_mode);
 
+  // Resets state of SearchBoxView so it can be reshown.
+  void ResetForShow();
+
   // Returns the total focus ring spacing for use in folders.
   static int GetFocusRingSpacing();
 

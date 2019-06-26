@@ -605,10 +605,6 @@ class ChromeDriver(object):
     params = {'parameters': {'type': connection_type}}
     return self.ExecuteCommand(Command.SET_NETWORK_CONNECTION, params)
 
-  def SendCommand(self, cmd, cmd_params):
-    params = {'parameters': {'cmd': cmd, 'params': cmd_params}};
-    return self.ExecuteCommand(Command.SEND_COMMAND, params)
-
   def SendCommandAndGetResult(self, cmd, cmd_params):
     params = {'cmd': cmd, 'params': cmd_params};
     return self.ExecuteCommand(Command.SEND_COMMAND_AND_GET_RESULT, params)

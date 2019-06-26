@@ -326,8 +326,9 @@ void WindowState::Restore() {
   }
 }
 
-void WindowState::DisableAlwaysOnTop(aura::Window* window_on_top) {
-  if (GetAlwaysOnTop() && !IsPip()) {
+void WindowState::DisableZOrdering(aura::Window* window_on_top) {
+  ui::ZOrderLevel z_order = GetZOrdering();
+  if (z_order != ui::ZOrderLevel::kNormal && !IsPip()) {
     // |window_| is hidden first to avoid canceling fullscreen mode when it is
     // no longer always on top and gets added to default container. This avoids
     // sending redundant OnFullscreenStateChanged to the layout manager. The
@@ -336,7 +337,7 @@ void WindowState::DisableAlwaysOnTop(aura::Window* window_on_top) {
     bool visible = window_->IsVisible();
     if (visible)
       window_->Hide();
-    window_->SetProperty(aura::client::kAlwaysOnTopKey, false);
+    window_->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
     // Technically it is possible that a |window_| could make itself
     // always_on_top really quickly. This is probably not a realistic case but
     // check if the two windows are in the same container just in case.
@@ -344,14 +345,14 @@ void WindowState::DisableAlwaysOnTop(aura::Window* window_on_top) {
       window_->parent()->StackChildAbove(window_on_top, window_);
     if (visible)
       window_->Show();
-    cached_always_on_top_ = true;
+    cached_z_order_ = z_order;
   }
 }
 
-void WindowState::RestoreAlwaysOnTop() {
-  if (cached_always_on_top_) {
-    cached_always_on_top_ = false;
-    window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
+void WindowState::RestoreZOrdering() {
+  if (cached_z_order_ != ui::ZOrderLevel::kNormal) {
+    window_->SetProperty(aura::client::kZOrderingKey, cached_z_order_);
+    cached_z_order_ = ui::ZOrderLevel::kNormal;
   }
 }
 
@@ -544,15 +545,15 @@ WindowState::WindowState(aura::Window* window)
       unminimize_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
       autohide_shelf_when_maximized_or_fullscreen_(false),
-      cached_always_on_top_(false),
+      cached_z_order_(ui::ZOrderLevel::kNormal),
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
   OnPrePipStateChange(WindowStateType::kDefault);
 }
 
-bool WindowState::GetAlwaysOnTop() const {
-  return window_->GetProperty(aura::client::kAlwaysOnTopKey);
+ui::ZOrderLevel WindowState::GetZOrdering() const {
+  return window_->GetProperty(aura::client::kZOrderingKey);
 }
 
 ui::WindowShowState WindowState::GetShowState() const {

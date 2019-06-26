@@ -520,14 +520,7 @@ BrowserMainLoop::BrowserMainLoop(
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
       created_threads_(false),
-      scoped_execution_fence_(std::move(scoped_execution_fence))
-#if !defined(OS_ANDROID)
-      ,
-      // TODO(fdoray): Create the fence on Android too. Not enabled yet because
-      // tests timeout. https://crbug.com/887407
-      scoped_best_effort_execution_fence_(base::in_place_t())
-#endif
-{
+      scoped_execution_fence_(std::move(scoped_execution_fence)) {
   DCHECK(!g_current_browser_main_loop);
   DCHECK(scoped_execution_fence_)
       << "ThreadPool must be halted before kicking off content.";
@@ -941,20 +934,12 @@ int BrowserMainLoop::CreateThreads() {
 
   // TODO(https://crbug.com/863341): Replace with a better API
   GetContentClient()->browser()->PostAfterStartupTask(
-      FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
-      base::BindOnce(
-          [](BrowserMainLoop* browser_main_loop) {
-            // Enable main thread and thread pool best effort queues. Non-best
-            // effort queues will already have been enabled. This will enable
-            // all queues on all browser threads, so we need to do this after
-            // the threads have been created, i.e. here.
-            content::BrowserTaskExecutor::EnableAllQueues();
-            browser_main_loop->scoped_best_effort_execution_fence_.reset();
-          },
-          // Main thread tasks can't run after BrowserMainLoop destruction.
-          // Accessing an Unretained pointer to BrowserMainLoop from a main
-          // thread task is therefore safe.
-          base::Unretained(this)));
+      FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
+        // Non best effort queues will already have been enabled
+        // This will enable all queues on all browser threads, so we need to do
+        // this after the threads have been created, i.e. here.
+        content::BrowserTaskExecutor::EnableAllQueues();
+      }));
 
   created_threads_ = true;
   return result_code_;

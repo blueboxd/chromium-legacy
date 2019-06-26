@@ -2,17 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-template("js_html_template") {
-  action(target_name + "_js_html_template") {
+common_namespace_rewrites = [
+  "Polymer.PaperRippleBehavior|PaperRippleBehavior",
+  "cr.ui.FocusOutlineManager|FocusOutlineManager",
+
+  # TODO(dpapad): Add more such rewrites as they get discovered.
+]
+
+template("polymer_modulizer") {
+  action(target_name + "_module") {
     script = "//tools/polymer/polymer.py"
 
     inputs = [
-      invoker.js_file,
       invoker.html_file,
     ]
 
+    if (invoker.html_type == "dom-module" || invoker.html_type == "v3-ready") {
+      inputs += [ invoker.js_file ]
+    }
+
+    output_js_file = "$target_gen_dir/" + invoker.js_file
+    if (invoker.html_type == "dom-module") {
+      output_js_file =
+          "$target_gen_dir/" + get_path_info(invoker.js_file, "file") + ".m.js"
+    }
     outputs = [
-      "$target_gen_dir/" + invoker.js_file,
+      "$target_gen_dir/" + output_js_file,
     ]
 
     args = [
@@ -27,5 +42,10 @@ template("js_html_template") {
       "--out_folder",
       rebase_path(target_gen_dir, root_build_dir),
     ]
+
+    args += [ "--namespace_rewrites" ] + common_namespace_rewrites
+    if (defined(invoker.namespace_rewrites)) {
+      args += invoker.namespace_rewrites
+    }
   }
 }

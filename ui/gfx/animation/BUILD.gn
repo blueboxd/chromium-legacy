@@ -59,6 +59,7 @@ jumbo_component("animation") {
     "//skia",
     "//ui/gfx:geometry_skia",
     "//ui/gfx:gfx_export",
+    "//ui/gfx:gfx_switches",
     "//ui/gfx/geometry",
   ]
 

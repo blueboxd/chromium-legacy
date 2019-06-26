@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -243,6 +244,15 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_LevelPropertyId, node);
       aria_properties_events_.insert(node);
       break;
+    case ui::AXEventGenerator::Event::IGNORED_CHANGED:
+      if (node->HasState(ax::mojom::State::kIgnored)) {
+        FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, node);
+        FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, node);
+      } else {
+        FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
+        FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+      }
+      break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
       break;
@@ -298,6 +308,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
+      // Only fire name changes when the name comes from an attribute, otherwise
+      // name changes are redundant with text removed/inserted events.
+      if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents)
+        FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
       break;
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
       FireUiaPropertyChangedEvent(UIA_HelpTextPropertyId, node);
@@ -401,6 +415,18 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
+  // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE
+  if (base::Contains(ignored_changed_nodes_, node)) {
+    switch (win_event_type) {
+      case EVENT_OBJECT_HIDE:
+      case EVENT_OBJECT_SHOW:
+        break;
+      default:
+        return;
+    }
+  } else if (node->HasState(ax::mojom::State::kIgnored)) {
+    return;
+  }
 
   HWND hwnd = GetParentHWND();
   if (!hwnd)
@@ -421,6 +447,10 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
+  // Suppress events when |IGNORED_CHANGED|
+  if (node->HasState(ax::mojom::State::kIgnored) ||
+      base::Contains(ignored_changed_nodes_, node))
+    return;
 
   ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
                             uia_event);
@@ -432,6 +462,10 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
   if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
     return;
   if (!ShouldFireEventForNode(node))
+    return;
+  // Suppress events when |IGNORED_CHANGED|
+  if (node->HasState(ax::mojom::State::kIgnored) ||
+      base::Contains(ignored_changed_nodes_, node))
     return;
 
   // The old value is not used by the system
@@ -454,6 +488,18 @@ void BrowserAccessibilityManagerWin::FireUiaStructureChangedEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
+  // Suppress events when |IGNORED_CHANGED| except for related structure changes
+  if (base::Contains(ignored_changed_nodes_, node)) {
+    switch (change_type) {
+      case StructureChangeType_ChildRemoved:
+      case StructureChangeType_ChildAdded:
+        break;
+      default:
+        return;
+    }
+  } else if (node->HasState(ax::mojom::State::kIgnored)) {
+    return;
+  }
 
   auto* provider = ToBrowserAccessibilityWin(node);
   auto* provider_com = provider ? provider->GetCOM() : nullptr;
@@ -671,6 +717,25 @@ void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
   }
 }
 
+void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
+  BrowserAccessibilityManager::BeforeAccessibilityEvents();
+
+  for (const auto& targeted_event : event_generator_) {
+    if (targeted_event.event_params.event ==
+        ui::AXEventGenerator::Event::IGNORED_CHANGED) {
+      BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
+      if (!event_target)
+        continue;
+
+      const auto insert_pair = ignored_changed_nodes_.insert(event_target);
+
+      // Expect that |IGNORED_CHANGED| only fires once for a given
+      // node in a given event frame.
+      DCHECK(insert_pair.second);
+    }
+  }
+}
+
 void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
   BrowserAccessibilityManager::FinalizeAccessibilityEvents();
 
@@ -719,6 +784,7 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
     }
   }
   selection_events_.clear();
+  ignored_changed_nodes_.clear();
 }
 
 BrowserAccessibilityManagerWin::SelectionEvents::SelectionEvents() = default;

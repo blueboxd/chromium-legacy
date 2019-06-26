@@ -15,7 +15,8 @@ namespace ash {
 // frequently used features e.g. lock screen, settings, and shutdown.
 class TopShortcutButton : public views::ImageButton {
  public:
-  explicit TopShortcutButton(const gfx::VectorIcon& icon);
+  explicit TopShortcutButton(const gfx::VectorIcon& icon,
+                             int accessible_name_id);
   TopShortcutButton(views::ButtonListener* listener,
                     const gfx::VectorIcon& icon,
                     int accessible_name_id);

@@ -87,40 +87,23 @@ favicon_base::IconTypeSet GetIconTypesForLocalQuery() {
           favicon_base::IconType::kWebManifestIcon};
 }
 
-bool CanOriginQueryGoogleServer(FaviconRequestOrigin origin) {
-  switch (origin) {
-    case FaviconRequestOrigin::HISTORY:
-    case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
-    case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
-      return true;
-    case FaviconRequestOrigin::UNKNOWN:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 GURL GetGroupIdentifier(const GURL& page_url, const GURL& icon_url) {
   // If it is not possible to find a mapped icon url, identify the group of
   // |page_url| by itself.
   return !icon_url.is_empty() ? icon_url : page_url;
 }
 
-bool CanQueryGoogleServer(FaviconRequestOrigin origin,
-                          bool can_send_history_data) {
-  return CanOriginQueryGoogleServer(origin) && can_send_history_data &&
-         base::FeatureList::IsEnabled(kEnableHistoryFaviconsGoogleServerQuery);
-}
-
 }  // namespace
 
 FaviconRequestHandler::FaviconRequestHandler(
     const SyncedFaviconGetter& synced_favicon_getter,
+    const CanSendHistoryDataGetter& can_send_history_data_getter,
     FaviconService* favicon_service,
     LargeIconService* large_icon_service)
     : favicon_service_(favicon_service),
       large_icon_service_(large_icon_service),
-      synced_favicon_getter_(synced_favicon_getter) {
+      synced_favicon_getter_(synced_favicon_getter),
+      can_send_history_data_getter_(can_send_history_data_getter) {
   DCHECK(favicon_service);
   DCHECK(large_icon_service);
 }
@@ -134,18 +117,17 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
     FaviconRequestOrigin request_origin,
     FaviconRequestPlatform request_platform,
     const GURL& icon_url_for_uma,
-    bool can_send_history_data,
     base::CancelableTaskTracker* tracker) {
   // First attempt to find the icon locally.
   favicon_service_->GetRawFaviconForPageURL(
       page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
       kFallbackToHost,
-      base::BindOnce(
-          &FaviconRequestHandler::OnBitmapLocalDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(), page_url, desired_size_in_pixel,
-          /*response_callback=*/std::move(callback), request_origin,
-          request_platform, icon_url_for_uma,
-          CanQueryGoogleServer(request_origin, can_send_history_data), tracker),
+      base::BindOnce(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url,
+                     desired_size_in_pixel,
+                     /*response_callback=*/std::move(callback), request_origin,
+                     request_platform, icon_url_for_uma,
+                     CanQueryGoogleServer(request_origin), tracker),
       tracker);
 }
 
@@ -154,17 +136,15 @@ void FaviconRequestHandler::GetFaviconImageForPageURL(
     favicon_base::FaviconImageCallback callback,
     FaviconRequestOrigin request_origin,
     const GURL& icon_url_for_uma,
-    bool can_send_history_data,
     base::CancelableTaskTracker* tracker) {
   // First attempt to find the icon locally.
   favicon_service_->GetFaviconImageForPageURL(
       page_url,
-      base::BindOnce(
-          &FaviconRequestHandler::OnImageLocalDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(), page_url,
-          /*response_callback=*/std::move(callback), request_origin,
-          icon_url_for_uma,
-          CanQueryGoogleServer(request_origin, can_send_history_data), tracker),
+      base::BindOnce(&FaviconRequestHandler::OnImageLocalDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url,
+                     /*response_callback=*/std::move(callback), request_origin,
+                     icon_url_for_uma, CanQueryGoogleServer(request_origin),
+                     tracker),
       tracker);
 }
 
@@ -376,6 +356,15 @@ void FaviconRequestHandler::OnGoogleServerDataAvailable(
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kNotAvailable);
     std::move(empty_response_callback).Run();
   }
+}
+
+bool FaviconRequestHandler::CanQueryGoogleServer(
+    FaviconRequestOrigin origin) const {
+  // TODO(victorvianna): Remove origin check once extensions don't talk to this
+  // layer anymore.
+  return origin != FaviconRequestOrigin::UNKNOWN &&
+         can_send_history_data_getter_.Run() &&
+         base::FeatureList::IsEnabled(kEnableHistoryFaviconsGoogleServerQuery);
 }
 
 }  // namespace favicon

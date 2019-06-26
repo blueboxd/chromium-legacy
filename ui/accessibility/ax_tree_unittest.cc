@@ -697,6 +697,37 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
   ASSERT_FALSE(base::Contains(node_reparented, 3));
 }
 
+TEST(AXTreeTest, MultipleIgnoredChangesDoesNotBreakCache) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[1].child_ids.push_back(3);
+
+  initial_state.nodes[2].id = 3;
+
+  AXTree tree(initial_state);
+  TestAXTreeObserver test_observer(&tree);
+  EXPECT_EQ(1u, tree.GetFromId(2)->GetUnignoredChildCount());
+
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0].id = 3;
+  update.nodes[0].AddState(ax::mojom::State::kIgnored);
+
+  update.nodes[1].id = 2;
+  update.nodes[1].child_ids.push_back(3);
+
+  EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
+  EXPECT_EQ(0u, tree.GetFromId(2)->GetUnignoredChildCount());
+  EXPECT_FALSE(tree.GetFromId(2)->data().HasState(ax::mojom::State::kIgnored));
+  EXPECT_TRUE(tree.GetFromId(3)->data().HasState(ax::mojom::State::kIgnored));
+}
+
 TEST(AXTreeTest, TreeObserverIsNotCalledForReparenting) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

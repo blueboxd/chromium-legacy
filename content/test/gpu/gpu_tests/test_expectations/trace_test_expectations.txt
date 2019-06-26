@@ -38,3 +38,4 @@ crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOv
 # Flaky for unknown reason.
 crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
 crbug.com/969117 [ win10 intel ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/978181 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]

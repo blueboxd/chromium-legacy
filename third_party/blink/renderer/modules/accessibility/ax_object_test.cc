@@ -42,23 +42,29 @@ TEST_F(AccessibilityTest, IsAncestorOf) {
 
 TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
+                   <div id='ignored_a' aria-hidden='true'></div>
                    <p id="paragraph">hello<br id="br">there</p>
+                   <span id='ignored_b' aria-hidden='true'></span>
                    <button id="button">button</button>)HTML");
 
-  const AXObject* root = GetAXRootObject();
-  ASSERT_NE(nullptr, root);
+  const AXObject* body = GetAXRootObject()->FirstChild();
+  ASSERT_NE(nullptr, body);
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);
+  ASSERT_NE(nullptr, GetAXObjectByElementId("ignored_a"));
+  ASSERT_TRUE(GetAXObjectByElementId("ignored_a")->AccessibilityIsIgnored());
   const AXObject* paragraph = GetAXObjectByElementId("paragraph");
   ASSERT_NE(nullptr, paragraph);
   const AXObject* br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, br);
+  ASSERT_NE(nullptr, GetAXObjectByElementId("ignored_b"));
+  ASSERT_TRUE(GetAXObjectByElementId("ignored_b")->AccessibilityIsIgnored());
   const AXObject* button = GetAXObjectByElementId("button");
   ASSERT_NE(nullptr, button);
 
-  EXPECT_EQ(input, root->FirstChild());
-  EXPECT_EQ(button, root->LastChild());
-  EXPECT_EQ(button, root->DeepestLastChild());
+  EXPECT_EQ(input, body->FirstChild());
+  EXPECT_EQ(button, body->LastChild());
+  EXPECT_EQ(button, body->DeepestLastChild());
 
   ASSERT_NE(nullptr, paragraph->FirstChild());
   EXPECT_EQ(ax::mojom::Role::kStaticText, paragraph->FirstChild()->RoleValue());
@@ -77,6 +83,75 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());
   EXPECT_EQ(ax::mojom::Role::kStaticText, br->PreviousSibling()->RoleValue());
+}
+
+TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
+  // Setup the following tree :
+  // ++A
+  // ++IGNORED
+  // ++++B
+  // ++C
+  // So that nodes [A, B, C] are siblings
+  SetBodyInnerHTML(R"HTML(<body>
+    <p id="A">some text</p>
+    <div>
+      <p id="B">nested text</p>
+    </div>
+    <p id="C">more text</p>
+    </body>)HTML");
+
+  const AXObject* root = GetAXRootObject();
+  const AXObject* body = root->FirstChild();
+  ASSERT_EQ(3, body->ChildCount());
+  ASSERT_EQ(1, body->Children()[1]->ChildCount());
+
+  ASSERT_FALSE(root->AccessibilityIsIgnored());
+  ASSERT_TRUE(body->AccessibilityIsIgnored());
+  const AXObject* obj_a = GetAXObjectByElementId("A");
+  ASSERT_NE(nullptr, obj_a);
+  ASSERT_FALSE(obj_a->AccessibilityIsIgnored());
+  const AXObject* obj_a_text = obj_a->FirstChild();
+  ASSERT_NE(nullptr, obj_a_text);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, obj_a_text->RoleValue());
+  const AXObject* obj_b = GetAXObjectByElementId("B");
+  ASSERT_NE(nullptr, obj_b);
+  ASSERT_FALSE(obj_b->AccessibilityIsIgnored());
+  const AXObject* obj_b_text = obj_b->FirstChild();
+  ASSERT_NE(nullptr, obj_b_text);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, obj_b_text->RoleValue());
+  const AXObject* obj_c = GetAXObjectByElementId("C");
+  ASSERT_NE(nullptr, obj_c);
+  ASSERT_FALSE(obj_c->AccessibilityIsIgnored());
+  const AXObject* obj_c_text = obj_c->FirstChild();
+  ASSERT_NE(nullptr, obj_c_text);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, obj_c_text->RoleValue());
+  const AXObject* obj_ignored = body->Children()[1];
+  ASSERT_NE(nullptr, obj_ignored);
+  ASSERT_TRUE(obj_ignored->AccessibilityIsIgnored());
+
+  EXPECT_EQ(root, obj_a->ParentObjectUnignored());
+  EXPECT_EQ(body, obj_a->ParentObjectIncludedInTree());
+  EXPECT_EQ(root, obj_b->ParentObjectUnignored());
+  EXPECT_EQ(obj_ignored, obj_b->ParentObjectIncludedInTree());
+  EXPECT_EQ(root, obj_c->ParentObjectUnignored());
+  EXPECT_EQ(body, obj_c->ParentObjectIncludedInTree());
+
+  EXPECT_EQ(obj_b, obj_ignored->FirstChild());
+
+  EXPECT_EQ(nullptr, obj_a->PreviousSibling());
+  EXPECT_EQ(obj_b, obj_a->NextSibling());
+  EXPECT_EQ(root, obj_a->PreviousInTreeObject());
+  EXPECT_EQ(obj_a_text, obj_a->NextInTreeObject());
+
+  EXPECT_EQ(obj_a, obj_b->PreviousSibling());
+  EXPECT_EQ(obj_c, obj_b->NextSibling());
+  EXPECT_EQ(obj_a_text, obj_b->PreviousInTreeObject());
+  EXPECT_EQ(obj_b_text, obj_b->NextInTreeObject());
+
+  EXPECT_EQ(obj_b, obj_c->PreviousSibling());
+  EXPECT_EQ(nullptr, obj_c->NextSibling());
+  EXPECT_EQ(obj_b_text, obj_c->PreviousInTreeObject());
+  EXPECT_EQ(obj_c_text, obj_c->NextInTreeObject());
 }
 
 TEST_F(AccessibilityTest, AXObjectComparisonOperators) {

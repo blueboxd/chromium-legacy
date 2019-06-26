@@ -518,8 +518,43 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
 
     // If it's ignored, find the first ancestor that's not ignored.
-    while (!obj.IsDetached() && obj.AccessibilityIsIgnored())
+    while (!obj.IsDetached() && obj.AccessibilityIsIgnored()) {
+      // There are 3 states of nodes that we care about here.
+      // (x) Unignored, included in tree
+      // [x] Ignored, included in tree
+      // <x> Ignored, excluded from tree
+      //
+      // Consider the following tree :
+      // ++(0) Role::kRootWebArea
+      // ++++<1> Role::kIgnored
+      // ++++++[2] Role::kGenericContainer <body>
+      // ++++++++[3] Role::kGenericContainer with 'visibility: hidden'
+      //
+      // If we modify [3] to be 'visibility: visible', we will receive
+      // Event::kChildrenChanged here for the Ignored parent [2].
+      // We must re-serialize the Unignored parent node (0) due to this
+      // change, but we must also re-serialize [2] since its children
+      // have changed. <1> was never part of the ax tree, and therefore
+      // does not need to be serialized.
+      //
+      // So on the way to the Unignored parent, ancestors that are
+      // included in the tree must also be serialized.
+      // Note that [3] will be serialized to (3) during :
+      // |AXTreeSerializer<>::SerializeChangedNodes| when node [2] is
+      // being serialized, since it will detect the Ignored state had
+      // changed.
+      //
+      // Similarly, during Event::kTextChanged, if any Ignored,
+      // but included in tree ancestor uses NameFrom::kContents,
+      // they must also be re-serialized in case the name changed.
+      if (obj.AccessibilityIsIncludedInTree()) {
+        DirtyObject dirty_object;
+        dirty_object.obj = obj;
+        dirty_object.event_from = event.event_from;
+        dirty_objects.push_back(dirty_object);
+      }
       obj = obj.ParentObject();
+    }
 
     // Make sure it's a descendant of our root node - exceptions include the
     // scroll area that's the parent of the main document (we ignore it), and

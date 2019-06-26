@@ -44,6 +44,10 @@ class AX_EXPORT AXTreeSourceAdapter
     return node->parent();
   }
 
+  bool IsIgnored(const AXNode* node) const override {
+    return node->data().HasState(ax::mojom::State::kIgnored);
+  }
+
   bool IsValid(const AXNode* node) const override { return node != nullptr; }
 
   bool IsEqual(const AXNode* node1, const AXNode* node2) const override {

@@ -29,13 +29,10 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl(
                              : base::DefaultTickClock::GetInstance()),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
       broken_alternative_services_(this, tick_clock_),
+      canonical_suffixes_({".ggpht.com", ".c.youtube.com", ".googlevideo.com",
+                           ".googleusercontent.com"}),
       quic_server_info_map_(kDefaultMaxQuicServerEntries),
-      max_server_configs_stored_in_properties_(kDefaultMaxQuicServerEntries) {
-  canonical_suffixes_.push_back(".ggpht.com");
-  canonical_suffixes_.push_back(".c.youtube.com");
-  canonical_suffixes_.push_back(".googlevideo.com");
-  canonical_suffixes_.push_back(".googleusercontent.com");
-}
+      max_server_configs_stored_in_properties_(kDefaultMaxQuicServerEntries) {}
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
     : HttpServerPropertiesImpl(nullptr, nullptr) {}

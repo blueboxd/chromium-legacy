@@ -485,10 +485,12 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       role_(ax::mojom::Role::kUnknown),
       aria_role_(ax::mojom::Role::kUnknown),
       last_known_is_ignored_value_(kDefaultBehavior),
+      last_known_is_ignored_but_included_in_tree_value_(kDefaultBehavior),
       explicit_container_id_(0),
       parent_(nullptr),
       last_modification_count_(-1),
       cached_is_ignored_(false),
+      cached_is_ignored_but_included_in_tree_(false),
       cached_is_inert_or_aria_hidden_(false),
       cached_is_descendant_of_leaf_node_(false),
       cached_is_descendant_of_disabled_node_(false),
@@ -862,35 +864,21 @@ bool AXObject::IsClickable() const {
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
-  Node* node = GetNode();
-  if (!node) {
-    AXObject* parent = this->ParentObject();
-    while (!node && parent) {
-      node = parent->GetNode();
-      parent = parent->ParentObject();
-    }
-  }
-
-  if (node)
-    node->UpdateDistributionForFlatTreeTraversal();
-
-  // TODO(aboxhall): Instead of this, propagate inert down through frames
-  Document* document = GetDocument();
-  while (document && document->LocalOwner()) {
-    document->LocalOwner()->UpdateDistributionForFlatTreeTraversal();
-    document = document->LocalOwner()->ownerDocument();
-  }
-
+  UpdateDistributionForFlatTreeTraversal();
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_;
 }
 
-// TODO(janewman) AccessibilityIsIncludedInTree should be true for all nodes
-// that should be included in the tree, even if they are ignored
+bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
+  UpdateDistributionForFlatTreeTraversal();
+  UpdateCachedAttributeValuesIfNeeded();
+  return cached_is_ignored_but_included_in_tree_;
+}
+
+// AccessibilityIsIncludedInTree should be true for all nodes that should be
+// included in the tree, even if they are ignored
 bool AXObject::AccessibilityIsIncludedInTree() const {
-  // TODO(janewman) add DCHECK to ensure we do not disallow unignored nodes from
-  // being in the tree.
-  return !AccessibilityIsIgnored();
+  return !AccessibilityIsIgnored() || AccessibilityIsIgnoredButIncludedInTree();
 }
 
 void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
@@ -910,6 +898,8 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   cached_has_inherited_presentational_role_ =
       !!InheritsPresentationalRoleFrom();
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
+  cached_is_ignored_but_included_in_tree_ =
+      cached_is_ignored_ && ComputeAccessibilityIsIgnoredButIncludedInTree();
   cached_is_editable_root_ = ComputeIsEditableRoot();
   // Compute live region root, which can be from any ARIA live value, including
   // "off", or from an automatic ARIA live value, e.g. from role="status".
@@ -922,12 +912,24 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
                                     : nullptr);
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
+
+  bool ignored_states_changed = false;
   if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
     last_known_is_ignored_value_ =
         cached_is_ignored_ ? kIgnoreObject : kIncludeObject;
+    ignored_states_changed = true;
+  }
 
-    AXObject* parent = ParentObjectIfExists();
-    if (parent)
+  if (cached_is_ignored_but_included_in_tree_ !=
+      LastKnownIsIgnoredButIncludedInTreeValue()) {
+    last_known_is_ignored_but_included_in_tree_value_ =
+        cached_is_ignored_but_included_in_tree_ ? kIncludeObject
+                                                : kIgnoreObject;
+    ignored_states_changed = true;
+  }
+
+  if (ignored_states_changed) {
+    if (AXObject* parent = ParentObjectIfExists())
       parent->ChildrenChanged();
   }
 
@@ -1172,6 +1174,20 @@ const AXObject* AXObject::DisabledAncestor() const {
   return nullptr;
 }
 
+bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
+  if (!GetNode())
+    return false;
+
+  // Always pass through Line Breaking objects, this is necessary to
+  // detect paragraph edges, which are defined as hard-line breaks.
+  //
+  // Though if the node is part of the shadow dom, or has the explicit
+  // internal Role::kIgnored, they aren't interesting for paragraph
+  // navigation so exclude those cases.
+  return RoleValue() != ax::mojom::Role::kIgnored &&
+         !GetNode()->IsInUserAgentShadowRoot() && IsLineBreakingObject();
+}
+
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
   switch (RoleValue()) {
     case ax::mojom::Role::kDateTime:
@@ -1203,6 +1219,22 @@ bool AXObject::LastKnownIsIgnoredValue() const {
 
 void AXObject::SetLastKnownIsIgnoredValue(bool is_ignored) {
   last_known_is_ignored_value_ = is_ignored ? kIgnoreObject : kIncludeObject;
+}
+
+bool AXObject::LastKnownIsIgnoredButIncludedInTreeValue() const {
+  if (last_known_is_ignored_but_included_in_tree_value_ == kDefaultBehavior) {
+    last_known_is_ignored_but_included_in_tree_value_ =
+        AccessibilityIsIgnoredButIncludedInTree() ? kIncludeObject
+                                                  : kIgnoreObject;
+  }
+
+  return last_known_is_ignored_but_included_in_tree_value_ == kIncludeObject;
+}
+
+void AXObject::SetLastKnownIsIgnoredButIncludedInTreeValue(
+    bool is_ignored_but_included_in_tree) {
+  last_known_is_ignored_but_included_in_tree_value_ =
+      is_ignored_but_included_in_tree ? kIncludeObject : kIgnoreObject;
 }
 
 bool AXObject::HasInheritedPresentationalRole() const {
@@ -1288,6 +1320,27 @@ bool AXObject::CanSetFocusAttribute() const {
 bool AXObject::CanBeActiveDescendant() const {
   return IsARIAControlledByTextboxWithActiveDescendant() ||
          AncestorExposesActiveDescendant();
+}
+
+void AXObject::UpdateDistributionForFlatTreeTraversal() const {
+  Node* node = GetNode();
+  if (!node) {
+    AXObject* parent = this->ParentObject();
+    while (!node && parent) {
+      node = parent->GetNode();
+      parent = parent->ParentObject();
+    }
+  }
+
+  if (node)
+    node->UpdateDistributionForFlatTreeTraversal();
+
+  // TODO(aboxhall): Instead of this, propagate inert down through frames
+  Document* document = GetDocument();
+  while (document && document->LocalOwner()) {
+    document->LocalOwner()->UpdateDistributionForFlatTreeTraversal();
+    document = document->LocalOwner()->ownerDocument();
+  }
 }
 
 bool AXObject::IsARIAControlledByTextboxWithActiveDescendant() const {
@@ -1887,11 +1940,14 @@ bool AXObject::SupportsRangeValue() const {
 }
 
 int AXObject::IndexInParent() const {
-  if (!ParentObjectUnignored())
+  DCHECK(AccessibilityIsIncludedInTree())
+      << "IndexInParent is only valid when a node is included in the tree";
+  if (!ParentObjectIncludedInTree())
     return 0;
 
-  const AXObjectVector& siblings = ParentObjectUnignored()->Children();
+  const AXObjectVector& siblings = ParentObjectIncludedInTree()->Children();
   wtf_size_t index = siblings.Find(this);
+  DCHECK(index != kNotFound);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
@@ -2148,72 +2204,200 @@ bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
   return !!parent;
 }
 
-AXObject* AXObject::NextSibling() const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
+AXObject* AXObject::NextSiblingIncludingIgnored() const {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support iterating over objects excluded "
+                    "from the accessibility tree";
+    return nullptr;
+  }
+
+  const AXObject* parent_in_tree = ParentObjectIncludedInTree();
+  if (!parent_in_tree)
     return nullptr;
 
-  if (AccessibilityIsIgnored())
+  const int index_in_parent = IndexInParent();
+  if (index_in_parent < parent_in_tree->ChildCount() - 1)
+    return *(parent_in_tree->Children().begin() + index_in_parent + 1);
+  return nullptr;
+}
+
+AXObject* AXObject::PreviousSiblingIncludingIgnored() const {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support iterating over objects excluded "
+                    "from the accessibility tree";
+    return nullptr;
+  }
+
+  const AXObject* parent_in_tree = ParentObjectIncludedInTree();
+  if (!parent_in_tree)
+    return nullptr;
+
+  const int index_in_parent = IndexInParent();
+  if (index_in_parent > 0)
+    return *(parent_in_tree->Children().begin() + index_in_parent - 1);
+  return nullptr;
+}
+
+AXObject* AXObject::NextInPreOrderIncludingIgnored(
+    const AXObject* within) const {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support iterating over objects excluded "
+                    "from the accessibility tree";
+    return nullptr;
+  }
+
+  if (ChildCount())
+    return FirstChild();
+
+  if (within == this)
+    return nullptr;
+
+  const AXObject* current = this;
+  AXObject* next = current->NextSiblingIncludingIgnored();
+  for (; !next; next = current->NextSiblingIncludingIgnored()) {
+    current = current->ParentObjectIncludedInTree();
+    if (!current || within == current)
+      return nullptr;
+  }
+  return next;
+}
+
+AXObject* AXObject::PreviousInPreOrderIncludingIgnored(
+    const AXObject* within) const {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support iterating over objects excluded "
+                    "from the accessibility tree";
+    return nullptr;
+  }
+  if (within == this)
+    return nullptr;
+
+  if (AXObject* sibling = PreviousSiblingIncludingIgnored()) {
+    if (sibling->ChildCount())
+      return sibling->DeepestLastChild();
+    return sibling;
+  }
+
+  return ParentObjectIncludedInTree();
+}
+
+AXObject* AXObject::PreviousInPostOrderIncludingIgnored(
+    const AXObject* within) const {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support iterating over objects excluded "
+                    "from the accessibility tree";
+    return nullptr;
+  }
+
+  if (ChildCount())
+    return LastChild();
+
+  if (within == this)
+    return nullptr;
+
+  const AXObject* current = this;
+  AXObject* previous = current->PreviousSiblingIncludingIgnored();
+  for (; !previous; previous = current->PreviousSiblingIncludingIgnored()) {
+    current = current->ParentObjectIncludedInTree();
+    if (!current || within == current)
+      return nullptr;
+  }
+  return previous;
+}
+
+AXObject* AXObject::NextSibling() const {
+  if (AccessibilityIsIgnored()) {
     NOTREACHED() << "We don't support finding siblings for ignored objects.";
+    return nullptr;
+  }
 
-  if (IndexInParent() < parent->ChildCount() - 1)
-    return *(parent->Children().begin() + IndexInParent() + 1);
+  // Find the next sibling for the same unignored parent object,
+  // flattening accessibility ignored objects.
+  //
+  // For example :
+  // ++A
+  // ++++B
+  // ++++C IGNORED
+  // ++++++E
+  // ++++D
+  // Objects [B, E, D] will be siblings since C is ignored.
 
+  const AXObject* unignored_parent = ParentObjectUnignored();
+  const AXObject* current_obj = this;
+  while (current_obj) {
+    AXObject* sibling = current_obj->NextSiblingIncludingIgnored();
+    if (sibling) {
+      // If we found an ignored sibling, walk in next pre-order
+      // until an unignored object is found, flattening the ignored object.
+      while (sibling && sibling->AccessibilityIsIgnored()) {
+        sibling = sibling->NextInPreOrderIncludingIgnored(unignored_parent);
+      }
+      return sibling;
+    }
+
+    // If a sibling has not been found, try again with the parent object,
+    // until the unignored parent is reached.
+    current_obj = current_obj->ParentObjectIncludedInTree();
+    if (!current_obj || !current_obj->AccessibilityIsIgnored())
+      return nullptr;
+  }
   return nullptr;
 }
 
 AXObject* AXObject::PreviousSibling() const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
-    return nullptr;
-
-  if (AccessibilityIsIgnored())
+  if (AccessibilityIsIgnored()) {
     NOTREACHED() << "We don't support finding siblings for ignored objects.";
+    return nullptr;
+  }
 
-  if (IndexInParent() > 0)
-    return *(parent->Children().begin() + IndexInParent() - 1);
+  // Find the previous sibling for the same unignored parent object,
+  // flattening accessibility ignored objects.
+  //
+  // For example :
+  // ++A
+  // ++++B
+  // ++++C IGNORED
+  // ++++++E
+  // ++++D
+  // Objects [B, E, D] will be siblings since C is ignored.
 
+  const AXObject* current_obj = this;
+  while (current_obj) {
+    AXObject* sibling = current_obj->PreviousSiblingIncludingIgnored();
+    if (sibling) {
+      const AXObject* unignored_parent = ParentObjectUnignored();
+      // If we found an ignored sibling, walk in previous post-order
+      // until an unignored object is found, flattening the ignored object.
+      while (sibling && sibling->AccessibilityIsIgnored()) {
+        sibling =
+            sibling->PreviousInPostOrderIncludingIgnored(unignored_parent);
+      }
+      return sibling;
+    }
+
+    // If a sibling has not been found, try again with the parent object,
+    // until the unignored parent is reached.
+    current_obj = current_obj->ParentObjectIncludedInTree();
+    if (!current_obj || !current_obj->AccessibilityIsIgnored())
+      return nullptr;
+  }
   return nullptr;
 }
 
-AXObject* AXObject::NextInTreeObject(bool can_wrap_to_first_element) const {
-  // We don't support finding the next sibling for an ignored object, so we
-  // return the next sibling of the deepest unignored ancestor, which is the
-  // next best thing that doesn't violate next-in-order semantics.
-  if (!AccessibilityIsIgnored()) {
-    if (ChildCount())
-      return FirstChild();
-
-    if (NextSibling())
-      return NextSibling();
+AXObject* AXObject::NextInTreeObject() const {
+  AXObject* next = NextInPreOrderIncludingIgnored();
+  while (next && next->AccessibilityIsIgnored()) {
+    next = next->NextInPreOrderIncludingIgnored();
   }
-
-  AXObject* current_object = const_cast<AXObject*>(this);
-  while (current_object->ParentObjectUnignored()) {
-    current_object = current_object->ParentObjectUnignored();
-    AXObject* sibling = current_object->NextSibling();
-    if (sibling)
-      return sibling;
-  }
-
-  return can_wrap_to_first_element ? current_object : nullptr;
+  return next;
 }
 
-AXObject* AXObject::PreviousInTreeObject(bool can_wrap_to_last_element) const {
-  // We don't support finding the previous sibling for an ignored object, so we
-  // return the deepest unignored ancestor instead, which is the next best thing
-  // that doesn't violate previous-in-order semantics.
-  AXObject* sibling = AccessibilityIsIgnored() ? nullptr : PreviousSibling();
-  if (!sibling) {
-    if (ParentObjectUnignored())
-      return ParentObjectUnignored();
-    return can_wrap_to_last_element ? DeepestLastChild() : nullptr;
+AXObject* AXObject::PreviousInTreeObject() const {
+  AXObject* previous = PreviousInPreOrderIncludingIgnored();
+  while (previous && previous->AccessibilityIsIgnored()) {
+    previous = previous->PreviousInPreOrderIncludingIgnored();
   }
-
-  if (sibling->ChildCount())
-    return sibling->DeepestLastChild();
-
-  return sibling;
+  return previous;
 }
 
 AXObject* AXObject::ParentObject() const {
@@ -2242,6 +2426,16 @@ AXObject* AXObject::ParentObjectIfExists() const {
 AXObject* AXObject::ParentObjectUnignored() const {
   AXObject* parent;
   for (parent = ParentObject(); parent && parent->AccessibilityIsIgnored();
+       parent = parent->ParentObject()) {
+  }
+
+  return parent;
+}
+
+AXObject* AXObject::ParentObjectIncludedInTree() const {
+  AXObject* parent;
+  for (parent = ParentObject();
+       parent && !parent->AccessibilityIsIncludedInTree();
        parent = parent->ParentObject()) {
   }
 
@@ -3351,12 +3545,12 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   HeapVector<Member<const AXObject>> ancestors1;
   ancestors1.push_back(&first);
   while (ancestors1.back())
-    ancestors1.push_back(ancestors1.back()->ParentObjectUnignored());
+    ancestors1.push_back(ancestors1.back()->ParentObjectIncludedInTree());
 
   HeapVector<Member<const AXObject>> ancestors2;
   ancestors2.push_back(&second);
   while (ancestors2.back())
-    ancestors2.push_back(ancestors2.back()->ParentObjectUnignored());
+    ancestors2.push_back(ancestors2.back()->ParentObjectIncludedInTree());
 
   const AXObject* common_ancestor = nullptr;
   while (!ancestors1.IsEmpty() && !ancestors2.IsEmpty() &&

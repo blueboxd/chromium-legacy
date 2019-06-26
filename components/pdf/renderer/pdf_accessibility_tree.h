@@ -53,6 +53,7 @@ class PdfAccessibilityTree
   void GetChildren(const ui::AXNode* node,
                    std::vector<const ui::AXNode*>* out_children) const override;
   ui::AXNode* GetParent(const ui::AXNode* node) const override;
+  bool IsIgnored(const ui::AXNode* node) const override;
   bool IsValid(const ui::AXNode* node) const override;
   bool IsEqual(const ui::AXNode* node1, const ui::AXNode* node2) const override;
   const ui::AXNode* GetNull() const override;

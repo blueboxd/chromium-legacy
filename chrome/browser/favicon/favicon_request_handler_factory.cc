@@ -10,10 +10,13 @@
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/browser_context.h"
@@ -27,6 +30,12 @@ favicon_base::FaviconRawBitmapResult GetSyncedFaviconForPageUrl(
       session_sync_service->GetOpenTabsUIDelegate();
   return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url)
                    : favicon_base::FaviconRawBitmapResult();
+}
+
+bool CanSendHistoryData(syncer::SyncService* sync_service) {
+  return syncer::GetUploadToGoogleState(
+             sync_service, syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
+         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -51,6 +60,7 @@ FaviconRequestHandlerFactory::FaviconRequestHandlerFactory()
   DependsOn(FaviconServiceFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 FaviconRequestHandlerFactory::~FaviconRequestHandlerFactory() {}
@@ -66,6 +76,8 @@ KeyedService* FaviconRequestHandlerFactory::BuildServiceInstanceFor(
   return new favicon::FaviconRequestHandler(
       base::BindRepeating(&GetSyncedFaviconForPageUrl,
                           SessionSyncServiceFactory::GetForProfile(profile)),
+      base::BindRepeating(&CanSendHistoryData,
+                          ProfileSyncServiceFactory::GetForProfile(profile)),
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
       LargeIconServiceFactory::GetForBrowserContext(context));

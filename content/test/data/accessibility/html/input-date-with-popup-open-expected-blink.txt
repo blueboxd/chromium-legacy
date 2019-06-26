@@ -18,28 +18,30 @@ rootWebArea
 ++++++++++++++inlineTextBox name='2008'
 ++++++popUpButton name='Show date picker'
 ++++++rootWebArea
-++++++++genericContainer
+++++++++genericContainer ignored
 ++++++++++genericContainer
 ++++++++++++genericContainer
-++++++++++++++button name='Show month selection panel'
-++++++++++++button name='Show previous month'
-++++++++++++button name='Today'
-++++++++++++button name='Show next month'
-++++++++++++grid
-++++++++++++++genericContainer
+++++++++++++++genericContainer ignored
 ++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Sun'
+++++++++++++++++++button name='Show month selection panel'
+++++++++++++++++button name='Show previous month'
+++++++++++++++++button name='Today'
+++++++++++++++++button name='Show next month'
+++++++++++++++grid
 ++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Mon'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Sun'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Mon'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Tue'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Wed'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Thu'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Fri'
+++++++++++++++++++genericContainer
+++++++++++++++++++++staticText name='Sat'
 ++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Tue'
-++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Wed'
-++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Thu'
-++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Fri'
-++++++++++++++++genericContainer
-++++++++++++++++++staticText name='Sat'
-++++++++++++++genericContainer
-++++++++++++++++genericContainer
+++++++++++++++++++genericContainer

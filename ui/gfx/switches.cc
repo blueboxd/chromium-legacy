@@ -12,6 +12,10 @@ namespace switches {
 const char kDisableFontSubpixelPositioning[] =
     "disable-font-subpixel-positioning";
 
+// Forces whether the user desires reduced motion, regardless of system
+// settings.
+const char kForcePrefersReducedMotion[] = "force-prefers-reduced-motion";
+
 // Run in headless mode, i.e., without a UI or display server dependencies.
 const char kHeadless[] = "headless";
 

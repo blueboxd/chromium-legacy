@@ -653,8 +653,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const ui::AXTree& tree = GetAXTree();
   const ui::AXNode* root = tree.root();
-  const ui::AXNode* input1 = root->children()[0];
-  const ui::AXNode* input2 = root->children()[1];
+  const ui::AXNode* input1 = root->GetUnignoredChildAtIndex(0);
+  const ui::AXNode* input2 = root->GetUnignoredChildAtIndex(1);
 
   EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kTitle),
             GetIntAttr(input1, ax::mojom::IntAttribute::kNameFrom));

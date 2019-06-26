@@ -936,7 +936,6 @@ if (!is_android) {
       "../browser/net/variations_http_headers_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
       "../browser/no_best_effort_tasks_browsertest.cc",
-      "../browser/no_best_effort_tasks_during_startup_browsertest.cc",
       "../browser/ntp_snippets/content_suggestions_service_factory_browsertest.cc",
       "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",

@@ -33,7 +33,7 @@ using content::WebContents;
 using ui_test_utils::IsViewFocused;
 
 namespace {
-static const char kSimplePage[] = "/find_in_page/simple.html";
+const char kSimplePage[] = "/find_in_page/simple.html";
 }  // namespace
 
 class FindInPageTest : public InProcessBrowserTest {
@@ -577,3 +577,33 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CtrlEnter) {
 
   observer.Wait();
 }
+
+// FindInPage on Mac doesn't use prepopulated values. Search there is global.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/find_in_page/find_from_selection.html"));
+
+  // Put focus in the input
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), "focusInput();"));
+
+  // Cause a selection with Ctrl+A
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_A, true,
+                                              false, false, false));
+
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // verify the text matches the selection
+  EXPECT_EQ(ASCIIToUTF16("text"), GetFindBarText());
+  FindNotificationDetails details = WaitForFindResult();
+  EXPECT_TRUE(details.number_of_matches() > 0);
+}
+#endif

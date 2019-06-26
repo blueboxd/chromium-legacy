@@ -17,8 +17,9 @@
 
 namespace ash {
 
-TopShortcutButton::TopShortcutButton(const gfx::VectorIcon& icon)
-    : TopShortcutButton(nullptr /* listener */, 0 /* accessible_name_id */) {
+TopShortcutButton::TopShortcutButton(const gfx::VectorIcon& icon,
+                                     int accessible_name_id)
+    : TopShortcutButton(nullptr /* listener */, accessible_name_id) {
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
                                  kUnifiedMenuIconColor));

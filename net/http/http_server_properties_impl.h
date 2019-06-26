@@ -159,7 +159,7 @@ class NET_EXPORT HttpServerPropertiesImpl
       CanonicalAltSvcMap;
   typedef base::flat_map<HostPortPair, quic::QuicServerId>
       CanonicalServerInfoMap;
-  typedef std::vector<std::string> CanonicalSufficList;
+  typedef std::vector<std::string> CanonicalSuffixList;
   typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
   // Return the iterator for |server|, or for its canonical host, or end.
@@ -202,9 +202,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   // to an actual origin, which has a plausible alternate protocol mapping.
   CanonicalAltSvcMap canonical_alt_svc_map_;
 
-  // Contains list of suffixes (for exmaple ".c.youtube.com",
+  // Contains list of suffixes (for example ".c.youtube.com",
   // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.
-  CanonicalSufficList canonical_suffixes_;
+  const CanonicalSuffixList canonical_suffixes_;
 
   QuicServerInfoMap quic_server_info_map_;
 
@@ -212,7 +212,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // and have a corresponding entry in |quic_server_info_map_|. The map can be
   // used to quickly look for server info for hosts that share the same
   // canonical suffix but don't have exact match in |quic_server_info_map_|. The
-  // map exists solely to improve the search performance. It only contais
+  // map exists solely to improve the search performance. It only contains
   // derived data that can be recalculated by traversing
   // |quic_server_info_map_|.
   CanonicalServerInfoMap canonical_server_info_map_;

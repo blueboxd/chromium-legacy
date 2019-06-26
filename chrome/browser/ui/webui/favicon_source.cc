@@ -15,14 +15,12 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
@@ -42,15 +40,6 @@ favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
   if (url == history_url)
     return favicon::FaviconRequestOrigin::HISTORY;
   return favicon::FaviconRequestOrigin::UNKNOWN;
-}
-
-// Check if user settings allow querying a Google server using history
-// information.
-bool CanSendHistoryDataToServer(Profile* profile) {
-  return syncer::GetUploadToGoogleState(
-             ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
-             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
-         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -164,7 +153,7 @@ void FaviconSource::StartDataRequest(
         unsafe_request_origin, favicon::FaviconRequestPlatform::kDesktop,
         /*icon_url_for_uma=*/
         open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
-        CanSendHistoryDataToServer(profile_), &cancelable_task_tracker_);
+        &cancelable_task_tracker_);
   }
 }
 

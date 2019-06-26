@@ -147,7 +147,8 @@ views::View* CreateUserAvatarView(int user_index) {
 
   if (user_session->user_info.type == user_manager::USER_TYPE_GUEST) {
     // In guest mode, the user avatar is just a disabled button pod.
-    return new TopShortcutButton(kSystemMenuGuestIcon);
+    return new TopShortcutButton(kSystemMenuGuestIcon,
+                                 IDS_ASH_STATUS_TRAY_GUEST_LABEL);
   } else {
     auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
     image_view->set_can_process_events_within_subtree(false);

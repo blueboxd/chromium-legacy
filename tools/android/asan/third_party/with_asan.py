@@ -15,7 +15,7 @@ _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
 sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
-from devil.android import device_errors
+from devil import base_error
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
 from devil.android.sdk import version_codes
@@ -31,57 +31,64 @@ _SCRIPT_PATH = os.path.abspath(
 
 
 @contextlib.contextmanager
+def _LogDevicesOnFailure(msg):
+  try:
+    yield
+  except base_error.BaseError:
+    logging.exception(msg)
+    logging.error('Devices visible to adb:')
+    for entry in adb_wrapper.AdbWrapper.Devices(desired_state=None,
+                                                long_list=True):
+      logging.error('  %s: %s',
+                    entry[0].GetDeviceSerial(),
+                    ' '.join(entry[1:]))
+    raise
+
+
+@contextlib.contextmanager
 def Asan(args):
   env = os.environ.copy()
   env['ADB'] = args.adb
 
-  device = device_utils.DeviceUtils.HealthyDevices(
-      device_arg=args.device)[0]
-  disable_verity = device.build_version_sdk >= version_codes.MARSHMALLOW
   try:
-    if disable_verity:
-      device.EnableRoot()
-      # TODO(crbug.com/790202): Stop logging output after diagnosing
-      # issues on android-asan.
-      verity_output = device.adb.DisableVerity()
-      if verity_output:
-        logging.info('disable-verity output:')
-        for line in verity_output.splitlines():
-          logging.info('  %s', line)
-      try:
+    with _LogDevicesOnFailure('Failed to set up the device.'):
+      device = device_utils.DeviceUtils.HealthyDevices(
+          device_arg=args.device)[0]
+      disable_verity = device.build_version_sdk >= version_codes.MARSHMALLOW
+      if disable_verity:
+        device.EnableRoot()
+        # TODO(crbug.com/790202): Stop logging output after diagnosing
+        # issues on android-asan.
+        verity_output = device.adb.DisableVerity()
+        if verity_output:
+          logging.info('disable-verity output:')
+          for line in verity_output.splitlines():
+            logging.info('  %s', line)
         device.Reboot()
-      except device_errors.CommandFailedError:
-        logging.exception('Failed to reboot device.')
-        logging.error('Devices visible to adb:')
-        for entry in adb_wrapper.AdbWrapper.Devices(desired_state=None,
-                                                    long_list=True):
-          logging.error('  %s: %s',
-                        entry[0].GetDeviceSerial(),
-                        ' '.join(entry[1:]))
-
-    # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
-    # get tripped up by the root timeout.
-    device.EnableRoot()
-    setup_cmd = [_SCRIPT_PATH, '--lib', args.lib]
-    if args.device:
-      setup_cmd += ['--device', args.device]
-    subprocess.check_call(setup_cmd, env=env)
-    yield
+      # Call EnableRoot prior to asan_device_setup.sh to ensure it doesn't
+      # get tripped up by the root timeout.
+      device.EnableRoot()
+      setup_cmd = [_SCRIPT_PATH, '--lib', args.lib]
+      if args.device:
+        setup_cmd += ['--device', args.device]
+      subprocess.check_call(setup_cmd, env=env)
+      yield
   finally:
-    device.EnableRoot()
-    teardown_cmd = [_SCRIPT_PATH, '--revert']
-    if args.device:
-      teardown_cmd += ['--device', args.device]
-    subprocess.check_call(teardown_cmd, env=env)
-    if disable_verity:
-      # TODO(crbug.com/790202): Stop logging output after diagnosing
-      # issues on android-asan.
-      verity_output = device.adb.EnableVerity()
-      if verity_output:
-        logging.info('enable-verity output:')
-        for line in verity_output.splitlines():
-          logging.info('  %s', line)
-      device.Reboot()
+    with _LogDevicesOnFailure('Failed to tear down the device.'):
+      device.EnableRoot()
+      teardown_cmd = [_SCRIPT_PATH, '--revert']
+      if args.device:
+        teardown_cmd += ['--device', args.device]
+      subprocess.check_call(teardown_cmd, env=env)
+      if disable_verity:
+        # TODO(crbug.com/790202): Stop logging output after diagnosing
+        # issues on android-asan.
+        verity_output = device.adb.EnableVerity()
+        if verity_output:
+          logging.info('enable-verity output:')
+          for line in verity_output.splitlines():
+            logging.info('  %s', line)
+        device.Reboot()
 
 
 def main(raw_args):

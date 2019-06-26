@@ -140,9 +140,9 @@ struct AXTreeUpdateState {
   // decisions about when to notify observers of removals or reparenting.
   std::set<int> changed_node_ids;
 
-  // keeps track of parents whose unignored children have changed. Used for
-  // caching unignored relationships.
-  std::unordered_set<int> changed_unignored_parent_ids;
+  // keeps track of nodes whose cached unignored child count, or unignored
+  // index in parent may have changed, and must be updated.
+  std::unordered_set<int> invalidate_unignored_cached_values_ids;
 
   // Potentially reparented node ids include any child node ids touched by the
   // update, as well as any new root node id. Nodes are considered
@@ -528,7 +528,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     changes.push_back(AXTreeObserver::Change(node, change));
   }
 
-  for (int parent_id : update_state.changed_unignored_parent_ids) {
+  for (int parent_id : update_state.invalidate_unignored_cached_values_ids) {
     AXNode* parent = GetFromId(parent_id);
     if (parent)
       parent->UpdateUnignoredCachedValues();
@@ -603,7 +603,8 @@ AXNode* AXTree::CreateNode(AXNode* parent,
   }
   AXNode* unignored_parent = new_node->GetUnignoredParent();
   if (unignored_parent) {
-    update_state->changed_unignored_parent_ids.insert(unignored_parent->id());
+    update_state->invalidate_unignored_cached_values_ids.insert(
+        unignored_parent->id());
   }
   return new_node;
 }
@@ -636,8 +637,31 @@ bool AXTree::UpdateNode(const AXNodeData& src,
           src.HasState(ax::mojom::State::kIgnored)) {
         AXNode* unignored_parent = node->GetUnignoredParent();
         if (unignored_parent) {
-          update_state->changed_unignored_parent_ids.insert(
+          update_state->invalidate_unignored_cached_values_ids.insert(
               unignored_parent->id());
+        }
+
+        // We must invalidate the node if it's no longer State::kIgnored.
+        // Since nodes updated in no particular order, this node may
+        // not be added to the set later or update its cached values.
+        //
+        // For example, given the following tree, :
+        // A unignored
+        // |
+        // B ignored
+        // |
+        // C unignored
+        //
+        // ... and the following updates :
+        // Update C unignored => ignored
+        // Update B ignored => unignored
+        //
+        // Both updates would add A to the set of nodes which have invalid
+        // cached values, but B would never be added because ignored nodes
+        // are skipped over.
+        if (!src.HasState(ax::mojom::State::kIgnored)) {
+          update_state->invalidate_unignored_cached_values_ids.insert(
+              node->id());
         }
       }
     }
@@ -900,7 +924,8 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   if (update_state) {
     AXNode* unignored_parent = node->GetUnignoredParent();
     if (unignored_parent) {
-      update_state->changed_unignored_parent_ids.insert(unignored_parent->id());
+      update_state->invalidate_unignored_cached_values_ids.insert(
+          unignored_parent->id());
     }
     update_state->pending_nodes.erase(node);
     update_state->removed_node_ids.insert(node->id());
@@ -993,9 +1018,10 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
-  // Ignored nodes are not a part of ordered sets.
+  // ignored nodes are not a part of ordered sets.
   if (original_node.data().HasState(ax::mojom::State::kIgnored))
     return;
+
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {

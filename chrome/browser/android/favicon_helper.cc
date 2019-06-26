@@ -21,13 +21,11 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "components/favicon/core/favicon_request_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
@@ -78,15 +76,6 @@ void OnEnsureIconIsAvailableFinished(
   JNIEnv* env = AttachCurrentThread();
   Java_IconAvailabilityCallback_onIconAvailabilityChecked(
       env, j_availability_callback, newly_available);
-}
-
-// Check if user settings allow querying a Google server using history
-// information.
-bool CanSendHistoryDataToServer(Profile* profile) {
-  return syncer::GetUploadToGoogleState(
-             ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
-             syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
-         syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -176,7 +165,7 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
       favicon::FaviconRequestPlatform::kMobile,
       /*icon_url_for_uma=*/
       open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL(),
-      CanSendHistoryDataToServer(profile), cancelable_task_tracker_.get());
+      cancelable_task_tracker_.get());
   return true;
 }
 

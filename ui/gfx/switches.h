@@ -12,6 +12,8 @@ namespace switches {
 
 GFX_SWITCHES_EXPORT extern const char kDisableFontSubpixelPositioning[];
 
+GFX_SWITCHES_EXPORT extern const char kForcePrefersReducedMotion[];
+
 GFX_SWITCHES_EXPORT extern const char kHeadless[];
 
 GFX_SWITCHES_EXPORT extern const char kEnableNativeGpuMemoryBuffers[];

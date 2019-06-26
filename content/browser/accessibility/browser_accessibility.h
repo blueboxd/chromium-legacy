@@ -115,11 +115,18 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns true if this is a leaf node on this platform, meaning any
   // children should not be exposed to this platform's native accessibility
-  // layer. Each platform subclass should implement this itself.
+  // layer.
   // The definition of a leaf may vary depending on the platform,
   // but a leaf node should never have children that are focusable or
   // that might send notifications.
-  virtual bool PlatformIsLeaf() const;
+  bool PlatformIsLeaf() const;
+
+  // Returns true if this is a leaf node on this platform, including
+  // ignored nodes, meaning any children should not be exposed to this
+  // platform's native accessibility layer, but a node shouldn't be
+  // considered a leaf node solely because it has only ignored children.
+  // Each platform subclass should implement this itself.
+  virtual bool PlatformIsLeafIncludingIgnored() const;
 
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
@@ -141,6 +148,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // leaf node, meaning that this node is not actually exposed to the
   // platform.
   bool PlatformIsChildOfLeaf() const;
+
+  // Returns true if an ancestor of this node (not including itself) is a
+  // leaf node, including ignored nodes, meaning that this node is not
+  // actually exposed to the platform, but a node shouldn't be
+  // considered a leaf node solely because it has only ignored children.
+  bool PlatformIsChildOfLeafIncludingIgnored() const;
 
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.

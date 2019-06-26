@@ -76,7 +76,7 @@ async_test((t) => {
     document.getElementById('hiddenDiv').hidden = false;
 
     assert_true(accessibleElementById('invisibleDivContainer') != null);
-    assert_false(accessibleElementById('invisibleDiv') != null);
+    assert_true(accessibleElementById('invisibleDiv').isIgnored);
 
     accessibleElementById('invisibleDivContainer').addNotificationListener(t.step_func((notification) => {
         console.log('Got ' + notification + ' notification on invisibleDivContainer');

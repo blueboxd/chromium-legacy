@@ -99,6 +99,10 @@ AXAuraObjWrapper* AXTreeSourceViews::GetParent(AXAuraObjWrapper* node) const {
   return parent;
 }
 
+bool AXTreeSourceViews::IsIgnored(AXAuraObjWrapper* node) const {
+  return node && node->IsIgnored();
+}
+
 bool AXTreeSourceViews::IsValid(AXAuraObjWrapper* node) const {
   return node && !node->IsIgnored();
 }

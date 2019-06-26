@@ -1989,8 +1989,86 @@ bool ListStyle::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return css_property_parser_helpers::ConsumeShorthandGreedilyViaLonghands(
-      listStyleShorthand(), important, context, range, properties);
+  const CSSValue* none = nullptr;
+  const CSSValue* list_style_position = nullptr;
+  const CSSValue* list_style_image = nullptr;
+  const CSSValue* list_style_type = nullptr;
+  do {
+    if (!none) {
+      none =
+          css_property_parser_helpers::ConsumeIdent<CSSValueID::kNone>(range);
+      if (none)
+        continue;
+    }
+    if (!list_style_position) {
+      list_style_position = css_property_parser_helpers::ParseLonghand(
+          CSSPropertyID::kListStylePosition, CSSPropertyID::kListStyle, context,
+          range);
+      if (list_style_position)
+        continue;
+    }
+    if (!list_style_image) {
+      list_style_image = css_property_parser_helpers::ParseLonghand(
+          CSSPropertyID::kListStyleImage, CSSPropertyID::kListStyle, context,
+          range);
+      if (list_style_image)
+        continue;
+    }
+    if (!list_style_type) {
+      list_style_type = css_property_parser_helpers::ParseLonghand(
+          CSSPropertyID::kListStyleType, CSSPropertyID::kListStyle, context,
+          range);
+      if (list_style_type)
+        continue;
+    }
+    return false;
+  } while (!range.AtEnd());
+  if (none) {
+    if (!list_style_type)
+      list_style_type = none;
+    else if (!list_style_image)
+      list_style_image = none;
+    else
+      return false;
+  }
+
+  if (list_style_position) {
+    AddProperty(CSSPropertyID::kListStylePosition, CSSPropertyID::kListStyle,
+                *list_style_position, important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  } else {
+    AddProperty(CSSPropertyID::kListStylePosition, CSSPropertyID::kListStyle,
+                *CSSInitialValue::Create(), important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  }
+
+  if (list_style_image) {
+    AddProperty(CSSPropertyID::kListStyleImage, CSSPropertyID::kListStyle,
+                *list_style_image, important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  } else {
+    AddProperty(CSSPropertyID::kListStyleImage, CSSPropertyID::kListStyle,
+                *CSSInitialValue::Create(), important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  }
+
+  if (list_style_type) {
+    AddProperty(CSSPropertyID::kListStyleType, CSSPropertyID::kListStyle,
+                *list_style_type, important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  } else {
+    AddProperty(CSSPropertyID::kListStyleType, CSSPropertyID::kListStyle,
+                *CSSInitialValue::Create(), important,
+                css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+                properties);
+  }
+
+  return true;
 }
 
 const CSSValue* ListStyle::CSSValueFromComputedStyleInternal(

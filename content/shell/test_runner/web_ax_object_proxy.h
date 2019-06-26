@@ -116,6 +116,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsCollapsed();
   bool IsValid();
   bool IsReadOnly();
+  bool IsIgnored();
   std::string Restriction();
   v8::Local<v8::Object> ActiveDescendant();
   unsigned int BackgroundColor();

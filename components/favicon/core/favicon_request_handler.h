@@ -64,20 +64,24 @@ class FaviconRequestHandler : public KeyedService {
       base::RepeatingCallback<favicon_base::FaviconRawBitmapResult(
           const GURL&)>;
 
-  FaviconRequestHandler(const SyncedFaviconGetter& synced_favicon_getter,
-                        FaviconService* favicon_service,
-                        LargeIconService* large_icon_service);
+  // Callback that checks whether user settings allow to query the favicon
+  // server using history data (in particular it must check that history sync is
+  // enabled and no custom passphrase is set).
+  using CanSendHistoryDataGetter = base::RepeatingCallback<bool()>;
+
+  FaviconRequestHandler(
+      const SyncedFaviconGetter& synced_favicon_getter,
+      const CanSendHistoryDataGetter& can_send_history_data_getter,
+      FaviconService* favicon_service,
+      LargeIconService* large_icon_service);
 
   ~FaviconRequestHandler() override;
 
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
   // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. |can_send_history_data| indicates whether user settings allow
-  // to query the favicon server using history data (in particular it must check
-  // that history sync is enabled and no custom passphrase is set).
-  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
-  // record UMA about the grouping of requests to the favicon server.
+  // is enabled. If a non-empty |icon_url_for_uma| (optional) is passed, it will
+  // be used to record UMA about the grouping of requests to the favicon server.
   // |request_platform| specifies whether the caller is mobile or desktop code.
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
@@ -85,15 +89,12 @@ class FaviconRequestHandler : public KeyedService {
                                FaviconRequestOrigin request_origin,
                                FaviconRequestPlatform request_platform,
                                const GURL& icon_url_for_uma,
-                               bool can_send_history_data,
                                base::CancelableTaskTracker* tracker);
 
   // Requests favicon image at |page_url|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
   // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. |can_send_history_data| indicates whether user settings allow
-  // to query the favicon server using history data (in particular it must check
-  // that history sync is enabled and no custom passphrase is set).
+  // is enabled.
   // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
   // record UMA about the grouping of requests to the favicon server.
   // This method is only called by desktop code.
@@ -101,7 +102,6 @@ class FaviconRequestHandler : public KeyedService {
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
                                  const GURL& icon_url_for_uma,
-                                 bool can_send_history_data,
                                  base::CancelableTaskTracker* tracker);
 
  private:
@@ -156,11 +156,17 @@ class FaviconRequestHandler : public KeyedService {
       const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
 
+  // Verifies that history sync is enabled and |origin| is not unknown.
+  // TODO(victorvianna): Move origin filtering to FaviconSource level.
+  bool CanQueryGoogleServer(FaviconRequestOrigin origin) const;
+
   FaviconService* const favicon_service_;
 
   LargeIconService* const large_icon_service_;
 
   SyncedFaviconGetter const synced_favicon_getter_;
+
+  CanSendHistoryDataGetter const can_send_history_data_getter_;
 
   // Map from a group identifier to the number of callbacks in that group which
   // would be waiting for execution. Used for recording metrics for the possible

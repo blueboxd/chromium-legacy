@@ -81,7 +81,7 @@ class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 class ServerSharedBitmapManager;
-}  // namespace viz
+}
 
 namespace content {
 class BrowserMainParts;
@@ -293,14 +293,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   // before content is entered.
   std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
       scoped_execution_fence_;
-
-  // BEST_EFFORT tasks are not allowed to run between //content initialization
-  // and startup completion.
-  //
-  // TODO(fdoray): Move this to a more elaborate class that prevents BEST_EFFORT
-  // tasks from running when resources are needed to respond to user actions.
-  base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
-      scoped_best_effort_execution_fence_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
 

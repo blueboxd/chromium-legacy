@@ -158,6 +158,12 @@ template("create_native_executable_dist") {
 #   }
 template("wrapper_script") {
   action_with_pydeps(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "data",
+                             "data_deps",
+                             "deps",
+                           ])
     _name = get_path_info(invoker.target, "name")
     _output = "$root_out_dir/bin/$_name"
 

@@ -4890,7 +4890,7 @@
     },
     {
       name: "list-style",
-      longhands: ["list-style-type", "list-style-position", "list-style-image"],
+      longhands: ["list-style-position", "list-style-image", "list-style-type"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {

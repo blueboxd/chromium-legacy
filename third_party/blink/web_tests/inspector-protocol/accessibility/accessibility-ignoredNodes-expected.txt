@@ -22,8 +22,6 @@ WebArea
 }
 
 WebArea
-  img
-    *Ignored
 {
   "nodeId": "<string>",
   "ignored": true,
@@ -48,8 +46,6 @@ WebArea
 }
 
 WebArea
-  button "Buttons are leaf nodes"
-    *Ignored
 {
   "nodeId": "<string>",
   "ignored": true,
@@ -166,18 +162,6 @@ WebArea
 }
 
 WebArea
-  GenericContainer
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
-  *GenericContainer
-    text "Div in list isn't presentational"
-  checkbox "Content within label refers to label container"
-  button "aria-hidden false button"
-  GenericContainer
-  combobox
-  GenericContainer "span with ARIA label"
-  text "div with display contents - should be ignored, but text should be included"
   GenericContainer
 {
   "nodeId": "<string>",
@@ -357,21 +341,6 @@ WebArea
 
 WebArea
   GenericContainer
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
-  GenericContainer
-  checkbox "Content within label refers to label container"
-  button "aria-hidden false button"
-  GenericContainer
-  *combobox
-    MenuListPopup
-      menuitem "Options should be"
-      menuitem "sent down even though"
-      menuitem "they are grandchildren"
-  GenericContainer "span with ARIA label"
-  text "div with display contents - should be ignored, but text should be included"
-  GenericContainer
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -432,11 +401,6 @@ WebArea
 }
 
 WebArea
-  combobox
-    MenuListPopup
-      *menuitem "Options should be"
-      menuitem "sent down even though"
-      menuitem "they are grandchildren"
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -533,18 +497,6 @@ WebArea
 
 WebArea
   GenericContainer
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
-  GenericContainer
-  checkbox "Content within label refers to label container"
-  button "aria-hidden false button"
-  GenericContainer
-  combobox
-  *GenericContainer "span with ARIA label"
-    text "should not be ignored"
-  text "div with display contents - should be ignored, but text should be included"
-  GenericContainer
 {
   "nodeId": "<string>",
   "ignored": false,
@@ -606,18 +558,6 @@ WebArea
 
 WebArea
   GenericContainer
-  img
-  button "Buttons are leaf nodes"
-  text "List item also presentational"
-  GenericContainer
-  checkbox "Content within label refers to label container"
-  button "aria-hidden false button"
-  GenericContainer
-  combobox
-  GenericContainer "span with ARIA label"
-  text "div with display contents - should be ignored, but text should be included"
-  *GenericContainer
-    text "summary element without details parent is ignored"
 {
   "nodeId": "<string>",
   "ignored": false,

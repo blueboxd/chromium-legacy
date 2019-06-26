@@ -289,6 +289,8 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
     objects_.Set(node_id, new_obj);
     new_obj->Init();
     new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+    new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+        new_obj->AccessibilityIsIgnoredButIncludedInTree());
     return new_obj;
   }
 
@@ -462,6 +464,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   node_object_mapping_.Set(node, ax_id);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   MaybeNewRelationTarget(node, new_obj);
 
   return new_obj;
@@ -490,6 +494,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   layout_object_mapping_.Set(layout_object, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   if (node && node->GetLayoutObject() == layout_object) {
     AXID prev_axid = node_object_mapping_.at(node);
     if (prev_axid != 0 && prev_axid != axid) {
@@ -520,7 +526,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
   inline_text_box_object_mapping_.Set(inline_text_box, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
-
+  new_obj->SetLastKnownIsIgnoredButIncludedInTreeValue(
+      new_obj->AccessibilityIsIgnoredButIncludedInTree());
   return new_obj;
 }
 
@@ -827,10 +834,10 @@ void AXObjectCacheImpl::FocusableChangedWithCleanLayout(Element* element) {
     // hidden element's focusable state changes, it's ignored state must be
     // recomputed.
     ChildrenChangedWithCleanLayout(element->parentNode());
-  } else {
-    // Refresh the focusable state on the exposed object.
-    MarkAXObjectDirty(obj, false);
   }
+
+  // Refresh the focusable state and State::kIgnored on the exposed object.
+  MarkAXObjectDirty(obj, false);
 }
 
 void AXObjectCacheImpl::DocumentTitleChanged() {

@@ -184,18 +184,11 @@ crbug.com/774873 [ Mac ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
-crbug.com/974652 [ Linux Debug ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/974652 [ Linux Debug ] media/audio-concurrent-supported.html  [ Pass Failure ]
-crbug.com/974652 [ Linux Debug ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
-crbug.com/974652 [ Linux Debug ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html  [ Pass Failure ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
-crbug.com/974720 [ Mac10.13 ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/974720 [ Mac10.13 ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 
 crbug.com/978436 external/wpt/svg/coordinate-systems/viewBox-scaling-text-001.html [ Failure ]
 
@@ -6197,9 +6190,9 @@ crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
-crbug.com/976045 [ Win ] fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/976045 [ Win ] virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/976045 [ Win ] virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
+crbug.com/976045 virtual/threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listener.html [ Pass Timeout Failure ]
 
 crbug.com/974710 [ Win7 ] http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]

@@ -87,7 +87,7 @@ python_library("test_runner_py") {
   ]
   data_deps = [
     ":devil_chromium_py",
-    "//third_party/android_platform:stack_wrapper",
+    "//third_party/android_platform/development/scripts:stack_py",
   ]
   if (is_asan) {
     data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]

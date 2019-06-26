@@ -1,0 +1,28 @@
+This is a testharness.js-based test.
+PASS Property list-style-type value 'none' computes to 'none'
+PASS Property list-style-type value 'disc' computes to 'disc'
+PASS Property list-style-type value 'circle' computes to 'circle'
+PASS Property list-style-type value 'square' computes to 'square'
+PASS Property list-style-type value 'decimal' computes to 'decimal'
+PASS Property list-style-type value 'decimal-leading-zero' computes to 'decimal-leading-zero'
+PASS Property list-style-type value 'lower-roman' computes to 'lower-roman'
+PASS Property list-style-type value 'upper-roman' computes to 'upper-roman'
+PASS Property list-style-type value 'lower-greek' computes to 'lower-greek'
+PASS Property list-style-type value 'lower-latin' computes to 'lower-latin'
+PASS Property list-style-type value 'upper-latin' computes to 'upper-latin'
+PASS Property list-style-type value 'armenian' computes to 'armenian'
+PASS Property list-style-type value 'georgian' computes to 'georgian'
+PASS Property list-style-type value 'lower-alpha' computes to 'lower-alpha'
+PASS Property list-style-type value 'upper-alpha' computes to 'upper-alpha'
+FAIL Property list-style-type value '"marker string"' computes to '"marker string"' assert_equals: expected "\"marker string\"" but got "disc"
+FAIL Property list-style-type value '"Note: "' computes to '"Note: "' assert_equals: expected "\"Note: \"" but got "disc"
+FAIL Property list-style-type value 'counter-Style-Name' computes to 'counter-Style-Name' assert_equals: expected "counter-Style-Name" but got "disc"
+FAIL Property list-style-type value 'CounterStyleName' computes to 'CounterStyleName' assert_equals: expected "CounterStyleName" but got "disc"
+FAIL Property list-style-type value 'symbols(cyclic "string")' computes to 'symbols(cyclic "string")' assert_equals: expected "symbols(cyclic \"string\")" but got "disc"
+FAIL Property list-style-type value 'symbols(cyclic "○" "●")' computes to 'symbols(cyclic "○" "●")' assert_equals: expected "symbols(cyclic \"○\" \"●\")" but got "disc"
+FAIL Property list-style-type value 'symbols(fixed "1")' computes to 'symbols(fixed "1")' assert_equals: expected "symbols(fixed \"1\")" but got "disc"
+FAIL Property list-style-type value 'symbols("string")' computes to 'symbols("string")' assert_equals: expected "symbols(\"string\")" but got "disc"
+FAIL Property list-style-type value 'symbols(alphabetic "first" "second")' computes to 'symbols(alphabetic "first" "second")' assert_equals: expected "symbols(alphabetic \"first\" \"second\")" but got "disc"
+FAIL Property list-style-type value 'symbols(numeric "first" "second")' computes to 'symbols(numeric "first" "second")' assert_equals: expected "symbols(numeric \"first\" \"second\")" but got "disc"
+Harness: the test ran to completion.
+

@@ -306,7 +306,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   EXPECT_EQ(DemuxerStream::VIDEO, demuxer_stream_->type());
   EXPECT_FALSE(output_config.is_encrypted());
   EXPECT_EQ(input_config.codec(), output_config.codec());
-  EXPECT_EQ(input_config.format(), output_config.format());
+  EXPECT_EQ(input_config.alpha_mode(), output_config.alpha_mode());
   EXPECT_EQ(input_config.profile(), output_config.profile());
   EXPECT_EQ(input_config.coded_size(), output_config.coded_size());
   EXPECT_EQ(input_config.visible_rect(), output_config.visible_rect());

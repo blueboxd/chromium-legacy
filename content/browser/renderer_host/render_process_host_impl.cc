@@ -1012,6 +1012,10 @@ class UnmatchedServiceWorkerProcessTracker
   }
 
  private:
+  using ProcessID = int;
+  using SiteProcessIDPair = std::pair<GURL, ProcessID>;
+  using SiteProcessIDPairSet = std::set<SiteProcessIDPair>;
+
   void RegisterProcessForSite(RenderProcessHost* host,
                               SiteInstanceImpl* site_instance) {
     if (!HasProcess(host))
@@ -1022,7 +1026,15 @@ class UnmatchedServiceWorkerProcessTracker
 
   RenderProcessHost* TakeFreshestProcessForSite(
       SiteInstanceImpl* site_instance) {
-    RenderProcessHost* host = FindFreshestProcessForSite(site_instance);
+    SiteProcessIDPair site_process_pair =
+        FindFreshestProcessForSite(site_instance);
+
+    if (site_process_pair.first.is_empty())
+      return nullptr;
+
+    RenderProcessHost* host =
+        RenderProcessHost::FromID(site_process_pair.second);
+
     if (!host)
       return nullptr;
 
@@ -1037,20 +1049,31 @@ class UnmatchedServiceWorkerProcessTracker
                                      site_url, site_instance->lock_url()))
       return nullptr;
 
-    site_process_set_.erase(SiteProcessIDPair(site_url, host->GetID()));
+    site_process_set_.erase(site_process_pair);
     if (!HasProcess(host))
       host->RemoveObserver(this);
     return host;
   }
 
-  RenderProcessHost* FindFreshestProcessForSite(
+  SiteProcessIDPair FindFreshestProcessForSite(
       SiteInstanceImpl* site_instance) const {
-    GURL site_url(site_instance->GetSiteURL());
-    for (const auto& site_process_pair : base::Reversed(site_process_set_)) {
-      if (site_process_pair.first == site_url)
-        return RenderProcessHost::FromID(site_process_pair.second);
+    const auto reversed_site_process_set = base::Reversed(site_process_set_);
+    if (site_instance->IsDefaultSiteInstance()) {
+      // See if we can find an entry that maps to a site associated with the
+      // default SiteInstance. This allows the default SiteInstance to reuse a
+      // service worker process for any site that has been associated with it.
+      for (const auto& site_process_pair : reversed_site_process_set) {
+        if (site_instance->IsSiteInDefaultSiteInstance(site_process_pair.first))
+          return site_process_pair;
+      }
+    } else {
+      const GURL site_url(site_instance->GetSiteURL());
+      for (const auto& site_process_pair : reversed_site_process_set) {
+        if (site_process_pair.first == site_url)
+          return site_process_pair;
+      }
     }
-    return nullptr;
+    return SiteProcessIDPair();
   }
 
   // Returns true if this tracker contains the process ID |host->GetID()|.
@@ -1062,10 +1085,6 @@ class UnmatchedServiceWorkerProcessTracker
     }
     return false;
   }
-
-  using ProcessID = int;
-  using SiteProcessIDPair = std::pair<GURL, ProcessID>;
-  using SiteProcessIDPairSet = std::set<SiteProcessIDPair>;
 
   // Use std::set because duplicates don't need to be tracked separately (eg.,
   // service workers for the same site in the same process). It is sorted in the

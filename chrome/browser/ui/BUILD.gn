@@ -335,6 +335,13 @@ jumbo_split_static_library("ui") {
     "webui/webui_util.h",
   ]
 
+  if (is_win || is_mac) {
+    sources += [
+      "webui/settings/captions_handler.cc",
+      "webui/settings/captions_handler.h",
+    ]
+  }
+
   if (enable_vr) {
     if (is_win) {
       sources += [

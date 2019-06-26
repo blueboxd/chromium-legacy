@@ -318,8 +318,6 @@ void SoftwareImageDecodeCache::DecodeImageInTask(const CacheKey& key,
 
   DecodeImageIfNecessary(key, paint_image, cache_entry);
   DCHECK(cache_entry->decode_failed || cache_entry->is_locked);
-  RecordImageMipLevelUMA(
-      MipMapUtil::GetLevelForSize(key.src_rect().size(), key.target_size()));
 }
 
 void SoftwareImageDecodeCache::DecodeImageIfNecessary(

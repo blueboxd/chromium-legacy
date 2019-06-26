@@ -55,6 +55,10 @@ bool BrowsingInstance::IsDefaultSiteInstance(
   return site_instance != nullptr && site_instance == default_site_instance_;
 }
 
+bool BrowsingInstance::IsSiteInDefaultSiteInstance(const GURL& site_url) const {
+  return site_url_set_.find(site_url) != site_url_set_.end();
+}
+
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
   std::string site = GetSiteForURL(url).possibly_invalid_spec();
   return site_instance_map_.find(site) != site_instance_map_.end();
@@ -100,8 +104,8 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  std::string site = GetSiteForURL(url).possibly_invalid_spec();
-  auto i = site_instance_map_.find(site);
+  const GURL site_url = GetSiteForURL(url);
+  auto i = site_instance_map_.find(site_url.possibly_invalid_spec());
   if (i != site_instance_map_.end())
     return i->second;
 
@@ -132,6 +136,10 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
 
       site_instance->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
     }
+
+    // Add |site_url| to the set so we can keep track of all the sites the
+    // the default SiteInstance has been returned for.
+    site_url_set_.insert(site_url);
     return site_instance;
   }
 

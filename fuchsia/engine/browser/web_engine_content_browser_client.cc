@@ -12,6 +12,7 @@
 #include "fuchsia/engine/browser/web_engine_browser_context.h"
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
+#include "fuchsia/engine/common.h"
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
@@ -43,8 +44,14 @@ std::string WebEngineContentBrowserClient::GetProduct() {
 }
 
 std::string WebEngineContentBrowserClient::GetUserAgent() {
-  return content::BuildUserAgentFromProduct(
-      version_info::GetProductNameAndVersionForUserAgent());
+  std::string user_agent = content::BuildUserAgentFromProduct(GetProduct());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kUserAgentProductAndVersion)) {
+    user_agent +=
+        " " + base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+                  kUserAgentProductAndVersion);
+  }
+  return user_agent;
 }
 
 void WebEngineContentBrowserClient::OverrideWebkitPrefs(

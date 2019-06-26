@@ -1827,6 +1827,9 @@ extern const char kEnableAssistantKeyRemappingDescription[];
 extern const char kEnableAssistantLauncherIntegrationName[];
 extern const char kEnableAssistantLauncherIntegrationDescription[];
 
+extern const char kEnableAssistantMediaSessionIntegrationName[];
+extern const char kEnableAssistantMediaSessionIntegrationDescription[];
+
 extern const char kEnableAssistantVoiceMatchName[];
 extern const char kEnableAssistantVoiceMatchDescription[];
 

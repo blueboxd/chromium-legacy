@@ -178,8 +178,6 @@ static void RecordVideoCodecStats(container_names::MediaContainerName container,
                              video_config.visible_rect().width());
   UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
                           video_config.visible_rect());
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoPixelFormatUnion",
-                            video_config.format(), PIXEL_FORMAT_MAX + 1);
 
   // TODO(hubbe): make better color space statistics
 
@@ -1626,8 +1624,6 @@ void FFmpegDemuxer::LogMetadata(AVFormatContext* avctx,
           base::StringPrintf("%d/%d", video_av_stream->time_base.num,
                              video_av_stream->time_base.den));
 
-      params.SetString("video_format" + suffix,
-                       VideoPixelFormatToString(video_config.format()));
       params.SetBoolean("video_is_encrypted" + suffix,
                         video_config.is_encrypted());
     }

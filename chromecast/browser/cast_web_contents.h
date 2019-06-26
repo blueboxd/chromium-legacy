@@ -266,6 +266,10 @@ class CastWebContents {
 
   // Block/unblock media from loading in all RenderFrames for the WebContents.
   virtual void BlockMediaLoading(bool blocked) = 0;
+  // Block/unblock media from starting in all RenderFrames for the WebContents.
+  // As opposed to |BlockMediaLoading|,  |BlockMediaStarting| allows media to
+  // load while in blocking state.
+  virtual void BlockMediaStarting(bool blocked) = 0;
   virtual void EnableBackgroundVideoPlayback(bool enabled) = 0;
 
   // ===========================================================================

@@ -35,11 +35,13 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // appropriate values before using.
   VideoDecoderConfig();
 
+  enum class AlphaMode { kHasAlpha, kIsOpaque };
+
   // Constructs an initialized object. It is acceptable to pass in NULL for
   // |extra_data|, otherwise the memory is copied.
   VideoDecoderConfig(VideoCodec codec,
                      VideoCodecProfile profile,
-                     VideoPixelFormat format,
+                     AlphaMode alpha_mode,
                      const VideoColorSpace& color_space,
                      VideoTransformation transformation,
                      const gfx::Size& coded_size,
@@ -47,7 +49,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const gfx::Size& natural_size,
                      const std::vector<uint8_t>& extra_data,
                      const EncryptionScheme& encryption_scheme);
-
   VideoDecoderConfig(const VideoDecoderConfig& other);
 
   ~VideoDecoderConfig();
@@ -55,7 +56,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Resets the internal state of this object.
   void Initialize(VideoCodec codec,
                   VideoCodecProfile profile,
-                  VideoPixelFormat format,
+                  AlphaMode alpha_mode,
                   const VideoColorSpace& color_space,
                   VideoTransformation transformation,
                   const gfx::Size& coded_size,
@@ -79,14 +80,9 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   static std::string GetHumanReadableProfile(VideoCodecProfile profile);
 
-  // Video codec and profile.
   VideoCodec codec() const { return codec_; }
   VideoCodecProfile profile() const { return profile_; }
-
-  // Encoded video pixel format. Lossy codecs rarely have actual pixel formats,
-  // this should usually be interpreted as a subsampling specification. (The
-  // decoder determines the actual pixel format.)
-  VideoPixelFormat format() const { return format_; }
+  AlphaMode alpha_mode() const { return alpha_mode_; }
 
   // Difference between encoded and display orientation.
   //
@@ -152,7 +148,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoCodec codec_;
   VideoCodecProfile profile_;
 
-  VideoPixelFormat format_;
+  AlphaMode alpha_mode_;
 
   VideoTransformation transformation_;
 

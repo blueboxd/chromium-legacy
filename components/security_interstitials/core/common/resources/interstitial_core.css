@@ -67,6 +67,7 @@ html {
   body.captive-portal,
   body.dark-mode-available,
   body.neterror,
+  body.supervised-user-block,
   .offline body {
     --background-color: var(--google-gray-900);
     --error-code-color: var(--google-gray-500);

@@ -306,9 +306,11 @@ TaskTracker::TaskTracker(StringPiece histogram_label)
                              "UserBlockingTaskPriority_MayBlock")}},
       tracked_ref_factory_(this) {
   // Confirm that all |task_latency_histograms_| have been initialized above.
-  DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
-                                     1][0] -
-           1));
+  for (TaskPriorityType i = 0; i < kNumTaskPriorities; ++i) {
+    for (TaskPriorityType j = 0; j < kNumBlockingModes; ++j) {
+      DCHECK(task_latency_histograms_[i][j]);
+    }
+  }
 }
 
 TaskTracker::~TaskTracker() = default;

@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/observer_list.h"
 #include "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 
@@ -36,7 +37,13 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
   void SimulateDismissalForRequest(OverlayRequest* request,
                                    OverlayDismissalReason reason);
 
+  // Setter for whether the context is active.
+  void SetIsActive(bool active);
+
   // OverlayUIDelegate:
+  void AddObserver(OverlayPresentationContextObserver* observer) override;
+  void RemoveObserver(OverlayPresentationContextObserver* observer) override;
+  bool IsActive() const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
                      OverlayDismissalCallback dismissal_callback) override;
@@ -50,6 +57,12 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
   std::map<OverlayRequest*, PresentationState> presentation_states_;
   // The callbacks for each OverlayRequest.
   std::map<OverlayRequest*, OverlayDismissalCallback> overlay_callbacks_;
+  // Whether the context is active.
+  bool active_ = true;
+
+  base::ObserverList<OverlayPresentationContextObserver,
+                     /* check_empty= */ true>
+      observers_;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_TEST_FAKE_OVERLAY_PRESENTATION_CONTEXT_H_

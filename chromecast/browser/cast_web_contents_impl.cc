@@ -189,6 +189,11 @@ void CastWebContentsImpl::BlockMediaLoading(bool blocked) {
     media_blocker_->BlockMediaLoading(blocked);
 }
 
+void CastWebContentsImpl::BlockMediaStarting(bool blocked) {
+  if (media_blocker_)
+    media_blocker_->BlockMediaStarting(blocked);
+}
+
 void CastWebContentsImpl::EnableBackgroundVideoPlayback(bool enabled) {
   if (media_blocker_)
     media_blocker_->EnableBackgroundVideoPlayback(enabled);

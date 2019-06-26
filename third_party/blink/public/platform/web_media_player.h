@@ -214,6 +214,10 @@ class WebMediaPlayer {
   virtual uint64_t AudioDecodedByteCount() const = 0;
   virtual uint64_t VideoDecodedByteCount() const = 0;
 
+  // Returns true if the player has a frame available for presentation. Usually
+  // this just means the first frame has been delivered.
+  virtual bool HasAvailableVideoFrame() const = 0;
+
   // |already_uploaded_id| indicates the unique_id of the frame last uploaded
   //   to this destination. It should only be set by the caller if the contents
   //   of the destination are known not to have changed since that upload.

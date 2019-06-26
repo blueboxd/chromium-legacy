@@ -141,10 +141,10 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
         .WillOnce(Return(GetParam()));
     EXPECT_CALL(init_cb_, Run(true));
     InitializeWithConfig(VideoDecoderConfig(
-        kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-        VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
-        gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
-        Unencrypted()));
+        kCodecVP9, VP9PROFILE_PROFILE0,
+        VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace::REC709(),
+        kNoTransformation, gfx::Size(1920, 1088), gfx::Rect(1920, 1080),
+        gfx::Size(1920, 1080), EmptyExtraData(), Unencrypted()));
     RunUntilIdle();
   }
 
@@ -317,21 +317,21 @@ TEST_P(VdaVideoDecoderTest, Initialize) {
 }
 
 TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedSize) {
-  InitializeWithConfig(
-      VideoDecoderConfig(kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
-                         VideoColorSpace::REC601(), kNoTransformation,
-                         gfx::Size(320, 240), gfx::Rect(320, 240),
-                         gfx::Size(320, 240), EmptyExtraData(), Unencrypted()));
+  InitializeWithConfig(VideoDecoderConfig(
+      kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
+      VideoColorSpace::REC601(), kNoTransformation, gfx::Size(320, 240),
+      gfx::Rect(320, 240), gfx::Size(320, 240), EmptyExtraData(),
+      Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
   RunUntilIdle();
 }
 
 TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
   InitializeWithConfig(VideoDecoderConfig(
-      kCodecH264, H264PROFILE_BASELINE, PIXEL_FORMAT_I420,
-      VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
-      gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
-      Unencrypted()));
+      kCodecH264, H264PROFILE_BASELINE,
+      VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace::REC709(),
+      kNoTransformation, gfx::Size(1920, 1088), gfx::Rect(1920, 1080),
+      gfx::Size(1920, 1080), EmptyExtraData(), Unencrypted()));
   EXPECT_CALL(init_cb_, Run(false));
   RunUntilIdle();
 }
@@ -339,7 +339,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
 TEST_P(VdaVideoDecoderTest, Initialize_RejectedByVda) {
   EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(false));
   InitializeWithConfig(VideoDecoderConfig(
-      kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
+      kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
       gfx::Rect(1920, 1080), gfx::Size(1920, 1080), EmptyExtraData(),
       Unencrypted()));
@@ -422,7 +422,7 @@ TEST_P(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
   EXPECT_CALL(*vda_, TryToSetupDecodeOnSeparateThread(_, _))
       .WillOnce(Return(GetParam()));
   InitializeWithConfig(VideoDecoderConfig(
-      kCodecVP9, VP9PROFILE_PROFILE0, PIXEL_FORMAT_I420,
+      kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC709(), kNoTransformation, gfx::Size(640, 480),
       gfx::Rect(640, 480), gfx::Size(1280, 480), EmptyExtraData(),
       Unencrypted()));

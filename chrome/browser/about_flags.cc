@@ -3452,6 +3452,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantKeyRemappingName,
      flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
+
+    {"enable-assistant-media-session-integration",
+     flag_descriptions::kEnableAssistantMediaSessionIntegrationName,
+     flag_descriptions::kEnableAssistantMediaSessionIntegrationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::assistant::features::kEnableMediaSessionIntegration)},
 #endif  // defined(OS_CHROMEOS)
 
     {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,

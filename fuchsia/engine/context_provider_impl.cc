@@ -31,6 +31,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "fuchsia/engine/common.h"
+#include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 
 namespace {
@@ -181,6 +182,31 @@ void ContextProviderImpl::Create(
         "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
     launch_command.AppendSwitch("--use-vulkan");
     launch_command.AppendSwitchASCII("--use-gl", "stub");
+  }
+
+  // Validate embedder-supplied product, and optional version, and pass it to
+  // the Context to include in the UserAgent.
+  if (params.has_user_agent_product()) {
+    if (!net::HttpUtil::IsToken(params.user_agent_product())) {
+      DLOG(ERROR) << "Invalid embedder product.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+    std::string product_tag(params.user_agent_product());
+    if (params.has_user_agent_version()) {
+      if (!net::HttpUtil::IsToken(params.user_agent_version())) {
+        DLOG(ERROR) << "Invalid embedder version.";
+        context_request.Close(ZX_ERR_INVALID_ARGS);
+        return;
+      }
+      product_tag += "/" + params.user_agent_version();
+    }
+    launch_command.AppendSwitchNative(kUserAgentProductAndVersion,
+                                      std::move(product_tag));
+  } else if (params.has_user_agent_version()) {
+    DLOG(ERROR) << "Embedder version without product.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
   }
 
   if (launch_for_test_)

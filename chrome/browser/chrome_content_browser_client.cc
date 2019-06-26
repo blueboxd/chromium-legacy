@@ -3154,19 +3154,25 @@ base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
 
   style.text_size = prefs->GetString(prefs::kAccessibilityCaptionsTextSize);
   style.font_family = prefs->GetString(prefs::kAccessibilityCaptionsTextFont);
-  style.text_color = base::StringPrintf(
-      "rgba(%s,%s)",
-      prefs->GetString(prefs::kAccessibilityCaptionsTextColor).c_str(),
-      base::NumberToString(
-          prefs->GetInteger(prefs::kAccessibilityCaptionsTextOpacity) / 100.0)
-          .c_str());
-  style.background_color = base::StringPrintf(
-      "rgba(%s,%s)",
-      prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).c_str(),
-      base::NumberToString(
-          prefs->GetInteger(prefs::kAccessibilityCaptionsBackgroundOpacity) /
-          100.0)
-          .c_str());
+  if (!prefs->GetString(prefs::kAccessibilityCaptionsTextColor).empty()) {
+    style.text_color = base::StringPrintf(
+        "rgba(%s,%s)",
+        prefs->GetString(prefs::kAccessibilityCaptionsTextColor).c_str(),
+        base::NumberToString(
+            prefs->GetInteger(prefs::kAccessibilityCaptionsTextOpacity) / 100.0)
+            .c_str());
+  }
+
+  if (!prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).empty()) {
+    style.background_color = base::StringPrintf(
+        "rgba(%s,%s)",
+        prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).c_str(),
+        base::NumberToString(
+            prefs->GetInteger(prefs::kAccessibilityCaptionsBackgroundOpacity) /
+            100.0)
+            .c_str());
+  }
+
   style.text_shadow = prefs->GetString(prefs::kAccessibilityCaptionsTextShadow);
 
   return style;

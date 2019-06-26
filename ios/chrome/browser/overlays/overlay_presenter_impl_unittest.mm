@@ -142,6 +142,43 @@ TEST_F(OverlayPresenterImplTest, PresentAfterRequestAddedToActiveQueue) {
             presentation_context().GetPresentationState(request));
 }
 
+// Tests that requested overlays are presented when the presentation context is
+// activated.
+TEST_F(OverlayPresenterImplTest, PresentAfterContextActivation) {
+  // Add a WebState to the list and add a request to that WebState's queue.
+  presentation_context().SetIsActive(false);
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
+  OverlayRequest* request = AddRequest(active_web_state());
+  ASSERT_EQ(FakeOverlayPresentationContext::PresentationState::kNotPresented,
+            presentation_context().GetPresentationState(request));
+
+  // Activate the presentation context and verify that the UI is presented.
+  presentation_context().SetIsActive(true);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kPresented,
+            presentation_context().GetPresentationState(request));
+}
+
+// Tests that presented overlay UI is hidden when the presentation context is
+// deactivated.
+TEST_F(OverlayPresenterImplTest, HideAfterContextDeactivation) {
+  // Add a WebState to the list and add a request to that WebState's queue.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
+  OverlayRequest* request = AddRequest(active_web_state());
+  ASSERT_EQ(FakeOverlayPresentationContext::PresentationState::kPresented,
+            presentation_context().GetPresentationState(request));
+
+  // Deactivate the presentation context and verify that the UI is hidden.
+  presentation_context().SetIsActive(false);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kHidden,
+            presentation_context().GetPresentationState(request));
+}
+
 // Tests resetting the presentation context.  The UI should be cancelled in the
 // previous context and presented in the new context.
 TEST_F(OverlayPresenterImplTest, ResetPresentationContext) {

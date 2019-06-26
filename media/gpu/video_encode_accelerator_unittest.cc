@@ -1146,18 +1146,20 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   gfx::Size natural_size(visible_size.size());
   // The default output format of ffmpeg video decoder is YV12.
   VideoDecoderConfig config;
+  const auto alpha_mode = IsOpaque(pixel_format_)
+                              ? VideoDecoderConfig::AlphaMode::kIsOpaque
+                              : VideoDecoderConfig::AlphaMode::kHasAlpha;
   if (IsVP8(profile_)) {
-    config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
-                      VideoColorSpace(), kNoTransformation, coded_size,
-                      visible_size, natural_size, EmptyExtraData(),
-                      Unencrypted());
+    config.Initialize(kCodecVP8, VP8PROFILE_ANY, alpha_mode, VideoColorSpace(),
+                      kNoTransformation, coded_size, visible_size, natural_size,
+                      EmptyExtraData(), Unencrypted());
   } else if (IsVP9(profile_)) {
-    config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, pixel_format_,
+    config.Initialize(kCodecVP9, VP9PROFILE_PROFILE0, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());
   } else if (IsH264(profile_)) {
-    config.Initialize(kCodecH264, H264PROFILE_MAIN, pixel_format_,
+    config.Initialize(kCodecH264, H264PROFILE_MAIN, alpha_mode,
                       VideoColorSpace(), kNoTransformation, coded_size,
                       visible_size, natural_size, EmptyExtraData(),
                       Unencrypted());

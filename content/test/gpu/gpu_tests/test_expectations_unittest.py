@@ -188,6 +188,7 @@ def CheckTestExpectationsAreForExistingTests(
     _trie = trie.setdefault(test[0], {})
     for l in test[1:]:
       _trie = _trie.setdefault(l, {})
+    _trie.setdefault('$', {})
   f = open(expectations_file, 'r')
   expectations_file = os.path.basename(expectations_file)
   expectations = f.read()
@@ -195,14 +196,18 @@ def CheckTestExpectationsAreForExistingTests(
   parser = expectations_parser.TaggedTestListParser(expectations)
   for exp in parser.expectations:
     _trie = trie
+    is_glob = False
     for l in exp.test:
       if l == '*':
+        is_glob = True
         break
       assert l in _trie, (
-        "%s:%d: Glob '%s' does not match with any tests in the %s test suite" %
-        (expectations_file, exp.lineno, exp.test, test_class.Name()))
+        "%s:%d: Pattern '%s' does not match with any tests in the %s test suite"
+        % (expectations_file, exp.lineno, exp.test, test_class.Name()))
       _trie = _trie[l]
-
+    assert is_glob or '$' in _trie, (
+        "%s:%d: Pattern '%s' does not match with any tests in the %s test suite"
+        % (expectations_file, exp.lineno, exp.test, test_class.Name()))
 
 def CheckTestExpectationGlobsForCollision(
     expectations, file_name, test_class=None):
@@ -625,7 +630,14 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
   def testExpectationPatternNotInGeneratedTests(self):
     with self.assertRaises(AssertionError) as context:
       _TestCheckTestExpectationsAreForExistingTests('a/b/d [ Failure ]')
-    self.assertIn(("1: Glob 'a/b/d' does not match with any"
+    self.assertIn(("1: Pattern 'a/b/d' does not match with any"
+                  " tests in the GpuIntegrationTest test suite"),
+                  str(context.exception))
+
+  def testExpectationPatternIsShorterThanAnyTestName(self):
+    with self.assertRaises(AssertionError) as context:
+      _TestCheckTestExpectationsAreForExistingTests('a/b [ Failure ]')
+    self.assertIn(("1: Pattern 'a/b' does not match with any"
                   " tests in the GpuIntegrationTest test suite"),
                   str(context.exception))
 

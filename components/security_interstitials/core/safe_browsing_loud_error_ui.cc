@@ -309,6 +309,8 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
 
 void SafeBrowsingLoudErrorUI::PopulateBillingLoadTimeData(
     base::DictionaryValue* load_time_data) {
+  common_string_util::PopulateDarkModeDisplaySetting(load_time_data);
+
   load_time_data->SetBoolean("phishing", false);
   load_time_data->SetBoolean("overridable", true);
 

@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_OVERLAYS_OVERLAY_PRESENTATION_CONTEXT_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
@@ -56,6 +57,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   void SetCoordinator(OverlayContainerCoordinator* coordinator);
 
   // OverlayPresentationContext:
+  void AddObserver(OverlayPresentationContextObserver* observer) override;
+  void RemoveObserver(OverlayPresentationContextObserver* observer) override;
+  bool IsActive() const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
                      OverlayDismissalCallback dismissal_callback) override;
@@ -83,9 +87,6 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // Called when the UI for |request_| has finished being dismissed.
   void OverlayUIWasDismissed();
 
-  // Notifies the state for |request_| that its UI has finished being dismissed.
-  void NotifyStateOfDismissal();
-
   // Helper object that detaches the UI delegate for Browser shudown.
   class BrowserShutdownHelper : public BrowserObserver {
    public:
@@ -103,14 +104,15 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // Helper object that listens for UI dismissal events.
   class OverlayDismissalHelper : public OverlayUIDismissalDelegate {
    public:
-    OverlayDismissalHelper(OverlayPresentationContextImpl* ui_delegate);
+    OverlayDismissalHelper(
+        OverlayPresentationContextImpl* presentation_context);
     ~OverlayDismissalHelper() override;
 
     // OverlayUIDismissalDelegate:
     void OverlayUIDidFinishDismissal(OverlayRequest* request) override;
 
    private:
-    OverlayPresentationContextImpl* ui_delegate_ = nullptr;
+    OverlayPresentationContextImpl* presentation_context_ = nullptr;
   };
 
   // The presenter whose UI is being handled by this delegate.
@@ -131,6 +133,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   OverlayRequest* request_ = nullptr;
   // Map storing the UI state for each OverlayRequest.
   std::map<OverlayRequest*, std::unique_ptr<OverlayRequestUIState>> states_;
+  base::ObserverList<OverlayPresentationContextObserver,
+                     /* check_empty= */ true>
+      observers_;
   // Weak pointer factory.
   base::WeakPtrFactory<OverlayPresentationContextImpl> weak_factory_;
 };

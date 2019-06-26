@@ -4,9 +4,22 @@
 
 assert(is_fuchsia)
 
+import("//build/buildflag_header.gni")
 import("//build/config/fuchsia/rules.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
+
+declare_args() {
+  # Enable remote debugging for WebContentRunner instances on this port.
+  # Set to 0 to disable.
+  enable_remote_debugging_on_port = 0
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "ENABLE_REMOTE_DEBUGGING_ON_PORT=$enable_remote_debugging_on_port" ]
+  visibility = [ ":*" ]
+}
 
 # Files common to both cast_runner and web_runner targets.
 source_set("common") {
@@ -17,6 +30,7 @@ source_set("common") {
     "common/web_content_runner.h",
   ]
   deps = [
+    ":buildflags",
     "//base",
     "//fuchsia/base",
     "//fuchsia/base:modular",

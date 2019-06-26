@@ -398,7 +398,6 @@ void ShelfWidget::Shutdown() {
   // access it later in shutdown.
   shelf_layout_manager_->PrepareForShutdown();
 
-  background_animator_.RemoveObserver(status_area_widget_.get());
   Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_.get());
   status_area_widget_.reset();
 
@@ -421,7 +420,6 @@ void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
       std::make_unique<StatusAreaWidget>(status_container, shelf_);
   status_area_widget_->Initialize();
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_.get());
-  background_animator_.AddObserver(status_area_widget_.get());
   status_container->SetLayoutManager(new StatusAreaLayoutManager(this));
 }
 

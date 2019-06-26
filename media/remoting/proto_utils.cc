@@ -308,8 +308,11 @@ void ConvertVideoDecoderConfigToProto(const VideoDecoderConfig& video_config,
       ToProtoVideoDecoderConfigCodec(video_config.codec()).value());
   video_message->set_profile(
       ToProtoVideoDecoderConfigProfile(video_config.profile()).value());
-  video_message->set_format(
-      ToProtoVideoDecoderConfigFormat(video_config.format()).value());
+  // TODO(dalecurtis): Remove |format| it's now unused.
+  video_message->set_format(video_config.alpha_mode() ==
+                                    VideoDecoderConfig::AlphaMode::kHasAlpha
+                                ? pb::VideoDecoderConfig::PIXEL_FORMAT_I420A
+                                : pb::VideoDecoderConfig::PIXEL_FORMAT_I420);
 
   // TODO(hubbe): Update proto to use color_space_info()
   if (video_config.color_space_info() == VideoColorSpace::JPEG()) {
@@ -376,8 +379,10 @@ bool ConvertProtoToVideoDecoderConfig(
   video_config->Initialize(
       ToMediaVideoCodec(video_message.codec()).value(),
       ToMediaVideoCodecProfile(video_message.profile()).value(),
-      ToMediaVideoPixelFormat(video_message.format()).value(), color_space,
-      kNoTransformation,
+      IsOpaque(ToMediaVideoPixelFormat(video_message.format()).value())
+          ? VideoDecoderConfig::AlphaMode::kIsOpaque
+          : VideoDecoderConfig::AlphaMode::kHasAlpha,
+      color_space, kNoTransformation,
       gfx::Size(video_message.coded_size().width(),
                 video_message.coded_size().height()),
       gfx::Rect(video_message.visible_rect().x(),

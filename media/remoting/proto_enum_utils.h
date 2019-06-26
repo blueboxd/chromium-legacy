@@ -64,8 +64,6 @@ ToProtoVideoDecoderConfigProfile(VideoCodecProfile value);
 
 base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
     pb::VideoDecoderConfig::Format value);
-base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
-    VideoPixelFormat value);
 
 base::Optional<BufferingState> ToMediaBufferingState(
     pb::RendererClientOnBufferingStateChange::State value);

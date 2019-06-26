@@ -2973,15 +2973,28 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
         base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
   }
 
-  size_t mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;
+  POINTER_FLAGS pointer_flags = pointer_info.pointerFlags;
+
+  // When there are touch move events but no finger is pressing on the screen,
+  // which most likely happens for smart board, we should ignore these events
+  // for now. POINTER_FLAG_INCONTACT indicates this pointer is in contact with
+  // the digitizer surface, which means pressing the screen.
+  // POINTER_FLAG_INRANGE indicates the pointer is in the detection range of
+  // the screen.
+  if ((message == WM_POINTERUPDATE) &&
+      !(pointer_flags & POINTER_FLAG_INCONTACT) &&
+      (pointer_flags & POINTER_FLAG_INRANGE)) {
+    SetMsgHandled(TRUE);
+    return 0;
+  }
+
   POINT client_point = pointer_info.ptPixelLocationRaw;
   ScreenToClient(hwnd(), &client_point);
   gfx::Point touch_point = gfx::Point(client_point.x, client_point.y);
-
-  POINTER_FLAGS pointer_flags = pointer_info.pointerFlags;
   ui::EventType event_type = GetTouchEventType(pointer_flags);
   const base::TimeTicks event_time = ui::EventTimeForNow();
+  size_t mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
 
   // The pressure from POINTER_TOUCH_INFO is normalized to a range between 0
   // and 1024, but we define the pressure of the range of [0,1].
@@ -3007,17 +3020,16 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   event.latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, event_time, 1);
 
+  // Release the pointer id for touch release events.
+  if (event_type == ui::ET_TOUCH_RELEASED)
+    id_generator_.ReleaseNumber(pointer_id);
+
   // There are cases where the code handling the message destroys the
   // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(&event);
 
   if (ref) {
-    // Release the pointer id only when |HWNDMessageHandler| and |id_generator_|
-    // are not destroyed.
-    if (event_type == ui::ET_TOUCH_RELEASED)
-      id_generator_.ReleaseNumber(pointer_id);
-
     // Mark touch released events handled. These will usually turn into tap
     // gestures, and doing this avoids propagating the event to other windows.
     if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {

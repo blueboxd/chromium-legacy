@@ -616,7 +616,7 @@ BuildSysrootAll() {
 UploadSysroot() {
   local sha=$(sha1sum "${TARBALL}" | awk '{print $1;}')
   set -x
-  gsutil cp -a public-read "${TARBALL}" \
+  gsutil.py cp -a public-read "${TARBALL}" \
       "gs://chrome-linux-sysroot/toolchain/$sha/"
   set +x
 }

@@ -530,6 +530,14 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(!video_init_cb_);
   TRACE_EVENT0("media", "CdmAdapter::InitializeVideoDecoder");
 
+  // Alpha decoding is not supported by the CDM.
+  if (config.alpha_mode() != VideoDecoderConfig::AlphaMode::kIsOpaque) {
+    DVLOG(1) << __func__
+             << ": Unsupported config: " << config.AsHumanReadableString();
+    init_cb.Run(false);
+    return;
+  }
+
   // cdm::kUnknownVideoCodecProfile and cdm::kUnknownVideoFormat are not checked
   // because it's possible the container has wrong information or the demuxer
   // doesn't parse them correctly.

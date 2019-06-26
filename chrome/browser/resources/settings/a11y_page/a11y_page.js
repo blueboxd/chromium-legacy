@@ -43,6 +43,9 @@ Polymer({
       type: Object,
       value: function() {
         const map = new Map();
+        if (settings.routes.CAPTIONS) {
+          map.set(settings.routes.CAPTIONS.path, '#captions');
+        }
         // <if expr="chromeos">
         if (settings.routes.MANAGE_ACCESSIBILITY) {
           map.set(
@@ -50,6 +53,17 @@ Polymer({
         }
         // </if>
         return map;
+      },
+    },
+
+    /**
+     * Whether to show the link to caption settings.
+     * @private {boolean}
+     */
+    showCaptionSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableCaptionSettings');
       },
     },
 
@@ -120,5 +134,30 @@ Polymer({
   onMoreFeaturesLinkClick_: function() {
     window.open(
         'https://chrome.google.com/webstore/category/collection/accessibility');
+  },
+
+  /** @private */
+  onTapCaptions_: function() {
+    // Open the system captions dialog for Mac.
+    // <if expr="is_macosx">
+    settings.CaptionsBrowserProxyImpl.getInstance().openSystemCaptionsDialog();
+    // </if>
+
+    // Open the system captions dialog for Windows 10+ or navigate to the
+    // caption settings page for older versions of Windows
+    // <if expr="is_win">
+    if (loadTimeData.getBoolean('isWindows10OrNewer')) {
+      settings.CaptionsBrowserProxyImpl.getInstance()
+          .openSystemCaptionsDialog();
+    } else {
+      settings.navigateTo(settings.routes.CAPTIONS);
+    }
+    // </if>
+
+    // Navigate to the caption settings page for ChromeOS and Linux as they
+    // do not have system caption settings.
+    // <if expr="chromeos or is_linux">
+    settings.navigateTo(settings.routes.CAPTIONS);
+    // </if>
   },
 });

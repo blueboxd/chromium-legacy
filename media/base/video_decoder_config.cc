@@ -8,12 +8,19 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "media/base/limits.h"
 #include "media/base/media_util.h"
-#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 
 namespace media {
+
+static bool IsValidSize(const gfx::Size& size) {
+  const int area = size.GetCheckedArea().ValueOrDefault(INT_MAX);
+  return area && area <= limits::kMaxCanvas &&
+         size.width() <= limits::kMaxDimension &&
+         size.height() <= limits::kMaxDimension;
+}
 
 VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
   switch (profile) {
@@ -63,13 +70,13 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
 VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
-      format_(PIXEL_FORMAT_UNKNOWN),
+      alpha_mode_(AlphaMode::kIsOpaque),
       transformation_(kNoTransformation) {}
 
 VideoDecoderConfig::VideoDecoderConfig(
     VideoCodec codec,
     VideoCodecProfile profile,
-    VideoPixelFormat format,
+    AlphaMode alpha_mode,
     const VideoColorSpace& color_space,
     VideoTransformation rotation,
     const gfx::Size& coded_size,
@@ -77,7 +84,7 @@ VideoDecoderConfig::VideoDecoderConfig(
     const gfx::Size& natural_size,
     const std::vector<uint8_t>& extra_data,
     const EncryptionScheme& encryption_scheme) {
-  Initialize(codec, profile, format, color_space, rotation, coded_size,
+  Initialize(codec, profile, alpha_mode, color_space, rotation, coded_size,
              visible_rect, natural_size, extra_data, encryption_scheme);
 }
 
@@ -105,7 +112,7 @@ const base::Optional<HDRMetadata>& VideoDecoderConfig::hdr_metadata() const {
 
 void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
-                                    VideoPixelFormat format,
+                                    AlphaMode alpha_mode,
                                     const VideoColorSpace& color_space,
                                     VideoTransformation transformation,
                                     const gfx::Size& coded_size,
@@ -115,7 +122,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     const EncryptionScheme& encryption_scheme) {
   codec_ = codec;
   profile_ = profile;
-  format_ = format;
+  alpha_mode_ = alpha_mode;
   transformation_ = transformation;
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
@@ -126,30 +133,31 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
 }
 
 bool VideoDecoderConfig::IsValidConfig() const {
-  return codec_ != kUnknownVideoCodec && natural_size_.width() > 0 &&
-         natural_size_.height() > 0 &&
-         VideoFrame::IsValidConfig(format_, VideoFrame::STORAGE_UNOWNED_MEMORY,
-                                   coded_size_, visible_rect_, natural_size_);
+  return codec_ != kUnknownVideoCodec && IsValidSize(coded_size_) &&
+         IsValidSize(natural_size_) &&
+         gfx::Rect(coded_size_).Contains(visible_rect_);
 }
 
 bool VideoDecoderConfig::Matches(const VideoDecoderConfig& config) const {
-  return ((codec() == config.codec()) && (format() == config.format()) &&
-          (profile() == config.profile()) &&
-          (video_transformation() == config.video_transformation()) &&
-          (coded_size() == config.coded_size()) &&
-          (visible_rect() == config.visible_rect()) &&
-          (natural_size() == config.natural_size()) &&
-          (extra_data() == config.extra_data()) &&
-          (encryption_scheme().Matches(config.encryption_scheme())) &&
-          (color_space_info() == config.color_space_info()) &&
-          (hdr_metadata() == config.hdr_metadata()));
+  return codec() == config.codec() && profile() == config.profile() &&
+         alpha_mode() == config.alpha_mode() &&
+         video_transformation() == config.video_transformation() &&
+         coded_size() == config.coded_size() &&
+         visible_rect() == config.visible_rect() &&
+         natural_size() == config.natural_size() &&
+         extra_data() == config.extra_data() &&
+         encryption_scheme().Matches(config.encryption_scheme()) &&
+         color_space_info() == config.color_space_info() &&
+         hdr_metadata() == config.hdr_metadata();
 }
 
 std::string VideoDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
-  s << "codec: " << GetCodecName(codec()) << ", format: " << format()
-    << ", profile: " << GetProfileName(profile()) << ", coded size: ["
-    << coded_size().width() << "," << coded_size().height() << "]"
+  s << "codec: " << GetCodecName(codec())
+    << ", profile: " << GetProfileName(profile()) << ", alpha_mode: "
+    << (alpha_mode() == AlphaMode::kHasAlpha ? "has_alpha" : "is_opaque")
+    << ", coded size: [" << coded_size().width() << "," << coded_size().height()
+    << "]"
     << ", visible rect: [" << visible_rect().x() << "," << visible_rect().y()
     << "," << visible_rect().width() << "," << visible_rect().height() << "]"
     << ", natural size: [" << natural_size().width() << ","

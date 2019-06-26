@@ -7,6 +7,7 @@ source_set("overlays") {
     "public/overlay_dismissal_callback.h",
     "public/overlay_modality.h",
     "public/overlay_presentation_context.h",
+    "public/overlay_presentation_context_observer.h",
     "public/overlay_presenter.h",
     "public/overlay_presenter_observer.h",
     "public/overlay_request.h",

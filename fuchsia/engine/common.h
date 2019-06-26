@@ -20,6 +20,9 @@ WEB_ENGINE_EXPORT extern const char kIncognitoSwitch[];
 // a comma-separated list of remote debugger handle IDs as an argument.
 WEB_ENGINE_EXPORT extern const char kRemoteDebuggerHandles[];
 
+// Switch passed to Context process to customize the UserAgent string.
+WEB_ENGINE_EXPORT extern const char kUserAgentProductAndVersion[];
+
 // Handle ID for the Context interface request passed from ContextProvider to
 // Context process.
 constexpr uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);

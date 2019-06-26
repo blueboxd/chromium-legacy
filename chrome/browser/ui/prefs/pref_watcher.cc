@@ -30,6 +30,13 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebKitDefaultFixedFontSize,
     prefs::kWebKitDefaultFontSize,
     prefs::kWebKitDomPasteEnabled,
+    prefs::kAccessibilityCaptionsTextSize,
+    prefs::kAccessibilityCaptionsTextFont,
+    prefs::kAccessibilityCaptionsTextColor,
+    prefs::kAccessibilityCaptionsTextOpacity,
+    prefs::kAccessibilityCaptionsBackgroundColor,
+    prefs::kAccessibilityCaptionsTextShadow,
+    prefs::kAccessibilityCaptionsBackgroundOpacity,
 #if defined(OS_ANDROID)
     prefs::kWebKitFontScaleFactor,
     prefs::kWebKitForceDarkModeEnabled,

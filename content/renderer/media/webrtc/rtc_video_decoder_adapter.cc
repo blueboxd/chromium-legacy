@@ -52,10 +52,6 @@ namespace {
 // Any reasonable size, will be overridden by the decoder anyway.
 const gfx::Size kDefaultSize(640, 480);
 
-// Assumed pixel format of the encoded content. WebRTC doesn't tell us, and in
-// practice the decoders ignore it. We're going with generic 4:2:0.
-const media::VideoPixelFormat kDefaultPixelFormat = media::PIXEL_FORMAT_I420;
-
 // Maximum number of buffers that we will queue in |pending_buffers_|.
 const int32_t kMaxPendingBuffers = 8;
 
@@ -159,10 +155,10 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
   // TODO(sandersd): Predict size from level.
   media::VideoDecoderConfig config(
       ToVideoCodec(webrtc::PayloadStringToCodecType(format.name)),
-      GuessVideoCodecProfile(format), kDefaultPixelFormat,
-      media::VideoColorSpace(), media::kNoTransformation, kDefaultSize,
-      gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
-      media::Unencrypted());
+      GuessVideoCodecProfile(format),
+      media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
+      media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
+      kDefaultSize, media::EmptyExtraData(), media::Unencrypted());
   if (!gpu_factories->IsDecoderConfigSupported(kImplementation, config))
     return nullptr;
 

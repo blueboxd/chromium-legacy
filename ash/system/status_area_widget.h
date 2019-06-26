@@ -9,7 +9,6 @@
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/shelf/shelf_background_animator_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
 
@@ -35,7 +34,6 @@ class VirtualKeyboardTray;
 // so that it can be shown in cases where the rest of the shelf is hidden (e.g.
 // on secondary monitors at the login screen).
 class ASH_EXPORT StatusAreaWidget : public views::Widget,
-                                    public ShelfBackgroundAnimatorObserver,
                                     public KioskNextShellObserver {
  public:
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);

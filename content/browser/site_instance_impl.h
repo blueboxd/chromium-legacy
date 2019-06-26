@@ -307,7 +307,11 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   RenderProcessHost* GetDefaultProcessIfUsable();
 
   // Returns true if this object was constructed as a default site instance.
-  bool IsDefaultSiteInstance();
+  bool IsDefaultSiteInstance() const;
+
+  // Returns true if |site_url| is a site URL that the BrowsingInstance has
+  // associated with its default SiteInstance.
+  bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
 
   // Returns true if the the site URL for |url| matches the site URL
   // for this instance (i.e. GetSiteURL()). Otherwise returns false.

@@ -167,6 +167,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
   uint64_t AudioDecodedByteCount() const override;
   uint64_t VideoDecodedByteCount() const override;
 
+  bool HasAvailableVideoFrame() const override;
+
   // WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
   void OnFrameClosed() override;
@@ -354,6 +356,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // Whether the video is known to be opaque or not.
   bool opaque_ = true;
+
+  bool has_first_frame_ = false;
 
   base::WeakPtr<WebMediaPlayerMS> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerMS> weak_factory_;

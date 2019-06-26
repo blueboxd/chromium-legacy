@@ -28,9 +28,9 @@ struct StructTraits<media::mojom::VideoDecoderConfigDataView,
     return input.profile();
   }
 
-  static media::VideoPixelFormat format(
-      const media::VideoDecoderConfig& input) {
-    return input.format();
+  static bool has_alpha(const media::VideoDecoderConfig& input) {
+    return input.alpha_mode() ==
+           media::VideoDecoderConfig::AlphaMode::kHasAlpha;
   }
 
   static const gfx::Size& coded_size(const media::VideoDecoderConfig& input) {

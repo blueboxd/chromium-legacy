@@ -5,6 +5,7 @@
       "system-temp" ],
   "services": [
       "fuchsia.device.NameProvider",
+      "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",

@@ -135,9 +135,6 @@ AVSampleFormatToSampleFormat(AVSampleFormat sample_format, AVCodecID codec_id);
 MEDIA_EXPORT VideoPixelFormat
 AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format);
 
-// Converts video formats to its corresponding FFmpeg's pixel formats.
-AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format);
-
 VideoColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,
                                          AVColorRange color_range);
 

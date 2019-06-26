@@ -9,12 +9,21 @@
 
 class OverlayPresenter;
 class OverlayRequest;
+class OverlayPresentationContextObserver;
 
 // Object that handles presenting the overlay UI for OverlayPresenter.
 class OverlayPresentationContext {
  public:
   OverlayPresentationContext() = default;
   virtual ~OverlayPresentationContext() = default;
+
+  // Adds and removes |observer|.
+  virtual void AddObserver(OverlayPresentationContextObserver* observer) = 0;
+  virtual void RemoveObserver(OverlayPresentationContextObserver* observer) = 0;
+
+  // Whether the presentation context is active.  Overlay UI will only be
+  // presented for active contexts.
+  virtual bool IsActive() const = 0;
 
   // Called by |presenter| to show the overlay UI for |request|.
   // |dismissal_callback| must be stored and called whenever the UI is finished

@@ -4708,7 +4708,6 @@ if (enable_java_templates) {
     }
 
     # Generate a wrapper script for the bundle.
-    _android_aapt2_dir = android_sdk_tools_bundle_aapt2_dir
     _android_aapt2_path = android_sdk_tools_bundle_aapt2
 
     _bundle_apks_path = "$_bundle_base_path/$_bundle_name.apks"
@@ -4728,7 +4727,6 @@ if (enable_java_templates) {
       data = [
         _bundle_wrapper_script_path,
         _android_aapt2_path,
-        _android_aapt2_dir + "/lib64/libc++.so",
         _keystore_path,
       ]
       data_deps = [

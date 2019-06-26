@@ -161,6 +161,14 @@ class CONTENT_EXPORT BrowsingInstance final
 
   bool IsDefaultSiteInstance(const SiteInstanceImpl* site_instance) const;
 
+  // Returns true if |site_url| has been used to get a SiteInstance from this
+  // object and the default SiteInstance was returned. This simply indicates
+  // the site may be directed to the default SiteInstance process, but it does
+  // not indicate that the site has already been committed to that process.
+  // Returns false if no request for |site_url| has resulted in this object
+  // returning the default SiteInstance.
+  bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
+
   // Helper function used by other methods in this class to ensure consistent
   // mapping between |url| and site URL.
   // Note: This should not be used by code outside this class.
@@ -206,6 +214,10 @@ class CONTENT_EXPORT BrowsingInstance final
   // enabled. This is a raw pointer to avoid a reference cycle between the
   // BrowsingInstance and the SiteInstanceImpl.
   SiteInstanceImpl* default_site_instance_;
+
+  // Keeps track of the site URLs that this object mapped to the
+  // |default_site_instance_|.
+  std::set<GURL> site_url_set_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };

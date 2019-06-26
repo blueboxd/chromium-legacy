@@ -3064,6 +3064,11 @@ const char kEnableAssistantLauncherIntegrationDescription[] =
     "Combine Launcher search with the power of Assistant to provide the most "
     "useful answer for each query. Requires Assistant to be enabled.";
 
+const char kEnableAssistantMediaSessionIntegrationName[] =
+    "Assistant Media Session integration";
+const char kEnableAssistantMediaSessionIntegrationDescription[] =
+    "Enable Assistant Media Session Integration.";
+
 const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
 const char kEnableAssistantVoiceMatchDescription[] =
     "Enable the Assistant Voice Match feature";

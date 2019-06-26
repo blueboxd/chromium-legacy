@@ -569,7 +569,11 @@ cdm::VideoDecoderConfig_3 ToCdmVideoDecoderConfig(
   cdm::VideoDecoderConfig_3 cdm_config = {};
   cdm_config.codec = ToCdmVideoCodec(config.codec());
   cdm_config.profile = ToCdmVideoCodecProfile(config.profile());
-  cdm_config.format = ToCdmVideoFormat(config.format());
+
+  // TODO(dalecurtis): CDM doesn't support alpha, so delete |format|.
+  DCHECK_EQ(config.alpha_mode(), VideoDecoderConfig::AlphaMode::kIsOpaque);
+  cdm_config.format = cdm::kI420;
+
   cdm_config.color_space = ToCdmColorSpace(config.color_space_info());
   cdm_config.coded_size.width = config.coded_size().width();
   cdm_config.coded_size.height = config.coded_size().height();

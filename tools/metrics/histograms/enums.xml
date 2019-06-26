@@ -34426,6 +34426,8 @@ from previous Chrome versions.
   <int value="-757282194" label="EnableFilesystemInIncognito:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
+  <int value="-748571227"
+      label="AssistantEnableMediaSessionIntegration:enabled"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
   <int value="-746328467" label="ExpensiveBackgroundTimerThrottling:disabled"/>
   <int value="-744159181" label="disable-spdy-proxy-dev-auth-origin"/>
@@ -36112,6 +36114,8 @@ from previous Chrome versions.
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
+  <int value="1786692012"
+      label="AssistantEnableMediaSessionIntegration:disabled"/>
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1789793147" label="HTTPSServerPreviewsUsingURLLoader:disabled"/>
   <int value="1792609232" label="NTPShortcuts:enabled"/>

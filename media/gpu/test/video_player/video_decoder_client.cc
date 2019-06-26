@@ -165,7 +165,8 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
   LOG_ASSERT(video_);
 
   VideoDecoderConfig config(
-      video_->Codec(), video_->Profile(), PIXEL_FORMAT_I420, VideoColorSpace(),
+      video_->Codec(), video_->Profile(),
+      VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
       kNoTransformation, video_->Resolution(), gfx::Rect(video_->Resolution()),
       video_->Resolution(), std::vector<uint8_t>(0), EncryptionScheme());
 

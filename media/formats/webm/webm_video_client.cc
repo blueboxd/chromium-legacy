@@ -90,9 +90,6 @@ bool WebMVideoClient::InitializeConfig(
     return false;
   }
 
-  VideoPixelFormat format =
-      (alpha_mode_ == 1) ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_I420;
-
   if (pixel_width_ <= 0 || pixel_height_ <= 0)
     return false;
 
@@ -134,9 +131,12 @@ bool WebMVideoClient::InitializeConfig(
   }
   gfx::Size natural_size = gfx::Size(display_width_, display_height_);
 
-  config->Initialize(video_codec, profile, format, color_space,
-                     kNoTransformation, coded_size, visible_rect, natural_size,
-                     codec_private, encryption_scheme);
+  config->Initialize(video_codec, profile,
+                     alpha_mode_ == 1
+                         ? VideoDecoderConfig::AlphaMode::kHasAlpha
+                         : VideoDecoderConfig::AlphaMode::kIsOpaque,
+                     color_space, kNoTransformation, coded_size, visible_rect,
+                     natural_size, codec_private, encryption_scheme);
   return config->IsValidConfig();
 }
 

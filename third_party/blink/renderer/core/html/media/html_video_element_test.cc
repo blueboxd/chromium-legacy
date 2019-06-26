@@ -20,12 +20,15 @@
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
+using testing::_;
+
 namespace blink {
 
 class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
  public:
   MOCK_METHOD1(SetIsEffectivelyFullscreen, void(WebFullscreenVideoStatus));
   MOCK_METHOD1(OnDisplayTypeChanged, void(WebMediaPlayer::DisplayType));
+  MOCK_CONST_METHOD0(HasAvailableVideoFrame, bool());
 };
 
 class HTMLVideoElementTest : public PageTestBase {
@@ -71,6 +74,7 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
   video()->UpdateTextTrackDisplay();
 
   // Simulate entering Picture-in-Picture.
+  EXPECT_CALL(*MockWebMediaPlayer(), OnDisplayTypeChanged(_));
   video()->OnEnteredPictureInPicture();
 
   // Simulate that text track are displayed again.
@@ -90,6 +94,10 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 
+  EXPECT_CALL(*MockWebMediaPlayer(), OnDisplayTypeChanged(_));
+  EXPECT_CALL(*MockWebMediaPlayer(), HasAvailableVideoFrame())
+      .WillRepeatedly(testing::Return(true));
+
   // Simulate entering Picture-in-Picture.
   video()->OnEnteredPictureInPicture();
 
@@ -100,6 +108,10 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
 }
 
 TEST_F(HTMLVideoElementTest, EffectivelyFullscreen_DisplayType) {
+  video()->SetSrc("http://example.com/foo.mp4");
+  test::RunPendingTasks();
+  UpdateAllLifecyclePhasesForTest();
+
   EXPECT_EQ(WebMediaPlayer::DisplayType::kInline, video()->DisplayType());
 
   // Vector of data to use for tests. First value is to be set when calling
@@ -125,6 +137,7 @@ TEST_F(HTMLVideoElementTest, EffectivelyFullscreen_DisplayType) {
     video()->SetIsEffectivelyFullscreen(test.first);
 
     EXPECT_EQ(test.second, video()->DisplayType());
+    testing::Mock::VerifyAndClearExpectations(MockWebMediaPlayer());
   }
 }
 
@@ -154,6 +167,18 @@ TEST_F(HTMLVideoElementTest, ChangeLayerNeedsCompositingUpdate) {
   EXPECT_TRUE(paint_layer->NeedsCompositingInputsUpdate());
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(paint_layer->NeedsCompositingInputsUpdate());
+}
+
+TEST_F(HTMLVideoElementTest, HasAvailableVideoFrameChecksWMP) {
+  video()->SetSrc("http://example.com/foo.mp4");
+  test::RunPendingTasks();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_CALL(*MockWebMediaPlayer(), HasAvailableVideoFrame())
+      .WillOnce(testing::Return(false))
+      .WillOnce(testing::Return(true));
+  EXPECT_FALSE(video()->HasAvailableVideoFrame());
+  EXPECT_TRUE(video()->HasAvailableVideoFrame());
 }
 
 }  // namespace blink

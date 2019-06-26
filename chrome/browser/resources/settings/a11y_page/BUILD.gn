@@ -7,6 +7,8 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":a11y_page",
+    ":captions_browser_proxy",
+    ":captions_subpage",
   ]
 
   if (is_chromeos) {
@@ -17,6 +19,16 @@ js_type_check("closure_compile") {
       ":tts_subpage",
     ]
   }
+}
+
+js_library("captions_subpage") {
+  deps = [
+    "../appearance_page:fonts_browser_proxy",
+    "../controls:settings_dropdown_menu",
+    "//ui/webui/resources/cr_elements/cr_slider:cr_slider",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
 }
 
 js_library("a11y_page") {
@@ -60,4 +72,10 @@ js_library("tts_subpage") {
 }
 
 js_library("externs") {
+}
+
+js_library("captions_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
 }

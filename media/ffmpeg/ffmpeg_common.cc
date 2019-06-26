@@ -469,9 +469,6 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   gfx::Size natural_size =
       GetNaturalSize(visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
 
-  VideoPixelFormat format =
-      AVPixelFormatToVideoPixelFormat(codec_context->pix_fmt);
-
   // Without the ffmpeg decoder configured, libavformat is unable to get the
   // profile, format, or coded size. So choose sensible defaults and let
   // decoders fail later if the configuration is actually unsupported.
@@ -496,15 +493,10 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       // All the heuristics failed, let's assign a default profile
       if (profile == VIDEO_CODEC_PROFILE_UNKNOWN)
         profile = H264PROFILE_BASELINE;
-
-      format = PIXEL_FORMAT_I420;
       break;
     }
 #endif
     case kCodecVP8:
-#if !BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-      format = PIXEL_FORMAT_I420;
-#endif
       profile = VP8PROFILE_ANY;
       break;
     case kCodecVP9:
@@ -525,10 +517,8 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
           profile = VP9PROFILE_MIN;
           break;
       }
-      format = PIXEL_FORMAT_I420;
       break;
     case kCodecAV1:
-      format = PIXEL_FORMAT_I420;
       profile = AV1PROFILE_PROFILE_MAIN;
       break;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
@@ -543,18 +533,8 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       profile = ProfileIDToVideoCodecProfile(codec_context->profile);
   }
 
-  // Pad out |coded_size| for subsampled YUV formats.
-  if (format != PIXEL_FORMAT_I444 && format != PIXEL_FORMAT_UNKNOWN) {
-    coded_size.set_width((coded_size.width() + 1) / 2 * 2);
-    if (format != PIXEL_FORMAT_I422)
-      coded_size.set_height((coded_size.height() + 1) / 2 * 2);
-  }
-
-  AVDictionaryEntry* webm_alpha =
-      av_dict_get(stream->metadata, "alpha_mode", nullptr, 0);
-  if (webm_alpha && !strcmp(webm_alpha->value, "1")) {
-    format = PIXEL_FORMAT_I420A;
-  }
+  auto* alpha_mode = av_dict_get(stream->metadata, "alpha_mode", nullptr, 0);
+  const bool has_alpha = alpha_mode && !strcmp(alpha_mode->value, "1");
 
   VideoRotation video_rotation = VIDEO_ROTATION_0;
   int rotation = 0;
@@ -622,9 +602,11 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                       codec_context->extradata + codec_context->extradata_size);
   }
   // TODO(tmathmeyer) ffmpeg can't provide us with an actual video rotation yet.
-  config->Initialize(codec, profile, format, color_space,
-                     VideoTransformation(video_rotation), coded_size,
-                     visible_rect, natural_size, extra_data,
+  config->Initialize(codec, profile,
+                     has_alpha ? VideoDecoderConfig::AlphaMode::kHasAlpha
+                               : VideoDecoderConfig::AlphaMode::kIsOpaque,
+                     color_space, VideoTransformation(video_rotation),
+                     coded_size, visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
 
   if (stream->nb_side_data) {
@@ -670,7 +652,6 @@ void VideoDecoderConfigToAVCodecContext(
   codec_context->profile = VideoCodecProfileToProfileID(config.profile());
   codec_context->coded_width = config.coded_size().width();
   codec_context->coded_height = config.coded_size().height();
-  codec_context->pix_fmt = VideoPixelFormatToAVPixelFormat(config.format());
   if (config.color_space_info().range == gfx::ColorSpace::RangeID::FULL)
     codec_context->color_range = AVCOL_RANGE_JPEG;
 
@@ -804,43 +785,6 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
       DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
   }
   return PIXEL_FORMAT_UNKNOWN;
-}
-
-AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
-  switch (video_format) {
-    case PIXEL_FORMAT_I420:
-      return AV_PIX_FMT_YUV420P;
-    case PIXEL_FORMAT_I422:
-      return AV_PIX_FMT_YUV422P;
-    case PIXEL_FORMAT_I420A:
-      return AV_PIX_FMT_YUVA420P;
-    case PIXEL_FORMAT_I444:
-      return AV_PIX_FMT_YUV444P;
-    case PIXEL_FORMAT_YUV420P9:
-      return AV_PIX_FMT_YUV420P9LE;
-    case PIXEL_FORMAT_YUV420P10:
-      return AV_PIX_FMT_YUV420P10LE;
-    case PIXEL_FORMAT_YUV420P12:
-      return AV_PIX_FMT_YUV420P12LE;
-    case PIXEL_FORMAT_YUV422P9:
-      return AV_PIX_FMT_YUV422P9LE;
-    case PIXEL_FORMAT_YUV422P10:
-      return AV_PIX_FMT_YUV422P10LE;
-    case PIXEL_FORMAT_YUV422P12:
-      return AV_PIX_FMT_YUV422P12LE;
-    case PIXEL_FORMAT_YUV444P9:
-      return AV_PIX_FMT_YUV444P9LE;
-    case PIXEL_FORMAT_YUV444P10:
-      return AV_PIX_FMT_YUV444P10LE;
-    case PIXEL_FORMAT_YUV444P12:
-      return AV_PIX_FMT_YUV444P12LE;
-    case PIXEL_FORMAT_P016LE:
-      return AV_PIX_FMT_P016LE;
-
-    default:
-      DVLOG(1) << "Unsupported Format: " << video_format;
-  }
-  return AV_PIX_FMT_NONE;
 }
 
 VideoColorSpace AVColorSpaceToColorSpace(AVColorSpace color_space,

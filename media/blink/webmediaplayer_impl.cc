@@ -1266,6 +1266,10 @@ uint64_t WebMediaPlayerImpl::VideoDecodedByteCount() const {
   return GetPipelineStatistics().video_bytes_decoded;
 }
 
+bool WebMediaPlayerImpl::HasAvailableVideoFrame() const {
+  return has_first_frame_;
+}
+
 bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned int target,
@@ -3474,6 +3478,10 @@ void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);
+
+  // Needed to signal HTMLVideoElement that it should remove the poster image.
+  if (client_ && did_lazy_load_ && has_poster_)
+    client_->Repaint();
 }
 
 void WebMediaPlayerImpl::RecordTimingUMA(const std::string& key,

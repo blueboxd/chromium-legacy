@@ -18,6 +18,7 @@
 #include "fuchsia/base/agent_impl.h"
 #include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
@@ -366,27 +367,11 @@ TEST_F(CastRunnerIntegrationTest, AdditionalHeadersProvider) {
   navigation_listener.RunUntilUrlEquals(echo_app_url);
 
   // Check the header was properly set.
-  {
-    base::RunLoop run_loop;
-    web_component->frame()->ExecuteJavaScript(
-        {echo_app_url.GetOrigin().spec()},
-        cr_fuchsia::MemBufferFromString("document.body.innerText"),
-        [&](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
-          ASSERT_TRUE(result.is_response());
-          std::string result_json;
-          ASSERT_TRUE(cr_fuchsia::StringFromMemBuffer(result.response().result,
-                                                      &result_json));
-          EXPECT_EQ(result_json, "\"Value\"");
-          run_loop.Quit();
-        });
-    run_loop.Run();
-  }
-
-  // Shutdown the component and wait for the teardown of its state.
-  base::RunLoop run_loop;
-  component_state_->set_on_delete(run_loop.QuitClosure());
-  component_controller.Unbind();
-  run_loop.Run();
+  base::Optional<base::Value> result = cr_fuchsia::ExecuteJavaScript(
+      web_component->frame(), "document.body.innerText");
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->is_string());
+  EXPECT_EQ(result->GetString(), "Value");
 }
 
 }  // namespace castrunner

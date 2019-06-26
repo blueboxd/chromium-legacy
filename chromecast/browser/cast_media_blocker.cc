@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/threading/thread_checker.h"
+#include "chromecast/browser/cast_renderer_block_data.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
@@ -20,7 +21,8 @@ CastMediaBlocker::CastMediaBlocker(content::WebContents* web_contents)
 }
 
 CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
-    : blocked_(false),
+    : media_loading_blocked_(false),
+      media_starting_blocked_(false),
       paused_by_user_(true),
       suspended_(true),
       controllable_(false),
@@ -34,18 +36,36 @@ CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
 CastMediaBlocker::~CastMediaBlocker() {}
 
 void CastMediaBlocker::BlockMediaLoading(bool blocked) {
-  if (blocked_ == blocked)
+  if (media_loading_blocked_ == blocked)
     return;
 
-  blocked_ = blocked;
-  UpdateMediaBlockedState();
+  media_loading_blocked_ = blocked;
+  UpdateMediaLoadingBlockedState();
 
-  LOG(INFO) << __FUNCTION__ << " blocked=" << blocked_
+  UpdatePlayingState();
+}
+
+void CastMediaBlocker::BlockMediaStarting(bool blocked) {
+  if (media_starting_blocked_ == blocked)
+    return;
+
+  media_starting_blocked_ = blocked;
+
+  shell::CastRendererBlockData::SetRendererBlockForWebContents(
+      web_contents(), media_starting_blocked_);
+
+  UpdatePlayingState();
+}
+
+void CastMediaBlocker::UpdatePlayingState() {
+  LOG(INFO) << __FUNCTION__
+            << " media_loading_blocked=" << media_loading_blocked_
+            << " media_starting_blocked=" << media_starting_blocked_
             << " suspended=" << suspended_ << " controllable=" << controllable_
             << " paused_by_user=" << paused_by_user_;
 
   // If blocking media, suspend if possible.
-  if (blocked_) {
+  if (PlayingBlocked()) {
     if (!suspended_ && controllable_) {
       Suspend();
     }
@@ -67,12 +87,18 @@ void CastMediaBlocker::EnableBackgroundVideoPlayback(bool enabled) {
   UpdateBackgroundVideoPlaybackState();
 }
 
+bool CastMediaBlocker::PlayingBlocked() const {
+  return (media_loading_blocked_ || media_starting_blocked_);
+}
+
 void CastMediaBlocker::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   bool is_suspended = session_info->playback_state ==
                       media_session::mojom::MediaPlaybackState::kPaused;
 
-  LOG(INFO) << __FUNCTION__ << " blocked=" << blocked_
+  LOG(INFO) << __FUNCTION__
+            << " media_loading_blocked=" << media_loading_blocked_
+            << " media_starting_blocked=" << media_starting_blocked_
             << " is_suspended=" << is_suspended
             << " is_controllable=" << session_info->is_controllable
             << " paused_by_user=" << paused_by_user_;
@@ -83,13 +109,14 @@ void CastMediaBlocker::MediaSessionInfoChanged(
 
     // If not blocked, and we regain control and the media wasn't paused when
     // blocked, resume media if suspended.
-    if (!blocked_ && !paused_by_user_ && is_suspended && controllable_) {
+    if (!PlayingBlocked() && !paused_by_user_ && is_suspended &&
+        controllable_) {
       paused_by_user_ = true;
       Resume();
     }
 
     // Suspend if blocked and the session becomes controllable.
-    if (blocked_ && !is_suspended && controllable_) {
+    if (PlayingBlocked() && !is_suspended && controllable_) {
       // Only suspend if suspended_ doesn't change. Otherwise, this will be
       // handled in the suspended changed block.
       if (suspended_ == is_suspended)
@@ -101,7 +128,7 @@ void CastMediaBlocker::MediaSessionInfoChanged(
   if (suspended_ != is_suspended) {
     suspended_ = is_suspended;
     // If blocking, suspend media whenever possible.
-    if (blocked_ && !suspended_) {
+    if (PlayingBlocked() && !suspended_) {
       // If media was resumed when blocked, the user tried to play music.
       paused_by_user_ = false;
       if (controllable_)
@@ -109,7 +136,7 @@ void CastMediaBlocker::MediaSessionInfoChanged(
     }
 
     // If not blocking, cache the user's play intent.
-    if (!blocked_)
+    if (!PlayingBlocked())
       paused_by_user_ = suspended_;
   }
 }
@@ -132,22 +159,22 @@ void CastMediaBlocker::Resume() {
 
 void CastMediaBlocker::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  UpdateRenderFrameMediaBlockedState(render_frame_host);
+  UpdateRenderFrameMediaLoadingBlockedState(render_frame_host);
   UpdateRenderFrameBackgroundVideoPlaybackState(render_frame_host);
 }
 
 void CastMediaBlocker::RenderViewReady() {
-  UpdateMediaBlockedState();
+  UpdateMediaLoadingBlockedState();
 }
 
-void CastMediaBlocker::UpdateMediaBlockedState() {
+void CastMediaBlocker::UpdateMediaLoadingBlockedState() {
   if (!web_contents())
     return;
 
   const std::vector<content::RenderFrameHost*> frames =
       web_contents()->GetAllFrames();
   for (content::RenderFrameHost* frame : frames) {
-    UpdateRenderFrameMediaBlockedState(frame);
+    UpdateRenderFrameMediaLoadingBlockedState(frame);
   }
 }
 
@@ -161,14 +188,14 @@ void CastMediaBlocker::UpdateBackgroundVideoPlaybackState() {
   }
 }
 
-void CastMediaBlocker::UpdateRenderFrameMediaBlockedState(
+void CastMediaBlocker::UpdateRenderFrameMediaLoadingBlockedState(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
   chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
-  media_playback_options->SetMediaLoadingBlocked(media_loading_blocked());
+  media_playback_options->SetMediaLoadingBlocked(media_loading_blocked_);
 }
 
 void CastMediaBlocker::UpdateRenderFrameBackgroundVideoPlaybackState(
@@ -178,6 +205,11 @@ void CastMediaBlocker::UpdateRenderFrameBackgroundVideoPlaybackState(
   frame->GetRemoteAssociatedInterfaces()->GetInterface(&media_playback_options);
   media_playback_options->SetBackgroundVideoPlaybackEnabled(
       background_video_playback_enabled_);
+}
+
+void CastMediaBlocker::SetMediaSessionForTesting(
+    content::MediaSession* media_session) {
+  media_session_ = media_session;
 }
 
 }  // namespace chromecast

@@ -136,26 +136,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     }
 
     // The MIME type determined by ShouldBlockBasedOnHeaders.
-    const CrossOriginReadBlocking::MimeType& canonical_mime_type() const {
+    const CrossOriginReadBlocking::MimeType& canonical_mime_type_for_testing()
+        const {
       return canonical_mime_type_;
     }
-
-    // Value of the content-length response header if available. -1 if not
-    // available.
-    int64_t content_length() const { return content_length_; }
-
-    // The HTTP response code (e.g. 200 or 404) received in response to this
-    // resource request.
-    int http_response_code() const { return http_response_code_; }
 
     // Allows ResponseAnalyzer to sniff the response body.
     void SniffResponseBody(base::StringPiece data, size_t new_data_offset);
 
-    bool found_parser_breaker() const { return found_parser_breaker_; }
-
     class ConfirmationSniffer;
     class SimpleConfirmationSniffer;
-    class FetchOnlyResourceSniffer;
 
     void LogAllowedResponse();
     void LogBlockedResponse();
@@ -231,16 +221,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // resource request.
     int http_response_code_ = 0;
 
-    // Propagated from URLLoaderFactoryParams::request_initiator_site_lock;
-    base::Optional<url::Origin> request_initiator_site_lock_;
-
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;
 
     // Sniffing results.
     bool found_blockable_content_ = false;
-    bool found_parser_breaker_ = false;
-    int bytes_read_for_sniffing_ = -1;
 
     DISALLOW_COPY_AND_ASSIGN(ResponseAnalyzer);
   };

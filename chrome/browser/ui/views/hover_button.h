@@ -28,6 +28,8 @@ class StyledLabel;
 class View;
 }  // namespace views
 
+class PageInfoBubbleViewBrowserTest;
+
 // A button taking the full width of its parent that shows a background color
 // when hovered over.
 class HoverButton : public views::MenuButton, public views::MenuButtonListener {
@@ -120,6 +122,7 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
                            SetStatusLabel);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuButtonTest,
                            UpdatesToDisplayCorrectActionTitle);
+  friend class PageInfoBubbleViewBrowserTest;
 
   views::StyledLabel* title_ = nullptr;
   views::Label* subtitle_ = nullptr;

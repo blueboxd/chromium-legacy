@@ -273,7 +273,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '11cf0a3029edc26c133a15a2506b0c6b60e18c25',
+  'shaderc_revision': 'cff2a5619b04526f899af885ecf1e7ef2b8377f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -637,7 +637,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_build_tools/aapt2',
-              'version': 'j6U3mv7-KG3PSDtVvTwycWzjwvFR1_sSdA540AYxpucC',
+              'version': 'version:3.6.0-alpha03-5516695-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -811,7 +811,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2b2367291125b0ffb4c6ab836520307fe0c8a69d',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '54e38e3701569037eefaa890db4171f07afa14c2',
       'condition': 'checkout_linux',
   },
 
@@ -1405,7 +1405,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2e6505e6392f2ce76f25d5e3dfe5bdfcc9c0d0b7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b46998c50dd470705696d635d3d1f80c99ebae82',
     'condition': 'checkout_src_internal',
   },
 

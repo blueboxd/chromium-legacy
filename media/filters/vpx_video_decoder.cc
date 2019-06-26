@@ -202,19 +202,13 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (config.codec() != kCodecVP8 && config.codec() != kCodecVP9)
     return false;
 
-  // These are the combinations of codec-pixel format supported in principle.
-  DCHECK(
-      (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_I420) ||
-      (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_I420A) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I420) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I420A) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I444));
-
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   // When FFmpegVideoDecoder is available it handles VP8 that doesn't have
   // alpha, and VpxVideoDecoder will handle VP8 with alpha.
-  if (config.codec() == kCodecVP8 && config.format() != PIXEL_FORMAT_I420A)
+  if (config.codec() == kCodecVP8 &&
+      config.alpha_mode() == VideoDecoderConfig::AlphaMode::kIsOpaque) {
     return false;
+  }
 #endif
 
   DCHECK(!vpx_codec_);
@@ -241,7 +235,7 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     }
   }
 
-  if (config.format() != PIXEL_FORMAT_I420A)
+  if (config.alpha_mode() == VideoDecoderConfig::AlphaMode::kIsOpaque)
     return true;
 
   DCHECK(!vpx_codec_alpha_);

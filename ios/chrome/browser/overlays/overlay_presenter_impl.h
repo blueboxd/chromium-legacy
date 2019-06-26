@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 #import "ios/chrome/browser/overlays/public/overlay_dismissal_callback.h"
 #import "ios/chrome/browser/overlays/public/overlay_modality.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -20,6 +21,7 @@
 // - manages hiding and showing overlays for active WebState changes.
 class OverlayPresenterImpl : public BrowserObserver,
                              public OverlayPresenter,
+                             public OverlayPresentationContextObserver,
                              public OverlayRequestQueueImpl::Observer,
                              public WebStateListObserver {
  public:
@@ -100,6 +102,13 @@ class OverlayPresenterImpl : public BrowserObserver,
                            OverlayRequest* request) override;
   void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
                               OverlayRequest* request) override;
+
+  // OverlayPresentationContextObserver:
+  void OverlayPresentationContextWillChangeActivationState(
+      OverlayPresentationContext* presentation_context,
+      bool activating) override;
+  void OverlayPresentationContextDidChangeActivationState(
+      OverlayPresentationContext* presentation_context) override;
 
   // WebStateListObserver:
   void WebStateInsertedAt(WebStateList* web_state_list,

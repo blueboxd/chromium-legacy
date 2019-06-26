@@ -531,9 +531,6 @@ class CrossOriginReadBlocking::ResponseAnalyzer::ConfirmationSniffer {
   // Returns true if the data has been confirmed to be of the CORB-protected
   // content type that this sniffer is intended to detect.
   virtual bool IsConfirmedContentType() const = 0;
-
-  // Helper for reporting the right UMA.
-  virtual bool IsParserBreakerSniffer() const = 0;
 };
 
 // A ConfirmationSniffer that wraps one of the sniffing functions from
@@ -579,8 +576,6 @@ class CrossOriginReadBlocking::ResponseAnalyzer::SimpleConfirmationSniffer
     return last_sniff_result_ == SniffingResult::kYes;
   }
 
-  bool IsParserBreakerSniffer() const override { return false; }
-
  private:
   // The function that actually knows how to sniff for a content type.
   SnifferFunction sniffer_function_;
@@ -589,22 +584,6 @@ class CrossOriginReadBlocking::ResponseAnalyzer::SimpleConfirmationSniffer
   SniffingResult last_sniff_result_ = SniffingResult::kMaybe;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleConfirmationSniffer);
-};
-
-// A ConfirmationSniffer for parser breakers (fetch-only resources). This logs
-// to an UMA histogram whenever it is the reason for a response being blocked.
-class CrossOriginReadBlocking::ResponseAnalyzer::FetchOnlyResourceSniffer
-    : public CrossOriginReadBlocking::ResponseAnalyzer::
-          SimpleConfirmationSniffer {
- public:
-  FetchOnlyResourceSniffer()
-      : SimpleConfirmationSniffer(
-            &network::CrossOriginReadBlocking::SniffForFetchOnlyResource) {}
-
-  bool IsParserBreakerSniffer() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FetchOnlyResourceSniffer);
 };
 
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
@@ -616,7 +595,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
   content_length_ = response.content_length;
   http_response_code_ =
       response.headers ? response.headers->response_code() : 0;
-  request_initiator_site_lock_ = request_initiator_site_lock;
 
   // CORB should look directly at the Content-Type header if one has been
   // received from the network. Ignoring |response.mime_type| helps avoid
@@ -956,22 +934,22 @@ void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
 
   // When the MIME type is "text/plain", create sniffers for HTML, XML and
   // JSON. If any of these sniffers match, the response will be blocked.
-  const bool use_all = canonical_mime_type() == MimeType::kPlain;
+  const bool use_all = canonical_mime_type_ == MimeType::kPlain;
 
   // HTML sniffer.
-  if (use_all || canonical_mime_type() == MimeType::kHtml) {
+  if (use_all || canonical_mime_type_ == MimeType::kHtml) {
     sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
         &network::CrossOriginReadBlocking::SniffForHTML));
   }
 
   // XML sniffer.
-  if (use_all || canonical_mime_type() == MimeType::kXml) {
+  if (use_all || canonical_mime_type_ == MimeType::kXml) {
     sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
         &network::CrossOriginReadBlocking::SniffForXML));
   }
 
   // JSON sniffer.
-  if (use_all || canonical_mime_type() == MimeType::kJson) {
+  if (use_all || canonical_mime_type_ == MimeType::kJson) {
     sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
         &network::CrossOriginReadBlocking::SniffForJSON));
   }
@@ -983,7 +961,8 @@ void CrossOriginReadBlocking::ResponseAnalyzer::CreateSniffers() {
   // header. So this sniffer is created unconditionally.
   //
   // For MimeType::kOthers, this will be the only sniffer that's active.
-  sniffers_.push_back(std::make_unique<FetchOnlyResourceSniffer>());
+  sniffers_.push_back(std::make_unique<SimpleConfirmationSniffer>(
+      &network::CrossOriginReadBlocking::SniffForFetchOnlyResource));
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
@@ -992,9 +971,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
   DCHECK_EQ(kNeedToSniffMore, should_block_based_on_headers_);
   DCHECK(!sniffers_.empty());
   DCHECK(!found_blockable_content_);
-
-  DCHECK_LE(bytes_read_for_sniffing_, static_cast<int>(data.size()));
-  bytes_read_for_sniffing_ = static_cast<int>(data.size());
 
   DCHECK_LE(data.size(), static_cast<size_t>(net::kMaxBytesToSniff));
   DCHECK_LE(new_data_offset, data.size());
@@ -1010,9 +986,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::SniffResponseBody(
     }
 
     if (sniffers_[i]->IsConfirmedContentType()) {
-      if (sniffers_[i]->IsParserBreakerSniffer())
-        found_parser_breaker_ = true;
-
       found_blockable_content_ = true;
       sniffers_.clear();
       break;
@@ -1053,15 +1026,15 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
 
   // Don't bother showing a warning message when blocking responses that are
   // already empty.
-  if (content_length() == 0)
+  if (content_length_ == 0)
     return false;
-  if (http_response_code() == 204)
+  if (http_response_code_ == 204)
     return false;
 
   // Don't bother showing a warning message when blocking responses that are
   // associated with error responses (e.g. it is quite common to serve a
   // text/html 404 error page for an <img> tag pointing to a wrong URL).
-  if (400 <= http_response_code() && http_response_code() <= 599)
+  if (400 <= http_response_code_ && http_response_code_ <= 599)
     return false;
 
   return true;

@@ -18,6 +18,7 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
+#include "fuchsia/runners/buildflags.h"
 #include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
 
@@ -43,6 +44,12 @@ fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
       base::FilePath(base::fuchsia::kServiceDirectoryPath)));
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
+
+  // Set |remote_debugging_port| on the context, if set.
+  if (BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT) != 0) {
+    create_params.set_remote_debugging_port(
+        BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT));
+  }
 
   fuchsia::web::ContextPtr web_context;
   web_context_provider->Create(std::move(create_params),

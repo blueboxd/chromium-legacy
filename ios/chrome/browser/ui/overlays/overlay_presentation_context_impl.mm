@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
@@ -62,18 +63,37 @@ void OverlayPresentationContextImpl::SetCoordinator(
     OverlayContainerCoordinator* coordinator) {
   if (coordinator_ == coordinator)
     return;
-  if (coordinator_ && request_)
-    DismissPresentedUI(OverlayDismissalReason::kHiding);
+
+  for (auto& observer : observers_) {
+    observer.OverlayPresentationContextWillChangeActivationState(this,
+                                                                 !!coordinator);
+  }
 
   coordinator_ = coordinator;
 
   // The new coordinator should be started before provided to the UI delegate.
   DCHECK(!coordinator_ || coordinator_.viewController);
 
-  ShowUIForPresentedRequest();
+  for (auto& observer : observers_) {
+    observer.OverlayPresentationContextDidChangeActivationState(this);
+  }
 }
 
 #pragma mark OverlayPresentationContext
+
+void OverlayPresentationContextImpl::AddObserver(
+    OverlayPresentationContextObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OverlayPresentationContextImpl::RemoveObserver(
+    OverlayPresentationContextObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool OverlayPresentationContextImpl::IsActive() const {
+  return !!coordinator_;
+}
 
 void OverlayPresentationContextImpl::ShowOverlayUI(
     OverlayPresenter* presenter,
@@ -104,7 +124,7 @@ void OverlayPresentationContextImpl::HideOverlayUI(OverlayPresenter* presenter,
   } else {
     // Simulate dismissal if there is no container coordinator.
     state->set_dismissal_reason(OverlayDismissalReason::kHiding);
-    NotifyStateOfDismissal();
+    OverlayUIWasDismissed();
   }
 }
 
@@ -122,13 +142,11 @@ void OverlayPresentationContextImpl::CancelOverlayUI(
   }
 
   // If the current request is being cancelled (e.g. for WebState closures) when
-  // there is no coordinator, simulate a dismissal and reset the current
-  // request.
+  // there is no coordinator, simulate a dismissal.
   if (!coordinator_) {
     DCHECK_EQ(request_, request);
     state->set_dismissal_reason(OverlayDismissalReason::kCancellation);
     state->OverlayUIWasDismissed();
-    SetRequest(nullptr);
     return;
   }
 
@@ -207,17 +225,6 @@ void OverlayPresentationContextImpl::DismissPresentedUI(
 
 void OverlayPresentationContextImpl::OverlayUIWasDismissed() {
   DCHECK(request_);
-  // Overlays are dismissed without animation when the container coordinator is
-  // reset, but the state should not be notified of these dismissals since the
-  // same UI will be presented again once a new container coordinator is
-  // provided.
-  if (!coordinator_)
-    return;
-  NotifyStateOfDismissal();
-}
-
-void OverlayPresentationContextImpl::NotifyStateOfDismissal() {
-  DCHECK(request_);
   DCHECK(GetRequestUIState(request_)->has_callback());
   // If there is another request in the active WebState's OverlayRequestQueue,
   // executing the state's dismissal callback will trigger the presentation of
@@ -252,9 +259,9 @@ void OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserDestroyed(
 #pragma mark OverlayDismissalHelper
 
 OverlayPresentationContextImpl::OverlayDismissalHelper::OverlayDismissalHelper(
-    OverlayPresentationContextImpl* ui_delegate)
-    : ui_delegate_(ui_delegate) {
-  DCHECK(ui_delegate_);
+    OverlayPresentationContextImpl* presentation_context)
+    : presentation_context_(presentation_context) {
+  DCHECK(presentation_context_);
 }
 
 OverlayPresentationContextImpl::OverlayDismissalHelper::
@@ -263,6 +270,6 @@ OverlayPresentationContextImpl::OverlayDismissalHelper::
 void OverlayPresentationContextImpl::OverlayDismissalHelper::
     OverlayUIDidFinishDismissal(OverlayRequest* request) {
   DCHECK(request);
-  DCHECK_EQ(ui_delegate_->request_, request);
-  ui_delegate_->OverlayUIWasDismissed();
+  DCHECK_EQ(presentation_context_->request_, request);
+  presentation_context_->OverlayUIWasDismissed();
 }

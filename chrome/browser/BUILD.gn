@@ -3840,6 +3840,20 @@ jumbo_split_static_library("browser") {
     ]
   }
 
+  if (is_mac) {
+    sources += [
+      "accessibility/caption_settings_dialog.h",
+      "accessibility/caption_settings_dialog_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "accessibility/caption_settings_dialog.h",
+      "accessibility/caption_settings_dialog_win.cc",
+    ]
+  }
+
   if (is_win || is_mac || is_desktop_linux) {
     sources += [
       "browser_switcher/alternative_browser_driver.h",

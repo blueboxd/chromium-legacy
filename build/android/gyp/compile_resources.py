@@ -738,6 +738,7 @@ def _PackageApk(options, build):
     link_command += ['--version-name', options.version_name]
   if options.proguard_file:
     link_command += ['--proguard', build.proguard_path]
+    link_command += ['--proguard-minimal-keep-rules']
   if options.proguard_file_main_dex:
     link_command += ['--proguard-main-dex', build.proguard_main_dex_path]
   if options.emit_ids_out:

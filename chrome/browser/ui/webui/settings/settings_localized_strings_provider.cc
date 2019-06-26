@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -151,7 +152,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
     {"ok", IDS_OK},
-    {"remove", IDS_REMOVE},
     {"restart", IDS_SETTINGS_RESTART},
 #if !defined(OS_CHROMEOS)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
@@ -192,6 +192,32 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
     {"moreFeaturesLinkDescription",
      IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
+    {"captionsTitle", IDS_SETTINGS_CAPTIONS},
+    {"captionsTextSize", IDS_SETTINGS_CAPTIONS_TEXT_SIZE},
+    {"captionsTextFont", IDS_SETTINGS_CAPTIONS_TEXT_FONT},
+    {"captionsTextColor", IDS_SETTINGS_CAPTIONS_TEXT_COLOR},
+    {"captionsTextOpacity", IDS_SETTINGS_CAPTIONS_TEXT_OPACITY},
+    {"captionsBackgroundOpacity", IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY},
+    {"captionsOpacityMin", IDS_SETTINGS_CAPTIONS_OPACITY_MIN},
+    {"captionsOpacityMax", IDS_SETTINGS_CAPTIONS_OPACITY_MAX},
+    {"captionsTextShadow", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW},
+    {"captionsTextShadowNone", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_NONE},
+    {"captionsTextShadowRaised", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_RAISED},
+    {"captionsTextShadowDepressed",
+     IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_DEPRESSED},
+    {"captionsTextShadowUniform", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_UNIFORM},
+    {"captionsTextShadowDropShadow",
+     IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_DROP_SHADOW},
+    {"captionsBackgroundColor", IDS_SETTINGS_CAPTIONS_BACKGROUND_COLOR},
+    {"captionsColorBlack", IDS_SETTINGS_CAPTIONS_COLOR_BLACK},
+    {"captionsColorWhite", IDS_SETTINGS_CAPTIONS_COLOR_WHITE},
+    {"captionsColorRed", IDS_SETTINGS_CAPTIONS_COLOR_RED},
+    {"captionsColorGreen", IDS_SETTINGS_CAPTIONS_COLOR_GREEN},
+    {"captionsColorBlue", IDS_SETTINGS_CAPTIONS_COLOR_BLUE},
+    {"captionsColorYellow", IDS_SETTINGS_CAPTIONS_COLOR_YELLOW},
+    {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
+    {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
+    {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
 #if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
@@ -344,6 +370,15 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalA11yLabels",
       base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
+
+  html_source->AddBoolean(
+      "enableCaptionSettings",
+      base::FeatureList::IsEnabled(features::kCaptionSettings));
+
+#if defined(OS_WIN)
+  html_source->AddBoolean("isWindows10OrNewer",
+                          base::win::GetVersion() >= base::win::Version::WIN10);
+#endif
 
 #if defined(OS_CHROMEOS)
   html_source->AddString("accountManagerLearnMoreUrl",

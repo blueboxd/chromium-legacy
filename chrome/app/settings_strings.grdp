@@ -162,6 +162,78 @@
   </if>
 
   <!-- Accessibility Page -->
+  <message name="IDS_SETTINGS_CAPTIONS" desc="Name of the settings page which displays caption preferences.">
+    Captions
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SIZE" desc="Name of the settings page which displays caption text size preferences.">
+    Text size
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_FONT" desc="Name of the settings page which displays caption text font preferences.">
+    Text font
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_COLOR" desc="Name of the settings page which displays caption text color preferences.">
+    Text color
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_OPACITY" desc="Name of the settings page which displays caption text opacity preferences.">
+    Text opacity
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY" desc="Name of the settings page which displays caption background opacity preferences.">
+    Background opacity
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MIN" desc="Value of the minimum captions text opacity setting.">
+    0
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MAX" desc="Value of the maximum captions text opacity setting.">
+    100
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW" desc="Name of the settings page which displays caption text shadow preferences.">
+    Text shadow
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_NONE" desc="Name of the None option for the caption text shadow.">
+    None
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_RAISED" desc="Name of the Raised option for the caption text shadow.">
+    Raised
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_DEPRESSED" desc="Name of the Depressed option for the caption text shadow.">
+    Depressed
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_UNIFORM" desc="Name of the Uniform option for the caption text shadow.">
+    Uniform
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_DROP_SHADOW" desc="Name of the Drop shadow option for the caption text shadow.">
+    Drop shadow
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_COLOR" desc="Name of the settings page which displays caption background color preferences.">
+    Background color
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_BLACK" desc="Name of the Black color for the caption text or background.">
+    Black
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_WHITE" desc="Name of the White color for the caption text or background.">
+    White
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_RED" desc="Name of the Red color for the caption text or background.">
+    Red
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_GREEN" desc="Name of the Green color for the caption text or background.">
+    Green
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_BLUE" desc="Name of the Blue color for the caption text or background.">
+    Blue
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_YELLOW" desc="Name of the Yellow color for the caption text or background.">
+    Yellow
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_CYAN" desc="Name of the Cyan color for the caption text or background.">
+    Cyan
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA" desc="Name of the Magenta color for the caption text or background.">
+    Magenta
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING" desc="Name of the default setting for the caption text.">
+    Default
+  </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
   </message>

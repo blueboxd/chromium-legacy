@@ -55,6 +55,7 @@ class CastWebContentsImpl : public CastWebContents,
       service_manager::InterfaceProvider* interface_provider) override;
   service_manager::BinderRegistry* binder_registry() override;
   void BlockMediaLoading(bool blocked) override;
+  void BlockMediaStarting(bool blocked) override;
   void EnableBackgroundVideoPlayback(bool enabled) override;
 
   // Observer interface:

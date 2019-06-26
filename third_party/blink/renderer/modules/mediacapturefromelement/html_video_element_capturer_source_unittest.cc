@@ -91,6 +91,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
     return;
   }
   bool IsOpaque() const override { return is_video_opaque_; }
+  bool HasAvailableVideoFrame() const override { return true; }
 
   base::WeakPtr<WebMediaPlayer> AsWeakPtr() override {
     return weak_factory_.GetWeakPtr();

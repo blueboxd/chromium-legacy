@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
 FakeOverlayPresentationContext::FakeOverlayPresentationContext() = default;
@@ -32,6 +33,33 @@ void FakeOverlayPresentationContext::SimulateDismissalForRequest(
       break;
   }
   std::move(overlay_callbacks_[request]).Run(reason);
+}
+
+void FakeOverlayPresentationContext::SetIsActive(bool active) {
+  if (active_ == active)
+    return;
+
+  for (auto& observer : observers_) {
+    observer.OverlayPresentationContextWillChangeActivationState(this, active);
+  }
+  active_ = active;
+  for (auto& observer : observers_) {
+    observer.OverlayPresentationContextDidChangeActivationState(this);
+  }
+}
+
+void FakeOverlayPresentationContext::AddObserver(
+    OverlayPresentationContextObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeOverlayPresentationContext::RemoveObserver(
+    OverlayPresentationContextObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+bool FakeOverlayPresentationContext::IsActive() const {
+  return active_;
 }
 
 void FakeOverlayPresentationContext::ShowOverlayUI(

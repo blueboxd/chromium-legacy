@@ -253,7 +253,7 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // TODO(sandersd): Change this to a capability if any VDA starts supporting
   // alpha channels. This is believed to be impossible right now because VPx
   // alpha channel data is passed in side data, which isn't sent to VDAs.
-  if (!IsOpaque(config.format())) {
+  if (config.alpha_mode() != VideoDecoderConfig::AlphaMode::kIsOpaque) {
     MEDIA_LOG(INFO, media_log_) << "Alpha formats are not supported";
     EnterErrorState();
     return;

@@ -162,7 +162,7 @@ struct AudioDecoderConfig {
 struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
-  VideoPixelFormat format;
+  bool has_alpha;
   VideoTransformation transformation;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;

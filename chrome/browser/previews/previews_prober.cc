@@ -47,18 +47,24 @@ PreviewsProber::RetryPolicy::RetryPolicy() = default;
 PreviewsProber::RetryPolicy::~RetryPolicy() = default;
 PreviewsProber::RetryPolicy::RetryPolicy(PreviewsProber::RetryPolicy const&) =
     default;
+PreviewsProber::TimeoutPolicy::TimeoutPolicy() = default;
+PreviewsProber::TimeoutPolicy::~TimeoutPolicy() = default;
+PreviewsProber::TimeoutPolicy::TimeoutPolicy(
+    PreviewsProber::TimeoutPolicy const&) = default;
 
 PreviewsProber::PreviewsProber(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& name,
     const GURL& url,
     const HttpMethod http_method,
-    const RetryPolicy& retry_policy)
+    const RetryPolicy& retry_policy,
+    const TimeoutPolicy& timeout_policy)
     : PreviewsProber(url_loader_factory,
                      name,
                      url,
                      http_method,
                      retry_policy,
+                     timeout_policy,
                      base::DefaultTickClock::GetInstance()) {}
 
 PreviewsProber::PreviewsProber(
@@ -67,13 +73,15 @@ PreviewsProber::PreviewsProber(
     const GURL& url,
     const HttpMethod http_method,
     const RetryPolicy& retry_policy,
+    const TimeoutPolicy& timeout_policy,
     const base::TickClock* tick_clock)
     : name_(name),
       url_(url),
       http_method_(http_method),
       retry_policy_(retry_policy),
+      timeout_policy_(timeout_policy),
       successive_retry_count_(0),
-      retry_timer_(nullptr),
+      successive_timeout_count_(0),
       tick_clock_(tick_clock),
       is_active_(false),
       last_probe_status_(base::nullopt),
@@ -88,6 +96,7 @@ void PreviewsProber::SendNowIfInactive() {
     return;
 
   successive_retry_count_ = 0;
+  successive_timeout_count_ = 0;
   CreateAndStartURLLoader();
 }
 
@@ -135,7 +144,6 @@ void PreviewsProber::CreateAndStartURLLoader() {
   request->load_flags = net::LOAD_DISABLE_CACHE;
   request->allow_credentials = false;
 
-  // TODO(crbug/977603): Set retry options.
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   url_loader_->SetAllowHttpErrorResults(true);
@@ -145,6 +153,17 @@ void PreviewsProber::CreateAndStartURLLoader() {
       base::BindOnce(&PreviewsProber::OnURLLoadComplete,
                      base::Unretained(this)),
       1024);
+
+  // We don't use SimpleURLLoader's timeout functionality because it is not
+  // possible to test by PreviewsProberTest.
+  base::TimeDelta ttl = ComputeNextTimeDeltaForBackoff(
+      timeout_policy_.backoff, timeout_policy_.base_timeout,
+      successive_timeout_count_);
+  timeout_timer_ = std::make_unique<base::OneShotTimer>(tick_clock_);
+  // base::Unretained is safe because |timeout_timer_| is owned by this.
+  timeout_timer_->Start(FROM_HERE, ttl,
+                        base::BindOnce(&PreviewsProber::ProcessProbeTimeout,
+                                       base::Unretained(this)));
 }
 
 void PreviewsProber::OnURLLoadComplete(
@@ -160,7 +179,9 @@ void PreviewsProber::OnURLLoadComplete(
   bool was_successful =
       url_loader_->NetError() == net::OK && response_code == net::HTTP_OK;
 
+  timeout_timer_.reset();
   url_loader_.reset();
+  successive_timeout_count_ = 0;
 
   if (was_successful) {
     ProcessProbeSuccess();
@@ -169,9 +190,20 @@ void PreviewsProber::OnURLLoadComplete(
   ProcessProbeFailure();
 }
 
+void PreviewsProber::ProcessProbeTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(url_loader_);
+
+  url_loader_.reset();
+  successive_timeout_count_++;
+  ProcessProbeFailure();
+}
+
 void PreviewsProber::ProcessProbeFailure() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
+  DCHECK(!timeout_timer_ || !timeout_timer_->IsRunning());
+  DCHECK(!url_loader_);
   DCHECK(is_active_);
 
   last_probe_status_ = false;
@@ -197,11 +229,14 @@ void PreviewsProber::ProcessProbeFailure() {
 void PreviewsProber::ProcessProbeSuccess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
+  DCHECK(!timeout_timer_ || !timeout_timer_->IsRunning());
+  DCHECK(!url_loader_);
   DCHECK(is_active_);
 
   is_active_ = false;
   last_probe_status_ = true;
   successive_retry_count_ = 0;
+  successive_timeout_count_ = 0;
 }
 
 base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() const {

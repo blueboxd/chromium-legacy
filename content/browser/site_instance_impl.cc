@@ -194,8 +194,12 @@ RenderProcessHost* SiteInstanceImpl::GetDefaultProcessIfUsable() {
   return browsing_instance_->default_process();
 }
 
-bool SiteInstanceImpl::IsDefaultSiteInstance() {
+bool SiteInstanceImpl::IsDefaultSiteInstance() const {
   return browsing_instance_->IsDefaultSiteInstance(this);
+}
+
+bool SiteInstanceImpl::IsSiteInDefaultSiteInstance(const GURL& site_url) const {
+  return browsing_instance_->IsSiteInDefaultSiteInstance(site_url);
 }
 
 void SiteInstanceImpl::MaybeSetBrowsingInstanceDefaultProcess() {

@@ -26,6 +26,7 @@
  *   BASIC: (undefined|!settings.Route),
  *   BLUETOOTH: (undefined|!settings.Route),
  *   BLUETOOTH_DEVICES: (undefined|!settings.Route),
+ *   CAPTIONS: (undefined|!settings.Route),
  *   CERTIFICATES: (undefined|!settings.Route),
  *   CHANGE_PICTURE: (undefined|!settings.Route),
  *   CHROME_CLEANUP: (undefined|!settings.Route),
@@ -463,6 +464,20 @@ cr.define('settings', function() {
       // </if>
 
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+
+      // <if expr="chromeos or is_linux">
+      if (loadTimeData.getBoolean('enableCaptionSettings')) {
+        r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
+      }
+      // </if>
+
+      // <if expr="is_win">
+      if (loadTimeData.getBoolean('enableCaptionSettings') &&
+          !loadTimeData.getBoolean('isWindows10OrNewer')) {
+        r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
+      }
+      // </if>
+
       // <if expr="chromeos">
       r.MANAGE_ACCESSIBILITY =
           r.ACCESSIBILITY.createChild('/manageAccessibility');

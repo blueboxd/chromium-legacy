@@ -84,6 +84,8 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
   CHECK(load_time_data);
 
   PopulateStringsForSharedHTML(load_time_data);
+  security_interstitials::common_string_util::PopulateDarkModeDisplaySetting(
+      load_time_data);
 
   load_time_data->SetString(
       "tabTitle",

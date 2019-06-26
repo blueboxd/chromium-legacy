@@ -1676,7 +1676,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   // Verify MIME type was classified correctly.
   ASSERT_TRUE(document_blocker_->has_response_started_);
   EXPECT_EQ(scenario.canonical_mime_type,
-            document_blocker_->analyzer_->canonical_mime_type());
+            document_blocker_->analyzer_->canonical_mime_type_for_testing());
 
   // Verify that we will sniff content into a different buffer if sniffing is
   // needed.  Note that the different buffer is used even for blocking cases
@@ -2106,7 +2106,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, MimeSnifferInterop) {
   // CrossSiteDocumentResourceHandler's behavior.
   ASSERT_TRUE(document_blocker_->has_response_started_);
   EXPECT_EQ(scenario.canonical_mime_type,
-            document_blocker_->analyzer_->canonical_mime_type());
+            document_blocker_->analyzer_->canonical_mime_type_for_testing());
   EXPECT_EQ(expected_to_sniff, document_blocker_->analyzer_->needs_sniffing());
   ASSERT_EQ(expected_to_block_based_on_headers,
             document_blocker_->should_block_based_on_headers_);

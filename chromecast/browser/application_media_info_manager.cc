@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/browser/cast_renderer_block_data.h"
+#include "content/public/browser/web_contents.h"
 
 #include <utility>
 
@@ -28,12 +30,39 @@ ApplicationMediaInfoManager::ApplicationMediaInfoManager(
     bool mixer_audio_enabled)
     : FrameServiceBase(render_frame_host, std::move(request)),
       application_session_id_(std::move(application_session_id)),
-      mixer_audio_enabled_(mixer_audio_enabled) {}
+      mixer_audio_enabled_(mixer_audio_enabled),
+      renderer_blocked_(false) {
+  shell::CastRendererBlockData::SetApplicationMediaInfoManagerForWebContents(
+      content::WebContents::FromRenderFrameHost(render_frame_host), this);
+}
 
 ApplicationMediaInfoManager::~ApplicationMediaInfoManager() = default;
 
+void ApplicationMediaInfoManager::SetRendererBlock(bool renderer_blocked) {
+  LOG(INFO) << "Setting blocked to: " << renderer_blocked << " from "
+            << renderer_blocked_
+            << "(Pending call set: " << (!pending_call_.is_null()) << ")";
+  if (renderer_blocked_ && !renderer_blocked && pending_call_) {
+    // Move callbacks in case CanStartRenderer() is called.
+    std::move(pending_call_)
+        .Run(::media::mojom::CastApplicationMediaInfo::New(
+            application_session_id_, mixer_audio_enabled_));
+    pending_call_.Reset();
+  }
+
+  renderer_blocked_ = renderer_blocked;
+}
+
 void ApplicationMediaInfoManager::GetCastApplicationMediaInfo(
     GetCastApplicationMediaInfoCallback callback) {
+  LOG(INFO) << "GetCastApplicationMediaInfo called with blocked: "
+            << renderer_blocked_;
+  if (renderer_blocked_) {
+    DCHECK(!pending_call_);
+    pending_call_ = std::move(callback);
+    return;
+  }
+
   std::move(callback).Run(::media::mojom::CastApplicationMediaInfo::New(
       application_session_id_, mixer_audio_enabled_));
 }

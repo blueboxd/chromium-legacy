@@ -60,6 +60,21 @@ class PreviewsProber {
     bool use_random_urls = false;
   };
 
+  struct TimeoutPolicy {
+    TimeoutPolicy();
+    TimeoutPolicy(const TimeoutPolicy& other);
+    ~TimeoutPolicy();
+
+    // How to compute the TTL of probes.
+    Backoff backoff = Backoff::kLinear;
+
+    // The TTL base value. For example,
+    //   LINEAR: Each probe times out in |base_timeout|.
+    //   EXPONENTIAL: Each probe times out in
+    //                (|base_timeout| * 2 ^ |successive_timeout_count_|).
+    base::TimeDelta base_timeout = base::TimeDelta::FromSeconds(60);
+  };
+
   enum class HttpMethod {
     kGet,
     kHead,
@@ -70,7 +85,8 @@ class PreviewsProber {
       const std::string& name,
       const GURL& url,
       HttpMethod http_method,
-      const RetryPolicy& retry_policy);
+      const RetryPolicy& retry_policy,
+      const TimeoutPolicy& timeout_policy);
   ~PreviewsProber();
 
   // Sends a probe now if the prober is currently inactive. If the probe is
@@ -91,11 +107,13 @@ class PreviewsProber {
       const GURL& url,
       HttpMethod http_method,
       const RetryPolicy& retry_policy,
+      const TimeoutPolicy& timeout_policy,
       const base::TickClock* tick_clock);
 
  private:
   void CreateAndStartURLLoader();
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
+  void ProcessProbeTimeout();
   void ProcessProbeFailure();
   void ProcessProbeSuccess();
 
@@ -112,14 +130,23 @@ class PreviewsProber {
   // The retry policy to use in this prober.
   const RetryPolicy retry_policy_;
 
+  // The timeout policy to use in this prober.
+  const TimeoutPolicy timeout_policy_;
+
   // The number of retries that have been attempted. This count does not include
   // the original probe.
   size_t successive_retry_count_;
 
+  // The number of timeouts that have occurred.
+  size_t successive_timeout_count_;
+
   // If a retry is being attempted, this will be running until the next attempt.
   std::unique_ptr<base::OneShotTimer> retry_timer_;
 
-  // The tick clock used for |retry_timer_|.
+  // If a probe is being attempted, this will be running until the TTL.
+  std::unique_ptr<base::OneShotTimer> timeout_timer_;
+
+  // The tick clock used within this class.
   const base::TickClock* tick_clock_;
 
   // Whether the prober is currently sending probes.

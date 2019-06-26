@@ -828,6 +828,10 @@ uint64_t WebMediaPlayerMS::VideoDecodedByteCount() const {
   return 0;
 }
 
+bool WebMediaPlayerMS::HasAvailableVideoFrame() const {
+  return has_first_frame_;
+}
+
 void WebMediaPlayerMS::OnFrameHidden() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // This method is called when the RenderFrame is sent to background or
@@ -1072,6 +1076,7 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  has_first_frame_ = true;
   OnRotationChanged(video_rotation);
   OnOpacityChanged(is_opaque);
 

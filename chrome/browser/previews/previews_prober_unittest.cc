@@ -28,12 +28,14 @@ class TestPreviewsProber : public PreviewsProber {
       const GURL& url,
       const HttpMethod http_method,
       const RetryPolicy& retry_policy,
+      const TimeoutPolicy& timeout_policy,
       const base::TickClock* tick_clock)
       : PreviewsProber(url_loader_factory,
                        name,
                        url,
                        http_method,
                        retry_policy,
+                       timeout_policy,
                        tick_clock) {}
 };
 
@@ -47,17 +49,21 @@ class PreviewsProberTest : public testing::Test {
                 &test_url_loader_factory_)) {}
 
   std::unique_ptr<PreviewsProber> NewProber() {
-    return std::make_unique<TestPreviewsProber>(
-        test_shared_loader_factory_, kName, kTestUrl,
-        PreviewsProber::HttpMethod::kGet, PreviewsProber::RetryPolicy(),
-        scoped_task_environment_.GetMockTickClock());
+    return NewProberWithPolicies(PreviewsProber::RetryPolicy(),
+                                 PreviewsProber::TimeoutPolicy());
   }
 
   std::unique_ptr<PreviewsProber> NewProberWithRetryPolicy(
       const PreviewsProber::RetryPolicy& retry_policy) {
+    return NewProberWithPolicies(retry_policy, PreviewsProber::TimeoutPolicy());
+  }
+
+  std::unique_ptr<PreviewsProber> NewProberWithPolicies(
+      const PreviewsProber::RetryPolicy& retry_policy,
+      const PreviewsProber::TimeoutPolicy& timeout_policy) {
     return std::make_unique<TestPreviewsProber>(
         test_shared_loader_factory_, kName, kTestUrl,
-        PreviewsProber::HttpMethod::kGet, retry_policy,
+        PreviewsProber::HttpMethod::kGet, retry_policy, timeout_policy,
         scoped_task_environment_.GetMockTickClock());
   }
 
@@ -250,6 +256,78 @@ TEST_F(PreviewsProberTest, RetryExponential) {
   FastForward(base::TimeDelta::FromMilliseconds(1));
   VerifyRequest();
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, TimeoutLinear) {
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 1;
+  retry_policy.base_interval = base::TimeDelta::FromMilliseconds(10);
+
+  PreviewsProber::TimeoutPolicy timeout_policy;
+  timeout_policy.backoff = PreviewsProber::Backoff::kLinear;
+  timeout_policy.base_timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  std::unique_ptr<PreviewsProber> prober =
+      NewProberWithPolicies(retry_policy, timeout_policy);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  // First attempt.
+  prober->SendNowIfInactive();
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyNoRequests();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  // Fast forward to the start of the next attempt.
+  FastForward(base::TimeDelta::FromMilliseconds(10));
+
+  // Second attempt should have the same timeout.
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyNoRequests();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, TimeoutExponential) {
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 1;
+  retry_policy.base_interval = base::TimeDelta::FromMilliseconds(10);
+
+  PreviewsProber::TimeoutPolicy timeout_policy;
+  timeout_policy.backoff = PreviewsProber::Backoff::kExponential;
+  timeout_policy.base_timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  std::unique_ptr<PreviewsProber> prober =
+      NewProberWithPolicies(retry_policy, timeout_policy);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  // First attempt.
+  prober->SendNowIfInactive();
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyNoRequests();
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  // Fast forward to the start of the next attempt.
+  FastForward(base::TimeDelta::FromMilliseconds(10));
+
+  // Second attempt should have a 2s timeout.
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(1999));
+  VerifyRequest();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyNoRequests();
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 }

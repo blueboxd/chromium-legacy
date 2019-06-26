@@ -6,3 +6,4 @@
 
 constexpr char kIncognitoSwitch[] = "incognito";
 constexpr char kRemoteDebuggerHandles[] = "remote-debugger-handles";
+constexpr char kUserAgentProductAndVersion[] = "user-agent-product";

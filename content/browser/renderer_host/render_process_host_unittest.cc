@@ -197,14 +197,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseUnmatchedServiceWorkerProcess) {
   // the newest unmatched service worker's process (i.e., sw_host2).
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(site_instance1->IsDefaultSiteInstance());
-    // TODO(acolwell): Remove once CreateForServiceWorker() can return a
-    // default SiteInstance.
-    EXPECT_NE(sw_host2, site_instance1->GetProcess());
-  } else {
-    EXPECT_EQ(sw_host2, site_instance1->GetProcess());
-  }
+  EXPECT_EQ(sw_host2, site_instance1->GetProcess());
 
   // Getting a RenderProcessHost for a navigation to the same site must reuse
   // the newest unmatched service worker's process (i.e., sw_host1). sw_host2
@@ -212,25 +205,14 @@ TEST_F(RenderProcessHostUnitTest, ReuseUnmatchedServiceWorkerProcess) {
   // with a corresponding unmatched service worker.
   scoped_refptr<SiteInstanceImpl> site_instance2 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(site_instance2->IsDefaultSiteInstance());
-    // TODO(acolwell): Remove once CreateForServiceWorker() can return a
-    // default SiteInstance.
-    EXPECT_NE(sw_host1, site_instance2->GetProcess());
-  } else {
-    EXPECT_EQ(sw_host1, site_instance2->GetProcess());
-  }
+  EXPECT_EQ(sw_host1, site_instance2->GetProcess());
 
   // Getting a RenderProcessHost for a navigation should return a new process
   // because there is no unmatched service worker's process.
   scoped_refptr<SiteInstanceImpl> site_instance3 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(site_instance3->IsDefaultSiteInstance());
-  } else {
-    EXPECT_NE(sw_host1, site_instance3->GetProcess());
-    EXPECT_NE(sw_host2, site_instance3->GetProcess());
-  }
+  EXPECT_NE(sw_host1, site_instance3->GetProcess());
+  EXPECT_NE(sw_host2, site_instance3->GetProcess());
 }
 
 class UnsuitableHostContentBrowserClient : public ContentBrowserClient {
@@ -322,14 +304,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseServiceWorkerProcessForServiceWorker) {
   // the newest unmatched service worker's process (i.e., sw_host2).
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(site_instance1->IsDefaultSiteInstance());
-    // TODO(acolwell): Remove once CreateForServiceWorker() can return
-    // a default SiteInstance.
-    EXPECT_NE(sw_host2, site_instance1->GetProcess());
-  } else {
-    EXPECT_EQ(sw_host2, site_instance1->GetProcess());
-  }
+  EXPECT_EQ(sw_host2, site_instance1->GetProcess());
 
   // Getting a RenderProcessHost for a navigation to the same site must reuse
   // the newest unmatched service worker's process (i.e., sw_host1). sw_host2
@@ -337,14 +312,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseServiceWorkerProcessForServiceWorker) {
   // with a corresponding unmatched service worker.
   scoped_refptr<SiteInstanceImpl> site_instance2 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(site_instance2->IsDefaultSiteInstance());
-    // TODO(acolwell): Remove once CreateForServiceWorker() can return
-    // a default SiteInstance.
-    EXPECT_NE(sw_host1, site_instance2->GetProcess());
-  } else {
-    EXPECT_EQ(sw_host1, site_instance2->GetProcess());
-  }
+  EXPECT_EQ(sw_host1, site_instance2->GetProcess());
 }
 
 TEST_F(RenderProcessHostUnitTest,
@@ -370,28 +338,14 @@ TEST_F(RenderProcessHostUnitTest,
   scoped_refptr<SiteInstanceImpl> sw_site_instance3 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   RenderProcessHost* sw_host3 = sw_site_instance3->GetProcess();
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(sw_site_instance3->IsDefaultSiteInstance());
-    // TODO(acolwell: Remove once CreateForServiceWorker() can return a
-    // default SiteInstance.
-    EXPECT_NE(sw_host1, sw_host3);
-  } else {
-    EXPECT_EQ(sw_host1, sw_host3);
-  }
+  EXPECT_EQ(sw_host1, sw_host3);
 
   // Getting a RenderProcessHost for a navigation to the same site again with
   // process-per-site flag should reuse the unmatched service worker's process.
   scoped_refptr<SiteInstanceImpl> sw_site_instance4 =
       SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   RenderProcessHost* sw_host4 = sw_site_instance4->GetProcess();
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(sw_site_instance4->IsDefaultSiteInstance());
-    // TODO(acolwell: Remove once CreateForServiceWorker() can return a
-    // default SiteInstance.
-    EXPECT_NE(sw_host1, sw_host4);
-  } else {
-    EXPECT_EQ(sw_host1, sw_host4);
-  }
+  EXPECT_EQ(sw_host1, sw_host4);
 }
 
 TEST_F(RenderProcessHostUnitTest, DoNotReuseOtherSiteServiceWorkerProcess) {

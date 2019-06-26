@@ -387,7 +387,7 @@ bool HTMLVideoElement::IsPersistent() const {
 }
 
 void HTMLVideoElement::UpdateDisplayState() {
-  if (PosterImageURL().IsEmpty())
+  if (PosterImageURL().IsEmpty() || HasAvailableVideoFrame())
     SetDisplayMode(kVideo);
   else if (GetDisplayMode() < kPoster)
     SetDisplayMode(kPoster);
@@ -516,13 +516,9 @@ bool HTMLVideoElement::PrepareVideoFrameForWebGL(
 }
 
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
-  if (!GetWebMediaPlayer())
-    return false;
-
-  // The ready state maximum is used here instead of the current ready state
-  // since a frame is still available during a seek.
-  return GetWebMediaPlayer()->HasVideo() &&
-         ready_state_maximum_ >= kHaveCurrentData;
+  if (auto* wmp = GetWebMediaPlayer())
+    return wmp->HasAvailableVideoFrame();
+  return false;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen() {

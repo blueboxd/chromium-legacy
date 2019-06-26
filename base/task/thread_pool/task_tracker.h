@@ -281,12 +281,16 @@ class BASE_EXPORT TaskTracker {
   // blocking tasks. Intentionally leaked.
   // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
   // these.
-  static constexpr int kNumTaskPriorities =
-      static_cast<int>(TaskPriority::HIGHEST) + 1;
-  HistogramBase* const task_latency_histograms_[kNumTaskPriorities][2];
-  HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities][2];
+  static constexpr auto kNumTaskPriorities =
+      static_cast<TaskPriorityType>(TaskPriority::HIGHEST) + 1;
+  static constexpr TaskPriorityType kNumBlockingModes = 2;
+  HistogramBase* const task_latency_histograms_[kNumTaskPriorities]
+                                               [kNumBlockingModes];
+  HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities]
+                                                    [kNumBlockingModes];
   HistogramBase* const
-      num_tasks_run_while_queuing_histograms_[kNumTaskPriorities][2];
+      num_tasks_run_while_queuing_histograms_[kNumTaskPriorities]
+                                             [kNumBlockingModes];
 
   // Ensures all state (e.g. dangling cleaned up workers) is coalesced before
   // destroying the TaskTracker (e.g. in test environments).

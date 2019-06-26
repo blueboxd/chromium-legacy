@@ -82,6 +82,8 @@ cast_source_set("browser") {
     "cast_permission_manager.h",
     "cast_quota_permission_context.cc",
     "cast_quota_permission_context.h",
+    "cast_renderer_block_data.cc",
+    "cast_renderer_block_data.h",
     "cast_resource_dispatcher_host_delegate.cc",
     "cast_resource_dispatcher_host_delegate.h",
     "cast_session_id_map.cc",
@@ -502,6 +504,7 @@ cast_source_set("unittests") {
   testonly = true
 
   sources = [
+    "application_media_info_manager_unittest.cc",
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
     "cast_network_delegate_unittest.cc",

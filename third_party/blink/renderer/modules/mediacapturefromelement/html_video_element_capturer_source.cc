@@ -127,7 +127,6 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const blink::WebSize resolution = web_media_player_->NaturalSize();
 
   if (!canvas_ || is_opaque_ != web_media_player_->IsOpaque()) {
-    LOG(ERROR) << " Change in opacity !!!";
     is_opaque_ = web_media_player_->IsOpaque();
     if (!bitmap_.tryAllocPixels(SkImageInfo::MakeN32(
             resolution.width, resolution.height,

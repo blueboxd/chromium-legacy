@@ -5984,7 +5984,6 @@ crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pa
 crbug.com/949167 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Pass Timeout ]
 crbug.com/949207 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Pass Timeout ]
 crbug.com/949440 [ Mac10.13 Debug ] http/tests/devtools/layers/layers-panel-mouse-events.js [ Pass Crash ]
-crbug.com/949440 [ Mac10.13 Debug ] http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Crash ]
 crbug.com/949442 [ Mac10.13 Debug ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
 crbug.com/949442 [ Mac10.13 Debug ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
 crbug.com/949443 [ Mac10.13 Debug ] fast/block/inline-children-root-linebox-crash.html [ Pass Crash ]
@@ -6217,3 +6216,5 @@ crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-negative.
 crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-codecs-parameter.html [ Failure ]
 
 crbug.com/978587 external/wpt/largest-contentful-paint/observe-image.html [ Pass Failure ]
+
+crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]

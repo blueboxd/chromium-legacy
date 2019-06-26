@@ -36,8 +36,7 @@ namespace {
 
 enum class CompositorImplMode {
   kNormal,
-  kViz,
-  kVizSkDDL,
+  kSkiaRenderer,
 };
 
 class CompositorImplBrowserTest
@@ -52,14 +51,8 @@ class CompositorImplBrowserTest
     switch (GetParam()) {
       case CompositorImplMode::kNormal:
         break;
-      case CompositorImplMode::kViz:
-        features =
-            std::vector<base::Feature>({features::kVizDisplayCompositor});
-        break;
-      case CompositorImplMode::kVizSkDDL:
-        features = std::vector<base::Feature>(
-            {features::kVizDisplayCompositor, features::kUseSkiaRenderer,
-             features::kDefaultEnableOopRasterization});
+      case CompositorImplMode::kSkiaRenderer:
+        features = std::vector<base::Feature>({features::kUseSkiaRenderer});
         break;
     }
 
@@ -107,8 +100,7 @@ class CompositorImplBrowserTest
 INSTANTIATE_TEST_SUITE_P(P,
                          CompositorImplBrowserTest,
                          ::testing::Values(CompositorImplMode::kNormal,
-                                           CompositorImplMode::kViz,
-                                           CompositorImplMode::kVizSkDDL));
+                                           CompositorImplMode::kSkiaRenderer));
 
 class CompositorImplLowEndBrowserTest : public CompositorImplBrowserTest {
  public:
@@ -119,9 +111,6 @@ class CompositorImplLowEndBrowserTest : public CompositorImplBrowserTest {
   }
 };
 
-// Viz on android is not yet compatible with in-process GPU. Only run in
-// kNormal mode.
-// TODO(ericrk): Make this work everywhere. https://crbug.com/851643
 INSTANTIATE_TEST_SUITE_P(P,
                          CompositorImplLowEndBrowserTest,
                          ::testing::Values(CompositorImplMode::kNormal));
@@ -266,7 +255,7 @@ IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTest,
                        CompositorImplReceivesSwapCallbacks) {
   // OOP-R is required for this test to succeed with SkDDL, but is disabled on
   // Android L and lower.
-  if (GetParam() == CompositorImplMode::kVizSkDDL &&
+  if (GetParam() == CompositorImplMode::kSkiaRenderer &&
       base::android::BuildInfo::GetInstance()->sdk_int() <
           base::android::SDK_VERSION_MARSHMALLOW) {
     return;
@@ -307,7 +296,7 @@ IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTestRefreshRate, VideoPreference) {
 
 INSTANTIATE_TEST_SUITE_P(P,
                          CompositorImplBrowserTestRefreshRate,
-                         ::testing::Values(CompositorImplMode::kViz));
+                         ::testing::Values(CompositorImplMode::kNormal));
 
 }  // namespace
 }  // namespace content

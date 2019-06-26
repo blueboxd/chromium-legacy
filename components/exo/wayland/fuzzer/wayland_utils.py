@@ -81,7 +81,7 @@ def IsDestructor(message):
   Returns:
     True if the message has the type='destructor' attribute, false otherwise.
   """
-  return message.attrib.get('type') == 'destructor'
+  return message.get('type') == 'destructor'
 
 
 def GetConstructedInterface(message):
@@ -100,7 +100,7 @@ def GetConstructedInterface(message):
   cons_arg = GetConstructorArg(message)
   if cons_arg is None:
     return None
-  return cons_arg.attrib.get('interface')
+  return cons_arg.get('interface')
 
 
 def NeedsListener(interface):

@@ -48,7 +48,7 @@ def GetDependencyGraph(protocols):
   constructed_interfaces = set()
   for _, i, m in wlu.AllMessages(protocols):
     dep_graph[ToNode(i, m)] = [('receiver', i.attrib['name'])] + [
-        (a.attrib['name'], a.attrib.get('interface', '?'))
+        (a.attrib['name'], a.get('interface', '?'))
         for a in m.findall('arg')
         if a.attrib['type'] == 'object'
     ]

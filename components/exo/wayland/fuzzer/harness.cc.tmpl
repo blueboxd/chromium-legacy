@@ -4,7 +4,6 @@
 
 #include "components/exo/wayland/fuzzer/harness.h"
 
-#include <wayland-util.h>
 {% for protocol in protocol_names %}
   {% if protocol == 'wayland' %}
     #include <wayland-client-core.h>
@@ -28,13 +27,13 @@ namespace wayland_fuzzer {
   {% for event in interface.events %}
     void {{event.name}}(
       void* data,
-      ::{{interface.name}}* receiver
+      {{interface.cpp_type}} receiver
       {% for arg in event.args %}
         , {{arg.cpp_type}} {{arg.name}}
       {% endfor %}
     );
   {% endfor %}
-  static const ::{{interface.name}}_listener kListener = {
+  static const struct {{interface.name}}_listener kListener = {
     {% for event in interface.events %}
       {{event.name}},
     {% endfor %}
@@ -48,7 +47,7 @@ namespace wayland_fuzzer {
   {% for event in interface.events %}
     void {{event.name}}(
       void* data,
-      ::{{interface.name}}* receiver
+      {{interface.cpp_type}} receiver
       {% for arg in event.args %}
         , {{arg.cpp_type}} {{arg.name}}
       {% endfor %}
@@ -68,7 +67,7 @@ namespace wayland_fuzzer {
   {% for request in interface.requests %}
     void {{request.name}}(Harness* harness,
         const actions::{{interface.name}}_{{request.name}}& action) {
-      ::{{interface.name}}* receiver = harness->get_{{interface.name}}(action.receiver());
+      {{interface.cpp_type}} receiver = harness->get_{{interface.name}}(action.receiver());
       if (!receiver)
         return;
       {% for arg in request.args %}
@@ -80,15 +79,24 @@ namespace wayland_fuzzer {
           {% endif %}
         {% elif arg.type == 'fd' %}
           int {{arg.name}} = harness->GetFileDescriptor(action.{{arg.name}}());
+        {% elif arg.type == 'array' %}
+          wl_array {{arg.name}}{
+            /*size=*/action.{{arg.name}}().size(),
+            /*alloc=*/action.{{arg.name}}().capacity(),
+            /*data=*/const_cast<char*>(action.{{arg.name}}().data())
+          };
         {% endif %}
       {% endfor %}
-      {% if request.is_constructor %}
-        ::{{request.constructed}}* new_object =
-      {% endif %}
-      {{interface.name}}_{{request.name}}(receiver
+
+      // Invoke the wayland method.  We need ::method_name in order to
+      // disambiguate methods which might collide with
+      // interface/namespace names.
+      {% if request.is_constructor %} struct {{request.constructed}}* new_object = {% endif %}::{{interface.name}}_{{request.name}}(receiver
         {% for arg in request.args %}
           {% if arg.type == 'object' or arg.type == 'fd' %}
             , {{arg.name}}
+          {% elif arg.type == 'array' %}
+            , &{{arg.name}}
           {% elif arg.type != 'new_id' %}
             , action.{{arg.name}}(){% if arg.type == 'string' %}.c_str(){% endif %}
           {% endif %}
@@ -110,7 +118,7 @@ namespace wayland_fuzzer {
 namespace wl_registry {
 
 void bind(Harness* harness, const actions::wl_registry_bind& action) {
-  ::wl_registry* receiver = harness->get_wl_registry(action.receiver());
+  struct wl_registry* receiver = harness->get_wl_registry(action.receiver());
   if (!receiver)
     return;
   switch (action.global()) {
@@ -137,7 +145,7 @@ void bind(Harness* harness, const actions::wl_registry_bind& action) {
 }
 
 void global(void* data,
-            ::wl_registry* registry,
+            struct wl_registry* registry,
             uint32_t name,
             const char* interface,
             uint32_t version) {
@@ -152,7 +160,7 @@ void global(void* data,
 
 }  // namespace wl_registry
 
-void wl_registry::global_remove(void* data, ::wl_registry* registry, uint32_t name) {}
+void wl_registry::global_remove(void* data, struct wl_registry* registry, uint32_t name) {}
 
 Harness::Harness() {
   wl_display_list_.emplace_back(wl_display_connect(nullptr));

@@ -12,33 +12,53 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
+import os
 
 import jinja2
 import wayland_utils as wlu
 
 proto_type_conversions = {
-    'object': 'small_value',
-    'int': 'int32',
-    'uint': 'uint32',
-    'string': 'string',
+    'array': 'bytes',
+    'fixed': 'double',
     'fd': 'small_value',
+    'int': 'int32',
+    'new_id': None,
+    'object': 'small_value',
+    'string': 'string',
+    'uint': 'uint32',
 }
 
 cpp_type_conversions = {
-    'int': 'int32_t',
-    'uint': 'uint32_t',
-    'fixed': 'wl_fixed_t',
-    'string': 'const char*',
     'array': 'struct wl_array*',
     'fd': 'int',
+    'fixed': 'wl_fixed_t',
+    'int': 'int32_t',
+    'string': 'const char*',
+    'uint': 'uint32_t',
 }
+
+
+def GetCppPtrType(interface_name):
+  """Returns the c++ type associated with interfaces of the given name.
+
+  Args:
+    interface_name: the name of the interface you want the type for, or None.
+
+  Returns:
+    the c++ type which wayland will generate for this interface, or void* if
+    the interface_name is none. We use "struct foo*" due to a collision between
+    typenames and function names (specifically, wp_presentation has a feedback()
+    method and there is also a wp_presentation_feedback interface).
+  """
+  if not interface_name:
+    return 'void*'
+  return 'struct ' + interface_name + '*'
 
 
 def GetCppType(arg):
   ty = arg.attrib['type']
   if ty in ['object', 'new_id']:
-    return ('::' if 'interface' in arg.attrib else '') + arg.attrib.get(
-        'interface', 'void') + '*'
+    return GetCppPtrType(arg.get('interface'))
   return cpp_type_conversions[ty]
 
 
@@ -80,10 +100,10 @@ def GetArg(arg):
   return {
       'name': arg.attrib['name'],
       'type': ty,
-      'nullable': arg.attrib.get('allow-null', 'false') == 'true',
-      'proto_type': proto_type_conversions.get(ty),
+      'nullable': arg.get('allow-null', 'false') == 'true',
+      'proto_type': proto_type_conversions[ty],
       'cpp_type': GetCppType(arg),
-      'interface': arg.attrib.get('interface'),
+      'interface': arg.get('interface'),
   }
 
 
@@ -114,6 +134,8 @@ def GetInterface(interface, context):
           name,
       'idx':
           context.GetAndIncrementCount('interface_index'),
+      'cpp_type':
+          GetCppPtrType(name),
       'is_global':
           name not in context.non_global_names,
       'events': [GetMessage(m, context) for m in interface.findall('event')],
@@ -132,9 +154,11 @@ def GetTemplateData(protocol_paths):
   for p in protocols:
     for i in p.findall('interface'):
       interfaces.append(GetInterface(i, context))
+  assert all(p.endswith(".xml") for p in protocol_paths)
   return {
-      'protocol_names': [p.attrib['name'] for p in protocols],
-      'interfaces': interfaces,
+      'protocol_names': [str(os.path.basename(p))[:-4] for p in protocol_paths],
+      'interfaces':
+          interfaces,
   }
 
 

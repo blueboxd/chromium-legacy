@@ -181,7 +181,7 @@ void WebSocketHandleImpl::OnAddChannelResponse(
 void WebSocketHandleImpl::OnDataFrame(
     bool fin,
     network::mojom::blink::WebSocketMessageType type,
-    const Vector<uint8_t>& data) {
+    base::span<const uint8_t> data) {
   NETWORK_DVLOG(1) << this << " OnDataFrame(" << fin << ", " << type << ", "
                    << "(data size = " << data.size() << "))";
   if (!client_)
@@ -201,7 +201,7 @@ void WebSocketHandleImpl::OnDataFrame(
       break;
   }
   const char* data_to_pass =
-      reinterpret_cast<const char*>(data.IsEmpty() ? nullptr : &data[0]);
+      reinterpret_cast<const char*>(data.empty() ? nullptr : data.data());
   client_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data.size());
   // |this| can be deleted here.
 }

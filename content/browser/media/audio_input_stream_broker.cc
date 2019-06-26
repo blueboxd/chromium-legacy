@@ -131,6 +131,9 @@ AudioInputStreamBroker::~AudioInputStreamBroker() {
   TRACE_EVENT_NESTABLE_ASYNC_END1("audio", "AudioInputStreamBroker", this,
                                   "disconnect reason",
                                   static_cast<uint32_t>(disconnect_reason_));
+
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamBrokerDisconnectReason",
+                            disconnect_reason_);
 }
 
 void AudioInputStreamBroker::CreateStream(

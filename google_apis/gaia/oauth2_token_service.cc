@@ -45,7 +45,8 @@ const OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 
-const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
+const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
+                         true>::Unchecked&
 OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
   return token_manager_->diagnostics_observer_list_;
 }
@@ -63,12 +64,12 @@ void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
 }
 
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
-    AccessTokenDiagnosticsObserver* observer) {
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
   token_manager_->AddDiagnosticsObserver(observer);
 }
 
 void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
-    AccessTokenDiagnosticsObserver* observer) {
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
   token_manager_->RemoveDiagnosticsObserver(observer);
 }
 

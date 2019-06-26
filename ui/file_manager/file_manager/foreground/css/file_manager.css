@@ -1259,10 +1259,6 @@ body[type='full-page'] .detail-name .detail-icon {
   background-color: rgba(51, 103, 214, 0.2);
 }
 
-body.check-select .thumbnail-grid:focus .thumbnail-item[lead] {
-  outline: 1px solid rgba(51, 103, 214, 0.5);
-}
-
 .thumbnail-grid .checkmark {
   background-position: center;
   background-repeat: no-repeat;

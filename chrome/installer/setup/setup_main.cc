@@ -258,8 +258,15 @@ bool UncompressAndPatchChromeArchive(
     installer::InstallStatus* install_status,
     const base::Version& previous_version) {
   installer_state.SetStage(installer::UNCOMPRESSING);
-  base::TimeTicks start_time = base::TimeTicks::Now();
 
+  // UMA tells us the following about the time required for uncompression as of
+  // M75:
+  // --- Foreground (<10%) ---
+  //   Full archive: 7.5s (50%ile) / 52s (99%ile)
+  //   Archive patch: <2s (50%ile) / 10-20s (99%ile)
+  // --- Background (>90%) ---
+  //   Full archive: 22s (50%ile) / >3m (99%ile)
+  //   Archive patch: ~2s (50%ile) / 1.5m - >3m (99%ile)
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
     installer_state.WriteInstallerResult(*install_status,
@@ -267,38 +274,12 @@ bool UncompressAndPatchChromeArchive(
                                          NULL);
     return false;
   }
-  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-
-  bool has_full_archive = base::PathExists(archive_helper->target());
-  if (installer_state.is_background_mode()) {
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.HasArchivePatch.background",
-                          !has_full_archive);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.HasArchivePatch", !has_full_archive);
-  }
 
   // Short-circuit if uncompression produced the uncompressed archive rather
   // than a patch file.
-  if (has_full_archive) {
+  if (base::PathExists(archive_helper->target())) {
     *archive_type = installer::FULL_ARCHIVE_TYPE;
-    // Uncompression alone hopefully takes less than 3 minutes even on slow
-    // machines.
-    if (installer_state.is_background_mode()) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Setup.Install.UncompressFullArchiveTime.background", elapsed_time);
-    } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
-          "Setup.Install.UncompressFullArchiveTime", elapsed_time);
-    }
     return true;
-  }
-
-  if (installer_state.is_background_mode()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Setup.Install.UncompressArchivePatchTime.background", elapsed_time);
-  } else {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Setup.Install.UncompressArchivePatchTime", elapsed_time);
   }
 
   // Find the installed version's archive to serve as the source for patching.
@@ -315,25 +296,17 @@ bool UncompressAndPatchChromeArchive(
   }
   archive_helper->set_patch_source(patch_source);
 
-  // Patch application sometimes takes a very long time, so use 100 buckets for
-  // up to an hour.
-  start_time = base::TimeTicks::Now();
+  // UMA tells us the following about the time required for patching as of M75:
+  // --- Foreground ---
+  //   12s (50%ile) / 3-6m (99%ile)
+  // --- Background ---
+  //   1m (50%ile) / >60m (99%ile)
   installer_state.SetStage(installer::PATCHING);
   if (!archive_helper->ApplyPatch()) {
     *install_status = installer::APPLY_DIFF_PATCH_FAILED;
     installer_state.WriteInstallerResult(
         *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
     return false;
-  }
-
-  // Record patch time only if it was successful.
-  elapsed_time = base::TimeTicks::Now() - start_time;
-  if (installer_state.is_background_mode()) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Setup.Install.ApplyArchivePatchTime.background", elapsed_time);
-  } else {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Setup.Install.ApplyArchivePatchTime", elapsed_time);
   }
 
   *archive_type = installer::INCREMENTAL_ARCHIVE_TYPE;
@@ -676,8 +649,7 @@ installer::InstallStatus InstallProducts(
   // normal process priority class. This is done here because InstallProducts-
   // Helper has read-only access to the state and because the action also
   // affects everything else that runs below.
-  bool entered_background_mode = installer::AdjustProcessPriority();
-  installer_state->set_background_mode(entered_background_mode);
+  const bool entered_background_mode = installer::AdjustProcessPriority();
   VLOG_IF(1, entered_background_mode) << "Entered background processing mode.";
 
   if (CheckPreInstallConditions(original_state, *installer_state,
@@ -1124,8 +1096,12 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   }
 
   // Unpack the uncompressed archive.
+  // UMA tells us the following about the time required to unpack as of M75:
+  // --- Foreground ---
+  //   <2.7s (50%ile) / 45s (99%ile)
+  // --- Background ---
+  //   ~14s (50%ile) / >3m (99%ile)
   installer_state.SetStage(UNPACKING);
-  base::TimeTicks start_time = base::TimeTicks::Now();
   UnPackStatus unpack_status = UNPACK_NO_ERROR;
   int32_t ntstatus = 0;
   DWORD lzma_result = UnPackArchive(uncompressed_archive, unpack_path, NULL,
@@ -1138,15 +1114,6 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
         NULL);
     return UNPACKING_FAILED;
-  }
-
-  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
-  if (installer_state.is_background_mode()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Setup.Install.UnpackFullArchiveTime.background", elapsed_time);
-  } else {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Setup.Install.UnpackFullArchiveTime", elapsed_time);
   }
 
   VLOG(1) << "unpacked to " << unpack_path.value();

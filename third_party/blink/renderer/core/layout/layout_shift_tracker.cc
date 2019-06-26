@@ -422,10 +422,10 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   return value;
 }
 
-std::vector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
+WebVector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
     const Vector<IntRect>& int_rects,
     double granularity_scale) {
-  std::vector<gfx::Rect> rects;
+  WebVector<gfx::Rect> rects;
   for (const IntRect& rect : int_rects) {
     gfx::Rect r = gfx::Rect(
         rect.X() / granularity_scale, rect.Y() / granularity_scale,
@@ -451,7 +451,7 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
     if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
-      std::vector<gfx::Rect> rects;
+      WebVector<gfx::Rect> rects;
       if (using_sweep_line) {
         Region old_region;
         for (IntRect rect : int_rects)
@@ -461,7 +461,8 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
       } else {
         rects = ConvertIntRectsToGfxRects(int_rects, granularity_scale);
       }
-      cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(rects);
+      cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(
+          rects.ReleaseVector());
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();
     }
   }

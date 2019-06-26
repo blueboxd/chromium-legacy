@@ -34,7 +34,7 @@ String GetConsoleLogStringForBlockedLoad(const KURL& url) {
 PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
     ExecutionContext& execution_context,
     int64_t ukm_source_id,
-    const std::vector<WTF::String>& subresource_patterns_to_block) {
+    const Vector<WTF::String>& subresource_patterns_to_block) {
   return MakeGarbageCollected<PreviewsResourceLoadingHints>(
       &execution_context, ukm_source_id, subresource_patterns_to_block);
 }
@@ -42,14 +42,14 @@ PreviewsResourceLoadingHints* PreviewsResourceLoadingHints::Create(
 PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
     ExecutionContext* execution_context,
     int64_t ukm_source_id,
-    const std::vector<WTF::String>& subresource_patterns_to_block)
+    const Vector<WTF::String>& subresource_patterns_to_block)
     : execution_context_(execution_context),
       ukm_source_id_(ukm_source_id),
       subresource_patterns_to_block_(subresource_patterns_to_block) {
   DCHECK_NE(ukm::kInvalidSourceId, ukm_source_id_);
 
-  subresource_patterns_to_block_usage_.assign(
-      subresource_patterns_to_block.size(), false);
+  subresource_patterns_to_block_usage_.Fill(
+      false, subresource_patterns_to_block.size());
   blocked_resource_load_priority_counts_.fill(0);
 
   // Populate which specific resource types are eligible for blocking.

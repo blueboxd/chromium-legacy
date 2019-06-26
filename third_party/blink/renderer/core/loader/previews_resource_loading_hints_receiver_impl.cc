@@ -30,7 +30,7 @@ void PreviewsResourceLoadingHintsReceiverImpl::SetResourceLoadingHints(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns",
       resource_loading_hints->subresources_to_block.size());
 
-  std::vector<WTF::String> subresource_patterns_to_block;
+  Vector<WTF::String> subresource_patterns_to_block;
   for (const auto& subresource :
        resource_loading_hints->subresources_to_block) {
     subresource_patterns_to_block.push_back(subresource);

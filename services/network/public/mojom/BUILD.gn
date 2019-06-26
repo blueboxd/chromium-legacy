@@ -59,6 +59,7 @@ mojom("websocket_mojom") {
 
   public_deps = [
     ":mojom_ip_address",
+    "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -113,7 +114,6 @@ mojom("mojom") {
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
-    "//mojo/public/mojom/base:read_only_buffer",
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

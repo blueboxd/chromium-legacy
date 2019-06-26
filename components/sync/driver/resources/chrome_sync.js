@@ -180,7 +180,11 @@ cr.define('chrome.sync', function() {
   return {
     makeTimer: makeTimer,
     dispatchEvent: dispatchEvent,
-    events: new cr.EventTarget(),
+    // TODO(crbug.com/854268,crbug.com/976249): Use new cr.EventTarget() when
+    // the native EventTarget constructor is implemented on iOS (not the case as
+    // of 2019-06). In the meantime using a plain div as a workaround, which
+    // subclasses EventTarget.
+    events: document.createElement('div'),
     getAllNodes: getAllNodes,
     getAllNodesCallback: getAllNodesCallback,
     registerForEvents: registerForEvents,

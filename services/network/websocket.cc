@@ -174,14 +174,11 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
            << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << buffer_size << " bytes";
 
-  // TODO(darin): Avoid this copy.
-  std::vector<uint8_t> data_to_pass(buffer_size);
-  if (buffer_size > 0) {
-    std::copy(buffer->data(), buffer->data() + buffer_size,
-              data_to_pass.begin());
-  }
-
-  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), data_to_pass);
+  base::span<char> char_span =
+      buffer_size ? base::make_span(buffer->data(), buffer_size)
+                  : base::span<char>();
+  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type),
+                              base::as_bytes(char_span));
 }
 
 void WebSocket::WebSocketEventHandler::OnClosingHandshake() {

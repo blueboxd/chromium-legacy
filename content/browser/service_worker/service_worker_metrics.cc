@@ -388,10 +388,6 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.InstallEventStatus", status);
 }
 
-void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count", event);
-}
-
 void ServiceWorkerMetrics::RecordEventDuration(EventType event,
                                                base::TimeDelta time,
                                                bool was_handled) {

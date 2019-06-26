@@ -73,7 +73,7 @@ class WebSocketHandleImpl
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
-                   const Vector<uint8_t>& data) override;
+                   base::span<const uint8_t> data) override;
   void AddSendFlowControlQuota(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,

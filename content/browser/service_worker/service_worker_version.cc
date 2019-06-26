@@ -1746,7 +1746,6 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     if (MaybeTimeoutRequest(info)) {
       stop_for_timeout =
           stop_for_timeout || info.timeout_behavior == KILL_ON_TIMEOUT;
-      ServiceWorkerMetrics::RecordEventTimeout(info.event_type);
     }
     timeout_iter = request_timeouts_.erase(timeout_iter);
   }

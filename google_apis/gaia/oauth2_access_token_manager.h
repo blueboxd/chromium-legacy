@@ -7,9 +7,10 @@
 
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -56,8 +57,8 @@ class OAuth2AccessTokenManager {
     std::string id_;
   };
 
-  // Implements a cancelable |OAuth2TokenService::Request|, which should be
-  // operated on the UI thread.
+  // Implements a cancelable |OAuth2AccessTokenManager::Request|, which should
+  // be operated on the UI thread.
   // TODO(davidroche): move this out of header file.
   class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
                       public Request {
@@ -82,6 +83,30 @@ class OAuth2AccessTokenManager {
     Consumer* const consumer_;
 
     SEQUENCE_CHECKER(sequence_checker_);
+  };
+
+  // Classes that want to monitor status of access token and access token
+  // request should implement this interface and register with the
+  // AddDiagnosticsObserver() call.
+  class DiagnosticsObserver {
+   public:
+    // Called when receiving request for access token.
+    virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
+                                        const std::string& consumer_id,
+                                        const ScopeSet& scopes) {}
+
+    // Called when access token fetching finished successfully or
+    // unsuccessfully. |expiration_time| are only valid with
+    // successful completion.
+    virtual void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
+                                            const std::string& consumer_id,
+                                            const ScopeSet& scopes,
+                                            GoogleServiceAuthError error,
+                                            base::Time expiration_time) {}
+
+    // Called when an access token was removed.
+    virtual void OnAccessTokenRemoved(const CoreAccountId& account_id,
+                                      const ScopeSet& scopes) {}
   };
 
   // The parameters used to fetch an OAuth2 access token.
@@ -115,8 +140,8 @@ class OAuth2AccessTokenManager {
   const OAuth2TokenServiceDelegate* GetDelegate() const;
 
   // Add or remove observers of this token manager.
-  void AddDiagnosticsObserver(AccessTokenDiagnosticsObserver* observer);
-  void RemoveDiagnosticsObserver(AccessTokenDiagnosticsObserver* observer);
+  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
+  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -255,7 +280,7 @@ class OAuth2AccessTokenManager {
   // The cache of currently valid tokens.
   TokenCache token_cache_;
   // List of observers to notify when access token status changes.
-  base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked
+  base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
   // fully manages access tokens independently of OAuth2TokenService.

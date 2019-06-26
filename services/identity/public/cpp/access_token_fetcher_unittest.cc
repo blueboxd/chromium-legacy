@@ -44,8 +44,9 @@ const char kIdTokenEmptyServices[] =
     ".dummy-signature";
 }  // namespace
 
-class AccessTokenFetcherTest : public testing::Test,
-                               public AccessTokenDiagnosticsObserver {
+class AccessTokenFetcherTest
+    : public testing::Test,
+      public OAuth2AccessTokenManager::DiagnosticsObserver {
  public:
   using TestTokenCallback =
       StrictMock<MockCallback<AccessTokenFetcher::TokenCallback>>;
@@ -107,7 +108,7 @@ class AccessTokenFetcherTest : public testing::Test,
   AccessTokenInfo access_token_info() { return access_token_info_; }
 
  private:
-  // OAuth2AccessTokenManagerDiagnosticsObserver:
+  // OAuth2AccessTokenManager::DiagnosticsObserver:
   void OnAccessTokenRequested(
       const CoreAccountId& account_id,
       const std::string& consumer_id,

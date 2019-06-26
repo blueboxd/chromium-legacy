@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SHIFT_TRACKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SHIFT_TRACKER_H_
 
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_region.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -60,7 +61,7 @@ class CORE_EXPORT LayoutShiftTracker {
       double jank_fraction_with_move_distance,
       double granularity_scale) const;
   double SubframeWeightingFactor() const;
-  std::vector<gfx::Rect> ConvertIntRectsToGfxRects(
+  WebVector<gfx::Rect> ConvertIntRectsToGfxRects(
       const Vector<IntRect>& int_rects,
       double granularity_scale);
   void SetLayoutShiftRects(const Vector<IntRect>& int_rects,

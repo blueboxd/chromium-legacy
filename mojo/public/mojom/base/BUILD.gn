@@ -17,6 +17,7 @@ mojom_component("base") {
     "memory_allocator_dump_cross_process_uid.mojom",
     "memory_pressure_level.mojom",
     "process_id.mojom",
+    "read_only_buffer.mojom",
     "ref_counted_memory.mojom",
     "shared_memory.mojom",
     "string16.mojom",
@@ -40,10 +41,4 @@ mojom_component("base") {
 
   output_prefix = "mojo_base_mojom"
   macro_prefix = "MOJO_BASE_MOJOM"
-}
-
-mojom("read_only_buffer") {
-  sources = [
-    "read_only_buffer.mojom",
-  ]
 }

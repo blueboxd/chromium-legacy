@@ -391,12 +391,12 @@ const OAuth2TokenServiceDelegate* OAuth2AccessTokenManager::GetDelegate()
 }
 
 void OAuth2AccessTokenManager::AddDiagnosticsObserver(
-    AccessTokenDiagnosticsObserver* observer) {
+    DiagnosticsObserver* observer) {
   diagnostics_observer_list_.AddObserver(observer);
 }
 
 void OAuth2AccessTokenManager::RemoveDiagnosticsObserver(
-    AccessTokenDiagnosticsObserver* observer) {
+    DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 

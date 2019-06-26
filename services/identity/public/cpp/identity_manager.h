@@ -52,7 +52,7 @@ struct CookieParams;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
-class IdentityManager : public AccessTokenDiagnosticsObserver,
+class IdentityManager : public OAuth2AccessTokenManager::DiagnosticsObserver,
                         public OAuth2TokenServiceObserver {
  public:
   class Observer {
@@ -596,7 +596,7 @@ class IdentityManager : public AccessTokenDiagnosticsObserver,
       const GoogleServiceAuthError& error);
   void OnGaiaCookieDeletedByUserAction();
 
-  // AccessTokenDiagnosticsObserver
+  // OAuth2AccessTokenManager::DiagnosticsObserver
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const ScopeSet& scopes) override;

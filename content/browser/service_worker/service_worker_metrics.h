@@ -234,9 +234,6 @@ class ServiceWorkerMetrics {
                                         bool is_shutdown);
   static void RecordInstallEventStatus(blink::ServiceWorkerStatusCode status);
 
-  // Records how often a dispatched event times out.
-  static void RecordEventTimeout(EventType event);
-
   // Records the amount of time spent handling an event.
   static void RecordEventDuration(EventType event,
                                   base::TimeDelta time,

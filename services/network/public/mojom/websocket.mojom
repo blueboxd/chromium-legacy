@@ -4,6 +4,7 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -81,7 +82,9 @@ interface WebSocketClient {
   //   the first message. If |type| is WebSocketMessageType.TEXT, then the
   //   concatenation of the |data| from every frame in the message must be valid
   //   UTF-8. If |fin| is not set, |data| must be non-empty.
-  OnDataFrame(bool fin, WebSocketMessageType type, array<uint8> data);
+  OnDataFrame(bool fin,
+              WebSocketMessageType type,
+              mojo_base.mojom.ReadOnlyBuffer data);
 
   // Add |quota| bytes of send quota. |quota| must be positive. Initial quota
   // is 0. The renderer will wait for an AddSendFlowControlQuota() message

@@ -6298,13 +6298,12 @@ TextDirection LayoutBox::ResolvedDirection() const {
   if (IsInline() && IsAtomicInlineLevel()) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      DCHECK(*fragments.begin()) << this;
-      const NGPaintFragment* fragment = *fragments.begin();
-      return fragment->PhysicalFragment().ResolvedDirection();
-    }
-
-    if (InlineBoxWrapper())
+      if (!fragments.IsEmpty()) {
+        return fragments.front().PhysicalFragment().ResolvedDirection();
+      }
+    } else if (InlineBoxWrapper()) {
       return InlineBoxWrapper()->Direction();
+    }
   }
   return StyleRef().Direction();
 }

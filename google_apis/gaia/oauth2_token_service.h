@@ -24,7 +24,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 
 namespace network {
@@ -72,9 +71,9 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // OAuth2AccessTokenManager without OAuth2TokenService.
   // Add or remove observers of access token manager.
   void AddAccessTokenDiagnosticsObserver(
-      AccessTokenDiagnosticsObserver* observer);
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
   void RemoveAccessTokenDiagnosticsObserver(
-      AccessTokenDiagnosticsObserver* observer);
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -178,7 +177,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // OAuth2TokenServiceTest.
   int GetTokenCacheCount();
 
-  const base::ObserverList<AccessTokenDiagnosticsObserver, true>::Unchecked&
+  const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
+                           true>::Unchecked&
   GetAccessTokenDiagnosticsObservers();
 
  protected:

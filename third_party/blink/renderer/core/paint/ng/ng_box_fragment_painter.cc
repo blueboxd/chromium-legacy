@@ -986,6 +986,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
                                        const HitTestLocation& hit_test_location,
                                        const PhysicalOffset& physical_offset,
                                        HitTestAction action) {
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   const PhysicalSize& size = box_fragment_.Size();
   const ComputedStyle& style = box_fragment_.Style();
 
@@ -1039,6 +1040,10 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
       bounds_rect = box_fragment_.SelfInkOverflow();
       bounds_rect.Move(physical_offset);
     }
+    // TODO(kojii): Don't have good explanation why only inline box needs to
+    // snap, but matches to legacy and fixes crbug.com/976606.
+    if (fragment.IsInlineBox())
+      bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test_location.Intersects(bounds_rect)) {
       Node* node = box_fragment_.NodeForHitTest();
       if (!result.InnerNode() && node) {
@@ -1082,6 +1087,9 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
     rect.Move(border_rect.offset);
   }
 
+  // TODO(kojii): Don't have good explanation why only inline box needs to
+  // snap, but matches to legacy and fixes crbug.com/976606.
+  rect = PhysicalRect(PixelSnappedIntRect(rect));
   if (FragmentVisibleToHitTestRequest(text_paint_fragment,
                                       result.GetHitTestRequest()) &&
       hit_test_location.Intersects(rect)) {
@@ -1124,7 +1132,10 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     return false;
 
   const PhysicalSize size = fragment.Size();
-  const PhysicalRect bounds_rect(physical_offset, size);
+  PhysicalRect bounds_rect(physical_offset, size);
+  // TODO(kojii): Don't have good explanation why only inline box needs to
+  // snap, but matches to legacy and fixes crbug.com/976606.
+  bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
   const ComputedStyle& containing_box_style = box_fragment_.Style();
   if (containing_box_style.HasBorderRadius() &&
       !hit_test_location.Intersects(containing_box_style.GetRoundedBorderFor(

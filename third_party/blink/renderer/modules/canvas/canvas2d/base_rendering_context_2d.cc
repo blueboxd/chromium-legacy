@@ -705,14 +705,6 @@ void BaseRenderingContext2D::fillRect(double x,
   float fwidth = clampTo<float>(width);
   float fheight = clampTo<float>(height);
 
-  // We are assuming that if the pattern is not accelerated and the current
-  // canvas is accelerated, we will not be able to hold the pattern into the
-  // canvas, probably because it does not fit. That's why we disable the
-  // acceleration to be sure that it will work
-  if (IsAccelerated() && GetState().HasPattern() &&
-      !GetState().PatternIsAccelerated())
-    DisableAcceleration();
-
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },

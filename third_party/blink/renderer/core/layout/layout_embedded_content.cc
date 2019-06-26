@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
@@ -317,24 +318,31 @@ PhysicalRect LayoutEmbeddedContent::ReplacedContentRect() const {
 }
 
 void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-  if (!embedded_content_view)
-    return;
-
   if (!Style())
     return;
 
-  if (!NeedsLayout())
-    UpdateGeometry(*embedded_content_view);
+  if (EmbeddedContentView* embedded_content_view = GetEmbeddedContentView()) {
+    if (!NeedsLayout())
+      UpdateGeometry(*embedded_content_view);
 
-  if (StyleRef().Visibility() != EVisibility::kVisible) {
-    embedded_content_view->Hide();
-  } else {
-    embedded_content_view->Show();
-    // FIXME: Why do we issue a full paint invalidation in this case, but not
-    // the other?
-    SetShouldDoFullPaintInvalidation();
+    if (StyleRef().Visibility() != EVisibility::kVisible)
+      embedded_content_view->Hide();
+    else
+      embedded_content_view->Show();
   }
+
+  // One of the reasons of the following is that the layout tree in the new
+  // embedded content view may have already had some paint property and paint
+  // invalidation flags set, and we need to propagate the flags into the host
+  // view. Adding, changing and removing are also significant changes to the
+  // tree so setting the flags ensures the required updates.
+  SetNeedsPaintPropertyUpdate();
+  SetShouldDoFullPaintInvalidation();
+  // Showing/hiding the embedded content view and changing the view between null
+  // and non-null affect compositing (see: PaintLayerCompositor::CanBeComposited
+  // and RootShouldAlwaysComposite).
+  if (HasLayer())
+    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void LayoutEmbeddedContent::UpdateGeometry(

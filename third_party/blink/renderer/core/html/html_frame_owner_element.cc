@@ -359,7 +359,6 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
 
   embedded_content_view_ = embedded_content_view;
   FrameOwnerPropertiesChanged();
-  SetNeedsCompositingUpdate();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);
 
@@ -368,6 +367,8 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
   if (!layout_embedded_content)
     return;
 
+  layout_embedded_content->UpdateOnEmbeddedContentViewChange();
+
   if (embedded_content_view_) {
     // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout
     // crashes.  Perhaps view is getting reattached while document is shutting
@@ -375,7 +376,6 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     if (doc) {
       CHECK_NE(doc->Lifecycle().GetState(), DocumentLifecycle::kStopping);
     }
-    layout_embedded_content->UpdateOnEmbeddedContentViewChange();
 
     DCHECK_EQ(GetDocument().View(), layout_embedded_content->GetFrameView());
     DCHECK(layout_embedded_content->GetFrameView());

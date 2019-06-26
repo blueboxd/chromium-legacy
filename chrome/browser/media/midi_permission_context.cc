@@ -20,5 +20,5 @@ ContentSetting MidiPermissionContext::GetPermissionStatusInternal(
 }
 
 bool MidiPermissionContext::IsRestrictedToSecureOrigins() const {
-  return false;
+  return true;
 }

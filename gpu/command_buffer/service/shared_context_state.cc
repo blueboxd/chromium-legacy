@@ -150,6 +150,9 @@ void SharedContextState::InitializeGrContext(
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     // TODO(brianosman): turn this back on.  http://crbug.com/977938
     options.fDisallowGLSLBinaryCaching = true;
+    // TODO(csmartdalton): enable internal multisampling after the related Skia
+    // rolls are in.
+    options.fInternalMultisampleCount = 0;
     owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
   }

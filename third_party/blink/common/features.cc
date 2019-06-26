@@ -179,7 +179,7 @@ const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerIsolateInForeground{
-    "ServiceWorkerIsolateInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerIsolateInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",

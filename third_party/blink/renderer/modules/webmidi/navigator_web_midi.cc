@@ -104,10 +104,10 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
     // user for permission regardless of sysex option.
     // https://webaudio.github.io/web-midi-api/#dom-navigator-requestmidiaccess
     // https://crbug.com/662000.
-    Deprecation::CountDeprecation(
-        document, document.IsSecureContext()
-                      ? WebFeature::kNoSysexWebMIDIWithoutPermission
-                      : WebFeature::kNoSysexWebMIDIOnInsecureOrigin);
+    if (document.IsSecureContext()) {
+      Deprecation::CountDeprecation(
+          document, WebFeature::kNoSysexWebMIDIWithoutPermission);
+    }
   }
   document.CountUseOnlyInCrossOriginIframe(
       WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);

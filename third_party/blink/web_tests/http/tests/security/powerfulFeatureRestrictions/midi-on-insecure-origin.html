@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<title>Request the MIDIAccess interface On An Insecure Origin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/get-host-info.js"></script>
+<script>
+if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
+    window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
+} else {
+  promise_test(() => {
+    return navigator.requestMIDIAccess().then(() => {
+      assert_unreached('requestMIDIAccess should fail, but succeeded.');
+    }, error => {
+      assert_equals(error.message, 'An attempt was made to break through the security policy of the user agent.');
+    });
+  }, 'requestMIDIAccess on insecure origin');
+}
+</script>

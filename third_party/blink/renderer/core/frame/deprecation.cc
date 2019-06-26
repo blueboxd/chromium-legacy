@@ -551,16 +551,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "more details.",
                   MilestoneString(kM77))};
 
-    case WebFeature::kNoSysexWebMIDIOnInsecureOrigin:
-      return {"NoSysexWebMIDIOnInsecureOrigin", kM77,
-              String::Format(
-                  "Web MIDI will be deprecated on insecure origins since %s. "
-                  "You should consider switching your application to a secure "
-                  "origin, such as HTTPS. See "
-                  "https://www.chromestatus.com/feature/5138066234671104 for "
-                  "more details.",
-                  MilestoneString(kM77))};
-
     case WebFeature::kCustomCursorIntersectsViewport:
       return {
           "CustomCursorIntersectsViewport", kM75,

@@ -38,6 +38,9 @@ GrContextForGLES2Interface::GrContextForGLES2Interface(
   options.fAvoidStencilBuffers = capabilities.avoid_stencil_buffers;
   options.fAllowPathMaskCaching = false;
   options.fSharpenMipmappedTextures = true;
+  // TODO(csmartdalton): enable internal multisampling after the related Skia
+  // rolls are in.
+  options.fInternalMultisampleCount = 0;
   sk_sp<GrGLInterface> interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl, context_support));
   gr_context_ = GrContext::MakeGL(std::move(interface), options);

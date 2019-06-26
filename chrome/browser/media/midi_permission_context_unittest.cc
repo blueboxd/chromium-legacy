@@ -19,19 +19,19 @@ class MidiPermissionContextTests : public testing::Test {
   TestingProfile profile_;
 };
 
-// Web MIDI permission status should be allowed for all origins.
+// Web MIDI permission status should be allowed only for secure origins.
 TEST_F(MidiPermissionContextTests, TestNoSysexAllowedAllOrigins) {
   MidiPermissionContext permission_context(profile());
   GURL insecure_url("http://www.example.com");
   GURL secure_url("https://www.example.com");
 
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context
                 .GetPermissionStatus(nullptr /* render_frame_host */,
                                      insecure_url, insecure_url)
                 .content_setting);
 
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
             permission_context
                 .GetPermissionStatus(nullptr /* render_frame_host */,
                                      insecure_url, secure_url)

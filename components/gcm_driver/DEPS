@@ -10,6 +10,8 @@ include_rules = [
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",
   "+content/public/browser/browser_context.h",
+  "+content/public/test",  # Only used for tests.
+  "+crypto",  # Only used for tests.
 
   # Whitelist specific headers from //google_apis/gaia. Contact
   # blundell@chromium.org if looking to add more.
@@ -22,4 +24,5 @@ include_rules = [
   "+services/network/public/mojom",
   "+services/network/test",
   "+third_party/leveldatabase",  # Only used for tests.
+  "+third_party/re2",  # Only used for tests.
 ]

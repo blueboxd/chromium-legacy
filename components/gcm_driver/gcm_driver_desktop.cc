@@ -520,7 +520,7 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : GCMDriver(store_path, blocking_task_runner),
+    : GCMDriver(store_path, blocking_task_runner, url_loader_factory_for_ui),
       gcm_channel_status_syncer_(
           new GCMChannelStatusSyncer(this,
                                      prefs,

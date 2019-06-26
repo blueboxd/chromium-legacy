@@ -768,10 +768,10 @@ void SplitViewController::OnWindowBoundsChanged(
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
   if (split_view_type_ != SplitViewType::kClamshellType ||
-      reason == ui::PropertyChangeReason::FROM_ANIMATION) {
+      reason == ui::PropertyChangeReason::FROM_ANIMATION ||
+      !InSplitViewMode()) {
     return;
   }
-  DCHECK(InSplitViewMode());
 
   wm::WindowState* window_state = wm::GetWindowState(window);
   const bool is_window_moved = window_state->is_dragged() &&
@@ -1109,14 +1109,37 @@ void SplitViewController::OnDisplayMetricsChanged(
   UpdateSnappedWindowsAndDividerBounds();
 }
 
-void SplitViewController::OnTabletModeStarted() {
+void SplitViewController::OnTabletModeStarting() {
   split_view_type_ = SplitViewType::kTabletType;
+
+  // If splitview is active when tablet mode is starting, do the clamshell mode
+  // splitview to tablet mode splitview transition by adding the split view
+  // divider bar.
+  if (InSplitViewMode()) {
+    divider_position_ = GetClosestFixedDividerPosition();
+    split_view_divider_ = std::make_unique<SplitViewDivider>(
+        this, GetDefaultSnappedWindow()->GetRootWindow());
+    UpdateSnappedWindowsAndDividerBounds();
+    NotifyDividerPositionChanged();
+  }
 }
 
 void SplitViewController::OnTabletModeEnding() {
-  if (IsClamshellSplitViewModeEnabled())
+  if (IsClamshellSplitViewModeEnabled()) {
     split_view_type_ = SplitViewType::kClamshellType;
-  EndSplitView();
+
+    // If splitview is active when tablet mode is ending, simply destroy the
+    // split view divider bar as we don't have the bar in clamshell split view
+    // mode.
+    if (InSplitViewMode())
+      split_view_divider_.reset();
+  } else if (InSplitViewMode()) {
+    // If clamshell splitview mode is not enabled, fall back to the old
+    // behavior: end splitview and overivew and all windows will return to its
+    // old window state before entering tablet mode.
+    EndSplitView();
+    EndOverview();
+  }
 }
 
 void SplitViewController::OnTabletControllerDestroyed() {

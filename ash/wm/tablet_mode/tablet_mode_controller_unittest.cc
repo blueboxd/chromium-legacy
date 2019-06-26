@@ -43,6 +43,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_handler.h"
@@ -672,6 +673,10 @@ class TabletModeControllerInitedFromPowerManagerClientTest
     power_manager_client()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
     TabletModeControllerTest::SetUp();
+    // Remove TabletModeController as an observer of input device events to
+    // prevent interfering with the test.
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(
+        tablet_mode_controller());
   }
 };
 

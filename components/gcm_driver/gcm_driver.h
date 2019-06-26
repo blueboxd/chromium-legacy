@@ -17,6 +17,7 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/web_push_sender.h"
 
 namespace base {
 class FilePath;
@@ -25,6 +26,10 @@ class SequencedTaskRunner;
 
 namespace crypto {
 class ECPrivateKey;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace gcm {
@@ -98,6 +103,8 @@ class GCMDriver {
       base::Callback<void(const std::string&, const std::string&)>;
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
+  using SendWebPushMessageCallback =
+      base::OnceCallback<void(const std::string& message_id, bool result)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -108,7 +115,8 @@ class GCMDriver {
 
   GCMDriver(
       const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~GCMDriver();
 
   // Registers |sender_ids| for an app. A registration ID will be returned by
@@ -157,19 +165,25 @@ class GCMDriver {
             const OutgoingMessage& message,
             const SendCallback& callback);
 
-  // Sends a message using FCM web-push with end-to-end encryption.
-  // The |message| is encrypted using private enryption key associated with
-  // |app_id| and |authorized_entity|, against public encryption key |p256dh|
-  // with authentcaition secret |auth_secret|. Encrypted message is sent to FCM
-  // with |fcm_token|, and and authenticate with VAPID using |vapid_key|.
+  // Sends a WebPushMessage via Firebase Cloud Messaging (FCM) Web Push with
+  // end-to-end encryption.
+  // |app_id|: application ID.
+  // |authorized_entity|: authorization entity.
+  // |p256dh|: public encryption key of receiver device.
+  // |auth_secret|: authentcaition secret of receiver device.
+  // |fcm_token|: FCM registration token for receiving end.
+  // |vapid_key|: Private key to sign Voluntary Application Server
+  // Identification for Web Push header.
+  // |message|: WebPushMessage to be sent.
+  // |callback|: To be called once the asynchronous operation is done.
   void SendWebPushMessage(const std::string& app_id,
                           const std::string& authorized_entity,
                           const std::string& p256dh,
                           const std::string& auth_secret,
                           const std::string& fcm_token,
                           crypto::ECPrivateKey* vapid_key,
-                          int time_to_live,
-                          const std::string& message);
+                          WebPushMessage message,
+                          SendWebPushMessageCallback callback);
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
@@ -355,9 +369,10 @@ class GCMDriver {
   // Called after webpush message is encrypted.
   void OnMessageEncrypted(const std::string& fcm_token,
                           crypto::ECPrivateKey* vapid_key,
-                          int time_to_live,
+                          WebPushMessage message,
+                          SendWebPushMessageCallback callback,
                           GCMEncryptionResult result,
-                          const std::string& payload);
+                          std::string payload);
 
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;
@@ -374,6 +389,9 @@ class GCMDriver {
 
   // App handler map (from app_id to handler pointer). The handler is not owned.
   GCMAppHandlerMap app_handlers_;
+
+  // Sender for Web Push messages.
+  WebPushSender web_push_sender_;
 
   base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
 

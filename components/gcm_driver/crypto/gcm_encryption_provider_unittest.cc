@@ -115,8 +115,8 @@ class GCMEncryptionProviderTest : public ::testing::Test {
                const std::string& message) {
     encryption_provider_->EncryptMessage(
         kExampleAppId, authorized_entity, p256dh, auth_secret, message,
-        base::Bind(&GCMEncryptionProviderTest::DidEncryptMessage,
-                   base::Unretained(this)));
+        base::BindOnce(&GCMEncryptionProviderTest::DidEncryptMessage,
+                       base::Unretained(this)));
 
     // The encryption keys will be read asynchronously.
     base::RunLoop().RunUntilIdle();
@@ -184,10 +184,9 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     decrypted_message_ = message;
   }
 
-  void DidEncryptMessage(GCMEncryptionResult result,
-                         const std::string& message) {
+  void DidEncryptMessage(GCMEncryptionResult result, std::string message) {
     encryption_result_ = result;
-    encrypted_message_ = message;
+    encrypted_message_ = std::move(message);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -581,7 +580,7 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
       ASSERT_EQ(GCMEncryptionResult::ENCRYPTED_DRAFT_08, encryption_result());
 
       message.data["content-encoding"] = "aes128gcm";
-      message.raw_data = std::move(encrypted_message());
+      message.raw_data = encrypted_message();
       break;
     }
   }
@@ -618,7 +617,7 @@ void GCMEncryptionProviderTest::TestEncryptionNoKeys(
   ASSERT_GT(public_key.size(), 0u);
 
   ASSERT_NO_FATAL_FAILURE(
-      Encrypt(authorized_entity, public_key, auth_secret, "foo"));
+      Encrypt(authorized_entity, public_key, auth_secret, kExampleMessage));
   EXPECT_EQ(GCMEncryptionResult::NO_KEYS, encryption_result());
 }
 

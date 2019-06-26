@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -20,6 +21,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -33,6 +35,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -1302,33 +1305,6 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   EXPECT_EQ(first_dragged_origin.y() + 5, window->bounds().y());
 }
 
-// Test that overview is exited before entering / exiting tablet mode so that
-// the window changes made by TabletModeWindowManager do not conflict with
-// those made in WindowOverview.
-TEST_F(TabletModeWindowManagerTest, ExitsOverview) {
-  // Bounds for windows we know can be controlled.
-  gfx::Rect rect1(10, 10, 200, 50);
-  gfx::Rect rect2(10, 60, 200, 50);
-  std::unique_ptr<aura::Window> w1(
-      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect1));
-  std::unique_ptr<aura::Window> w2(
-      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect2));
-
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(overview_controller->StartOverview());
-  ASSERT_TRUE(overview_controller->InOverviewSession());
-  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
-  ASSERT_TRUE(manager);
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-
-  ASSERT_TRUE(overview_controller->StartOverview());
-  ASSERT_TRUE(overview_controller->InOverviewSession());
-  // Destroy the manager again and check that the windows return to their
-  // previous state.
-  DestroyTabletModeWindowManager();
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-}
-
 // Test that an edge swipe from the top will end full screen mode.
 TEST_F(TabletModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
   gfx::Rect rect(10, 10, 200, 50);
@@ -1808,6 +1784,220 @@ TEST_F(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
   EXPECT_NE(rect.size(), parent->bounds().size());
   EXPECT_FALSE(wm::GetWindowState(child.get())->IsMaximized());
   EXPECT_EQ(rect.size(), child->bounds().size());
+}
+
+// Test clamshell mode <-> tablet mode transition if clamshell splitscreen is
+// not enabled.
+TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+
+  // 1. Clamshell -> tablet. If overview is active, it should still be kept
+  // active after transition.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  EXPECT_TRUE(manager);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // 2. Tablet -> Clamshell. If overview is active, it should still be kept
+  // active after transition.
+  DestroyTabletModeWindowManager();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // 3. Clamshell -> tablet. If overview is inactive, it should still be kept
+  // inactive after transition. All windows will be maximized.
+  EXPECT_TRUE(overview_controller->EndOverview());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  CreateTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // 4. Tablet -> Clamshell. The window should be restored to its old state.
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // 5. Clamshell -> Tablet. If the window is snapped, it will be carried over
+  // to splitview in tablet mode.
+  const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
+  wm::GetWindowState(window.get())->OnWMEvent(&event);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  // After transition, we should be in single split screen.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+
+  // 6. Tablet -> Clamshell. Since clamshell splitscreen is not enabled, oveview
+  // and splitview will be both ended, and the window is restored to its old
+  // state.
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+
+  // Create another normal state window to test additional scenarios.
+  std::unique_ptr<aura::Window> window2(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::ActivateWindow(window2.get());
+
+  // 7. Clamshell -> Tablet. Since the top active window is not a snapped
+  // window, all windows will be maximized after the transition.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+
+  // 8. Tablet -> Clamshell. If the two windows are in splitscreen in tablet
+  // mode, after transition they will restore to their old window states.
+  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
+                                                    SplitViewController::LEFT);
+  Shell::Get()->split_view_controller()->SnapWindow(window2.get(),
+                                                    SplitViewController::RIGHT);
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsSnapped());
+
+  // 9. Clamshell -> Tablet. If the top two windows are snapped to both sides of
+  // the screen, they will carry over to tablet split view mode.
+  const wm::WMEvent event2(wm::WM_EVENT_SNAP_RIGHT);
+  wm::GetWindowState(window2.get())->OnWMEvent(&event2);
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+
+  // 10. Tablet -> Clamshell. If overview and splitview are both active, they
+  // will be both ended after the transition.
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+}
+
+// The class to test TabletModeWindowManagerTest related functionalities when
+// clamshell split screen feature is enabled.
+class TabletModeWindowManagerWithClamshellSplitViewTest
+    : public TabletModeWindowManagerTest {
+ public:
+  TabletModeWindowManagerWithClamshellSplitViewTest() = default;
+  ~TabletModeWindowManagerWithClamshellSplitViewTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kDragToSnapInClamshellMode);
+    TabletModeWindowManagerTest::SetUp();
+    DCHECK(ShouldAllowSplitView());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManagerWithClamshellSplitViewTest);
+};
+
+// Test clamshell mode <-> tablet mode transition if clamshell splitscreen is
+// enabled.
+TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
+       ClamshellTabletTransitionTest) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+
+  // 1. Clamshell -> tablet. If overview is active, it should still be kept
+  // active after transition.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  EXPECT_TRUE(manager);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // 2. Tablet -> Clamshell. If overview is active, it should still be kept
+  // active after transition.
+  DestroyTabletModeWindowManager();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // 3. Clamshell -> tablet. If overview is inactive, it should still be kept
+  // inactive after transition. All windows will be maximized.
+  EXPECT_TRUE(overview_controller->EndOverview());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  CreateTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // 4. Tablet -> Clamshell. The window should be restored to its old state.
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // 5. Clamshell -> Tablet. If the window is snapped, it will be carried over
+  // to splitview in tablet mode.
+  const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
+  wm::GetWindowState(window.get())->OnWMEvent(&event);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  // After transition, we should be in single split screen.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+
+  // 6. Tablet -> Clamshell. Since there is only 1 window, splitview and
+  // overview will be both ended. The window will be kept snapped.
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+
+  // Create another normal state window to test additional scenarios.
+  std::unique_ptr<aura::Window> window2(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::ActivateWindow(window2.get());
+  // 7. Clamshell -> Tablet. Since top window is not a snapped window, all
+  // windows will be maximized.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+
+  // 8. Tablet -> Clamshell. If tablet splitscreen is active with two snapped
+  // windows, the two windows will remain snapped in clamshell mode.
+  Shell::Get()->split_view_controller()->SnapWindow(window.get(),
+                                                    SplitViewController::LEFT);
+  Shell::Get()->split_view_controller()->SnapWindow(window2.get(),
+                                                    SplitViewController::RIGHT);
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  DestroyTabletModeWindowManager();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsSnapped());
+  EXPECT_FALSE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  // 9. Clamshell -> Tablet. If two window are snapped to two sides of the
+  // screen, they will carry over to splitscreen in tablet mode.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsSnapped());
+
+  // 10. Tablet -> Clamshell. If overview and splitview are both active, after
+  // transition, they will remain both active.
+  overview_controller->StartOverview();
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  DestroyTabletModeWindowManager();
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // 11. Clamshell -> Tablet. The same as 10.
+  CreateTabletModeWindowManager();
+  EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 }  // namespace ash

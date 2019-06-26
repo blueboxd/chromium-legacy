@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/android/jni_headers/GCMDriver_jni.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
@@ -24,11 +25,14 @@ using base::android::JavaParamRef;
 
 namespace gcm {
 
- GCMDriverAndroid::GCMDriverAndroid(
-     const base::FilePath& store_path,
-     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-     : GCMDriver(store_path, blocking_task_runner),
-       recorder_(this) {
+GCMDriverAndroid::GCMDriverAndroid(
+    const base::FilePath& store_path,
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : GCMDriver(store_path,
+                blocking_task_runner,
+                std::move(url_loader_factory)),
+      recorder_(this) {
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(Java_GCMDriver_create(env, reinterpret_cast<intptr_t>(this)));
 }

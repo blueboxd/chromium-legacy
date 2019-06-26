@@ -101,7 +101,7 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
       GetChromeBuildInfo(channel, product_category_for_subtypes),
       GetChannelStatusRequestUrl(channel),
       syncer::MakeUserAgentForSync(channel), prefs, store_path,
-      get_socket_factory_callback, url_loader_factory,
+      get_socket_factory_callback, std::move(url_loader_factory),
       network_connection_tracker, ui_task_runner, io_task_runner,
       blocking_task_runner));
 }

@@ -8,16 +8,24 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 namespace gcm {
 
-FakeGCMDriver::FakeGCMDriver() : GCMDriver(base::FilePath(), nullptr) {
-}
+FakeGCMDriver::FakeGCMDriver()
+    : GCMDriver(
+          base::FilePath(),
+          nullptr,
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {}
 
 FakeGCMDriver::FakeGCMDriver(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : GCMDriver(base::FilePath(), blocking_task_runner) {
-}
+    : GCMDriver(
+          base::FilePath(),
+          blocking_task_runner,
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)) {}
 
 FakeGCMDriver::~FakeGCMDriver() {
 }

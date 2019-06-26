@@ -10,4 +10,8 @@ component("common") {
   ]
 
   defines = [ "GCM_DRIVER_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+  ]
 }

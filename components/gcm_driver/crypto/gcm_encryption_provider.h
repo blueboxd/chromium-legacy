@@ -52,8 +52,7 @@ class GCMEncryptionProvider {
   // by the |result|. The |message| contains the dispatchable message in success
   // cases, or will be initialized to an empty, default state for failure.
   using EncryptMessageCallback =
-      base::Callback<void(GCMEncryptionResult result,
-                          const std::string& message)>;
+      base::OnceCallback<void(GCMEncryptionResult result, std::string message)>;
 
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();
@@ -101,7 +100,7 @@ class GCMEncryptionProvider {
                       const std::string& p256dh,
                       const std::string& auth_secret,
                       const std::string& message,
-                      const EncryptMessageCallback& callback);
+                      EncryptMessageCallback callback);
 
  private:
   friend class GCMEncryptionProviderTest;
@@ -137,7 +136,7 @@ class GCMEncryptionProvider {
                              const std::string& p256dh,
                              const std::string& auth_secret,
                              const std::string& message,
-                             const EncryptMessageCallback& callback,
+                             EncryptMessageCallback callback,
                              std::unique_ptr<crypto::ECPrivateKey> key,
                              const std::string& sender_auth_secret);
 

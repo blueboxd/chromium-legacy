@@ -250,8 +250,10 @@ SplitViewDivider::~SplitViewDivider() {
   Shell::Get()->activation_client()->RemoveObserver(this);
   divider_widget_->Close();
   split_view_window_targeter_.reset();
-  for (auto* iter : observed_windows_)
-    iter->RemoveObserver(this);
+  for (auto* window : observed_windows_) {
+    window->RemoveObserver(this);
+    ::wm::TransientWindowManager::GetOrCreate(window)->RemoveObserver(this);
+  }
   observed_windows_.clear();
 }
 

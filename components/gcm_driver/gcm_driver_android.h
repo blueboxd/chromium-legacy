@@ -20,6 +20,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace gcm {
 
 // GCMDriver implementation for Android, using Android GCM APIs.
@@ -28,7 +32,8 @@ class GCMDriverAndroid : public GCMDriver,
  public:
   GCMDriverAndroid(
       const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~GCMDriverAndroid() override;
 
   // Methods called from Java via JNI:

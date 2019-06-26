@@ -10,6 +10,7 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/encryption_header_parsers.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
@@ -245,13 +246,12 @@ void GCMEncryptionProvider::DecryptMessage(
                      version, callback));
 }
 
-void GCMEncryptionProvider::EncryptMessage(
-    const std::string& app_id,
-    const std::string& authorized_entity,
-    const std::string& p256dh,
-    const std::string& auth_secret,
-    const std::string& message,
-    const EncryptMessageCallback& callback) {
+void GCMEncryptionProvider::EncryptMessage(const std::string& app_id,
+                                           const std::string& authorized_entity,
+                                           const std::string& p256dh,
+                                           const std::string& auth_secret,
+                                           const std::string& message,
+                                           EncryptMessageCallback callback) {
   DCHECK(key_store_);
   key_store_->GetKeys(
       app_id, authorized_entity,
@@ -343,12 +343,12 @@ void GCMEncryptionProvider::EncryptMessageWithKey(
     const std::string& p256dh,
     const std::string& auth_secret,
     const std::string& message,
-    const EncryptMessageCallback& callback,
+    EncryptMessageCallback callback,
     std::unique_ptr<crypto::ECPrivateKey> key,
     const std::string& sender_auth_secret) {
   if (!key) {
     DLOG(ERROR) << "Unable to retrieve the keys for the outgoing message.";
-    callback.Run(GCMEncryptionResult::NO_KEYS, std::string());
+    std::move(callback).Run(GCMEncryptionResult::NO_KEYS, std::string());
     return;
   }
 
@@ -360,7 +360,8 @@ void GCMEncryptionProvider::EncryptMessageWithKey(
   std::string shared_secret;
   if (!ComputeSharedP256Secret(*key, p256dh, &shared_secret)) {
     DLOG(ERROR) << "Unable to calculate the shared secret.";
-    callback.Run(GCMEncryptionResult::INVALID_SHARED_SECRET, std::string());
+    std::move(callback).Run(GCMEncryptionResult::INVALID_SHARED_SECRET,
+                            std::string());
     return;
   }
 
@@ -377,33 +378,27 @@ void GCMEncryptionProvider::EncryptMessageWithKey(
                              auth_secret, salt, message, &record_size,
                              &ciphertext)) {
     DLOG(ERROR) << "Unable to encrypt the incoming data.";
-    callback.Run(GCMEncryptionResult::ENCRYPTION_FAILED, std::string());
+    std::move(callback).Run(GCMEncryptionResult::ENCRYPTION_FAILED,
+                            std::string());
     return;
   }
 
   // Construct encryption header.
   uint32_t rs = record_size;
-  std::vector<char> rs_buf(sizeof(rs));
-  base::WriteBigEndian(rs_buf.data(), rs);
+  char rs_buf[sizeof(rs)];
+  base::WriteBigEndian(rs_buf, rs);
+  std::string rs_str(std::begin(rs_buf), std::end(rs_buf));
 
   uint8_t key_length = sender_public_key.size();
-  std::vector<char> key_length_buf(sizeof(key_length));
-  base::WriteBigEndian(key_length_buf.data(), key_length);
+  char key_length_buf[sizeof(key_length)];
+  base::WriteBigEndian(key_length_buf, key_length);
+  std::string key_length_str(std::begin(key_length_buf),
+                             std::end(key_length_buf));
 
-  std::vector<uint8_t> payload;
-  payload.reserve(salt.size() + rs_buf.size() + key_length_buf.size() +
-                  sender_public_key.size() + ciphertext.size());
-  std::move(salt.begin(), salt.end(), std::back_inserter(payload));
-  std::move(rs_buf.begin(), rs_buf.end(), std::back_inserter(payload));
-  std::move(key_length_buf.begin(), key_length_buf.end(),
-            std::back_inserter(payload));
-  std::move(sender_public_key.begin(), sender_public_key.end(),
-            std::back_inserter(payload));
-  std::move(ciphertext.begin(), ciphertext.end(), std::back_inserter(payload));
-
-  callback.Run(GCMEncryptionResult::ENCRYPTED_DRAFT_08,
-               std::string(std::make_move_iterator(payload.begin()),
-                           std::make_move_iterator(payload.end())));
+  std::string payload = base::StrCat(
+      {salt, rs_str, key_length_str, sender_public_key, ciphertext});
+  std::move(callback).Run(GCMEncryptionResult::ENCRYPTED_DRAFT_08,
+                          std::move(payload));
 }
 
 }  // namespace gcm

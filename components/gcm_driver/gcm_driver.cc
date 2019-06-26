@@ -29,9 +29,10 @@ void InstanceIDHandler::DeleteAllTokensForApp(const std::string& app_id,
 
 GCMDriver::GCMDriver(
     const base::FilePath& store_path,
-    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : weak_ptr_factory_(this) {
-  // The |blocking_task_runner| can be NULL for tests that do not need the
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : web_push_sender_(std::move(url_loader_factory)), weak_ptr_factory_(this) {
+  // The |blocking_task_runner| can be nullptr for tests that do not need the
   // encryption capabilities of the GCMDriver class.
   if (blocking_task_runner)
     encryption_provider_.Init(store_path, blocking_task_runner);
@@ -332,30 +333,36 @@ void GCMDriver::SendWebPushMessage(const std::string& app_id,
                                    const std::string& auth_secret,
                                    const std::string& fcm_token,
                                    crypto::ECPrivateKey* vapid_key,
-                                   int time_to_live,
-                                   const std::string& message) {
+                                   WebPushMessage message,
+                                   SendWebPushMessageCallback callback) {
   encryption_provider_.EncryptMessage(
-      app_id, authorized_entity, p256dh, auth_secret, message,
-      base::Bind(&GCMDriver::OnMessageEncrypted, weak_ptr_factory_.GetWeakPtr(),
-                 fcm_token, vapid_key, time_to_live));
+      app_id, authorized_entity, p256dh, auth_secret, message.payload,
+      base::BindOnce(&GCMDriver::OnMessageEncrypted,
+                     weak_ptr_factory_.GetWeakPtr(), fcm_token, vapid_key,
+                     std::move(message), std::move(callback)));
 }
 
 void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
                                    crypto::ECPrivateKey* vapid_key,
-                                   int time_to_live,
+                                   WebPushMessage message,
+                                   SendWebPushMessageCallback callback,
                                    GCMEncryptionResult result,
-                                   const std::string& message) {
+                                   std::string payload) {
   UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.EncryptMessageResult", result,
                             GCMEncryptionResult::ENUM_SIZE);
 
   switch (result) {
-    case GCMEncryptionResult::ENCRYPTED_DRAFT_08:
-      // TODO: send the message.
+    case GCMEncryptionResult::ENCRYPTED_DRAFT_08: {
+      message.payload = std::move(payload);
+      web_push_sender_.SendMessage(fcm_token, vapid_key, message,
+                                   std::move(callback));
       return;
+    }
     case GCMEncryptionResult::NO_KEYS:
     case GCMEncryptionResult::INVALID_SHARED_SECRET:
     case GCMEncryptionResult::ENCRYPTION_FAILED: {
       LOG(ERROR) << "Webpush message encryption failed";
+      std::move(callback).Run(message.id, false);
       return;
     }
     case GCMEncryptionResult::ENUM_SIZE:

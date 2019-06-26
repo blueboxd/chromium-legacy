@@ -49,7 +49,8 @@ class GCMProfileService : public KeyedService {
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   GCMProfileService(
       base::FilePath path,
-      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 #else
   GCMProfileService(
       PrefService* prefs,
@@ -109,4 +110,3 @@ class GCMProfileService : public KeyedService {
 }  // namespace gcm
 
 #endif  // COMPONENTS_GCM_DRIVER_GCM_PROFILE_SERVICE_H_
-

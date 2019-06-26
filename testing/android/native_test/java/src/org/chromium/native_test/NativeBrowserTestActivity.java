@@ -7,6 +7,8 @@ package org.chromium.native_test;
 import android.app.Activity;
 import android.os.Bundle;
 
+import org.chromium.ui.base.ResourceBundle;
+
 import java.io.File;
 
 /**
@@ -40,6 +42,7 @@ public abstract class NativeBrowserTestActivity extends Activity {
 
         mStarted = true;
         NativeBrowserTest.deletePrivateDataDirectory(getPrivateDataDirectory());
+        ResourceBundle.setNoAvailableLocalePaks();
         initializeBrowserProcess();
     }
 

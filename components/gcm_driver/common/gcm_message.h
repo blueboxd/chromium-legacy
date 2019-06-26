@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "components/gcm_driver/common/gcm_driver_export.h"
 
 namespace gcm {
@@ -45,6 +46,23 @@ struct GCM_DRIVER_EXPORT IncomingMessage {
   // Whether the contents of the message have been decrypted, and are
   // available in |raw_data|.
   bool decrypted;
+};
+
+// Message to be delivered to the other party via Web Push.
+struct GCM_DRIVER_EXPORT WebPushMessage {
+  WebPushMessage();
+  WebPushMessage(WebPushMessage&& other);
+  ~WebPushMessage();
+
+  // Message ID.
+  std::string id;
+  // In seconds.
+  int time_to_live;
+  std::string payload;
+
+  static const int kMaximumTTL;
+
+  DISALLOW_COPY_AND_ASSIGN(WebPushMessage);
 };
 
 }  // namespace gcm

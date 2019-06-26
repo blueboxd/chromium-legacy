@@ -172,7 +172,7 @@ bool BindingSecurity::ShouldAllowAccessTo(
     return false;
   bool can_access = CanAccessWindow(accessing_window, target, exception_state);
 
-  if (!can_access) {
+  if (!can_access && accessing_window) {
     UseCounter::Count(accessing_window->document(),
                       WebFeature::kCrossOriginPropertyAccess);
     if (target->opener() == accessing_window) {
@@ -200,7 +200,7 @@ bool BindingSecurity::ShouldAllowAccessTo(
 
   bool can_access = CanAccessWindow(accessing_window, target, reporting_option);
 
-  if (!can_access) {
+  if (!can_access && accessing_window) {
     UseCounter::Count(accessing_window->document(),
                       WebFeature::kCrossOriginPropertyAccess);
     if (target->opener() == accessing_window) {
@@ -229,7 +229,7 @@ bool BindingSecurity::ShouldAllowAccessTo(
   bool can_access =
       CanAccessWindow(accessing_window, target->DomWindow(), exception_state);
 
-  if (!can_access) {
+  if (!can_access && accessing_window) {
     UseCounter::Count(accessing_window->document(),
                       WebFeature::kCrossOriginPropertyAccess);
     if (target->DomWindow()->opener() == accessing_window) {
@@ -258,7 +258,7 @@ bool BindingSecurity::ShouldAllowAccessTo(
   bool can_access =
       CanAccessWindow(accessing_window, target->DomWindow(), reporting_option);
 
-  if (!can_access) {
+  if (!can_access && accessing_window) {
     UseCounter::Count(accessing_window->document(),
                       WebFeature::kCrossOriginPropertyAccess);
     if (target->DomWindow()->opener() == accessing_window) {

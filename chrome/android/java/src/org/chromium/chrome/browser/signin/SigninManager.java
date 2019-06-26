@@ -160,17 +160,20 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         final Runnable mCallback;
         final WipeDataHooks mWipeDataHooks;
         final String mManagementDomain;
+        final boolean mForceWipeUserData;
 
         /**
          * @param callback Called after sign-out finishes and all data has been cleared.
          * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
          * @param managementDomain Domain when account is managed.
+         * @param forceWipeUserData Flag to wipe user data when account is not managed.
          */
         SignOutState(@Nullable Runnable callback, @Nullable WipeDataHooks wipeDataHooks,
-                @Nullable String managementDomain) {
+                @Nullable String managementDomain, boolean forceWipeUserData) {
             this.mCallback = callback;
             this.mWipeDataHooks = wipeDataHooks;
             this.mManagementDomain = managementDomain;
+            this.mForceWipeUserData = forceWipeUserData;
         }
     }
 
@@ -549,14 +552,14 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Invokes signOut with no callback or wipeDataHooks.
      */
     public void signOut(@SignoutReason int signoutSource) {
-        signOut(signoutSource, null, null);
+        signOut(signoutSource, null, null, false);
     }
 
     /**
      * Invokes signOut() with no wipeDataHooks.
      */
     public void signOut(@SignoutReason int signoutSource, Runnable callback) {
-        signOut(signoutSource, callback, null);
+        signOut(signoutSource, callback, null, false);
     }
 
     /**
@@ -569,14 +572,16 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      *         {@link SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS}).
      * @param callback Will be invoked after sign-out completes, if not null.
      * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
+     * @param forceWipeUserData Whether user selected to wipe all device data.
      */
-    public void signOut(
-            @SignoutReason int signoutSource, Runnable callback, WipeDataHooks wipeDataHooks) {
+    public void signOut(@SignoutReason int signoutSource, Runnable callback,
+            WipeDataHooks wipeDataHooks, boolean forceWipeUserData) {
         // Only one signOut at a time!
         assert mSignOutState == null;
 
         // Grab the management domain before nativeSignOut() potentially clears it.
-        mSignOutState = new SignOutState(callback, wipeDataHooks, getManagementDomain());
+        mSignOutState =
+                new SignOutState(callback, wipeDataHooks, getManagementDomain(), forceWipeUserData);
 
         Log.d(TAG, "Signing out, management domain: " + mSignOutState.mManagementDomain);
 
@@ -631,7 +636,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             // sign-outs that are initiated from the native side. But grabbing it here may be too
             // late! The management domain may be already cleared due to race condition with
             // sign-out observers on the native side.
-            mSignOutState = new SignOutState(null, null, getManagementDomain());
+            mSignOutState = new SignOutState(null, null, getManagementDomain(), false);
         }
 
         Log.d(TAG, "Native signed out, management domain: " + mSignOutState.mManagementDomain);
@@ -641,7 +646,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         ChromeSigninController.get().setSignedInAccountName(null);
         if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.preWipeData();
         mDelegate.disableSyncAndWipeData(this, mNativeSigninManagerAndroid,
-                mSignOutState.mManagementDomain != null, this::onProfileDataWiped);
+                mSignOutState.mManagementDomain != null || mSignOutState.mForceWipeUserData,
+                this::onProfileDataWiped);
         mAccountTrackerService.invalidateAccountSeedStatus(true);
     }
 

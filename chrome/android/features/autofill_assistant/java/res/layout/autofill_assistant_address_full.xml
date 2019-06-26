@@ -7,7 +7,8 @@
               android:id="@+id/address_full"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:gravity="center_vertical">
 
     <TextView android:id="@+id/full_name"
               android:layout_width="wrap_content"

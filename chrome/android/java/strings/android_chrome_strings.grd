@@ -1618,8 +1618,14 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SIGNOUT_MESSAGE_LEGACY" desc="Message to display for sign out of Chrome dialog">
         Changes to your bookmarks, history, passwords, and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.
       </message>
-      <message name="IDS_SIGNOUT_MESSAGE" desc="Message to display in 'Sign out and turn off sync?' dialog">
+      <message name="IDS_SIGNOUT_MESSAGE_WITHOUT_REMOVE_LOCAL_DATA" desc="Message to display in 'Sign out and turn off sync?' dialog">
         Your bookmarks, history, passwords, and more will no longer be synced to your Google Account
+      </message>
+      <message name="IDS_SIGNOUT_MESSAGE" desc="Message to display in 'Sign out and turn off sync?' dialog">
+        Your bookmarks, history, passwords, and other Chrome data will no longer be synced to your Google Account
+      </message>
+      <message name="IDS_REMOVE_LOCAL_DATA" desc="Checkbox to delete all existing data in local device storage">
+        Also clear this Chrome data from this device
       </message>
       <message name="IDS_SIGNOUT_MANAGED_ACCOUNT_MESSAGE" desc="Message to display for sign out of Chrome dialog when the account has enterprise management, and all user data will be erased">
         You are signing out of an account managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.

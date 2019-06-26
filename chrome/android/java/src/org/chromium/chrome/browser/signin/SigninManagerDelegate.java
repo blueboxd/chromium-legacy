@@ -73,9 +73,11 @@ public interface SigninManagerDelegate {
      * @param signinManager a reference on SigninManager used for the native calls
      * @param nativeSigninManagerAndroid a reference on the native SigninManager used for native
      *                                   calls
-     * @param isManaged if the account is managed, which triggers a different cleanup flow
+     * @param isManagedOrForceWipe if the account is managed or force wipe enabled, which triggers a
+     *                            different cleanup flow
      * @param wipeDataCallback to be called once profile data cleanup is complete
      */
     public void disableSyncAndWipeData(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, boolean isManaged, Runnable wipeDataCallback);
+            long nativeSigninManagerAndroid, boolean isManagedOrForceWipe,
+            Runnable wipeDataCallback);
 }

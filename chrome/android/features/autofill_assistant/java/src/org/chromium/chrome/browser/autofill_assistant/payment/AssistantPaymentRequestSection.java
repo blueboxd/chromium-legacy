@@ -231,7 +231,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         } else if (mSectionExpander.isExpanded()) {
             // Section is expanded, i.e., the expanded widget is the bottom-most widget.
             mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);
-            setBottomPadding(mSectionExpander.getExpandedView(), mBottomPadding);
+            // No need to set additional bottom padding, expanded sections have enough already.
         } else {
             // Section is non-empty and collapsed -> collapsed widget is the bottom-most widget.
             mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);

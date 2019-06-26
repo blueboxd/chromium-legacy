@@ -9,7 +9,12 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
@@ -32,8 +37,10 @@ public class SignOutDialogFragment extends DialogFragment implements
     public interface SignOutDialogListener {
         /**
          * Called when the user clicks "Sign out".
+         *
+         * @param forceWipeUserData Whether the user selected to wipe local device data.
          */
-        void onSignOutClicked();
+        void onSignOutClicked(boolean forceWipeUserData);
 
         /**
          * Called when the dialog is dismissed.
@@ -45,6 +52,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     }
 
     private boolean mSignOutClicked;
+    private CheckBox mWipeUserData;
 
     /**
      * The GAIA service that's prompted this dialog.
@@ -59,6 +67,9 @@ public class SignOutDialogFragment extends DialogFragment implements
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)) {
+                return createDialogUnifiedConsentAndForceWipeDataFeatureEnabled();
+            }
             return createDialogUnifiedConsentFeatureEnabled();
         }
         return createDialogPreUnifiedConsent();
@@ -67,7 +78,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     private Dialog createDialogUnifiedConsentFeatureEnabled() {
         String domain = SigninManager.get().getManagementDomain();
         String message = domain == null
-                ? getString(R.string.signout_message)
+                ? getString(R.string.signout_message_without_remove_local_data)
                 : getString(R.string.signout_managed_account_message, domain);
         return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(R.string.signout_title)
@@ -90,14 +101,43 @@ public class SignOutDialogFragment extends DialogFragment implements
                 .create();
     }
 
+    private Dialog createDialogUnifiedConsentAndForceWipeDataFeatureEnabled() {
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog);
+        LayoutInflater inflater = LayoutInflater.from(builder.getContext());
+        View body = inflater.inflate(R.layout.signout_wipe_storage_dialog, null);
+
+        String domain = SigninManager.get().getManagementDomain();
+        TextView message = body.findViewById(android.R.id.message);
+        mWipeUserData = body.findViewById(R.id.remove_local_data);
+
+        if (domain != null) {
+            message.setText(getString(R.string.signout_managed_account_message, domain));
+            // The account is managed, so data will be wiped anyway.
+            mWipeUserData.setVisibility(View.GONE);
+        } else {
+            message.setText(getString(R.string.signout_message));
+        }
+        return builder.setTitle(R.string.signout_title)
+                .setView(body)
+                .setPositiveButton(R.string.continue_button, this)
+                .setNegativeButton(R.string.cancel, this)
+                .create();
+    }
+
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
 
             mSignOutClicked = true;
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFER_WIPE_DATA_ON_SIGNOUT)
+                    && SigninManager.get().getManagementDomain() == null) {
+                RecordHistogram.recordBooleanHistogram(
+                        "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
+            }
             SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
-            targetFragment.onSignOutClicked();
+            targetFragment.onSignOutClicked(mWipeUserData.isChecked());
         }
     }
 

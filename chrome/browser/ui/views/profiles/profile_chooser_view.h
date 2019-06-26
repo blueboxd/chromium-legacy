@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace views {
 class Button;
@@ -61,6 +62,11 @@ class ProfileChooserView : public ProfileMenuViewBase,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::StyledLabelListener
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
 
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
@@ -119,6 +125,10 @@ class ProfileChooserView : public ProfileMenuViewBase,
                             sync_ui_util::AvatarSyncErrorType error,
                             int button_string_id);
 
+  // Add a view showing that the reason for the sync paused is in the cookie
+  // settings setup. On click, will direct to the cookie settings page.
+  void AddSyncPausedReasonCookiesClearedOnExit();
+
   // Adds a promo for signin, if dice is not enabled.
   void AddPreDiceSigninPromo();
 
@@ -167,6 +177,8 @@ class ProfileChooserView : public ProfileMenuViewBase,
   views::Button* addresses_button_;
   views::Button* signout_button_;
   views::Button* manage_google_account_button_;
+
+  views::StyledLabel* cookies_cleared_on_exit_label_;
 
   // View for the signin/turn-on-sync button in the dice promo.
   DiceSigninButtonView* dice_signin_button_view_;

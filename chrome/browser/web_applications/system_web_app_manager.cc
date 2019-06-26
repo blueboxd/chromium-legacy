@@ -54,7 +54,8 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   return infos;
 }
 
-InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info) {
+InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
+                                                bool force_update) {
   DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
   web_app::InstallOptions install_options(info.install_url,
@@ -64,7 +65,7 @@ InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info) {
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   install_options.bypass_service_worker_check = true;
-  install_options.always_update = true;
+  install_options.always_update = force_update;
   return install_options;
 }
 
@@ -99,14 +100,6 @@ SystemWebAppManager::~SystemWebAppManager() = default;
 void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
 
-  // Clear the last update pref here to force uninstall, and to ensure that when
-  // the flag is enabled again, an update is triggered.
-  if (!IsEnabled())
-    pref_service_->ClearPref(prefs::kSystemWebAppLastUpdateVersion);
-
-  if (!NeedsUpdate())
-    return;
-
   std::map<AppId, GURL> installed_apps =
       pending_app_manager_->registrar()->GetExternallyInstalledApps(
           InstallSource::kSystemInstalled);
@@ -127,7 +120,7 @@ void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
     // Skipping this will uninstall all System Apps currently installed.
     for (const auto& app : system_app_infos_) {
       install_options_list.push_back(
-          CreateInstallOptionsForSystemApp(app.second));
+          CreateInstallOptionsForSystemApp(app.second, NeedsUpdate()));
     }
   }
 

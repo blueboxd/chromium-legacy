@@ -277,7 +277,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '41c24ee4eb6960c751993b85e7ff86f7431f449b',
+  'dawn_revision': '751252e3724b07062858af91e72dadb6379244ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -836,7 +836,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '667fa910dad2fd97131a35a95bd125bf391adc50',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd9ae33420aaf0679a2435e580cedff314929fa65',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),

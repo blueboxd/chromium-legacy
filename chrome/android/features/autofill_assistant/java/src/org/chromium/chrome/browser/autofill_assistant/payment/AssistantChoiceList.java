@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Space;
 import android.widget.TextView;
@@ -72,11 +73,11 @@ public class AssistantChoiceList extends GridLayout {
     /**
      * |mAddButton| and |mAddButtonLabel| are guaranteed to be non-null if |mCanAddItems| is true.
      */
-    private final ChromeImageView mAddButton;
+    private final View mAddButton;
     private final TextView mAddButtonLabel;
     private final int mRowSpacing;
     private final int mColumnSpacing;
-    private final int mAddButtonSpacing;
+    private final int mMinimumTouchTargetSize;
     private final List<Item> mItems = new ArrayList<>();
     private boolean mAllowMultipleChoices;
     private Runnable mAddButtonListener;
@@ -92,8 +93,8 @@ public class AssistantChoiceList extends GridLayout {
                 : null;
         mRowSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_row_spacing, 0);
         mColumnSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_column_spacing, 0);
-        mAddButtonSpacing = context.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_choicelist_add_button_spacing);
+        mMinimumTouchTargetSize = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_minimum_touch_target_size);
         a.recycle();
 
         // One column for the radio buttons, one for the content, one for the edit buttons.
@@ -101,17 +102,14 @@ public class AssistantChoiceList extends GridLayout {
 
         if (mCanAddItems) {
             mAddButton = createAddButtonIcon();
-            mAddButtonLabel = createAddButtonLabel(addButtonText);
-
             addViewInternal(mAddButton, -1, createRadioButtonLayoutParams());
+
+            mAddButtonLabel = createAddButtonLabel(addButtonText);
             GridLayout.LayoutParams lp =
                     new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(1, 2));
-            lp.setGravity(Gravity.FILL_HORIZONTAL | Gravity.CENTER_VERTICAL);
+            lp.setGravity(Gravity.FILL | Gravity.CENTER_VERTICAL);
             lp.width = 0;
             addViewInternal(mAddButtonLabel, -1, lp);
-
-            // Set margin to 0 because list is currently empty.
-            updateAddButtonMargins(0);
         } else {
             mAddButton = null;
             mAddButtonLabel = null;
@@ -167,17 +165,20 @@ public class AssistantChoiceList extends GridLayout {
             @Nullable Runnable itemEditedListener) {
         CompoundButton radioButton =
                 mAllowMultipleChoices ? new CheckBox(getContext()) : new RadioButton(getContext());
+        radioButton.setPadding(0, 0, mColumnSpacing, 0);
+
+        // Ensure minimum touch target size (buttons will auto-scale their height with this view).
+        view.setMinimumHeight(mMinimumTouchTargetSize);
+
         // Insert at end, before the `add' button (if any).
         int viewIndex = mCanAddItems ? indexOfChild(mAddButton) : getChildCount();
         addViewInternal(radioButton, viewIndex++, createRadioButtonLayoutParams());
         addViewInternal(view, viewIndex++, createContentLayoutParams());
 
-        ChromeImageView editButton = null;
-        View spacer = null;
+        View editButton = null;
+        LinearLayout spacer = null;
         if (hasEditButton) {
-            editButton = new ChromeImageView(getContext());
-            editButton.setImageResource(R.drawable.ic_edit_24dp);
-            editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            editButton = createEditButton();
             editButton.setOnClickListener(unusedView -> {
                 if (itemEditedListener != null) {
                     itemEditedListener.run();
@@ -185,7 +186,8 @@ public class AssistantChoiceList extends GridLayout {
             });
             addViewInternal(editButton, viewIndex++, createEditButtonLayoutParams());
         } else {
-            spacer = new Space(getContext());
+            spacer = createMinimumTouchSizeContainer();
+            spacer.addView(new Space(getContext()));
             addViewInternal(spacer, viewIndex++, createEditButtonLayoutParams());
         }
 
@@ -199,11 +201,6 @@ public class AssistantChoiceList extends GridLayout {
         radioButton.setOnClickListener(clickListener);
         view.setOnClickListener(clickListener);
         mItems.add(item);
-
-        // Need to adjust button margins after first item was inserted.
-        if (mItems.size() == 1) {
-            updateAddButtonMargins(mAddButtonSpacing);
-        }
     }
 
     /**
@@ -222,7 +219,6 @@ public class AssistantChoiceList extends GridLayout {
             }
         }
         mItems.clear();
-        updateAddButtonMargins(0);
     }
 
     public View getItem(int index) {
@@ -311,15 +307,19 @@ public class AssistantChoiceList extends GridLayout {
         super.addView(view, index, lp);
     }
 
-    private ChromeImageView createAddButtonIcon() {
+    private View createAddButtonIcon() {
         ChromeImageView addButtonIcon = new ChromeImageView(getContext());
         addButtonIcon.setImageResource(R.drawable.ic_autofill_assistant_add_circle_24dp);
-        addButtonIcon.setOnClickListener(unusedView -> {
+        LinearLayout container = new LinearLayout(getContext());
+        container.setGravity(Gravity.CENTER);
+        container.setPadding(0, 0, mColumnSpacing, 0);
+        container.addView(addButtonIcon);
+        container.setOnClickListener(unusedView -> {
             if (mAddButtonListener != null) {
                 mAddButtonListener.run();
             }
         });
-        return addButtonIcon;
+        return container;
     }
 
     private TextView createAddButtonLabel(String addButtonText) {
@@ -332,6 +332,8 @@ public class AssistantChoiceList extends GridLayout {
                 mAddButtonListener.run();
             }
         });
+        addButtonLabel.setMinimumHeight(mMinimumTouchTargetSize);
+        addButtonLabel.setGravity(Gravity.CENTER_VERTICAL);
         return addButtonLabel;
     }
 
@@ -339,7 +341,7 @@ public class AssistantChoiceList extends GridLayout {
         // Set layout params to let content grow to maximum size.
         GridLayout.LayoutParams lp =
                 new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(1, 1));
-        lp.setGravity(Gravity.FILL_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        lp.setGravity(Gravity.FILL | Gravity.CENTER_VERTICAL);
         lp.width = 0;
         lp.topMargin = mItems.isEmpty() ? 0 : mRowSpacing;
         return lp;
@@ -348,42 +350,38 @@ public class AssistantChoiceList extends GridLayout {
     private GridLayout.LayoutParams createRadioButtonLayoutParams() {
         GridLayout.LayoutParams lp =
                 new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(0, 1));
-        lp.setGravity(Gravity.CENTER);
-        lp.setMarginEnd(mColumnSpacing);
+        lp.setGravity(Gravity.CENTER | Gravity.FILL);
         lp.topMargin = mItems.isEmpty() ? 0 : mRowSpacing;
         return lp;
     }
 
     private GridLayout.LayoutParams createEditButtonLayoutParams() {
-        int editButtonSize = getContext().getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_choicelist_edit_button_size);
         GridLayout.LayoutParams lp =
                 new GridLayout.LayoutParams(GridLayout.spec(UNDEFINED), GridLayout.spec(2, 1));
         lp.setGravity(Gravity.CENTER_VERTICAL | Gravity.FILL_VERTICAL);
         lp.setMarginStart(mColumnSpacing);
-        lp.width = editButtonSize;
-        lp.height = editButtonSize;
         lp.topMargin = mItems.isEmpty() ? 0 : mRowSpacing;
         return lp;
     }
 
-    /**
-     * Adjusts the margins of the 'add' button.
-     *
-     * For empty lists, the margins should be 0. For non-empty lists, the margins should be equal
-     * to |mRowSpacing|.
-     */
-    private void updateAddButtonMargins(int marginTop) {
-        if (!mCanAddItems) {
-            return;
-        }
+    private View createEditButton() {
+        int editButtonSize = getContext().getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_choicelist_edit_button_size);
+        ChromeImageView editButton = new ChromeImageView(getContext());
+        editButton.setImageResource(R.drawable.ic_edit_24dp);
+        editButton.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        editButton.setLayoutParams(new ViewGroup.LayoutParams(editButtonSize, editButtonSize));
 
-        LayoutParams lp = (LayoutParams) mAddButton.getLayoutParams();
-        lp.setMargins(lp.leftMargin, marginTop, lp.rightMargin, lp.bottomMargin);
-        mAddButton.setLayoutParams(lp);
+        LinearLayout editButtonLayout = createMinimumTouchSizeContainer();
+        editButtonLayout.setGravity(Gravity.CENTER);
+        editButtonLayout.addView(editButton);
+        return editButtonLayout;
+    }
 
-        lp = (LayoutParams) mAddButtonLabel.getLayoutParams();
-        lp.setMargins(lp.leftMargin, marginTop, lp.rightMargin, lp.bottomMargin);
-        mAddButtonLabel.setLayoutParams(lp);
+    private LinearLayout createMinimumTouchSizeContainer() {
+        LinearLayout container = new LinearLayout(getContext());
+        container.setMinimumWidth(mMinimumTouchTargetSize);
+        container.setMinimumHeight(mMinimumTouchTargetSize);
+        return container;
     }
 }

@@ -86,6 +86,13 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
 
+  bool IsInstalled(const GURL& install_url) {
+    return pending_app_manager()
+        ->registrar()
+        ->LookupExternalAppId(install_url)
+        .has_value();
+  }
+
  protected:
   TestPendingAppManager* pending_app_manager() {
     return test_pending_app_manager_;
@@ -213,6 +220,9 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
+  const std::vector<InstallOptions>& install_requests =
+      pending_app_manager()->install_requests();
+
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
@@ -222,26 +232,37 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
   system_web_app_manager()->Start(ui_delegate());
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
-  // Create another app. The version hasn't changed so the install won't
-  // process.
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].always_update);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+
+  // Create another app. The version hasn't changed, but we should immediately
+  // install anyway, as if a user flipped a chrome://flag. The first app won't
+  // force reinstall.
   system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start(ui_delegate());
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
-  // Bump the version number, and the install will trigger, and request
-  // installation of both apps.
+  EXPECT_EQ(3u, install_requests.size());
+  EXPECT_FALSE(install_requests[1].always_update);
+  EXPECT_FALSE(install_requests[2].always_update);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation of both apps.
   system_web_app_manager()->set_current_version(base::Version("2.0.0.0"));
   system_web_app_manager()->Start(ui_delegate());
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
+
+  EXPECT_EQ(5u, install_requests.size());
+  EXPECT_TRUE(install_requests[3].always_update);
+  EXPECT_TRUE(install_requests[4].always_update);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
 
   {
     // Disabling System Web Apps uninstalls even without a version change.
@@ -249,16 +270,36 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
     system_web_app_manager()->Start(ui_delegate());
-
     base::RunLoop().RunUntilIdle();
+
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
+    EXPECT_FALSE(IsInstalled(kAppUrl1));
+    EXPECT_FALSE(IsInstalled(kAppUrl2));
   }
 
   // Re-enabling System Web Apps installs even without a version change.
   system_web_app_manager()->Start(ui_delegate());
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
+
+  EXPECT_EQ(7u, install_requests.size());
+  EXPECT_FALSE(install_requests[5].always_update);
+  EXPECT_FALSE(install_requests[6].always_update);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+
+  // Changing the install URL of a system app propagates even without a version
+  // change.
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl3};
+  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->Start(ui_delegate());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(9u, install_requests.size());
+  EXPECT_FALSE(install_requests[7].always_update);
+  EXPECT_FALSE(install_requests[8].always_update);
+  EXPECT_FALSE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+  EXPECT_TRUE(IsInstalled(kAppUrl3));
 }
 
 }  // namespace web_app

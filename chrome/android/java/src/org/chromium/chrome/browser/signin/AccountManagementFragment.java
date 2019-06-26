@@ -432,15 +432,15 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     @Override
-    public void onSignOutClicked() {
+    public void onSignOutClicked(boolean forceWipeUserData) {
         // In case the user reached this fragment without being signed in, we guard the sign out so
         // we do not hit a native crash.
         if (!ChromeSigninController.get().isSignedIn()) return;
 
         final Activity activity = getActivity();
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
-        SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, null,
-                new SigninManager.WipeDataHooks() {
+        SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
+                null, new SigninManager.WipeDataHooks() {
                     @Override
                     public void preWipeData() {
                         clearDataProgressDialog.show(
@@ -452,7 +452,7 @@ public class AccountManagementFragment extends PreferenceFragment
                             clearDataProgressDialog.dismissAllowingStateLoss();
                         }
                     }
-                });
+                }, forceWipeUserData);
         SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
     }
 
@@ -466,7 +466,7 @@ public class AccountManagementFragment extends PreferenceFragment
     // ConfirmManagedSyncDataDialog.Listener implementation
     @Override
     public void onConfirm() {
-        onSignOutClicked();
+        onSignOutClicked(false);
     }
 
     @Override

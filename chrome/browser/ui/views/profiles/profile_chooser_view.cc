@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
@@ -94,6 +95,12 @@ void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
   Navigate(&params);
 }
 
+bool AreSigninCookiesClearedOnExit(Profile* profile) {
+  SigninClient* client =
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
+  return client->AreSigninCookiesDeletedOnExit();
+}
+
 #if defined(GOOGLE_CHROME_BUILD)
 // Returns the Google G icon in grey and with a padding of 2. The padding is
 // needed to make the icon look smaller, otherwise it looks too big compared to
@@ -158,6 +165,7 @@ void ProfileChooserView::Reset() {
   addresses_button_ = nullptr;
   signout_button_ = nullptr;
   manage_google_account_button_ = nullptr;
+  cookies_cleared_on_exit_label_ = nullptr;
 }
 
 void ProfileChooserView::Init() {
@@ -395,6 +403,17 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   }
 }
 
+void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
+  DCHECK_EQ(cookies_cleared_on_exit_label_, label);
+  chrome::ShowSettingsSubPage(browser(), chrome::kContentSettingsSubPage +
+                                             std::string("/") +
+                                             chrome::kCookieSettingsSubPage);
+  base::RecordAction(
+      base::UserMetricsAction("ProfileChooser_CookieSettingsClicked"));
+}
+
 void ProfileChooserView::AddProfileChooserView(AvatarMenu* avatar_menu) {
   // Separate items into active and alternatives.
   const AvatarMenu::Item* active_item = nullptr;
@@ -491,6 +510,10 @@ void ProfileChooserView::AddDiceSyncErrorView(
 
   AddMenuGroup();
 
+  if (show_sync_paused_ui &&
+      AreSigninCookiesClearedOnExit(browser()->profile())) {
+    AddSyncPausedReasonCookiesClearedOnExit();
+  }
   // Add profile card.
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
       show_sync_paused_ui
@@ -520,6 +543,38 @@ void ProfileChooserView::AddDiceSyncErrorView(
     base::RecordAction(
         base::UserMetricsAction("ProfileChooser_SignInAgainDisplayed"));
   }
+}
+
+void ProfileChooserView::AddSyncPausedReasonCookiesClearedOnExit() {
+  size_t offset = 0;
+  std::unique_ptr<views::StyledLabel> sync_paused_reason =
+      std::make_unique<views::StyledLabel>(base::string16(), this);
+
+  base::string16 link_text = l10n_util::GetStringUTF16(
+      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT);
+
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT, link_text, &offset);
+
+  sync_paused_reason->SetText(message);
+  // Mark the link text as link.
+  sync_paused_reason->AddStyleRange(
+      gfx::Range(offset, offset + link_text.length()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  // Mark the rest of the text as secondary text.
+  views::StyledLabel::RangeStyleInfo message_style;
+  message_style.text_style = STYLE_SECONDARY;
+  gfx::Range before_link_range(0, offset);
+  if (!before_link_range.is_empty())
+    sync_paused_reason->AddStyleRange(before_link_range, message_style);
+
+  gfx::Range after_link_range(offset + link_text.length(), message.length());
+  if (!after_link_range.is_empty())
+    sync_paused_reason->AddStyleRange(after_link_range, message_style);
+
+  cookies_cleared_on_exit_label_ = sync_paused_reason.get();
+  AddViewItem(std::move(sync_paused_reason));
 }
 
 void ProfileChooserView::AddCurrentProfileView(

@@ -16755,6 +16755,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ProfileChooser_CookieSettingsClicked">
+  <owner>msalama@chromium.org</owner>
+  <description>
+    User clicked on settings from the user menu prompted message to go to cookie
+    settings. The prompt was shown because sync is paused due to cookie settings
+    set to clear cookies on exit.
+  </description>
+</action>
+
 <action name="ProfileChooser_GuestClicked">
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>

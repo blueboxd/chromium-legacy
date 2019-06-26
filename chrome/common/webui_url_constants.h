@@ -297,6 +297,7 @@ extern const char kAddressesSubPage[];
 extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
+extern const char kCookieSettingsSubPage[];
 extern const char kCreateProfileSubPage[];
 extern const char kDeprecatedExtensionsSubPage[];
 extern const char kHandlerSettingsSubPage[];

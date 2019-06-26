@@ -22,7 +22,7 @@ interface BundledExchangesParser {
 // Data source that provides application/webbundle data to the parser.
 interface BundleDataSource {
   GetSize() => (uint64 size);
-  Read(uint64 offset, uint64 length) => (bool success, array<uint8>? buffer);
+  Read(uint64 offset, uint64 length) => (array<uint8>? buffer);
 };
 
 struct BundleMetadata {

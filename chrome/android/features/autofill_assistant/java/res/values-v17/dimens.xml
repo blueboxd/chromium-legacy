@@ -23,8 +23,11 @@
     <dimen name="autofill_assistant_toolbar_vertical_padding">8dp</dimen>
     <dimen name="autofill_assistant_toolbar_swipe_handle_height">4dp</dimen>
     <dimen name="autofill_assistant_choicelist_edit_button_size">20dp</dimen>
-    <dimen name="autofill_assistant_choicelist_add_button_spacing">12dp</dimen>
+    <dimen name="autofill_assistant_minimum_touch_target_size">48dp</dimen>
 
+    <!-- This is less than autofill_assistant_bottombar_horizontal_spacing to allow for larger
+         touch targets at the right side of the PR, while keeping alignment with bottom bar. -->
+    <dimen name="autofill_assistant_payment_request_choice_list_padding_end">12dp</dimen>
     <!-- Amount of padding between a PR section and the next divider (and vice-versa). -->
     <dimen name="autofill_assistant_payment_request_section_padding">12dp</dimen>
     <!-- Amount of padding between PR section title and summary/expanded part. -->

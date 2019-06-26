@@ -860,7 +860,6 @@ crbug.com/591099 [ Mac ] paint/text/text-match-highlights-big-line-height.html [
 crbug.com/591099 [ Mac ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ Failure ]
 crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descendant-of-flex.html [ Failure ]
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
-crbug.com/591099 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Failure ]
 crbug.com/591099 [ Mac ] images/feature-policy-oversized-images-resize.html [ Failure ]
 crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ Failure Pass ]
 crbug.com/591099 [ Mac10.11 ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
@@ -6218,3 +6217,4 @@ crbug.com/535738 external/wpt/media-source/mediasource-changetype-play-without-c
 crbug.com/978587 external/wpt/largest-contentful-paint/observe-image.html [ Pass Failure ]
 
 crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]
+crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Pass Crash ]

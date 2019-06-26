@@ -115,6 +115,29 @@ public class SigninManagerTest {
     }
 
     @Test
+    public void signOutFromJavaWithNullDomainAndForceWipe() {
+        // Stub out various native calls. Some of these are verified as never called
+        // and those stubs simply allow that verification to catch any issues.
+        doNothing().when(mNativeMock).signOut(any(), anyLong(), anyInt());
+        doNothing().when(mDelegateMock).disableSyncAndWipeData(any(), anyLong(), eq(false), any());
+        // See verification of nativeWipeGoogleServiceWorkerCaches below.
+        doReturn(null).when(mDelegateMock).getManagementDomain();
+
+        // Trigger the sign out flow!
+        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, null, true);
+
+        // nativeSignOut should be called *before* clearing any account data.
+        // http://crbug.com/589028
+        verify(mNativeMock, times(1)).signOut(any(), anyLong(), eq(SignoutReason.SIGNOUT_TEST));
+        verify(mDelegateMock, never()).disableSyncAndWipeData(any(), anyLong(), eq(false), any());
+
+        // Simulate native callback to trigger clearing of account data.
+        mSigninManager.onNativeSignOut();
+
+        verify(mDelegateMock, times(1)).disableSyncAndWipeData(any(), anyLong(), eq(true), any());
+    }
+
+    @Test
     public void signOutFromNativeWithManagedDomain() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.

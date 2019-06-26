@@ -90,9 +90,10 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
 
     @Override
     public void disableSyncAndWipeData(@JCaller SigninManager signinManager,
-            long nativeSigninManagerAndroid, boolean isManaged, final Runnable wipeDataCallback) {
+            long nativeSigninManagerAndroid, boolean isManagedOrForceWipe,
+            final Runnable wipeDataCallback) {
         mAndroidSyncSettings.updateAccount(null);
-        if (isManaged) {
+        if (isManagedOrForceWipe) {
             SigninManagerJni.get().wipeProfileData(
                     signinManager, nativeSigninManagerAndroid, wipeDataCallback);
         } else {

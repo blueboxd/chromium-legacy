@@ -86,16 +86,16 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   initialized_ = true;
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs());
-  io_data_->safe_browsing_enabled()->MoveToThread(
+  io_data_->safe_browsing_enabled()->MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   io_data_->safe_browsing_whitelist_domains()->Init(
       prefs::kSafeBrowsingWhitelistDomains, profile_->GetPrefs());
-  io_data_->safe_browsing_whitelist_domains()->MoveToThread(
+  io_data_->safe_browsing_whitelist_domains()->MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #if BUILDFLAG(ENABLE_PLUGINS)
   io_data_->always_open_pdf_externally()->Init(
       prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());
-  io_data_->always_open_pdf_externally()->MoveToThread(
+  io_data_->always_open_pdf_externally()->MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 #endif
   io_data_->InitializeOnUIThread(profile_);

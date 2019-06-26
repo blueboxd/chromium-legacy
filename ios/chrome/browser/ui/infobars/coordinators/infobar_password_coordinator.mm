@@ -196,9 +196,13 @@
 
 - (void)neverSaveCredentialsForCurrentSite {
   self.passwordInfoBarDelegate->Cancel();
-  // Completely remove the Infobar along with its badge after blacklisting the
-  // Website.
-  [self detachView];
+  [self dismissInfobarModal:self
+                   animated:YES
+                 completion:^{
+                   // Completely remove the Infobar along with its badge after
+                   // blacklisting the Website.
+                   [self detachView];
+                 }];
 }
 
 - (void)presentPasswordSettings {

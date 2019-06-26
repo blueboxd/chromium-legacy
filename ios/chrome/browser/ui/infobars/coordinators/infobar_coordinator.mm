@@ -37,6 +37,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly) infobars::InfoBarDelegate* infobarDelegate;
+// NavigationController that contains the modalViewController.
+@property(nonatomic, weak) UINavigationController* modalNavigationController;
 // The transition delegate used by the Coordinator to present the InfobarBanner.
 // nil if no Banner is being presented.
 @property(nonatomic, strong)
@@ -173,7 +175,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (void)detachView {
-  [self dismissInfobarBanner:self animated:YES completion:nil];
+  [self dismissInfobarBanner:self animated:NO completion:nil];
+  [self dismissInfobarModal:self animated:NO completion:nil];
   [self stop];
 }
 
@@ -269,14 +272,14 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                  completion:(ProceduralBlock)completion {
   DCHECK(self.baseViewController);
   if (self.baseViewController.presentedViewController) {
-    // Deselect infobar badge in parallel with modal dismissal.
-    [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
-    __weak __typeof(self) weakSelf = self;
-
     // If the Modal is being presented by the Banner, call dismiss on it.
     // This way the modal dismissal will animate correctly and the completion
     // block cleans up the banner correctly.
-    if (self.bannerViewController.presentedViewController) {
+    if (self.baseViewController.presentedViewController ==
+        self.bannerViewController) {
+      // Deselect infobar badge in parallel with modal dismissal.
+      [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
+      __weak __typeof(self) weakSelf = self;
       [self.bannerViewController
           dismissViewControllerAnimated:animated
                              completion:^{
@@ -284,7 +287,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                                    dismissInfobarBannerAnimated:NO
                                                      completion:completion];
                              }];
-    } else {
+
+    } else if (self.baseViewController.presentedViewController ==
+               self.modalNavigationController) {
+      // Deselect infobar badge in parallel with modal dismissal.
+      [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
       [self.baseViewController dismissViewControllerAnimated:animated
                                                   completion:^{
                                                     if (completion)
@@ -359,6 +366,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
       initWithRootViewController:self.modalViewController];
   navController.transitioningDelegate = driver;
   navController.modalPresentationStyle = UIModalPresentationCustom;
+  self.modalNavigationController = navController;
   [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:nil];

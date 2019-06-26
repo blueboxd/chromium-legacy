@@ -4,6 +4,7 @@
 
 package org.chromium.customtabs.test;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -30,8 +31,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /** Activity used to benchmark Custom Tabs PLT.
@@ -279,6 +284,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     /**
+     * Holds the file and the range for pinning. Used only in the 'Pinning Benchmark' mode.
+     */
+    private static class PinInfo {
+        public boolean pinningBenchmark;
+        public String fileName;
+        public int offset;
+        public int length;
+
+        public PinInfo() {}
+
+        public PinInfo(boolean pinningBenchmark, String fileName, int offset, int length) {
+            this.pinningBenchmark = pinningBenchmark;
+            this.fileName = fileName;
+            this.offset = offset;
+            this.length = length;
+        }
+    }
+
+    /**
      * Holds immutable parameters of the benchmark that are not needed after launching an intent.
      *
      * There are a few parameters that need to be written to the CSV line, those better fit in the
@@ -321,7 +345,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (speculationMode == null) speculationMode = "prerender";
         int timeoutSeconds = intent.getIntExtra("timeout", NONE);
 
-        if (parallelUrl != null && !warmup) {
+        PinInfo pinInfo;
+        if (!intent.getBooleanExtra("pinning_benchmark", false)) {
+            pinInfo = new PinInfo();
+        } else {
+            pinInfo = new PinInfo(true, intent.getStringExtra("pin_filename"),
+                    intent.getIntExtra("pin_offset", NONE), intent.getIntExtra("pin_length", NONE));
+        }
+        int extraBriefMemoryMb = intent.getIntExtra("extra_brief_memory_mb", 0);
+
+        if (parallelUrl != null && !parallelUrl.equals("") && !warmup) {
+            if (pinInfo.pinningBenchmark) {
+                String message = "Warming up while pinning is not interesting";
+                Log.e(TAG, message);
+                throw new RuntimeException(message);
+            }
             Log.w(TAG, "Parallel URL provided, forcing warmup");
             warmup = true;
             delayToLaunchUrl = Math.max(delayToLaunchUrl, PARALLEL_REQUEST_MIN_DELAY_AFTER_WARMUP);
@@ -329,8 +367,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Math.max(delayToMayLaunchUrl, PARALLEL_REQUEST_MIN_DELAY_AFTER_WARMUP);
         }
 
-        final CustomCallback cb = new CustomCallback(packageName, warmup, skipLauncherActivity,
-                speculationMode, delayToMayLaunchUrl, delayToLaunchUrl);
+        final CustomCallback cb =
+                new CustomCallback(packageName, warmup, skipLauncherActivity, speculationMode,
+                        delayToMayLaunchUrl, delayToLaunchUrl, pinInfo, extraBriefMemoryMb);
         launchCustomTabs(cb, new LaunchInfo(url, speculatedUrl, parallelUrl, timeoutSeconds));
     }
 
@@ -346,15 +385,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
         public long pageLoadStartedMs = NONE;
         public long pageLoadFinishedMs = NONE;
         public long firstContentfulPaintMs = NONE;
+        public PinInfo pinInfo;
+        public long extraBriefMemoryMb;
 
         public CustomCallback(String packageName, boolean warmup, boolean skipLauncherActivity,
-                String speculationMode, int delayToMayLaunchUrl, int delayToLaunchUrl) {
+                String speculationMode, int delayToMayLaunchUrl, int delayToLaunchUrl,
+                PinInfo pinInfo, long extraBriefMemoryMb) {
             this.packageName = packageName;
             this.warmup = warmup;
             this.skipLauncherActivity = skipLauncherActivity;
             this.speculationMode = speculationMode;
             this.delayToMayLaunchUrl = delayToMayLaunchUrl;
             this.delayToLaunchUrl = delayToLaunchUrl;
+            this.pinInfo = pinInfo;
+            this.extraBriefMemoryMb = extraBriefMemoryMb;
         }
 
         public void recordIntentHasBeenSent() {
@@ -408,6 +452,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     + speculationMode + "," + delayToMayLaunchUrl + "," + delayToLaunchUrl + ","
                     + intentSentMs + "," + pageLoadStartedMs + "," + pageLoadFinishedMs + ","
                     + firstContentfulPaintMs;
+            if (pinInfo.pinningBenchmark) {
+                logLine += ',' + extraBriefMemoryMb + ',' + pinInfo.length;
+            }
             Log.w(TAGCSV, logLine);
             logMemory(packageName, "AfterMetrics");
             MainActivity.this.finish();
@@ -503,6 +550,106 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (!ok) throw new RuntimeException("Cannot set the speculation mode");
     }
 
+    // Declare as public and volatile to prevent it from being optimized out.
+    private static volatile ArrayList<byte[]> sExtraArrays = new ArrayList<>();
+
+    private static final int MAX_ALLOCATION_ALLOWED = 1 << 23; // 8 MiB
+
+    private static byte[] createRandomlyFilledArray(int size, Random random) {
+        // Fill in small chunks to avoid allocating 2x the size.
+        byte[] array = new byte[size];
+        final int chunkSize = 1 << 15; // 32 KiB
+        byte[] randomBytes = new byte[chunkSize];
+        for (int i = 0; i < size / chunkSize; i++) {
+            random.nextBytes(randomBytes);
+            System.arraycopy(randomBytes /* src */, 0 /* srcPos */, array /* dest */,
+                    i * chunkSize /* destPos */, chunkSize /* length */);
+        }
+        return array;
+    }
+
+    // In order for this method to work, the Android system image needs to be modified to export
+    // PinnerService and allow any app to call pinRangeFromFile(). Usually pinning is requested by
+    // Chrome (in LibraryPrefetcher), but the call is reimplemented here to avoid restarting
+    // Chrome unnecessarily.
+    @SuppressLint("WrongConstant")
+    private boolean pinChrome(String fileName, int startOffset, int length) {
+        Context context = getApplicationContext();
+        Object pinner = context.getSystemService("pinner");
+        if (pinner == null) {
+            Log.w(TAG, "Cannot get PinnerService.");
+            return false;
+        }
+
+        try {
+            Method pinRangeFromFile = pinner.getClass().getMethod(
+                    "pinRangeFromFile", String.class, int.class, int.class);
+            boolean ok = (Boolean) pinRangeFromFile.invoke(pinner, fileName, startOffset, length);
+            if (!ok) {
+                Log.e(TAG, "Not allowed to call the method, should not happen");
+                return false;
+            } else {
+                Log.w(TAG, "Successfully pinned ordered code");
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            Log.w(TAG, "Error invoking the method. " + ex.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    // In order for this method to work, the Android system image needs to be modified to export
+    // PinnerService and allow any app to call unpinChromeFiles().
+    @SuppressLint("WrongConstant")
+    private boolean unpinChrome() {
+        Context context = getApplicationContext();
+        Object pinner = context.getSystemService("pinner");
+        if (pinner == null) {
+            Log.w(TAG, "Cannot get PinnerService for unpinning.");
+            return false;
+        }
+        try {
+            Method unpinChromeFiles = pinner.getClass().getMethod("unpinChromeFiles");
+            boolean ok = (Boolean) unpinChromeFiles.invoke(pinner);
+            if (!ok) {
+                Log.e(TAG, "Could not make a reflection call to unpinChromeFiles()");
+                return false;
+            } else {
+                Log.i(TAG, "Unpinned Chrome files");
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            Log.w(TAG, "Error invoking the method. " + ex.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private void consumeExtraMemoryBriefly(long amountMb) {
+        // Allocate memory and fill with random data. Randomization is needed to avoid efficient
+        // compression of the data in ZRAM.
+        Log.i(TAG, "Consuming extra memory (MiB) = " + amountMb);
+        int bytesToUse = (int) (amountMb * (1 << 20));
+        long beforeFill = SystemClock.uptimeMillis();
+        Random random = new Random();
+        do {
+            // Limit every allocation in size in case there is a per-allocation limit.
+            int size = bytesToUse < MAX_ALLOCATION_ALLOWED ? bytesToUse : MAX_ALLOCATION_ALLOWED;
+            bytesToUse -= MAX_ALLOCATION_ALLOWED;
+            sExtraArrays.add(createRandomlyFilledArray(size, random));
+        } while (bytesToUse > 0);
+        long afterFill = SystemClock.uptimeMillis() - beforeFill;
+        Log.i(TAG, "Time to fill extra memory (ms) = " + afterFill);
+
+        // Allow a number of background apps to be killed.
+        int amountToWaitForBackgroundKilling = 3000;
+        syncSleepMs(amountToWaitForBackgroundKilling);
+
+        // Free up memory to give Chrome the room to start without killing even more background
+        // apps.
+        sExtraArrays.clear();
+        System.gc();
+    }
+
     private void onCustomTabsServiceConnected(
             CustomTabsClient client, CustomCallback cb, LaunchInfo launchInfo) {
         logMemory(cb.packageName, "OnServiceConnected");
@@ -530,21 +677,33 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 cb.logMetricsAndFinishDelayed(launchInfo.timeoutSeconds * 1000);
         };
 
-        Runnable mayLaunchRunnable = () -> {
-            logMemory(cb.packageName, "BeforeMayLaunchUrl");
-            session.mayLaunchUrl(Uri.parse(launchInfo.speculatedUrl), null, null);
-            mHandler.postDelayed(launchRunnable, cb.delayToLaunchUrl);
-        };
-
-        if (cb.warmup) client.warmup(0);
-        if (cb.delayToMayLaunchUrl != NONE) {
-            mHandler.postDelayed(mayLaunchRunnable, cb.delayToMayLaunchUrl);
+        if (cb.pinInfo.pinningBenchmark) {
+            mHandler.post(launchRunnable); // Already waited for the delay.
         } else {
-            mHandler.postDelayed(launchRunnable, cb.delayToLaunchUrl);
+            if (cb.warmup) client.warmup(0);
+            if (cb.delayToMayLaunchUrl != NONE) {
+                final Runnable mayLaunchRunnable = () -> {
+                    logMemory(cb.packageName, "BeforeMayLaunchUrl");
+                    session.mayLaunchUrl(Uri.parse(launchInfo.speculatedUrl), null, null);
+                    mHandler.postDelayed(launchRunnable, cb.delayToLaunchUrl);
+                };
+                mHandler.postDelayed(mayLaunchRunnable, cb.delayToMayLaunchUrl);
+            } else {
+                mHandler.postDelayed(launchRunnable, cb.delayToLaunchUrl);
+            }
         }
     }
 
-    private void launchCustomTabs(CustomCallback cb, LaunchInfo launchInfo) {
+    private static void syncSleepMs(int delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            Log.w(TAG, "Interrupted: " + e);
+        }
+    }
+
+    private void continueWithServiceConnection(
+            final CustomCallback cb, final LaunchInfo launchInfo) {
         CustomTabsClient.bindCustomTabsService(
                 this, cb.packageName, new CustomTabsServiceConnection() {
                     @Override
@@ -556,5 +715,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     @Override
                     public void onServiceDisconnected(ComponentName name) {}
                 });
+    }
+
+    private void launchCustomTabs(CustomCallback cb, LaunchInfo launchInfo) {
+        final PinInfo pinInfo = cb.pinInfo;
+        if (!pinInfo.pinningBenchmark) {
+            continueWithServiceConnection(cb, launchInfo);
+        } else {
+            // Execute off the UI thread to allow slow operations like pinning or eating RAM for
+            // dinner.
+            new Thread(() -> {
+                if (pinInfo.length > 0) {
+                    boolean ok = pinChrome(pinInfo.fileName, pinInfo.offset, pinInfo.length);
+                    if (!ok) throw new RuntimeException("Failed to pin Chrome file.");
+                } else {
+                    boolean ok = unpinChrome();
+                    if (!ok) throw new RuntimeException("Failed to unpin Chrome file.");
+                }
+                // Pinning is async, wait until hopefully it finishes.
+                syncSleepMs(3000);
+                if (cb.extraBriefMemoryMb != 0) {
+                    consumeExtraMemoryBriefly(cb.extraBriefMemoryMb);
+                }
+                Log.i(TAG, "Waiting for " + cb.delayToLaunchUrl + "ms before launching URL");
+                syncSleepMs(cb.delayToLaunchUrl);
+                continueWithServiceConnection(cb, launchInfo);
+            }).start();
+        }
     }
 }

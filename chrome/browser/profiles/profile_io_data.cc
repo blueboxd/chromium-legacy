@@ -321,17 +321,17 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   profile_params_ = std::move(params);
 
   force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
-  force_google_safesearch_.MoveToThread(
+  force_google_safesearch_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
-  force_youtube_restrict_.MoveToThread(
+  force_youtube_restrict_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
-  allowed_domains_for_apps_.MoveToThread(
+  allowed_domains_for_apps_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
                                 pref_service);
-  signed_exchange_enabled_.MoveToThread(
+  signed_exchange_enabled_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
@@ -342,33 +342,33 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (!IsOffTheRecord()) {
     google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
                                           pref_service);
-    google_services_user_account_id_.MoveToThread(io_task_runner);
+    google_services_user_account_id_.MoveToSequence(io_task_runner);
     sync_suppress_start_.Init(syncer::prefs::kSyncSuppressStart, pref_service);
-    sync_suppress_start_.MoveToThread(io_task_runner);
+    sync_suppress_start_.MoveToSequence(io_task_runner);
     sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
                                     pref_service);
-    sync_first_setup_complete_.MoveToThread(io_task_runner);
+    sync_first_setup_complete_.MoveToSequence(io_task_runner);
   }
 
 #if !defined(OS_CHROMEOS)
   signin_scoped_device_id_.Init(prefs::kGoogleServicesSigninScopedDeviceId,
                                 pref_service);
-  signin_scoped_device_id_.MoveToThread(io_task_runner);
+  signin_scoped_device_id_.MoveToSequence(io_task_runner);
 #endif
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
                                    pref_service);
 
-  network_prediction_options_.MoveToThread(io_task_runner);
+  network_prediction_options_.MoveToSequence(io_task_runner);
 
   incognito_availibility_pref_.Init(prefs::kIncognitoModeAvailability,
                                     pref_service);
-  incognito_availibility_pref_.MoveToThread(io_task_runner);
+  incognito_availibility_pref_.MoveToSequence(io_task_runner);
 
 #if defined(OS_CHROMEOS)
   account_consistency_mirror_required_pref_.Init(
       prefs::kAccountConsistencyMirrorRequired, pref_service);
-  account_consistency_mirror_required_pref_.MoveToThread(io_task_runner);
+  account_consistency_mirror_required_pref_.MoveToSequence(io_task_runner);
 #endif
 
   // We need to make sure that content initializes its own data structures that

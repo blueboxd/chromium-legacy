@@ -134,6 +134,13 @@ chrome.test.runTests([
     chrome.test.assertEq(5,
       (await testEnv.onCompositionBoundsChanged()).length);
 
+    // Should commit "again" and set composition to "in".
+    await asyncInputMethodPrivate.setCompositionRange({
+      contextID: testEnv.getContextID(),
+      selectionBefore: 2,
+      selectionAfter: 0
+    });
+
     chrome.test.succeed();
   }
 ]);

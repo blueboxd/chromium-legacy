@@ -419,9 +419,13 @@ bool InputMethodEngineBase::SetCompositionRange(
     return false;
   }
 
-  // Can't change composition range when there's pending composition text.
-  if (!composition_text_->text.empty())
-    return false;
+  // When there is composition text, commit it to the text field first before
+  // changing the composition range.
+  if (!composition_text_->text.empty()) {
+    const std::string composition_text_utf8 =
+        base::UTF16ToUTF8(composition_text_->text);
+    CommitTextToInputContext(context_id, composition_text_utf8);
+  }
 
   std::vector<ui::ImeTextSpan> text_spans;
   for (const auto& segment : segments) {

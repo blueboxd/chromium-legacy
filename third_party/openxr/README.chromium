@@ -1,0 +1,21 @@
+Name: OpenXR SDK
+Short Name: OpenXR
+URL: https://github.com/KhronosGroup/OpenXR-SDK
+Version: 0.90.1
+Revision: e0c6e6794c3155eae791a704d5214df2eeaa46f0
+License: Apache 2.0
+License File: src/LICENSE
+Security Critical: yes
+
+Description:
+OpenXR is a royalty-free, open standard that provides high-performance access to
+Augmented Reality (AR) and Virtual Reality (VR)—collectively known as
+XR—platforms and devices.
+
+Local Modifications:
+
+
+Getting a new snapshot of the OpenXR loader library requires running the
+third_party/openxr/script/generate_openxr_headers_and_sources.py script and
+checking in the generated files located under third_party/openxr/gen and
+third_party/openxr/include.

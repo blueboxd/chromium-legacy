@@ -1,0 +1,449 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.test.pagecontroller.utils;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.uiautomator.StaleObjectException;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject2;
+
+import org.chromium.base.Log;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Convenience helper for IUi2Locators, with retry capability to reduce flakes.
+ *
+ * IUi2Locators contain matching criteria to find UI nodes on a device, but it
+ * lacks the ability to retry on failures.  They also do not give directly useful
+ * information such as the text displayed in an UI node that tests will likely need.
+ * This helper class provides these capabilities.
+ */
+public class UiLocatorHelper {
+    private static final String TAG = "UiLocatorHelper";
+    private static final long DEFAULT_TIMEOUT_MS = 3000L;
+    private static final long DEFAULT_MAX_UI_SETTLE_TIME_MS = 200L;
+    // UI_CHECK_INTERVAL_MS is intentionally not modifiable so that longer timeouts
+    // don't lead to slowness due to the checking interval being too coarse.
+    private static final long UI_CHECK_INTERVAL_MS = DEFAULT_TIMEOUT_MS / 4L;
+
+    private static final ElementConverter<String> CONVERTER_TEXT = object2 -> {
+        return object2.getText();
+    };
+
+    private static final ElementConverter<String> CONVERTER_DESC = object2 -> {
+        return object2.getContentDescription();
+    };
+
+    private static final ElementConverter<Boolean> CONVERTER_CHECKED = object2 -> {
+        if (object2.isCheckable()) {
+            return object2.isChecked();
+        } else {
+            throw UiLocationException.newInstance("Item is not checkable", null, object2);
+        }
+    };
+
+    private final UiDevice mDevice;
+    private long mTimeout;
+
+    public UiLocatorHelper() {
+        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        mTimeout = DEFAULT_TIMEOUT_MS;
+    }
+
+    /**
+     * @return Timeout used for location operations in milliseconds.
+     */
+    public long getTimeout() {
+        return mTimeout;
+    }
+
+    /**
+     * Set the timeout used for location operations.
+     * This is immutable outside package to reduce errors.
+     * @param timeout Timeout in milliseconds.
+     */
+    void setTimeout(long timeout) {
+        mTimeout = timeout;
+    }
+
+    /**
+     * Checks and waits if a node is found on the screen.
+     *
+     * @param locator Locator used to find the node.
+     * @return        true if node is found, false otherwise.
+     */
+    public boolean isOnScreen(@NonNull IUi2Locator locator) {
+        try {
+            getOne(locator);
+        } catch (UiLocationException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if a node is found on the screen, does not retry.
+     *
+     * @param locator Locator used to find the node.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        true if node is found, false otherwise.
+     */
+    public boolean isOnScreenImmediate(@NonNull IUi2Locator locator, UiObject2 root) {
+        return getOneImmediate(locator, root) == null;
+    }
+
+    /**
+     * Get text from a single node using locator.
+     * @param locator          Locator used to find the nodes.
+     * @return                 Text field of the node.
+     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public String getOneText(@NonNull IUi2Locator locator) {
+        return getOneElement(locator, CONVERTER_TEXT);
+    }
+
+    /**
+     * Get list of text using locator.
+     * @param locator          Locator used to find the nodes.
+     * @return                 List of text.
+     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public List<String> getAllTexts(@NonNull IUi2Locator locator) {
+        return getAllElements(locator, CONVERTER_TEXT);
+    }
+
+    /**
+     * Get the node's text without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        Text field of the node, or null if locator didn't find any nodes.
+     */
+    public String getOneTextImmediate(@NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getOneElementImmediate(locator, root, CONVERTER_TEXT);
+    }
+
+    /**
+     * Get list of text using locator without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        List of text, or empty list if locator didn't find any nodes.
+     */
+    public List<String> getAllTextsImmediate(
+            @NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getAllElementsImmediate(locator, root, CONVERTER_TEXT);
+    }
+
+    /**
+     * Get content description from a single node using locator.
+     * @param locator          Locator used to find the nodes.
+     * @return                 Content description field of the node.
+     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public String getOneDescription(@NonNull IUi2Locator locator) {
+        return getOneElement(locator, CONVERTER_DESC);
+    }
+
+    /**
+     * Get list of content descriptions using locator.
+     * @param locator          Locator used to find the nodes.
+     * @return                 List of content descriptions.
+     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public List<String> getAllDescriptions(@NonNull IUi2Locator locator) {
+        return getAllElements(locator, CONVERTER_DESC);
+    }
+
+    /**
+     * Get the node's content description without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        Content description of the node, or null if locator didn't find any nodes.
+     */
+    public String getOneDescriptionImmediate(
+            @NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getOneElementImmediate(locator, root, CONVERTER_DESC);
+    }
+
+    /**
+     * Get list of content descriptions using locator without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        List of content descriptions, or empty list if locator didn't find any nodes.
+     */
+    public List<String> getAllDescriptionsImmediate(
+            @NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getAllElementsImmediate(locator, root, CONVERTER_DESC);
+    }
+
+    /**
+     * Get checked status from a single node using locator.
+     * @param locator           Locator used to find the nodes.
+     * @return                  checked status of the node.
+     * @throws  UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public Boolean getOneChecked(@NonNull IUi2Locator locator) {
+        return getOneElement(locator, CONVERTER_CHECKED);
+    }
+
+    /**
+     * Get list of checked statuses using locator.
+     * @param locator          Locator used to find the nodes.
+     * @return                 List of checked statuses.
+     * @throws UiLocationError if locator didn't find any nodes within timeout interval.
+     */
+    public List<Boolean> getAllChecked(@NonNull IUi2Locator locator) {
+        return getAllElements(locator, CONVERTER_CHECKED);
+    }
+
+    /**
+     * Get the node's checked status without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        Checked status of the node, or null if locator didn't find any nodes.
+     */
+    public Boolean getOneCheckedImmediate(@NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getOneElementImmediate(locator, root, CONVERTER_CHECKED);
+    }
+
+    /**
+     * Get list of checked statuses using locator without retries.
+     * @param locator Locator used to find the nodes.
+     * @param root    Node to search under, or null if all the nodes should be searched.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        List of checked statuses, or empty list if locator didn't find any nodes.
+     */
+    public List<Boolean> getAllCheckedImmediate(
+            @NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        return getAllElementsImmediate(locator, root, CONVERTER_CHECKED);
+    }
+
+    /**
+     * Returns the first element found using locator.
+     *
+     * Throws UiLocationError if not found.
+     * @param locator Locator to use to find the element.
+     * @return        UiObject2
+     */
+    public UiObject2 getOne(@NonNull IUi2Locator locator) {
+        List<UiObject2> all = getAll(locator);
+        return all.get(0);
+    }
+
+    /**
+     * Returns the first element found using locator.
+     *
+     * Could return null but does not throw.
+     * @param locator Locator to use to find the element.
+     * @param root    Search for elements within root, or on the device if null.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        UiObject2
+     */
+    public UiObject2 getOneImmediate(@NonNull IUi2Locator locator, @Nullable UiObject2 root) {
+        List<UiObject2> all = getAllImmediate(locator, root);
+        if (all.size() == 0) {
+            return null;
+        } else {
+            return all.get(0);
+        }
+    }
+
+    /**
+     * Return a list of UiObject2 nodes matching locator, will retry up to timeout.
+     * @param locator          Locator to use to find the element.
+     * @return                 list of elements matching the locator
+     * @throws UiLocationError if locator didn't find any nodes.
+     */
+    public List<UiObject2> getAll(IUi2Locator locator) {
+        long startTime = Utils.currentTime();
+        long elapsedTime = 0;
+        int attempts = 0;
+        List<UiObject2> object2s = null;
+        do {
+            try {
+                object2s = getAllInternal(locator, null);
+            } catch (StaleObjectException | NullPointerException e) {
+            } finally {
+                attempts++;
+            }
+            if (object2s != null && object2s.size() != 0) {
+                return object2s;
+            }
+            elapsedTime = Utils.elapsedTime(startTime);
+            if (elapsedTime >= mTimeout) {
+                break;
+            }
+            sleep(UI_CHECK_INTERVAL_MS);
+        } while (true);
+        throw UiLocationException.newInstance("Could not find any objects after " + elapsedTime
+                        + " ms and " + attempts + " attempts",
+                locator, null);
+    }
+
+    /**
+     * Return a list of UiObject2 nodes matching locator, without retries.
+     * @param locator Locator to use to find the element.
+     * @param root    the root element to search under, or null to search for any
+     *                node on the device.
+     *                Possible root staleness will make retries ineffective, this means
+     *                that it is only suitable for immediate methods to take a root node.
+     * @return        list of elements matching the locator, or empty if nothing
+     *                matched.
+     */
+    public List<UiObject2> getAllImmediate(@NonNull IUi2Locator locator, UiObject2 root) {
+        try {
+            return getAllInternal(locator, root);
+        } catch (StaleObjectException | NullPointerException e) {
+            return new ArrayList<UiObject2>();
+        }
+    }
+
+    /**
+     * Delegate to be used with getCustomElements.
+     *
+     * @param <T> The type of the element.
+     */
+    static public interface CustomElementMaker<T> {
+        /**
+         * Should construct an element given a node.
+         * @param root          The input node.
+         * @param isLastAttempt getCustomElements may call this delegate
+         *                      multiple times if errors are thrown from this
+         *                      method and timeout has not been reached.  If
+         *                      isLastAttempt is true, then it indicates that
+         *                      getCustomElements will not call this delegate
+         *                      again.  For example the delegate can return null
+         *                      on the lastAttempt if it still encounters errors
+         *                      which indicates that a properly formed element is
+         *                      not found on the page, this case could happen if
+         *                      an element gets cutoff at a scroll boundary.
+         * @return              The element if construction is successful, null
+         *                      otherwise.
+         * @throws              Should throw a UiLocationError or
+         *                      UiStaleObjectException if getCustomElements
+         *                      should re-obtain a root using its provided
+         *                      locator.
+         */
+        T makeElement(UiObject2 root, boolean isLastAttempt);
+    }
+
+    /**
+     * Create a list of objects based on nodes found by locator.
+     * @param locator Locator used to find the nodes.
+     * @param maker   CustomElementMaker used to construct the custom element.
+     * @param <T>     The type of the objects in the list.
+     * @return        List of constructed objects of type T.
+     */
+    public <T> List<T> getCustomElements(
+            @NonNull IUi2Locator locator, @NonNull CustomElementMaker<T> maker) {
+        List<T> elements = new ArrayList<>();
+        List<UiObject2> roots;
+        boolean isLastAttempt = false;
+
+        long startTime = Utils.currentTime();
+        while (true) {
+            try {
+                try {
+                    roots = getAllInternal(locator, null);
+                } catch (UiLocationException e) {
+                    return elements;
+                }
+                for (UiObject2 root : roots) {
+                    T e = maker.makeElement(root, isLastAttempt);
+                    if (e != null) {
+                        elements.add(e);
+                    }
+                }
+                return elements;
+            } catch (StaleObjectException | UiLocationException e) {
+                if (isLastAttempt) {
+                    throw e;
+                }
+                // makeElement could throw while going through the list of roots,
+                // so clear out any elements to avoid duplicates and stale ones.
+                elements.clear();
+                sleep(UI_CHECK_INTERVAL_MS);
+                // If the next interaction will cause timeout to be exceeded, then
+                // flag isLastAttempt so client can choose to perform a work-around
+                // instead of throwing an exception again.
+                if (Utils.elapsedTime(startTime) > mTimeout - UI_CHECK_INTERVAL_MS) {
+                    isLastAttempt = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Define a conversion method creates an object from info in a UiObject2 node.
+     * @param <T> Type of the object.
+     */
+    private static interface ElementConverter<T> { T convert(UiObject2 object2); }
+
+    private <T> T getOneElement(IUi2Locator locator, ElementConverter<T> converter) {
+        List<T> all = getAllElements(locator, converter);
+        if (all.size() > 0)
+            return all.get(0);
+        else
+            return null;
+    }
+
+    private <T> T getOneElementImmediate(
+            IUi2Locator locator, UiObject2 root, ElementConverter<T> converter) {
+        List<T> all = getAllElementsImmediate(locator, root, converter);
+        return Utils.nullableGet(all, 0);
+    }
+
+    private <T> List<T> getAllElementsImmediate(
+            IUi2Locator locator, UiObject2 root, ElementConverter<T> elementConverter) {
+        List<UiObject2> all = getAllImmediate(locator, root);
+        return convertAll(elementConverter, all);
+    }
+
+    private <T> List<T> getAllElements(IUi2Locator locator, ElementConverter<T> elementConverter) {
+        List<UiObject2> all = getAll(locator);
+        return convertAll(elementConverter, all);
+    }
+
+    // Convert each item in all and return the resultant list.
+    private <T> List<T> convertAll(ElementConverter<T> converter, List<UiObject2> all) {
+        List<T> allT = new ArrayList<>();
+        for (UiObject2 object2 : all) {
+            allT.add(converter.convert(object2));
+        }
+        return allT;
+    }
+
+    /** Could return empty list or throw StaleObject exception or throw NullPointerException*/
+    private List<UiObject2> getAllInternal(@NonNull IUi2Locator locator, UiObject2 root) {
+        return root == null ? locator.locateAll(mDevice) : locator.locateAll(root);
+    }
+
+    private void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            for (StackTraceElement elem : e.getStackTrace()) {
+                Log.e(TAG, elem.toString());
+            }
+        }
+    }
+}

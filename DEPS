@@ -34,6 +34,7 @@ gclient_gn_args = [
   'checkout_ios_webkit',
   'checkout_nacl',
   'checkout_oculus_sdk',
+  'checkout_openxr',
 ]
 
 
@@ -90,6 +91,9 @@ vars = {
 
   # By default do not check out the Oculus SDK. Only available for Googlers.
   'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
+
+  # By default do not checkout the OpenXR loader library.
+  'checkout_openxr' : False,
 
   'checkout_traffic_annotation_tools': 'checkout_configuration != "small"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
@@ -1165,6 +1169,11 @@ deps = {
 
   'src/third_party/openscreen/src':
     Var('chromium_git') + '/openscreen' + '@' + 'd384da5a955f7594615ae49b5f624cb135d0cb01',
+
+  'src/third_party/openxr/src': {
+    'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + 'c52d3b40dd802353c1f2ceec139922b374c1373a',
+    'condition': 'checkout_openxr',
+  },
 
   'src/third_party/ow2_asm': {
       'packages': [

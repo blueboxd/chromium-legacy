@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,17 +12,34 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Internal utility methods for pagecontroller.utils package.
+ * Utility methods for Pagecontroller.
  */
 
-final class Utils {
+public final class Utils {
+    /**
+     * Calculates the time interval from previousTime to now.
+     * @param previousTime  The previousTime, as returned from a previous call to currentTime().
+     * @return  The number of milliseconds that has elapsed since previousTime.
+     */
+    public static long elapsedTime(long previousTime) {
+        return currentTime() - previousTime;
+    }
+
+    /**
+     * Gets the currentTime, to be used with elapsedTime to calculate time intervals.
+     * @return  The currentTime in milliseconds.
+     */
+    public static long currentTime() {
+        return SystemClock.uptimeMillis();
+    }
+
     // Return empty list if t is null, else return a singleton list containing t.
-    static <T> List<T> nullableIntoList(@Nullable T t) {
+    public static <T> List<T> nullableIntoList(@Nullable T t) {
         return t == null ? Collections.<T>emptyList() : Collections.singletonList(t);
     }
 
     // Returns the index-th item in the list or null if it's out of bounds.
-    static @Nullable<T> T nullableGet(@NonNull List<T> list, int index) {
+    public static @Nullable<T> T nullableGet(@NonNull List<T> list, int index) {
         return index >= list.size() ? null : list.get(index);
     }
 }

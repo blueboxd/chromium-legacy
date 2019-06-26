@@ -135,7 +135,8 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                             : nullptr,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : nullptr,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : nullptr,
-        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED);
+        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED,
+        NetworkIsolationKey());
   }
 
   void AddAuthToCache() {

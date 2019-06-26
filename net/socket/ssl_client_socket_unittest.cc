@@ -34,6 +34,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -85,6 +86,8 @@
 #include "third_party/boringssl/src/include/openssl/bio.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pem.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -3168,6 +3171,120 @@ TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
   EXPECT_EQ(kProtoHTTP11, sock_->GetNegotiatedProtocol());
+}
+
+// Tests that the session cache is not sharded by NetworkIsolationKey if the
+// feature is disabled.
+TEST_F(SSLClientSocketTest, SessionResumptionNetworkIsolationKeyDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPartitionSSLSessionsByNetworkIsolationKey);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // First, perform a full handshake.
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+
+  // The next connection should resume.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+
+  // Using a different NetworkIsolationKey shares session cache key because
+  // sharding is disabled.
+  ssl_config.network_isolation_key =
+      NetworkIsolationKey(url::Origin::Create(GURL("https://a.test")));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+
+  ssl_config.network_isolation_key =
+      NetworkIsolationKey(url::Origin::Create(GURL("https://b.test")));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+}
+
+// Tests that the session cache is sharded by NetworkIsolationKey if the
+// feature is enabled.
+TEST_F(SSLClientSocketTest, SessionResumptionNetworkIsolationKeyEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionSSLSessionsByNetworkIsolationKey);
+
+  const NetworkIsolationKey kNetworkIsolationKeyA(
+      url::Origin::Create(GURL("https://a.test")));
+  const NetworkIsolationKey kNetworkIsolationKeyB(
+      url::Origin::Create(GURL("https://b.test")));
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // First, perform a full handshake.
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+
+  // The next connection should resume.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+
+  // Using a different NetworkIsolationKey uses a different session cache key.
+  ssl_config.network_isolation_key = kNetworkIsolationKeyA;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  sock_.reset();
+
+  // We, however, can resume under that newly-established session.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+
+  // Repeat with another non-null key.
+  ssl_config.network_isolation_key = kNetworkIsolationKeyB;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+  sock_.reset();
+
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
+
+  // b.test does not evict a.test's session.
+  ssl_config.network_isolation_key = kNetworkIsolationKeyA;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+  sock_.reset();
 }
 
 // Tests that connections with certificate errors do not add entries to the

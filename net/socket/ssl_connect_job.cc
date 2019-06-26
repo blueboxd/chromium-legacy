@@ -46,13 +46,15 @@ SSLSocketParams::SSLSocketParams(
     scoped_refptr<HttpProxySocketParams> http_proxy_params,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
-    PrivacyMode privacy_mode)
+    PrivacyMode privacy_mode,
+    NetworkIsolationKey network_isolation_key)
     : direct_params_(std::move(direct_params)),
       socks_proxy_params_(std::move(socks_proxy_params)),
       http_proxy_params_(std::move(http_proxy_params)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
-      privacy_mode_(privacy_mode) {
+      privacy_mode_(privacy_mode),
+      network_isolation_key_(network_isolation_key) {
   // Only one set of lower level ConnectJob params should be non-NULL.
   DCHECK((direct_params_ && !socks_proxy_params_ && !http_proxy_params_) ||
          (!direct_params_ && socks_proxy_params_ && !http_proxy_params_) ||
@@ -355,9 +357,10 @@ int SSLConnectJob::DoSSLConnect() {
           ? ssl_client_socket_context_privacy_mode()
           : ssl_client_socket_context();
 
+  SSLConfig ssl_config = params_->ssl_config();
+  ssl_config.network_isolation_key = params_->network_isolation_key();
   ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
-      std::move(nested_socket_), params_->host_and_port(),
-      params_->ssl_config(), context);
+      std::move(nested_socket_), params_->host_and_port(), ssl_config, context);
   nested_connect_job_.reset();
   return ssl_socket_->Connect(callback_);
 }

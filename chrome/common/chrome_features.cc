@@ -352,10 +352,9 @@ const base::Feature kViewsCastDialog{"ViewsCastDialog",
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
-// engagement score, such as googlé.com). This is prefixed with V2 because the
-// client logic handling the feature was changed.
+// engagement score, such as googlé.com).
 const base::Feature kLookalikeUrlNavigationSuggestionsUI{
-    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 // A feature that controls whether Chrome warns about incompatible applications.

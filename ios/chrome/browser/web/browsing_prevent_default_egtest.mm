@@ -12,7 +12,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/chrome/test/scoped_block_popups_pref.h"
+#include "ios/chrome/test/earl_grey/scoped_block_popups_pref.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "url/url_constants.h"
@@ -48,8 +48,7 @@ GURL GetTestUrl() {
 - (void)runTestAndVerifyNoNavigationForLinkID:(const std::string&)linkID {
   // Disable popup blocking, because that will mask failures that try to open
   // new tabs.
-  ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW,
-                               GetOriginalBrowserState());
+  ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW);
   web::test::SetUpFileBasedHttpServer();
 
   const GURL testURL = GetTestUrl();
@@ -89,8 +88,7 @@ GURL GetTestUrl() {
 - (void)testPreventDefaultOverridesWindowOpen {
   // Disable popup blocking, because that will mask failures that try to open
   // new tabs.
-  ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW,
-                               GetOriginalBrowserState());
+  ScopedBlockPopupsPref scoper(CONTENT_SETTING_ALLOW);
   web::test::SetUpFileBasedHttpServer();
 
   const GURL testURL = GetTestUrl();

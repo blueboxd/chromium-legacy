@@ -17,7 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/chrome/test/scoped_block_popups_pref.h"
+#include "ios/chrome/test/earl_grey/scoped_block_popups_pref.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -126,8 +126,7 @@ class ScopedBlockPopupsException {
   responses[openedWindowURL] = kOpenedWindowResponse;
   web::test::SetUpSimpleHttpServer(responses);
 
-  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW,
-                                   GetOriginalBrowserState());
+  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
   [ChromeEarlGrey loadURL:blockPopupsURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -156,8 +155,7 @@ class ScopedBlockPopupsException {
   responses[openedWindowURL] = kOpenedWindowResponse;
   web::test::SetUpSimpleHttpServer(responses);
 
-  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK,
-                                   GetOriginalBrowserState());
+  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK);
   [ChromeEarlGrey loadURL:blockPopupsURL];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -185,8 +183,7 @@ class ScopedBlockPopupsException {
 // revealed properly when the preference switch is toggled.
 - (void)testSettingsPageWithExceptions {
   std::string allowedPattern = "[*.]example.com";
-  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK,
-                                   GetOriginalBrowserState());
+  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_BLOCK);
   ScopedBlockPopupsException exceptionSetter(allowedPattern);
 
   [ChromeEarlGreyUI openSettingsMenu];

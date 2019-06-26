@@ -88,10 +88,13 @@ namespace wayland_fuzzer {
         {% endif %}
       {% endfor %}
 
+      {% if request.is_constructor %}
+        struct {{request.constructed}}* new_object =
+      {% endif %}
       // Invoke the wayland method.  We need ::method_name in order to
       // disambiguate methods which might collide with
       // interface/namespace names.
-      {% if request.is_constructor %} struct {{request.constructed}}* new_object = {% endif %}::{{interface.name}}_{{request.name}}(receiver
+      ::{{interface.name}}_{{request.name}}(receiver
         {% for arg in request.args %}
           {% if arg.type == 'object' or arg.type == 'fd' %}
             , {{arg.name}}

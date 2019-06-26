@@ -299,6 +299,10 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     }
   }
 
+  const base::Clock* GetMockClock() const {
+    return scoped_task_environment_.GetMockClock();
+  }
+
   void ResetGuide() {
     guide_.reset();
     RunUntilIdle();
@@ -1922,6 +1926,43 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
   // check that FetcHints is not triggered by making sure that top_host_provider
   // is not called.
   InitializeFixedCountResourceLoadingHints();
+}
+
+TEST_F(PreviewsOptimizationGuideTest, HintsFetcherLastFetchAtttempt) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+
+  // Set the last fetch attempt to 5 minutes ago, simulating a short duration
+  // since last execution (simulating browser crash/close-reopen).
+  base::TimeDelta minutes_since_attempt = base::TimeDelta::FromMinutes(5);
+  base::Time last_attempt_time = GetMockClock()->Now() - minutes_since_attempt;
+
+  pref_service()->SetInt64(
+      optimization_guide::prefs::kHintsFetcherLastFetchAttempt,
+      last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  guide()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+
+  std::vector<std::string> hosts = {"example1.com", "example2.com"};
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+      .Times(1)
+      .WillRepeatedly(testing::Return(hosts));
+
+  // Load hints so that OnHintsUpdated is called. This will force FetchHints to
+  // be triggered if OptimizationHintsFetching is enabled.
+  InitializeFixedCountResourceLoadingHints();
+
+  // Move the clock forward a short duration to ensure that the hints fetch does
+  // not occur too quickly after the simulated short relaunch.
+  MoveClockForwardBy(base::TimeDelta::FromMinutes(5));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+
+  // Move clock forward by the maximum delay, |kTestFetchRetryDelaySeconds to
+  // trigger the hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
 }
 
 class PreviewsOptimizationGuideDataSaverOffTest

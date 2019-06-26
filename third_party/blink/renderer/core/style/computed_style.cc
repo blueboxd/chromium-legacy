@@ -239,7 +239,7 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
       (old_style->IsDisplayFlexibleOrGridBox() ||
        old_style->IsDisplayLayoutCustomBox() ||
        new_style->IsDisplayFlexibleOrGridBox() ||
-       old_style->IsDisplayLayoutCustomBox())) {
+       new_style->IsDisplayLayoutCustomBox())) {
     return Difference::kDisplayAffectingDescendantStyles;
   }
   if (!old_style->NonIndependentInheritedEqual(*new_style))

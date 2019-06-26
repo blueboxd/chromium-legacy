@@ -495,6 +495,8 @@ struct SSLSocketDataProvider {
   base::Optional<bool> expected_send_client_cert;
   scoped_refptr<X509Certificate> expected_client_cert;
   base::Optional<bool> expected_false_start_enabled;
+  base::Optional<HostPortPair> expected_host_and_port;
+  base::Optional<NetworkIsolationKey> expected_network_isolation_key;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;

@@ -58,11 +58,14 @@ const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_EXTENDED, H264PROFILE_MAIN,
     H264PROFILE_HIGH,
 
-    // TODO(hubbe): Re-enable this once software fallback is working.
-    // http://crbug.com/605790
+    // TODO(sandersd): Hi10p fails during
+    // CMVideoFormatDescriptionCreateFromH264ParameterSets with
+    // kCMFormatDescriptionError_InvalidParameter.
+    //
     // H264PROFILE_HIGH10PROFILE,
 
     // TODO(sandersd): Find and test media with these profiles before enabling.
+    //
     // H264PROFILE_SCALABLEBASELINE,
     // H264PROFILE_SCALABLEHIGH,
     // H264PROFILE_STEREOHIGH,

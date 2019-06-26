@@ -217,6 +217,15 @@ LookalikeUrlNavigationThrottle::~LookalikeUrlNavigationThrottle() {}
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     const GURL& url) {
+  // Ignore if running unit tests. Some tests use
+  // TestMockTimeTaskRunner::ScopedContext and call CreateTestWebContents()
+  // which navigates and waits for throttles to complete using a RunLoop.
+  // However, TestMockTimeTaskRunner::ScopedContext disallows RunLoop so those
+  // tests crash. We should only do this with a real profile anyways.
+  if (profile_->AsTestingProfile()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   content::NavigationHandle* handle = navigation_handle();
 
   // Ignore subframe and same document navigations.

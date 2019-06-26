@@ -6,8 +6,10 @@
 #import "base/test/ios/wait_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/payments/core/features.h"
 #import "components/ukm/ios/features.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
@@ -484,6 +486,21 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (BOOL)isWebPaymentsModifiersEnabled {
   return base::FeatureList::IsEnabled(
       payments::features::kWebPaymentsModifiers);
+}
+
+#pragma mark - ScopedBlockPopupsPref
+
++ (ContentSetting)popupPrefValue {
+  return ios::HostContentSettingsMapFactory::GetForBrowserState(
+             chrome_test_util::GetOriginalBrowserState())
+      ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, NULL);
+}
+
++ (void)setPopupPrefValue:(ContentSetting)value {
+  DCHECK(value == CONTENT_SETTING_BLOCK || value == CONTENT_SETTING_ALLOW);
+  ios::HostContentSettingsMapFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, value);
 }
 
 @end

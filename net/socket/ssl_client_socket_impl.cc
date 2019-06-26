@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -1622,6 +1623,11 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 }
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
+  if (base::FeatureList::IsEnabled(
+          features::kPartitionSSLSessionsByNetworkIsolationKey)) {
+    return host_and_port_.ToString() + '/' +
+           ssl_config_.network_isolation_key.ToString();
+  }
   return host_and_port_.ToString();
 }
 

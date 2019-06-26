@@ -3157,7 +3157,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 #if defined(OS_ANDROID)
   if (features::IsSurfaceSynchronizationEnabled()) {
     // TODO(crbug.com/933846): LatencyRecovery is causing jank on Android.
-    // Disable in viz mode for now, with plant o disable more widely once
+    // Disable in viz mode for now, with plan to disable more widely once
     // viz launches.
     settings.enable_latency_recovery = false;
   }

@@ -219,6 +219,8 @@ source_set("test_support") {
     "chrome_test_case.mm",
     "chrome_test_case_app_interface.h",
     "chrome_test_case_app_interface.mm",
+    "scoped_block_popups_pref.h",
+    "scoped_block_popups_pref.mm",
   ]
 
   deps = [
@@ -232,6 +234,7 @@ source_set("test_support") {
     "//components/ukm/ios:features",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:authentication",
@@ -331,6 +334,7 @@ source_set("eg_app_support+eg2") {
     "//components/ukm/ios:features",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication/cells",
@@ -394,6 +398,8 @@ source_set("eg_test_support+eg2") {
     "chrome_test_case.h",
     "chrome_test_case.mm",
     "chrome_test_case_app_interface.h",
+    "scoped_block_popups_pref.h",
+    "scoped_block_popups_pref.mm",
   ]
 
   deps = [

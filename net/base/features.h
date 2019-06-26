@@ -44,6 +44,14 @@ NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
 NET_EXPORT extern const base::Feature
     kPartitionConnectionsByNetworkIsolationKey;
 
+// Partitions TLS sessions and QUIC server configs based on the
+// NetworkIsolationKey associated with a request.
+//
+// This feature requires kPartitionConnectionsByNetworkIsolationKey to be
+// enabled to work.
+NET_EXPORT extern const base::Feature
+    kPartitionSSLSessionsByNetworkIsolationKey;
+
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
 // disabled by default because we discovered incompatibilities with some

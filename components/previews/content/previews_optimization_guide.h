@@ -170,6 +170,12 @@ class PreviewsOptimizationGuide
   // engagement scores using |hints_fetcher_|.
   void FetchHints();
 
+  // Return the time when a hints fetch request was last attempted.
+  base::Time GetLastHintsFetchAttemptTime() const;
+
+  // Set the time when a hints fetch was last attempted to |last_attempt_time|.
+  void SetLastHintsFetchAttemptTime(base::Time last_attempt_time);
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
 
@@ -204,8 +210,6 @@ class PreviewsOptimizationGuide
 
   // Clock used for scheduling the |hints_fetch_timer_|.
   const base::Clock* time_clock_;
-
-  base::Time last_fetch_attempt_;
 
   // A reference to the PrefService for this profile. Not owned.
   PrefService* pref_service_ = nullptr;

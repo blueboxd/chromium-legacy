@@ -14,6 +14,12 @@ namespace prefs {
 // loaded, broken down by hint source.
 const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 
+// A pref that stores the last time a hints fetch was attempted. This limits the
+// frequency that hints are fetched and prevents a crash loop that continually
+// fetches hints on startup.
+const char kHintsFetcherLastFetchAttempt[] =
+    "optimization_guide.hintsfetcher.last_fetch_attempt";
+
 // A dictionary pref that stores the set of hosts that cannot have hints fetched
 // for until visited again after DataSaver was enabled. If The hash of the host
 // is in the dictionary, then it is on the blacklist and should not be used, the
@@ -29,6 +35,10 @@ const char kHintsFetcherTopHostBlacklistState[] =
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kHintLoadedCounts, PrefRegistry::LOSSY_PREF);
+  registry->RegisterInt64Pref(
+      kHintsFetcherLastFetchAttempt,
+      base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
+      PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(

@@ -14,6 +14,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
@@ -41,7 +42,8 @@ class NET_EXPORT_PRIVATE SSLSocketParams
                   scoped_refptr<HttpProxySocketParams> http_proxy_params,
                   const HostPortPair& host_and_port,
                   const SSLConfig& ssl_config,
-                  PrivacyMode privacy_mode);
+                  PrivacyMode privacy_mode,
+                  NetworkIsolationKey network_isolation_key);
 
   // Returns the type of the underlying connection.
   ConnectionType GetConnectionType() const;
@@ -59,6 +61,9 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const HostPortPair& host_and_port() const { return host_and_port_; }
   const SSLConfig& ssl_config() const { return ssl_config_; }
   PrivacyMode privacy_mode() const { return privacy_mode_; }
+  const NetworkIsolationKey& network_isolation_key() const {
+    return network_isolation_key_;
+  }
 
  private:
   friend class base::RefCounted<SSLSocketParams>;
@@ -70,6 +75,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const HostPortPair host_and_port_;
   const SSLConfig ssl_config_;
   const PrivacyMode privacy_mode_;
+  const NetworkIsolationKey network_isolation_key_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLSocketParams);
 };

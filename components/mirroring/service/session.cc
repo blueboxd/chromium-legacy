@@ -241,13 +241,15 @@ void AddStreamObject(int stream_index,
 }
 
 // Checks whether receiver's build version is less than "1.|base_version|.xxxx".
-// Returns false if given version doesn't have the format of "1.xx.xxxx".
+// Returns true if given version doesn't have the format of "1.xx.xxxx", so that
+// we don't assume that the receiver has the required new capabilities.
 bool NeedsWorkaroundForOlder1DotXVersions(
     const std::string& receiver_build_version,
     int base_version) {
   if (!base::StartsWith(receiver_build_version, "1.",
-                        base::CompareCase::SENSITIVE))
-    return false;
+                        base::CompareCase::SENSITIVE)) {
+    return true;
+  }
   const size_t end_pos = receiver_build_version.find_first_of('.', 2);
   if (end_pos == std::string::npos)
     return false;
@@ -767,12 +769,11 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   if (answer.supports_get_status) {
     wifi_status_monitor =
         std::make_unique<WifiStatusMonitor>(&message_dispatcher_);
-    // Before 1.28 Android TV Chromecast receivers respond to GET_CAPABILITIES
-    // even though they don't support remoting.
+    // Nest Hub devices do not support remoting despite having a relatively new
+    // build version, so we cannot filter with
+    // NeedsWorkaroundForOlder1DotXVersions() here.
     if (initially_starting_session &&
-        (!NeedsWorkaroundForOlder1DotXVersions(
-             session_monitor_->GetReceiverBuildVersion(), 28) ||
-         base::StartsWith(session_params_.receiver_model_name, "Chromecast",
+        (base::StartsWith(session_params_.receiver_model_name, "Chromecast",
                           base::CompareCase::SENSITIVE) ||
          base::StartsWith(session_params_.receiver_model_name, "Eureka Dongle",
                           base::CompareCase::SENSITIVE))) {

@@ -49,12 +49,12 @@ void VerifyBoolValue(const base::Value& raw_value,
   EXPECT_EQ(expected_value, data);
 }
 
-void VerifyIntValue(const base::Value& raw_value,
-                    const std::string& key,
-                    int32_t expected_value) {
-  int32_t data;
-  EXPECT_TRUE(GetInt(raw_value, key, &data));
-  EXPECT_EQ(expected_value, data);
+void VerifyDoubleValue(const base::Value& raw_value,
+                       const std::string& key,
+                       double expected_value) {
+  double data;
+  EXPECT_TRUE(GetDouble(raw_value, key, &data));
+  EXPECT_NEAR(expected_value, data, DBL_EPSILON * 2);
 }
 
 void VerifyWifiStatus(const base::Value& raw_value,
@@ -375,7 +375,7 @@ TEST_F(SessionMonitorTest, ReceiverSetupInfo) {
       "\"connected\": true,"
       "\"ethernet_connected\": false,"
       "\"has_update\": false,"
-      "\"uptime\": 132536 }";
+      "\"uptime\": 13253.6 }";
 
   SendReceiverSetupInfo(receiver_setup_info);
 
@@ -406,7 +406,7 @@ TEST_F(SessionMonitorTest, ReceiverSetupInfo) {
   VerifyBoolValue(*tags, "receiverConnected", true);
   VerifyBoolValue(*tags, "receiverOnEthernet", false);
   VerifyBoolValue(*tags, "receiverHasUpdatePending", false);
-  VerifyIntValue(*tags, "receiverUptimeSeconds", 132536);
+  VerifyDoubleValue(*tags, "receiverUptimeSeconds", 13253.6);
 }
 
 }  // namespace mirroring

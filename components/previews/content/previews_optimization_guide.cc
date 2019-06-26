@@ -15,6 +15,7 @@
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
@@ -153,9 +154,6 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       url_loader_factory_(url_loader_factory),
       ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
-  // TODO(mcrouse): This needs to be a pref to persist the last fetch attempt
-  // time and prevent crash loops.
-  last_fetch_attempt_ = base::Time();
   hint_cache_->Initialize(
       ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&PreviewsOptimizationGuide::OnHintCacheInitialized,
@@ -426,11 +424,26 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
       ShouldOverrideFetchHintsTimer()) {
     // Skip the fetch scheduling logic and perform a hints fetch immediately
     // after initialization.
-    last_fetch_attempt_ = time_clock_->Now();
+    SetLastHintsFetchAttemptTime(time_clock_->Now());
     FetchHints();
   } else {
     ScheduleHintsFetch();
   }
+}
+
+void PreviewsOptimizationGuide::SetLastHintsFetchAttemptTime(
+    base::Time last_attempt_time) {
+  DCHECK(pref_service_);
+  pref_service_->SetInt64(
+      optimization_guide::prefs::kHintsFetcherLastFetchAttempt,
+      last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
+base::Time PreviewsOptimizationGuide::GetLastHintsFetchAttemptTime() const {
+  DCHECK(pref_service_);
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
+          optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
 }
 
 void PreviewsOptimizationGuide::ScheduleHintsFetch() {
@@ -444,13 +457,13 @@ void PreviewsOptimizationGuide::ScheduleHintsFetch() {
   const base::TimeDelta time_until_update_time =
       hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now();
   const base::TimeDelta time_until_retry =
-      last_fetch_attempt_ + kFetchRetryDelay - time_clock_->Now();
+      GetLastHintsFetchAttemptTime() + kFetchRetryDelay - time_clock_->Now();
   base::TimeDelta fetcher_delay;
   if (time_until_update_time <= base::TimeDelta() &&
       time_until_retry <= base::TimeDelta()) {
     // Fetched hints in the store should be updated and an attempt has not
     // been made in last |kFetchRetryDelay|.
-    last_fetch_attempt_ = time_clock_->Now();
+    SetLastHintsFetchAttemptTime(time_clock_->Now());
     hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
                              &PreviewsOptimizationGuide::FetchHints);
   } else {

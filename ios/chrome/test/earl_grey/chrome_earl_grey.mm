@@ -558,6 +558,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isWebPaymentsModifiersEnabled];
 }
 
+#pragma mark - ScopedBlockPopupsPref
+
+- (ContentSetting)popupPrefValue {
+  return [ChromeEarlGreyAppInterface popupPrefValue];
+}
+
+- (void)setPopupPrefValue:(ContentSetting)value {
+  return [ChromeEarlGreyAppInterface setPopupPrefValue:value];
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

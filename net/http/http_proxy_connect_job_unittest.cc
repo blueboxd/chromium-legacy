@@ -125,7 +125,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
         base::MakeRefCounted<TransportSocketParams>(
             HostPortPair(kHttpsProxyHost, 443), OnHostResolutionCallback()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
-        PRIVACY_MODE_DISABLED);
+        PRIVACY_MODE_DISABLED, NetworkIsolationKey());
   }
 
   // Returns a correctly constructed HttpProxyParams for the HTTP or HTTPS

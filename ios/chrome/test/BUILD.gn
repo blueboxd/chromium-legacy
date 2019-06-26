@@ -31,8 +31,6 @@ source_set("test_support") {
     "ios_chrome_unit_test_suite.mm",
     "root_view_controller_test.h",
     "root_view_controller_test.mm",
-    "scoped_block_popups_pref.h",
-    "scoped_block_popups_pref.mm",
     "scoped_key_window.h",
     "testing_application_context.h",
     "testing_application_context.mm",
@@ -77,7 +75,7 @@ source_set("eg_test_support") {
   ]
   deps = [
     ":test_support",
-    "//base",
+    "//base:base",
     "//ios/third_party/earl_grey:earl_grey+link",
   ]
 }

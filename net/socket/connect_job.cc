@@ -129,7 +129,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
         ssl_params = base::MakeRefCounted<SSLSocketParams>(
             std::move(proxy_tcp_params), nullptr, nullptr,
             proxy_server.host_port_pair(), *ssl_config_for_proxy,
-            PRIVACY_MODE_DISABLED);
+            PRIVACY_MODE_DISABLED, network_isolation_key);
         proxy_tcp_params = nullptr;
       }
 
@@ -158,7 +158,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
         std::move(ssl_tcp_params), std::move(socks_params),
         std::move(http_proxy_params), endpoint, *ssl_config_for_origin,
-        privacy_mode);
+        privacy_mode, network_isolation_key);
     return std::make_unique<SSLConnectJob>(
         request_priority, socket_tag, common_connect_job_params,
         std::move(ssl_params), delegate, nullptr /* net_log */);

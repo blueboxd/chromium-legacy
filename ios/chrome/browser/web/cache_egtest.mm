@@ -14,7 +14,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/chrome/test/scoped_block_popups_pref.h"
+#include "ios/chrome/test/earl_grey/scoped_block_popups_pref.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -174,8 +174,7 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
 
   // Open the first page in a new tab. Verify that cache was not used. Must
   // first allow popups.
-  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW,
-                                   GetOriginalBrowserState());
+  ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW);
   [ChromeEarlGrey
       tapWebStateElementWithID:[NSString
                                    stringWithUTF8String:kCacheTestLinkID]];

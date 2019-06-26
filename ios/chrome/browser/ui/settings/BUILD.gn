@@ -373,6 +373,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:util",
+    "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",

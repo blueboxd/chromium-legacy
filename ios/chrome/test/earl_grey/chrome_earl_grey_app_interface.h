@@ -283,6 +283,16 @@
 // Returns YES if WebPaymentsModifiers feature is enabled.
 + (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
+#pragma mark - Popup Blocking
+
+// Gets the current value of the popup content setting preference for the
+// original browser state.
++ (ContentSetting)popupPrefValue;
+
+// Sets the popup content setting preference to the given value for the original
+// browser state.
++ (void)setPopupPrefValue:(ContentSetting)value;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

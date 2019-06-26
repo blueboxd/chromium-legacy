@@ -345,6 +345,16 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if WebPaymentsModifiers feature is enabled.
 - (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
+#pragma mark - Popup Blocking
+
+// Gets the current value of the popup content setting preference for the
+// original browser state.
+- (ContentSetting)popupPrefValue;
+
+// Sets the popup content setting preference to the given value for the original
+// browser state.
+- (void)setPopupPrefValue:(ContentSetting)value;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

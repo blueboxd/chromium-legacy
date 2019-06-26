@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_private_key.h"
@@ -135,6 +136,10 @@ struct NET_EXPORT SSLConfig {
 
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
+
+  // If the PartitionSSLSessionsByNetworkIsolationKey feature is enabled, the
+  // session cache is partitioned by this value.
+  NetworkIsolationKey network_isolation_key;
 };
 
 }  // namespace net

@@ -54,7 +54,7 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
 
   // Waits until specific enrollment step is displayed.
   void WaitForStep(const std::string& step);
-  bool IsStepDisplayed(const std::string& step);
+  void ExpectStepVisibility(bool visibility, const std::string& step);
 
   void ExpectErrorMessage(int error_message_id, bool can_retry);
   void RetryAfterError();

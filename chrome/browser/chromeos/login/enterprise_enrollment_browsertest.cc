@@ -41,7 +41,7 @@ namespace {
 
 constexpr char kEnrollmentUI[] = "enterprise-enrollment";
 constexpr char kAdDialog[] = "oauth-enroll-ad-join-ui";
-constexpr char kAdErrorCard[] = "oauth-enroll-active-directory-join-error-card";
+constexpr char kAdErrorCard[] = "oauth-enroll-error-card";
 
 constexpr char kAdUnlockConfigurationStep[] = "unlockStep";
 constexpr char kAdUnlockPasswordInput[] = "unlockPasswordInput";
@@ -220,8 +220,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
   void CheckActiveDirectoryCredentialsShown() {
-    EXPECT_TRUE(
-        enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+    enrollment_ui_.ExpectStepVisibility(true, test::ui::kEnrollmentStepADJoin);
 
     std::initializer_list<base::StringPiece> ad_credentials{
         kEnrollmentUI, kAdDialog, kAdCredentialsStep};
@@ -244,8 +243,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
   void CheckActiveDirectoryUnlockConfigurationShown() {
-    EXPECT_TRUE(
-        enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+    enrollment_ui_.ExpectStepVisibility(true, test::ui::kEnrollmentStepADJoin);
     test::OobeJS().ExpectHiddenPath(
         {kEnrollmentUI, kAdDialog, kAdCredentialsStep});
     test::OobeJS().ExpectVisiblePath(
@@ -573,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */, "all",
                                    kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
-  EXPECT_FALSE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+  enrollment_ui_.ExpectStepVisibility(false, test::ui::kEnrollmentStepADJoin);
 
   CompleteEnrollment();
   // Verify that the success page is displayed.
@@ -606,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowSpinnerScreen\"");
-  EXPECT_FALSE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+  enrollment_ui_.ExpectStepVisibility(false, test::ui::kEnrollmentStepADJoin);
 
   CompleteEnrollment();
   // Verify that the success page is displayed.
@@ -634,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
                                    "" /* encryption_types */, kAdTestUser,
                                    "" /* password */);
-  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+  enrollment_ui_.ExpectStepVisibility(true, test::ui::kEnrollmentStepADJoin);
   ExpectElementValid(kAdMachineNameInput, true);
   ExpectElementValid(kAdUsernameInput, true);
   ExpectElementValid(kAdPasswordInput, false);
@@ -644,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
-  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+  enrollment_ui_.ExpectStepVisibility(true, test::ui::kEnrollmentStepADJoin);
   ExpectElementValid(kAdMachineNameInput, false);
   ExpectElementValid(kAdUsernameInput, true);
   ExpectElementValid(kAdPasswordInput, true);
@@ -654,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, "test_user",
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
-  EXPECT_TRUE(enrollment_ui_.IsStepDisplayed(test::ui::kEnrollmentStepADJoin));
+  enrollment_ui_.ExpectStepVisibility(true, test::ui::kEnrollmentStepADJoin);
   ExpectElementValid(kAdMachineNameInput, true);
   ExpectElementValid(kAdUsernameInput, false);
   ExpectElementValid(kAdPasswordInput, true);
@@ -677,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoinError);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   test::OobeJS().ClickOnPath({kEnrollmentUI, kAdErrorCard, kSubmitButton});
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepADJoin);
 }

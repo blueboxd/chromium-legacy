@@ -41,7 +41,7 @@
       <link rel="stylesheet" href="oobe_flex_layout.css">
       <link rel="stylesheet" href="oobe_dialog_host.css">
       <link rel="stylesheet" href="enterprise_enrollment.css">
-      <div id="oauth-enroll-step-signin">
+      <div id="step-signin" hidden$="[[!eq_(currentStep_, 'signin')]]">
         <oobe-dialog class="gaia-dialog" role="dialog"
                      id="enrollment-gaia-dialog" has-buttons no-header
                      no-footer-padding>
@@ -56,7 +56,7 @@
           </div>
         </oobe-dialog>
       </div>
-      <div id="oauth-enroll-step-working">
+      <div id="step-working" hidden$="[[!eq_(currentStep_, 'working')]]">
           <oobe-dialog id="oauth-enroll-working">
             <hd-iron-icon slot="oobe-icon"
                           icon1x="oobe-enrollment-32:briefcase"
@@ -73,23 +73,29 @@
             </div>
           </oobe-dialog>
       </div>
-      <div id="oauth-enroll-step-license">
+      <div id="step-license" hidden$="[[!eq_(currentStep_, 'license')]]">
         <enrollment-license-card id="oauth-enroll-license-ui"
                                  i18n-values="button-text:oauthEnrollNextBtn">
         </enrollment-license-card>
       </div>
-      <div id="oauth-enroll-step-ad-join">
+      <div id="step-ad-join" hidden$="[[!eq_(currentStep_, 'ad-join')]]">
         <offline-ad-login id="oauth-enroll-ad-join-ui" is-domain-join
             class="fit" i18n-values=
                 "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage">
         </offline-ad-login>
       </div>
-      <div id="oauth-enroll-step-error" role="alert">
+      <div id="step-error" role="alert"
+          hidden$="[[!isErrorStep_(currentStep_)]]">
         <notification-card id="oauth-enroll-error-card" type="fail"
-            i18n-values="button-label:oauthEnrollRetry">
+            button-label=
+                "[[errorAction_(locale, currentStep_, canRetryAfterError_)]]"
+            i18n-values="button-label:oauthEnrollRetry"
+            on-buttonclick="onErrorButtonPressed_">
+          [[errorText_]]
         </notification-card>
       </div>
-      <div id="oauth-enroll-step-success" role="alert">
+      <div id="step-success" hidden$="[[!eq_(currentStep_, 'success')]]"
+          role="alert">
         <oobe-dialog id="oauth-enroll-success-card" has-buttons>
           <hd-iron-icon slot="oobe-icon"
                         icon1x="oobe-enrollment-32:briefcase"
@@ -119,7 +125,8 @@
           </div>
         </oobe-dialog>
       </div>
-      <div id="oauth-enroll-step-attribute-prompt">
+      <div id="step-attribute-prompt"
+          hidden$="[[!eq_(currentStep_, 'attribute-prompt')]]">
         <oobe-dialog id="oauth-enroll-attribute-prompt-card" has-buttons>
           <hd-iron-icon slot="oobe-icon"
                         icon1x="oobe-enrollment-32:briefcase"
@@ -155,16 +162,6 @@
                 id="enroll-attributes-submit-button"></oobe-next-button>
           </div>
         </oobe-dialog>
-      </div>
-      <div id="oauth-enroll-step-attribute-prompt-error">
-        <notification-card id="oauth-enroll-attribute-prompt-error-card"
-            type="fail" i18n-values="button-label:oauthEnrollDone">
-        </notification-card>
-      </div>
-      <div id="oauth-enroll-step-active-directory-join-error">
-        <notification-card id="oauth-enroll-active-directory-join-error-card"
-            type="fail" i18n-values="button-label:oauthEnrollRetry">
-        </notification-card>
       </div>
     </div>
     <div id="oauth-saml-notice-container">

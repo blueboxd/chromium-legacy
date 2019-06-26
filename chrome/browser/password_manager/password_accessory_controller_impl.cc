@@ -22,6 +22,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -182,6 +183,10 @@ void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
   suggestions->clear();
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
+    if (!url::IsSameOriginWith(origin.GetURL(), form->origin) &&
+        !base::FeatureList::IsEnabled(
+            autofill::features::kAutofillKeyboardAccessory))
+      continue;  // Skip matches for PSL origins in V1 which has no UI for that.
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
                               /*selectable=*/!form->username_value.empty());
   }

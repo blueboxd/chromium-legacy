@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   enrollment_ui_.SubmitDeviceAttributes(test::values::kAssetId,
                                         test::values::kLocation);
 
-  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributesError);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
   enrollment_ui_.LeaveDeviceAttributeErrorScreen();

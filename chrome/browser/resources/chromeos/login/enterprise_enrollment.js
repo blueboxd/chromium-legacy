@@ -52,6 +52,14 @@ Polymer({
     },
 
     /**
+     * The current step. This is the last value passed to showStep().
+     */
+    currentStep_: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * Domain the device was enrolled to.
      */
     enrolledDomain_: {
@@ -66,17 +74,28 @@ Polymer({
       type: String,
       value: 'Chromebook',
     },
+
+    /**
+     * Text on the error screen.
+     */
+    errorText_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Controls if there will be "retry" button on the error screen.
+     */
+    canRetryAfterError_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /**
    * Authenticator object that wraps GAIA webview.
    */
   authenticator_: null,
-
-  /**
-   * The current step. This is the last value passed to showStep().
-   */
-  currentStep_: null,
 
   /**
    * We block esc, back button and cancel button until gaia is loaded to
@@ -229,13 +248,6 @@ Polymer({
               loadTimeData.getString('fatalEnrollmentError'), false);
         }).bind(this);
 
-    this.$['oauth-enroll-error-card']
-        .addEventListener('buttonclick', this.doRetry_.bind(this));
-
-    this.$['oauth-enroll-attribute-prompt-error-card']
-        .addEventListener(
-            'buttonclick', this.onEnrollmentFinished_.bind(this));
-
     this.$['enroll-success-done-button']
         .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
 
@@ -243,12 +255,6 @@ Polymer({
         .addEventListener('tap', this.onSkipButtonClicked.bind(this));
     this.$['enroll-attributes-submit-button']
         .addEventListener('tap', this.onAttributesSubmitted.bind(this));
-
-
-    this.$['oauth-enroll-active-directory-join-error-card']
-        .addEventListener('buttonclick', function() {
-          this.showStep(ENROLLMENT_STEP.AD_JOIN);
-        }.bind(this));
 
     this.navigation_.addEventListener('close', this.cancel.bind(this));
     this.navigation_.addEventListener('refresh', this.cancel.bind(this));
@@ -399,28 +405,19 @@ Polymer({
    * "attribute-prompt", "error", "success".
    */
   showStep: function(step) {
-    let classList = this.$['oauth-enroll-step-contents'].classList;
-    classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
-    classList.toggle('oauth-enroll-state-' + step, true);
-
     this.isCancelDisabled =
         (step == ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
         step == ENROLLMENT_STEP.AD_JOIN || step == ENROLLMENT_STEP.WORKING;
-    if (step == ENROLLMENT_STEP.SIGNIN) {
+    if (this.isErrorStep_(step)) {
+      this.$['oauth-enroll-error-card'].submitButton.focus();
+    } else if (step == ENROLLMENT_STEP.SIGNIN) {
       this.$['oauth-enroll-auth-view'].focus();
     } else if (step == ENROLLMENT_STEP.LICENSE_TYPE) {
       this.$['oauth-enroll-license-ui'].show();
-    } else if (step == ENROLLMENT_STEP.ERROR) {
-      this.$['oauth-enroll-error-card'].submitButton.focus();
     } else if (step == ENROLLMENT_STEP.SUCCESS) {
       this.$['oauth-enroll-success-card'].show();
     } else if (step == ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
       this.$['oauth-enroll-attribute-prompt-card'].show();
-    } else if (step == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {
-      this.$['oauth-enroll-attribute-prompt-error-card'].submitButton.focus();
-    } else if (step == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
-      this.$['oauth-enroll-active-directory-join-error-card'].submitButton
-      .focus();
     } else if (step == ENROLLMENT_STEP.AD_JOIN) {
       this.offlineAdUi_.disabled = false;
       this.offlineAdUi_.loading = false;
@@ -438,21 +435,16 @@ Polymer({
    * @param {boolean} retry whether the retry link should be shown.
    */
   showError: function(message, retry) {
+    this.errorText_ = message;
+    this.canRetryAfterError_ = retry;
+
     if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
-      this.$['oauth-enroll-attribute-prompt-error-card'].textContent = message;
       this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR);
-      return;
-    }
-    if (this.currentStep_ == ENROLLMENT_STEP.AD_JOIN) {
-      this.$['oauth-enroll-active-directory-join-error-card'].textContent =
-          message;
+    } else if (this.currentStep_ == ENROLLMENT_STEP.AD_JOIN) {
       this.showStep(ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR);
-      return;
+    } else {
+      this.showStep(ENROLLMENT_STEP.ERROR);
     }
-    this.$['oauth-enroll-error-card'].textContent = message;
-    this.$['oauth-enroll-error-card'].buttonLabel =
-        retry ? loadTimeData.getString('oauthEnrollRetry') : '';
-    this.showStep(ENROLLMENT_STEP.ERROR);
   },
 
   doReload: function() {
@@ -564,6 +556,16 @@ Polymer({
     this.offlineAdUi_.i18nUpdateLocale();
   },
 
+  onErrorButtonPressed_: function () {
+    if (this.currentStep_ == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
+      this.showStep(ENROLLMENT_STEP.AD_JOIN);
+    } else if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {
+      this.onEnrollmentFinished_();
+    } else {
+      this.doRetry_();
+    }
+  },
+
   /**
    * Generates message on the success screen.
    */
@@ -574,5 +576,35 @@ Polymer({
 
   isEmpty_: function(str) {
     return !str;
+  },
+
+  /**
+   * Simple equality comparison function.
+   */
+  eq_: function(currentStep, expectedStep) {
+    return currentStep == expectedStep;
+  },
+
+  /**
+   * Simple equality comparison function.
+   */
+  isErrorStep_: function(currentStep) {
+    return currentStep == ENROLLMENT_STEP.ERROR ||
+           currentStep == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR ||
+           currentStep == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR;
+  },
+
+  /**
+   * Text for error screen button depending on type of error.
+   */
+  errorAction_: function(locale, step, retry) {
+    if (this.currentStep_ == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
+      return this.i18n('oauthEnrollRetry');
+    } else if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {
+      return this.i18n('oauthEnrollDone');
+    } else if (this.currentStep_ == ENROLLMENT_STEP.ERROR) {
+      return retry ? this.i18n('oauthEnrollRetry') : '';
+    }
   }
+
 });

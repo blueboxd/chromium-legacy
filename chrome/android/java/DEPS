@@ -1,6 +1,9 @@
 include_rules = [
   "-chrome/android/features/keyboard_accessory/internal"
 
+  "+chrome/lib/lifecycle/public",
+  "+chrome/lib/image_fetcher/public",
+  "+chrome/lib/util/public",
   "+components/embedder_support/android",
   "+components/embedder_support/android",
   "+components/autofill/android/java/src/org/chromium/components/autofill",

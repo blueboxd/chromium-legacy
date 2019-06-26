@@ -20,30 +20,10 @@
   width: 100%;
 }
 
-#oauth-enroll-step-contents > div {
-  display: none;
-}
-
-.oauth-enroll-state-error #oauth-enroll-step-error {
+#step-error {
   display: table;
   height: 480px;
   margin: 0 auto;
-}
-
-.oauth-enroll-state-active-directory-join-error
-    #oauth-enroll-step-active-directory-join-error,
-.oauth-enroll-state-attribute-prompt-error
-    #oauth-enroll-step-attribute-prompt-error,
-.oauth-enroll-state-signin #oauth-enroll-step-signin,
-.oauth-enroll-state-ad-join #oauth-enroll-step-ad-join,
-.oauth-enroll-state-license #oauth-enroll-step-license,
-.oauth-enroll-state-success #oauth-enroll-step-success,
-.oauth-enroll-state-working #oauth-enroll-step-working,
-.oauth-enroll-state-attribute-prompt
-    #oauth-enroll-step-attribute-prompt {
-  display: block;
-  height: 100%;
-  width: 100%;
 }
 
 #oauth-enroll-auth-view {

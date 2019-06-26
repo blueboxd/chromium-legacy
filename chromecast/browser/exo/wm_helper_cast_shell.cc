@@ -169,7 +169,7 @@ void WMHelperCastShell::RemovePostTargetHandler(ui::EventHandler* handler) {
   cast_window_manager_aura_->GetRootWindow()->RemovePostTargetHandler(handler);
 }
 
-bool WMHelperCastShell::IsTabletModeWindowManagerEnabled() const {
+bool WMHelperCastShell::InTabletMode() const {
   NOTIMPLEMENTED();
   return false;
 }
@@ -177,6 +177,15 @@ bool WMHelperCastShell::IsTabletModeWindowManagerEnabled() const {
 double WMHelperCastShell::GetDefaultDeviceScaleFactor() const {
   NOTIMPLEMENTED();
   return 1.0;
+}
+
+void WMHelperCastShell::SetImeBlocked(aura::Window* window, bool ime_blocked) {
+  NOTIMPLEMENTED();
+}
+
+bool WMHelperCastShell::IsImeBlocked(aura::Window* window) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 WMHelper::LifetimeManager* WMHelperCastShell::GetLifetimeManager() {

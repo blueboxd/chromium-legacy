@@ -12,6 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/tick_clock.h"
+#include "base/timer/timer.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -24,6 +26,40 @@ class SharedURLLoaderFactory;
 // available or accessible by Chrome.
 class PreviewsProber {
  public:
+  // This enum describes the different algorithms that can be used to calculate
+  // a time delta between probe events like retries or timeout ttl.
+  enum class Backoff {
+    // Use the same time delta for each event.
+    kLinear,
+
+    // Use an exponentially increasing time delta, base 2.
+    kExponential,
+  };
+
+  struct RetryPolicy {
+    RetryPolicy();
+    RetryPolicy(const RetryPolicy& other);
+    ~RetryPolicy();
+
+    // The maximum number of retries (not including the original probe) to
+    // attempt.
+    size_t max_retries = 3;
+
+    // How to compute the time interval between successive retries.
+    Backoff backoff = Backoff::kLinear;
+
+    // Time between probes as the base value. For example, given |backoff|:
+    //   LINEAR: |base_interval| between the end of last probe and start of next
+    //           probe.
+    //   EXPONENTIAL: (|base_interval| * 2 ^ |successive_retry_count_|) between
+    //                the end of last retry and start of next retry.
+    base::TimeDelta base_interval = base::TimeDelta();
+
+    // If true, this attaches a random GUID query param to the URL of every
+    // probe, including the first probe.
+    bool use_random_urls = false;
+  };
+
   enum class HttpMethod {
     kGet,
     kHead,
@@ -33,7 +69,8 @@ class PreviewsProber {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& name,
       const GURL& url,
-      HttpMethod http_method);
+      HttpMethod http_method,
+      const RetryPolicy& retry_policy);
   ~PreviewsProber();
 
   // Sends a probe now if the prober is currently inactive. If the probe is
@@ -43,9 +80,24 @@ class PreviewsProber {
   // Returns the successfulness of the last probe, if there was one.
   base::Optional<bool> LastProbeWasSuccessful() const;
 
+  // True if probes are being attempted, including retries.
+  bool is_active() const { return is_active_; }
+
+ protected:
+  // Exposes |tick_clock| for testing.
+  PreviewsProber(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& name,
+      const GURL& url,
+      HttpMethod http_method,
+      const RetryPolicy& retry_policy,
+      const base::TickClock* tick_clock);
+
  private:
   void CreateAndStartURLLoader();
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
+  void ProcessProbeFailure();
+  void ProcessProbeSuccess();
 
   // The name given to this prober instance, used in metrics, prefs, and traffic
   // annotations.
@@ -56,6 +108,19 @@ class PreviewsProber {
 
   // The HTTP method used for probing.
   const HttpMethod http_method_;
+
+  // The retry policy to use in this prober.
+  const RetryPolicy retry_policy_;
+
+  // The number of retries that have been attempted. This count does not include
+  // the original probe.
+  size_t successive_retry_count_;
+
+  // If a retry is being attempted, this will be running until the next attempt.
+  std::unique_ptr<base::OneShotTimer> retry_timer_;
+
+  // The tick clock used for |retry_timer_|.
+  const base::TickClock* tick_clock_;
 
   // Whether the prober is currently sending probes.
   bool is_active_;

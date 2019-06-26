@@ -89,8 +89,10 @@ class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePreTargetHandler(ui::EventHandler* handler) override;
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
-  bool IsTabletModeWindowManagerEnabled() const override;
+  bool InTabletMode() const override;
   double GetDefaultDeviceScaleFactor() const override;
+  void SetImeBlocked(aura::Window* window, bool ime_blocked) override;
+  bool IsImeBlocked(aura::Window* window) const override;
 
   LifetimeManager* GetLifetimeManager() override;
   aura::client::CaptureClient* GetCaptureClient() override;

@@ -6,8 +6,21 @@
 
 namespace net {
 
+TestDnsConfigService::TestDnsConfigService() = default;
+
+TestDnsConfigService::~TestDnsConfigService() = default;
+
 bool TestDnsConfigService::StartWatching() {
   return true;
+}
+
+void TestDnsConfigService::RefreshConfig() {
+  DCHECK(config_for_refresh_);
+  InvalidateConfig();
+  InvalidateHosts();
+  OnConfigRead(config_for_refresh_.value());
+  OnHostsRead(config_for_refresh_.value().hosts);
+  config_for_refresh_ = base::nullopt;
 }
 
 }  // namespace net

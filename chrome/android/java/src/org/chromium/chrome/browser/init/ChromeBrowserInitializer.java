@@ -18,7 +18,6 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -71,9 +70,6 @@ public class ChromeBrowserInitializer {
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
     private boolean mNetworkChangeNotifierInitializationComplete;
-
-    // Public to allow use in ChromeBackupAgent
-    public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     /**
      * A callback to be executed when there is a new version available in Play Store.
@@ -224,7 +220,6 @@ public class ChromeBrowserInitializer {
     private void preInflationStartup() {
         ThreadUtils.assertOnUiThread();
         if (mPreInflationStartupComplete) return;
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
         // Ensure critical files are available, so they aren't blocked on the file-system
         // behind long-running accesses in next phase.

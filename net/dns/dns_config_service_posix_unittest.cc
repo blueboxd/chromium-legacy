@@ -256,7 +256,7 @@ TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
   scoped_task_environment_.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {
-    service_->OnConfigChanged(true);
+    service_->RefreshConfig();
     // Wait for config read after the change. OnConfigChanged() will only be
     // called if the new config is different from the old one, so this can't be
     // ExpectChange().

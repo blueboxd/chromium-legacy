@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/dns_config_service.h"
-
 #ifndef NET_DNS_TEST_DNS_CONFIG_SERVICE_H_
 #define NET_DNS_TEST_DNS_CONFIG_SERVICE_H_
+
+#include <utility>
+
+#include "base/logging.h"
+#include "base/optional.h"
+#include "net/dns/dns_config_service.h"
 
 namespace net {
 
@@ -13,6 +17,9 @@ namespace net {
 // notifications only on explicitly calling On...() methods.
 class TestDnsConfigService : public DnsConfigService {
  public:
+  TestDnsConfigService();
+  ~TestDnsConfigService() override;
+
   void ReadNow() override {}
   bool StartWatching() override;
 
@@ -32,6 +39,16 @@ class TestDnsConfigService : public DnsConfigService {
   void set_watch_failed(bool value) {
     DnsConfigService::set_watch_failed(value);
   }
+
+  void RefreshConfig() override;
+
+  void SetConfigForRefresh(DnsConfig config) {
+    DCHECK(!config_for_refresh_);
+    config_for_refresh_ = std::move(config);
+  }
+
+ private:
+  base::Optional<DnsConfig> config_for_refresh_;
 };
 
 }  // namespace net

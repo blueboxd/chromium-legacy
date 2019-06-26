@@ -5,15 +5,17 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 TabStripRegionView::TabStripRegionView() {
   views::FlexLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetDefaultFlex(views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToZero,
-          views::MaximumFlexSizeRule::kUnbounded));
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification::ForSizeRule(
+                      views::MinimumFlexSizeRule::kScaleToZero,
+                      views::MaximumFlexSizeRule::kUnbounded));
 }
 
 TabStripRegionView::~TabStripRegionView() {}

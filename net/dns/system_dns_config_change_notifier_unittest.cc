@@ -308,4 +308,20 @@ TEST_F(SystemDnsConfigChangeNotifierTest, InitialConfigInvalid) {
   notifier_->RemoveObserver(&observer);
 }
 
+TEST_F(SystemDnsConfigChangeNotifierTest, RefreshConfig) {
+  test_config_service_->SetConfigForRefresh(kConfig);
+
+  TestObserver observer;
+  notifier_->AddObserver(&observer);
+
+  notifier_->RefreshConfig();
+  observer.WaitForNotification();
+
+  EXPECT_THAT(observer.configs_received(),
+              testing::ElementsAre(testing::Optional(kConfig)));
+  observer.ExpectNoMoreNotifications();
+
+  notifier_->RemoveObserver(&observer);
+}
+
 }  // namespace net

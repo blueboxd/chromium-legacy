@@ -265,11 +265,17 @@ Polymer({
       return;
     }
 
-    // Accept Enter keys from either the dialog, or a child input element.
-    if (e.target != this && e.target.tagName != 'CR-INPUT') {
+    // Accept Enter keys from either the dialog, or a child input or cr-input
+    // element (but consider that the event may have been retargeted).
+    const origTarget = e.composedPath()[0];
+    const accept = e.target == this || origTarget.tagName == 'CR-INPUT' ||
+        (origTarget.tagName == 'INPUT' &&
+         // <cr-input> can only be text-like; apply the same limit to <input> so
+         // that e.g. enter on a checkbox does not submit the dialog.
+         ['text', 'password', 'number', 'search'].includes(origTarget.type));
+    if (!accept) {
       return;
     }
-
     const actionButton =
         this.querySelector('.action-button:not([disabled]):not([hidden])');
     if (actionButton) {

@@ -105,11 +105,20 @@ class CustomTabBarTitleOriginView : public views::View {
     title_label_->SetBackgroundColor(background_color);
     title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
     title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label_->SetProperty(views::kFlexBehaviorKey,
+                              views::FlexSpecification::ForSizeRule(
+                                  views::MinimumFlexSizeRule::kScaleToMinimum,
+                                  views::MaximumFlexSizeRule::kPreferred));
 
     location_label_->SetBackgroundColor(background_color);
     location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
     location_label_->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
+    location_label_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification::ForSizeRule(
+            views::MinimumFlexSizeRule::kScaleToMinimum,
+            views::MaximumFlexSizeRule::kPreferred));
 
     AddChildView(title_label_);
     AddChildView(location_label_);
@@ -117,15 +126,7 @@ class CustomTabBarTitleOriginView : public views::View {
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
         .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
-        .SetFlexForView(title_label_,
-                        views::FlexSpecification::ForSizeRule(
-                            views::MinimumFlexSizeRule::kScaleToMinimum,
-                            views::MaximumFlexSizeRule::kPreferred))
-        .SetFlexForView(location_label_,
-                        views::FlexSpecification::ForSizeRule(
-                            views::MinimumFlexSizeRule::kScaleToMinimum,
-                            views::MaximumFlexSizeRule::kPreferred));
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   }
 
   void Update(base::string16 title, base::string16 location) {
@@ -199,17 +200,17 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 
   title_origin_view_ =
       new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
+  title_origin_view_->SetProperty(
+      views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
+                                   views::MinimumFlexSizeRule::kScaleToMinimum,
+                                   views::MaximumFlexSizeRule::kPreferred));
   AddChildView(title_origin_view_);
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN))
-      .SetFlexForView(title_origin_view_,
-                      views::FlexSpecification::ForSizeRule(
-                          views::MinimumFlexSizeRule::kScaleToMinimum,
-                          views::MaximumFlexSizeRule::kPreferred));
+      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }

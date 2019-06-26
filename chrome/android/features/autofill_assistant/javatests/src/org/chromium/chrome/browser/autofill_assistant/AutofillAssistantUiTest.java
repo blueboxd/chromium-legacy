@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -84,7 +83,6 @@ public class AutofillAssistantUiTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(UrlUtils.getIsolatedTestFilePath(
                 "components/test/data/autofill_assistant/autofill_assistant_target_website.html"));
-        PathUtils.setPrivateDataDirectorySuffix("chrome");
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
     }
 

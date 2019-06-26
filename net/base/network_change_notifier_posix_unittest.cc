@@ -4,8 +4,11 @@
 
 #include "net/base/network_change_notifier_posix.h"
 
+#include <utility>
+
 #include "base/test/scoped_task_environment.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/test_dns_config_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -17,18 +20,24 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         notifier_(new NetworkChangeNotifierPosix(
             NetworkChangeNotifier::CONNECTION_UNKNOWN,
-            NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {}
+            NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {
+    auto dns_config_service = std::make_unique<TestDnsConfigService>();
+    dns_config_service_ = dns_config_service.get();
+    notifier_->SetDnsConfigServiceForTesting(std::move(dns_config_service));
+  }
 
   void FastForwardUntilIdle() {
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
   NetworkChangeNotifierPosix* notifier() { return notifier_.get(); }
+  TestDnsConfigService* dns_config_service() { return dns_config_service_; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::NetworkChangeNotifier::DisableForTest mock_notifier_disabler_;
   std::unique_ptr<NetworkChangeNotifierPosix> notifier_;
+  TestDnsConfigService* dns_config_service_;
 };
 
 class MockIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
@@ -84,6 +93,19 @@ TEST_F(NetworkChangeNotifierPosixTest, OnMaxBandwidthChanged) {
   FastForwardUntilIdle();
 
   NetworkChangeNotifier::RemoveMaxBandwidthObserver(&observer);
+}
+
+TEST_F(NetworkChangeNotifierPosixTest, OnDNSChanged) {
+  DnsConfig expected_config;
+  expected_config.nameservers = {IPEndPoint(IPAddress(1, 2, 3, 4), 233)};
+  dns_config_service()->SetConfigForRefresh(expected_config);
+
+  notifier()->OnDNSChanged();
+  FastForwardUntilIdle();
+
+  DnsConfig actual_config;
+  NetworkChangeNotifier::GetDnsConfig(&actual_config);
+  EXPECT_EQ(expected_config, actual_config);
 }
 
 }  // namespace net

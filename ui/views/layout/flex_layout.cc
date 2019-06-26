@@ -151,6 +151,10 @@ class LayoutCache {
   CacheEntry current_;
 };
 
+}  // anonymous namespace
+
+// Private implementation ------------------------------------------------------
+
 // Calculates and maintains 1D spacing between a sequence of child views.
 class ChildViewSpacing {
  public:
@@ -286,18 +290,6 @@ base::Optional<size_t> ChildViewSpacing::GetNextViewIndex(
   return it->first;
 }
 
-// Utility functions -----------------------------------------------------------
-
-gfx::Insets GetInternalPadding(const View* view) {
-  const gfx::Insets* const margins =
-      view->GetProperty(views::kInternalPaddingKey);
-  return margins ? *margins : gfx::Insets();
-}
-
-}  // anonymous namespace
-
-// Private implementation ------------------------------------------------------
-
 // Holds child-view-specific layout parameters that are not stored in the
 // properties system.
 //
@@ -305,7 +297,6 @@ gfx::Insets GetInternalPadding(const View* view) {
 struct ChildLayoutParams {
   bool excluded = false;
   bool hidden_by_owner = false;
-  base::Optional<FlexSpecification> flex_specification;
 };
 
 // Internal data structure and functionality for FlexLayout so we don't have to
@@ -385,7 +376,11 @@ class FlexLayoutInternal {
                             base::Optional<size_t> child1_index,
                             base::Optional<size_t> child2_index) const;
 
-  const gfx::Insets& GetMargins(const View* view) const;
+  // Fetches the layout-specific value for a child view, then the layout-default
+  // value, then the global default value if none of the others are present.
+  template <typename T>
+  T GetViewProperty(const View* view,
+                    const ui::ClassProperty<T*>* property) const;
 
   FlexLayout& layout_;
 
@@ -509,11 +504,6 @@ int FlexLayoutInternal::CalculateChildSpacing(
 
   return CalculateMargin(left_margin, right_margin,
                          left_padding + right_padding);
-}
-
-const gfx::Insets& FlexLayoutInternal::GetMargins(const View* view) const {
-  const gfx::Insets* const margins = view->GetProperty(views::kMarginsKey);
-  return margins ? *margins : layout_.default_child_margins();
 }
 
 void FlexLayoutInternal::UpdateLayoutFromChildren(
@@ -751,16 +741,18 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
   View* const view = layout_.host();
   for (size_t i = 0; i < view->children().size(); ++i) {
     View* child = view->children()[i];
-    layout->child_layouts.emplace_back(child, layout_.GetFlexForView(child));
+    layout->child_layouts.emplace_back(
+        child, GetViewProperty(child, views::kFlexBehaviorKey));
     ChildLayout& child_layout = layout->child_layouts.back();
 
     child_layout.excluded = layout_.IsViewExcluded(child);
     if (child_layout.excluded)
       continue;
 
-    child_layout.margins = Normalize(orientation(), GetMargins(child));
-    child_layout.internal_padding =
-        Normalize(orientation(), GetInternalPadding(child));
+    child_layout.margins =
+        Normalize(orientation(), GetViewProperty(child, views::kMarginsKey));
+    child_layout.internal_padding = Normalize(
+        orientation(), GetViewProperty(child, views::kInternalPaddingKey));
     child_layout.preferred_size =
         Normalize(orientation(), child->GetPreferredSize());
 
@@ -864,12 +856,12 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
 
     if (proposed_view_layout.visible) {
       // Check that view margins haven't changed for visible controls.
-      if (GetMargins(child) !=
+      if (GetViewProperty(child, views::kMarginsKey) !=
           Denormalize(orientation(), proposed_view_layout.margins))
         return false;
 
       // Same for internal padding.
-      if (GetInternalPadding(child) !=
+      if (GetViewProperty(child, views::kInternalPaddingKey) !=
           Denormalize(orientation(), proposed_view_layout.internal_padding))
         return false;
     }
@@ -880,7 +872,9 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
         Denormalize(orientation(), proposed_view_layout.preferred_size))
       return false;
 
-    const gfx::Size preferred = proposed_view_layout.flex.rule().Run(
+    const FlexSpecification child_flex =
+        GetViewProperty(child, views::kFlexBehaviorKey);
+    const gfx::Size preferred = child_flex.rule().Run(
         child, Denormalize(orientation(), proposed_view_layout.available_size));
     if (preferred !=
         Denormalize(orientation(), proposed_view_layout.current_size))
@@ -896,13 +890,36 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
   return true;
 }
 
+template <typename T>
+T FlexLayoutInternal::GetViewProperty(
+    const View* view,
+    const ui::ClassProperty<T*>* property) const {
+  T* found_value = view->GetProperty(property);
+  if (found_value)
+    return *found_value;
+  found_value = layout_.layout_defaults_.GetProperty(property);
+  if (found_value)
+    return *found_value;
+  return T();
+}
+
 }  // namespace internal
 
 // FlexLayout
 // -------------------------------------------------------------------
 
+FlexLayout::PropertyHandler::PropertyHandler(
+    internal::FlexLayoutInternal* layout)
+    : layout_(layout) {}
+
+void FlexLayout::PropertyHandler::AfterPropertyChange(const void* key,
+                                                      int64_t old_value) {
+  layout_->InvalidateLayout(false);
+}
+
 FlexLayout::FlexLayout()
-    : internal_(std::make_unique<internal::FlexLayoutInternal>(this)) {}
+    : internal_(std::make_unique<internal::FlexLayoutInternal>(this)),
+      layout_defaults_(internal_.get()) {}
 
 FlexLayout::~FlexLayout() = default;
 
@@ -958,32 +975,6 @@ FlexLayout& FlexLayout::SetMinimumCrossAxisSize(int size) {
   return *this;
 }
 
-FlexLayout& FlexLayout::SetDefaultChildMargins(const gfx::Insets& margins) {
-  if (default_child_margins_ != margins) {
-    default_child_margins_ = margins;
-    internal_->InvalidateLayout(true);
-  }
-  return *this;
-}
-
-FlexLayout& FlexLayout::SetFlexForView(
-    const View* view,
-    const FlexSpecification& flex_specification) {
-  auto it = child_params_.find(view);
-  DCHECK(it != child_params_.end());
-  it->second.flex_specification = flex_specification;
-  internal_->InvalidateLayout(true);
-  return *this;
-}
-
-FlexLayout& FlexLayout::ClearFlexForView(const View* view) {
-  auto it = child_params_.find(view);
-  DCHECK(it != child_params_.end());
-  it->second.flex_specification.reset();
-  internal_->InvalidateLayout(true);
-  return *this;
-}
-
 FlexLayout& FlexLayout::SetViewExcluded(const View* view, bool excluded) {
   auto it = child_params_.find(view);
   DCHECK(it != child_params_.end());
@@ -992,20 +983,6 @@ FlexLayout& FlexLayout::SetViewExcluded(const View* view, bool excluded) {
     InvalidateLayout();
   }
   return *this;
-}
-
-FlexLayout& FlexLayout::SetDefaultFlex(
-    const FlexSpecification& flex_specification) {
-  default_flex_ = flex_specification;
-  internal_->InvalidateLayout(true);
-  return *this;
-}
-
-const FlexSpecification& FlexLayout::GetFlexForView(const View* view) const {
-  auto it = child_params_.find(view);
-  DCHECK(it != child_params_.end());
-  const base::Optional<FlexSpecification>& spec = it->second.flex_specification;
-  return spec ? *spec : default_flex_;
 }
 
 bool FlexLayout::IsViewExcluded(const View* view) const {

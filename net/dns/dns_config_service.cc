@@ -41,6 +41,11 @@ void DnsConfigService::WatchConfig(const CallbackType& callback) {
   ReadNow();
 }
 
+void DnsConfigService::RefreshConfig() {
+  // Overridden on supported platforms.
+  NOTREACHED();
+}
+
 void DnsConfigService::InvalidateConfig() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeTicks now = base::TimeTicks::Now();

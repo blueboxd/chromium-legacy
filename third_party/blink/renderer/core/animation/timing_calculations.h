@@ -48,6 +48,12 @@ inline bool IsWithinEpsilon(double a, double b) {
 inline bool LessThanOrEqualToWithinEpsilon(double a, double b) {
   return a <= b || IsWithinEpsilon(a, b);
 }
+
+inline bool EndsOnIterationBoundary(double iteration_count,
+                                    double iteration_start) {
+  DCHECK(std::isfinite(iteration_count));
+  return !fmod(iteration_count + iteration_start, 1);
+}
 }  // namespace
 
 static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
@@ -90,6 +96,7 @@ static inline AnimationEffect::Phase CalculatePhase(
   return AnimationEffect::kPhaseActive;
 }
 
+// https://drafts.csswg.org/web-animations/#calculating-the-active-time
 static inline double CalculateActiveTime(double active_duration,
                                          Timing::FillMode fill_mode,
                                          double local_time,
@@ -119,69 +126,6 @@ static inline double CalculateActiveTime(double active_duration,
       NOTREACHED();
       return NullValue();
   }
-}
-
-static inline double CalculateOffsetActiveTime(double active_duration,
-                                               double active_time,
-                                               double start_offset) {
-  DCHECK_GE(active_duration, 0);
-  DCHECK_GE(start_offset, 0);
-
-  if (IsNull(active_time))
-    return NullValue();
-
-  DCHECK(active_time >= 0 &&
-         LessThanOrEqualToWithinEpsilon(active_time, active_duration));
-
-  if (!std::isfinite(active_time))
-    return std::numeric_limits<double>::infinity();
-
-  return active_time + start_offset;
-}
-
-static inline bool EndsOnIterationBoundary(double iteration_count,
-                                           double iteration_start) {
-  DCHECK(std::isfinite(iteration_count));
-  return !fmod(iteration_count + iteration_start, 1);
-}
-
-// TODO(crbug.com/630915): Align this function with current Web Animations spec
-// text.
-static inline double CalculateIterationTime(double iteration_duration,
-                                            double repeated_duration,
-                                            double offset_active_time,
-                                            double start_offset,
-                                            AnimationEffect::Phase phase,
-                                            const Timing& specified) {
-  DCHECK_GT(iteration_duration, 0);
-  DCHECK_EQ(repeated_duration,
-            MultiplyZeroAlwaysGivesZero(iteration_duration,
-                                        specified.iteration_count));
-
-  if (IsNull(offset_active_time))
-    return NullValue();
-
-  DCHECK_GE(offset_active_time, 0);
-  DCHECK(LessThanOrEqualToWithinEpsilon(offset_active_time,
-                                        repeated_duration + start_offset));
-
-  if (!std::isfinite(offset_active_time) ||
-      (offset_active_time - start_offset == repeated_duration &&
-       specified.iteration_count &&
-       EndsOnIterationBoundary(specified.iteration_count,
-                               specified.iteration_start)))
-    return iteration_duration;
-
-  DCHECK(std::isfinite(offset_active_time));
-  double iteration_time = fmod(offset_active_time, iteration_duration);
-
-  // This implements step 3 of
-  // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
-  if (iteration_time == 0 && phase == AnimationEffect::kPhaseAfter &&
-      repeated_duration != 0 && offset_active_time != 0)
-    return iteration_duration;
-
-  return iteration_time;
 }
 
 // Calculates the overall progress, which describes the number of iterations
@@ -356,6 +300,71 @@ static inline double CalculateTransformedProgress(
   // passing directed progress as the input progress value.
   return timing_function->Evaluate(directed_progress, limit_direction,
                                    AccuracyForDuration(iteration_duration));
+}
+
+// Offsets the active time by how far into the animation we start (i.e. the
+// product of the iteration start and iteration duration). This is not part of
+// the Web Animations spec; it is used for calculating the time until the next
+// iteration to optimize scheduling.
+static inline double CalculateOffsetActiveTime(double active_duration,
+                                               double active_time,
+                                               double start_offset) {
+  DCHECK_GE(active_duration, 0);
+  DCHECK_GE(start_offset, 0);
+
+  if (IsNull(active_time))
+    return NullValue();
+
+  DCHECK(active_time >= 0 &&
+         LessThanOrEqualToWithinEpsilon(active_time, active_duration));
+
+  if (!std::isfinite(active_time))
+    return std::numeric_limits<double>::infinity();
+
+  return active_time + start_offset;
+}
+
+// Maps the offset active time into 'iteration time space'[0], aka the offset
+// into the current iteration. This is not part of the Web Animations spec (note
+// that the section linked below is non-normative); it is used for calculating
+// the time until the next iteration to optimize scheduling.
+//
+// [0] https://drafts.csswg.org/web-animations-1/#iteration-time-space
+static inline double CalculateIterationTime(double iteration_duration,
+                                            double active_duration,
+                                            double offset_active_time,
+                                            double start_offset,
+                                            AnimationEffect::Phase phase,
+                                            const Timing& specified) {
+  DCHECK_GT(iteration_duration, 0);
+  DCHECK_EQ(active_duration,
+            MultiplyZeroAlwaysGivesZero(iteration_duration,
+                                        specified.iteration_count));
+
+  if (IsNull(offset_active_time))
+    return NullValue();
+
+  DCHECK_GE(offset_active_time, 0);
+  DCHECK(LessThanOrEqualToWithinEpsilon(offset_active_time,
+                                        active_duration + start_offset));
+
+  if (!std::isfinite(offset_active_time) ||
+      (offset_active_time - start_offset == active_duration &&
+       specified.iteration_count &&
+       EndsOnIterationBoundary(specified.iteration_count,
+                               specified.iteration_start)))
+    return iteration_duration;
+
+  DCHECK(std::isfinite(offset_active_time));
+  double iteration_time = fmod(offset_active_time, iteration_duration);
+
+  // This implements step 3 of
+  // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
+  if (iteration_time == 0 && phase == AnimationEffect::kPhaseAfter &&
+      active_duration != 0 && offset_active_time != 0)
+    return iteration_duration;
+
+  return iteration_time;
 }
 
 }  // namespace blink

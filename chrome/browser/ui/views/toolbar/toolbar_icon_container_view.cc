@@ -17,7 +17,8 @@
 ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
     : uses_highlight_(uses_highlight) {
   auto layout_manager = std::make_unique<views::FlexLayout>();
-  layout_manager->SetCollapseMargins(true).SetDefaultChildMargins(
+  layout_manager->SetCollapseMargins(true).SetDefault(
+      views::kMarginsKey,
       gfx::Insets(0, 0, 0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
   SetLayoutManager(std::move(layout_manager));
 }

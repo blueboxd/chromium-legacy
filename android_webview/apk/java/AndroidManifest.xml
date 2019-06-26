@@ -43,6 +43,9 @@
             {% if donor_package is not defined %}
                 <!-- If you change the variations services, also see
                      android_webview/test/shell/AndroidManifest.xml. -->
+                <!-- These have a separate android:process so that they can
+                     run in Monochrome with a different value for
+                     PathUtils.getDataDirectory() from Chrome. -->
                 <service android:name="org.chromium.android_webview.services.VariationsSeedServer"
                          android:exported="true"
                          android:process=":webview_service" />

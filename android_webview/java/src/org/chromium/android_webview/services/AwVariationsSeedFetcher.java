@@ -13,6 +13,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
 
+import com.android.webview.chromium.WebViewApkApplication;
+
 import org.chromium.android_webview.VariationsUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -49,8 +51,12 @@ public class AwVariationsSeedFetcher extends JobService {
     private static JobScheduler sMockJobScheduler;
     private static VariationsSeedFetcher sMockDownloader;
 
-    private VariationsSeedHolder mSeedHolder;
     private FetchTask mFetchTask;
+
+    public AwVariationsSeedFetcher() {
+        // Required when running in Monochrome.
+        WebViewApkApplication.initPathUtils();
+    }
 
     private static String getChannelStr() {
         switch (VersionConstants.CHANNEL) {
@@ -138,7 +144,8 @@ public class AwVariationsSeedFetcher extends JobService {
                 }
 
                 if (newSeed != null) {
-                    mSeedHolder.updateSeed(newSeed, /*onFinished=*/() -> jobFinished(mParams));
+                    VariationsSeedHolder.getInstance().updateSeed(
+                            newSeed, /*onFinished=*/() -> jobFinished(mParams));
                     shouldFinish = false; // jobFinished will be deferred until updateSeed is done.
                 }
             } catch (IOException e) {
@@ -151,12 +158,6 @@ public class AwVariationsSeedFetcher extends JobService {
 
             return null;
         }
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mSeedHolder = VariationsSeedHolder.getInstance();
     }
 
     @Override

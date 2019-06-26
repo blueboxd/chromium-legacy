@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
@@ -18,29 +19,6 @@
 
 namespace net {
 
-// DNS config services on Chrome OS and Android are signalled by the network
-// state handler rather than relying on watching files in /etc.
-class NetworkChangeNotifierPosix::DnsConfigService
-    : public net::internal::DnsConfigServicePosix {
- public:
-  DnsConfigService() = default;
-  ~DnsConfigService() override = default;
-
-  // net::internal::DnsConfigService() overrides.
-  bool StartWatching() override {
-    CreateReaders();
-    // DNS config changes are handled and notified by the network
-    // state handlers.
-    return true;
-  }
-
-  void OnNetworkChange() {
-    InvalidateConfig();
-    InvalidateHosts();
-    ReadNow();
-  }
-};
-
 NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
     NetworkChangeNotifier::ConnectionType initial_connection_type,
     NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype)
@@ -48,7 +26,7 @@ NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
       dns_config_service_runner_(
           base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       dns_config_service_(
-          new DnsConfigService(),
+          nullptr,
           // Ensure DnsConfigService lives on |dns_config_service_runner_|
           // to prevent races where NetworkChangeNotifierPosix outlives
           // ScopedTaskEnvironment. https://crbug.com/938126
@@ -57,12 +35,7 @@ NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
               initial_connection_subtype)) {
-  dns_config_service_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &NetworkChangeNotifierPosix::DnsConfigService::WatchConfig,
-          base::Unretained(dns_config_service_.get()),
-          base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig)));
+  SetAndStartDnsConfigService(DnsConfigService::CreateSystemService());
   OnDNSChanged();
 }
 
@@ -73,10 +46,8 @@ NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() {
 void NetworkChangeNotifierPosix::OnDNSChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   dns_config_service_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &NetworkChangeNotifierPosix::DnsConfigService::OnNetworkChange,
-          base::Unretained(dns_config_service_.get())));
+      FROM_HERE, base::BindOnce(&DnsConfigService::RefreshConfig,
+                                base::Unretained(dns_config_service_.get())));
 }
 
 void NetworkChangeNotifierPosix::OnIPAddressChanged() {
@@ -108,6 +79,11 @@ void NetworkChangeNotifierPosix::OnConnectionSubtypeChanged(
                                                              connection_type);
 }
 
+void NetworkChangeNotifierPosix::SetDnsConfigServiceForTesting(
+    std::unique_ptr<DnsConfigService> dns_config_service) {
+  SetAndStartDnsConfigService(std::move(dns_config_service));
+}
+
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierPosix::GetCurrentConnectionType() const {
   base::AutoLock scoped_lock(lock_);
@@ -120,6 +96,17 @@ void NetworkChangeNotifierPosix::GetCurrentMaxBandwidthAndConnectionType(
   base::AutoLock scoped_lock(lock_);
   *connection_type = connection_type_;
   *max_bandwidth_mbps = max_bandwidth_mbps_;
+}
+
+void NetworkChangeNotifierPosix::SetAndStartDnsConfigService(
+    std::unique_ptr<DnsConfigService> dns_config_service) {
+  // Reset/release to use the deleter already set up in |dns_config_service_|.
+  dns_config_service_.reset(dns_config_service.release());
+  dns_config_service_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DnsConfigService::WatchConfig,
+                                base::Unretained(dns_config_service_.get()),
+                                base::BindRepeating(
+                                    &NetworkChangeNotifier::SetDnsConfig)));
 }
 
 // static

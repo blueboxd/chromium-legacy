@@ -319,7 +319,7 @@ public class ChromeBackupAgent extends BackupAgent {
         PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             // Chrome library loading depends on PathUtils.
             PathUtils.setPrivateDataDirectorySuffix(
-                    ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
+                    ChromeApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
             createAsyncInitTaskRunner(latch).startBackgroundTasks(
                     false /* allocateChildConnection */, true /* initVariationSeed */);
         });

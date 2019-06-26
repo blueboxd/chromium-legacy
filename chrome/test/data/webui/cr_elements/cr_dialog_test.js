@@ -220,25 +220,32 @@ suite('cr-dialog', function() {
     assertTrue(clicked);
   });
 
-  test('enter keys from cr-inputs (only) are processed', function() {
+  test('enter keys from certain inputs only are processed', function() {
     document.body.innerHTML = `
       <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
-          <cr-input></cr-input>
+          <input></input>
+          <input type="text"></input>
+          <input type="password"></input>
+          <input type="checkbox"></input>
           <foobar></foobar>
           <button class="action-button">active</button>
+          <cr-input></cr-input>
         </div>
       </cr-dialog>`;
 
     const dialog = document.body.querySelector('cr-dialog');
 
-    const inputElement = document.body.querySelector('cr-input');
+    const inputElement = document.body.querySelector('input:not([type])');
+    const inputTextElement = document.body.querySelector('input[type="text"]');
+    const inputPasswordElement =
+        document.body.querySelector('input[type="password"]');
+    const inputCheckboxElement =
+        document.body.querySelector('input[type="checkbox"]');
     const otherElement = document.body.querySelector('foobar');
     const actionButton = document.body.querySelector('.action-button');
-    assertTrue(!!inputElement);
-    assertTrue(!!otherElement);
-    assertTrue(!!actionButton);
+    const crInputElement = document.body.querySelector('cr-input');
 
     // MockInteractions triggers event listeners synchronously.
     let clickedCounter = 0;
@@ -246,8 +253,59 @@ suite('cr-dialog', function() {
       clickedCounter++;
     });
 
+    // Only certain types of <input> trigger a dialog submit.
     pressEnter(otherElement);
     assertEquals(0, clickedCounter);
+    // "type" defaults to text, which triggers the click.
+    pressEnter(inputElement);
+    assertEquals(1, clickedCounter);
+    pressEnter(inputTextElement);
+    assertEquals(2, clickedCounter);
+    pressEnter(inputPasswordElement);
+    assertEquals(3, clickedCounter);
+    pressEnter(inputCheckboxElement);
+    assertEquals(3, clickedCounter);
+    // Also trigger dialog submit if code synthesizes enter on a cr-input
+    // without targeting the underlying input.
+    pressEnter(crInputElement);
+    assertEquals(4, clickedCounter);
+  });
+
+  // Test that enter key presses trigger an action button click, even if the
+  // even was retargeted, e.g. because the input was really a cr-input, the
+  // cr-input was part of another custom element, etc.
+  test('enter keys are processed even if event was retargeted', function() {
+    document.body.innerHTML = `
+      <dom-module id="test-element">
+        <template><input></input></template>
+      </dom-module>
+
+      <cr-dialog>
+        <div slot="title">title</div>
+        <div slot="body">
+          <test-element></test-element>
+          <button class="action-button">active</button>
+        </div>
+      </cr-dialog>`;
+
+    Polymer({
+      is: 'test-element',
+    });
+
+    const dialog = document.body.querySelector('cr-dialog');
+
+    const inputWrapper = document.body.querySelector('test-element');
+    assertTrue(!!inputWrapper);
+    const inputElement = inputWrapper.shadowRoot.querySelector('input');
+    const actionButton = document.body.querySelector('.action-button');
+    assertTrue(!!inputElement);
+    assertTrue(!!actionButton);
+
+    // MockInteractions triggers event listeners synchronously.
+    let clickedCounter = 0;
+    actionButton.addEventListener('click', function() {
+      clickedCounter++;
+    });
 
     pressEnter(inputElement);
     assertEquals(1, clickedCounter);

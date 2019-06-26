@@ -79,57 +79,60 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
   if (!base::ReadFileToString(path, &contents))
     return false;
 
-  base::DictionaryValue* top_dictionary = NULL;
-  std::unique_ptr<base::Value> value(
-      base::JSONReader::ReadDeprecated(contents));
-  if (!value.get() || !value->GetAsDictionary(&top_dictionary))
+  base::Optional<base::Value> top_dictionary = base::JSONReader::Read(contents);
+  if (!top_dictionary || !top_dictionary->is_dict())
     return false;
 
   // For now we don't support forwards or backwards compatability in the
   // format, so we return false on version mismatch.
-  int version = 0;
-  if (!top_dictionary->GetInteger(computed_hashes::kVersionKey, &version) ||
-      version != computed_hashes::kVersion)
+  base::Optional<int> version =
+      top_dictionary->FindIntKey(computed_hashes::kVersionKey);
+  if (!version || *version != computed_hashes::kVersion)
     return false;
 
-  base::ListValue* all_hashes = NULL;
-  if (!top_dictionary->GetList(computed_hashes::kFileHashesKey, &all_hashes))
+  const base::Value* all_hashes =
+      top_dictionary->FindListKey(computed_hashes::kFileHashesKey);
+  if (!all_hashes)
     return false;
 
-  for (size_t i = 0; i < all_hashes->GetSize(); i++) {
-    base::DictionaryValue* dictionary = NULL;
-    if (!all_hashes->GetDictionary(i, &dictionary))
+  for (const base::Value& file_hash : all_hashes->GetList()) {
+    if (!file_hash.is_dict())
       return false;
 
-    std::string relative_path_utf8;
-    if (!dictionary->GetString(computed_hashes::kPathKey, &relative_path_utf8))
+    const std::string* relative_path_utf8 =
+        file_hash.FindStringKey(computed_hashes::kPathKey);
+    if (!relative_path_utf8)
       return false;
 
-    int block_size;
-    if (!dictionary->GetInteger(computed_hashes::kBlockSizeKey, &block_size))
+    base::Optional<int> block_size =
+        file_hash.FindIntKey(computed_hashes::kBlockSizeKey);
+    if (!block_size)
       return false;
-    if (block_size <= 0 || ((block_size % 1024) != 0)) {
-      LOG(ERROR) << "Invalid block size: " << block_size;
+    if (*block_size <= 0 || ((*block_size % 1024) != 0)) {
+      LOG(ERROR) << "Invalid block size: " << *block_size;
       return false;
     }
 
-    base::ListValue* hashes_list = NULL;
-    if (!dictionary->GetList(computed_hashes::kBlockHashesKey, &hashes_list))
+    const base::Value* block_hashes =
+        file_hash.FindListKey(computed_hashes::kBlockHashesKey);
+    if (!block_hashes)
       return false;
 
+    const base::Value::ListStorage& hashes_list = block_hashes->GetList();
+
     base::FilePath relative_path =
-        base::FilePath::FromUTF8Unsafe(relative_path_utf8);
+        base::FilePath::FromUTF8Unsafe(*relative_path_utf8);
     relative_path = relative_path.NormalizePathSeparatorsTo('/');
 
-    data_[relative_path] = HashInfo(block_size, std::vector<std::string>());
+    data_[relative_path] = HashInfo(*block_size, std::vector<std::string>());
     std::vector<std::string>* hashes = &(data_[relative_path].second);
 
-    for (size_t j = 0; j < hashes_list->GetSize(); j++) {
-      std::string encoded;
-      if (!hashes_list->GetString(j, &encoded))
+    for (const base::Value& value : hashes_list) {
+      if (!value.is_string())
         return false;
 
       hashes->push_back(std::string());
+      const std::string& encoded = value.GetString();
       std::string* decoded = &hashes->back();
       if (!base::Base64Decode(encoded, decoded)) {
         hashes->clear();

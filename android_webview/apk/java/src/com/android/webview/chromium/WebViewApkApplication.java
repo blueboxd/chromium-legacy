@@ -32,7 +32,7 @@ public class WebViewApkApplication extends Application {
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
-        PathUtils.setPrivateDataDirectorySuffix("webview");
+        initPathUtils();
         initCommandLine();
         ResourceBundle.setAvailablePakLocales(
                 new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
@@ -42,6 +42,11 @@ public class WebViewApkApplication extends Application {
     public void onCreate() {
         super.onCreate();
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
+    }
+
+    /** Ensures PathUtils is initialized. */
+    public static void initPathUtils() {
+        PathUtils.setPrivateDataDirectorySuffix("webview");
     }
 
     // Overridden by webview shell to point to a different flags file.

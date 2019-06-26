@@ -104,7 +104,7 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   Timing timing;
 
   // calculateIterationTime(
-  //     iterationDuration, repeatedDuration, scaledActiveTime, startOffset,
+  //     iterationDuration, activeDuration, scaledActiveTime, startOffset,
   //     phase, timing)
 
   // if the scaled active time is null
@@ -125,14 +125,14 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   EXPECT_EQ(8, CalculateIterationTime(12, 120, 20, 7,
                                       AnimationEffect::kPhaseActive, timing));
 
-  // Edge case for offset_active_time being within epsilon of (repeated_duration
+  // Edge case for offset_active_time being within epsilon of (active_duration
   // + start_offset). https://crbug.com/962138
   timing.iteration_count = 1;
   const double offset_active_time = 1.3435713716800004;
   const double iteration_duration = 1.3435713716800002;
-  const double repeated_duration = 1.3435713716800002;
+  const double active_duration = 1.3435713716800002;
   EXPECT_NEAR(2.22045e-16,
-              CalculateIterationTime(iteration_duration, repeated_duration,
+              CalculateIterationTime(iteration_duration, active_duration,
                                      offset_active_time, 0,
                                      AnimationEffect::kPhaseActive, timing),
               std::numeric_limits<float>::epsilon());

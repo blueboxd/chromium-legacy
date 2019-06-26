@@ -25,6 +25,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_class_properties.h"
 
 TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
     : controller_(controller), group_(group) {
@@ -48,10 +49,10 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
       provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
   title_chip->SetLayoutManager(std::make_unique<views::FillLayout>());
   auto* title_chip_ptr = AddChildView(std::move(title_chip));
-  layout->SetFlexForView(title_chip_ptr,
-                         views::FlexSpecification::ForSizeRule(
-                             views::MinimumFlexSizeRule::kScaleToZero,
-                             views::MaximumFlexSizeRule::kPreferred));
+  title_chip_ptr->SetProperty(views::kFlexBehaviorKey,
+                              views::FlexSpecification::ForSizeRule(
+                                  views::MinimumFlexSizeRule::kScaleToZero,
+                                  views::MaximumFlexSizeRule::kPreferred));
 
   auto title = std::make_unique<views::Label>(data->title());
   title->SetAutoColorReadabilityEnabled(false);

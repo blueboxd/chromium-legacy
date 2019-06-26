@@ -13,10 +13,12 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -1132,6 +1134,33 @@ TEST_F(MediaControlsImplTest,
   ThreadState::Current()->CollectAllGarbageForTesting();
 
   // It has been GC'd.
+  EXPECT_EQ(nullptr, weak_persistent_video);
+}
+
+TEST_F(MediaControlsImplTest,
+       RemovingFromDocumentWhenResettingSrcAllowsReclamation) {
+  // Regression test: https://crbug.com/918064
+  //
+  // Test ensures that unified heap garbage collections are able to collect
+  // detached HTMLVideoElements. The tricky part is that ResizeObserver's are
+  // treated as roots as long as they have observations which prevent the video
+  // element from being collected.
+
+  auto page_holder = std::make_unique<DummyPageHolder>();
+  page_holder->GetDocument().write("<video controls>");
+  page_holder->GetDocument().Parser()->Finish();
+
+  HTMLVideoElement& video =
+      ToHTMLVideoElement(*page_holder->GetDocument().QuerySelector("video"));
+  WeakPersistent<HTMLMediaElement> weak_persistent_video = &video;
+  video.remove();
+
+  test::RunPendingTasks();
+
+  // Needs to call into V8's GC here to trigger a unified garbage collection.
+  V8GCController::CollectAllGarbageForTesting(
+      ThreadState::Current()->GetIsolate(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   EXPECT_EQ(nullptr, weak_persistent_video);
 }
 

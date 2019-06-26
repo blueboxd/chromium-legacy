@@ -118,6 +118,12 @@ class SystemDnsConfigChangeNotifier::Core {
     }
   }
 
+  void RefreshConfig() {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Core::TriggerRefreshConfig,
+                                          weak_ptr_factory_.GetWeakPtr()));
+  }
+
  private:
   void StartWatching() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -145,6 +151,11 @@ class SystemDnsConfigChangeNotifier::Core {
     for (auto& wrapped_observer : wrapped_observers_) {
       wrapped_observer.second->OnNotifyThreadsafe(config_);
     }
+  }
+
+  void TriggerRefreshConfig() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    dns_config_service_->RefreshConfig();
   }
 
   // Fields that may be accessed from any sequence. Must protect access using
@@ -183,6 +194,10 @@ void SystemDnsConfigChangeNotifier::AddObserver(Observer* observer) {
 
 void SystemDnsConfigChangeNotifier::RemoveObserver(Observer* observer) {
   core_->RemoveObserver(observer);
+}
+
+void SystemDnsConfigChangeNotifier::RefreshConfig() {
+  core_->RefreshConfig();
 }
 
 }  // namespace net

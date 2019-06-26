@@ -34,6 +34,7 @@ include_rules = [
 specific_include_rules = {
   # Special-case where monochrome composes chrome+webview
   "MonochromeApplication\.java": [
+    "+android_webview/apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
     "+android_webview/glue/java/src/com/android/webview/chromium/MonochromeLibraryPreloader.java",
   ]
 }

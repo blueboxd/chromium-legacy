@@ -240,11 +240,12 @@ class _ProjectEntry(object):
 
   def IsValid(self):
     return self.GetType() in (
-      'android_apk',
-      'java_library',
-      "java_annotation_processor",
-      'java_binary',
-      'junit_binary',
+        'android_apk',
+        'android_app_bundle_module',
+        'java_library',
+        "java_annotation_processor",
+        'java_binary',
+        'junit_binary',
     )
 
   def ResZips(self):
@@ -708,7 +709,7 @@ def _GenerateSettingsGradle(project_entries):
 
 
 def _ExtractFile(zip_path, extracted_path):
-  logging.info('Extracting %s to %s', zip_path, extracted_path)
+  logging.debug('Extracting %s to %s', zip_path, extracted_path)
   with zipfile.ZipFile(zip_path) as z:
     z.extractall(extracted_path)
 
@@ -898,11 +899,15 @@ def main():
 
   if args.all:
     # There are many unused libraries, so restrict to those that are actually
-    # used by apks/binaries/tests or that are explicitly mentioned in --targets.
-    main_entries = [e for e in main_entries if (
-        e.GetType() in ('android_apk', 'java_binary', 'junit_binary') or
-        e.GnTarget() in targets_from_args or
-        e.GnTarget().endswith('_test_apk__apk'))]
+    # used by apks/bundles/binaries/tests or that are explicitly mentioned in
+    # --targets.
+    BASE_TYPES = ('android_apk', 'android_app_bundle_module', 'java_binary',
+                  'junit_binary')
+    main_entries = [
+        e for e in main_entries
+        if (e.GetType() in BASE_TYPES or e.GnTarget() in targets_from_args
+            or e.GnTarget().endswith('_test_apk__apk'))
+    ]
 
   if args.split_projects:
     main_entries = _FindAllProjectEntries(main_entries)

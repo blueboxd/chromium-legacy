@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "ui/base/class_property.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_manager.h"
@@ -22,6 +23,8 @@ class Size;
 }  // namespace gfx
 
 namespace views {
+
+class View;
 
 namespace internal {
 struct ChildLayoutParams;
@@ -88,11 +91,6 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
   FlexLayout& SetCrossAxisAlignment(LayoutAlignment cross_axis_alignment);
   FlexLayout& SetInteriorMargin(const gfx::Insets& interior_margin);
   FlexLayout& SetMinimumCrossAxisSize(int size);
-  FlexLayout& SetDefaultChildMargins(const gfx::Insets& margins);
-  FlexLayout& SetFlexForView(const View* view,
-                             const FlexSpecification& flex_specification);
-  FlexLayout& ClearFlexForView(const View* view);
-  FlexLayout& SetDefaultFlex(const FlexSpecification& flex_specification);
 
   // Set whether a view should be excluded from the layout. Excluded views will
   // be completely ignored and must be explicitly placed by the host view.
@@ -106,12 +104,21 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
   LayoutAlignment cross_axis_alignment() const { return cross_axis_alignment_; }
   const gfx::Insets& interior_margin() const { return interior_margin_; }
   int minimum_cross_axis_size() const { return minimum_cross_axis_size_; }
-  const gfx::Insets& default_child_margins() const {
-    return default_child_margins_;
-  }
-  const FlexSpecification& default_flex() const { return default_flex_; }
 
-  const FlexSpecification& GetFlexForView(const View* view) const;
+  // Moves and uses |value| as the default value for layout property |key|.
+  template <class T, class U>
+  FlexLayout& SetDefault(const ui::ClassProperty<T>* key, U&& value) {
+    layout_defaults_.SetProperty(key, std::forward<U>(value));
+    return *this;
+  }
+
+  // Copies and uses |value| as the default value for layout property |key|.
+  template <class T, class U>
+  FlexLayout& SetDefault(const ui::ClassProperty<T>* key, const U& value) {
+    layout_defaults_.SetProperty(key, value);
+    return *this;
+  }
+
   bool IsViewExcluded(const View* view) const;
   bool IsHiddenByOwner(const View* view) const;
 
@@ -133,6 +140,35 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
  private:
   friend class internal::FlexLayoutInternal;
 
+  class PropertyHandler : public ui::PropertyHandler {
+   public:
+    explicit PropertyHandler(internal::FlexLayoutInternal* layout);
+
+   protected:
+    // ui::PropertyHandler:
+    void AfterPropertyChange(const void* key, int64_t old_value) override;
+
+   private:
+    internal::FlexLayoutInternal* const layout_;
+  };
+
+  // Gets the default value for a particular layout property, which will be used
+  // if the property is not set on a child view being laid out (e.g.
+  // kMarginsKey).
+  template <class T>
+  T* GetDefault(const ui::ClassProperty<T>* key) const {
+    return layout_defaults_.GetProperty(key);
+  }
+
+  // Clears the default value for a particular layout property, which will be
+  // used if the property is not set on a child view being laid out (e.g.
+  // kMarginsKey).
+  template <class T>
+  FlexLayout& ClearDefault(const ui::ClassProperty<T>* key) {
+    layout_defaults_.ClearProperty(key);
+    return *this;
+  }
+
   LayoutOrientation orientation_ = LayoutOrientation::kHorizontal;
 
   // Adjacent view margins should be collapsed.
@@ -140,12 +176,6 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
 
   // Spacing between child views and host view border.
   gfx::Insets interior_margin_;
-
-  // Default spacing to put around child views.
-  gfx::Insets default_child_margins_;
-
-  // Child-view-specific details (e.g. hidden status, flex rules, etc.)
-  std::map<const View*, internal::ChildLayoutParams> child_params_;
 
   // The alignment of children in the main axis. This is start by default.
   LayoutAlignment main_axis_alignment_ = LayoutAlignment::kStart;
@@ -156,8 +186,8 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
   // The minimum cross axis size for the layout.
   int minimum_cross_axis_size_ = 0;
 
-  // Flex specification for components with no flex set.
-  FlexSpecification default_flex_;
+  // Tracks layout-specific information about child views.
+  std::map<const View*, internal::ChildLayoutParams> child_params_;
 
   // The view that this FlexLayout is managing the layout for.
   views::View* host_ = nullptr;
@@ -165,6 +195,10 @@ class VIEWS_EXPORT FlexLayout : public LayoutManager {
   // Internal data used to cache layout information, etc. All definitions and
   // data are module-private.
   std::unique_ptr<internal::FlexLayoutInternal> internal_;
+
+  // Default properties for any views that don't have them explicitly set for
+  // this layout.
+  PropertyHandler layout_defaults_;
 
   DISALLOW_COPY_AND_ASSIGN(FlexLayout);
 };

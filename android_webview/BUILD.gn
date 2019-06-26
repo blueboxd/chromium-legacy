@@ -1075,6 +1075,7 @@ android_library("android_webview_services_java") {
     ":android_webview_platform_services_java",
     ":android_webview_variations_utils_java",
     ":system_webview_manifest",
+    "//android_webview/apk:apk_java",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",

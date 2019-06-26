@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
@@ -66,14 +65,12 @@ public class DetachedResourceRequestTest {
     private Context mContext;
     private EmbeddedTestServer mServer;
 
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final Uri ORIGIN = Uri.parse("http://cats.google.com");
     private static final int NET_OK = 0;
 
     @Before
     public void setUp() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         mConnection = CustomTabsTestUtils.setUpConnection();
         mContext = InstrumentationRegistry.getInstrumentation()
                            .getTargetContext()

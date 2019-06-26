@@ -10,7 +10,7 @@
 -keep public class org.chromium.chrome.browser.** extends android.app.Fragment {
   public <init>();
 }
--keep public class org.chromium.chrome.browser.** extends android.support.v7.preference.PreferenceFragmentCompat {
+-keep public class org.chromium.chrome.browser.preferences.** extends android.support.v4.app.Fragment {
   public <init>();
 }
 

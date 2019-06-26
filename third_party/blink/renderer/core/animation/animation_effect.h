@@ -120,8 +120,12 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
   double LocalTime() const { return EnsureCalculated().local_time; }
 
+  // https://drafts.csswg.org/web-animations-1/#iteration-duration
   AnimationTimeDelta IterationDuration() const;
-  double RepeatedDuration() const;
+
+  // https://drafts.csswg.org/web-animations-1/#active-duration
+  double ActiveDuration() const;
+
   double EndTimeInternal() const;
 
   const Timing& SpecifiedTiming() const { return timing_; }
@@ -159,6 +163,11 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   void ClearEventDelegate() { event_delegate_ = nullptr; }
 
   virtual void UpdateChildrenAndEffects() const = 0;
+
+  // This is the value of the iteration duration when it is specified as 'auto'.
+  // In web-animations-1, auto is treated as "the value zero for the purpose of
+  // timing model calculations and for the result of the duration member
+  // returned from getComputedTiming()".
   virtual AnimationTimeDelta IntrinsicIterationDuration() const {
     return AnimationTimeDelta();
   }

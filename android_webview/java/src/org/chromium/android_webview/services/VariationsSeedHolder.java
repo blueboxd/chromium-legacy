@@ -31,7 +31,7 @@ import java.util.Date;
 public class VariationsSeedHolder {
     private static final String TAG = "VariationsSeedHolder";
 
-    private static VariationsSeedHolder sInstance;
+    private static final VariationsSeedHolder sInstance = new VariationsSeedHolder();
 
     private static void writeSeedWithoutClosing(SeedInfo seed, ParcelFileDescriptor destination) {
         // writeSeed() will close "out", but closing "out" will not close "destination".
@@ -142,9 +142,6 @@ public class VariationsSeedHolder {
     }
 
     /* package */ static VariationsSeedHolder getInstance() {
-        if (sInstance == null) {
-            sInstance = new VariationsSeedHolder();
-        }
         return sInstance;
     }
 

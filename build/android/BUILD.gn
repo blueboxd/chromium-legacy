@@ -4,8 +4,8 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
-import("//build/config/gclient_args.gni")
 import("//build/config/python.gni")
+import("//build_overrides/build.gni")
 
 if (enable_java_templates) {
   sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"

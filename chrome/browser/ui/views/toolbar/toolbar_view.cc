@@ -687,7 +687,8 @@ void ToolbarView::OnTouchUiChanged() {
     // code cleaner.
     const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
     const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-    layout_manager_->SetDefaultChildMargins(gfx::Insets(0, default_margin));
+    layout_manager_->SetDefault(views::kMarginsKey,
+                                gfx::Insets(0, default_margin));
     location_bar_->SetProperty(views::kMarginsKey,
                                gfx::Insets(0, location_bar_margin));
     if (browser_actions_) {
@@ -722,15 +723,15 @@ void ToolbarView::InitLayout() {
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCollapseMargins(true)
-      .SetDefaultChildMargins(gfx::Insets(0, default_margin));
+      .SetDefault(views::kMarginsKey, gfx::Insets(0, default_margin));
 
-  layout_manager_->SetFlexForView(location_bar_, location_bar_flex_rule);
+  location_bar_->SetProperty(views::kFlexBehaviorKey, location_bar_flex_rule);
   location_bar_->SetProperty(views::kMarginsKey,
                              gfx::Insets(0, location_bar_margin));
 
   if (browser_actions_) {
-    layout_manager_->SetFlexForView(browser_actions_,
-                                    browser_actions_flex_rule);
+    browser_actions_->SetProperty(views::kFlexBehaviorKey,
+                                  browser_actions_flex_rule);
     browser_actions_->SetProperty(views::kMarginsKey, gfx::Insets());
     browser_actions_->SetProperty(views::kInternalPaddingKey,
                                   gfx::Insets(0, location_bar_margin));

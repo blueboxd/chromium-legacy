@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
@@ -59,11 +58,9 @@ public class CustomTabsConnectionTest {
     private static final String URL = "http://www.google.com";
     private static final String URL2 = "https://www.android.com";
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     @Before
     public void setUp() throws Exception {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection();
     }

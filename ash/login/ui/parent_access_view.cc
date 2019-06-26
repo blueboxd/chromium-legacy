@@ -133,6 +133,10 @@ base::string16 GetDescription(ParentAccessRequestReason reason) {
   return l10n_util::GetStringUTF16(description_id);
 }
 
+base::string16 GetAccessibleTitle() {
+  return l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME);
+}
+
 // Accessible input field. Customizes field description and focus behavior.
 class AccessibleInputField : public views::Textfield {
  public:
@@ -634,6 +638,10 @@ views::View* ParentAccessView::GetInitiallyFocusedView() {
   return access_code_view_;
 }
 
+base::string16 ParentAccessView::GetAccessibleWindowTitle() const {
+  return GetAccessibleTitle();
+}
+
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
@@ -724,8 +732,7 @@ void ParentAccessView::OnInputChange(bool complete) {
 void ParentAccessView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::View::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kDialog;
-  node_data->SetName(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME));
+  node_data->SetName(GetAccessibleTitle());
 }
 
 }  // namespace ash

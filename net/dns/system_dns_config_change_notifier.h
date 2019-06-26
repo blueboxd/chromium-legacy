@@ -62,6 +62,11 @@ class NET_EXPORT_PRIVATE SystemDnsConfigChangeNotifier {
   // AddObserver() was called.
   void RemoveObserver(Observer* observer);
 
+  // Triggers invalidation and re-read of the current configuration (followed by
+  // notifications to registered Observers). For use only on platforms
+  // expecting network-stack-external notifications of DNS config changes.
+  void RefreshConfig();
+
  private:
   class Core;
 

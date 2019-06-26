@@ -91,7 +91,7 @@ MediaControlSliderElement::MediaControlSliderElement(
               this))) {
   setType(input_type_names::kRange);
   setAttribute(html_names::kStepAttr, "any");
-  resize_observer_->observe(this);
+  OnControlsShown();
 }
 
 Element& MediaControlSliderElement::GetTrackElement() {
@@ -168,6 +168,14 @@ void MediaControlSliderElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(segment_highlight_after_);
   visitor->Trace(resize_observer_);
   MediaControlInputElement::Trace(visitor);
+}
+
+void MediaControlSliderElement::OnControlsShown() {
+  resize_observer_->observe(this);
+}
+
+void MediaControlSliderElement::OnControlsHidden() {
+  resize_observer_->disconnect();
 }
 
 }  // namespace blink

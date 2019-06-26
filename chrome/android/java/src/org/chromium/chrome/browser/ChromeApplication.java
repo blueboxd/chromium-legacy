@@ -22,6 +22,7 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -57,6 +58,8 @@ import org.chromium.ui.base.ResourceBundle;
 public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
     private static final String TAG = "ChromiumApplication";
+    // Public to allow use in ChromeBackupAgent
+    public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     /** Lock on creation of sComponent. */
     private static final Object sLock = new Object();
@@ -87,6 +90,7 @@ public class ChromeApplication extends Application {
             }
             checkAppBeingReplaced();
 
+            PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
             // Renderer and GPU processes have command line passed to them via IPC
             // (see ChildProcessService.java).
             CommandLineInitUtil.initCommandLine(

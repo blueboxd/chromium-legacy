@@ -1175,7 +1175,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
       previous_phase_ != AnimationEffect::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
-                  animation_node.RepeatedDuration());
+                  animation_node.ActiveDuration());
   }
 
   previous_phase_ = current_phase;
@@ -1249,7 +1249,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
       double cancel_active_time = CalculateActiveTime(
-          animation_node.RepeatedDuration(), Timing::FillMode::BOTH,
+          animation_node.ActiveDuration(), Timing::FillMode::BOTH,
           animation_node.LocalTime(), previous_phase_,
           animation_node.SpecifiedTiming());
       EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);

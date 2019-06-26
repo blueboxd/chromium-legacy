@@ -86,11 +86,20 @@ class FrameImpl : public fuchsia::web::Frame,
   // Release the resources associated with the View, if one is active.
   void TearDownView();
 
+  // Shared implementation for the ExecuteJavaScript[NoResult]() APIs.
+  void ExecuteJavaScriptInternal(std::vector<std::string> origins,
+                                 fuchsia::mem::Buffer script,
+                                 ExecuteJavaScriptCallback callback,
+                                 bool need_result);
+
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
   void GetNavigationController(
       fidl::InterfaceRequest<fuchsia::web::NavigationController> controller)
       override;
+  void ExecuteJavaScript(std::vector<std::string> origins,
+                         fuchsia::mem::Buffer script,
+                         ExecuteJavaScriptCallback callback) override;
   void ExecuteJavaScriptNoResult(
       std::vector<std::string> origins,
       fuchsia::mem::Buffer script,

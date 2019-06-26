@@ -25,6 +25,8 @@ struct OnTaskRunnerDeleter;
 
 namespace net {
 
+class DnsConfigService;
+
 // A NetworkChangeNotifier that needs to be told about network changes by some
 // other object. This class can't directly listen for network changes because on
 // ChromeOS and Android only objects running in the browser process can listen
@@ -46,6 +48,10 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
       NetworkChangeNotifier::ConnectionType connection_type,
       NetworkChangeNotifier::ConnectionSubtype connection_subtype);
 
+  // |dns_config_service| must support RefreshConfig().
+  void SetDnsConfigServiceForTesting(
+      std::unique_ptr<DnsConfigService> dns_config_service);
+
  protected:
   // NetworkChangeNotifier overrides.
   NetworkChangeNotifier::ConnectionType GetCurrentConnectionType()
@@ -57,7 +63,8 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
  private:
   friend class NetworkChangeNotifierPosixTest;
 
-  class DnsConfigService;
+  void SetAndStartDnsConfigService(
+      std::unique_ptr<DnsConfigService> dns_config_service);
 
   // |dns_config_service_| will live on this runner.
   scoped_refptr<base::SequencedTaskRunner> dns_config_service_runner_;

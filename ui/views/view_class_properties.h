@@ -17,6 +17,7 @@ class Insets;
 namespace views {
 
 class BubbleDialogDelegateView;
+class FlexSpecification;
 
 // The hit test component (e.g. HTCLIENT) for a View in a window frame. Defaults
 // to HTNOWHERE.
@@ -49,6 +50,11 @@ VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegateView*>* const
 // the view in different ways.
 VIEWS_EXPORT extern const ui::ClassProperty<SkPath*>* const kHighlightPathKey;
 
+// A property to store how a view should flex when placed in a layout.
+// Currently only supported by FlexLayout.
+VIEWS_EXPORT extern const ui::ClassProperty<FlexSpecification*>* const
+    kFlexBehaviorKey;
+
 }  // namespace views
 
 // Declaring the template specialization here to make sure that the
@@ -60,4 +66,5 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                         views::BubbleDialogDelegateView*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::FlexSpecification*)
 #endif  // UI_VIEWS_VIEW_CLASS_PROPERTIES_H_

@@ -12,6 +12,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
+import com.android.webview.chromium.WebViewApkApplication;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -42,6 +44,11 @@ public class CrashReceiverService extends Service {
             performMinidumpCopyingSerially(uid, fileDescriptors, true /* scheduleUploads */);
         }
     };
+
+    public CrashReceiverService() {
+        // Required when running in Monochrome.
+        WebViewApkApplication.initPathUtils();
+    }
 
     /**
      * Copies minidumps in a synchronized way, waiting for any already started copying operations to

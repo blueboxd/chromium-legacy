@@ -11,6 +11,7 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -787,10 +788,14 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
       }
     case download::DownloadItem::COMPLETE:
       // If the file has been removed: Removed
-      if (item_->GetFileExternallyRemoved())
+      if (item_->GetFileExternallyRemoved()) {
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
-      else
-        return item_->GetFileNameToReportUser().LossyDisplayName();
+      } else {
+        base::string16 file_name =
+            item_->GetFileNameToReportUser().LossyDisplayName();
+        base::i18n::AdjustStringForLocaleDirection(&file_name);
+        return file_name;
+      }
     case download::DownloadItem::CANCELLED:
       // "Cancelled"
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);

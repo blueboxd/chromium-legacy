@@ -23,6 +23,7 @@
 #include "ui/views/examples/example_combobox_model.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 namespace examples {
@@ -81,8 +82,8 @@ void FlexLayoutExample::ContentsChanged(Textfield* sender,
                                         const base::string16& new_contents) {
   layout_->SetInteriorMargin(
       LayoutExampleBase::TextfieldsToInsets(interior_margin_));
-  layout_->SetDefaultChildMargins(
-      LayoutExampleBase::TextfieldsToInsets(default_child_margins_));
+  layout_->SetDefault(views::kMarginsKey, LayoutExampleBase::TextfieldsToInsets(
+                                              default_child_margins_));
   RefreshLayoutPanel(false);
 }
 
@@ -97,9 +98,9 @@ void FlexLayoutExample::UpdateLayoutManager() {
     ChildPanel* panel = static_cast<ChildPanel*>(child);
     int flex = panel->GetFlex();
     if (flex < 0)
-      layout_->ClearFlexForView(panel);
+      panel->ClearProperty(views::kFlexBehaviorKey);
     else
-      layout_->SetFlexForView(panel, GetFlexSpecification(flex));
+      panel->SetProperty(views::kFlexBehaviorKey, GetFlexSpecification(flex));
   }
 }
 

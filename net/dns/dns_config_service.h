@@ -45,6 +45,11 @@ class NET_EXPORT_PRIVATE DnsConfigService {
   // Might require MessageLoopForIO.
   void WatchConfig(const CallbackType& callback);
 
+  // Triggers invalidation and re-read of the current configuration (followed by
+  // invocation of the callback). For use only on platforms expecting
+  // network-stack-external notifications of DNS config changes.
+  virtual void RefreshConfig();
+
  protected:
   enum WatchStatus {
     DNS_CONFIG_WATCH_STARTED = 0,

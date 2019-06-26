@@ -21,7 +21,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.FileDescriptor;
@@ -58,7 +58,7 @@ public class DecoderService extends Service {
             // The decoder service relies on PathUtils.
             PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 PathUtils.setPrivateDataDirectorySuffix(
-                        ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
+                        ChromeApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
             });
 
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);

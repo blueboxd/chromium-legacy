@@ -26,6 +26,7 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_class_properties.h"
 
 namespace message_center {
 
@@ -162,7 +163,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
           .WithOrder(2);
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetDefaultChildMargins(kHeaderSpacing);
+  layout->SetDefault(views::kMarginsKey, kHeaderSpacing);
   layout->SetInteriorMargin(kHeaderOuterPadding);
   layout->SetCollapseMargins(true);
 
@@ -194,15 +195,15 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   app_name_view_ = create_label();
   // Explicitly disable multiline to support proper text elision for URLs.
   app_name_view_->SetMultiLine(false);
+  app_name_view_->SetProperty(views::kFlexBehaviorKey, kAppNameFlex);
   AddChildView(app_name_view_);
-  layout->SetFlexForView(app_name_view_, kAppNameFlex);
 
   // Detail views which will be hidden in settings mode.
   detail_views_ = new views::View();
   auto* detail_layout =
       detail_views_->SetLayoutManager(std::make_unique<views::FlexLayout>());
   detail_layout->SetCollapseMargins(true);
-  detail_layout->SetDefaultChildMargins(kHeaderSpacing);
+  detail_layout->SetDefault(views::kMarginsKey, kHeaderSpacing);
   AddChildView(detail_views_);
 
   // Summary text divider
@@ -240,8 +241,8 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   views::View* spacer = new views::View;
   spacer->SetPreferredSize(
       gfx::Size(kControlButtonSpacing, kInnerHeaderHeight));
+  spacer->SetProperty(views::kFlexBehaviorKey, kSpacerFlex);
   AddChildView(spacer);
-  layout->SetFlexForView(spacer, kSpacerFlex);
 
   SetAccentColor(accent_color_);
   SetPreferredSize(gfx::Size(kNotificationWidth, kHeaderHeight));

@@ -153,6 +153,11 @@ public abstract class PathUtils {
             // inherently posts to the UI thread for onPostExecute().
             sDirPathFetchTask = new FutureTask<>(PathUtils::setPrivateDataDirectorySuffixInternal);
             AsyncTask.THREAD_POOL_EXECUTOR.execute(sDirPathFetchTask);
+        } else {
+            assert TextUtils.equals(sDataDirectorySuffix, suffix)
+                : String.format("%s != %s", suffix, sDataDirectorySuffix);
+            assert TextUtils.equals(sCacheSubDirectory, cacheSubDir)
+                : String.format("%s != %s", cacheSubDir, sCacheSubDirectory);
         }
     }
 

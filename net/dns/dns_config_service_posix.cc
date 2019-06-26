@@ -412,11 +412,25 @@ DnsConfigServicePosix::~DnsConfigServicePosix() {
   hosts_reader_->Cancel();
 }
 
+void DnsConfigServicePosix::RefreshConfig() {
+  InvalidateConfig();
+  InvalidateHosts();
+  ReadNow();
+}
+
 void DnsConfigServicePosix::ReadNow() {
   config_reader_->WorkNow();
   hosts_reader_->WorkNow();
 }
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+bool DnsConfigServicePosix::StartWatching() {
+  CreateReaders();
+  // DNS config changes are handled and notified by the network
+  // state handlers.
+  return true;
+}
+#else   // defined(OS_ANDROID) || defined(OS_CHROMEOS)
 bool DnsConfigServicePosix::StartWatching() {
   CreateReaders();
   // TODO(szym): re-start watcher if that makes sense. http://crbug.com/116139
@@ -425,6 +439,7 @@ bool DnsConfigServicePosix::StartWatching() {
                             DNS_CONFIG_WATCH_MAX);
   return watcher_->Watch();
 }
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS)
 
 void DnsConfigServicePosix::OnConfigChanged(bool succeeded) {
   InvalidateConfig();

@@ -1284,15 +1284,9 @@ Status ExecutePerformActions(Session* session,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
   // extract action sequence
-  const base::DictionaryValue* actions_dict;
   const base::ListValue* actions_input;
 
-  // TODO(lanwei): The below line will be removed after this pull request is
-  // merged, https://github.com/web-platform-tests/wpt/pull/14345.
-  if (!params.GetDictionary("actions", &actions_dict))
-    actions_dict = &params;
-
-  if (!actions_dict->GetList("actions", &actions_input))
+  if (!params.GetList("actions", &actions_input))
     return Status(kInvalidArgument, "'actions' must be an array");
 
   // the processed actions

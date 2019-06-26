@@ -70,7 +70,7 @@ AnimationTimeDelta AnimationEffect::IterationDuration() const {
   return result;
 }
 
-double AnimationEffect::RepeatedDuration() const {
+double AnimationEffect::ActiveDuration() const {
   const double result =
       MultiplyZeroAlwaysGivesZero(IterationDuration(), timing_.iteration_count);
   DCHECK_GE(result, 0);
@@ -80,7 +80,7 @@ double AnimationEffect::RepeatedDuration() const {
 double AnimationEffect::EndTimeInternal() const {
   // Per the spec, the end time has a lower bound of 0.0:
   // https://drafts.csswg.org/web-animations-1/#end-time
-  return std::max(timing_.start_delay + RepeatedDuration() + timing_.end_delay,
+  return std::max(timing_.start_delay + ActiveDuration() + timing_.end_delay,
                   0.0);
 }
 
@@ -99,7 +99,7 @@ ComputedEffectTiming* AnimationEffect::getComputedTiming() const {
 
   // ComputedEffectTiming members.
   computed_timing->setEndTime(EndTimeInternal() * 1000);
-  computed_timing->setActiveDuration(RepeatedDuration() * 1000);
+  computed_timing->setActiveDuration(ActiveDuration() * 1000);
 
   if (IsNull(EnsureCalculated().local_time)) {
     computed_timing->setLocalTimeToNull();
@@ -159,7 +159,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   const double local_time = inherited_time;
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   if (needs_update) {
-    const double active_duration = RepeatedDuration();
+    const double active_duration = ActiveDuration();
     // TODO(yigu): Direction of WorkletAnimation is always forwards based on
     // the calculation. Need to unify the logic to handle it correctly.
     // https://crbug.com/896249.

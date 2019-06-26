@@ -98,6 +98,7 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   views::View* GetInitiallyFocusedView() override;
+  base::string16 GetAccessibleWindowTitle() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

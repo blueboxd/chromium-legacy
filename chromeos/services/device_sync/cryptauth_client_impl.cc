@@ -606,7 +606,7 @@ void CryptAuthClientImpl::MakeApiCall(
   request_url_ = request_url;
   error_callback_ = error_callback;
 
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(kCryptAuthOAuth2Scope);
 
   access_token_fetcher_ = std::make_unique<

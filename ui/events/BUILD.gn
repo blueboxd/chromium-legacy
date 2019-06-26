@@ -10,6 +10,7 @@ import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
 if (is_android) {
+  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
@@ -570,9 +571,14 @@ if (!is_ios) {
       "//ui/gfx/ipc/geometry",
     ]
 
+    defines = []
+
     if (is_android) {
       sources += [ "android/motion_event_android_unittest.cc" ]
       deps += [ "//ui/android:ui_full_java" ]
+      if (notouch_build) {
+        defines += [ "NOTOUCH_BUILD" ]
+      }
     } else {
       data_deps = [
         "//third_party/mesa_headers",

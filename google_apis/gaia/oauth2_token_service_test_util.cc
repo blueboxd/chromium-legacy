@@ -20,24 +20,23 @@ std::string GetValidTokenResponse(const std::string& token, int expiration) {
 }
 
 TestingOAuth2TokenServiceConsumer::TestingOAuth2TokenServiceConsumer()
-    : OAuth2TokenService::Consumer("test"),
+    : OAuth2AccessTokenManager::Consumer("test"),
       number_of_successful_tokens_(0),
       last_error_(GoogleServiceAuthError::AuthErrorNone()),
-      number_of_errors_(0) {
-}
+      number_of_errors_(0) {}
 
 TestingOAuth2TokenServiceConsumer::~TestingOAuth2TokenServiceConsumer() {
 }
 
 void TestingOAuth2TokenServiceConsumer::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   last_token_ = token_response.access_token;
   ++number_of_successful_tokens_;
 }
 
 void TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   last_error_ = error;
   ++number_of_errors_;

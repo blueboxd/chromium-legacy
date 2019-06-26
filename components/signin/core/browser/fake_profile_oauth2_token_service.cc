@@ -40,7 +40,7 @@ void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& access_token,
     const base::Time& expiration) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests(account_id, true, ScopeSet(),
+  CompleteRequests(account_id, true, OAuth2AccessTokenManager::ScopeSet(),
                    GoogleServiceAuthError::AuthErrorNone(),
                    OAuth2AccessTokenConsumer::TokenResponse(
                        access_token, expiration, std::string() /* id_token */));
@@ -50,7 +50,7 @@ void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& account_id,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests(account_id, true, ScopeSet(),
+  CompleteRequests(account_id, true, OAuth2AccessTokenManager::ScopeSet(),
                    GoogleServiceAuthError::AuthErrorNone(), token_response);
 }
 
@@ -58,12 +58,12 @@ void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests(account_id, true, ScopeSet(), error,
-                   OAuth2AccessTokenConsumer::TokenResponse());
+  CompleteRequests(account_id, true, OAuth2AccessTokenManager::ScopeSet(),
+                   error, OAuth2AccessTokenConsumer::TokenResponse());
 }
 
 void FakeProfileOAuth2TokenService::IssueTokenForScope(
-    const ScopeSet& scope,
+    const OAuth2AccessTokenManager::ScopeSet& scope,
     const std::string& access_token,
     const base::Time& expiration) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
@@ -73,7 +73,7 @@ void FakeProfileOAuth2TokenService::IssueTokenForScope(
 }
 
 void FakeProfileOAuth2TokenService::IssueTokenForScope(
-    const ScopeSet& scope,
+    const OAuth2AccessTokenManager::ScopeSet& scope,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
   CompleteRequests("", false, scope, GoogleServiceAuthError::AuthErrorNone(),
@@ -81,7 +81,7 @@ void FakeProfileOAuth2TokenService::IssueTokenForScope(
 }
 
 void FakeProfileOAuth2TokenService::IssueErrorForScope(
-    const ScopeSet& scope,
+    const OAuth2AccessTokenManager::ScopeSet& scope,
     const GoogleServiceAuthError& error) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
   CompleteRequests("", false, scope, error,
@@ -91,7 +91,7 @@ void FakeProfileOAuth2TokenService::IssueErrorForScope(
 void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequests(
     const GoogleServiceAuthError& error) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests("", true, ScopeSet(), error,
+  CompleteRequests("", true, OAuth2AccessTokenManager::ScopeSet(), error,
                    OAuth2AccessTokenConsumer::TokenResponse());
 }
 
@@ -99,7 +99,7 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
     const std::string& access_token,
     const base::Time& expiration) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests("", true, ScopeSet(),
+  CompleteRequests("", true, OAuth2AccessTokenManager::ScopeSet(),
                    GoogleServiceAuthError::AuthErrorNone(),
                    OAuth2AccessTokenConsumer::TokenResponse(
                        access_token, expiration, std::string() /* id_token */));
@@ -108,14 +108,14 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
 void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(!auto_post_fetch_response_on_message_loop_);
-  CompleteRequests("", true, ScopeSet(),
+  CompleteRequests("", true, OAuth2AccessTokenManager::ScopeSet(),
                    GoogleServiceAuthError::AuthErrorNone(), token_response);
 }
 
 void FakeProfileOAuth2TokenService::CompleteRequests(
     const std::string& account_id,
     bool all_scopes,
-    const ScopeSet& scope,
+    const OAuth2AccessTokenManager::ScopeSet& scope,
     const GoogleServiceAuthError& error,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   std::vector<FakeProfileOAuth2TokenService::PendingRequest> requests =
@@ -155,7 +155,7 @@ FakeProfileOAuth2TokenService::GetPendingRequests() {
 
 void FakeProfileOAuth2TokenService::CancelAllRequests() {
   CompleteRequests(
-      "", true, ScopeSet(),
+      "", true, OAuth2AccessTokenManager::ScopeSet(),
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
       OAuth2AccessTokenConsumer::TokenResponse());
 }
@@ -163,18 +163,18 @@ void FakeProfileOAuth2TokenService::CancelAllRequests() {
 void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
     const CoreAccountId& account_id) {
   CompleteRequests(
-      account_id, true, ScopeSet(),
+      account_id, true, OAuth2AccessTokenManager::ScopeSet(),
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
       OAuth2AccessTokenConsumer::TokenResponse());
 }
 
 void FakeProfileOAuth2TokenService::FetchOAuth2Token(
-    RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
-    const ScopeSet& scopes) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) {
   PendingRequest pending_request;
   pending_request.account_id = account_id;
   pending_request.client_id = client_id;
@@ -199,7 +199,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
 void FakeProfileOAuth2TokenService::InvalidateAccessTokenImpl(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   // Do nothing, as we don't have a cache from which to remove the token.
 }

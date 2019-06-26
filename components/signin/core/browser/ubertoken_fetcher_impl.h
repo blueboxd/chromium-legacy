@@ -12,7 +12,7 @@
 #include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 
 // Allow to retrieves an uber-auth token for the user. This class uses the
 // |OAuth2TokenService| and considers that the user is already logged in. It
@@ -24,6 +24,7 @@
 // This class can handle one request at a time.
 
 class GoogleServiceAuthError;
+class OAuth2TokenService;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,7 +39,7 @@ using GaiaAuthFetcherFactory =
 // Allows to retrieve an uber-auth token.
 class UbertokenFetcherImpl : public UbertokenFetcher,
                              public GaiaAuthConsumer,
-                             public OAuth2TokenService::Consumer {
+                             public OAuth2AccessTokenManager::Consumer {
  public:
   // Maximum number of retries to get the uber-auth token before giving up.
   static const int kMaxRetries;
@@ -67,15 +68,15 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
                        bool is_bound_to_channel_id = true);
   ~UbertokenFetcherImpl() override;
 
-  // Overriden from GaiaAuthConsumer
+  // Overridden from GaiaAuthConsumer
   void OnUberAuthTokenSuccess(const std::string& token) override;
   void OnUberAuthTokenFailure(const GoogleServiceAuthError& error) override;
 
-  // Overriden from OAuth2TokenService::Consumer:
+  // Overridden from OAuth2AccessTokenManager::Consumer:
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
  private:
@@ -90,7 +91,7 @@ class UbertokenFetcherImpl : public UbertokenFetcher,
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;
   CoreAccountId account_id_;
   std::string access_token_;
   int retry_number_;

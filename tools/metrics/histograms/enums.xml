@@ -15077,6 +15077,7 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Password entry: Phone locked and tx power too high"/>
   <int value="20" label="Password entry: Forced re-auth"/>
   <int value="21" label="Password entry: Sign-in with Smart Lock disabled"/>
+  <int value="22" label="Password entry: Primary user absent"/>
 </enum>
 
 <enum name="EasyUnlockBluetoothType">
@@ -53426,6 +53427,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="16" label="Forced Reauthentication"/>
   <int value="17" label="Sign-in with Smart Lock disabled"/>
   <int value="18" label="Phone not lockable"/>
+  <int value="19" label="Primary user absent"/>
 </enum>
 
 <enum name="SmartLockAuthMethodChoice">

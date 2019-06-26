@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 namespace {
 
@@ -31,7 +32,7 @@ OAuthMultiloginTokenFetcher::OAuthMultiloginTokenFetcher(
     const std::vector<CoreAccountId>& account_ids,
     SuccessCallback success_callback,
     FailureCallback failure_callback)
-    : OAuth2TokenService::Consumer("oauth_multilogin_token_fetcher"),
+    : OAuth2AccessTokenManager::Consumer("oauth_multilogin_token_fetcher"),
       signin_client_(signin_client),
       token_service_(token_service),
       account_ids_(account_ids),
@@ -65,7 +66,7 @@ void OAuthMultiloginTokenFetcher::StartFetchingToken(
 }
 
 void OAuthMultiloginTokenFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   CoreAccountId account_id = request->GetAccountId();
   DCHECK(account_ids_.cend() !=
@@ -95,7 +96,7 @@ void OAuthMultiloginTokenFetcher::OnGetTokenSuccess(
 }
 
 void OAuthMultiloginTokenFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   CoreAccountId account_id = request->GetAccountId();
   VLOG(1) << "Failed to retrieve accesstoken account=" << account_id
@@ -121,7 +122,7 @@ void OAuthMultiloginTokenFetcher::OnGetTokenFailure(
 }
 
 void OAuthMultiloginTokenFetcher::EraseRequest(
-    const OAuth2TokenService::Request* request) {
+    const OAuth2AccessTokenManager::Request* request) {
   for (auto it = token_requests_.begin(); it != token_requests_.end(); ++it) {
     if (it->get() == request) {
       token_requests_.erase(it);

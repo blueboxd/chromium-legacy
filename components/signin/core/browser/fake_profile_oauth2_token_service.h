@@ -30,7 +30,7 @@ class SharedURLLoaderFactory;
 // EXPECT_GT(0U, service.GetPendingRequests().size());
 // ...
 // // Make any pending token fetches for a given scope succeed.
-// ScopeSet scopes;
+// OAuth2AccessTokenManager::ScopeSet scopes;
 // scopes.insert(GaiaConstants::kYourServiceScope);
 // IssueTokenForScope(scopes, "access_token", base::Time()::Max());
 // ...
@@ -48,8 +48,8 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
     std::string client_id;
     std::string client_secret;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-    ScopeSet scopes;
-    base::WeakPtr<RequestImpl> request;
+    OAuth2AccessTokenManager::ScopeSet scopes;
+    base::WeakPtr<OAuth2AccessTokenManager::RequestImpl> request;
   };
 
   explicit FakeProfileOAuth2TokenService(PrefService* user_prefs);
@@ -76,15 +76,15 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
       const std::string& account_id,
       const GoogleServiceAuthError& error);
 
-  void IssueTokenForScope(const ScopeSet& scopes,
+  void IssueTokenForScope(const OAuth2AccessTokenManager::ScopeSet& scopes,
                           const std::string& access_token,
                           const base::Time& expiration);
 
   void IssueTokenForScope(
-      const ScopeSet& scopes,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
-  void IssueErrorForScope(const ScopeSet& scopes,
+  void IssueErrorForScope(const OAuth2AccessTokenManager::ScopeSet& scopes,
                           const GoogleServiceAuthError& error);
 
   void IssueTokenForAllPendingRequests(const std::string& access_token,
@@ -106,17 +106,18 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   void CancelRequestsForAccount(const CoreAccountId& account_id) override;
 
   void FetchOAuth2Token(
-      RequestImpl* request,
+      OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const ScopeSet& scopes) override;
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token) override;
+  void InvalidateAccessTokenImpl(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override;
 
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,
@@ -127,7 +128,7 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   void CompleteRequests(
       const std::string& account_id,
       bool all_scopes,
-      const ScopeSet& scopes,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
       const GoogleServiceAuthError& error,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 

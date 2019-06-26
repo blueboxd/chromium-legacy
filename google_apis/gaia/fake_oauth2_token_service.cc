@@ -22,12 +22,12 @@ FakeOAuth2TokenService::~FakeOAuth2TokenService() {
 }
 
 void FakeOAuth2TokenService::FetchOAuth2Token(
-    RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
-    const ScopeSet& scopes) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) {
   PendingRequest pending_request;
   pending_request.account_id = account_id;
   pending_request.client_id = client_id;

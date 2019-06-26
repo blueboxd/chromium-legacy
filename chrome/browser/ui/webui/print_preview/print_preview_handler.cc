@@ -442,9 +442,9 @@ StickySettings* GetStickySettings() {
 
 #if defined(OS_CHROMEOS)
 class PrintPreviewHandler::AccessTokenService
-    : public OAuth2TokenService::Consumer {
+    : public OAuth2AccessTokenManager::Consumer {
  public:
-  AccessTokenService() : OAuth2TokenService::Consumer("print_preview") {}
+  AccessTokenService() : OAuth2AccessTokenManager::Consumer("print_preview") {}
 
   void RequestToken(base::OnceCallback<void(const std::string&)> callback) {
     // There can only be one pending request at a time. See
@@ -461,25 +461,25 @@ class PrintPreviewHandler::AccessTokenService
   }
 
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override {
     OnServiceResponse(request, token_response.access_token);
   }
 
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override {
     OnServiceResponse(request, std::string());
   }
 
  private:
-  void OnServiceResponse(const OAuth2TokenService::Request* request,
+  void OnServiceResponse(const OAuth2AccessTokenManager::Request* request,
                          const std::string& access_token) {
     DCHECK_EQ(request, device_request_.get());
     std::move(device_request_callback_).Run(access_token);
     device_request_.reset();
   }
 
-  std::unique_ptr<OAuth2TokenService::Request> device_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> device_request_;
   base::OnceCallback<void(const std::string&)> device_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);

@@ -20,6 +20,8 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       {"smbShareName", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_NAME},
       {"smbShareUsername", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_USERNAME},
       {"smbSharePassword", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_PASSWORD},
+      {"smbShareSaveCredentials",
+       IDS_SETTINGS_DOWNLOADS_ADD_SHARE_SAVE_CREDENTIALS},
       {"smbShareAuthenticationMethod",
        IDS_SETTINGS_DOWNLOADS_ADD_SHARE_AUTHENTICATION_METHOD},
       {"smbShareStandardAuthentication",

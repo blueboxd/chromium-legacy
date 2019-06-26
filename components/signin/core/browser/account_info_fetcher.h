@@ -11,18 +11,19 @@
 #include "base/memory/scoped_refptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }
 
 class AccountFetcherService;
+class OAuth2TokenService;
 
 // An account information fetcher that gets an OAuth token of appropriate
-// scope and uses it to fetch account infromation. This does not handle
+// scope and uses it to fetch account information. This does not handle
 // refreshing the information and is meant to be used in a one shot fashion.
-class AccountInfoFetcher : public OAuth2TokenService::Consumer,
+class AccountInfoFetcher : public OAuth2AccessTokenManager::Consumer,
                            public gaia::GaiaOAuthClient::Delegate {
  public:
   AccountInfoFetcher(
@@ -37,11 +38,11 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   // Start fetching the account information.
   void Start();
 
-  // OAuth2TokenService::Consumer implementation.
+  // OAuth2AccessTokenManager::Consumer implementation.
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
@@ -56,7 +57,7 @@ class AccountInfoFetcher : public OAuth2TokenService::Consumer,
   AccountFetcherService* service_;
   const CoreAccountId account_id_;
 
-  std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> login_token_request_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountInfoFetcher);

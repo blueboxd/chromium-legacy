@@ -318,15 +318,6 @@ void NaClProcessHost::EarlyStartup() {
   NaClBrowser::GetInstance()->EnsureIrtAvailable();
 #endif
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  UMA_HISTOGRAM_BOOLEAN(
-      "NaCl.nacl-gdb",
-      !cmd->GetSwitchValuePath(switches::kNaClGdb).empty());
-  UMA_HISTOGRAM_BOOLEAN(
-      "NaCl.nacl-gdb-script",
-      !cmd->GetSwitchValuePath(switches::kNaClGdbScript).empty());
-  UMA_HISTOGRAM_BOOLEAN(
-      "NaCl.enable-nacl-debug",
-      cmd->HasSwitch(switches::kEnableNaClDebug));
   std::string nacl_debug_mask =
       cmd->GetSwitchValueASCII(switches::kNaClDebugMask);
   // By default, exclude debugging SSH and the PNaCl translator.

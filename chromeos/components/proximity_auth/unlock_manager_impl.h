@@ -63,6 +63,7 @@ class UnlockManagerImpl : public UnlockManager,
     UNLOCKED,
     DISABLED,
     LOCKED,
+    PRIMARY_USER_ABSENT,
   };
 
   // MessengerObserver:

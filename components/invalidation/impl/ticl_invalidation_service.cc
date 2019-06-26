@@ -199,7 +199,7 @@ void TiclInvalidationService::RequestAccessToken() {
   if (access_token_fetcher_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
-  OAuth2TokenService::ScopeSet oauth2_scopes;
+  OAuth2AccessTokenManager::ScopeSet oauth2_scopes;
   for (size_t i = 0; i < base::size(kOAuth2Scopes); i++)
     oauth2_scopes.insert(kOAuth2Scopes[i]);
   // Invalidate previous token, otherwise the identity provider will return the

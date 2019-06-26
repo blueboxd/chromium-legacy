@@ -23,45 +23,6 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-OAuth2TokenService::RequestImpl::RequestImpl(
-    const CoreAccountId& account_id,
-    OAuth2TokenService::Consumer* consumer)
-    : account_id_(account_id), consumer_(consumer) {}
-
-OAuth2TokenService::RequestImpl::~RequestImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-CoreAccountId OAuth2TokenService::RequestImpl::GetAccountId() const {
-  return account_id_;
-}
-
-std::string OAuth2TokenService::RequestImpl::GetConsumerId() const {
-  return consumer_->id();
-}
-
-void OAuth2TokenService::RequestImpl::InformConsumer(
-    const GoogleServiceAuthError& error,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error.state() == GoogleServiceAuthError::NONE)
-    consumer_->OnGetTokenSuccess(this, token_response);
-  else
-    consumer_->OnGetTokenFailure(this, error);
-}
-
-OAuth2TokenService::Request::Request() {
-}
-
-OAuth2TokenService::Request::~Request() {
-}
-
-OAuth2TokenService::Consumer::Consumer(const std::string& id)
-    : id_(id) {}
-
-OAuth2TokenService::Consumer::~Consumer() {
-}
-
 OAuth2TokenService::OAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
     : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
@@ -111,20 +72,21 @@ void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
   token_manager_->RemoveDiagnosticsObserver(observer);
 }
 
-std::unique_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2AccessTokenManager::Request>
 OAuth2TokenService::StartRequestForMultilogin(
     const CoreAccountId& account_id,
-    OAuth2TokenService::Consumer* consumer) {
+    OAuth2AccessTokenManager::Consumer* consumer) {
   const std::string refresh_token =
       delegate_->GetTokenForMultilogin(account_id);
   if (refresh_token.empty()) {
     // If we can't get refresh token from the delegate, start request for access
     // token.
-    OAuth2TokenService::ScopeSet scopes;
+    OAuth2AccessTokenManager::ScopeSet scopes;
     scopes.insert(GaiaConstants::kOAuth1LoginScope);
     return StartRequest(account_id, scopes, consumer);
   }
-  std::unique_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
+  std::unique_ptr<OAuth2AccessTokenManager::RequestImpl> request(
+      new OAuth2AccessTokenManager::RequestImpl(account_id, consumer));
   // Create token response from token. Expiration time and id token do not
   // matter and should not be accessed.
   OAuth2AccessTokenConsumer::TokenResponse token_response(
@@ -132,47 +94,49 @@ OAuth2TokenService::StartRequestForMultilogin(
   // If we can get refresh token from the delegate, inform cosumer right away.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&RequestImpl::InformConsumer, request.get()->AsWeakPtr(),
+      base::BindOnce(&OAuth2AccessTokenManager::RequestImpl::InformConsumer,
+                     request.get()->AsWeakPtr(),
                      GoogleServiceAuthError(GoogleServiceAuthError::NONE),
                      token_response));
   return std::move(request);
 }
 
-std::unique_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
+std::unique_ptr<OAuth2AccessTokenManager::Request>
+OAuth2TokenService::StartRequest(
     const CoreAccountId& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenService::Consumer* consumer) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
+    OAuth2AccessTokenManager::Consumer* consumer) {
   return token_manager_->StartRequest(account_id, scopes, consumer);
 }
 
-std::unique_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2AccessTokenManager::Request>
 OAuth2TokenService::StartRequestForClient(
     const CoreAccountId& account_id,
     const std::string& client_id,
     const std::string& client_secret,
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenService::Consumer* consumer) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
+    OAuth2AccessTokenManager::Consumer* consumer) {
   return token_manager_->StartRequestForClient(account_id, client_id,
                                                client_secret, scopes, consumer);
 }
 
-std::unique_ptr<OAuth2TokenService::Request>
+std::unique_ptr<OAuth2AccessTokenManager::Request>
 OAuth2TokenService::StartRequestWithContext(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const ScopeSet& scopes,
-    Consumer* consumer) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
+    OAuth2AccessTokenManager::Consumer* consumer) {
   return token_manager_->StartRequestWithContext(account_id, url_loader_factory,
                                                  scopes, consumer);
 }
 
 void OAuth2TokenService::FetchOAuth2Token(
-    RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
-    const ScopeSet& scopes) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) {
   token_manager_->FetchOAuth2Token(request, account_id, url_loader_factory,
                                    client_id, client_secret, scopes);
 }
@@ -207,7 +171,7 @@ GoogleServiceAuthError OAuth2TokenService::GetAuthError(
 
 void OAuth2TokenService::InvalidateAccessToken(
     const CoreAccountId& account_id,
-    const ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   token_manager_->InvalidateAccessToken(account_id, scopes, access_token);
 }
@@ -215,7 +179,7 @@ void OAuth2TokenService::InvalidateAccessToken(
 void OAuth2TokenService::InvalidateTokenForMultilogin(
     const CoreAccountId& failed_account,
     const std::string& token) {
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
   // Remove from cache. This will have no effect on desktop since token is a
   // refresh token and is not in cache.
@@ -228,7 +192,7 @@ void OAuth2TokenService::InvalidateTokenForMultilogin(
 void OAuth2TokenService::InvalidateAccessTokenImpl(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_manager_->InvalidateAccessTokenImpl(account_id, client_id, scopes,
@@ -247,7 +211,7 @@ void OAuth2TokenService::UpdateAuthError(const CoreAccountId& account_id,
 void OAuth2TokenService::RegisterTokenResponse(
     const std::string& client_id,
     const CoreAccountId& account_id,
-    const ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_manager_->RegisterTokenResponse(client_id, account_id, scopes,
@@ -282,7 +246,7 @@ void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
 size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
     const std::string& client_id,
     const CoreAccountId& account_id,
-    const ScopeSet& scopes) const {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
   return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
                                                          scopes);
 }

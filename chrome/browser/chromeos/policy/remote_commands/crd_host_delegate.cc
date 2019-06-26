@@ -136,7 +136,8 @@ net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
 }  // namespace
 
 CRDHostDelegate::CRDHostDelegate()
-    : OAuth2TokenService::Consumer("crd_host_delegate"), weak_factory_(this) {}
+    : OAuth2AccessTokenManager::Consumer("crd_host_delegate"),
+      weak_factory_(this) {}
 
 CRDHostDelegate::~CRDHostDelegate() {
 }
@@ -192,7 +193,7 @@ void CRDHostDelegate::FetchOAuthToken(
   chromeos::DeviceOAuth2TokenService* oauth_service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
 
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
   scopes.insert(kCloudDevicesOAuth2Scope);
 
@@ -214,7 +215,7 @@ void CRDHostDelegate::FetchOAuthToken(
 }
 
 void CRDHostDelegate::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   oauth_request_.reset();
   error_callback_.Reset();
@@ -222,7 +223,7 @@ void CRDHostDelegate::OnGetTokenSuccess(
 }
 
 void CRDHostDelegate::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   oauth_request_.reset();
   oauth_success_callback_.Reset();

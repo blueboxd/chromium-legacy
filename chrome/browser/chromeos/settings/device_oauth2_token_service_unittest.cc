@@ -89,7 +89,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     content::RunAllTasksUntilIdle();
   }
 
-  std::unique_ptr<OAuth2TokenService::Request> StartTokenRequest() {
+  std::unique_ptr<OAuth2AccessTokenManager::Request> StartTokenRequest() {
     return oauth2_service_->StartRequest(oauth2_service_->GetRobotAccountId(),
                                          std::set<std::string>(), &consumer_);
   }
@@ -286,7 +286,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedTokenEarly) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetches();
   AssertConsumerTokensAndErrors(1, 0);
@@ -297,7 +298,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Success) {
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
   SetUpWithPendingSalt();
 
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   PerformURLFetches();
   AssertConsumerTokensAndErrors(0, 0);
 
@@ -314,7 +316,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Cancel) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   request.reset();
 
   PerformURLFetches();
@@ -329,7 +332,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
 
   EXPECT_FALSE(RefreshTokenIsAvailable());
 
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
   base::RunLoop().RunUntilIdle();
 
   AssertConsumerTokensAndErrors(0, 1);
@@ -338,7 +342,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoAccessTokenHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_UNAUTHORIZED, "",
@@ -351,7 +356,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoAccessTokenInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, "invalid response",
@@ -364,7 +370,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoApiCallHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -377,7 +384,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_TokenInfoApiCallInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -390,7 +398,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_CloudPrintAccessTokenHttpError) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -403,7 +412,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 TEST_F(DeviceOAuth2TokenServiceTest,
        RefreshTokenValidation_Failure_CloudPrintAccessTokenInvalidResponse) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),
@@ -415,7 +425,8 @@ TEST_F(DeviceOAuth2TokenServiceTest,
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Failure_BadOwner) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   SetRobotAccountId("WRONG_service_acct@g.com");
 
@@ -429,7 +440,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Failure_BadOwner) {
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Retry) {
   SetUpDefaultValues();
-  std::unique_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request =
+      StartTokenRequest();
 
   PerformURLFetchesWithResults(
       net::HTTP_INTERNAL_SERVER_ERROR, "",

@@ -121,7 +121,7 @@ void FamilyInfoFetcher::StartGetFamilyMembers() {
 }
 
 void FamilyInfoFetcher::StartFetchingAccessToken() {
-  OAuth2TokenService::ScopeSet scopes{kScope};
+  OAuth2AccessTokenManager::ScopeSet scopes{kScope};
   access_token_fetcher_ = std::make_unique<
       identity::PrimaryAccountAccessTokenFetcher>(
       "family_info_fetcher", identity_manager_, scopes,
@@ -214,7 +214,7 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
   if (response_code == net::HTTP_UNAUTHORIZED && !access_token_expired_) {
     DVLOG(1) << "Access token expired, retrying";
     access_token_expired_ = true;
-    OAuth2TokenService::ScopeSet scopes;
+    OAuth2AccessTokenManager::ScopeSet scopes;
     scopes.insert(kScope);
     identity_manager_->RemoveAccessTokenFromCache(primary_account_id_, scopes,
                                                   access_token_);

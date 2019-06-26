@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
@@ -16,7 +17,7 @@
   <template>
     <style include="md-select">
       #dialog [slot=body] {
-        height: 400px;
+        height: 440px;
       }
 
       .md-select {
@@ -108,6 +109,9 @@
               label="[[i18n('smbSharePassword')]]" value="{{password_}}"
               invalid="[[shouldShowCredentialError_(currentMountError_)]]">
           </cr-input>
+          <cr-checkbox id="saveCredentialsCheckbox" checked>
+            [[i18n('smbShareSaveCredentials')]]
+          </cr-checkbox>
         </div>
       </div>
       <div slot="button-container">

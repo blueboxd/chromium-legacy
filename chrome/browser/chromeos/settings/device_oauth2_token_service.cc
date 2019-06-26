@@ -22,19 +22,20 @@
 namespace chromeos {
 
 struct DeviceOAuth2TokenService::PendingRequest {
-  PendingRequest(const base::WeakPtr<RequestImpl>& request,
-                 const std::string& client_id,
-                 const std::string& client_secret,
-                 const ScopeSet& scopes)
+  PendingRequest(
+      const base::WeakPtr<OAuth2AccessTokenManager::RequestImpl>& request,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const OAuth2AccessTokenManager::ScopeSet& scopes)
       : request(request),
         client_id(client_id),
         client_secret(client_secret),
         scopes(scopes) {}
 
-  const base::WeakPtr<RequestImpl> request;
+  const base::WeakPtr<OAuth2AccessTokenManager::RequestImpl> request;
   const std::string client_id;
   const std::string client_secret;
-  const ScopeSet scopes;
+  const OAuth2AccessTokenManager::ScopeSet scopes;
 };
 
 void DeviceOAuth2TokenService::OnValidationCompleted(
@@ -78,12 +79,12 @@ void DeviceOAuth2TokenService::set_robot_account_id_for_testing(
 }
 
 void DeviceOAuth2TokenService::FetchOAuth2Token(
-    RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
-    const ScopeSet& scopes) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) {
   switch (GetDeviceDelegate()->state_) {
     case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_PENDING:
       // If this is the first request for a token, start validation.
@@ -138,7 +139,7 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
 }
 
 void DeviceOAuth2TokenService::FailRequest(
-    RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     GoogleServiceAuthError::State error) {
   GoogleServiceAuthError auth_error =
       (error == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
@@ -148,8 +149,9 @@ void DeviceOAuth2TokenService::FailRequest(
           : GoogleServiceAuthError(error);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&RequestImpl::InformConsumer, request->AsWeakPtr(),
-                     auth_error, OAuth2AccessTokenConsumer::TokenResponse()));
+      base::BindOnce(&OAuth2AccessTokenManager::RequestImpl::InformConsumer,
+                     request->AsWeakPtr(), auth_error,
+                     OAuth2AccessTokenConsumer::TokenResponse()));
 }
 
 DeviceOAuth2TokenServiceDelegate*

@@ -152,7 +152,8 @@ Polymer({
         .smbMount(
             this.mountUrl_, this.mountName_.trim(), this.username_,
             this.password_, this.authenticationMethod_,
-            this.shouldOpenFileManagerAfterMount)
+            this.shouldOpenFileManagerAfterMount,
+            this.$.saveCredentialsCheckbox.checked)
         .then(result => {
           this.onAddShare_(result);
         });

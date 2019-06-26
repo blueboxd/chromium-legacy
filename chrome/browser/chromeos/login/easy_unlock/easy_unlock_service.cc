@@ -637,6 +637,9 @@ EasyUnlockService::GetSmartUnlockPasswordAuthEvent() const {
       case ScreenlockState::PHONE_NOT_LOCKABLE:
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
             kPhoneNotLockable;
+      case ScreenlockState::PRIMARY_USER_ABSENT:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPrimaryUserAbsent;
       default:
         NOTREACHED();
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
@@ -698,6 +701,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE;
       case ScreenlockState::PASSWORD_REAUTH:
         return PASSWORD_ENTRY_FORCED_REAUTH;
+      case ScreenlockState::PRIMARY_USER_ABSENT:
+        return PASSWORD_ENTRY_PRIMARY_USER_ABSENT;
     }
   }
 

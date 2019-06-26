@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
@@ -50,7 +50,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public IdentityMintRequestQueue::Request,
                                      public identity::IdentityManager::Observer,
 #if defined(OS_CHROMEOS)
-                                     public OAuth2TokenService::Consumer,
+                                     public OAuth2AccessTokenManager::Consumer,
 #endif
                                      public OAuth2MintTokenFlow::Delegate {
  public:
@@ -80,12 +80,12 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
 // TODO(blundell): Investigate feasibility of moving the ChromeOS use case
 // to use the Identity Service instead of being an
-// OAuth2TokenService::Consumer.
+// OAuth2AccessTokenManager::Consumer.
 #if defined(OS_CHROMEOS)
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 #endif
 
@@ -108,7 +108,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   // Pending request for an access token from the device account (via
   // DeviceOAuth2TokenService).
-  std::unique_ptr<OAuth2TokenService::Request> device_access_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request>
+      device_access_token_request_;
 
   // Pending fetcher for an access token for |token_key_.account_id| (via
   // IdentityManager).

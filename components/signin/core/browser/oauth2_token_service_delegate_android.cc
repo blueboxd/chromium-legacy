@@ -290,7 +290,7 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
 void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   ValidateAccountId(account_id);
   JNIEnv* env = AttachCurrentThread();

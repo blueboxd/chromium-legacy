@@ -5,24 +5,90 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_MANAGER_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_MANAGER_H_
 
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-// TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager's
-// separated from OAuth2TokenService.
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager_diagnostics_observer.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 class OAuth2AccessTokenFetcher;
+class OAuth2TokenService;
 class OAuth2TokenServiceDelegate;
 
 // Class that manages requests for OAuth2 access tokens.
 class OAuth2AccessTokenManager {
  public:
+  // A set of scopes in OAuth2 authentication.
+  typedef std::set<std::string> ScopeSet;
+
+  // Class representing a request that fetches an OAuth2 access token.
+  class Request {
+   public:
+    virtual ~Request();
+    virtual CoreAccountId GetAccountId() const = 0;
+
+   protected:
+    Request();
+  };
+
+  // Class representing the consumer of a Request passed to |StartRequest|,
+  // which will be called back when the request completes.
+  class Consumer {
+   public:
+    explicit Consumer(const std::string& id);
+    virtual ~Consumer();
+
+    std::string id() const { return id_; }
+
+    // |request| is a Request that is started by this consumer and has
+    // completed.
+    virtual void OnGetTokenSuccess(
+        const Request* request,
+        const OAuth2AccessTokenConsumer::TokenResponse& token_response) = 0;
+    virtual void OnGetTokenFailure(const Request* request,
+                                   const GoogleServiceAuthError& error) = 0;
+
+   private:
+    std::string id_;
+  };
+
+  // Implements a cancelable |OAuth2TokenService::Request|, which should be
+  // operated on the UI thread.
+  // TODO(davidroche): move this out of header file.
+  class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
+                      public Request {
+   public:
+    // |consumer| is required to outlive this.
+    RequestImpl(const CoreAccountId& account_id, Consumer* consumer);
+    ~RequestImpl() override;
+
+    // Overridden from Request:
+    CoreAccountId GetAccountId() const override;
+
+    std::string GetConsumerId() const;
+
+    // Informs |consumer_| that this request is completed.
+    void InformConsumer(
+        const GoogleServiceAuthError& error,
+        const OAuth2AccessTokenConsumer::TokenResponse& token_response);
+
+   private:
+    const CoreAccountId account_id_;
+    // |consumer_| to call back when this request completes.
+    Consumer* const consumer_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
+  };
+
   // The parameters used to fetch an OAuth2 access token.
   struct RequestParameters {
     RequestParameters(const std::string& client_id,
                       const CoreAccountId& account_id,
-                      const OAuth2TokenService::ScopeSet& scopes);
+                      const ScopeSet& scopes);
     RequestParameters(const RequestParameters& other);
     ~RequestParameters();
     bool operator<(const RequestParameters& params) const;
@@ -32,7 +98,7 @@ class OAuth2AccessTokenManager {
     // Account id for which the request is made.
     CoreAccountId account_id;
     // URL scopes for the requested access token.
-    OAuth2TokenService::ScopeSet scopes;
+    ScopeSet scopes;
   };
   typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
       TokenCache;
@@ -59,44 +125,43 @@ class OAuth2AccessTokenManager {
   // |scopes| is the set of scopes to get an access token for, |consumer| is
   // the object that will be called back with results if the returned request
   // is not deleted.
-  std::unique_ptr<OAuth2TokenService::Request> StartRequest(
-      const CoreAccountId& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer);
+  std::unique_ptr<Request> StartRequest(const CoreAccountId& account_id,
+                                        const ScopeSet& scopes,
+                                        Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
   // Chrome's default values.
-  std::unique_ptr<OAuth2TokenService::Request> StartRequestForClient(
+  std::unique_ptr<Request> StartRequestForClient(
       const CoreAccountId& account_id,
       const std::string& client_id,
       const std::string& client_secret,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer);
+      const ScopeSet& scopes,
+      Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses the
   // URLLoaderfactory given by |url_loader_factory| instead of using the one
   // returned by |GetURLLoaderFactory| implemented by the delegate.
-  std::unique_ptr<OAuth2TokenService::Request> StartRequestWithContext(
+  std::unique_ptr<Request> StartRequestWithContext(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer);
+      const ScopeSet& scopes,
+      Consumer* consumer);
 
   // Fetches an OAuth token for the specified client/scopes.
   void FetchOAuth2Token(
-      OAuth2TokenService::RequestImpl* request,
+      RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const OAuth2TokenService::ScopeSet& scopes);
+      const ScopeSet& scopes);
 
   // Add a new entry to the cache.
   void RegisterTokenResponse(
       const std::string& client_id,
       const CoreAccountId& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const ScopeSet& scopes,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   // Returns a currently valid OAuth2 access token for the given set of scopes,
@@ -126,23 +191,22 @@ class OAuth2AccessTokenManager {
   // 401 Unauthorized). The token will be removed from the cache for the given
   // scopes.
   void InvalidateAccessToken(const CoreAccountId& account_id,
-                             const OAuth2TokenService::ScopeSet& scopes,
+                             const ScopeSet& scopes,
                              const std::string& access_token);
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|.
   void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
-                                 const OAuth2TokenService::ScopeSet& scopes,
+                                 const ScopeSet& scopes,
                                  const std::string& access_token);
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
   // Returns the current number of pending fetchers matching given params.
-  size_t GetNumPendingRequestsForTesting(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const OAuth2TokenService::ScopeSet& scopes) const;
+  size_t GetNumPendingRequestsForTesting(const std::string& client_id,
+                                         const CoreAccountId& account_id,
+                                         const ScopeSet& scopes) const;
 
  private:
   // TODO(https://crbug.com/967598): Remove this once |token_cache_| management
@@ -163,18 +227,18 @@ class OAuth2AccessTokenManager {
   // This method does the same as |StartRequestWithContext| except it
   // uses |client_id| and |client_secret| to identify OAuth
   // client app instead of using Chrome's default values.
-  std::unique_ptr<OAuth2TokenService::Request> StartRequestForClientWithContext(
+  std::unique_ptr<Request> StartRequestForClientWithContext(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const OAuth2TokenService::ScopeSet& scopes,
-      OAuth2TokenService::Consumer* consumer);
+      const ScopeSet& scopes,
+      Consumer* consumer);
 
   // Posts a task to fire the Consumer callback with the cached token response.
   void InformConsumerWithCachedTokenResponse(
       const OAuth2AccessTokenConsumer::TokenResponse* token_response,
-      OAuth2TokenService::RequestImpl* request,
+      RequestImpl* request,
       const RequestParameters& client_scopes);
 
   // Removes an access token for the given set of scopes from the cache.

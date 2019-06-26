@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace identity {
@@ -71,7 +72,7 @@ AccessTokenFetcher::AccessTokenFetcher(
     const identity::ScopeSet& scopes,
     TokenCallback callback,
     Mode mode)
-    : OAuth2TokenService::Consumer(oauth_consumer_name),
+    : OAuth2AccessTokenManager::Consumer(oauth_consumer_name),
       account_id_(account_id),
       client_id_(client_id),
       client_secret_(client_secret),
@@ -149,10 +150,10 @@ void AccessTokenFetcher::OnRefreshTokenAvailable(
 }
 
 void AccessTokenFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(request, access_token_request_.get());
-  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request_deleter(
       std::move(access_token_request_));
 
   RunCallbackAndMaybeDie(
@@ -164,10 +165,10 @@ void AccessTokenFetcher::OnGetTokenSuccess(
 }
 
 void AccessTokenFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(request, access_token_request_.get());
-  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request_deleter(
       std::move(access_token_request_));
 
   RunCallbackAndMaybeDie(error, AccessTokenInfo());

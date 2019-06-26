@@ -508,6 +508,21 @@
             ]
         }
     ],
+    "AppListQueryBasedMixedTypesRanker": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AppListQueryBasedMixedTypesRanker",
+                    "enable_features": [
+                        "EnableQueryBasedMixedTypesRanker"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppleScriptExecuteJavaScript": [
         {
             "platforms": [

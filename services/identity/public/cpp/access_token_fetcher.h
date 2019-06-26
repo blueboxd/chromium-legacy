@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/access_token_info.h"
 #include "services/identity/public/cpp/scope_set.h"
 
@@ -20,13 +21,15 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+class OAuth2TokenService;
+
 namespace identity {
 
 // Helper class to ease the task of obtaining an OAuth2 access token for a
 // given account.
 // May only be used on the UI thread.
 class AccessTokenFetcher : public OAuth2TokenServiceObserver,
-                           public OAuth2TokenService::Consumer {
+                           public OAuth2AccessTokenManager::Consumer {
  public:
   // Specifies how this instance should behave:
   // |kImmediate|: Makes one-shot immediate request.
@@ -106,11 +109,11 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
 
-  // OAuth2TokenService::Consumer implementation.
+  // OAuth2AccessTokenManager::Consumer implementation.
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   // Invokes |callback_| with (|error|, |access_token_info|). Per the contract
@@ -136,7 +139,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   ScopedObserver<OAuth2TokenService, AccessTokenFetcher>
       token_service_observer_;
 
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcher);
 };

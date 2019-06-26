@@ -74,11 +74,11 @@ void ScopedClipboardWriter::WriteHyperlink(const base::string16& anchor_text,
     return;
 
   // Construct the hyperlink.
-  std::string html("<a href=\"");
-  html.append(net::EscapeForHTML(url));
-  html.append("\">");
-  html.append(net::EscapeForHTML(base::UTF16ToUTF8(anchor_text)));
-  html.append("</a>");
+  std::string html = "<a href=\"";
+  html += net::EscapeForHTML(url);
+  html += "\">";
+  html += net::EscapeForHTML(base::UTF16ToUTF8(anchor_text));
+  html += "</a>";
   WriteHTML(base::UTF8ToUTF16(html), std::string());
 }
 

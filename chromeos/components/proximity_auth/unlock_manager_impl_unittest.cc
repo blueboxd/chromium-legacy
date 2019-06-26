@@ -329,6 +329,35 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
 }
 
+TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_UserIsSecondary) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  life_cycle_.ChangeState(
+      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+  unlock_manager_->OnLifeCycleStateChanged();
+  unlock_manager_->OnRemoteStatusUpdate({USER_PRESENCE_SECONDARY,
+                                         SECURE_SCREEN_LOCK_ENABLED,
+                                         TRUST_AGENT_UNSUPPORTED});
+
+  EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       IsUnlockAllowed_PrimaryUserInBackground) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  life_cycle_.ChangeState(
+      RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
+  unlock_manager_->OnLifeCycleStateChanged();
+  unlock_manager_->OnRemoteStatusUpdate({USER_PRESENCE_BACKGROUND,
+                                         SECURE_SCREEN_LOCK_ENABLED,
+                                         TRUST_AGENT_UNSUPPORTED});
+
+  EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
+}
+
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteScreenlockStateUnknown) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);

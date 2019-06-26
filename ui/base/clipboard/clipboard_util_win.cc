@@ -832,13 +832,13 @@ std::string ClipboardUtil::HtmlToCFHtml(const std::string& html,
                                           start_fragment_offset,
                                           end_fragment_offset);
   if (!base_url.empty()) {
-    result.append(source_url_prefix);
-    result.append(base_url);
-    result.append("\r\n");
+    result += source_url_prefix;
+    result += base_url;
+    result += "\r\n";
   }
-  result.append(start_markup);
-  result.append(html);
-  result.append(end_markup);
+  result += start_markup;
+  result += html;
+  result += end_markup;
 
   #undef MAX_DIGITS
   #undef MAKE_NUMBER_FORMAT_1

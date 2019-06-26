@@ -211,7 +211,7 @@ void GCMInvalidationBridge::RequestToken(
                        core_, request_token_callback_, error, access_token));
   }
   request_token_callback_ = callback;
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   access_token_fetcher_ = identity_provider_->FetchAccessToken(
       "gcm_network_channel", scopes,
@@ -233,7 +233,7 @@ void GCMInvalidationBridge::OnAccessTokenRequestCompleted(
 
 void GCMInvalidationBridge::InvalidateToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   identity_provider_->InvalidateAccessToken(scopes, token);
 }

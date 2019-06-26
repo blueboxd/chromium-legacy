@@ -73,7 +73,8 @@ class SmartLockMetricsRecorder {
     kForcedReauth = 16,
     kLoginWithSmartLockDisabled = 17,
     kPhoneNotLockable = 18,
-    kMaxValue = kPhoneNotLockable
+    kPrimaryUserAbsent = 19,
+    kMaxValue = kPrimaryUserAbsent
   };
 
   static void RecordSmartLockUnlockAuthMethodChoice(

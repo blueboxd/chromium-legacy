@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -31,12 +31,15 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
+class OAuth2TokenService;
+
 namespace policy {
 
-// This implementation of UploadJob uses the OAuth2TokenService to acquire
+// This implementation of UploadJob uses the OAuth2AccessTokenManager to acquire
 // access tokens for the device management (cloud-based policy) server scope and
 // uses a SimpleURLLoader to upload data to the specified upload url.
-class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
+class UploadJobImpl : public UploadJob,
+                      public OAuth2AccessTokenManager::Consumer {
  public:
   // UploadJobImpl uses a MimeBoundaryGenerator to generate strings which
   // mark the boundaries between data segments.
@@ -102,11 +105,11 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
     ERROR               // Upload failed.
   };
 
-  // OAuth2TokenService::Consumer:
+  // OAuth2AccessTokenManager::Consumer:
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   // Called when the SimpleURLLoader is finished.
@@ -169,7 +172,7 @@ class UploadJobImpl : public UploadJob, public OAuth2TokenService::Consumer {
   int retry_;
 
   // The OAuth request to receive the access token.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;
 
   // The OAuth access token.
   std::string access_token_;

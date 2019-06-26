@@ -583,10 +583,9 @@ void IdentityManager::OnGaiaCookieDeletedByUserAction() {
   }
 }
 
-void IdentityManager::OnAccessTokenRequested(
-    const CoreAccountId& account_id,
-    const std::string& consumer_id,
-    const OAuth2TokenService::ScopeSet& scopes) {
+void IdentityManager::OnAccessTokenRequested(const CoreAccountId& account_id,
+                                             const std::string& consumer_id,
+                                             const ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
   }

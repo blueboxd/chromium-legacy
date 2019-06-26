@@ -53,7 +53,7 @@ void SmbHandler::RegisterMessages() {
 }
 
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
-  CHECK_EQ(7U, args->GetSize());
+  CHECK_EQ(8U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
@@ -63,12 +63,14 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   std::string password;
   bool use_kerberos;
   bool should_open_file_manager_after_mount;
+  bool save_credentials;
   CHECK(args->GetString(1, &mount_url));
   CHECK(args->GetString(2, &mount_name));
   CHECK(args->GetString(3, &username));
   CHECK(args->GetString(4, &password));
   CHECK(args->GetBoolean(5, &use_kerberos));
   CHECK(args->GetBoolean(6, &should_open_file_manager_after_mount));
+  CHECK(args->GetBoolean(7, &save_credentials));
 
   smb_client::SmbService* const service = GetSmbService(profile_);
   if (!service) {
@@ -86,7 +88,7 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
       base::BindOnce(&smb_client::SmbService::Mount, base::Unretained(service),
                      mo, base::FilePath(mount_url), username, password,
                      use_kerberos, should_open_file_manager_after_mount,
-                     false /* save_credentials */, std::move(mount_response));
+                     save_credentials, std::move(mount_response));
 
   if (host_discovery_done_) {
     std::move(mount_call).Run();

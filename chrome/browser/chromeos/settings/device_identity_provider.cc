@@ -14,31 +14,32 @@ namespace {
 // DeviceOAuth2TokenService.
 class ActiveAccountAccessTokenFetcherImpl
     : public invalidation::ActiveAccountAccessTokenFetcher,
-      OAuth2TokenService::Consumer {
+      OAuth2AccessTokenManager::Consumer {
  public:
   ActiveAccountAccessTokenFetcherImpl(
       const std::string& active_account_id,
       const std::string& oauth_consumer_name,
       DeviceOAuth2TokenService* token_service,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
       invalidation::ActiveAccountAccessTokenCallback callback);
   ~ActiveAccountAccessTokenFetcherImpl() override;
 
  private:
-  // OAuth2TokenService::Consumer implementation.
+  // OAuth2AccessTokenManager::Consumer implementation.
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   // Invokes |callback_| with (|access_token|, |error|).
-  void HandleTokenRequestCompletion(const OAuth2TokenService::Request* request,
-                                    const GoogleServiceAuthError& error,
-                                    const std::string& access_token);
+  void HandleTokenRequestCompletion(
+      const OAuth2AccessTokenManager::Request* request,
+      const GoogleServiceAuthError& error,
+      const std::string& access_token);
 
   invalidation::ActiveAccountAccessTokenCallback callback_;
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveAccountAccessTokenFetcherImpl);
 };
@@ -49,9 +50,9 @@ ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
     const std::string& active_account_id,
     const std::string& oauth_consumer_name,
     DeviceOAuth2TokenService* token_service,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     invalidation::ActiveAccountAccessTokenCallback callback)
-    : OAuth2TokenService::Consumer(oauth_consumer_name),
+    : OAuth2AccessTokenManager::Consumer(oauth_consumer_name),
       callback_(std::move(callback)) {
   access_token_request_ =
       token_service->StartRequest(active_account_id, scopes, this);
@@ -60,24 +61,24 @@ ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
 ActiveAccountAccessTokenFetcherImpl::~ActiveAccountAccessTokenFetcherImpl() {}
 
 void ActiveAccountAccessTokenFetcherImpl::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   HandleTokenRequestCompletion(request, GoogleServiceAuthError::AuthErrorNone(),
                                token_response.access_token);
 }
 
 void ActiveAccountAccessTokenFetcherImpl::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   HandleTokenRequestCompletion(request, error, std::string());
 }
 
 void ActiveAccountAccessTokenFetcherImpl::HandleTokenRequestCompletion(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error,
     const std::string& access_token) {
   DCHECK_EQ(request, access_token_request_.get());
-  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request_deleter(
       std::move(access_token_request_));
 
   std::move(callback_).Run(error, access_token);
@@ -129,7 +130,7 @@ bool DeviceIdentityProvider::IsActiveAccountWithRefreshToken() {
 std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
 DeviceIdentityProvider::FetchAccessToken(
     const std::string& oauth_consumer_name,
-    const OAuth2TokenService::ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     invalidation::ActiveAccountAccessTokenCallback callback) {
   return std::make_unique<ActiveAccountAccessTokenFetcherImpl>(
       GetActiveAccountId(), oauth_consumer_name, token_service_, scopes,
@@ -137,7 +138,7 @@ DeviceIdentityProvider::FetchAccessToken(
 }
 
 void DeviceIdentityProvider::InvalidateAccessToken(
-    const OAuth2TokenService::ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   token_service_->InvalidateAccessToken(GetActiveAccountId(), scopes,
                                         access_token);

@@ -587,6 +587,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, HardlockStatePersistsOverUnlocks) {
             lock_handler_->GetAuthType(account_id_));
 }
 
+TEST_F(EasyUnlockScreenlockStateHandlerTest, PrimaryUserAbsent) {
+  state_handler_->ChangeState(ScreenlockState::PRIMARY_USER_ABSENT);
+
+  EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
+  ASSERT_TRUE(lock_handler_->HasCustomIcon());
+  EXPECT_EQ(kLockedIconId, lock_handler_->GetCustomIconId());
+}
+
 TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
   lock_handler_->SetAuthType(account_id_,
                              proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,

@@ -75,13 +75,14 @@ class IdentityProvider {
   // or error. To cancel the request, destroy the returned TokenFetcher.
   virtual std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
       const std::string& oauth_consumer_name,
-      const OAuth2TokenService::ScopeSet& scopes,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
       ActiveAccountAccessTokenCallback callback) = 0;
 
   // Marks an OAuth2 |access_token| issued for the active account and |scopes|
   // as invalid.
-  virtual void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
-                                     const std::string& access_token) = 0;
+  virtual void InvalidateAccessToken(
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) = 0;
 
   // Set the account id that should be registered for invalidations.
   virtual void SetActiveAccountId(const CoreAccountId& account_id) = 0;

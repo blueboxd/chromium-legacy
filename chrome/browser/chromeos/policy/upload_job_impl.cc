@@ -17,6 +17,7 @@
 #include "base/syslog_logging.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -158,7 +159,7 @@ UploadJobImpl::UploadJobImpl(
     std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
     net::NetworkTrafficAnnotationTag traffic_annotation,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : OAuth2TokenService::Consumer("cros_upload_job"),
+    : OAuth2AccessTokenManager::Consumer("cros_upload_job"),
       upload_url_(upload_url),
       account_id_(account_id),
       token_service_(token_service),
@@ -229,7 +230,7 @@ void UploadJobImpl::RequestAccessToken() {
 
   state_ = ACQUIRING_TOKEN;
 
-  OAuth2TokenService::ScopeSet scope_set;
+  OAuth2AccessTokenManager::ScopeSet scope_set;
   scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   access_token_request_ =
       token_service_->StartRequest(account_id_, scope_set, this);
@@ -340,7 +341,7 @@ void UploadJobImpl::StartUpload() {
 }
 
 void UploadJobImpl::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(ACQUIRING_TOKEN, state_);
   DCHECK_EQ(access_token_request_.get(), request);
@@ -353,7 +354,7 @@ void UploadJobImpl::OnGetTokenSuccess(
 }
 
 void UploadJobImpl::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(ACQUIRING_TOKEN, state_);
   DCHECK_EQ(access_token_request_.get(), request);
@@ -382,7 +383,7 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
     if (error_code == AUTHENTICATION_ERROR) {
       SYSLOG(ERROR) << "Retrying upload with a new token.";
       // Request new token and retry.
-      OAuth2TokenService::ScopeSet scope_set;
+      OAuth2AccessTokenManager::ScopeSet scope_set;
       scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
       token_service_->InvalidateAccessToken(account_id_, scope_set,
                                             access_token_);

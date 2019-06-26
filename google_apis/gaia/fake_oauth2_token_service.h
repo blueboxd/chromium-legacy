@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace network {
@@ -40,17 +41,18 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
  protected:
   // OAuth2TokenService overrides.
   void FetchOAuth2Token(
-      RequestImpl* request,
+      OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const ScopeSet& scopes) override;
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token) override {}
+  void InvalidateAccessTokenImpl(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override {}
 
  private:
   struct PendingRequest {
@@ -61,8 +63,8 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
     CoreAccountId account_id;
     std::string client_id;
     std::string client_secret;
-    ScopeSet scopes;
-    base::WeakPtr<RequestImpl> request;
+    OAuth2AccessTokenManager::ScopeSet scopes;
+    base::WeakPtr<OAuth2AccessTokenManager::RequestImpl> request;
   };
 
   std::vector<PendingRequest> pending_requests_;

@@ -70,18 +70,19 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
 
   // OAuth2TokenService:
   void FetchOAuth2Token(
-      RequestImpl* request,
+      OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const ScopeSet& scopes) override;
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
   // OAuth2TokenService:
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token) override;
+  void InvalidateAccessTokenImpl(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override;
 
   void AddTokenToQueue(const std::string& token);
   bool IsTokenValid(const std::string& token) const;
@@ -102,12 +103,12 @@ MockOAuth2TokenService::~MockOAuth2TokenService() {
 }
 
 void MockOAuth2TokenService::FetchOAuth2Token(
-    OAuth2TokenService::RequestImpl* request,
+    OAuth2AccessTokenManager::RequestImpl* request,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
-    const FakeOAuth2TokenService::ScopeSet& scopes) {
+    const OAuth2AccessTokenManager::ScopeSet& scopes) {
   GoogleServiceAuthError response_error =
       GoogleServiceAuthError::AuthErrorNone();
   OAuth2AccessTokenConsumer::TokenResponse token_response;
@@ -121,7 +122,7 @@ void MockOAuth2TokenService::FetchOAuth2Token(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&OAuth2TokenService::RequestImpl::InformConsumer,
+      base::BindOnce(&OAuth2AccessTokenManager::RequestImpl::InformConsumer,
                      request->AsWeakPtr(), response_error, token_response));
 }
 
@@ -144,7 +145,7 @@ void MockOAuth2TokenService::SetTokenInvalid(const std::string& token) {
 void MockOAuth2TokenService::InvalidateAccessTokenImpl(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const ScopeSet& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   SetTokenInvalid(access_token);
 }

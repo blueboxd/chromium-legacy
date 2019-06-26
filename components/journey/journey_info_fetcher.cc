@@ -40,7 +40,7 @@ void JourneyInfoFetcher::RequestOAuthTokenService() {
   if (token_fetcher_)
     return;
 
-  OAuth2TokenService::ScopeSet scopes{kChromeSyncScope};
+  OAuth2AccessTokenManager::ScopeSet scopes{kChromeSyncScope};
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "journey_info", identity_manager_, scopes,
       base::BindOnce(&JourneyInfoFetcher::AccessTokenFetchFinished,

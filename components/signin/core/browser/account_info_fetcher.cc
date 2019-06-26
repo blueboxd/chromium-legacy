@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AccountInfoFetcher::AccountInfoFetcher(
@@ -16,7 +17,7 @@ AccountInfoFetcher::AccountInfoFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountFetcherService* service,
     const CoreAccountId& account_id)
-    : OAuth2TokenService::Consumer("gaia_account_tracker"),
+    : OAuth2AccessTokenManager::Consumer("gaia_account_tracker"),
       token_service_(token_service),
       url_loader_factory_(std::move(url_loader_factory)),
       service_(service),
@@ -30,7 +31,7 @@ AccountInfoFetcher::~AccountInfoFetcher() {
 }
 
 void AccountInfoFetcher::Start() {
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
   scopes.insert(GaiaConstants::kGoogleUserInfoProfile);
   login_token_request_ =
@@ -38,7 +39,7 @@ void AccountInfoFetcher::Start() {
 }
 
 void AccountInfoFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   TRACE_EVENT_ASYNC_STEP_PAST0("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetTokenSuccess");
@@ -51,7 +52,7 @@ void AccountInfoFetcher::OnGetTokenSuccess(
 }
 
 void AccountInfoFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   TRACE_EVENT_ASYNC_STEP_PAST1("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetTokenFailure",

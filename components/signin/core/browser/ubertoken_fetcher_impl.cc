@@ -53,7 +53,7 @@ UbertokenFetcherImpl::UbertokenFetcherImpl(
     CompletionCallback ubertoken_callback,
     GaiaAuthFetcherFactory factory,
     bool is_bound_to_channel_id)
-    : OAuth2TokenService::Consumer("uber_token_fetcher"),
+    : OAuth2AccessTokenManager::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       ubertoken_callback_(std::move(ubertoken_callback)),
       is_bound_to_channel_id_(is_bound_to_channel_id),
@@ -101,7 +101,7 @@ void UbertokenFetcherImpl::OnUberAuthTokenFailure(
     }
   } else {
     // The access token is invalid.  Tell the token service.
-    OAuth2TokenService::ScopeSet scopes;
+    OAuth2AccessTokenManager::ScopeSet scopes;
     scopes.insert(GaiaConstants::kOAuth1LoginScope);
     token_service_->InvalidateAccessToken(account_id_, scopes, access_token_);
 
@@ -119,7 +119,7 @@ void UbertokenFetcherImpl::OnUberAuthTokenFailure(
 }
 
 void UbertokenFetcherImpl::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(!token_response.access_token.empty());
   access_token_ = token_response.access_token;
@@ -128,7 +128,7 @@ void UbertokenFetcherImpl::OnGetTokenSuccess(
 }
 
 void UbertokenFetcherImpl::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   access_token_request_.reset();
   std::move(ubertoken_callback_).Run(error, /*access_token=*/std::string());
@@ -139,7 +139,7 @@ void UbertokenFetcherImpl::RequestAccessToken() {
   gaia_auth_fetcher_.reset();
   retry_timer_.Stop();
 
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
   access_token_request_ =
       token_service_->StartRequest(account_id_, scopes, this);

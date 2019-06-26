@@ -17,15 +17,16 @@
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 
 class SigninClient;
+class OAuth2TokenService;
 
 namespace signin {
 
 // Fetches multilogin access tokens in parallel for multiple accounts.
 // It is safe to delete this object from within the callbacks.
-class OAuthMultiloginTokenFetcher : public OAuth2TokenService::Consumer {
+class OAuthMultiloginTokenFetcher : public OAuth2AccessTokenManager::Consumer {
  public:
   struct AccountIdTokenPair {
     CoreAccountId account_id;
@@ -51,15 +52,15 @@ class OAuthMultiloginTokenFetcher : public OAuth2TokenService::Consumer {
  private:
   void StartFetchingToken(const CoreAccountId& account_id);
 
-  // Overridden from OAuth2TokenService::Consumer.
+  // Overridden from OAuth2AccessTokenManager::Consumer.
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   // Helper function to remove a request from token_requests_.
-  void EraseRequest(const OAuth2TokenService::Request* request);
+  void EraseRequest(const OAuth2AccessTokenManager::Request* request);
 
   SigninClient* signin_client_;
   OAuth2TokenService* token_service_;
@@ -68,7 +69,8 @@ class OAuthMultiloginTokenFetcher : public OAuth2TokenService::Consumer {
   SuccessCallback success_callback_;
   FailureCallback failure_callback_;
 
-  std::vector<std::unique_ptr<OAuth2TokenService::Request>> token_requests_;
+  std::vector<std::unique_ptr<OAuth2AccessTokenManager::Request>>
+      token_requests_;
   std::map<CoreAccountId, std::string> access_tokens_;
   std::set<CoreAccountId> retried_requests_;  // Requests are retried once.
 

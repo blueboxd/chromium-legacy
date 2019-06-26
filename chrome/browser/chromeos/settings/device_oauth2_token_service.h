@@ -53,12 +53,12 @@ class DeviceOAuth2TokenService
  protected:
   // Implementation of OAuth2TokenService.
   void FetchOAuth2Token(
-      RequestImpl* request,
+      OAuth2AccessTokenManager::RequestImpl* request,
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
-      const ScopeSet& scopes) override;
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override;
 
  private:
   friend class DeviceOAuth2TokenServiceFactory;
@@ -79,7 +79,8 @@ class DeviceOAuth2TokenService
                             GoogleServiceAuthError::State error);
 
   // Signals failure on the specified request, passing |error| as the reason.
-  void FailRequest(RequestImpl* request, GoogleServiceAuthError::State error);
+  void FailRequest(OAuth2AccessTokenManager::RequestImpl* request,
+                   GoogleServiceAuthError::State error);
 
   DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate();
   const DeviceOAuth2TokenServiceDelegate* GetDeviceDelegate() const;

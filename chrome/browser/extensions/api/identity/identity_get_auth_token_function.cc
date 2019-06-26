@@ -66,7 +66,8 @@ bool IsBrowserSigninAllowed(Profile* profile) {
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     :
 #if defined(OS_CHROMEOS)
-      OAuth2TokenService::Consumer(kExtensionsIdentityAPIOAuthConsumerName),
+      OAuth2AccessTokenManager::Consumer(
+          kExtensionsIdentityAPIOAuthConsumerName),
 #endif
       interactive_(false),
       should_prompt_for_scopes_(false),
@@ -686,7 +687,7 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
 
 #if defined(OS_CHROMEOS)
 void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   device_access_token_request_.reset();
   OnGetAccessTokenComplete(token_response.access_token,
@@ -695,7 +696,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
 }
 
 void IdentityGetAuthTokenFunction::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenManager::Request* request,
     const GoogleServiceAuthError& error) {
   device_access_token_request_.reset();
   OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
@@ -734,7 +735,7 @@ void IdentityGetAuthTokenFunction::StartDeviceAccessTokenRequest() {
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
   // Since robot account refresh tokens are scoped down to [any-api] only,
   // request access token for [any-api] instead of login.
-  OAuth2TokenService::ScopeSet scopes;
+  OAuth2AccessTokenManager::ScopeSet scopes;
   scopes.insert(GaiaConstants::kAnyApiOAuth2Scope);
   device_access_token_request_ =
       service->StartRequest(service->GetRobotAccountId(), scopes, this);
@@ -766,8 +767,7 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
       token_key_account_access_token_fetcher_ =
           identity_manager->CreateAccessTokenFetcherForClient(
               token_key_.account_id, app_client_id, app_client_secret,
-              kExtensionsIdentityAPIOAuthConsumerName,
-              OAuth2TokenService::ScopeSet(),
+              kExtensionsIdentityAPIOAuthConsumerName, ::identity::ScopeSet(),
               base::BindOnce(
                   &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
                   base::Unretained(this)),

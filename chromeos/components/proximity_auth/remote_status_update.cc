@@ -22,6 +22,8 @@ const char kTrustAgent[] = "trust_agent";
 const char kUserPresent[] = "present";
 const char kUserAbsent[] = "absent";
 const char kUserPresenceUnknown[] = "unknown";
+const char kUserPresenceSecondary[] = "secondary";
+const char kUserPresenceBackground[] = "background";
 
 const char kSecureScreenLockEnabled[] = "enabled";
 const char kSecureScreenLockDisabled[] = "disabled";
@@ -64,6 +66,10 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
     parsed_update->user_presence = USER_ABSENT;
   } else if (user_presence == kUserPresenceUnknown) {
     parsed_update->user_presence = USER_PRESENCE_UNKNOWN;
+  } else if (user_presence == kUserPresenceSecondary) {
+    parsed_update->user_presence = USER_PRESENCE_SECONDARY;
+  } else if (user_presence == kUserPresenceBackground) {
+    parsed_update->user_presence = USER_PRESENCE_BACKGROUND;
   } else {
     PA_LOG(ERROR)
         << "Unable to parse remote status update: invalid user presence: '"

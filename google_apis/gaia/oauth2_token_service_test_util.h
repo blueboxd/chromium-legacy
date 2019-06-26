@@ -8,21 +8,22 @@
 #include <string>
 
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 
 std::string GetValidTokenResponse(const std::string& token, int expiration);
 
 // A simple testing consumer.
-class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
+class TestingOAuth2TokenServiceConsumer
+    : public OAuth2AccessTokenManager::Consumer {
  public:
   TestingOAuth2TokenServiceConsumer();
   ~TestingOAuth2TokenServiceConsumer() override;
 
-  // OAuth2TokenService::Consumer overrides.
+  // OAuth2AccessTokenManager::Consumer overrides.
   void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenManager::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+  void OnGetTokenFailure(const OAuth2AccessTokenManager::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   std::string last_token_;

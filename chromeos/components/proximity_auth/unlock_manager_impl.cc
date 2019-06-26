@@ -475,6 +475,9 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
       case RemoteScreenlockState::UNKNOWN:
         return ScreenlockState::PHONE_UNSUPPORTED;
 
+      case RemoteScreenlockState::PRIMARY_USER_ABSENT:
+        return ScreenlockState::PRIMARY_USER_ABSENT;
+
       case RemoteScreenlockState::UNLOCKED:
         // Handled by the code below.
         break;
@@ -592,6 +595,11 @@ UnlockManagerImpl::GetScreenlockStateFromRemoteUpdate(
       return RemoteScreenlockState::DISABLED;
 
     case SECURE_SCREEN_LOCK_ENABLED:
+      if (update.user_presence == USER_PRESENCE_SECONDARY ||
+          update.user_presence == USER_PRESENCE_BACKGROUND) {
+        return RemoteScreenlockState::PRIMARY_USER_ABSENT;
+      }
+
       if (update.user_presence == USER_PRESENT)
         return RemoteScreenlockState::UNLOCKED;
 

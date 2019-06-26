@@ -63,6 +63,8 @@ void TestVDAVideoDecoder::Destroy() {
 
   // Delete all video frames and related textures.
   video_frames_.clear();
+
+  delete this;
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {

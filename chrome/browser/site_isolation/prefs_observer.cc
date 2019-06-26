@@ -48,7 +48,7 @@ void SiteIsolationPrefsObserver::OnChangeInIsolatedOriginsPref() {
       pref_change_registrar_.prefs()->GetString(prefs::kIsolateOrigins);
   auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
   policy->AddIsolatedOrigins(
-      content::SiteIsolationPolicy::ParseIsolatedOrigins(isolated_origins),
+      isolated_origins,
       content::ChildProcessSecurityPolicy::IsolatedOriginSource::POLICY,
       /* browser_context = */ nullptr);
 }

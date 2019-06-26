@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <sstream>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -2687,6 +2688,148 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithStrictSiteInstances,
           static_cast<WebContentsImpl*>(new_shell->web_contents())
               ->GetFrameTree()
               ->root()));
+}
+
+class WildcardOriginIsolationTest : public IsolatedOriginTestBase {
+ public:
+  WildcardOriginIsolationTest() {}
+  ~WildcardOriginIsolationTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    std::string origin_list =
+        MakeWildcard(embedded_test_server()->GetURL("isolated.foo.com", "/")) +
+        "," + embedded_test_server()->GetURL("foo.com", "/").spec();
+
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
+
+    // This is needed for this test to run properly on platforms where
+    //  --site-per-process isn't the default, such as Android.
+    IsolateAllSitesForTesting(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
+ private:
+  const char* kAllSubdomainWildcard = "**.";
+
+  // Calling GetURL() on the embedded test server will escape any '*' characters
+  // into '%2A', so to create a wildcard origin they must be post-processed to
+  // have the string '**.' inserted at the correct point.
+  std::string MakeWildcard(GURL url) {
+    DCHECK(url.is_valid());
+    return url.scheme() + url::kStandardSchemeSeparator +
+           kAllSubdomainWildcard + url.GetContent();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WildcardOriginIsolationTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, MainFrameNavigation) {
+  GURL a_foo_url(embedded_test_server()->GetURL("a.foo.com", "/title1.html"));
+  GURL b_foo_url(embedded_test_server()->GetURL("b.foo.com", "/title1.html"));
+  GURL a_isolated_url(
+      embedded_test_server()->GetURL("a.isolated.foo.com", "/title1.html"));
+  GURL b_isolated_url(
+      embedded_test_server()->GetURL("b.isolated.foo.com", "/title1.html"));
+
+  EXPECT_TRUE(IsIsolatedOrigin(a_foo_url));
+  EXPECT_TRUE(IsIsolatedOrigin(b_foo_url));
+  EXPECT_TRUE(IsIsolatedOrigin(a_isolated_url));
+  EXPECT_TRUE(IsIsolatedOrigin(b_isolated_url));
+
+  // Navigate in the following order, all within the same shell:
+  // 1. a_foo_url
+  // 2. b_foo_url      -- check (1) and (2) have the same pid / instance
+  // 3. a_isolated_url
+  // 4. b_isolated_url -- check (2), (3) and (4) have distinct pids / instances
+  // 5. a_foo_url      -- check (4) and (5) have distinct pids / instances
+  // 6. b_foo_url      -- check (5) and (6) have the same pid / instance
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_foo_url));
+  int a_foo_pid =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  scoped_refptr<SiteInstance> a_foo_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  EXPECT_TRUE(NavigateToURL(shell(), b_foo_url));
+  int b_foo_pid =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  scoped_refptr<SiteInstance> b_foo_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  // Check that hosts in the wildcard subdomain (but not the wildcard subdomain
+  // itself) have their processes reused between navigation events.
+  EXPECT_EQ(a_foo_pid, b_foo_pid);
+  EXPECT_EQ(a_foo_instance, b_foo_instance);
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_isolated_url));
+  int a_isolated_pid =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  scoped_refptr<SiteInstance> a_isolated_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  EXPECT_TRUE(NavigateToURL(shell(), b_isolated_url));
+  int b_isolated_pid =
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  scoped_refptr<SiteInstance> b_isolated_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  // Navigating from a non-wildcard domain to a wildcard domain should result in
+  // a new process.
+  EXPECT_NE(b_foo_pid, b_isolated_pid);
+  EXPECT_NE(b_foo_instance, b_isolated_instance);
+
+  // Navigating to another URL within the wildcard domain should always result
+  // in a new process.
+  EXPECT_NE(a_isolated_pid, b_isolated_pid);
+  EXPECT_NE(a_isolated_instance, b_isolated_instance);
+
+  EXPECT_TRUE(NavigateToURL(shell(), a_foo_url));
+  a_foo_pid = shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  a_foo_instance = shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  EXPECT_TRUE(NavigateToURL(shell(), b_foo_url));
+  b_foo_pid = shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  b_foo_instance = shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  // Navigating from the wildcard subdomain to the isolated subdomain should
+  // produce a new pid.
+  EXPECT_NE(a_foo_pid, b_isolated_pid);
+  EXPECT_NE(a_foo_instance, b_isolated_instance);
+
+  // Confirm that navigation events in the isolated domain behave the same as
+  // before visiting the wildcard subdomain.
+  EXPECT_EQ(a_foo_pid, b_foo_pid);
+  EXPECT_EQ(a_foo_instance, b_foo_instance);
+}
+
+IN_PROC_BROWSER_TEST_F(WildcardOriginIsolationTest, SubFrameNavigation) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.foo.com",
+      "/cross_site_iframe_factory.html?a.foo.com("
+      "isolated.foo.com,b.foo.com("
+      "b.isolated.foo.com,a.foo.com,a.isolated.com))");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site B ------- proxies for A C D\n"
+      "   +--Site A ------- proxies for B C D\n"
+      "        |--Site C -- proxies for A B D\n"
+      "        |--Site A -- proxies for B C D\n"
+      "        +--Site D -- proxies for A B C\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://isolated.foo.com/\n"
+      "      C = http://b.isolated.foo.com/\n"
+      "      D = http://isolated.com/",
+      FrameTreeVisualizer().DepictFrameTree(root));
 }
 
 }  // namespace content

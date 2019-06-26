@@ -101,10 +101,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
-  void AddIsolatedOrigins(const std::vector<url::Origin>& origins,
+  void AddIsolatedOrigins(base::StringPiece origins_list,
                           IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr) override;
-  void AddIsolatedOrigins(const std::vector<IsolatedOriginPattern>& patterns,
+  void AddIsolatedOrigins(const std::vector<url::Origin>& origins,
                           IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr) override;
   bool IsGloballyIsolatedOriginForTesting(const url::Origin& origin) override;
@@ -349,6 +349,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                            WildcardAndNonWildcardOrigins);
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
                            WildcardAndNonWildcardEmbedded);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest,
+                           ParseIsolatedOrigins);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyTest, WildcardDefaultPort);
 
   class SecurityState;
 
@@ -485,6 +488,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Note: Returned object is only valid for the duration the caller holds
   // |lock_|.
   SecurityState* GetSecurityState(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Convert a list of comma separated isolated origins in |pattern_list|,
+  // specified either as wildcard origins, non-wildcard origins or a mix of the
+  // two into IsolatedOriginPatterns, suitable for addition via
+  // AddIsolatedOrigins().
+  static std::vector<IsolatedOriginPattern> ParseIsolatedOrigins(
+      base::StringPiece pattern_list);
+
+  void AddIsolatedOrigins(const std::vector<IsolatedOriginPattern>& patterns,
+                          IsolatedOriginSource source,
+                          BrowserContext* browser_context = nullptr);
 
   // You must acquire this lock before reading or writing any members of this
   // class, except for isolated_origins_ which uses its own lock.  You must not

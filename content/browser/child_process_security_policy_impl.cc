@@ -1406,6 +1406,15 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
 }
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
+    base::StringPiece origins_to_add,
+    IsolatedOriginSource source,
+    BrowserContext* browser_context) {
+  std::vector<IsolatedOriginPattern> patterns =
+      ParseIsolatedOrigins(origins_to_add);
+  AddIsolatedOrigins(patterns, source, browser_context);
+}
+
+void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     const std::vector<IsolatedOriginPattern>& patterns,
     IsolatedOriginSource source,
     BrowserContext* browser_context) {
@@ -1413,6 +1422,14 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
   // available (and is only safe to be retrieved) on the UI thread, such as
   // BrowsingInstance IDs.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (IsolatedOriginSource::COMMAND_LINE == source) {
+    size_t number_of_origins = std::count_if(
+        patterns.cbegin(), patterns.cend(),
+        [](const IsolatedOriginPattern& p) { return p.is_valid(); });
+    UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
+                              number_of_origins);
+  }
 
   base::AutoLock isolated_origins_lock(isolated_origins_lock_);
 
@@ -1616,6 +1633,15 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
         // https://a.b.c.isolated.com must be returned.
         if (isolated_origin_entry.isolate_all_subdomains()) {
           *result = origin;
+          uint16_t default_port = url::DefaultPortForScheme(
+              origin.scheme().data(), origin.scheme().length());
+
+          if (origin.port() != default_port) {
+            *result = url::Origin::Create(GURL(origin.scheme() +
+                                               url::kStandardSchemeSeparator +
+                                               origin.host()));
+          }
+
           return true;
         }
 
@@ -1665,6 +1691,21 @@ ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
   }
 
   return nullptr;
+}
+
+std::vector<IsolatedOriginPattern>
+ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+    base::StringPiece pattern_list) {
+  std::vector<base::StringPiece> origin_strings = base::SplitStringPiece(
+      pattern_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  std::vector<IsolatedOriginPattern> patterns;
+  patterns.reserve(origin_strings.size());
+
+  for (const base::StringPiece& origin_string : origin_strings)
+    patterns.emplace_back(origin_string);
+
+  return patterns;
 }
 
 }  // namespace content

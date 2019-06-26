@@ -81,6 +81,7 @@ bool IsolatedOriginPattern::Parse(const base::StringPiece& unparsed_pattern) {
     return false;
   }
 
+  DCHECK(!is_valid_ || !origin_.opaque());
   is_valid_ = true;
   return true;
 }

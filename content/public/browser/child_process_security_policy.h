@@ -19,7 +19,6 @@ class FilePath;
 namespace content {
 
 class BrowserContext;
-class IsolatedOriginPattern;
 
 // The ChildProcessSecurityPolicy class is used to grant and revoke security
 // capabilities for child processes.  For example, it restricts whether a child
@@ -292,12 +291,20 @@ class ChildProcessSecurityPolicy {
       IsolatedOriginSource source,
       BrowserContext* browser_context = nullptr) = 0;
 
-  // Semantically identical to the above, but accepts IsolatedOriginPatterns, a
-  // container class which holds wildcard patterns for isolated origins, such as
-  // https://**.foo.com indicating that all domains that match the pattern are
-  // to be given their own isolated process.
+  // Semantically identical to the above, but accepts a string of comma
+  // separated origins. |origins_to_add| can contain both wildcard and
+  // non-wildcard origins, e.g. "https://**.foo.com,https://bar.com".
+  //
+  // Wildcard origins provide a way to treat all subdomains under the specified
+  // host and scheme as distinct isolated origins. For example,
+  // https://**.foo.com would isolate https://foo.com, https://bar.foo.com and
+  // https://qux.baz.foo.com all in separate processes. Adding a wildcard origin
+  // implies breaking document.domain for all of its subdomains.
+  //
+  // Note that wildcards can only be added using this version of
+  // AddIsolatedOrigins; they cannot be specified in a url::Origin().
   virtual void AddIsolatedOrigins(
-      const std::vector<IsolatedOriginPattern>& patterns,
+      base::StringPiece origins_to_add,
       IsolatedOriginSource source,
       BrowserContext* browser_context = nullptr) = 0;
 

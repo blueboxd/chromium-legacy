@@ -1,7 +1,6 @@
 // Copyright (c) 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #ifndef CONTENT_BROWSER_ISOLATED_ORIGIN_UTIL_H_
 #define CONTENT_BROWSER_ISOLATED_ORIGIN_UTIL_H_
 
@@ -33,8 +32,14 @@ class CONTENT_EXPORT IsolatedOriginPattern {
   IsolatedOriginPattern& operator=(IsolatedOriginPattern&& other);
 
   bool operator==(const IsolatedOriginPattern& other) const {
-    return pattern_ == other.pattern_ && origin_ == other.origin_ &&
-           isolate_all_subdomains_ == other.isolate_all_subdomains_;
+    // |pattern_| is deliberately not considered during equality comparison as
+    // it stores the pattern as supplied at construction time, before
+    // normalisation. This leads to erroneous cases of mismatch where
+    // IsolatedOriginPattern("foo.com") and IsolatedOriginPattern("foo.com/")
+    // will fail equality comparison, despite both resolving to the same origin.
+    return origin_ == other.origin_ &&
+           isolate_all_subdomains_ == other.isolate_all_subdomains_ &&
+           is_valid_ == other.is_valid_;
   }
 
   // Returns the url::Origin corresponding to the pattern supplied at

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_SITE_ISOLATION_POLICY_H_
 #define CONTENT_PUBLIC_BROWSER_SITE_ISOLATION_POLICY_H_
 
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -69,15 +70,12 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // called once on browser startup.
   static void StartRecordingSiteIsolationFlagUsage();
 
-  // Parses |arg| into a list of origins.
-  static std::vector<url::Origin> ParseIsolatedOrigins(base::StringPiece arg);
-
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
   // Gets isolated origins from cmdline and/or from field trial param.
-  static std::vector<url::Origin> GetIsolatedOriginsFromCommandLine();
-  static std::vector<url::Origin> GetIsolatedOriginsFromFieldTrial();
+  static std::string GetIsolatedOriginsFromCommandLine();
+  static std::string GetIsolatedOriginsFromFieldTrial();
 
   // Records metrics about which site isolation command-line flags are present.
   static void RecordSiteIsolationFlagUsage();

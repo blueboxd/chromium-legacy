@@ -738,6 +738,23 @@ TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, UnsharePathPluginVmNotRunning) {
+  SetUpVolume();
+  DictionaryPrefUpdate update(profile()->GetPrefs(),
+                              prefs::kGuestOSPathsSharedToVms);
+  base::DictionaryValue* shared_paths = update.Get();
+  base::Value vms(base::Value::Type::LIST);
+  vms.GetList().emplace_back(base::Value("PvmDefault"));
+  shared_paths->SetKey(shared_path_.value(), std::move(vms));
+  crostini_share_path_->UnsharePath(
+      "PvmDefault", shared_path_, true,
+      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), shared_path_, Persist::NO,
+                     SeneschalClientCalled::NO, "", Success::YES,
+                     "PluginVm not running"));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, UnsharePathInvalidPath) {
   SetUpVolume();
   base::FilePath invalid("invalid/path");

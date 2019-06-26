@@ -339,13 +339,26 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
     const std::string& vm_name,
     const base::FilePath& path,
     base::OnceCallback<void(bool, std::string)> callback) {
+  vm_tools::seneschal::UnsharePathRequest request;
+
   // Return success if VM is not currently running.
-  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
-  base::Optional<crostini::VmInfo> vm_info =
-      crostini_manager->GetVmInfo(vm_name);
-  if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
-    std::move(callback).Run(true, "VM not running");
-    return;
+  if (vm_name == plugin_vm::kPluginVmName) {
+    if (plugin_vm::PluginVmManager::GetForProfile(profile_)->vm_state() !=
+        vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
+      std::move(callback).Run(true, "PluginVm not running");
+      return;
+    }
+    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
+                           ->seneschal_server_handle());
+  } else {
+    auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+    base::Optional<crostini::VmInfo> vm_info =
+        crostini_manager->GetVmInfo(vm_name);
+    if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
+      std::move(callback).Run(true, "VM not running");
+      return;
+    }
+    request.set_handle(vm_info->info.seneschal_server_handle());
   }
 
   // Convert path to a virtual path relative to one of the external mounts,
@@ -369,8 +382,6 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
     return;
   }
 
-  vm_tools::seneschal::UnsharePathRequest request;
-  request.set_handle(vm_info->info.seneschal_server_handle());
   request.set_path(unshare_path.value());
   chromeos::DBusThreadManager::Get()->GetSeneschalClient()->UnsharePath(
       request,

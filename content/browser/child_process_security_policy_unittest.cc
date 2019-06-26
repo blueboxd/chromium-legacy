@@ -1351,6 +1351,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   url::Origin baz_https_8000 =
       url::Origin::Create(GURL("https://baz.com:8000/"));
   url::Origin invalid_etld = url::Origin::Create(GURL("https://gov/"));
+
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -1411,6 +1412,18 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
         testing::UnorderedElementsAre(
             GetIsolatedOriginEntry(foo, quxfoo), GetIsolatedOriginEntry(bar),
             GetIsolatedOriginEntry(baz), GetIsolatedOriginEntry(baz_http)));
+  }
+
+  // Verify that adding invalid origins via the string variant of
+  // AddIsolatedOrigins() logs a warning.
+  {
+    base::test::MockLog mock_log;
+    EXPECT_CALL(mock_log, Log(::logging::LOG_ERROR, testing::_, testing::_,
+                              testing::_, testing::HasSubstr("about:blank")))
+        .Times(1);
+
+    mock_log.StartCapturingLogs();
+    p->AddIsolatedOrigins("about:blank", IsolatedOriginSource::TEST);
   }
 
   p->RemoveIsolatedOriginForTesting(foo);
@@ -2280,6 +2293,118 @@ TEST_F(ChildProcessSecurityPolicyTest, GetIsolatedOriginsWithProfile) {
   p->RemoveIsolatedOriginForTesting(bar);
   p->RemoveIsolatedOriginForTesting(baz);
   p->RemoveIsolatedOriginForTesting(qux);
+  EXPECT_THAT(p->GetIsolatedOrigins(), testing::IsEmpty());
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, IsolatedOriginPatternEquality) {
+  std::string foo("https://foo.com");
+  std::string foo_port("https://foo.com:8000");
+  std::string foo_path("https://foo.com/some/path");
+
+  EXPECT_EQ(IsolatedOriginPattern(foo), IsolatedOriginPattern(foo_port));
+  EXPECT_EQ(IsolatedOriginPattern(foo), IsolatedOriginPattern(foo_path));
+
+  std::string wild_foo("https://**.foo.com");
+  std::string wild_foo_port("https://**.foo.com:8000");
+  std::string wild_foo_path("https://**.foo.com/some/path");
+
+  EXPECT_EQ(IsolatedOriginPattern(wild_foo),
+            IsolatedOriginPattern(wild_foo_port));
+  EXPECT_EQ(IsolatedOriginPattern(wild_foo),
+            IsolatedOriginPattern(wild_foo_path));
+
+  EXPECT_FALSE(IsolatedOriginPattern(foo) == IsolatedOriginPattern(wild_foo));
+}
+
+// Verifies parsing logic in SiteIsolationPolicy::ParseIsolatedOrigins.
+TEST_F(ChildProcessSecurityPolicyTest, ParseIsolatedOrigins) {
+  EXPECT_THAT(ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(""),
+              testing::IsEmpty());
+
+  // Single simple, valid origin.
+  EXPECT_THAT(
+      ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+          "http://isolated.foo.com"),
+      testing::ElementsAre(IsolatedOriginPattern("http://isolated.foo.com")));
+
+  // Multiple comma-separated origins.
+  EXPECT_THAT(
+      ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+          "http://a.com,https://b.com,,https://c.com:8000"),
+      testing::ElementsAre(IsolatedOriginPattern("http://a.com"),
+                           IsolatedOriginPattern("https://b.com"),
+                           IsolatedOriginPattern("https://c.com:8000")));
+
+  // ParseIsolatedOrigins should not do any deduplication (that is the job of
+  // ChildProcessSecurityPolicyImpl::AddIsolatedOrigins).
+  EXPECT_THAT(
+      ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+          "https://b.com,https://b.com,https://b.com:1234"),
+      testing::ElementsAre(IsolatedOriginPattern("https://b.com"),
+                           IsolatedOriginPattern("https://b.com"),
+                           IsolatedOriginPattern("https://b.com:1234")));
+
+  // A single wildcard origin.
+  EXPECT_THAT(
+      ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+          "https://**.wild.foo.com"),
+      testing::ElementsAre(IsolatedOriginPattern("https://**.wild.foo.com")));
+
+  // A mixture of wildcard and non-wildcard origins.
+  EXPECT_THAT(
+      ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+          "https://**.wild.foo.com,https://isolated.foo.com"),
+      testing::ElementsAre(IsolatedOriginPattern("https://**.wild.foo.com"),
+                           IsolatedOriginPattern("https://isolated.foo.com")));
+}
+
+// Verify that the default port for an isolated origin's scheme is returned
+// during a lookup, not the port of the origin requested.
+TEST_F(ChildProcessSecurityPolicyTest, WildcardDefaultPort) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_THAT(p->GetIsolatedOrigins(), testing::IsEmpty());
+
+  url::Origin isolated_origin_with_port =
+      url::Origin::Create(GURL("https://isolated.com:1234"));
+  url::Origin isolated_origin =
+      url::Origin::Create(GURL("https://isolated.com"));
+
+  url::Origin wild_with_port =
+      url::Origin::Create(GURL("https://a.wild.com:5678"));
+  url::Origin wild_origin = url::Origin::Create(GURL("https://a.wild.com"));
+  IsolatedOriginPattern wild_pattern("https://**.wild.com:5678");
+
+  p->AddIsolatedOrigins({isolated_origin_with_port},
+                        IsolatedOriginSource::TEST);
+  p->AddIsolatedOrigins({wild_pattern}, IsolatedOriginSource::TEST);
+
+  IsolationContext isolation_context(browser_context());
+  url::Origin lookup_origin;
+
+  // Requesting isolated_origin_with_port should return the same origin but with
+  // the default port for the scheme.
+  EXPECT_TRUE(p->GetMatchingIsolatedOrigin(
+      isolation_context, isolated_origin_with_port, &lookup_origin));
+  EXPECT_EQ(url::DefaultPortForScheme(lookup_origin.scheme().data(),
+                                      lookup_origin.scheme().length()),
+            lookup_origin.port());
+  EXPECT_EQ(isolated_origin, lookup_origin);
+
+  p->RemoveIsolatedOriginForTesting(isolated_origin);
+
+  // Similarly, looking up matching isolated origins for wildcard origins must
+  // also return the default port for the origin's scheme, not the report of the
+  // requested origin.
+  EXPECT_TRUE(p->GetMatchingIsolatedOrigin(isolation_context, wild_with_port,
+                                           &lookup_origin));
+  EXPECT_EQ(url::DefaultPortForScheme(lookup_origin.scheme().data(),
+                                      lookup_origin.scheme().length()),
+            lookup_origin.port());
+  EXPECT_EQ(wild_origin, lookup_origin);
+
+  p->RemoveIsolatedOriginForTesting(wild_pattern.origin());
+
   EXPECT_THAT(p->GetIsolatedOrigins(), testing::IsEmpty());
 }
 

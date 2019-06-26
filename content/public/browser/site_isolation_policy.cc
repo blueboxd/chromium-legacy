@@ -137,25 +137,16 @@ bool SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled() {
 }
 
 // static
-std::vector<url::Origin>
-SiteIsolationPolicy::GetIsolatedOriginsFromCommandLine() {
+std::string SiteIsolationPolicy::GetIsolatedOriginsFromCommandLine() {
   std::string cmdline_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIsolateOrigins);
-  std::vector<url::Origin> origins;
-  // Note that --isolate-origins trumps the opt-out flag, so the command-line
-  // origins are returned regardless of IsSiteIsolationDisabled().
-  if (!cmdline_arg.empty()) {
-    origins = ParseIsolatedOrigins(cmdline_arg);
-    UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
-                              origins.size());
-  }
-  return origins;
+
+  return cmdline_arg;
 }
 
-std::vector<url::Origin>
-SiteIsolationPolicy::GetIsolatedOriginsFromFieldTrial() {
-  std::vector<url::Origin> origins;
+std::string SiteIsolationPolicy::GetIsolatedOriginsFromFieldTrial() {
+  std::string origins;
 
   // Check if site isolation modes are turned off (e.g., due to an opt-out
   // flag).
@@ -166,10 +157,9 @@ SiteIsolationPolicy::GetIsolatedOriginsFromFieldTrial() {
   // feature activates the field trial and assigns the client either to a
   // control or an experiment group - such assignment should be final.
   if (base::FeatureList::IsEnabled(features::kIsolateOrigins)) {
-    std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
+    origins = base::GetFieldTrialParamValueByFeature(
         features::kIsolateOrigins,
         features::kIsolateOriginsFieldTrialParamName);
-    origins = ParseIsolatedOrigins(field_trial_arg);
   }
 
   return origins;
@@ -179,12 +169,12 @@ void SiteIsolationPolicy::ApplyGlobalIsolatedOrigins() {
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
 
-  std::vector<url::Origin> from_cmdline = GetIsolatedOriginsFromCommandLine();
+  std::string from_cmdline = GetIsolatedOriginsFromCommandLine();
   policy->AddIsolatedOrigins(
       from_cmdline,
       ChildProcessSecurityPolicy::IsolatedOriginSource::COMMAND_LINE);
 
-  std::vector<url::Origin> from_trial = GetIsolatedOriginsFromFieldTrial();
+  std::string from_trial = GetIsolatedOriginsFromFieldTrial();
   policy->AddIsolatedOrigins(
       from_trial,
       ChildProcessSecurityPolicy::IsolatedOriginSource::FIELD_TRIAL);
@@ -194,22 +184,6 @@ void SiteIsolationPolicy::ApplyGlobalIsolatedOrigins() {
   policy->AddIsolatedOrigins(
       from_embedder,
       ChildProcessSecurityPolicy::IsolatedOriginSource::BUILT_IN);
-}
-
-// static
-std::vector<url::Origin> SiteIsolationPolicy::ParseIsolatedOrigins(
-    base::StringPiece arg) {
-  std::vector<base::StringPiece> origin_strings = base::SplitStringPiece(
-      arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  std::vector<url::Origin> origins;
-  origins.reserve(origin_strings.size());
-  for (const base::StringPiece& origin_string : origin_strings) {
-    url::Origin origin = url::Origin::Create(GURL(origin_string));
-    if (!origin.opaque())
-      origins.push_back(origin);
-  }
-  return origins;
 }
 
 // static

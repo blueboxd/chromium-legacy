@@ -303,8 +303,7 @@ void PasswordFormManager::Save() {
   }
 
   if (is_new_login_) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "PasswordManager.NewlySavedPasswordIsGenerated",
+    metrics_util::LogNewlySavedPasswordIsGenerated(
         pending_credentials_.type == PasswordForm::Type::kGenerated);
     password_form_manager_helpers::SanitizePossibleUsernames(
         &pending_credentials_);

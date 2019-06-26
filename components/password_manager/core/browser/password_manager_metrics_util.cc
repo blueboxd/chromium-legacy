@@ -211,6 +211,11 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
       "PasswordManager.DeleteCorruptedPasswordsResult", result);
 }
 
+void LogNewlySavedPasswordIsGenerated(bool value) {
+  base::UmaHistogramBoolean("PasswordManager.NewlySavedPasswordIsGenerated",
+                            value);
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
   base::UmaHistogramEnumeration(

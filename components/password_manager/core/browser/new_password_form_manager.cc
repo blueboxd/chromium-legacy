@@ -270,6 +270,8 @@ void NewPasswordFormManager::Save() {
   }
 
   if (is_new_login_) {
+    metrics_util::LogNewlySavedPasswordIsGenerated(
+        pending_credentials_.type == PasswordForm::Type::kGenerated);
     SanitizePossibleUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_, *parsed_submitted_form_,

@@ -9,11 +9,11 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "components/prefs/pref_service.h"
 
-using base::SingleThreadTaskRunner;
+using base::SequencedTaskRunner;
 
 namespace subtle {
 
@@ -49,13 +49,13 @@ void PrefMemberBase::Destroy() {
   }
 }
 
-void PrefMemberBase::MoveToThread(
-    scoped_refptr<SingleThreadTaskRunner> task_runner) {
+void PrefMemberBase::MoveToSequence(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
     UpdateValueFromPref(base::Closure());
-  internal()->MoveToThread(std::move(task_runner));
+  internal()->MoveToSequence(std::move(task_runner));
 }
 
 void PrefMemberBase::OnPreferenceChanged(PrefService* service,
@@ -89,14 +89,13 @@ void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
 }
 
 PrefMemberBase::Internal::Internal()
-    : thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : owning_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       is_managed_(false),
-      is_user_modifiable_(false) {
-}
+      is_user_modifiable_(false) {}
 PrefMemberBase::Internal::~Internal() { }
 
-bool PrefMemberBase::Internal::IsOnCorrectThread() const {
-  return thread_task_runner_->BelongsToCurrentThread();
+bool PrefMemberBase::Internal::IsOnCorrectSequence() const {
+  return owning_task_runner_->RunsTasksInCurrentSequence();
 }
 
 void PrefMemberBase::Internal::UpdateValue(base::Value* v,
@@ -105,13 +104,13 @@ void PrefMemberBase::Internal::UpdateValue(base::Value* v,
                                            base::OnceClosure callback) const {
   std::unique_ptr<base::Value> value(v);
   base::ScopedClosureRunner closure_runner(std::move(callback));
-  if (IsOnCorrectThread()) {
+  if (IsOnCorrectSequence()) {
     bool rv = UpdateValueInternal(*value);
     DCHECK(rv);
     is_managed_ = is_managed;
     is_user_modifiable_ = is_user_modifiable;
   } else {
-    bool may_run = thread_task_runner_->PostTask(
+    bool may_run = owning_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&PrefMemberBase::Internal::UpdateValue, this,
                        value.release(), is_managed, is_user_modifiable,
@@ -120,10 +119,10 @@ void PrefMemberBase::Internal::UpdateValue(base::Value* v,
   }
 }
 
-void PrefMemberBase::Internal::MoveToThread(
-    scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  CheckOnCorrectThread();
-  thread_task_runner_ = std::move(task_runner);
+void PrefMemberBase::Internal::MoveToSequence(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  CheckOnCorrectSequence();
+  owning_task_runner_ = std::move(task_runner);
 }
 
 bool PrefMemberVectorStringUpdate(const base::Value& value,

@@ -1203,7 +1203,7 @@
     "type": "console_test_launcher",
   },
   "http_structured_header_fuzzer": {
-    "label": "//content/test/fuzzer:http_structured_header_fuzzer",
+    "label": "//third_party/blink/common:http_structured_header_fuzzer",
     "type": "fuzzer",
   },
   "hunspell_fuzzer": {

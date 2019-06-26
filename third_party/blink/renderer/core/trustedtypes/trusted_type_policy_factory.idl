@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window, Worker),
-    OriginTrialEnabled=TrustedDOMTypes
+    RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
     [RaisesException, Unforgeable] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
     [Unforgeable] TrustedTypePolicy getExposedPolicy(DOMString policyName);

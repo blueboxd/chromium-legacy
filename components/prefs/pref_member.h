@@ -33,6 +33,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "components/prefs/pref_observer.h"
@@ -58,14 +59,14 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
     Internal();
 
     // Update the value, either by calling |UpdateValueInternal| directly
-    // or by dispatching to the right thread.
+    // or by dispatching to the right sequence.
     // Takes ownership of |value|.
     void UpdateValue(base::Value* value,
                      bool is_managed,
                      bool is_user_modifiable,
                      base::OnceClosure callback) const;
 
-    void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+    void MoveToSequence(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
     // See PrefMember<> for description.
     bool IsManaged() const {
@@ -80,18 +81,16 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
     friend class base::RefCountedThreadSafe<Internal>;
     virtual ~Internal();
 
-    void CheckOnCorrectThread() const {
-      DCHECK(IsOnCorrectThread());
-    }
+    void CheckOnCorrectSequence() const { DCHECK(IsOnCorrectSequence()); }
 
    private:
     // This method actually updates the value. It should only be called from
-    // the thread the PrefMember is on.
+    // the sequence the PrefMember is on.
     virtual bool UpdateValueInternal(const base::Value& value) const = 0;
 
-    bool IsOnCorrectThread() const;
+    bool IsOnCorrectSequence() const;
 
-    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> owning_task_runner_;
     mutable bool is_managed_;
     mutable bool is_user_modifiable_;
 
@@ -112,7 +111,7 @@ class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void MoveToSequence(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // PrefObserver
   void OnPreferenceChanged(PrefService* service,
@@ -186,8 +185,8 @@ class PrefMember : public subtle::PrefMemberBase {
 
   // Unsubscribes the PrefMember from the PrefService. After calling this
   // function, the PrefMember may not be used any more on the UI thread.
-  // Assuming |MoveToThread| was previously called, |GetValue|, |IsManaged|,
-  // and |IsUserModifiable| can still be called from the other thread but
+  // Assuming |MoveToSequence| was previously called, |GetValue|, |IsManaged|,
+  // and |IsUserModifiable| can still be called from the other sequence but
   // the results will no longer update from the PrefService.
   // This method should only be called on the UI thread.
   void Destroy() {
@@ -195,19 +194,26 @@ class PrefMember : public subtle::PrefMemberBase {
   }
 
   // Moves the PrefMember to another thread, allowing read accesses from there.
-  // Changes from the PrefService will be propagated asynchronously
+  // Forwarder to MoveToSequence.
+  // TODO(crbug.com/978036): Remove after all callers use MoveToSequence
+  void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    MoveToSequence(task_runner);
+  }
+
+  // Moves the PrefMember to another sequence, allowing read accesses from
+  // there. Changes from the PrefService will be propagated asynchronously
   // via PostTask.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread by default.
-  void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    subtle::PrefMemberBase::MoveToThread(task_runner);
+  void MoveToSequence(scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    subtle::PrefMemberBase::MoveToSequence(task_runner);
   }
 
   // Check whether the pref is managed, i.e. controlled externally through
   // enterprise configuration management (e.g. windows group policy). Returns
   // false for unknown prefs.
   // This method should only be used from the thread the PrefMember is currently
-  // on, which is the UI thread unless changed by |MoveToThread|.
+  // on, which is the UI thread unless changed by |MoveToSequence|.
   bool IsManaged() const {
     VerifyPref();
     return internal_->IsManaged();
@@ -217,7 +223,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // when the pref is managed by a policy or an extension, and when a command
   // line flag overrides the pref.
   // This method should only be used from the thread the PrefMember is currently
-  // on, which is the UI thread unless changed by |MoveToThread|.
+  // on, which is the UI thread unless changed by |MoveToSequence|.
   bool IsUserModifiable() const {
     VerifyPref();
     return internal_->IsUserModifiable();
@@ -225,7 +231,7 @@ class PrefMember : public subtle::PrefMemberBase {
 
   // Retrieve the value of the member variable.
   // This method should only be used from the thread the PrefMember is currently
-  // on, which is the UI thread unless changed by |MoveToThread|.
+  // on, which is the UI thread unless changed by |MoveToSequence|.
   ValueType GetValue() const {
     VerifyPref();
     return internal_->value();
@@ -256,7 +262,7 @@ class PrefMember : public subtle::PrefMemberBase {
     Internal() : value_(ValueType()) {}
 
     ValueType value() {
-      CheckOnCorrectThread();
+      CheckOnCorrectSequence();
       return value_;
     }
 

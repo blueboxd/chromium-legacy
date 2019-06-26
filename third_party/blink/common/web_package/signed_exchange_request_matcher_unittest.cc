@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace blink {
 
 constexpr char kVariantsHeader[] = "variants-04";
 constexpr char kVariantKeyHeader[] = "variant-key-04";
@@ -218,4 +218,4 @@ TEST(SignedExchangeRequestMatcherTest, MatchRequest) {
   }
 }
 
-}  // namespace content
+}  // namespace blink

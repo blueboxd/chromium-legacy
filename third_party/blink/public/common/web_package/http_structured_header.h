@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_
 
 #include <map>
 #include <string>
@@ -11,12 +11,12 @@
 
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/common/common_export.h"
 
-namespace content {
+namespace blink {
 namespace http_structured_header {
 
-struct CONTENT_EXPORT ParameterisedIdentifier {
+struct BLINK_COMMON_EXPORT ParameterisedIdentifier {
   using Parameters = std::map<std::string, std::string>;
 
   std::string identifier;
@@ -30,14 +30,14 @@ struct CONTENT_EXPORT ParameterisedIdentifier {
 using ParameterisedList = std::vector<ParameterisedIdentifier>;
 using ListOfLists = std::vector<std::vector<std::string>>;
 
-CONTENT_EXPORT base::Optional<std::string> ParseItem(
+BLINK_COMMON_EXPORT base::Optional<std::string> ParseItem(
     const base::StringPiece& str);
-CONTENT_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
+BLINK_COMMON_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
     const base::StringPiece& str);
-CONTENT_EXPORT base::Optional<ListOfLists> ParseListOfLists(
+BLINK_COMMON_EXPORT base::Optional<ListOfLists> ParseListOfLists(
     const base::StringPiece& str);
 
 }  // namespace http_structured_header
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_HTTP_STRUCTURED_HEADER_H_

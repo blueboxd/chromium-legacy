@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "content/browser/web_package/http_structured_header.h"
-#include "content/common/content_export.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/web_package/http_structured_header.h"
 
-namespace content {
+namespace blink {
 
 // SignedExchangeRequestMatcher implements the Request Matching algorithm [1].
 // [1] https://wicg.github.io/webpackage/loading.html#request-matching
-class CONTENT_EXPORT SignedExchangeRequestMatcher {
+class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
  public:
   // Keys must be lower-cased.
   using HeaderMap = std::map<std::string, std::string>;
@@ -43,6 +43,6 @@ class CONTENT_EXPORT SignedExchangeRequestMatcher {
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest, CacheBehavior);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_MATCHER_H_

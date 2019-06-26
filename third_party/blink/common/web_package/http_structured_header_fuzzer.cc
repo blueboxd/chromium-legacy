@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/http_structured_header.h"  // nogncheck
+#include "third_party/blink/public/common/web_package/http_structured_header.h"  // nogncheck
 
-namespace content {
+namespace blink {
 namespace http_structured_header {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -16,4 +16,4 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 
 }  // namespace http_structured_header
-}  // namespace content
+}  // namespace blink

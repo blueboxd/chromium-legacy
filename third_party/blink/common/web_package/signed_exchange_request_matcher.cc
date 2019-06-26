@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/signed_exchange_request_matcher.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 #include <algorithm>
 #include <memory>
@@ -17,7 +17,7 @@
 #include "net/http/http_util.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -452,4 +452,4 @@ bool SignedExchangeRequestMatcher::MatchRequest(
   return false;
 }
 
-}  // namespace content
+}  // namespace blink

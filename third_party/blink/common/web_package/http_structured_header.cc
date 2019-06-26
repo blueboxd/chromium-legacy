@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/http_structured_header.h"
+#include "third_party/blink/public/common/web_package/http_structured_header.h"
 
 #include <string>
 #include <utility>
@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
-namespace content {
+namespace blink {
 namespace http_structured_header {
 
 namespace {
@@ -320,4 +320,4 @@ base::Optional<ListOfLists> ParseListOfLists(const base::StringPiece& str) {
 }
 
 }  // namespace http_structured_header
-}  // namespace content
+}  // namespace blink

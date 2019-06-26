@@ -145,6 +145,7 @@ class StructureNode(base.Node):
              'sconsdep' : 'false',
              'variables': '',
              'compress': 'false',
+             'use_base_dir': 'true',
              }
 
   def IsExcludedFromRc(self):
@@ -185,7 +186,8 @@ class StructureNode(base.Node):
       return '\r'
     else:
       raise exception.UnexpectedAttribute(
-        "Attribute 'line_end' must be one of 'unix' (default), 'windows' or 'mac'")
+        "Attribute 'line_end' must be one of 'unix' (default), 'windows' or "
+        "'mac'")
 
   def GetCliques(self):
     return self.gatherer.GetCliques()
@@ -204,7 +206,24 @@ class StructureNode(base.Node):
     return self.gatherer.GetHtmlResourceFilenames()
 
   def GetInputPath(self):
-    return self.gatherer.GetInputPath()
+    path = self.gatherer.GetInputPath()
+    if path is None:
+      return path
+
+    # Do not mess with absolute paths, that would make them invalid.
+    if os.path.isabs(os.path.expandvars(path)):
+      return path
+
+    # We have no control over code that calls ToRealPath later, so convert
+    # the path to be relative against our basedir.
+    if self.attrs.get('use_base_dir', 'true') != 'true':
+      # Normalize the directory path to use the appropriate OS separator.
+      # GetBaseDir() may return paths\like\this or paths/like/this, since it is
+      # read from the base_dir attribute in the grd file.
+      norm_base_dir = util.normpath(self.GetRoot().GetBaseDir())
+      return os.path.relpath(path, norm_base_dir)
+
+    return path
 
   def GetTextualIds(self):
     if not hasattr(self, 'gatherer'):

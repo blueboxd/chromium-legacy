@@ -21,7 +21,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -38,9 +37,6 @@ public class ExternalAuthUtils {
     private static final String TAG = "ExternalAuthUtils";
 
     private static final ExternalAuthUtils sInstance = AppHooks.get().createExternalAuthUtils();
-
-    private final SparseHistogramSample mConnectionResultHistogramSample =
-            new SparseHistogramSample("GooglePlayServices.ConnectionResult");
 
     /**
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
@@ -185,7 +181,6 @@ public class ExternalAuthUtils {
 
         Context context = ContextUtils.getApplicationContext();
         final int resultCode = checkGooglePlayServicesAvailable(context);
-        recordConnectionResult(resultCode);
         if (resultCode == ConnectionResult.SUCCESS) return true;
         // resultCode is some kind of error.
         Log.v(TAG, "Unable to use Google Play Services: %s", describeError(resultCode));
@@ -244,15 +239,6 @@ public class ExternalAuthUtils {
     public static boolean canUseFirstPartyGooglePlayServices() {
         return sInstance.canUseFirstPartyGooglePlayServices(
                 new UserRecoverableErrorHandler.Silent());
-    }
-
-    /**
-     * Record the result of a connection attempt. The default implementation records via a UMA
-     * histogram.
-     * @param resultCode the result from {@link #checkGooglePlayServicesAvailable(Context)}
-     */
-    protected void recordConnectionResult(final int resultCode) {
-        mConnectionResultHistogramSample.record(resultCode);
     }
 
     /**

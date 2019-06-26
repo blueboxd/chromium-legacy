@@ -8,10 +8,10 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/web_package/http_structured_header.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/sha2.h"
+#include "third_party/blink/public/common/web_package/http_structured_header.h"
 
 namespace content {
 
@@ -23,8 +23,8 @@ SignedExchangeSignatureHeaderField::ParseSignature(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeSignatureHeaderField::ParseSignature");
 
-  base::Optional<http_structured_header::ParameterisedList> values =
-      http_structured_header::ParseParameterisedList(signature_str);
+  base::Optional<blink::http_structured_header::ParameterisedList> values =
+      blink::http_structured_header::ParseParameterisedList(signature_str);
   if (!values) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse signature header.");

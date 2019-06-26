@@ -79,7 +79,7 @@
     readonly attribute FontFaceSet fonts;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [OriginTrialEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypesWorkers;
+    [RuntimeEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypesWorkers;
 };
 
 WorkerGlobalScope includes WindowOrWorkerGlobalScope;

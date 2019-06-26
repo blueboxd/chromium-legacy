@@ -19,6 +19,8 @@ import unittest
 import StringIO
 
 from grit import util
+from grit.node import empty
+from grit.node import misc
 from grit.node import structure
 from grit.format import rc
 
@@ -66,6 +68,31 @@ class StructureUnittest(unittest.TestCase):
                             '  Hello!\n'
                             '</p>\n'), result)
     os.remove(filepath)
+
+  def testGetPath(self):
+    base_dir = util.PathFromRoot('grit/testdata')
+    grd = util.ParseGrdForUnittest('''
+        <structures>
+          <structure type="chrome_html" name="hello_tmpl" file="structure_variables.html" expand_variables="true" variables="GREETING=Hello,THINGS=foo,, bar,, baz,EQUATION=2+2==4,filename=simple" flattenhtml="true" use_base_dir="true"></structure>
+        </structures>''', base_dir)
+    grd.SetOutputLanguage('en')
+    grd.RunGatherers()
+    node, = grd.GetChildrenOfType(structure.StructureNode)
+    self.assertEqual(grd.ToRealPath(node.GetInputPath()),
+                     os.path.abspath(os.path.join(
+                         base_dir, ur'structure_variables.html')))
+
+  def testGetPathNoBasedir(self):
+    grd = util.ParseGrdForUnittest('''
+        <structures>
+          <structure type="chrome_html" name="hello_tmpl" file="structure_variables.html" expand_variables="true" variables="GREETING=Hello,THINGS=foo,, bar,, baz,EQUATION=2+2==4,filename=simple" flattenhtml="true" use_base_dir="false"></structure>
+        </structures>''', util.PathFromRoot('grit/testdata'))
+    grd.SetOutputLanguage('en')
+    grd.RunGatherers()
+    node, = grd.GetChildrenOfType(structure.StructureNode)
+    self.assertEqual(grd.ToRealPath(node.GetInputPath()),
+                     os.path.abspath(os.path.join(
+                         os.getcwd(), ur'structure_variables.html')))
 
   def testCompressGzip(self):
     test_data_root = util.PathFromRoot('grit/testdata')

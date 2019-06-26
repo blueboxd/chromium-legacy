@@ -533,8 +533,7 @@ TEST_F(SuggestionSelectionTest,
       base::ASCIIToUTF16("2 Beyond-the-Wall Rd"),
       base::ASCIIToUTF16("2 Beyond-the-Wall Rd.")};
 
-  PrepareSuggestions(/*add_profile_icon=*/false, labels, &suggestions,
-                     comparator_);
+  PrepareSuggestions(labels, &suggestions, comparator_);
 
   // Suggestions are sorted from highest to lowest rank, so check that
   // duplicates with a lower rank are removed.
@@ -560,8 +559,7 @@ TEST_F(SuggestionSelectionTest,
       base::ASCIIToUTF16("1 Winterfell Ln"), base::ASCIIToUTF16(""),
       base::ASCIIToUTF16("1 Winterfell Ln")};
 
-  PrepareSuggestions(/*add_profile_icon=*/false, labels, &suggestions,
-                     comparator_);
+  PrepareSuggestions(labels, &suggestions, comparator_);
 
   EXPECT_THAT(
       suggestions,

@@ -1200,8 +1200,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                                             nullptr);
   }
 
-  suggestion_selection::PrepareSuggestions(formatter != nullptr, labels,
-                                           &unique_suggestions, comparator);
+  suggestion_selection::PrepareSuggestions(labels, &unique_suggestions,
+                                           comparator);
 
   return unique_suggestions;
 }

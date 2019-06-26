@@ -66,13 +66,11 @@ void RemoveProfilesNotUsedSinceTimestamp(
 
 // Prepares a collection of Suggestions to show to the user. Adds |labels| to
 // their corresponding |suggestions| and removes duplicates, if any. A label
-// corresponds to the suggestion with the same index. Adds an icon on desktop
-// platforms when |add_profile_icon| is true.
+// corresponds to the suggestion with the same index.
 //
 // NOTE: |suggestions| are assumed to have already been sorted from most to
 // least important.
-void PrepareSuggestions(bool add_profile_icon,
-                        const std::vector<base::string16>& labels,
+void PrepareSuggestions(const std::vector<base::string16>& labels,
                         std::vector<Suggestion>* suggestions,
                         const AutofillProfileComparator& comparator);
 

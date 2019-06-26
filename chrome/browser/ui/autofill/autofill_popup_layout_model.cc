@@ -20,7 +20,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -216,7 +215,6 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
     return gfx::ImageSkia();
 
   constexpr int kIconSize = 16;
-  constexpr int kAccountBoxIconSize = 20;
 
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
@@ -241,11 +239,6 @@ gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
 #else
     return gfx::ImageSkia();
 #endif
-  }
-
-  if (icon_str == "accountBoxIcon") {
-    return gfx::CreateVectorIcon(kAccountBoxIcon, kAccountBoxIconSize,
-                                 gfx::kChromeIconGrey);
   }
 
 #if !defined(GOOGLE_CHROME_BUILD)

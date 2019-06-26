@@ -245,8 +245,7 @@ void RemoveProfilesNotUsedSinceTimestamp(
       num_profiles_supressed);
 }
 
-void PrepareSuggestions(bool add_profile_icon,
-                        const std::vector<base::string16>& labels,
+void PrepareSuggestions(const std::vector<base::string16>& labels,
                         std::vector<Suggestion>* suggestions,
                         const AutofillProfileComparator& comparator) {
   DCHECK_EQ(suggestions->size(), labels.size());
@@ -284,12 +283,6 @@ void PrepareSuggestions(bool add_profile_icon,
       // ranking. Suggestions with lower indices have a higher ranking and
       // should be kept.
       (*suggestions)[index_to_add_suggestion].label = labels[i];
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-      if (add_profile_icon) {
-        (*suggestions)[index_to_add_suggestion].icon = "accountBoxIcon";
-      }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
       ++index_to_add_suggestion;
     }
   }

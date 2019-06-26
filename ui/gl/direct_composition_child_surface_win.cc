@@ -569,8 +569,10 @@ void DirectCompositionChildSurfaceWin::EnqueuePendingFrame(
     next_refresh_count = pending_frames_.back().target_refresh_count + 1;
 
   UINT present_count = 0;
-  DCHECK(swap_chain_);
-  swap_chain_->GetLastPresentCount(&present_count);
+  // |swap_chain_| can be null if SetDrawRectangle() failed.  We still enqueue
+  // the callback so that it's released in order after pending callbacks.
+  if (swap_chain_)
+    swap_chain_->GetLastPresentCount(&present_count);
 
   pending_frames_.emplace_back(present_count, next_refresh_count,
                                std::move(callback));

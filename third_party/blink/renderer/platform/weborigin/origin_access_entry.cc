@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

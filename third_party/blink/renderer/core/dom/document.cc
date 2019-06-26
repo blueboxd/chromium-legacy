@@ -40,7 +40,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/metrics/public/mojom/ukm_interface.mojom-shared.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"

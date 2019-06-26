@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"

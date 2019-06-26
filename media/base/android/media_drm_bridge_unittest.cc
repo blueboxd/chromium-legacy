@@ -174,7 +174,7 @@ TEST_F(MediaDrmBridgeTest, CreateWithSecurityLevel_Widevine) {
   CreateWithoutSessionSupport(kWidevineKeySystem, kTestOrigin, kL1);
 }
 
-TEST_F(MediaDrmBridgeTest, DISABLED_Provision_Widevine) {
+TEST_F(MediaDrmBridgeTest, Provision_Widevine) {
   // Only test this if Widevine is supported. Otherwise
   // CreateWithoutSessionSupport() will return null and it can't be tested.
   if (!MediaDrmBridge::IsKeySystemSupported(kWidevineKeySystem)) {
@@ -186,6 +186,16 @@ TEST_F(MediaDrmBridgeTest, DISABLED_Provision_Widevine) {
   // if it's not supported.
   if (!MediaDrmBridge::IsPerOriginProvisioningSupported()) {
     VLOG(0) << "Origin isolated storage not supported on device.";
+    return;
+  }
+
+  // On Android M occasionally MediaDrm.getProvisionRequest() throws and thus a
+  // request can not be generated. This has been fixed in Android N. As Android
+  // M is unlikely to be fixed, disabling this test if running on Android M.
+  // http://crbug.com/973096#c21
+  if (base::android::BuildInfo::GetInstance()->sdk_int() ==
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    VLOG(0) << "Disabled for Android M.";
     return;
   }
 

@@ -7,9 +7,9 @@
 
 #include "base/optional.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/mojom/cors.mojom-shared.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

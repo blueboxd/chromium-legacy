@@ -7,7 +7,7 @@
 
 #include <bitset>
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"

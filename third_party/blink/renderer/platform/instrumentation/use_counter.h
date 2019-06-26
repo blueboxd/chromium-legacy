@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_USE_COUNTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_USE_COUNTER_H_
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {

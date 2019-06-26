@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"

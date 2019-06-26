@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULATOR_H_
 
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"

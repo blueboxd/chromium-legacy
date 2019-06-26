@@ -6209,3 +6209,6 @@ crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jque
 crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-navigation.js [ Skip ]
 crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-remove.js [ Skip ]
 crbug.com/967927 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Skip ]
+
+# Sheriff 2019-06-26
+crbug.com/978966 [ Mac ] paint/markers/ellipsis-mixed-text-in-ltr-flow-with-markers.html [ Pass Failure ]

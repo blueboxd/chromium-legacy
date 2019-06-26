@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"

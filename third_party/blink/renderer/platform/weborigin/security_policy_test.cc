@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"

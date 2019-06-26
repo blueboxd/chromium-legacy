@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "mojo/public/c/system/data_pipe.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader.h"

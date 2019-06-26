@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOAD_PARAMETERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOAD_PARAMETERS_H_
 
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"

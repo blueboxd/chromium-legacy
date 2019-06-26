@@ -29,7 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CONSOLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CONSOLE_H_
 
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
